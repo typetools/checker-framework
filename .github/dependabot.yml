@@ -1,0 +1,20 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: com.amazonaws:aws-java-sdk-bom
+    versions:
+    - "> 1.11.964"
+  - dependency-name: com.google.errorprone:javac
+    versions:
+    - 1.8.0-u20
+  - dependency-name: com.google.errorprone:error_prone_annotations
+    versions:
+    - 2.6.0
+  - dependency-name: com.gorylenko.gradle-git-properties
+    versions:
+    - 2.3.0
