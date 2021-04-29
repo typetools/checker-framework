@@ -717,9 +717,9 @@ public class AnnotationFileParser {
    * Returns true if the given program construct need not be read:
    *
    * <ul>
-   *   <li>It is in the annotated JDK and is not public. Non-public constructs can't be referenced
-   *       outside of the JDK and might refer to types that are not accessible.
-   *   <li>it is private and {@code -AmergeStubsWithSource} was not supplied. As described at
+   *   <li>It is in the annotated JDK and is private. Private constructs can't be referenced outside
+   *       of the JDK and might refer to types that are not accessible.
+   *   <li>It is private and {@code -AmergeStubsWithSource} was not supplied. As described at
    *       https://checkerframework.org/manual/#stub-multiple-specifications, source files take
    *       precedence over stub files unless {@code -AmergeStubsWithSource} is supplied.
    * </ul>
@@ -728,19 +728,12 @@ public class AnnotationFileParser {
    * @return true if the given program construct is in the annotated JDK and is private
    */
   private boolean skipNode(NodeWithAccessModifiers<?> node) {
-    if (!isJdkAsStub || mergeStubsWithSource) {
-      // Avoid computing node.getModifiers if not necessary.
-      return false;
-    }
-
-    NodeList<Modifier> ms = node.getModifiers();
-
     // Must include everything with no access modifier, because stub files are allowed to omit the
     // access modifier.  Also, interface methods have no access modifier, but they are still public.
-    return (isJdkAsStub
-            && (ms.contains(Modifier.privateModifier())
-                || ms.contains(Modifier.protectedModifier())))
-        || (!mergeStubsWithSource && ms.contains(Modifier.privateModifier()));
+    // Must include protected JDK methods..  For example, Object.clone is protected, but it contains
+    // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
+    return (isJdkAsStub || !mergeStubsWithSource)
+        && node.getModifiers().contains(Modifier.privateModifier());
   }
 
   /**
