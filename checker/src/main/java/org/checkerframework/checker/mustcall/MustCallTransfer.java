@@ -53,7 +53,7 @@ public class MustCallTransfer extends CFTransfer {
 
   /**
    * A cache for the default type for java.lang.String, to avoid needing to look it up for every
-   * implicit string conversion.
+   * implicit string conversion. See {@link #getDefaultStringType(StringConversionNode)}.
    */
   private @MonotonicNonNull AnnotationMirror defaultStringType;
 
@@ -75,18 +75,30 @@ public class MustCallTransfer extends CFTransfer {
     // Implicit String conversions should assume that the String's type is
     // whatever the default for String is, not that the conversion is polymorphic.
     TransferResult<CFValue, CFStore> result = super.visitStringConversion(n, p);
-    AnnotationMirror defaultStringType =
-        this.defaultStringType != null
-            ? this.defaultStringType
-            : atypeFactory
-                .getAnnotatedType(TypesUtils.getTypeElement(n.getType()))
-                .getAnnotationInHierarchy(atypeFactory.TOP);
     LocalVariableNode temp = getOrCreateTempVar(n);
     if (temp != null) {
+      AnnotationMirror defaultStringType = getDefaultStringType(n);
       JavaExpression localExp = JavaExpression.fromNode(temp);
       insertIntoStores(result, localExp, defaultStringType);
     }
     return result;
+  }
+
+  /**
+   * Returns the default type for java.lang.String, which is cached in this class to avoid
+   * recomputing it. If the cache is currently unset, this method sets it.
+   *
+   * @param n a string conversion node, from which the type is computed if it is required
+   * @return the type of java.lang.String
+   */
+  private AnnotationMirror getDefaultStringType(StringConversionNode n) {
+    if (this.defaultStringType == null) {
+      this.defaultStringType =
+          atypeFactory
+              .getAnnotatedType(TypesUtils.getTypeElement(n.getType()))
+              .getAnnotationInHierarchy(atypeFactory.TOP);
+    }
+    return this.defaultStringType;
   }
 
   @Override
@@ -155,23 +167,6 @@ public class MustCallTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
     updateStoreWithTempVar(result, node);
     return result;
-  }
-
-  /**
-   * Adds newAnno as the value for target to all stores contained in result.
-   *
-   * @param result a TransferResult containing one or more stores
-   * @param target a JavaExpression whose type is being modified
-   * @param newAnno the new type for target
-   */
-  public void insertIntoStores(
-      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
-    if (result.containsTwoStores()) {
-      result.getThenStore().insertValue(target, newAnno);
-      result.getElseStore().insertValue(target, newAnno);
-    } else {
-      result.getRegularStore().insertValue(target, newAnno);
-    }
   }
 
   /**
@@ -266,23 +261,23 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /**
-   * Issues a mustcall.not.parseable error.
+   * Issues a createsobligation.target.unparseable error.
    *
    * @param n the node
    * @param atypeFactory the type factory to use to issue the error
-   * @param targetStrWithoutAdaptation the unparseable string
+   * @param unparseable the unparseable string
    */
   private static void issueUnparseableError(
       MethodInvocationNode n,
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
-      String targetStrWithoutAdaptation) {
+      String unparseable) {
     atypeFactory
         .getChecker()
         .reportError(
             n.getTree(),
-            "mustcall.not.parseable",
+            "createsobligation.target.unparseable",
             n.getTarget().getMethod().getSimpleName(),
-            targetStrWithoutAdaptation);
+            unparseable);
   }
 
   /**
@@ -322,9 +317,9 @@ public class MustCallTransfer extends CFTransfer {
         IdentifierTree identifierTree = treeBuilder.buildVariableUse(temp);
         localVariableNode = new LocalVariableNode(identifierTree);
         localVariableNode.setInSource(true);
+        atypeFactory.tempVars.put(node.getTree(), localVariableNode);
       }
     }
-    atypeFactory.tempVars.put(node.getTree(), localVariableNode);
     return localVariableNode;
   }
 

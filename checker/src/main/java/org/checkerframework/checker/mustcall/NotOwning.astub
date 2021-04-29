@@ -4,63 +4,14 @@
 // on unconnected sockets) MUST go in SocketAccumulationFrames.astub. CreatesObligation
 // okay, because the OCC turns that off anyway.
 
-package java.net;
-
 import org.checkerframework.checker.mustcall.qual.*;
-import org.checkerframework.common.returnsreceiver.qual.*;
-
-package java.nio.channels;
-
-class SelectionKey {
-    @NotOwning SelectableChannel channel();
-}
-
-class FileChannel {
-    @NotOwning FileChannel position(long arg0) throws IOException;
-    @NotOwning FileChannel truncate(long arg0) throws IOException;
-}
-
-class SocketChannel extends AbstractSelectableChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel {
-    protected SocketChannel(SelectorProvider arg0);
-    // static @MustCall({}) SocketChannel open() throws IOException;
-    static SocketChannel open(SocketAddress arg0) throws IOException;
-    @CreatesObligation("this")
-    SocketChannel bind(SocketAddress arg0) throws IOException;
-    @NotOwning SocketChannel shutdownInput() throws IOException;
-    @NotOwning SocketChannel shutdownOutput() throws IOException;
-    @MustCallAlias Socket socket(@MustCallAlias SocketChannel this);
-
-    @EnsuresCalledMethodsIf(expression="this", result=false, methods={"close"})
-    boolean isOpen();
-}
-
-class ServerSocketChannel extends AbstractSelectableChannel implements NetworkChannel {
-    protected ServerSocketChannel(SelectorProvider arg0);
-    // static @MustCall({}) ServerSocketChannel open() throws IOException;
-    int validOps();
-    @CreatesObligation("this")
-    @MustCallAlias ServerSocketChannel bind(@MustCallAlias ServerSocketChannel this, SocketAddress arg0) throws IOException;
-    @CreatesObligation("this")
-    @MustCallAlias ServerSocketChannel bind(@MustCallAlias ServerSocketChannel this, SocketAddress arg0, int arg1) throws IOException;
-    <T> ServerSocketChannel setOption(SocketOption<T> arg0, T arg1) throws IOException;
-    @MustCallAlias ServerSocket socket(@MustCallAlias ServerSocketChannel this);
-    @MustCallAlias SocketChannel accept(@MustCallAlias ServerSocketChannel this) throws IOException;
-    SocketAddress getLocalAddress() throws IOException;
-}
-
-package java.nio.channels.spi;
-
-class AbstractSelectableChannel {
-    @MustCallAlias @This SelectableChannel configureBlocking(@MustCallAlias AbstractSelectableChannel this, boolean b);
-}
-
-class AbstractInterruptibleChannel {
-    @EnsuresCalledMethodsIf(expression="this", result=false, methods={"close"})
-    boolean isOpen(AbstractInterruptibleChannel this);
-}
 
 package javax.servlet;
 
+// TODO: this interface doesn't appear in the annotated JDK. It definitely
+// exists in Java 8, but I can't find it in Java 11. I checked the deprecation lists
+// for Java 8, 9, and 10, but couldn't find it. Does it exist in Java 11? Was it moved
+// somewhere else?
 interface ServletResponse {
     // The link below justifies why these annotations are correct
     // https://stackoverflow.com/questions/1159168/should-one-call-close-on-httpservletresponse-getoutputstream-getwriter

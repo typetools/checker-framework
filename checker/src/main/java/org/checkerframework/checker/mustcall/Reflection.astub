@@ -7,6 +7,11 @@
 // If you wish to see warnings related to reflection, remove this stub file
 // when running the checker.
 
+// TODO: make this configurable so that users can easily turn this assumption off,
+// e.g. via a command-line option. For now, keep this as a stub file rather than
+// moving it to the annotated JDK so that re-compiling the checker without this
+// assumption is easy if we ever need to do it.
+
 package java.lang.reflect;
 
 import org.checkerframework.checker.mustcall.qual.MustCall;

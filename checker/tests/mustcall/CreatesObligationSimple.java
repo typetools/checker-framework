@@ -35,7 +35,7 @@ import org.checkerframework.checker.mustcall.qual.*;
   static void test3() {
     Object cos = makeNoMC();
     @MustCall({}) Object a = cos;
-    // :: error: mustcall.not.parseable
+    // :: error: createsobligation.target.unparseable
     ((CreatesObligationSimple) cos).reset();
     // It would be better to issue an assignment incompatible error here, but the
     // error above is okay too.

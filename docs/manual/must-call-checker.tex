@@ -69,9 +69,8 @@ call \<foo>, \<bar>, both, or neither; it cannot not represent an object that ne
 to call some other method.
 
 The default type in unannotated code is \<@MustCall(\{\})>.
-A completely unannotated program will always type-check without warnings.
-For the Must Call Checker to be useful, the programmer should supply at least one non-empty
-\<@MustCall> annotation, either in source code or in a stub file.
+A completely unannotated program will always type-check without warnings (so long as it
+does not use any classes in the annotated JDK, such as those that implement \<java.io.Closeable>).
 
 
 \sectionAndLabel{Writing \<@MustCall>/\<@InheritableMustCall> on a class}{must-call-on-class}
@@ -129,6 +128,13 @@ a declaration annotation.
 
 %% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
 %% Call Checker.
+
+\sectionAndLabel{Assumptions about reflection}{must-call-reflection}
+
+The Must Call Checker is unsound with respect to reflection: it assumes
+that objects instantiated reflectively do not have must-call obligations (i.e. that their
+type is \<@MustCall({})>. If the checker is run with \<-AresolveReflection>, then
+this assumption applies only to types that cannot be resolved.
 
 \sectionAndLabel{Type parameter bounds often need to be annotated}{must-call-type-params}
 
