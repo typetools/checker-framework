@@ -236,8 +236,21 @@ public class AnnotationFileParser {
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-  /** Whether or not the file is a stub file that's part of the JDK. */
+  /**
+   * Whether or not the file is a stub file that's part of the JDK.
+   *
+   * <p>Two differences are that in the JDK, private declarations are ignored and some warning
+   * messages are not issued.
+   */
   private final boolean isJdkAsStub;
+
+  /**
+   * Whether or not the file is a stub file that's part of the JDK.
+   *
+   * <p>Two differences are that in the JDK, private declarations are ignored and some warning
+   * messages are not issued.
+   */
+  private final boolean mergeStubsWithSource;
 
   /**
    * The result of calling AnnotationFileParser.parse: the annotated types and declaration
@@ -311,6 +324,7 @@ public class AnnotationFileParser {
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
     this.isJdkAsStub = isJdkAsStub;
+    this.mergeStubsWithSource = atypeFactory.getChecker().hasOption("mergeStubsWithSource");
   }
 
   /**
@@ -705,15 +719,22 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Returns true if the given program construct is private. If so, it is skipped. Private
-   * consturcts can't be referenced by clients and (especially in the JDK) might refer to types that
-   * are not accessible.
+   * Returns true if the given program construct need not be read:
+   *
+   * <ul>
+   *   <li>It is in the annotated JDK and is not public. Non-public constructs can't be referenced
+   *       outside of the JDK and might refer to types that are not accessible.
+   *   <li>it is private and {@code -AmergeStubsWithSource} was not supplied. As described at
+   *       https://checkerframework.org/manual/#stub-multiple-specifications, source files take
+   *       precedence over stub files unless {@code -AmergeStubsWithSource} is supplied.
+   * </ul>
    *
    * @param node a declaration
-   * @return true if the given program construct is private
+   * @return true if the given program construct is in the annotated JDK and is private
    */
-  boolean isPrivate(NodeWithAccessModifiers<?> node) {
-    return node.getModifiers().contains(Modifier.privateModifier());
+  private boolean skipNode(NodeWithAccessModifiers<?> node) {
+    return (isJdkAsStub && !node.getModifiers().contains(Modifier.publicModifier()))
+        || (mergeStubsWithSource && node.getModifiers().contains(Modifier.privateModifier()));
   }
 
   /**
@@ -735,7 +756,7 @@ public class AnnotationFileParser {
   private List<AnnotatedTypeVariable> processTypeDecl(
       TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
     assert typeBeingParsed != null;
-    if (isPrivate(typeDecl)) {
+    if (skipNode(typeDecl)) {
       return null;
     }
     String innerName;
@@ -1367,7 +1388,7 @@ public class AnnotationFileParser {
    * @param elt the element representing that same declaration
    */
   private void processField(FieldDeclaration decl, VariableElement elt) {
-    if (isPrivate(decl)) {
+    if (skipNode(decl)) {
       // Don't process private fields of the JDK.  They can't be referenced outside of the JDK
       // and might refer to types that are not accessible.
       return;
@@ -1950,7 +1971,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, MethodDeclaration methodDecl, boolean noWarn) {
-    if (isPrivate(methodDecl)) {
+    if (skipNode(methodDecl)) {
       return null;
     }
     final String wantedMethodName = methodDecl.getNameAsString();
@@ -2004,7 +2025,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, ConstructorDeclaration constructorDecl) {
-    if (isPrivate(constructorDecl)) {
+    if (skipNode(constructorDecl)) {
       return null;
     }
     final int wantedMethodParams =
