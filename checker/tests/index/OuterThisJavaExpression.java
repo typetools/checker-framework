@@ -14,11 +14,45 @@ public abstract class OuterThisJavaExpression {
 
   final class Inner {
 
+    String s = "different from " + OuterThisJavaExpression.this.s;
+
     @SameLen("s") String f1() {
       return s;
     }
 
-    @SameLen("OuterThisJavaExpression.this.s") String f2() {
+    @SameLen("s") String f2() {
+      return this.s;
+    }
+
+    @SameLen("s") String f3() {
+      // :: error: (return.type.incompatible)
+      return OuterThisJavaExpression.this.s;
+    }
+
+    @SameLen("this.s") String f4() {
+      return s;
+    }
+
+    @SameLen("this.s") String f5() {
+      return this.s;
+    }
+
+    @SameLen("this.s") String f6() {
+      // :: error: (return.type.incompatible)
+      return OuterThisJavaExpression.this.s;
+    }
+
+    @SameLen("OuterThisJavaExpression.this.s") String f7() {
+      // :: error: (return.type.incompatible)
+      return s;
+    }
+
+    @SameLen("OuterThisJavaExpression.this.s") String f8() {
+      // :: error: (return.type.incompatible)
+      return this.s;
+    }
+
+    @SameLen("OuterThisJavaExpression.this.s") String f9() {
       return OuterThisJavaExpression.this.s;
     }
   }
