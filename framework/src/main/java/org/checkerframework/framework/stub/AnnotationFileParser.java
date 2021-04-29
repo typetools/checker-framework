@@ -714,14 +714,18 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Returns true if the given program construct need not be read:
+   * Returns true if the given program construct need not be read: it is private and one of the
+   * following is true:
    *
    * <ul>
-   *   <li>It is in the annotated JDK and is private. Private constructs can't be referenced outside
-   *       of the JDK and might refer to types that are not accessible.
-   *   <li>It is private and {@code -AmergeStubsWithSource} was not supplied. As described at
-   *       https://checkerframework.org/manual/#stub-multiple-specifications, source files take
-   *       precedence over stub files unless {@code -AmergeStubsWithSource} is supplied.
+   *   <li>It is in the annotated JDK. Private constructs can't be referenced outside of the JDK and
+   *       might refer to types that are not accessible.
+   *   <li>It is not an ajava file and {@code -AmergeStubsWithSource} was not supplied. As described
+   *       at https://checkerframework.org/manual/#stub-multiple-specifications, source files take
+   *       precedence over stub files unless {@code -AmergeStubsWithSource} is supplied. As
+   *       described at https://checkerframework.org/manual/#ajava-using, source files do not take
+   *       precedence over ajava files (when reading an ajava file, it is as if {@code
+   *       -AmergeStubsWithSource} were supplied).
    * </ul>
    *
    * @param node a declaration
@@ -732,7 +736,7 @@ public class AnnotationFileParser {
     // access modifier.  Also, interface methods have no access modifier, but they are still public.
     // Must include protected JDK methods..  For example, Object.clone is protected, but it contains
     // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
-    return (isJdkAsStub || !mergeStubsWithSource)
+    return (isJdkAsStub || (isParsingStubFile && !mergeStubsWithSource))
         && node.getModifiers().contains(Modifier.privateModifier());
   }
 
