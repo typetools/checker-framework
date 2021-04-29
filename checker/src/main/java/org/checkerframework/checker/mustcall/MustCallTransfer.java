@@ -167,7 +167,7 @@ public class MustCallTransfer extends CFTransfer {
    * This method either creates or looks up the temp var t for node, and then updates the store to
    * give t the same type as node.
    *
-   * @param node the node to be assigned to a temporal variable
+   * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
    */
   public void updateStoreWithTempVar(TransferResult<CFValue, CFStore> result, Node node) {

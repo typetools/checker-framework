@@ -137,9 +137,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           .isSubtype(atypeFactory.withoutClose(valAnno), atypeFactory.withoutClose(varAnno))) {
         return;
       }
-      // Note that in this case, the rest of the common assignment check should fail (barring
-      // an exception), but it's preferable to allow the whole process to continue to
-      // avoid duplicating error-issuing code here.
+      // Note that in this case, the rest of the common assignment check should fail (barring an
+      // exception).  Control falls through here to avoid duplicating error-issuing code.
     }
     // commonAssignmentCheckOnResourceVariable is already false, so no need to set it.
     super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);

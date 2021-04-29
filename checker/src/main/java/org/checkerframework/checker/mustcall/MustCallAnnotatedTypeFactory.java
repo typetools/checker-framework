@@ -305,9 +305,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Fetches the store from the results of dataflow for {@code first}. If afterFirstStore is true,
-   * then the store after {@code first} is returned; if afterFirstStore is false, the store before
-   * {@code succ} is returned.
+   * Fetches the store from the results of dataflow for {@code first}. If {@code afterFirstStore} is
+   * true, then the store after {@code first} is returned; if {@code afterFirstStore} is false, the
+   * store before {@code succ} is returned.
    *
    * @param afterFirstStore whether to use the store after the first block or the store before its
    *     successor, succ
