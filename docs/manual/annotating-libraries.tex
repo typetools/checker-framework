@@ -808,6 +808,12 @@ Some command-line options make the stub parser issue more warnings:
   overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
   will be issued.
 
+  % These warnings are not enabled by default because they would produce too
+  % much output.  An example of an innocuous warning is when a stub file is
+  % written for library version B but library version A is on the classpath.  A
+  % warning is issued for every method that is in the stub file but not in
+  % version A which is on the classpath.
+
 \item[\<-AstubWarnIfNotFoundIgnoresClasses>]
   Modifies the behavior of \<-AstubWarnIfNotFound>
   to report only missing methods/fields, but ignore missing classes, even if
