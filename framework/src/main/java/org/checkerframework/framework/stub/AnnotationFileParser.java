@@ -728,7 +728,7 @@ public class AnnotationFileParser {
    * @return true if the given program construct is in the annotated JDK and is private
    */
   private boolean skipNode(NodeWithAccessModifiers<?> node) {
-    if (!isJdkAsStub && mergeStubsWithSource) {
+    if (!isJdkAsStub || mergeStubsWithSource) {
       // Avoid computing node.getModifiers if not necessary.
       return false;
     }
