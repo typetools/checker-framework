@@ -728,8 +728,19 @@ public class AnnotationFileParser {
    * @return true if the given program construct is in the annotated JDK and is private
    */
   private boolean skipNode(NodeWithAccessModifiers<?> node) {
-    return (isJdkAsStub && !node.getModifiers().contains(Modifier.publicModifier()))
-        || (mergeStubsWithSource && node.getModifiers().contains(Modifier.privateModifier()));
+    if (!isJdkAsStub && mergeStubsWithSource) {
+      // Avoid computing node.getModifiers if not necessary.
+      return false;
+    }
+
+    NodeList<Modifier> ms = node.getModifiers();
+
+    // Must include everything with no access modifier, because stub files are allowed to omit the
+    // access modifier.  Also, interface methods have no access modifier, but they are still public.
+    return (isJdkAsStub
+            && (ms.contains(Modifier.privateModifier())
+                || ms.contains(Modifier.protectedModifier())))
+        || (!mergeStubsWithSource && ms.contains(Modifier.privateModifier()));
   }
 
   /**
