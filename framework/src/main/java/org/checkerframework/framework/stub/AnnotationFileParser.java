@@ -718,7 +718,7 @@ public class AnnotationFileParser {
    * @return true if the given program construct is in the annotated JDK and is private
    */
   boolean isPrivateInJdk(NodeWithAccessModifiers<?> node) {
-    return node.getModifiers().contains(Modifier.privateModifier());
+    return isJdkAsStub && node.getModifiers().contains(Modifier.privateModifier());
   }
 
   /**
