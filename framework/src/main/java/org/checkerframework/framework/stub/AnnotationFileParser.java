@@ -244,12 +244,7 @@ public class AnnotationFileParser {
    */
   private final boolean isJdkAsStub;
 
-  /**
-   * Whether or not the file is a stub file that's part of the JDK.
-   *
-   * <p>Two differences are that in the JDK, private declarations are ignored and some warning
-   * messages are not issued.
-   */
+  /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
   private final boolean mergeStubsWithSource;
 
   /**
