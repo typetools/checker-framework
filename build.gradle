@@ -24,7 +24,7 @@ repositories {
 
 gitProperties {
     // logically belongs in framework, but only checker resources are copied to .jar file
-    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources".toString()
+    gitPropertiesResourceDir = file("${project.rootDir}/checker/src/main/resources")
 }
 
 ext {
