@@ -710,9 +710,10 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Returns true if the given program construct is in the annotated JDK and is private. If so, it
-   * is skipped. Private consturcts can't be referenced outside of the JDK and might refer to types
-   * that are not accessible.
+   * Returns true if the given program construct is in the annotated JDK and is private.
+   *
+   * <p>If so, it is skipped. Private consturcts can't be referenced outside of the JDK and might
+   * refer to types that are not accessible.
    *
    * @param node a declaration
    * @return true if the given program construct is in the annotated JDK and is private
