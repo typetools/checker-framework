@@ -43,6 +43,7 @@ import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
+import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
@@ -235,7 +236,12 @@ public class AnnotationFileParser {
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-  /** Whether or not the file is a stub file that's part of the JDK. */
+  /**
+   * Whether or not the file is a stub file that's part of the JDK.
+   *
+   * <p>Two differences are that in the JDK, private declarations are ignored and some warning
+   * messages are not issued.
+   */
   private final boolean isJdkAsStub;
 
   /**
@@ -704,6 +710,19 @@ public class AnnotationFileParser {
   }
 
   /**
+   * Returns true if the given program construct is in the annotated JDK and is private.
+   *
+   * <p>If so, it is skipped. Private constructs can't be referenced outside of the JDK and might
+   * refer to types that are not accessible.
+   *
+   * @param node a declaration
+   * @return true if the given program construct is in the annotated JDK and is private
+   */
+  boolean isPrivateInJdk(NodeWithAccessModifiers<?> node) {
+    return isJdkAsStub && node.getModifiers().contains(Modifier.privateModifier());
+  }
+
+  /**
    * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
    *
    * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
@@ -722,9 +741,7 @@ public class AnnotationFileParser {
   private List<AnnotatedTypeVariable> processTypeDecl(
       TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
     assert typeBeingParsed != null;
-    if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
-      // Don't process private classes of the JDK.  They can't be referenced outside of the
-      // JDK and might refer to types that are not accessible.
+    if (isPrivateInJdk(typeDecl)) {
       return null;
     }
     String innerName;
@@ -1356,7 +1373,7 @@ public class AnnotationFileParser {
    * @param elt the element representing that same declaration
    */
   private void processField(FieldDeclaration decl, VariableElement elt) {
-    if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
+    if (isPrivateInJdk(decl)) {
       // Don't process private fields of the JDK.  They can't be referenced outside of the JDK
       // and might refer to types that are not accessible.
       return;
@@ -1939,9 +1956,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, MethodDeclaration methodDecl, boolean noWarn) {
-    if (isJdkAsStub && methodDecl.getModifiers().contains(Modifier.privateModifier())) {
-      // Don't process private methods of the JDK.  They can't be referenced outside of the
-      // JDK and might refer to types that are not accessible.
+    if (isPrivateInJdk(methodDecl)) {
       return null;
     }
     final String wantedMethodName = methodDecl.getNameAsString();
@@ -1995,9 +2010,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, ConstructorDeclaration constructorDecl) {
-    if (isJdkAsStub && constructorDecl.getModifiers().contains(Modifier.privateModifier())) {
-      // Don't process private constructors of the JDK.  They can't be referenced outside of
-      // the JDK and might refer to types that are not accessible.
+    if (isPrivateInJdk(constructorDecl)) {
       return null;
     }
     final int wantedMethodParams =
@@ -2118,8 +2131,8 @@ public class AnnotationFileParser {
    */
   private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
     if (isJdkAsStub) {
-      // The Jdk stubs have purity annotations that should be read for all checkers.
-      // TODO: Parse the jdk stubs, but only save the declaration annotations.
+      // The JDK stubs have purity annotations that should be read for all checkers.
+      // TODO: Parse the JDK stubs, but only save the declaration annotations.
       return true;
     }
     for (AnnotationExpr ae : annotations) {

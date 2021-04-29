@@ -1776,12 +1776,15 @@ You should list those other libraries in a
 class, so that they will also be automatically used.
 
 When a stub file should be used by multiple checkers (for example, if it
-contains purity annotations), the stub file should appear in directory
-\<checker/src/main/resources/>.  It will appear at the top level of the
-\<checker.jar> file.
+contains purity annotations that are needed by multiple distinct checkers),
+the stub file should appear in directory \<checker/src/main/resources/>.
+In the distribution, it will appear at the top level of the \<checker.jar> file.
 It will not be used automatically; a user must pass the
 \<-Astubs=checker.jar/\emph{stubfilename.astub}> command-line argument
 (see Section~\ref{annotated-libraries-using})
+
+While creating a stub file, you may find the debugging options described in
+Section~\ref{stub-troubleshooting} useful.
 
 \end{itemize}
 
@@ -1884,6 +1887,8 @@ in LSP (Language Server Protocol) format.
 
 \item \code{-AstubDebug}:
   Print debugging messages while processing stub files.
+  Section~\ref{stub-troubleshooting} describes more diagnostic command-line
+  arguments.
 
 \end{itemize}
 
