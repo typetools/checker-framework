@@ -4,7 +4,7 @@ import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibli
 abstract class MethodDefinedInSupertype {
 
   void test() {
-    // :: warning: argument.type.incompatible
+    // :: warning: argument
     expectsSibling1(shouldReturnSibling1());
   }
 
@@ -13,7 +13,7 @@ abstract class MethodDefinedInSupertype {
   public abstract int shouldReturnSibling1();
 
   void testMultipleOverrides() {
-    // :: warning: argument.type.incompatible
+    // :: warning: argument
     expectsParent(shouldReturnParent());
   }
 

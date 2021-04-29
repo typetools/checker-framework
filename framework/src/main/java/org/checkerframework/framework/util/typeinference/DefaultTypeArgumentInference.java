@@ -286,8 +286,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    *       In the above example, the null argument requires that T must be @Nullable String. But the
    *       assignment context requires that the T must be @NonNull String. But, in this case if we
    *       use @NonNull String the argument "null" is invalid. In this case, we use @Nullable String
-   *       and report an assignment.type.incompatible because we ALWAYS favor the arguments over the
-   *       assignment context.
+   *       and report an assignment because we ALWAYS favor the arguments over the assignment
+   *       context.
    *   <li>5. Combine the result from 2.a and step 4, if there is a conflict use the result from
    *       step 2.a
    *       <p>Suppose we have the following:

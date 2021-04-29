@@ -58,17 +58,15 @@ public class InitializationVisitor<
   protected final AnnotationFormatter annoFormatter;
 
   // Error message keys
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
-      "initialization.invalid.cast";
+  private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST = "initialization.cast";
   private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
-      "initialization.invalid.field.type";
+      "initialization.field.type";
   private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
-      "initialization.invalid.constructor.return.type";
+      "initialization.constructor.return.type";
   private static final @CompilerMessageKey String
-      COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION =
-          "initialization.invalid.field.write.unknown";
+      COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION = "initialization.field.write.unknown";
   private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED =
-      "initialization.invalid.field.write.initialized";
+      "initialization.field.write.initialized";
 
   public InitializationVisitor(BaseTypeChecker checker) {
     super(checker);

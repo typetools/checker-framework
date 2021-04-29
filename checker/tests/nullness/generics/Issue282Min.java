@@ -8,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue282Min {
   static <M> Set<M> copyOf(Comparator<? super M> comparator, Collection<? extends M> elements) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return null;
   }
 }

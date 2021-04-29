@@ -14,7 +14,7 @@ public class RefineLTE2 {
   public void add(int elt) {
     if (num_values == values.length) {
       values = null;
-      // :: error: (unary.increment.type.incompatible)
+      // :: error: (unary.increment)
       num_values++;
       return;
     }

@@ -117,9 +117,7 @@ public final class SceneToStubWriter {
    * @param className a binary name
    * @return the part of the name representing the class's name without its package
    */
-  @SuppressWarnings(
-      "signature:return.type.incompatible") // A binary name without its package is still a
-  // binary name
+  @SuppressWarnings("signature:return") // A binary name without its package is still a binary name
   private static @BinaryName String basenamePart(@BinaryName String className) {
     int lastdot = className.lastIndexOf('.');
     return className.substring(lastdot + 1);

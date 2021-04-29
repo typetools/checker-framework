@@ -16,7 +16,7 @@ public class Postconditions {
   }
 
   @EnsuresCalledMethods(value = "#1", methods = "b")
-  // :: error: contracts.postcondition.not.satisfied
+  // :: error: contracts.postcondition
   static void doesNotCallB(Postconditions x) {}
 
   @EnsuresCalledMethods(
@@ -61,7 +61,7 @@ public class Postconditions {
   static void invokeCallBAndCWrong() {
     Postconditions y = new Postconditions();
     callBAndC(y);
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     y.build();
   }
 
@@ -83,7 +83,7 @@ public class Postconditions {
     if (ensuresABCIfTrue(p, b)) {
       p.build();
     } else {
-      // :: error: finalizer.invocation.invalid
+      // :: error: finalizer.invocation
       p.build();
     }
   }

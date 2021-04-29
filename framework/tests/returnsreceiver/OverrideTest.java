@@ -17,7 +17,7 @@ public class OverrideTest {
   static class Sub extends Super {
 
     @Override
-    // :: error: override.return.invalid
+    // :: error: override.return
     Super retThis() {
       return null;
     }
@@ -25,7 +25,7 @@ public class OverrideTest {
     @Override
     // we do not support this case for now; would need to write explicit @This on receiver in
     // superclass
-    // :: error: override.receiver.invalid
+    // :: error: override.receiver
     @This Super retWhatever() {
       return this;
     }

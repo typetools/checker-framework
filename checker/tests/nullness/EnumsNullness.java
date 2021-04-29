@@ -8,14 +8,14 @@ public class EnumsNullness {
     C,
     D
   }
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   MyEnum myEnum = null; // invalid
   @Nullable MyEnum myNullableEnum = null;
 
   void testLocalEnum() {
     // Enums are allowed to be null:  no error here.
     MyEnum myNullableEnum = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull MyEnum myEnum = null; // invalid
   }
 

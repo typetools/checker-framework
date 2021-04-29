@@ -11,7 +11,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -25,7 +25,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -41,7 +41,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -58,7 +58,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -94,7 +94,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -137,7 +137,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -150,7 +150,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     } while (this.hashCode() > 10000);
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -164,7 +164,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     } while (true);
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -180,7 +180,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     } while (true);
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -197,7 +197,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     } while (true);
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -233,7 +233,7 @@ public class TryFinallyBreak {
       } while (cond);
       ans = "x";
     } while (cond);
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -276,7 +276,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     } while (cond);
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -289,7 +289,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -303,7 +303,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -319,7 +319,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -336,7 +336,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -372,7 +372,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -415,7 +415,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -429,7 +429,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -448,7 +448,7 @@ public class TryFinallyBreak {
       }
       ans = "x";
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -491,7 +491,7 @@ public class TryFinallyBreak {
         ans = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -505,7 +505,7 @@ public class TryFinallyBreak {
           ans = null;
         }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -523,7 +523,7 @@ public class TryFinallyBreak {
             }
         }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 
@@ -566,7 +566,7 @@ public class TryFinallyBreak {
           ans = null;
         }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return ans;
   }
 }

@@ -13,9 +13,9 @@ public class MinLenIndexFor {
   void callTest(int x) {
     test(0);
     test(1);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     test(2);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     test(3);
     test(arrayLen2.length - 1);
   }
@@ -34,7 +34,7 @@ public class MinLenIndexFor {
     test2(1);
     test2(2);
     test2(4);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     test2(5);
     test2(arrayLen4.length);
   }

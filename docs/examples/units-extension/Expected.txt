@@ -1,9 +1,9 @@
-UnitsExtensionDemo.java:14: error: [assignment.type.incompatible] incompatible types in assignment.
+UnitsExtensionDemo.java:14: error: [assignment] incompatible types in assignment.
         frq = 5;
               ^
   found   : @UnknownUnits int
   required: @Hz int
-UnitsExtensionDemo.java:67: error: [assignment.type.incompatible] incompatible types in assignment.
+UnitsExtensionDemo.java:67: error: [assignment] incompatible types in assignment.
         @Hz int badTernaryAssign = seconds > 10 ? hertz : kilohertz;
                                                 ^
   found   : @Frequency int

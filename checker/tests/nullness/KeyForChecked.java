@@ -74,13 +74,13 @@ public class KeyForChecked {
 
   void incorrect1(Object map) {
     String nonkey = "";
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @KeyFor("map") String key = nonkey;
   }
 
   void correct1(Object map) {
     String nonkey = "";
-    @SuppressWarnings("assignment.type.incompatible")
+    @SuppressWarnings("assignment")
     @KeyFor("map") String key = nonkey;
   }
 
@@ -92,7 +92,7 @@ public class KeyForChecked {
 
     Collection<@KeyFor("m") String> coll = m.keySet();
 
-    @SuppressWarnings("assignment.type.incompatible")
+    @SuppressWarnings("assignment")
     @KeyFor("m") String newkey = "new";
 
     coll.add(newkey);
@@ -108,7 +108,7 @@ public class KeyForChecked {
 
     Collection<@KeyFor("m") String> coll = m.keySet();
 
-    @SuppressWarnings("assignment.type.incompatible")
+    @SuppressWarnings("assignment")
     @KeyFor("m") String newkey = "new";
 
     m.put(newkey, new Object());
@@ -126,7 +126,7 @@ public class KeyForChecked {
     for (@KeyFor("emap") String st : s) {}
     for (String st : s) {}
     Object bubu = new Object();
-    // :: error: (enhancedfor.type.incompatible)
+    // :: error: (enhancedfor)
     for (@KeyFor("bubu") String st : s) {}
   }
 
@@ -143,7 +143,7 @@ public class KeyForChecked {
     // KeyFor has to be explicit on the component to Entry sets because
     //   a) it's not clear which map the Entry set may have come from
     //   b) and there is no guarantee the map is still accessible
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Set<KFMap.Entry<String, Object>> es2 = emap.entrySet();
   }
 

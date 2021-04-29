@@ -45,7 +45,7 @@ public class CustomContractWithArgs {
     }
 
     @EnsuresValue(value = "o", targetValue = 9)
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void ensuresWrong() {
       o = o10;
     }
@@ -75,9 +75,9 @@ public class CustomContractWithArgs {
         o10 = o;
         requires();
       }
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       o10 = o;
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       requires();
     }
   }

@@ -24,7 +24,7 @@ public class SkipUses2 {
       SkipMe.f = null;
       SkipMe.foo();
       DontSkip.f = null;
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       DontSkip.foo();
     }
   }

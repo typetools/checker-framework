@@ -29,7 +29,7 @@ public class AssertNonNullIfNonNullTest {
     // The @AssertNonNullIfNonNull annotation implies that if getValue() is
     // non-null, then is non-null, then value is non-null, but not the
     // converse, so an error should be issued here.
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return value != null;
   }
 

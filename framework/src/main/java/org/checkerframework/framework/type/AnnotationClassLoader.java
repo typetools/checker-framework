@@ -534,7 +534,7 @@ public class AnnotationClassLoader {
       if (pkgEle != null) {
         for (Element e : pkgEle.getEnclosedElements()) {
           if (e.getKind() == ElementKind.ANNOTATION_TYPE) {
-            @SuppressWarnings("signature:assignment.type.incompatible") // Elements needs to be
+            @SuppressWarnings("signature:assignment") // Elements needs to be
             // annotated.
             @BinaryName String annoBinName =
                 checker.getElementUtils().getBinaryName((TypeElement) e).toString();

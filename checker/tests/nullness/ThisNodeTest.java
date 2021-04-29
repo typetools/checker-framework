@@ -6,12 +6,12 @@ public class ThisNodeTest {
     new Object() {
       void test() {
         @UnderInitialization ThisNodeTest l1 = ThisNodeTest.this;
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         @Initialized ThisNodeTest l2 = ThisNodeTest.this;
 
-        // :: error: (method.invocation.invalid)
+        // :: error: (method.invocation)
         ThisNodeTest.this.foo();
-        // :: error: (method.invocation.invalid)
+        // :: error: (method.invocation)
         foo();
       }
     };

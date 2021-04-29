@@ -5,7 +5,7 @@ public class CastsFenum {
 
   void m(Object p, @Fenum("A") Object a) {
     fa = (Object) a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     fa = (Object) p;
 
     // TODO: How can we test the behavior for

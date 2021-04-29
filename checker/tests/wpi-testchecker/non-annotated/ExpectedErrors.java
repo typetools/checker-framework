@@ -24,9 +24,9 @@ public class ExpectedErrors {
   }
 
   void testFields() {
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSibling1(privateDeclaredField);
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSibling1(publicDeclaredField);
   }
 
@@ -36,9 +36,9 @@ public class ExpectedErrors {
 
   // The refinement cannot happen and an assignemnt type incompatible error occurs.
   void assignFieldsToTop() {
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     privateDeclaredField2 = getTop();
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     publicDeclaredField2 = getTop();
   }
 
@@ -70,16 +70,16 @@ public class ExpectedErrors {
   }
 
   void testLUBFields1() {
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSibling1(lubPrivateField);
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSibling1(lubPublicField);
   }
 
   void testLUBFields2() {
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSibling2(lubPrivateField);
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSibling2(lubPublicField);
   }
 
@@ -95,13 +95,13 @@ public class ExpectedErrors {
 
   public @Sibling1 int getSibling1Wrong() {
     int x = lubTest();
-    // :: warning: (return.type.incompatible)
+    // :: warning: (return)
     return x;
   }
 
   public @Sibling2 int getSibling2Wrong() {
     int x = lubTest();
-    // :: warning: (return.type.incompatible)
+    // :: warning: (return)
     return x;
   }
 
@@ -140,7 +140,7 @@ public class ExpectedErrors {
   }
 
   void setBoolean(Object o, boolean b) {
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     @WholeProgramInferenceBottom Object bot = o;
   }
 
@@ -161,15 +161,15 @@ public class ExpectedErrors {
     }
 
     public void suppressWarningsValidation() {
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsSibling1(i);
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsSibling1(i2);
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsSibling1(SuppressWarningsInner.i);
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsSibling1(SuppressWarningsInner.i2);
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsSibling1(suppressWarningsMethodReturn());
 
       suppressWarningsMethodParams(getSibling1());
@@ -210,9 +210,9 @@ public class ExpectedErrors {
 
     // Testing the refinement above.
     void testFields() {
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsBottom(privateField);
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsBottom(publicField);
     }
   }
@@ -227,16 +227,16 @@ public class ExpectedErrors {
     }
 
     void test() {
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsSibling1(field);
-      // :: warning: (argument.type.incompatible)
+      // :: warning: (argument)
       expectsSibling1(field2);
     }
   }
 
   class AssignParam {
     public void f(@WholeProgramInferenceBottom Object param) {
-      // :: warning: assignment.type.incompatible
+      // :: warning: assignment
       param = ((@Top Object) null);
     }
   }

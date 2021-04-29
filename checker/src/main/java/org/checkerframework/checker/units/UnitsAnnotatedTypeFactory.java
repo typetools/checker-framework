@@ -595,7 +595,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return a1;
         } else {
           @SuppressWarnings({
-            "nullness:assignment.type.incompatible" // Every qualifier kind is a
+            "nullness:assignment" // Every qualifier kind is a
             // key in directSuperQualifierMap.
           })
           @NonNull AnnotationMirror lub =

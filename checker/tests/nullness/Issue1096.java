@@ -33,7 +33,7 @@ class PreCond {
 
   void foo(@UnknownInitialization PreCond this) {
     // The receiver is not fully initialized, so raise an error.
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     early();
   }
 
@@ -41,7 +41,7 @@ class PreCond {
     // The receiver is initialized, so non-null field f is definitely non-null.
     early();
     // Nullable fields stay nullable
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     doNullable();
   }
 }
@@ -49,7 +49,7 @@ class PreCond {
 class User {
   void foo(@UnknownInitialization PreCond pc) {
     // The receiver is not fully initialized, so raise an error.
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     pc.early();
   }
 
@@ -57,7 +57,7 @@ class User {
     // The receiver is initialized, so non-null field f is definitely non-null.
     pc.early();
     // Nullable fields stay nullable
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     pc.doNullable();
   }
 }

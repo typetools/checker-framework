@@ -17,9 +17,9 @@ public class GenericTest7 {
   }
 
   public <I extends B<A> & C<A>> void oneA(I i) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd B<A> i1 = i;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd C<A> i2 = i;
   }
 
@@ -34,9 +34,9 @@ public class GenericTest7 {
   }
 
   public <I extends B<? extends A> & C<? extends A>> void twoA(I i) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd B<? extends A> i1 = i;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd C<? extends A> i2 = i;
   }
 

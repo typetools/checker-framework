@@ -10,7 +10,7 @@ public class Index176 {
       throw new Error("Malformed arglist: " + arglist);
     }
     arglist.substring(pos, semi_pos + 1);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     arglist.substring(pos, semi_pos + 2);
   }
 }

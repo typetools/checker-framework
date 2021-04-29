@@ -12,6 +12,6 @@ public class ClassInitializer2a {
     x = 1;
   }
 
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   ClassInitializer2a() {}
 }

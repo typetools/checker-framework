@@ -610,7 +610,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param newRoot the new compilation unit root
    */
-  @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+  @SuppressWarnings("interning:assignment") // used in == tests
   protected void setRoot(CompilationUnitTree newRoot) {
     this.currentRoot = newRoot;
     visitor.setRoot(currentRoot);
@@ -907,7 +907,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param p error is reported at the leaf of the path
    */
-  @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+  @SuppressWarnings("interning:assignment") // used in == tests
   protected void reportJavacError(TreePath p) {
     // If javac issued any errors, do not type check any file, so that the Checker Framework
     // does not have to deal with error types.
@@ -1062,7 +1062,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // Not a format method.  However, messageKey should be either a format string for `args`, or  a
   // property key that maps to a format string for `args`.
   // @FormatMethod
-  @SuppressWarnings("formatter:format.string.invalid") // arg is a format string or a property key
+  @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
   private void report(
       Object source,
       javax.tools.Diagnostic.Kind kind,
@@ -2385,9 +2385,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (typeElement == null) {
       throw new BugInCF("enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
     }
-    @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
-    // @FullyQualifiedName
-    )
+    @SuppressWarnings("signature:assignment") // TypeElement.toString(): @FullyQualifiedName
     @FullyQualifiedName String name = typeElement.toString();
     return shouldSkipUses(name);
   }

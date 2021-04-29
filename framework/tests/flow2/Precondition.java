@@ -11,7 +11,7 @@ public class Precondition {
 
   @RequiresQualifier(expression = "f1", qualifier = Odd.class)
   void requiresF1() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l1 = f1;
     @Odd String l2 = f1;
   }
@@ -19,7 +19,7 @@ public class Precondition {
   @Pure
   @RequiresQualifier(expression = "f1", qualifier = Odd.class)
   int requiresF1AndPure() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l1 = f1;
     @Odd String l2 = f1;
     return 1;
@@ -27,7 +27,7 @@ public class Precondition {
 
   @RequiresQualifier(expression = "f1", qualifier = Value.class)
   void requiresF1Value() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = f1;
     @Value String l2 = f1;
   }
@@ -35,15 +35,15 @@ public class Precondition {
   @RequiresQualifier(expression = "---", qualifier = Odd.class)
   // :: error: (flowexpr.parse.error)
   void error() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l1 = f1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l2 = f1;
   }
 
   @RequiresQualifier(expression = "#1", qualifier = Odd.class)
   void requiresParam(String p) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l1 = p;
     @Odd String l2 = p;
   }
@@ -52,9 +52,9 @@ public class Precondition {
       expression = {"#1", "#2"},
       qualifier = Odd.class)
   void requiresParams(String p1, String p2) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l1 = p1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l2 = p2;
     @Odd String l3 = p1;
     @Odd String l4 = p2;
@@ -65,22 +65,22 @@ public class Precondition {
   void param3() {}
 
   void t1(@Odd String p1, String p2) {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     requiresF1();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     requiresF1Value();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     requiresParam(p2);
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     requiresParams(p1, p2);
   }
 
   void t2(@Odd String p1, String p2) {
     f1 = p1;
     requiresF1();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     requiresF1();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     requiresF1Value();
   }
 
@@ -90,7 +90,7 @@ public class Precondition {
     requiresF1AndPure();
     requiresF1AndPure();
     requiresF1();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     requiresF1();
   }
 
@@ -123,9 +123,9 @@ public class Precondition {
   void multi() {
     @Value String l1 = f1;
     @Odd String l2 = f2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l3 = f2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l4 = f1;
   }
 
@@ -136,9 +136,9 @@ public class Precondition {
   void multi_explicit_requiresqualifierlist() {
     @Value String l1 = f1;
     @Odd String l2 = f2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l3 = f2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l4 = f1;
   }
 
@@ -147,10 +147,10 @@ public class Precondition {
   void error2() {}
 
   void t5(@Odd String p1, String p2, @Value String p3) {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     multi();
     f1 = p3;
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     multi();
     f1 = p3;
     f2 = p1;

@@ -28,63 +28,63 @@ public abstract class FlowExpressionParsingBug {
   public void c() {}
 
   void test1() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     a();
     FlowExpressionParsingBug.i = "";
     a();
   }
 
   void test1b() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     a();
     i = "";
     a();
   }
 
   void test1c() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     a();
     this.i = "";
     a();
   }
 
   void test2() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     b();
     FlowExpressionParsingBug.i = "";
     b();
   }
 
   void test2b() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     b();
     i = "";
     b();
   }
 
   void test2c() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     b();
     this.i = "";
     b();
   }
 
   void test3() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     c();
     FlowExpressionParsingBug.i = "";
     c();
   }
 
   void test3b() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     c();
     i = "";
     c();
   }
 
   void test3c() {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     c();
     this.i = "";
     c();

@@ -6,11 +6,11 @@ import org.checkerframework.checker.nullness.qual.*;
  */
 public class MethodTypeVars {
   void m() {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     Object a = A.badMethod(null);
     Object b = A.badMethod(new Object());
 
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     A.goodMethod(null);
     A.goodMethod(new Object());
   }

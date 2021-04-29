@@ -44,10 +44,10 @@ class MyGeneric<@NonNull T extends @Nullable Number> {}
 class UseMyGeneric {
   MyGeneric<?> wildcardUnbounded = new MyGeneric<>();
 
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   MyGeneric<? extends @NonNull Object> wildcardOutsideUB = wildcardUnbounded;
   MyGeneric<? extends @NonNull Number> wildcardInsideUB = wildcardOutsideUB;
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   MyGeneric<? extends @NonNull Number> wildcardInsideUB2 = wildcardUnbounded;
 
   MyGeneric<? extends @Nullable Number> wildcardInsideUBNullable = wildcardOutsideUB;
@@ -56,7 +56,7 @@ class UseMyGeneric {
 class MyGenericExactBounds<@NonNull T extends @NonNull Number> {}
 
 class UseMyGenericExactBounds {
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   MyGenericExactBounds<? extends @Nullable Object> wildcardOutsideUBError =
       new MyGenericExactBounds<>();
   MyGenericExactBounds<? extends @NonNull Object> wildcardOutside = new MyGenericExactBounds<>();

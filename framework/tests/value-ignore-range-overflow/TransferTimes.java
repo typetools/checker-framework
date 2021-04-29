@@ -7,14 +7,14 @@ public class TransferTimes {
     @IntRange(from = 1) int b = a * 1;
     @IntRange(from = 1) int c = 1 * a;
     @IntRange(from = 0) int d = 0 * a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntRange(from = 0) int e = -1 * a;
 
     int g = -1;
     @IntRange(from = 0) int h = g * 0;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntRange(from = 1) int i = g * 0;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntRange(from = 1) int j = g * a;
 
     int k = 0;

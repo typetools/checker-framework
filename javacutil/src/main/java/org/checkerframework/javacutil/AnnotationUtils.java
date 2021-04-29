@@ -73,7 +73,7 @@ public class AnnotationUtils {
     }
     final DeclaredType annoType = annotation.getAnnotationType();
     final TypeElement elm = (TypeElement) annoType.asElement();
-    @SuppressWarnings("signature:assignment.type.incompatible") // JDK needs annotations
+    @SuppressWarnings("signature:assignment") // JDK needs annotations
     @CanonicalName String name = elm.getQualifiedName().toString();
     return name;
   }

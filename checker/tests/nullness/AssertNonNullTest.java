@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 public class AssertNonNullTest {
   public @Nullable String s;
 
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   public @EnsuresNonNull("s") void makeNN() {
     s = null;
   }

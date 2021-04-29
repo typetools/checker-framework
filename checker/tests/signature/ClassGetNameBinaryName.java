@@ -18,48 +18,48 @@ public class ClassGetNameBinaryName {
 
     @DotSeparatedIdentifiers String s4a = Boolean.class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PrimitiveType String s4b = Boolean.class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String s12 = Nested.class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String s13 = Inner.class.getName();
 
     /// Primitive types
 
     @PrimitiveType String prim1 = int.class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String prim2 = int.class.getName();
 
     @PrimitiveType String prim3 = boolean.class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String prim4 = boolean.class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String prim5 = void.class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PrimitiveType String prim6 = void.class.getName();
 
     /// Arrays
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String s6 = int[].class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String s7 = int[][].class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String s8 = boolean[].class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String s9 = Integer[].class.getName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DotSeparatedIdentifiers String s10 = Boolean[].class.getName();
   }
 
@@ -73,48 +73,48 @@ public class ClassGetNameBinaryName {
 
     @CanonicalNameAndBinaryName String s4a = Boolean.class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PrimitiveType String s4b = Boolean.class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String s12 = Nested.class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String s13 = Inner.class.getName();
 
     /// Primitive types
 
     @PrimitiveType String prim1 = int.class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String prim2 = int.class.getCanonicalName();
 
     @PrimitiveType String prim3 = boolean.class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String prim4 = boolean.class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String prim5 = void.class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PrimitiveType String prim6 = void.class.getCanonicalName();
 
     /// Arrays
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String s6 = int[].class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String s7 = int[][].class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String s8 = boolean[].class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String s9 = Integer[].class.getCanonicalName();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @CanonicalNameAndBinaryName String s10 = Boolean[].class.getCanonicalName();
   }
 }
