@@ -244,6 +244,9 @@ public class AnnotationFileParser {
    */
   private final boolean isJdkAsStub;
 
+  /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
+  private final boolean mergeStubsWithSource;
+
   /**
    * The result of calling AnnotationFileParser.parse: the annotated types and declaration
    * annotations from the file.
@@ -316,6 +319,7 @@ public class AnnotationFileParser {
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
     this.isJdkAsStub = isJdkAsStub;
+    this.mergeStubsWithSource = atypeFactory.getChecker().hasOption("mergeStubsWithSource");
   }
 
   /**
@@ -710,16 +714,30 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Returns true if the given program construct is in the annotated JDK and is private.
+   * Returns true if the given program construct need not be read: it is private and one of the
+   * following is true:
    *
-   * <p>If so, it is skipped. Private constructs can't be referenced outside of the JDK and might
-   * refer to types that are not accessible.
+   * <ul>
+   *   <li>It is in the annotated JDK. Private constructs can't be referenced outside of the JDK and
+   *       might refer to types that are not accessible.
+   *   <li>It is not an ajava file and {@code -AmergeStubsWithSource} was not supplied. As described
+   *       at https://checkerframework.org/manual/#stub-multiple-specifications, source files take
+   *       precedence over stub files unless {@code -AmergeStubsWithSource} is supplied. As
+   *       described at https://checkerframework.org/manual/#ajava-using, source files do not take
+   *       precedence over ajava files (when reading an ajava file, it is as if {@code
+   *       -AmergeStubsWithSource} were supplied).
+   * </ul>
    *
    * @param node a declaration
    * @return true if the given program construct is in the annotated JDK and is private
    */
-  boolean isPrivateInJdk(NodeWithAccessModifiers<?> node) {
-    return isJdkAsStub && node.getModifiers().contains(Modifier.privateModifier());
+  private boolean skipNode(NodeWithAccessModifiers<?> node) {
+    // Must include everything with no access modifier, because stub files are allowed to omit the
+    // access modifier.  Also, interface methods have no access modifier, but they are still public.
+    // Must include protected JDK methods..  For example, Object.clone is protected, but it contains
+    // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
+    return (isJdkAsStub || (isParsingStubFile && !mergeStubsWithSource))
+        && node.getModifiers().contains(Modifier.privateModifier());
   }
 
   /**
@@ -741,7 +759,7 @@ public class AnnotationFileParser {
   private List<AnnotatedTypeVariable> processTypeDecl(
       TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
     assert typeBeingParsed != null;
-    if (isPrivateInJdk(typeDecl)) {
+    if (skipNode(typeDecl)) {
       return null;
     }
     String innerName;
@@ -1373,7 +1391,7 @@ public class AnnotationFileParser {
    * @param elt the element representing that same declaration
    */
   private void processField(FieldDeclaration decl, VariableElement elt) {
-    if (isPrivateInJdk(decl)) {
+    if (skipNode(decl)) {
       // Don't process private fields of the JDK.  They can't be referenced outside of the JDK
       // and might refer to types that are not accessible.
       return;
@@ -1956,7 +1974,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, MethodDeclaration methodDecl, boolean noWarn) {
-    if (isPrivateInJdk(methodDecl)) {
+    if (skipNode(methodDecl)) {
       return null;
     }
     final String wantedMethodName = methodDecl.getNameAsString();
@@ -2010,7 +2028,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, ConstructorDeclaration constructorDecl) {
-    if (isPrivateInJdk(constructorDecl)) {
+    if (skipNode(constructorDecl)) {
       return null;
     }
     final int wantedMethodParams =
