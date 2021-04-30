@@ -299,7 +299,6 @@ public class AnnotationFileParser {
    * @param filename name of annotation file, used only for diagnostic messages
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
-   * @param isBuiltinStub whether this is a stub file that is built in: either
    * @param isJdkAsStub whether or not this is a stub file that's part of the JDK
    * @param isBuiltinStub true if the stub file is built into the checker, false if the stub file
    *     was provided on the command line
