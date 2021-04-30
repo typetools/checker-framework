@@ -5,7 +5,8 @@ This document describes a \emph{Dataflow Framework} for the Java
 Programming Language.  The framework is used in the
 \href{https://checkerframework.org/}{Checker Framework},
 \href{http://errorprone.info/}{Error Prone},
-\href{https://github.com/uber/NullAway}{NullAway}, and other contexts.
+\href{https://github.com/uber/NullAway}{NullAway},
+at Facebook, and in other contexts.
 
 The primary purpose of the Dataflow Framework is to estimate values:
 for each line of source code, it determines what
@@ -51,6 +52,7 @@ enhancements.
     missing parts. Eventually, these paragraphs will be removed.
 \end{workinprogress}
 
+
 \paragraph{Potential version conflicts if you export the Dataflow Framework}
 Suppose that two tools both utilize the Dataflow Framework.  If neither one
 exports the Dataflow Framework's classes or the Checker Framework
@@ -65,9 +67,10 @@ using the \code{dataflow} artifact at
 you can use the \code{dataflow-shaded} artifact at
 \url{https://search.maven.org/artifact/org.checkerframework/dataflow-shaded/}.
 It contains the Dataflow Framework in package
-\code{org.checkerframework.shaded.dataflow} and also the Checker Framework
-qualifiers in their usual packages and the plume-util project
-(\url{https://github.com/plume-lib/plume-util}) in its usual package.
+\code{org.checkerframework.shaded.dataflow} and also its dependencies in
+their usual packages, namely the Checker Framework
+qualifiers and the plume-util project
+(\url{https://github.com/plume-lib/plume-util}).
 (There may still be a problem if two different non-Checker-Framework tools
 both export different, incompatible versions of the \code{dataflow-shaded}
 artifact.)
@@ -1973,7 +1976,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
 %  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess This
-%  LocalWords:  MethodAccess ExplicitThis ImplicitThis java
+%  LocalWords:  MethodAccess ExplicitThis ImplicitThis java NullAway
 %  LocalWords:  LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType
 %  LocalWords:  BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot
 %  LocalWords:  ConditionalOr FloatingDivision FloatingRemainder LeftShift
