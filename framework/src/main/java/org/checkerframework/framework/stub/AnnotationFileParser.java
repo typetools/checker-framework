@@ -91,6 +91,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
+import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -129,8 +130,8 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AnnotationFileParser {
 
-  /** Whether or not the file being parsed is a stub file. If false, then it's an ajava file. */
-  private final boolean isParsingStubFile;
+  /** The type of file being parsed: stub file or ajava file. */
+  private final AnnotationFileType fileType;
 
   /**
    * If parsing an ajava file, represents the javac tree for the compilation root of the file being
@@ -288,19 +289,19 @@ public class AnnotationFileParser {
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
    * @param isJdkAsStub whether or not this is a stub file that's part of the JDK
-   * @param isParsingStubFile true if parsing a stubfile, false if parsing an ajava file
+   * @param fileType the type of file being parsed (stub file or ajava file)
    */
   private AnnotationFileParser(
       String filename,
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       boolean isJdkAsStub,
-      boolean isParsingStubFile) {
+      AnnotationFileType fileType) {
     this.filename = filename;
     this.atypeFactory = atypeFactory;
     this.processingEnv = processingEnv;
     this.elements = processingEnv.getElementUtils();
-    this.isParsingStubFile = isParsingStubFile;
+    this.fileType = fileType;
     this.root = null;
 
     // TODO: This should use SourceChecker.getOptions() to allow
@@ -550,7 +551,8 @@ public class AnnotationFileParser {
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations ajavaAnnos) {
     AnnotationFileParser afp =
-        new AnnotationFileParser(filename, atypeFactory, processingEnv, false, false);
+        new AnnotationFileParser(
+            filename, atypeFactory, processingEnv, false, AnnotationFileType.AJAVA);
     try {
       afp.parseStubUnit(inputStream);
       JavaParserUtil.concatenateAddedStringLiterals(afp.stubUnit);
@@ -599,7 +601,8 @@ public class AnnotationFileParser {
       AnnotationFileAnnotations annotationFileAnnos,
       boolean isJdkAsStub) {
     AnnotationFileParser afp =
-        new AnnotationFileParser(filename, atypeFactory, processingEnv, isJdkAsStub, true);
+        new AnnotationFileParser(
+            filename, atypeFactory, processingEnv, isJdkAsStub, AnnotationFileType.STUB);
     try {
       afp.parseStubUnit(inputStream);
       afp.process(annotationFileAnnos);
@@ -678,7 +681,7 @@ public class AnnotationFileParser {
       processPackage(pDecl);
     }
 
-    if (isParsingStubFile) {
+    if (fileType == AnnotationFileType.STUB) {
       if (cu.getTypes() != null) {
         for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
           // Not processing an ajava file, so ignore the return value.
@@ -736,7 +739,7 @@ public class AnnotationFileParser {
     // access modifier.  Also, interface methods have no access modifier, but they are still public.
     // Must include protected JDK methods.  For example, Object.clone is protected, but it contains
     // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
-    return (isJdkAsStub || (isParsingStubFile && !mergeStubsWithSource))
+    return (isJdkAsStub || (fileType == AnnotationFileType.STUB && !mergeStubsWithSource))
         && node.getModifiers().contains(Modifier.privateModifier());
   }
 
@@ -841,7 +844,7 @@ public class AnnotationFileParser {
 
     // If processing an ajava file, then traversal is handled by a visitor, rather than the rest
     // of this method.
-    if (!isParsingStubFile) {
+    if (fileType == AnnotationFileType.AJAVA) {
       return typeDeclTypeParameters;
     }
 
@@ -1136,7 +1139,7 @@ public class AnnotationFileParser {
 
     // Store the type.
     putMerge(annotationFileAnnos.atypes, elt, methodType);
-    if (isParsingStubFile) {
+    if (fileType == AnnotationFileType.STUB) {
       typeParameters.removeAll(methodType.getTypeVariables());
     }
 
@@ -1523,7 +1526,7 @@ public class AnnotationFileParser {
    * @param elt an element to be annotated as {@code @FromStubFile}
    */
   private void recordDeclAnnotationFromAnnotationFile(Element elt) {
-    if (!isParsingStubFile || isJdkAsStub) {
+    if (fileType == AnnotationFileType.AJAVA || isJdkAsStub) {
       return;
     }
     putOrAddToMap(

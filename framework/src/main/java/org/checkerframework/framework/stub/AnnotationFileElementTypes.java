@@ -198,7 +198,7 @@ public class AnnotationFileElementTypes {
       Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
     }
 
-    parseAnnotationFiles(ajavaFiles, AnnotationFileUtil.AnnotationFileType.AJAVA);
+    parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
     parsing = false;
   }
 
@@ -234,8 +234,7 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
-  private void parseAnnotationFiles(
-      List<String> annotationFiles, AnnotationFileUtil.AnnotationFileType fileType) {
+  private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     for (String path : annotationFiles) {
