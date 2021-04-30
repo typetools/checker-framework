@@ -51,8 +51,26 @@ enhancements.
     missing parts. Eventually, these paragraphs will be removed.
 \end{workinprogress}
 
-
-
+\paragraph{Potential version conflicts if you export the Dataflow Framework}
+Suppose that two tools both utilize the Dataflow Framework.  If neither one
+exports the Dataflow Framework's classes or the Checker Framework
+annotations, both tools can be run at the same time.  If both export the
+classes, then it may be impossible for users to run both tools, because
+they may require a different version of the Dataflow Framework.  The
+Checker Framework necessarily exports the Dataflow Framework.  If your tool
+cannot shadow the Checker Framework and Dataflow Framework classes, and you
+cannot conform to the Checker Framework release schedule, then instead of
+using the \code{dataflow} artifact at
+\url{https://search.maven.org/artifact/org.checkerframework/dataflow/},
+you can use the \code{dataflow-shaded} artifact at
+\url{https://search.maven.org/artifact/org.checkerframework/dataflow-shaded/}.
+It contains the Dataflow Framework in package
+\code{org.checkerframework.shaded.dataflow} and also the Checker Framework
+qualifiers in their usual packages and the plume-util project
+(\url{https://github.com/plume-lib/plume-util}) in its usual package.
+(There may still be a problem if two different non-Checker-Framework tools
+both export different, incompatible versions of the \code{dataflow-shaded}
+artifact.)
 
 
 \section{Organization}
