@@ -11,43 +11,43 @@ public class CompoundAssignment {
 
   public void refinements() {
     field = "hello";
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (compound.assignment)
     field += method();
-    // :: error: (assignment.type.incompatible)
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (assignment)
+    // :: error: (compound.assignment)
     @StringVal("hellohellohello") String test = field += method();
   }
 
   @StringVal("hello") String method() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     field = "goodbye";
     return "hello";
   }
 
   void value() {
     @StringVal("hello") String s = "hello";
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (compound.assignment)
     s += "hello";
 
     @IntVal(1) int i = 1;
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (compound.assignment)
     i += 1;
 
     @IntVal(2) int j = 2;
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (compound.assignment)
     j += 2;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal(4) int four = j;
   }
 
   void value2() {
     @StringVal("hello") String s = "hello";
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     s = s + "hello";
 
     @IntVal(1) int i = 1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     i = i + 1;
   }
 
@@ -61,7 +61,7 @@ public class CompoundAssignment {
 
   void errorCompundAssignments() {
     @StringVal("hello") String s = "hello";
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (compound.assignment)
     s += "";
   }
 }

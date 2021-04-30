@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue3443 {
   static <T extends Supplier3443<@Nullable String>> Supplier3443<String> passThrough(T t) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return t;
   }
 

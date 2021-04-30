@@ -10,7 +10,7 @@ import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
   public void doGenericStuff() {
     // In here, it should be that this:@PolyUI
     uicons.runAsync(this); // should be okay
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     safecons.runAsync(this); // should be error!
   }
 }

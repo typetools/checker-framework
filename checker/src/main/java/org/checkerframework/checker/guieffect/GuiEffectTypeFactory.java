@@ -467,7 +467,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (isUI) {
           checker.reportError(
               errorNode,
-              "override.effect.invalid",
+              "override.effect",
               declaringType,
               overridingMethod,
               overriddenType,
@@ -475,7 +475,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         } else if (isPolyUI) {
           checker.reportError(
               errorNode,
-              "override.effect.invalid.polymorphic",
+              "override.effect.polymorphic",
               declaringType,
               overridingMethod,
               overriddenType,
@@ -496,7 +496,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
           if (!isAnonInstantiation && !overriddenType.hasAnnotation(UI.class)) {
             checker.reportError(
                 errorNode,
-                "override.effect.invalid.nonui",
+                "override.effect.nonui",
                 declaringType,
                 overridingMethod,
                 overriddenType,

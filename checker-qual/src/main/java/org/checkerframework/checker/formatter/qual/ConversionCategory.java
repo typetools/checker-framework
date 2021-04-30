@@ -240,20 +240,17 @@ public enum ConversionCategory {
       return a;
     }
 
-    @SuppressWarnings(
-        "nullness:argument.type.incompatible") // `types` field is null only for UNUSED and
-    // GENERAL
+    @SuppressWarnings("nullness:argument" // `types` field is null only for UNUSED and GENERAL
+    )
     Set<Class<?>> as = arrayToSet(a.types);
-    @SuppressWarnings(
-        "nullness:argument.type.incompatible") // `types` field is null only for UNUSED and
-    // GENERAL
+    @SuppressWarnings("nullness:argument" // `types` field is null only for UNUSED and GENERAL
+    )
     Set<Class<?>> bs = arrayToSet(b.types);
     as.retainAll(bs); // intersection
     for (ConversionCategory v :
         new ConversionCategory[] {CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL}) {
-      @SuppressWarnings(
-          "nullness:argument.type.incompatible") // `types` field is null only for UNUSED
-      // and GENERAL
+      @SuppressWarnings("nullness:argument" // `types` field is null only for UNUSED and GENERAL
+      )
       Set<Class<?>> vs = arrayToSet(v.types);
       if (vs.equals(as)) {
         return v;
@@ -291,20 +288,17 @@ public enum ConversionCategory {
       return INT;
     }
 
-    @SuppressWarnings(
-        "nullness:argument.type.incompatible") // `types` field is null only for UNUSED and
-    // GENERAL
+    @SuppressWarnings("nullness:argument" // `types` field is null only for UNUSED and GENERAL
+    )
     Set<Class<?>> as = arrayToSet(a.types);
-    @SuppressWarnings(
-        "nullness:argument.type.incompatible") // `types` field is null only for UNUSED and
-    // GENERAL
+    @SuppressWarnings("nullness:argument" // `types` field is null only for UNUSED and GENERAL
+    )
     Set<Class<?>> bs = arrayToSet(b.types);
     as.addAll(bs); // union
     for (ConversionCategory v :
         new ConversionCategory[] {NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME}) {
-      @SuppressWarnings(
-          "nullness:argument.type.incompatible") // `types` field is null only for UNUSED
-      // and GENERAL
+      @SuppressWarnings("nullness:argument" // `types` field is null only for UNUSED and GENERAL
+      )
       Set<Class<?>> vs = arrayToSet(v.types);
       if (vs.equals(as)) {
         return v;

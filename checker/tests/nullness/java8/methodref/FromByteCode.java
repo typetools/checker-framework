@@ -9,6 +9,6 @@ public class FromByteCode {
   FunctionBC<String, String> f1 = String::toString;
 
   // Make sure there aren't any issues generating an error with a method from byte code
-  // :: error: (methodref.param.invalid)
+  // :: error: (methodref.param)
   FunctionBC<@Nullable String, String> f2 = String::new;
 }

@@ -14,7 +14,7 @@ public class AssumeKeyForTest {
   }
 
   void m3(Map<String, @Nullable Integer> m, String k) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer x = m.get(k);
   }
 
@@ -31,7 +31,7 @@ public class AssumeKeyForTest {
   }
 
   void m7(Map<String, @Nullable Integer> m, @KeyFor("#1") String k) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer x = m.get(k);
   }
 

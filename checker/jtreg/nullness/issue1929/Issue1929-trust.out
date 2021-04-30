@@ -1,4 +1,4 @@
-Issue1929.java:29:21: compiler.err.proc.messager: [return.type.incompatible] incompatible types in return.
+Issue1929.java:29:21: compiler.err.proc.messager: [return] incompatible types in return.
 type of expression: @Initialized @Nullable String @Initialized @NonNull []
 method return type: @Initialized @NonNull String @Initialized @NonNull []
 Issue1929.java:29:21: compiler.warn.proc.messager: [toarray.nullable.elements.not.newarray] call of toArray on collection of non-null elements yields an array of possibly-null elements; omit the argument to toArray or make it an explicit array constructor

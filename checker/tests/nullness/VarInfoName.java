@@ -8,7 +8,7 @@ public abstract class VarInfoName {
     private boolean result;
 
     public BooleanAndVisitor(VarInfoName name) {
-      // :: error: (argument.type.incompatible) :: warning: (nulltest.redundant)
+      // :: error: (argument) :: warning: (nulltest.redundant)
       result = (name.accept(this) != null);
     }
   }

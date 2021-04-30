@@ -21,7 +21,7 @@ public class NNOEMoreTests {
 
   class NNOESeparate {
     void call1(NNOEMain p) {
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       p.test1();
 
       Object xxx = new Object();

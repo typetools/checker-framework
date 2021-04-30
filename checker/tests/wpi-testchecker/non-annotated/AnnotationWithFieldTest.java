@@ -8,13 +8,13 @@ public class AnnotationWithFieldTest {
 
   void testAnnotationWithFields() {
     fields = getSiblingWithFields();
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSiblingWithFields(fields);
   }
 
   void testAnnotationWithEmptyFields() {
     emptyFields = getSiblingWithFieldsEmpty();
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSiblingWithEmptyFields(emptyFields);
   }
 

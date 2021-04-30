@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.qual.*;
 
 @SuppressWarnings({
   "purity",
-  "contracts.precondition.not.satisfied",
+  "contracts.precondition",
   "lock.expression.possibly.not.final"
 }) // Only test parsing
 public class Issue753 extends ReentrantLock {

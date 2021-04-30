@@ -18,18 +18,18 @@ public class FormatIndexing {
     @Format({ConversionCategory.CHAR_AND_INT}) String ici = "%1$d %1$c";
     f.format("%1$c %1$d", (int) 42);
     f.format("%1$c %1$d %1$d", (int) 42);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format("%1$c %1$d", (long) 42);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format("%1$c %1$d", 'c');
 
     // test INT_AND_TIME
     @Format({ConversionCategory.INT_AND_TIME}) String iit = "%1$tT %1$d";
     f.format("%1$tT %1$d", (long) 42);
     f.format("%1$d %1$tT %1$d", (long) 42);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format("%1$tT %1$d", (int) 42);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format("%1$tT %1$d", new Date());
 
     // test NULL

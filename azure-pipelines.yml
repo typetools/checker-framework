@@ -131,7 +131,7 @@ jobs:
    - nonjunit_tests_jdk11
    - misc_jdk11
    - typecheck_jdk11
-   ## Reduce latency due to the "daikon_jdk11 -> daikon_jdk8" critical path.
+   ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk8" critical path.
    # - daikon_jdk11
   pool:
     vmImage: 'ubuntu-latest'
@@ -145,6 +145,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
+  timeoutInMinutes: 80
   steps:
   - checkout: self
     fetchDepth: 25
@@ -160,7 +161,6 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
-  timeoutInMinutes: 300
   steps:
   - checkout: self
     fetchDepth: 25
@@ -170,7 +170,6 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
-  timeoutInMinutes: 300
   steps:
   - checkout: self
     fetchDepth: 25

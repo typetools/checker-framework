@@ -18,7 +18,7 @@ public class KeyForPostcondition {
   }
 
   public void usePutKey(String x) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @KeyFor("m") String a = x;
     putKey(x);
     @KeyFor("m") String b = x;
@@ -35,13 +35,13 @@ public class KeyForPostcondition {
   }
 
   public void useTryPutKey(String x) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @KeyFor("m") String a = x;
     if (tryPutKey(x)) {
       @KeyFor("m") String b = x;
     }
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @KeyFor("m") String c = x;
   }
 }

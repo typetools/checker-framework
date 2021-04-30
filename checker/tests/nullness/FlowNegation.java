@@ -89,11 +89,11 @@ public class FlowNegation {
   void testAssignInCond() {
     String s = "m";
     if ((s = null) != "m") {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull String l0 = s;
     } else {
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String l1 = s;
   }
 }

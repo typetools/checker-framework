@@ -25,19 +25,19 @@ public class Issue306 {
 
     // The following error has to be raised: from the signature it is not guaranteed that the
     // parameter is returned.
-    // :: error: (monotonic.type.incompatible)
+    // :: error: (monotonic)
     x = check(x);
   }
 
   @MonotonicNonNull Object y;
 
   void realError(@MonotonicNonNull Object p) {
-    // :: error: (monotonic.type.incompatible)
+    // :: error: (monotonic)
     x = y;
-    // :: error: (monotonic.type.incompatible)
+    // :: error: (monotonic)
     x = p;
     // It would be nice not to raise the following error.
-    // :: error: (monotonic.type.incompatible)
+    // :: error: (monotonic)
     x = x;
   }
 }

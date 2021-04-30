@@ -10,7 +10,7 @@ public class Issue3407 {
     var anon =
         new Object() {
           String bar() {
-            // :: error: (method.invocation.invalid)
+            // :: error: (method.invocation)
             return Issue3407.this.getFoo().substring(1);
           }
         };

@@ -25,7 +25,7 @@ public class Issue1929 {
 
   String[] fails3(Collection<String> c) {
     // We don't determine field types from initializition expressions.
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return c.toArray(EMPTY_STRING_ARRAY_3);
   }
 }

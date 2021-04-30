@@ -127,7 +127,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         }
         checker.reportError(
             overriderTree,
-            "override.receiver.invalid",
+            "override.receiver",
             overrider.getReceiverType(),
             overridden.getReceiverType(),
             overriderType,
@@ -350,7 +350,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     assert callerEffect != null;
 
     if (!Effect.lessThanOrEqualTo(targetEffect, callerEffect)) {
-      checker.reportError(node, "call.invalid.ui", targetEffect, callerEffect);
+      checker.reportError(node, "call.ui", targetEffect, callerEffect);
       if (debugSpew) {
         System.err.println("Issuing error for node: " + node);
       }
@@ -394,7 +394,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       checker.reportError(node, "annotations.conflicts");
     }
     if (targetPolyP != null && !atypeFactory.isPolymorphicType(targetClassElt)) {
-      checker.reportError(node, "polymorphism.invalid");
+      checker.reportError(node, "polymorphism");
     }
     if (targetUIP != null && atypeFactory.isUIType(targetClassElt)) {
       checker.reportWarning(node, "effects.redundant.uitype");
@@ -477,7 +477,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             atypeFactory.getAnnotatedType(assignmentTree.getVariable()),
             atypeFactory.getAnnotatedType(assignmentTree.getExpression()),
             assignmentTree.getExpression(),
-            "assignment.type.incompatible");
+            "assignment");
         break;
       case VARIABLE:
         VariableTree variableTree = (VariableTree) tree;
@@ -485,7 +485,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             atypeFactory.getAnnotatedType(variableTree),
             atypeFactory.getAnnotatedType(variableTree.getInitializer()),
             variableTree.getInitializer(),
-            "assignment.type.incompatible");
+            "assignment");
         break;
       case METHOD_INVOCATION:
         MethodInvocationTree invocationTree = (MethodInvocationTree) tree;
@@ -505,7 +505,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 argsTypes.get(i),
                 atypeFactory.getAnnotatedType(args.get(i)),
                 args.get(i),
-                "argument.type.incompatible",
+                "argument",
                 methodParams.get(i),
                 methodName);
           }
@@ -539,7 +539,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                   ret,
                   atypeFactory.getAnnotatedType(returnTree.getExpression()),
                   returnTree.getExpression(),
-                  "return.type.incompatible");
+                  "return");
             } finally {
               visitorState.setAssignmentContext(preAssignmentContext);
             }

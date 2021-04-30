@@ -19,7 +19,7 @@ public class Marks2 {
 
   String customerNameByID(List<Customer> custList, int custID) {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     return opt.get().getName();
   }
 }

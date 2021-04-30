@@ -12,8 +12,8 @@ public class TestConcurrentSemantics2 {
     //  * Context switch to a different thread.
     //  * bar() is called on the other thread.
     //  * Context switch back to this thread.
-    // o is no longer null and an assignment.type.incompatible error should be issued.
-    // :: error: (assignment.type.incompatible)
+    // o is no longer null and an assignment error should be issued.
+    // :: error: (assignment)
     @GuardedBy("b") Object o2 = o;
   }
 
@@ -23,6 +23,6 @@ public class TestConcurrentSemantics2 {
 
   // Test that field assignments do not cause their type to be refined:
   @GuardedBy("a") Object myObject1 = null;
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   @GuardedBy("b") Object myObject2 = myObject1;
 }

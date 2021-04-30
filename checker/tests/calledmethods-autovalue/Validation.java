@@ -35,7 +35,7 @@ abstract class Validation {
 
   static void wrong() {
     Builder b = builder();
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     b.build();
   }
 }

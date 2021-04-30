@@ -22,7 +22,7 @@ public class GenericTest6 {
   void test3(Foo<Foo<? extends @Odd Foo<?>>> p) {}
 
   void call3(Foo<Foo<? extends Foo<?>>> p) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     test3(p);
   }
 

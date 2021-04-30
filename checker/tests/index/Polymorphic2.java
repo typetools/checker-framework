@@ -19,7 +19,7 @@ public class Polymorphic2 {
 
   void testSameLen(int @SameLen("array1") [] a, int @SameLen("array2") [] b) {
     int[] x = mergeSameLen(a, b);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @SameLen("array1") [] y = mergeSameLen(a, b);
   }
 
@@ -29,13 +29,13 @@ public class Polymorphic2 {
   // UpperBound tests
   void testUpperBound(@LTLengthOf("array1") int a, @LTLengthOf("array2") int b) {
     int z = mergeUpperBound(a, b);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf("array1") int zz = mergeUpperBound(a, b);
   }
 
   void testUpperBound2(@LTLengthOf("array1") int a, @LTEqLengthOf("array1") int b) {
     @LTEqLengthOf("array1") int z = mergeUpperBound(a, b);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf("array1") int zz = mergeUpperBound(a, b);
   }
 
@@ -45,7 +45,7 @@ public class Polymorphic2 {
   // LowerBound tests
   void lbc_id(@NonNegative int n, @Positive int p) {
     @NonNegative int z = mergeLowerBound(n, p);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int zz = mergeLowerBound(n, p);
   }
 }

@@ -6,7 +6,7 @@ public class TryFinallyContinue {
     String ans = "x";
     while (true) {
       if (true) {
-        // :: error: (return.type.incompatible)
+        // :: error: (return)
         return ans;
       }
       if (true) {
@@ -41,7 +41,7 @@ public class TryFinallyContinue {
     OUTER:
     while (true) {
       if (true) {
-        // :: error: (return.type.incompatible)
+        // :: error: (return)
         return ans;
       }
 
@@ -66,7 +66,7 @@ public class TryFinallyContinue {
     String ans = "x";
     for (; ; ) {
       if (true) {
-        // :: error: (return.type.incompatible)
+        // :: error: (return)
         return ans;
       }
       if (true) {
@@ -101,7 +101,7 @@ public class TryFinallyContinue {
     OUTER:
     for (; ; ) {
       if (true) {
-        // :: error: (return.type.incompatible)
+        // :: error: (return)
         return ans;
       }
 

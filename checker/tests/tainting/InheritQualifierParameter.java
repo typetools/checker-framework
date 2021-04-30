@@ -8,7 +8,7 @@ public class InheritQualifierParameter {}
 
 class SubHasQualifierParameter extends InheritQualifierParameter {
   void test(@Untainted SubHasQualifierParameter arg) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Tainted SubHasQualifierParameter local = arg;
   }
 }

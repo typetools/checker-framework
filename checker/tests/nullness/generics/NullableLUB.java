@@ -12,9 +12,9 @@ public class NullableLUB<T extends @Nullable Object> {
   T m(boolean b, T p) {
     T r1 = b ? p : null;
     nt = r1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     t = r1;
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return r1;
   }
 
@@ -25,9 +25,9 @@ public class NullableLUB<T extends @Nullable Object> {
   T m2(boolean b, T p) {
     T r1 = b ? null : p;
     nt = r1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     t = r1;
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return r1;
   }
 }
