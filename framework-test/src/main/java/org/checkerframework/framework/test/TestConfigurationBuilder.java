@@ -316,6 +316,12 @@ public class TestConfigurationBuilder {
     return this;
   }
 
+  /**
+   * Adds the given options to this.
+   *
+   * @param options options to add to this
+   * @return this
+   */
   @SuppressWarnings("nullness:return") // need @PolyInitialized annotation
   @RequiresNonNull("this.options")
   public TestConfigurationBuilder addOptions(

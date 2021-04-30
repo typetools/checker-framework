@@ -156,7 +156,11 @@ public class CFGProcessor extends BasicTypeProcessor {
       this.errMsg = errMsg;
     }
 
-    /** Check if the CFG process succeeded. */
+    /**
+     * Check if the CFG process succeeded.
+     *
+     * @return true if the CFG process succeeded
+     */
     @Pure
     @EnsuresNonNullIf(expression = "getCFG()", result = true)
     // TODO: add once #1307 is fixed

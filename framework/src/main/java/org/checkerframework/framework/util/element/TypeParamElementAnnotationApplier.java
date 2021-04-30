@@ -170,6 +170,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
   /**
    * In the event of multiple annotations on an AnnotatedNullType lower bound we want to preserve
    * the multiple annotations so that a type.invalid error is issued later.
+   *
+   * @param annos the annotations to add to the lower bound
    */
   private void applyLowerBounds(final List<? extends AnnotationMirror> annos) {
     if (!annos.isEmpty()) {
