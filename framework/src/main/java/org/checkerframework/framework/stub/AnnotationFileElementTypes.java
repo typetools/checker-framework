@@ -40,6 +40,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
+import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -183,7 +184,7 @@ public class AnnotationFileElementTypes {
       Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
     }
 
-    parseAnnotationFiles(allAnnotationFiles, AnnotationFileUtil.AnnotationFileType.STUB);
+    parseAnnotationFiles(allAnnotationFiles, AnnotationFileType.STUB);
     parsing = false;
   }
 
@@ -198,7 +199,7 @@ public class AnnotationFileElementTypes {
       Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
     }
 
-    parseAnnotationFiles(ajavaFiles, AnnotationFileUtil.AnnotationFileType.AJAVA);
+    parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
     parsing = false;
   }
 
@@ -234,8 +235,7 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
-  private void parseAnnotationFiles(
-      List<String> annotationFiles, AnnotationFileUtil.AnnotationFileType fileType) {
+  private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     for (String path : annotationFiles) {
