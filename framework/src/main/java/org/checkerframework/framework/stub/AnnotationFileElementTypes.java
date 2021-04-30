@@ -483,10 +483,10 @@ public class AnnotationFileElementTypes {
       return;
     }
     if (jdkStubFiles.containsKey(className)) {
-      parseStubFile(jdkStubFiles.get(className));
+      parseJdkStubFile(jdkStubFiles.get(className));
       jdkStubFiles.remove(className);
     } else if (jdkStubFilesJar.containsKey(className)) {
-      parseJarEntry(jdkStubFilesJar.get(className));
+      parseJdkJarEntry(jdkStubFilesJar.get(className));
       jdkStubFilesJar.remove(className);
     }
   }
@@ -527,7 +527,7 @@ public class AnnotationFileElementTypes {
    *
    * @param path path to file to parse
    */
-  private void parseStubFile(Path path) {
+  private void parseJdkStubFile(Path path) {
     parsing = true;
     try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
       AnnotationFileParser.parseJdkFileAsStub(
@@ -548,7 +548,7 @@ public class AnnotationFileElementTypes {
    *
    * @param jarEntryName name of the jar entry to parse
    */
-  private void parseJarEntry(String jarEntryName) {
+  private void parseJdkJarEntry(String jarEntryName) {
     JarURLConnection connection = getJarURLConnectionToJdk();
     parsing = true;
     try (JarFile jarFile = connection.getJarFile()) {
@@ -622,7 +622,7 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the jdk directory and create a mapping, {@link #jdkStubFiles}, from file name to
+   * Walk through the JDK directory and create a mapping, {@link #jdkStubFiles}, from file name to
    * the class contained with in it. Also, parses all package-info.java files.
    *
    * @param resourceURL the URL pointing to the JDK directory
@@ -641,7 +641,7 @@ public class AnnotationFileElementTypes {
               .collect(Collectors.toList());
       for (Path path : paths) {
         if (path.getFileName().toString().equals("package-info.java")) {
-          parseStubFile(path);
+          parseJdkStubFile(path);
           continue;
         }
         if (path.getFileName().toString().equals("module-info.java")) {
@@ -649,7 +649,7 @@ public class AnnotationFileElementTypes {
           continue;
         }
         if (parseAllJdkFiles) {
-          parseStubFile(path);
+          parseJdkStubFile(path);
           continue;
         }
         Path relativePath = root.relativize(path);
@@ -664,7 +664,7 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the jdk directory and create a mapping, {@link #jdkStubFilesJar}, from file name
+   * Walk through the JDK directory and create a mapping, {@link #jdkStubFilesJar}, from file name
    * to the class contained with in it. Also, parses all package-info.java files.
    *
    * @param resourceURL the URL pointing to the JDK directory
@@ -683,7 +683,7 @@ public class AnnotationFileElementTypes {
             && !jarEntry.getName().contains("module-info")) {
           String jarEntryName = jarEntry.getName();
           if (parseAllJdkFiles) {
-            parseJarEntry(jarEntryName);
+            parseJdkJarEntry(jarEntryName);
             continue;
           }
           int index = jarEntry.getName().indexOf("/share/classes/");
@@ -694,7 +694,7 @@ public class AnnotationFileElementTypes {
                   .replace('/', '.');
           jdkStubFilesJar.put(shortName, jarEntryName);
           if (jarEntryName.endsWith("package-info.java")) {
-            parseJarEntry(jarEntryName);
+            parseJdkJarEntry(jarEntryName);
           }
         }
       }
