@@ -145,7 +145,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
-  timeoutInMinutes: 70
+  timeoutInMinutes: 80
   steps:
   - checkout: self
     fetchDepth: 25
