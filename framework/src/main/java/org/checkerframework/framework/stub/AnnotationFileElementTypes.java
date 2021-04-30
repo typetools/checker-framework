@@ -539,7 +539,6 @@ public class AnnotationFileElementTypes {
   private void parseJdkStubFile(Path path) {
     parsing = true;
     try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
-      // TODO: Why does this always parse the stub file as from the JDK?
       AnnotationFileParser.parseJdkFileAsStub(
           path.toFile().getName(),
           jdkStub,
@@ -568,7 +567,6 @@ public class AnnotationFileElementTypes {
       } catch (IOException e) {
         throw new BugInCF("cannot open the jdk stub file " + jarEntryName, e);
       }
-      // TODO: Why does this always parse the stub file as from the JDK?
       AnnotationFileParser.parseJdkFileAsStub(
           jarEntryName, jdkStub, factory, factory.getProcessingEnv(), annotationFileAnnos);
     } catch (IOException e) {
