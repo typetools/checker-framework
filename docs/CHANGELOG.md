@@ -15,6 +15,11 @@ Command-line argument -AassumeKeyFor makes the Nullness Checker and Map Key
 Checker unsoundly assume that the argument to `Map.get` is a key for the
 receiver map.
 
+Warning message keys are shorter.  This reduces clutter in error messages and in
+`@SuppressWarnings` annotations.  Most ".type.invalid", ".type.incompatible",
+".invalid", and ".not.satisfied" suffixes and "type.invalid." prefixes have been
+removed, and most ".invalid." substrings have been changed to ".".
+
 The Checker Framework no longer crashes on code that contains binding
 variables (introduced in Java 14 for `instanceof` pattern matching), and
 such variables are reflected in the control flow graph (CFG).  Thanks to
