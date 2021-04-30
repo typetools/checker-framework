@@ -55,7 +55,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
 
         // There is currently no "switch" message key, so it is treated
         // identically to "type.incompatible".
-        this.commonAssignmentCheck(exprType, caseType, caseExpr, "switch");
+        this.commonAssignmentCheck(exprType, caseType, caseExpr, "type.incompatible");
       }
     }
     return super.visitSwitch(node, p);
