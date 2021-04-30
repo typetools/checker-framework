@@ -823,7 +823,9 @@ Some command-line options make the stub parser issue more warnings:
 \item[\<-AstubWarnIfRedundantWithBytecode>]
   Warn if a stub file entry is redundant with bytecode information.  The
   warning means that the stub file's type is the same as the bytecode type,
-  so that entry in the stub file is not necessary.
+  so that entry in the stub file has no effect.  You could remove the
+  entry in the stub file to make it shorter, or you could add an annotation
+  to the stub file to make the entry have an effect.
 
 %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
 % \item[\<-AstubWarnIfOverwritesBytecode>]

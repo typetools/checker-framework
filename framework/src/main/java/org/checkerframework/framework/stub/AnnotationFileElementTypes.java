@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -40,6 +41,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
+import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -144,7 +146,8 @@ public class AnnotationFileElementTypes {
             jdkStubIn,
             factory,
             processingEnv,
-            annotationFileAnnos);
+            annotationFileAnnos,
+            true);
       }
       String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
       InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
@@ -154,34 +157,36 @@ public class AnnotationFileElementTypes {
             jdkVersionStubIn,
             factory,
             processingEnv,
-            annotationFileAnnos);
+            annotationFileAnnos,
+            true);
       }
 
       // 2. Annotated JDK
+      // This preps but does not parse the JDK files (except package-info.java files).
+      // The JDK source code files will be parsed later, on demand.
       prepJdkStubs();
-      // prepping the Jdk will parse all package-info.java files.  This sets parsing to false,
-      // so re-set it to true.
+      // prepping the JDK parses all package-info.java files, which sets the `parsing` field to
+      // false, so re-set it to true.
       parsing = true;
     }
-
-    List<String> allAnnotationFiles = new ArrayList<>();
 
     // 3. Stub files listed in @StubFiles annotation on the checker
     StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
     if (stubFilesAnnotation != null) {
-      Collections.addAll(allAnnotationFiles, stubFilesAnnotation.value());
+      parseAnnotationFiles(
+          Arrays.asList(stubFilesAnnotation.value()), AnnotationFileType.STUB, true);
     }
 
     // 4. Stub files returned by the `getExtraStubFiles()` method
-    allAnnotationFiles.addAll(checker.getExtraStubFiles());
+    parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.STUB, true);
 
     // 5. Stub files provided via -Astubs command-line option
     String stubsOption = checker.getOption("stubs");
     if (stubsOption != null) {
-      Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
+      parseAnnotationFiles(
+          Arrays.asList(stubsOption.split(File.pathSeparator)), AnnotationFileType.STUB, false);
     }
 
-    parseAnnotationFiles(allAnnotationFiles, AnnotationFileUtil.AnnotationFileType.STUB);
     parsing = false;
   }
 
@@ -196,7 +201,7 @@ public class AnnotationFileElementTypes {
       Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
     }
 
-    parseAnnotationFiles(ajavaFiles, AnnotationFileUtil.AnnotationFileType.AJAVA);
+    parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA, false);
     parsing = false;
   }
 
@@ -231,9 +236,11 @@ public class AnnotationFileElementTypes {
    *
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
+   * @param isBuiltin true if the given annotation file is built into the checker; false if the
+   *     annotation file was supplied on the command line
    */
   private void parseAnnotationFiles(
-      List<String> annotationFiles, AnnotationFileUtil.AnnotationFileType fileType) {
+      List<String> annotationFiles, AnnotationFileType fileType, boolean isBuiltin) {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     for (String path : annotationFiles) {
@@ -255,13 +262,14 @@ public class AnnotationFileElementTypes {
           }
           // We use parseStubFile here even for ajava files because at this stage ajava
           // files are parsed as stub files. The extra annotation data in an ajava file is
-          // parsed when type checking the ajava file's corresponding Java file.
+          // parsed when type-checking the ajava file's corresponding Java file.
           AnnotationFileParser.parseStubFile(
               resource.getDescription(),
               annotationFileStream,
               factory,
               processingEnv,
-              annotationFileAnnos);
+              annotationFileAnnos,
+              isBuiltin);
         }
       } else {
         // We didn't find the files.
@@ -272,7 +280,8 @@ public class AnnotationFileElementTypes {
         }
         InputStream in = checker.getClass().getResourceAsStream(path);
         if (in != null) {
-          AnnotationFileParser.parseStubFile(path, in, factory, processingEnv, annotationFileAnnos);
+          AnnotationFileParser.parseStubFile(
+              path, in, factory, processingEnv, annotationFileAnnos, isBuiltin);
         } else {
           // Didn't find the file.  Issue a warning.
 
@@ -483,10 +492,10 @@ public class AnnotationFileElementTypes {
       return;
     }
     if (jdkStubFiles.containsKey(className)) {
-      parseStubFile(jdkStubFiles.get(className));
+      parseJdkStubFile(jdkStubFiles.get(className));
       jdkStubFiles.remove(className);
     } else if (jdkStubFilesJar.containsKey(className)) {
-      parseJarEntry(jdkStubFilesJar.get(className));
+      parseJdkJarEntry(jdkStubFilesJar.get(className));
       jdkStubFilesJar.remove(className);
     }
   }
@@ -527,9 +536,10 @@ public class AnnotationFileElementTypes {
    *
    * @param path path to file to parse
    */
-  private void parseStubFile(Path path) {
+  private void parseJdkStubFile(Path path) {
     parsing = true;
     try (FileInputStream jdkStub = new FileInputStream(path.toFile())) {
+      // TODO: Why does this always parse the stub file as from the JDK?
       AnnotationFileParser.parseJdkFileAsStub(
           path.toFile().getName(),
           jdkStub,
@@ -548,7 +558,7 @@ public class AnnotationFileElementTypes {
    *
    * @param jarEntryName name of the jar entry to parse
    */
-  private void parseJarEntry(String jarEntryName) {
+  private void parseJdkJarEntry(String jarEntryName) {
     JarURLConnection connection = getJarURLConnectionToJdk();
     parsing = true;
     try (JarFile jarFile = connection.getJarFile()) {
@@ -558,6 +568,7 @@ public class AnnotationFileElementTypes {
       } catch (IOException e) {
         throw new BugInCF("cannot open the jdk stub file " + jarEntryName, e);
       }
+      // TODO: Why does this always parse the stub file as from the JDK?
       AnnotationFileParser.parseJdkFileAsStub(
           jarEntryName, jdkStub, factory, factory.getProcessingEnv(), annotationFileAnnos);
     } catch (IOException e) {
@@ -622,7 +633,7 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the jdk directory and create a mapping, {@link #jdkStubFiles}, from file name to
+   * Walk through the JDK directory and create a mapping, {@link #jdkStubFiles}, from file name to
    * the class contained with in it. Also, parses all package-info.java files.
    *
    * @param resourceURL the URL pointing to the JDK directory
@@ -641,7 +652,7 @@ public class AnnotationFileElementTypes {
               .collect(Collectors.toList());
       for (Path path : paths) {
         if (path.getFileName().toString().equals("package-info.java")) {
-          parseStubFile(path);
+          parseJdkStubFile(path);
           continue;
         }
         if (path.getFileName().toString().equals("module-info.java")) {
@@ -649,7 +660,7 @@ public class AnnotationFileElementTypes {
           continue;
         }
         if (parseAllJdkFiles) {
-          parseStubFile(path);
+          parseJdkStubFile(path);
           continue;
         }
         Path relativePath = root.relativize(path);
@@ -664,7 +675,7 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the jdk directory and create a mapping, {@link #jdkStubFilesJar}, from file name
+   * Walk through the JDK directory and create a mapping, {@link #jdkStubFilesJar}, from file name
    * to the class contained with in it. Also, parses all package-info.java files.
    *
    * @param resourceURL the URL pointing to the JDK directory
@@ -683,7 +694,7 @@ public class AnnotationFileElementTypes {
             && !jarEntry.getName().contains("module-info")) {
           String jarEntryName = jarEntry.getName();
           if (parseAllJdkFiles) {
-            parseJarEntry(jarEntryName);
+            parseJdkJarEntry(jarEntryName);
             continue;
           }
           int index = jarEntry.getName().indexOf("/share/classes/");
@@ -694,7 +705,7 @@ public class AnnotationFileElementTypes {
                   .replace('/', '.');
           jdkStubFilesJar.put(shortName, jarEntryName);
           if (jarEntryName.endsWith("package-info.java")) {
-            parseJarEntry(jarEntryName);
+            parseJdkJarEntry(jarEntryName);
           }
         }
       }
