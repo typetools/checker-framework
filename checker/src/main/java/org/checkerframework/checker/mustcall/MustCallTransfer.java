@@ -227,13 +227,9 @@ public class MustCallTransfer extends CFTransfer {
     if (enclosingElement == null) {
       return null;
     }
-    // Declare and initialize a new, unique iterator variable
+    // Declare and initialize a new, unique variable
     VariableTree tmpVarTree =
-        treeBuilder.buildVariableDecl(
-            treeType, // annotatedIteratorTypeTree,
-            uniqueName("temp-var"),
-            enclosingElement,
-            tree);
+        treeBuilder.buildVariableDecl(treeType, uniqueName("temp-var"), enclosingElement, tree);
     return tmpVarTree;
   }
 

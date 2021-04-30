@@ -10,7 +10,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * another. The Object Construction Checker verifies that the given methods are actually called.
  */
 @StubFiles({
-  "NotOwning.astub",
+  "JavaEE.astub",
   "Reflection.astub",
   "SocketAccumulationFrames.astub",
 })

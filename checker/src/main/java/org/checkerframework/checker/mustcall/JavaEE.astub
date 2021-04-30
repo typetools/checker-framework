@@ -8,10 +8,9 @@ import org.checkerframework.checker.mustcall.qual.*;
 
 package javax.servlet;
 
-// TODO: this interface doesn't appear in the annotated JDK. It definitely
-// exists in Java 8, but I can't find it in Java 11. I checked the deprecation lists
-// for Java 8, 9, and 10, but couldn't find it. Does it exist in Java 11? Was it moved
-// somewhere else?
+// This interface doesn't appear in the annotated JDK, because it is part
+// Java EE not Java SE. Therefore, this annotated version appears here in a
+// stub file rather than in typetools/jdk.
 interface ServletResponse {
     // The link below justifies why these annotations are correct
     // https://stackoverflow.com/questions/1159168/should-one-call-close-on-httpservletresponse-getoutputstream-getwriter
