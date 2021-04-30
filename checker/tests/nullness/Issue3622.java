@@ -72,8 +72,8 @@ public class Issue3622 {
   public class ImmutableIntList4 {
 
     @Override
-    @SuppressWarnings("contracts.conditional.postcondition" // TODO: `if` needs the
-    // BOTH_TO_THEN treatment that ?: gets.
+    @SuppressWarnings(
+        "contracts.conditional.postcondition" // TODO: give `if` the BOTH_TO_THEN treatment like ?:
     )
     public boolean equals(@Nullable Object obj4) {
       boolean b;
@@ -89,8 +89,9 @@ public class Issue3622 {
   public class ImmutableIntList5 {
 
     @Override
-    @SuppressWarnings("contracts.conditional.postcondition" // TODO: Need special treatment
-    // for true and false boolean  literals (cut off dead parts of graph).
+    @SuppressWarnings(
+        "contracts.conditional.postcondition" // TODO: Need special treatment for true and false
+    // boolean  literals (cut off dead parts of graph).
     )
     public boolean equals(@Nullable Object obj5) {
       return true ? obj5 instanceof ImmutableIntList5 : obj5 instanceof ImmutableIntList5;

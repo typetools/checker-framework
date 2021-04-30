@@ -109,8 +109,8 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
       @UnderInitialization NoElementQualifierHierarchy this) {
     Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
     for (QualifierKind top : qualifierKindHierarchy.getTops()) {
-      @SuppressWarnings("nullness:assignment" // All QualifierKinds are keys in
-      // kindToAnnotationMirror
+      @SuppressWarnings(
+          "nullness:assignment" // All QualifierKinds are keys in kindToAnnotationMirror
       )
       @NonNull AnnotationMirror topAnno = kindToAnnotationMirror.get(top);
       tops.add(topAnno);
@@ -128,8 +128,8 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
       @UnderInitialization NoElementQualifierHierarchy this) {
     Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
     for (QualifierKind bottom : qualifierKindHierarchy.getBottoms()) {
-      @SuppressWarnings("nullness:assignment" // All QualifierKinds are keys in
-      // kindToAnnotationMirror
+      @SuppressWarnings(
+          "nullness:assignment" // All QualifierKinds are keys in kindToAnnotationMirror
       )
       @NonNull AnnotationMirror bottomAnno = kindToAnnotationMirror.get(bottom);
       bottoms.add(bottomAnno);
@@ -177,8 +177,8 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  @SuppressWarnings("nullness:return" // every QualifierKind is a key in its corresponding
-  // kindToAnnotationMirror
+  @SuppressWarnings(
+      "nullness:return" // every QualifierKind is a key in its corresponding kindToAnnotationMirror
   )
   public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);
@@ -191,8 +191,8 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  @SuppressWarnings("nullness:return" // every QualifierKind is a key in its corresponding
-  // kindToAnnotationMirror
+  @SuppressWarnings(
+      "nullness:return" // every QualifierKind is a key in its corresponding kindToAnnotationMirror
   )
   public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);
