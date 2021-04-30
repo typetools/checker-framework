@@ -342,7 +342,7 @@ public abstract class CFAbstractTransfer<
       }
 
       CFGLambda lambda = (CFGLambda) underlyingAST;
-      @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+      @SuppressWarnings("interning:assignment") // used in == tests
       @InternedDistinct Tree enclosingTree =
           TreePathUtil.enclosingOfKind(
               factory.getPath(lambda.getLambdaTree()),

@@ -6,10 +6,10 @@ public class UnsupportJavaCode {
 
   void method() {
 
-    // :: error: (expression.unparsable.type.invalid)
+    // :: error: (expression.unparsable)
     @FlowExp("new Object()") String s0;
 
-    // :: error: (expression.unparsable.type.invalid)
+    // :: error: (expression.unparsable)
     @FlowExp("List<String> list;") String s1;
   }
 }

@@ -23,7 +23,7 @@ public class MetaPostcondition {
   }
 
   @EnsuresOdd("f1")
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   void oddF1_error() {}
 
   @EnsuresOdd("---")
@@ -54,7 +54,7 @@ public class MetaPostcondition {
 
   // basic postcondition test
   void t1(@Odd String p1, String p2) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = f1;
     oddF1();
     @Odd String l2 = f1;
@@ -71,7 +71,7 @@ public class MetaPostcondition {
 
   // postcondition with more complex expression
   void tn1(boolean b) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = p.f1;
     oddF1_1();
     @Odd String l2 = p.f1;
@@ -80,7 +80,7 @@ public class MetaPostcondition {
   // postcondition with more complex expression
   void tn2(boolean b) {
     MetaPostcondition param = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = param.f1;
     oddF1_2(param);
     @Odd String l2 = param.f1;
@@ -88,9 +88,9 @@ public class MetaPostcondition {
 
   // basic postcondition test
   void tnm1(@Odd String p1, @Value String p2) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = f1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Value String l2 = f2;
 
     // :: error: (flowexpr.parse.error.postcondition)
@@ -122,16 +122,16 @@ public class MetaPostcondition {
       f1 = null;
       return true;
     }
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return false;
   }
 
   @EnsuresOddIf(result = false, expression = "f1")
-  // :: error: (contracts.conditional.postcondition.invalid.returntype)
+  // :: error: (contracts.conditional.postcondition.returntype)
   void wrongReturnType() {}
 
   @EnsuresOddIf(result = false, expression = "f1")
-  // :: error: (contracts.conditional.postcondition.invalid.returntype)
+  // :: error: (contracts.conditional.postcondition.returntype)
   String wrongReturnType2() {
     f1 = null;
     return "";
@@ -140,24 +140,24 @@ public class MetaPostcondition {
   // basic conditional postcondition test
   void t3(@Odd String p1, String p2) {
     condOddF1(true);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = f1;
     if (condOddF1(false)) {
       @Odd String l2 = f1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l3 = f1;
   }
 
   // basic conditional postcondition test (inverted)
   void t4(@Odd String p1, String p2) {
     condOddF1False(true);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = f1;
     if (!condOddF1False(false)) {
       @Odd String l2 = f1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l3 = f1;
   }
 
@@ -165,7 +165,7 @@ public class MetaPostcondition {
   void t5(boolean b) {
     condOddF1(true);
     if (b) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Odd String l2 = f1;
     }
   }

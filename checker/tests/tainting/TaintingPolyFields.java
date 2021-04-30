@@ -24,18 +24,18 @@ public class TaintingPolyFields {
   // Access of poly fields outside of the declaring class.
   static void test() {
     @Tainted TaintingPolyFields obj = new @Tainted TaintingPolyFields();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Untainted Integer myX = obj.x;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Untainted List<@Untainted String> myLst = obj.lst;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Untainted String @Untainted [] myStr = obj.str;
 
     // :: warning: (cast.unsafe.constructor.invocation)
     @Untainted TaintingPolyFields obj1 = new @Untainted TaintingPolyFields();
     @Untainted Integer myX1 = obj1.x;
     TaintingPolyFields obj2 = new TaintingPolyFields();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Untainted List<@Untainted String> myLst2 = obj2.lst;
   }
 

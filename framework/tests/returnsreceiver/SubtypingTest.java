@@ -5,7 +5,7 @@ public class SubtypingTest {
   void allSubtypingRelationships(@UnknownThis int x, @BottomThis int y) {
     @UnknownThis int a = x;
     @UnknownThis int b = y;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @BottomThis int c = x; // expected error on this line
     @BottomThis int d = y;
   }

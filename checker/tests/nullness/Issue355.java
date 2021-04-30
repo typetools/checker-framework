@@ -52,7 +52,7 @@ class Issue355e {
   }
 
   void m(@Nullable List<String> xs) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     for (Object x : checkNotNull(xs)) {}
   }
 }

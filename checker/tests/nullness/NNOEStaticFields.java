@@ -94,7 +94,7 @@ public class NNOEStaticFields {
     // this postcondition cannot be proved with the Checker Framework, as the relation
     // between doPurity and pureMethods is not explicit
     public static boolean shouldDoPurity() {
-      // :: error: (contracts.conditional.postcondition.not.satisfied)
+      // :: error: (contracts.conditional.postcondition)
       return doPurity;
     }
 

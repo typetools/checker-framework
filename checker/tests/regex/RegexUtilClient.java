@@ -36,19 +36,19 @@ public class RegexUtilClient {
 
   void illegalName(String s) {
     if (IllegalName.isRegex(s, 2)) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Regex(2) String s2 = s;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex(2) String s2 = IllegalName.asRegex(s, 2);
   }
 
   void illegalNameRegexUtil(String s) {
     if (IllegalNameRegexUtil.isRegex(s, 2)) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Regex(2) String s2 = s;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex(2) String s2 = IllegalNameRegexUtil.asRegex(s, 2);
   }
 }

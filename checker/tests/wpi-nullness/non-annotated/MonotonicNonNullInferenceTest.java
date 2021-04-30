@@ -3,20 +3,20 @@ public class MonotonicNonNullInferenceTest {
   // :: warning: (initialization.static.field.uninitialized)
   static String staticString1;
 
-  // :: warning: (assignment.type.incompatible)
+  // :: warning: (assignment)
   static String staticString2 = null;
 
   static String staticString3;
 
   String instanceString1;
 
-  // :: warning: (assignment.type.incompatible)
+  // :: warning: (assignment)
   String instanceString2 = null;
 
   String instanceString3;
 
   static {
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     staticString3 = null;
   }
 

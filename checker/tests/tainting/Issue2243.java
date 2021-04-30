@@ -17,7 +17,7 @@ class MyClass2243 {
 }
 
 @Untainted class Y2243 extends MyClass2243 {
-  // :: error: (super.invocation.invalid)
+  // :: error: (super.invocation)
   @Untainted Y2243() {}
 }
 

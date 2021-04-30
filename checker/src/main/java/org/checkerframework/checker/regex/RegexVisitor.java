@@ -103,7 +103,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
           annoGroups = atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
         }
         if (paramGroups > annoGroups) {
-          checker.reportError(group, "group.count.invalid", paramGroups, annoGroups, receiver);
+          checker.reportError(group, "group.count", paramGroups, annoGroups, receiver);
         }
       } else {
         checker.reportWarning(group, "group.count.unknown");

@@ -293,7 +293,7 @@ public class ElementUtils {
    * @param te a type
    * @return the binary name of the type
    */
-  @SuppressWarnings("signature:return.type.incompatible") // string manipulation
+  @SuppressWarnings("signature:return") // string manipulation
   public static @BinaryName String getBinaryName(TypeElement te) {
     Element enclosing = te.getEnclosingElement();
     String simpleName = te.getSimpleName().toString();

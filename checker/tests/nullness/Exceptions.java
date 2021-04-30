@@ -40,7 +40,7 @@ public class Exceptions {
     try {
     } catch (RuntimeException e) {
       // Note that this code is dead.
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       e = null;
       throw e;
     }

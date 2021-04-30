@@ -28,7 +28,7 @@ public class Issue1315 {
     public static void test() {
       Box<String> bs = new Box<>("");
       bs.f = bs.test1(null);
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       bs.f = bs.test2(null);
       bs.f.toString();
     }

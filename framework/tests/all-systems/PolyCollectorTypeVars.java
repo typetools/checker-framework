@@ -17,7 +17,7 @@ abstract class Ordering<T> implements Comparator<T> {
 
 public class PolyCollectorTypeVars {
   // Both of these come from the extends Comparable on line 9
-  @SuppressWarnings({"rawtypes", "type.argument.type.incompatible"})
+  @SuppressWarnings({"rawtypes", "type.argument"})
   public static MyGen<Comparable> treeKeys2() {
     // See Limitation in DefaultTypeArgumentInference on interdependent methods
     return treeKeys(Ordering.natural());

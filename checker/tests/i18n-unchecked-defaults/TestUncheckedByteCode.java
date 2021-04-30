@@ -10,9 +10,9 @@ public class TestUncheckedByteCode {
     field = param.identity("hello");
 
     // String and Object are relevant types and must be annotated in bytecode
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     field = param.getObject(new Object());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     field = param.getString("hello");
   }
 }

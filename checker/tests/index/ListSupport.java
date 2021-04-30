@@ -11,7 +11,7 @@ public class ListSupport {
 
     @LTLengthOf("list") int i = index;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @UpperBoundBottom int i2 = index;
   }
 
@@ -20,7 +20,7 @@ public class ListSupport {
 
     @LTLengthOf("list") int i = index;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @UpperBoundBottom int i2 = index;
   }
 
@@ -28,11 +28,11 @@ public class ListSupport {
     List<Integer> list2 = list.subList(index, endIndex);
 
     // start index must be strictly lessthanlength
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     list2 = list.subList(endIndex, endIndex);
 
     // edindex must be less than or equal to Length
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     list2 = list.subList(index, 28);
   }
 
@@ -40,7 +40,7 @@ public class ListSupport {
     int i = list.size();
     @LTEqLengthOf("list") int k = i;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf("list") int m = i;
   }
 
@@ -54,13 +54,13 @@ public class ListSupport {
     // :: error: (list.access.unsafe.high)
     list.get(lessThanLength);
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTEqLengthOf("list") int m = lessThanLength;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     m = lessThanOrEq;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf("list") int i = lessThanLength;
   }
 }

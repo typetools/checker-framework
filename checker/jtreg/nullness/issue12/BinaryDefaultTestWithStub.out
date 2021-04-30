@@ -1,4 +1,4 @@
-BinaryDefaultTest.java:16:73: compiler.err.proc.messager: [argument.type.incompatible] incompatible types in argument.
+BinaryDefaultTest.java:16:73: compiler.err.proc.messager: [argument] incompatible types in argument.
 found   : @Initialized @Nullable BinaryDefaultTestInterface
 required: @Initialized @NonNull BinaryDefaultTestInterface
 1 error

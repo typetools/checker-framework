@@ -27,7 +27,7 @@ class MyBufferedReader {
   @Pure
   public boolean ready() throws Exception {
     // don't bother with implementation.
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return true;
   }
 }

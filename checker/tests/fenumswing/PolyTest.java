@@ -12,7 +12,7 @@ public class PolyTest {
       @FenumBottom String bot) {
     // Test lub with poly and a qualifier that isn't top or bottom.
     String y = flag ? a : x;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyFenum String y2 = flag ? a : x;
 
     // Test lub with poly and bottom.

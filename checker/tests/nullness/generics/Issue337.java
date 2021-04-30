@@ -17,7 +17,7 @@ abstract class Issue337<R> {
   @Nullable R m2(@Nullable String key) {
     return (key == null)
         ?
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         getThing(key)
         : null;
   }
@@ -26,7 +26,7 @@ abstract class Issue337<R> {
     return (key != null)
         ? null
         :
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         getThing(key);
   }
 }

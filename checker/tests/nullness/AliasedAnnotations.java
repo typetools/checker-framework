@@ -4,23 +4,23 @@
 public class AliasedAnnotations {
 
   void useNonNullAnnotations() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @org.checkerframework.checker.nullness.qual.NonNull Object nn1 = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @com.sun.istack.internal.NotNull Object nn2 = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @edu.umd.cs.findbugs.annotations.NonNull Object nn3 = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @javax.annotation.Nonnull Object nn4 = null;
-    // Invalid location for NonNull :: error: (assignment.type.incompatible)
+    // Invalid location for NonNull :: error: (assignment)
     // @javax.validation.constraints.NotNull Object nn5 = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @org.eclipse.jdt.annotation.NonNull Object nn6 = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @org.jetbrains.annotations.NotNull Object nn7 = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @org.netbeans.api.annotations.common.NonNull Object nn8 = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @org.jmlspecs.annotation.NonNull Object nn9 = null;
   }
 

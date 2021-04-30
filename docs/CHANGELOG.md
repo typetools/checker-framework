@@ -15,6 +15,11 @@ Command-line argument -AassumeKeyFor makes the Nullness Checker and Map Key
 Checker unsoundly assume that the argument to `Map.get` is a key for the
 receiver map.
 
+Warning message keys are shorter.  This reduces clutter in error messages and in
+`@SuppressWarnings` annotations.  Most ".type.invalid", ".type.incompatible",
+".invalid", and ".not.satisfied" suffixes and "type.invalid." prefixes have been
+removed, and most ".invalid." substrings have been changed to ".".
+
 The Checker Framework no longer crashes on code that contains binding
 variables (introduced in Java 14 for `instanceof` pattern matching), and
 such variables are reflected in the control flow graph (CFG).  Thanks to
@@ -199,7 +204,7 @@ Replaced several error message keys:
  * `contracts.conditional.postcondition.expression.parameter.name`
  * `method.declaration.expression.parameter.name`
 by new message keys:
- * `expression.parameter.name.invalid`
+ * `expression.parameter.name`
  * `expression.parameter.name.shadows.field`
 
 **Implementation details:**
@@ -798,8 +803,8 @@ Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotat
 
 New/changed error message keys:
  * initialization.static.fields.uninitialized for uninitialized static fields
- * unary.increment.type.incompatible and unary.decrement.type.incompatible
-   replace some occurrences of compound.assignment.type.incompatible
+ * unary.increment and unary.decrement
+   replace some occurrences of compound.assignment
 
 **Implementation details:**
  * Renamed QualifierPolymorphism#annotate methods to resolve
@@ -1612,7 +1617,7 @@ Bug fixes for generics, especially type parameters:
    * Unannotated, unbounded wildcards are now qualified with the
      annotations of the type parameter to which they are an argument.
      See the new manual section 23.3.4 for more details.
-   * Warning "bound.type.incompatible" is issued if the lower bound of
+   * Warning "bound" is issued if the lower bound of
      a type parameter or wildcard is a supertype of its upper bound,
      e.g.  <@Nullable T extends @NonNull Object>
    * Method type argument inference has been improved. Fewer warnings

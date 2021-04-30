@@ -22,7 +22,7 @@ final class Issue1120Sub extends Issue1120Super {
   Issue1120Sub(int i) {
     // this is @UnderInitialization(A.class)
     this.party();
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     this.bar();
     g = new Object();
   }

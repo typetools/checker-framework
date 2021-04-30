@@ -15,7 +15,7 @@ public class SubClassHasQP {
   @HasQualifierParameter(Tainted.class)
   static @Untainted class UntaintedBuffer extends @Untainted Buffer {
     @Override
-    // :: error: (type.invalid.annotations.on.use)
+    // :: error: (annotations.on.use)
     void append(@Tainted UntaintedBuffer this, @Tainted String s) {}
 
     @Override
@@ -34,10 +34,10 @@ public class SubClassHasQP {
   }
 
   @HasQualifierParameter(Tainted.class)
-  // :: error: (super.invocation.invalid)
+  // :: error: (super.invocation)
   static class MyTaintedBuffer extends TaintedBuffer {
     @Override
-    // :: error: (override.receiver.invalid)
+    // :: error: (override.receiver)
     void append(MyTaintedBuffer this, String s) {} // legal override
   }
 

@@ -10,7 +10,7 @@ class Banana<T extends Number> extends Apple<int[]> {
 
   class InnerBanana extends InnerApple<long[]> {
     @Override
-    // :: error: (override.param.invalid)
+    // :: error: (override.param)
     <F2 extends Object> void foo(int[] array, long[] array2, F2 param3) {}
   }
 }
@@ -29,7 +29,7 @@ class Pineapple<E extends Object> extends Apple<E> {
 
   class InnerPineapple extends InnerApple<@Nullable String> {
     @Override
-    // :: error: (override.param.invalid)
+    // :: error: (override.param)
     <F3> void foo(E array, String array2, F3 param3) {}
   }
 }

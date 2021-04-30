@@ -19,7 +19,7 @@ public class MinLenFromPositive {
 
   void useTestArray(int @ArrayLen(1) [] x, int[] y) {
     testArray(x);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     testArray(y);
   }
 
@@ -40,9 +40,9 @@ public class MinLenFromPositive {
   }
 
   @Positive int plus(@Positive int x, @Positive int y) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntRange(from = 0) int z = x + y;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntRange(from = 1) int q = x + y;
 
     return x + y;
