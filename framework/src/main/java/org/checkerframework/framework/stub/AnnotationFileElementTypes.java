@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -167,24 +168,22 @@ public class AnnotationFileElementTypes {
       parsing = true;
     }
 
-    List<String> allAnnotationFiles = new ArrayList<>();
-
     // 3. Stub files listed in @StubFiles annotation on the checker
     StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
     if (stubFilesAnnotation != null) {
-      Collections.addAll(allAnnotationFiles, stubFilesAnnotation.value());
+      parseAnnotationFiles(Arrays.asList(stubFilesAnnotation.value()), AnnotationFileType.STUB);
     }
 
     // 4. Stub files returned by the `getExtraStubFiles()` method
-    allAnnotationFiles.addAll(checker.getExtraStubFiles());
+    parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.STUB);
 
     // 5. Stub files provided via -Astubs command-line option
     String stubsOption = checker.getOption("stubs");
     if (stubsOption != null) {
-      Collections.addAll(allAnnotationFiles, stubsOption.split(File.pathSeparator));
+      parseAnnotationFiles(
+          Arrays.asList(stubsOption.split(File.pathSeparator)), AnnotationFileType.STUB);
     }
 
-    parseAnnotationFiles(allAnnotationFiles, AnnotationFileType.STUB);
     parsing = false;
   }
 
