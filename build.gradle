@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
     id "de.undercouch.download" version "4.1.1"
     id 'java'
@@ -11,7 +11,7 @@ plugins {
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.2.4"
+    id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 apply plugin: "de.undercouch.download"
 
@@ -24,7 +24,7 @@ repositories {
 
 gitProperties {
     // logically belongs in framework, but only checker resources are copied to .jar file
-    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources"
+    gitPropertiesResourceDir = file("${project.rootDir}/checker/src/main/resources")
 }
 
 ext {
