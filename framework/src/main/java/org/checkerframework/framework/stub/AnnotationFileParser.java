@@ -734,7 +734,7 @@ public class AnnotationFileParser {
   private boolean skipNode(NodeWithAccessModifiers<?> node) {
     // Must include everything with no access modifier, because stub files are allowed to omit the
     // access modifier.  Also, interface methods have no access modifier, but they are still public.
-    // Must include protected JDK methods..  For example, Object.clone is protected, but it contains
+    // Must include protected JDK methods.  For example, Object.clone is protected, but it contains
     // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
     return (isJdkAsStub || (isParsingStubFile && !mergeStubsWithSource))
         && node.getModifiers().contains(Modifier.privateModifier());
@@ -2647,7 +2647,8 @@ public class AnnotationFileParser {
     if (m.containsKey(key)) {
       AnnotatedTypeMirror existingType = m.get(key);
       // If the newType is from a JDK stub file, then keep the existing type.  This
-      // way user supplied stub files override JDK stub files.
+      // way user-supplied stub files override JDK stub files.
+      // This works because the JDK is always parsed last, on demand, after all other stub files.
       if (!isJdkAsStub) {
         atypeFactory.replaceAnnotations(newType, existingType);
       }

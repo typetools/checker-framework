@@ -158,9 +158,11 @@ public class AnnotationFileElementTypes {
       }
 
       // 2. Annotated JDK
+      // This preps but does not parse the JDK files (except package-info.java files).
+      // The JDK source code files will be parsed later, on demand.
       prepJdkStubs();
-      // prepping the Jdk will parse all package-info.java files.  This sets parsing to false,
-      // so re-set it to true.
+      // prepping the JDK parses all package-info.java files, which sets the `parsing` field to
+      // false, so re-set it to true.
       parsing = true;
     }
 
@@ -255,7 +257,7 @@ public class AnnotationFileElementTypes {
           }
           // We use parseStubFile here even for ajava files because at this stage ajava
           // files are parsed as stub files. The extra annotation data in an ajava file is
-          // parsed when type checking the ajava file's corresponding Java file.
+          // parsed when type-checking the ajava file's corresponding Java file.
           AnnotationFileParser.parseStubFile(
               resource.getDescription(),
               annotationFileStream,
