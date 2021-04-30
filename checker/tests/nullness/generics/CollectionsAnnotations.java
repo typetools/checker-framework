@@ -48,7 +48,7 @@ class Methods {
   }
 
   static void bad2() {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     addNull2(new PriorityQueue1<@NonNull Object>());
   }
 
@@ -57,11 +57,11 @@ class Methods {
   }
 
   static void bad3() {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     addNull2(new PriorityQueue2<@NonNull Object>());
   }
 
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   static <@Nullable E> void addNull3(Collection2<E> l) {
     l.add(null);
   }

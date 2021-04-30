@@ -1656,7 +1656,7 @@ initialization done but the initialization of subclasses not yet complete.
 The Initialization Checker output indicates this problem:
 
 \begin{Verbatim}
-Client.java:7: error: [method.invocation.invalid] call to process(int) not allowed on the given receiver.
+Client.java:7: error: [method.invocation] call to process(int) not allowed on the given receiver.
     process(5);  // illegal call
            ^
   found   : @UnderInitialization(A.class) A

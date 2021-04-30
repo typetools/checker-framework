@@ -19,23 +19,23 @@ public class KeyForLub {
       @UnknownKeyFor String unknown) {
     @KeyFor("map1") String key1 = flag ? key12 : key13;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @KeyFor({"map1", "map2"}) String key2 = flag ? key12 : key13;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @KeyFor({"map1", "map2"}) String key3 = flag ? key12 : unknown;
   }
 
   @PolyKeyFor String poly1(@KeyFor("map1") String key1, @PolyKeyFor String poly) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return flag ? key1 : poly;
   }
 
   void poly2(@PolyKeyFor String poly, @UnknownKeyFor String unknown, @KeyForBottom String bot) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyKeyFor String s1 = flag ? poly : unknown;
     @PolyKeyFor String s2 = flag ? poly : bot;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @KeyForBottom String s3 = flag ? poly : bot;
   }
 }

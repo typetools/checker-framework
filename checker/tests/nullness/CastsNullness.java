@@ -69,7 +69,7 @@ public class CastsNullness {
   }
 
   void testSuppression(@Nullable Object x) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String s1 = (String) x;
     @SuppressWarnings("nullness")
     @NonNull String s2 = (String) x;
@@ -85,7 +85,7 @@ public class CastsNullness {
     }
 
     void m() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       t = (@Nullable T) null;
       nt = (@Nullable T) null;
       // :: warning: (cast.unsafe)

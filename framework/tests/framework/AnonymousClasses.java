@@ -8,7 +8,7 @@ public class AnonymousClasses {
       // @Unqualified @Unqualified Object
       // We should make sure that the qualifier is only present once.
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Odd Object o = this; // error
     };
 

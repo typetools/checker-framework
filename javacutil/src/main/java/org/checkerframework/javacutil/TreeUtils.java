@@ -194,7 +194,7 @@ public final class TreeUtils {
    * @param tree an expression tree
    * @return the outermost non-parenthesized tree enclosed by the given tree
    */
-  @SuppressWarnings("interning:return.type.incompatible") // polymorphism implementation
+  @SuppressWarnings("interning:return") // polymorphism implementation
   public static @PolyInterned ExpressionTree withoutParens(
       final @PolyInterned ExpressionTree tree) {
     ExpressionTree t = tree;

@@ -279,7 +279,7 @@ Here is a good way to proceed.
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @NonNegative int c = us;  // expected error on this line
     @NonNegative int d = nn;
   }
@@ -1116,22 +1116,22 @@ similar to Java subtype rules, but taking the type qualifiers into account.
     myNonNullObject = myObject;  // invalid assignment
   \end{Verbatim}
 
-\item invalid generic argument (type.argument.type.incompatible) when a type
+\item invalid generic argument (type.argument) when a type
   is bound to an incompatible generic type variable
 
-\item invalid method invocation (method.invocation.invalid) when a
+\item invalid method invocation (method.invocation) when a
   method is invoked on an object whose type is incompatible with the
   method receiver type
 
-\item invalid overriding parameter type (override.parameter.invalid)
+\item invalid overriding parameter type (override.param)
   when a parameter in a method declaration is incompatible with that
   parameter in the overridden method's declaration
 
-\item invalid overriding return type (override.return.invalid) when the
+\item invalid overriding return type (override.return) when the
   return type in a method declaration is incompatible with the
   return type in the overridden method's declaration
 
-\item invalid overriding receiver type (override.receiver.invalid)
+\item invalid overriding receiver type (override.receiver)
   when a receiver in a method declaration is incompatible with that
   receiver in the overridden method's declaration
 

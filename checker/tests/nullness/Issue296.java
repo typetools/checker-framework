@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class Issue296 {
   public static <T> void f1(T[] a) {
     @Nullable T[] r1 = Arrays.copyOf(a, a.length + 1);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     @Nullable T[] r2 = Arrays.<@NonNull T>copyOf(a, a.length + 1);
     @Nullable T[] r3 = Arrays.<@Nullable T>copyOf(a, a.length + 1);
   }
@@ -22,7 +22,7 @@ public class Issue296 {
 
   public static <T> void f3(@Nullable T[] a) {
     @Nullable T[] r1 = Arrays.copyOf(a, a.length + 1);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     @Nullable T[] r2 = Arrays.<@NonNull T>copyOf(a, a.length + 1);
     @Nullable T[] r3 = Arrays.<@Nullable T>copyOf(a, a.length + 1);
   }

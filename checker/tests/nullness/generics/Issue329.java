@@ -28,13 +28,13 @@ abstract class Issue329NN {
 
   void f1(Flag<@Nullable String> flag) {
     String s = getValue(flag);
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     setExtension(s);
   }
 
   void f2(Flag<@Nullable String> flag) {
     // TODO: false negative. See #979.
-    //// :: error: (type.argument.type.incompatible)
+    //// :: error: (type.argument)
     setExtension(getValue(flag));
   }
 }

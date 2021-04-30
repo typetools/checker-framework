@@ -6,7 +6,7 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
 
-@SuppressWarnings({"purity", "contracts.postcondition.not.satisfied"}) // Only test parsing
+@SuppressWarnings({"purity", "contracts.postcondition"}) // Only test parsing
 public class Issue1406 {
 
   public static void main(String[] args) {}

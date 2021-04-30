@@ -56,26 +56,26 @@ class FakeOverrideFPClient {
         mid.requiresTaintedInt(u);
         sub.requiresTaintedInt(u);
 
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         sup.requiresUntaintedInt(t);
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         mid.requiresUntaintedInt(t);
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         sub.requiresUntaintedInt(t);
         sup.requiresUntaintedInt(u);
         mid.requiresUntaintedInt(u);
         sub.requiresUntaintedInt(u);
 
         sup.requiresTaintedIntWithFakeOverride(t);
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         mid.requiresTaintedIntWithFakeOverride(t);
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         sub.requiresTaintedIntWithFakeOverride(t);
         sup.requiresTaintedIntWithFakeOverride(u);
         mid.requiresTaintedIntWithFakeOverride(u);
         sub.requiresTaintedIntWithFakeOverride(u);
 
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         sup.requiresUntaintedIntWithFakeOverride(t);
         mid.requiresUntaintedIntWithFakeOverride(t);
         sub.requiresUntaintedIntWithFakeOverride(t);

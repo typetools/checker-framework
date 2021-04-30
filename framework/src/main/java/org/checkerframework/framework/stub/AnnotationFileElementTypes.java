@@ -515,7 +515,7 @@ public class AnnotationFileElementTypes {
       }
       enclosingClass = t;
     }
-    @SuppressWarnings("signature:assignment.type.incompatible" // https://tinyurl.com/cfissue/658:
+    @SuppressWarnings("signature:assignment" // https://tinyurl.com/cfissue/658:
     // Name.toString should be @PolySignature
     )
     @CanonicalNameOrEmpty String result = enclosingClass.getQualifiedName().toString();

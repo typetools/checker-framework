@@ -32,7 +32,7 @@ class MetaReturn {
 
   SupplierSupplier t3 =
       () -> {
-        // :: error: (return.type.incompatible)
+        // :: error: (return)
         return () -> null;
       };
 

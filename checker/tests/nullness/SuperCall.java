@@ -8,7 +8,7 @@ public class SuperCall {
 
   public static class B extends A {
     public B(@Nullable Object arg) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       super(arg);
     }
   }

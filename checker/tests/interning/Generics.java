@@ -21,7 +21,7 @@ public class Generics {
     @Interned String interned;
 
     map.put(a, b); // valid
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     map.put(b, a); // error
 
     notInterned = map.get(a); // valid
@@ -31,10 +31,10 @@ public class Generics {
     Collection<String> notInternedSet;
 
     notInternedSet = map.keySet(); // valid
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     internedSet = map.keySet(); // error
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     notInternedSet = map.values(); // error
     internedSet = map.values(); // valid
 
@@ -58,13 +58,13 @@ public class Generics {
 
   void testGenerics2() {
     istrings.add(istring);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     istrings.add(string); // invalid
     strings.add(istring);
     strings.add(string);
     istring = istrings.get(0);
     string = istrings.get(0);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     istring = strings.get(0); // invalid
     string = strings.get(0);
   }
@@ -78,7 +78,7 @@ public class Generics {
 
   class MyList extends ArrayList<@Interned String> {
     // Correct return value is Iterator<@Interned String>
-    // :: error: (override.return.invalid)
+    // :: error: (override.return)
     public Iterator<String> iterator() {
       return null;
     }

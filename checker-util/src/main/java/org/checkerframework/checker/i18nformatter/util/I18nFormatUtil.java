@@ -34,8 +34,7 @@ public class I18nFormatUtil {
    *
    * @param format the format string to parse
    */
-  @SuppressWarnings(
-      "nullness:argument.type.incompatible") // It's not documented, but passing null as the
+  @SuppressWarnings("nullness:argument") // It's not documented, but passing null as the
   // argument array is supported.
   public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
     MessageFormat.format(format, (Object[]) null);
@@ -383,7 +382,7 @@ public class I18nFormatUtil {
       }
 
       // Try trimmed lowercase.
-      @SuppressWarnings("interning:assignment.type.incompatible") // test if value changed
+      @SuppressWarnings("interning:assignment") // test if value changed
       @InternedDistinct String ls = s.trim().toLowerCase(Locale.ROOT);
       if (ls != s) { // Don't loop if the string trim().toLowerCase returned the same object.
         for (int i = 0; i < list.length; ++i) {

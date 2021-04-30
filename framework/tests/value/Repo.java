@@ -7,7 +7,7 @@ public class Repo {
 
   void testLoop() {
     for (int i = 0; i < 20; i++) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @IntVal(0) int x = i;
       int j = flag ? i : 3;
     }

@@ -5,13 +5,13 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class UncheckedMinLen {
   void addToUnboundedIntRange(@IntRange(from = 0) int l, Object v) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Object @MinLen(100) [] o = new Object[l + 1];
     o[99] = v;
   }
 
   void addToBoundedIntRangeOK(@IntRange(from = 0, to = 1) int l, Object v) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Object @MinLen(100) [] o = new Object[l + 1];
     o[99] = v;
   }

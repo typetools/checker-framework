@@ -15,7 +15,7 @@ public class FieldShadowing {
     @RequiresQualifier(expression = "f", qualifier = Odd.class)
     int reqSub() {
       @Odd String l2 = f;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Odd String l1 = super.f;
       int i;
       i = 1;
@@ -25,7 +25,7 @@ public class FieldShadowing {
     @Pure
     @RequiresQualifier(expression = "super.f", qualifier = Odd.class)
     int reqSuper() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Odd String l2 = f;
       @Odd String l1 = super.f;
       return 1;
@@ -33,14 +33,14 @@ public class FieldShadowing {
 
     void t1(@Odd String p1) {
       f = p1;
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       reqSuper();
       reqSub();
     }
 
     void t2(@Odd String p1) {
       super.f = p1;
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       reqSub();
       reqSuper();
     }

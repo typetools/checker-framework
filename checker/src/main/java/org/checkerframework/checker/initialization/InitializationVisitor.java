@@ -55,21 +55,14 @@ public class InitializationVisitor<
         Store extends InitializationStore<Value, Store>>
     extends BaseTypeVisitor<Factory> {
 
+  /** The annotation formatter. */
   protected final AnnotationFormatter annoFormatter;
 
-  // Error message keys
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
-      "initialization.invalid.cast";
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
-      "initialization.invalid.field.type";
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
-      "initialization.invalid.constructor.return.type";
-  private static final @CompilerMessageKey String
-      COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION =
-          "initialization.invalid.field.write.unknown";
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED =
-      "initialization.invalid.field.write.initialized";
-
+  /**
+   * Creates a new InitializationVisitor.
+   *
+   * @param checker the associated type-checker
+   */
   public InitializationVisitor(BaseTypeChecker checker) {
     super(checker);
     annoFormatter = new DefaultAnnotationFormatter();
@@ -129,9 +122,9 @@ public class InitializationVisitor<
                 || atypeFactory.isFbcBottom(yType))) {
           @CompilerMessageKey String err;
           if (atypeFactory.isInitialized(xType)) {
-            err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
+            err = "initialization.field.write.initialized";
           } else {
-            err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
+            err = "initialization.field.write.unknown";
           }
           checker.reportError(varTree, err, varTree);
           return; // prevent issuing another errow about subtyping
@@ -154,7 +147,7 @@ public class InitializationVisitor<
             continue; // unknown initialization is allowed
           }
           if (atypeFactory.areSameByClass(a, c)) {
-            checker.reportError(node, COMMITMENT_INVALID_FIELD_TYPE, node);
+            checker.reportError(node, "initialization.field.type", node);
             break;
           }
         }
@@ -259,7 +252,7 @@ public class InitializationVisitor<
     if (!isSubtype) {
       checker.reportError(
           node,
-          COMMITMENT_INVALID_CAST,
+          "initialization.cast",
           annoFormatter.formatAnnotationMirror(exprAnno),
           annoFormatter.formatAnnotationMirror(castAnno));
       return p; // suppress cast.unsafe warning
@@ -317,7 +310,7 @@ public class InitializationVisitor<
           atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
         for (AnnotationMirror a : returnTypeAnnotations) {
           if (atypeFactory.areSameByClass(a, c)) {
-            checker.reportError(node, COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node);
+            checker.reportError(node, "initialization.constructor.return.type", node);
             break;
           }
         }

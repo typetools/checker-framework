@@ -14,7 +14,7 @@ public class Cve {
     DescribeImagesResult result =
         client.describeImages(
             new DescribeImagesRequest()
-                // :: error: argument.type.incompatible
+                // :: error: argument
                 .withFilters(new Filter("name").withValues(IMG_NAME)));
   }
 
@@ -42,7 +42,7 @@ public class Cve {
     DescribeImagesResult result =
         client.describeImages(
             new DescribeImagesRequest()
-                // :: error: argument.type.incompatible
+                // :: error: argument
                 .withFilters(new Filter("name").withValues(IMG_NAME)));
   }
 
@@ -65,7 +65,7 @@ public class Cve {
     DescribeImagesResult result =
         client.describeImages(
             new DescribeImagesRequest()
-                // :: error: argument.type.incompatible
+                // :: error: argument
                 .withFilters(new Filter("name").withValues(IMG_NAME)));
   }
 
@@ -88,7 +88,7 @@ public class Cve {
     Object result =
         client.describeImagesAsync(
             new DescribeImagesRequest()
-                // :: error: argument.type.incompatible
+                // :: error: argument
                 .withFilters(new Filter("name").withValues(IMG_NAME)));
   }
 

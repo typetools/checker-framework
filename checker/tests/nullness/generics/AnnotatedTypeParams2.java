@@ -15,7 +15,7 @@ public class AnnotatedTypeParams2 {
   }
 
   void testInvalidParam() {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     SomeClass<@NonNull String> l;
   }
 }

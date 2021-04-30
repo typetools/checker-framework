@@ -20,7 +20,7 @@ public class Specialization {
   }
 
   @AlwaysSafe public static class SafeDoer implements @AlwaysSafe Doer {
-    // :: error: (override.param.invalid)
+    // :: error: (override.param)
     public void doStuff(@AlwaysSafe SafeDoer this, @AlwaysSafe I i) {}
   }
 
@@ -33,7 +33,7 @@ public class Specialization {
     @AlwaysSafe Doer d =
         new @AlwaysSafe Doer() {
           @SafeEffect
-          // :: error: (override.param.invalid)
+          // :: error: (override.param)
           public void doStuff(@AlwaysSafe I i) {
             reqSafe(i);
           }
