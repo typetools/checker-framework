@@ -12,6 +12,3 @@ updates:
   - dependency-name: com.google.errorprone:javac
     versions:
     - 1.8.0-u20
-  - dependency-name: com.gorylenko.gradle-git-properties
-    versions:
-    - 2.3.0

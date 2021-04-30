@@ -43,6 +43,7 @@ import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
+import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.ReferenceType;
@@ -235,8 +236,16 @@ public class AnnotationFileParser {
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-  /** Whether or not the file is a stub file that's part of the JDK. */
+  /**
+   * Whether or not the file is a stub file that's part of the JDK.
+   *
+   * <p>Two differences are that in the JDK, private declarations are ignored and some warning
+   * messages are not issued.
+   */
   private final boolean isJdkAsStub;
+
+  /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
+  private final boolean mergeStubsWithSource;
 
   /**
    * The result of calling AnnotationFileParser.parse: the annotated types and declaration
@@ -310,6 +319,7 @@ public class AnnotationFileParser {
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
     this.isJdkAsStub = isJdkAsStub;
+    this.mergeStubsWithSource = atypeFactory.getChecker().hasOption("mergeStubsWithSource");
   }
 
   /**
@@ -704,6 +714,33 @@ public class AnnotationFileParser {
   }
 
   /**
+   * Returns true if the given program construct need not be read: it is private and one of the
+   * following is true:
+   *
+   * <ul>
+   *   <li>It is in the annotated JDK. Private constructs can't be referenced outside of the JDK and
+   *       might refer to types that are not accessible.
+   *   <li>It is not an ajava file and {@code -AmergeStubsWithSource} was not supplied. As described
+   *       at https://checkerframework.org/manual/#stub-multiple-specifications, source files take
+   *       precedence over stub files unless {@code -AmergeStubsWithSource} is supplied. As
+   *       described at https://checkerframework.org/manual/#ajava-using, source files do not take
+   *       precedence over ajava files (when reading an ajava file, it is as if {@code
+   *       -AmergeStubsWithSource} were supplied).
+   * </ul>
+   *
+   * @param node a declaration
+   * @return true if the given program construct is in the annotated JDK and is private
+   */
+  private boolean skipNode(NodeWithAccessModifiers<?> node) {
+    // Must include everything with no access modifier, because stub files are allowed to omit the
+    // access modifier.  Also, interface methods have no access modifier, but they are still public.
+    // Must include protected JDK methods..  For example, Object.clone is protected, but it contains
+    // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
+    return (isJdkAsStub || (isParsingStubFile && !mergeStubsWithSource))
+        && node.getModifiers().contains(Modifier.privateModifier());
+  }
+
+  /**
    * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
    *
    * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
@@ -722,9 +759,7 @@ public class AnnotationFileParser {
   private List<AnnotatedTypeVariable> processTypeDecl(
       TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
     assert typeBeingParsed != null;
-    if (isJdkAsStub && typeDecl.getModifiers().contains(Modifier.privateModifier())) {
-      // Don't process private classes of the JDK.  They can't be referenced outside of the
-      // JDK and might refer to types that are not accessible.
+    if (skipNode(typeDecl)) {
       return null;
     }
     String innerName;
@@ -1356,7 +1391,7 @@ public class AnnotationFileParser {
    * @param elt the element representing that same declaration
    */
   private void processField(FieldDeclaration decl, VariableElement elt) {
-    if (isJdkAsStub && decl.getModifiers().contains(Modifier.privateModifier())) {
+    if (skipNode(decl)) {
       // Don't process private fields of the JDK.  They can't be referenced outside of the JDK
       // and might refer to types that are not accessible.
       return;
@@ -1939,9 +1974,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, MethodDeclaration methodDecl, boolean noWarn) {
-    if (isJdkAsStub && methodDecl.getModifiers().contains(Modifier.privateModifier())) {
-      // Don't process private methods of the JDK.  They can't be referenced outside of the
-      // JDK and might refer to types that are not accessible.
+    if (skipNode(methodDecl)) {
       return null;
     }
     final String wantedMethodName = methodDecl.getNameAsString();
@@ -1995,9 +2028,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, ConstructorDeclaration constructorDecl) {
-    if (isJdkAsStub && constructorDecl.getModifiers().contains(Modifier.privateModifier())) {
-      // Don't process private constructors of the JDK.  They can't be referenced outside of
-      // the JDK and might refer to types that are not accessible.
+    if (skipNode(constructorDecl)) {
       return null;
     }
     final int wantedMethodParams =
@@ -2118,8 +2149,8 @@ public class AnnotationFileParser {
    */
   private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
     if (isJdkAsStub) {
-      // The Jdk stubs have purity annotations that should be read for all checkers.
-      // TODO: Parse the jdk stubs, but only save the declaration annotations.
+      // The JDK stubs have purity annotations that should be read for all checkers.
+      // TODO: Parse the JDK stubs, but only save the declaration annotations.
       return true;
     }
     for (AnnotationExpr ae : annotations) {
