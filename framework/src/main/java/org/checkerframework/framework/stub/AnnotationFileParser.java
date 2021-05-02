@@ -189,7 +189,7 @@ public class AnnotationFileParser {
    * <p>The map is populated from import statements and also by {@link #getAnnotation(
    * AnnotationExpr, Map)} for annotations that are used fully-qualified.
    *
-   * @see #getAllAnnotations
+   * @see #getImportedAnnotations
    */
   private Map<String, TypeElement> allAnnotations;
 
@@ -407,7 +407,7 @@ public class AnnotationFileParser {
    *     fully-qualified name, with the same value.
    * @see #allAnnotations
    */
-  private Map<String, TypeElement> getAllAnnotations() {
+  private Map<String, TypeElement> getImportedAnnotations() {
     Map<String, TypeElement> result = new HashMap<>();
 
     // TODO: The size can be greater than 1, but this ignores all but the first element.
@@ -627,9 +627,9 @@ public class AnnotationFileParser {
     }
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
-    // getAllAnnotations() also modifies importedConstants and importedTypes. This should
+    // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
-    allAnnotations = getAllAnnotations();
+    allAnnotations = getImportedAnnotations();
     if (allAnnotations.isEmpty()) {
       // This issues a warning if the stub file contains no import statements.  That is
       // incorrect if the stub file contains fully-qualified annotations.
@@ -2184,7 +2184,7 @@ public class AnnotationFileParser {
     @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
     TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
     if (annoTypeElt == null) {
-      // If the annotation was not imported, then #getAllAnnotations did not add it to the
+      // If the annotation was not imported, then #getImportedAnnotations did not add it to the
       // allAnnotations field. This code adds the annotation when it is encountered (i.e. here).
       // Note that this does not call AnnotationFileParser#getTypeElement to avoid a spurious
       // diagnostic if the annotation is actually unknown.
