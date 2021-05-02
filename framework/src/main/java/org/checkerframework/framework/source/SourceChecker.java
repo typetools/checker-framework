@@ -814,9 +814,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * {@inheritDoc}
    *
-   * <p>Type-checkers are not supposed to override this. Instead use initChecker. This allows us to
-   * handle BugInCF only here and doesn't require all overriding implementations to be aware of
-   * BugInCF.
+   * <p>Type-checkers are not supposed to override this. Instead override initChecker. This allows
+   * us to handle BugInCF only here and doesn't require all overriding implementations to be aware
+   * of BugInCF.
    *
    * @see AbstractProcessor#init(ProcessingEnvironment)
    * @see SourceChecker#initChecker()
