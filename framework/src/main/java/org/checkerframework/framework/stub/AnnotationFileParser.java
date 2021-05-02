@@ -630,7 +630,6 @@ public class AnnotationFileParser {
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
     allAnnotations = getImportedAnnotations();
-    // System.out.printf("AnnotationFileParser.parseStubUnit 3 %s%n", filename);
     // Issue a warning if the stub file contains no import statements.  The warning is
     // incorrect if the stub file contains fully-qualified annotations.
     if (allAnnotations.isEmpty()
