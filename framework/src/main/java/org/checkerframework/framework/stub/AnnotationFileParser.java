@@ -744,7 +744,7 @@ public class AnnotationFileParser {
     String packageName = packDecl.getNameAsString();
     typeBeingParsed = new FqName(packageName, null);
     Element elem = elements.getPackageElement(packageName);
-    // If the element lookup fails, it's because we have an annotation for a
+    // If the element lookup fails (that is, elem == null), it's because we have an annotation for a
     // package that isn't on the classpath, which is fine.
     if (elem != null) {
       recordDeclAnnotation(elem, packDecl.getAnnotations(), packDecl);
