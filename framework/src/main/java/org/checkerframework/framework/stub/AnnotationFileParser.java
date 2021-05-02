@@ -608,7 +608,7 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations stubAnnos) {
-    parseStubFile(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
+    parseStubFile(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true, true);
   }
 
   /**
