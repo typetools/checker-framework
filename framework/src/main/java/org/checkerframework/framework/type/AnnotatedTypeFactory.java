@@ -673,7 +673,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * this AnnotatedTypeFactory.
    */
   protected void postInit() {
-    System.out.printf("entering AnnotatedTypeFactory.postInit() %s%n", getClass());
     this.qualHierarchy = createQualifierHierarchy();
     if (qualHierarchy == null) {
       throw new TypeSystemError(
@@ -716,8 +715,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ElementUtils.getTypeElement(processingEnv, Iterable.class).asType();
     this.iterableDeclType =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(iterableTypeMirror, this, true);
-
-    System.out.printf("exiting AnnotatedTypeFactory.postInit() %s%n", getClass());
   }
 
   /**
@@ -3566,11 +3563,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>The annotations are stored by side-effecting {@link #stubTypes} and {@link #ajavaTypes}.
    */
   protected void parseAnnotationFiles() {
-    System.out.printf("entering AnnotatedTypeFactory.parseAnnotationFiles %s%n", getClass());
     stubTypes.parseStubFiles();
-    System.out.printf("midpoint AnnotatedTypeFactory.parseAnnotationFiles %s%n", getClass());
     ajavaTypes.parseAjavaFiles();
-    System.out.printf("exiting AnnotatedTypeFactory.parseAnnotationFiles %s%n", getClass());
   }
 
   /**

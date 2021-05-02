@@ -119,10 +119,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
    *
    * <p>Subclasses may override this method to do any initialization work.
    */
-  public void typeProcessingStart() {
-    System.out.printf(
-        "entering and exiting AbstractTypeProcessor.typeProcessingStart %s%n", this.getClass());
-  }
+  public void typeProcessingStart() {}
 
   /**
    * Processes a fully-analyzed class that contains a supported annotation (see {@link

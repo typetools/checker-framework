@@ -56,9 +56,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
 
   public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    System.out.printf("WholeProgramInferenceTestAnnotatedTypeFactory: called super%n");
     postInit();
-    System.out.printf("WholeProgramInferenceTestAnnotatedTypeFactory: called postInit%n");
   }
 
   @Override

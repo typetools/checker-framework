@@ -243,7 +243,6 @@ public class AnnotationFileElementTypes {
    * @param fileType the file type of files to parse
    */
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
-    System.out.printf("entering parseAnnotationFiles (%s) %s%n", fileType, annotationFiles);
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     for (String path : annotationFiles) {
@@ -259,16 +258,13 @@ public class AnnotationFileElementTypes {
           try {
             annotationFileStream = resource.getInputStream();
           } catch (IOException e) {
-            System.out.printf("About to call checker.message%n");
             checker.message(
                 Kind.NOTE, "Could not read annotation resource: " + resource.getDescription());
-            System.out.printf("called checker.message%n");
             continue;
           }
           // We use parseStubFile here even for ajava files because at this stage ajava
           // files are parsed as stub files. The extra annotation data in an ajava file is
           // parsed when type-checking the ajava file's corresponding Java file.
-          System.out.printf("About to call parseStubFile%n");
           AnnotationFileParser.parseStubFile(
               resource.getDescription(),
               annotationFileStream,
@@ -276,7 +272,6 @@ public class AnnotationFileElementTypes {
               processingEnv,
               annotationFileAnnos,
               fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
-          System.out.printf("called parseStubFile%n");
         }
       } else {
         // We didn't find the files.
@@ -334,14 +329,11 @@ public class AnnotationFileElementTypes {
             for (URI uri : new ClassGraph().getClasspathURIs()) {
               sj.add(uri.toString());
             }
-            System.out.printf("calling checker.message(%s)%n", sj.toString());
             checker.message(Kind.WARNING, sj.toString());
-            System.out.printf("called checker.message(%s)%n", sj.toString());
           }
         }
       }
     }
-    System.out.printf("exiting parseAnnotationFiles (%s) %s%n", fileType, annotationFiles);
   }
 
   /**

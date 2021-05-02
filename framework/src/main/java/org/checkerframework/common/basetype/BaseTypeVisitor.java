@@ -235,30 +235,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
     super(checker);
 
-    System.out.printf("BaseTypeVisitor() 1%n");
     this.checker = checker;
-    System.out.printf("BaseTypeVisitor() 2%n");
     this.atypeFactory = typeFactory == null ? createTypeFactory() : typeFactory;
-    System.out.printf("BaseTypeVisitor() 3%n");
     this.positions = trees.getSourcePositions();
-    System.out.printf("BaseTypeVisitor() 4%n");
     this.visitorState = atypeFactory.getVisitorState();
-    System.out.printf("BaseTypeVisitor() 5%n");
     this.typeValidator = createTypeValidator();
-    System.out.printf("BaseTypeVisitor() 6%n");
     ProcessingEnvironment env = checker.getProcessingEnvironment();
-    System.out.printf("BaseTypeVisitor() 7%n");
     this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
-    System.out.printf("BaseTypeVisitor() 8%n");
     this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
-    System.out.printf("BaseTypeVisitor() 9%n");
     this.vectorType =
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
-    System.out.printf("BaseTypeVisitor() 10%n");
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
-    System.out.printf("BaseTypeVisitor() 11%n");
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
-    System.out.printf("BaseTypeVisitor() 12%n");
   }
 
   /**
@@ -276,7 +264,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @SuppressWarnings("unchecked") // unchecked cast to type variable
   protected Factory createTypeFactory() {
-    System.out.printf("entering BaseTypeVisitor.createTypeFactory%n");
     // Try to reflectively load the type factory.
     Class<?> checkerClass = checker.getClass();
     while (checkerClass != BaseTypeChecker.class) {
@@ -291,20 +278,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkerClass = checkerClass.getSuperclass();
     }
     try {
-      Factory result = (Factory) new BaseAnnotatedTypeFactory(checker);
-      System.out.printf("exiting BaseTypeVisitor.createTypeFactory%n");
-      return result;
+      return (Factory) new BaseAnnotatedTypeFactory(checker);
     } catch (Throwable t) {
-      System.out.printf("exception in BaseTypeVisitor.createTypeFactory%n");
-      BugInCF bugInCF =
-          new BugInCF(
-              "Unexpected "
-                  + t.getClass().getSimpleName()
-                  + " when invoking BaseAnnotatedTypeFactory for checker "
-                  + checker.getClass().getSimpleName(),
-              t);
-      bugInCF.printStackTrace(System.out);
-      throw bugInCF;
+      throw new BugInCF(
+          "Unexpected "
+              + t.getClass().getSimpleName()
+              + " when invoking BaseAnnotatedTypeFactory for checker "
+              + checker.getClass().getSimpleName(),
+          t);
     }
   }
 

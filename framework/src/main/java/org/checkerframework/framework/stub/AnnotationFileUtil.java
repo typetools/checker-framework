@@ -379,13 +379,10 @@ public class AnnotationFileUtil {
    */
   public static List<AnnotationFileResource> allAnnotationFiles(
       String location, AnnotationFileType fileType) {
-    System.out.printf("allAnnotationFiles(%s, %s)%n", location, fileType);
     File file = new File(location);
-    System.out.printf("allAnnotationFiles file (1) = %s%n", file);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();
       addAnnotationFilesToList(file, resources, fileType);
-      System.out.printf("allAnnotationFiles(%s, %s) => %s%n", location, fileType, resources);
       return resources;
     }
 
@@ -393,11 +390,9 @@ public class AnnotationFileUtil {
     // current working directory, so try that.
     String workingDir = System.getProperty("user.dir") + System.getProperty("file.separator");
     file = new File(workingDir + location);
-    System.out.printf("allAnnotationFiles file (2) = %s%n", file);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();
       addAnnotationFilesToList(file, resources, fileType);
-      System.out.printf("allAnnotationFiles(%s, %s) => %s%n", location, fileType, resources);
       return resources;
     }
 
