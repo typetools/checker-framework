@@ -814,15 +814,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * {@inheritDoc}
    *
-   * <p>Type-checkers are not supposed to override this. Instead use initChecker. This allows us to
-   * handle BugInCF only here and doesn't require all overriding implementations to be aware of
-   * BugInCF.
+   * <p>Type-checkers are not supposed to override this. Instead override initChecker. This allows
+   * us to handle BugInCF only here and doesn't require all overriding implementations to be aware
+   * of BugInCF.
    *
    * @see AbstractProcessor#init(ProcessingEnvironment)
    * @see SourceChecker#initChecker()
    */
   @Override
   public void typeProcessingStart() {
+    System.out.printf("entering SourceChecker.typeProcessingStart %s%n", this.getClass());
     try {
       super.typeProcessingStart();
       initChecker();
@@ -848,6 +849,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (hasOption("version")) {
         messager.printMessage(Kind.NOTE, "Checker Framework " + getCheckerVersion());
       }
+      System.out.printf("SourceChecker.typeProcessingStart %s: no exception%n", this.getClass());
     } catch (UserError ce) {
       logUserError(ce);
     } catch (TypeSystemError ce) {
@@ -857,6 +859,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     } catch (Throwable t) {
       logBugInCF(wrapThrowableAsBugInCF("SourceChecker.typeProcessingStart", t, null));
     }
+    System.out.printf("exiting SourceChecker.typeProcessingStart %s%n", this.getClass());
   }
 
   /**
@@ -865,21 +868,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see AbstractProcessor#init(ProcessingEnvironment)
    */
   public void initChecker() {
+    System.out.printf("entering SourceChecker.initChecker %s%n", this.getClass());
+
     // Grab the Trees and Messager instances now; other utilities
     // (like Types and Elements) can be retrieved by subclasses.
     @Nullable Trees trees = Trees.instance(processingEnv);
+    System.out.println("SourceChecker.initChecker 1");
     assert trees != null;
+    System.out.println("SourceChecker.initChecker 2");
     this.trees = trees;
 
     this.messager = processingEnv.getMessager();
+    System.out.println("SourceChecker.initChecker 3");
     this.messagesProperties = getMessagesProperties();
+    System.out.println("SourceChecker.initChecker 4");
 
     this.visitor = createSourceVisitor();
+    System.out.println("SourceChecker.initChecker 5");
 
     // Validate the lint flags, if they haven't been used already.
     if (this.activeLints == null) {
       this.activeLints = createActiveLints(getOptions());
+      System.out.println("SourceChecker.initChecker 6");
     }
+    System.out.printf("exiting SourceChecker.initChecker %s%n", this.getClass());
   }
 
   /** Output the warning about source level at most once. */

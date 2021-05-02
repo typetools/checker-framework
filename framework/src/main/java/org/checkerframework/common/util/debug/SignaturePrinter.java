@@ -109,12 +109,15 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
   @Override
   public void typeProcessingStart() {
+    System.out.printf("entering typeProcessingStart %s%n", this.getClass());
     super.typeProcessingStart();
     String checkerName = processingEnv.getOptions().get("checker");
     if (!Signatures.isBinaryName(checkerName)) {
       throw new UserError("Malformed checker name \"%s\"", checkerName);
     }
+    System.out.printf("typeProcessingStart %s about to call init%n", this.getClass());
     init(processingEnv, checkerName);
+    System.out.printf("exiting typeProcessingStart %s%n", this.getClass());
   }
 
   @Override

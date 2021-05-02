@@ -35,12 +35,79 @@ import org.checkerframework.javacutil.Pair;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
-  /** The types of files that can contain annotations. */
+  /**
+   * The types of files that can contain annotations. Also indicates the file's source, such as from
+   * the JDK, built in, or from the command line.
+   *
+   * <p>Stub files have extension ".astub". Ajava files have extension ".ajava".
+   */
   public enum AnnotationFileType {
-    /** Stub file format with extension ".astub". */
-    STUB,
-    /** Ajava file format with extension ".ajava" */
-    AJAVA
+    /** Stub file in the annotated JDK. */
+    JDK_STUB,
+    /** Stub file built into a checker. */
+    BUILTIN_STUB,
+    /** Stub file provided on command line. */
+    COMMAND_LINE_STUB,
+    /** Ajava file being parsed as if it is a stub file. */
+    AJAVA_AS_STUB,
+    /** Ajava file provided on command line. */
+    AJAVA;
+
+    /**
+     * Returns true if this represents a stub file.
+     *
+     * @return true if this represents a stub file
+     */
+    public boolean isStub() {
+      switch (this) {
+        case JDK_STUB:
+        case BUILTIN_STUB:
+        case COMMAND_LINE_STUB:
+        case AJAVA_AS_STUB:
+          return true;
+        case AJAVA:
+          return false;
+        default:
+          throw new Error("unhandled case " + this);
+      }
+    }
+
+    /**
+     * Returns true if this annotation file is built-in (not provided on the command line).
+     *
+     * @return true if this annotation file is built-in (not provided on the command line)
+     */
+    public boolean isBuiltIn() {
+      switch (this) {
+        case JDK_STUB:
+        case BUILTIN_STUB:
+          return true;
+        case COMMAND_LINE_STUB:
+        case AJAVA_AS_STUB:
+        case AJAVA:
+          return false;
+        default:
+          throw new Error("unhandled case " + this);
+      }
+    }
+
+    /**
+     * Returns true if this annotation file was provided on the command line (not built-in).
+     *
+     * @return true if this annotation file was provided on the command line (not built-in)
+     */
+    public boolean isCommandLine() {
+      switch (this) {
+        case JDK_STUB:
+        case BUILTIN_STUB:
+          return false;
+        case COMMAND_LINE_STUB:
+        case AJAVA:
+          return true;
+        default:
+          throw new Error("unhandled case " + this);
+      }
+    }
   }
 
   /**
@@ -312,10 +379,13 @@ public class AnnotationFileUtil {
    */
   public static List<AnnotationFileResource> allAnnotationFiles(
       String location, AnnotationFileType fileType) {
+    System.out.printf("allAnnotationFiles(%s, %s)%n", location, fileType);
     File file = new File(location);
+    System.out.printf("allAnnotationFiles file (1) = %s%n", file);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();
       addAnnotationFilesToList(file, resources, fileType);
+      System.out.printf("allAnnotationFiles(%s, %s) => %s%n", location, fileType, resources);
       return resources;
     }
 
@@ -323,9 +393,11 @@ public class AnnotationFileUtil {
     // current working directory, so try that.
     String workingDir = System.getProperty("user.dir") + System.getProperty("file.separator");
     file = new File(workingDir + location);
+    System.out.printf("allAnnotationFiles file (2) = %s%n", file);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();
       addAnnotationFilesToList(file, resources, fileType);
+      System.out.printf("allAnnotationFiles(%s, %s) => %s%n", location, fileType, resources);
       return resources;
     }
 
@@ -352,14 +424,7 @@ public class AnnotationFileUtil {
    *     otherwise
    */
   private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
-    switch (fileType) {
-      case STUB:
-        return path.endsWith(".astub");
-      case AJAVA:
-        return path.endsWith(".ajava");
-      default:
-        return false;
-    }
+    return path.endsWith(fileType.isStub() ? ".astub" : ".ajava");
   }
 
   private static boolean isJar(File f) {

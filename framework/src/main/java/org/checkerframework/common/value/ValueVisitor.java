@@ -147,7 +147,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
   @Override
   protected ValueAnnotatedTypeFactory createTypeFactory() {
-    return new ValueAnnotatedTypeFactory(checker);
+    System.out.println("entering ValueAnnotatedTypeFactory.createTypeFactory");
+    ValueAnnotatedTypeFactory result = new ValueAnnotatedTypeFactory(checker);
+    System.out.println("exiting ValueAnnotatedTypeFactory.createTypeFactory");
+    return result;
   }
 
   /**

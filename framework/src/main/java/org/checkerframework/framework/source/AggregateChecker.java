@@ -70,6 +70,7 @@ public abstract class AggregateChecker extends SourceChecker {
 
   @Override
   public void initChecker() {
+    System.out.printf("entering AggregateChecker.initChecker %s%n", this.getClass());
     // No need to call super, it might result in reflective instantiations
     // of visitor/factory classes.
     // super.initChecker();
@@ -90,6 +91,7 @@ public abstract class AggregateChecker extends SourceChecker {
       checker.setSupportedLintOptions(this.getSupportedLintOptions());
     }
     allCheckersInited = true;
+    System.out.printf("exiting AggregateChecker.initChecker %s%n", this.getClass());
   }
 
   // Whether all checkers were successfully initialized.
@@ -160,6 +162,7 @@ public abstract class AggregateChecker extends SourceChecker {
 
   @Override
   protected SourceVisitor<?, ?> createSourceVisitor() {
+    System.out.printf("called AggregateChecker.createSourceVisitor%n");
     return new SourceVisitor<Void, Void>(this) {
       // Aggregate checkers do not visit source,
       // the checkers in the aggregate checker do.

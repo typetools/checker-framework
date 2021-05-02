@@ -93,6 +93,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
   @Override
   public void initChecker() {
+    System.out.printf("entering BaseTypeChecker.initChecker %s%n", this.getClass());
     // initialize all checkers and share options as necessary
     for (BaseTypeChecker checker : getSubcheckers()) {
       // We need to add all options that are activated for the set of subcheckers to
@@ -111,7 +112,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
       messageStore = new TreeSet<>(this::compareCheckerMessages);
     }
 
+    System.out.printf("BaseTypeChecker.initChecker %s about to call super%n", this.getClass());
     super.initChecker();
+    System.out.printf("exiting BaseTypeChecker.initChecker %s%n", this.getClass());
   }
 
   /**
@@ -227,6 +230,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    */
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
+    System.out.printf("entering BaseTypeChecker.createSourceVisitor %s%n", getClass());
     // Try to reflectively load the visitor.
     Class<?> checkerClass = this.getClass();
 
@@ -243,7 +247,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     // If a visitor couldn't be loaded reflectively, return the default.
-    return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+    BaseTypeVisitor<?> result = new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
+    System.out.printf("exiting BaseTypeChecker.createSourceVisitor %s%n", getClass());
+    return result;
   }
 
   /**
@@ -510,9 +516,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
     if (!getSubcheckers().isEmpty()) {
-      // TODO: I expected this to only be necessary if (parentChecker == null).
-      // However, the NestedAggregateChecker fails otherwise.
-      messageStore.clear();
+      if (messageStore != null) {
+        // TODO: I expected this to only be necessary if (parentChecker == null).
+        // However, the NestedAggregateChecker fails otherwise.
+        messageStore.clear();
+      } else {
+        new Error(String.format("messageStore == null for %s", this.getClass())).printStackTrace();
+      }
     }
 
     // Errors (or other messages) issued via

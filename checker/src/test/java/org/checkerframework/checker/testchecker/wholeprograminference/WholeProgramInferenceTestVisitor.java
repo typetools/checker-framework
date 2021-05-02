@@ -18,10 +18,16 @@ public class WholeProgramInferenceTestVisitor
     super(checker);
   }
 
+  /*
   @Override
   protected WholeProgramInferenceTestAnnotatedTypeFactory createTypeFactory() {
-    return new WholeProgramInferenceTestAnnotatedTypeFactory(checker);
+    System.out.println("entering WholeProgramInferenceTestAnnotatedTypeFactory.createTypeFactory");
+    WholeProgramInferenceTestAnnotatedTypeFactory result =
+        new WholeProgramInferenceTestAnnotatedTypeFactory(checker);
+    System.out.println("exiting WholeProgramInferenceTestAnnotatedTypeFactory.createTypeFactory");
+    return result;
   }
+  */
 
   @Override
   public Void visitAnnotation(AnnotationTree node, Void p) {

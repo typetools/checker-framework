@@ -187,6 +187,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @SuppressWarnings("StaticAssignmentInConstructor") // static Range.ignoreOverflow is gross
   public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
+    System.out.println("ValueAnnotatedTypeFactory() 1");
 
     reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
     Range.ignoreOverflow = checker.hasOption(ValueChecker.IGNORE_RANGE_OVERFLOW);
@@ -230,11 +231,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // EnumVal is treated as StringVal internally by the checker.
     addAliasedTypeAnnotation(EnumVal.class, StringVal.class, true);
 
+    System.out.println("ValueAnnotatedTypeFactory() 1");
+
     methods = new ValueMethodIdentifier(processingEnv);
 
     if (this.getClass() == ValueAnnotatedTypeFactory.class) {
+      System.out.println("about to call ValueAnnotatedTypeFactory.postInit()");
       this.postInit();
+      System.out.println("called ValueAnnotatedTypeFactory.postInit()");
     }
+    System.out.println("exiting ValueAnnotatedTypeFactory()");
   }
 
   /** Gets a helper object that holds references to methods with special handling. */

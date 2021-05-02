@@ -384,6 +384,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
   @Override
   protected void postInit() {
+    System.out.printf("entering GenericAnnotatedTypeFactory.postInit() %s%n", getClass());
+
     super.postInit();
 
     this.dependentTypesHelper = createDependentTypesHelper();
@@ -400,6 +402,8 @@ public abstract class GenericAnnotatedTypeFactory<
     this.emptyStore = analysis.createEmptyStore(transfer.usesSequentialSemantics());
 
     this.parseAnnotationFiles();
+
+    System.out.printf("exiting GenericAnnotatedTypeFactory.postInit() %s%n", getClass());
   }
 
   /**

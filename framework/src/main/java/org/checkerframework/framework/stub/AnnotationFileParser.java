@@ -116,22 +116,38 @@ import org.checkerframework.javacutil.TreeUtils;
  * to the {@link AnnotationFileAnnotations} passed as an argument.
  *
  * <p>The first main entry point is {@link AnnotationFileParser#parseStubFile(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations, boolean)}, which
- * side-effects its last argument. It operates in two steps. First, it calls the Annotation File
- * Parser to parse an annotation file. Then, it walks the AST to create/collect types and
+ * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileType)},
+ * which side-effects its last argument. It operates in two steps. First, it calls the Annotation
+ * File Parser to parse an annotation file. Then, it walks the AST to create/collect types and
  * declaration annotations.
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
  * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
  * This behaves the same as {@link AnnotationFileParser#parseStubFile(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations, boolean)}, but takes an
- * ajava file instead.
+ * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileType)}, but
+ * takes an ajava file instead.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
 public class AnnotationFileParser {
 
-  /** The type of file being parsed: stub file or ajava file. */
+  /** If true, log progress. */
+  private static final boolean debugProcess = true;
+
+  /**
+   * The type of file being parsed: stub file or ajava file. Also indicates its source, such as from
+   * the JDK, built in, or from the command line.
+   *
+   * <p>Non-JDK stub files override JDK stub files. (Ordinarily, if two stubs are provided, they are
+   * merged.)
+   *
+   * <p>For a built-in stub file,
+   *
+   * <ul>
+   *   <li>private declarations are ignored,
+   *   <li>some warning messages are not issued, and
+   * </ul>
+   */
   private final AnnotationFileType fileType;
 
   /**
@@ -238,25 +254,6 @@ public class AnnotationFileParser {
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-  /**
-   * Whether or not the file is a stub file that's part of the JDK. Non-JDK stub files override JDK
-   * stub files. (Ordinarily, if two stubs are provided, they are merged.) If this is true, then
-   * {@link #isBuiltinStub} is also true.
-   */
-  private final boolean isJdkAsStub;
-
-  /**
-   * True if the stub file is built into the checker, false if it was provided on the command line.
-   *
-   * <p>For a built-in stub file,
-   *
-   * <ul>
-   *   <li>private declarations are ignored,
-   *   <li>some warning messages are not issued, and
-   * </ul>
-   */
-  private final boolean isBuiltinStub;
-
   /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
   private final boolean mergeStubsWithSource;
 
@@ -300,17 +297,12 @@ public class AnnotationFileParser {
    * @param filename name of annotation file, used only for diagnostic messages
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
-   * @param isJdkAsStub whether or not this is a stub file that's part of the JDK
-   * @param isBuiltinStub true if the stub file is built into the checker, false if the stub file
-   *     was provided on the command line
-   * @param fileType the type of file being parsed (stub file or ajava file)
+   * @param fileType the type of file being parsed (stub file or ajava file) and its source
    */
   private AnnotationFileParser(
       String filename,
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
-      boolean isJdkAsStub,
-      boolean isBuiltinStub,
       AnnotationFileType fileType) {
     this.filename = filename;
     this.atypeFactory = atypeFactory;
@@ -331,14 +323,10 @@ public class AnnotationFileParser {
     this.stubWarnDiagnosticKind =
         options.containsKey("stubWarnNote") ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
     this.debugAnnotationFileParser = options.containsKey("stubDebug");
+    // this.debugAnnotationFileParser = true;
 
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
-    this.isJdkAsStub = isJdkAsStub;
-    this.isBuiltinStub = isBuiltinStub;
-    if (isJdkAsStub) {
-      assert isBuiltinStub;
-    }
     this.mergeStubsWithSource = atypeFactory.getChecker().hasOption("mergeStubsWithSource");
   }
 
@@ -541,8 +529,7 @@ public class AnnotationFileParser {
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
    * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
-   * @param isBuiltinStub true if this stub file is built in to the checker, false if the stub file
-   *     was supplied by the user on the command line
+   * @param fileType the annotation file type and source
    */
   public static void parseStubFile(
       String filename,
@@ -550,15 +537,24 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations annotationFileAnnos,
-      boolean isBuiltinStub) {
-    parseStubFile(
-        filename,
-        inputStream,
-        atypeFactory,
-        processingEnv,
-        annotationFileAnnos,
-        false,
-        isBuiltinStub);
+      AnnotationFileType fileType) {
+    System.out.printf("entering parseStubFile %s%n", filename);
+    AnnotationFileParser afp =
+        new AnnotationFileParser(filename, atypeFactory, processingEnv, fileType);
+    System.out.printf("parseStubFile 1 %s%n", filename);
+    try {
+      afp.parseStubUnit(inputStream, fileType);
+      System.out.printf("parseStubFile 2 %s%n", filename);
+      afp.process(annotationFileAnnos);
+      System.out.printf("parseStubFile 3 %s%n", filename);
+    } catch (ParseProblemException e) {
+      for (Problem p : e.getProblems()) {
+        System.out.printf("about to call warn: %s%n", p.getVerboseMessage());
+        afp.warn(null, p.getVerboseMessage());
+        System.out.printf("called warn: %s%n", p.getVerboseMessage());
+      }
+    }
+    System.out.printf("exiting parseStubFile %s%n", filename);
   }
 
   /**
@@ -580,16 +576,17 @@ public class AnnotationFileParser {
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations ajavaAnnos) {
     AnnotationFileParser afp =
-        new AnnotationFileParser(
-            filename, atypeFactory, processingEnv, false, false, AnnotationFileType.AJAVA);
+        new AnnotationFileParser(filename, atypeFactory, processingEnv, AnnotationFileType.AJAVA);
     try {
-      afp.parseStubUnit(inputStream);
+      afp.parseStubUnit(inputStream, AnnotationFileType.AJAVA);
       JavaParserUtil.concatenateAddedStringLiterals(afp.stubUnit);
       afp.setRoot(root);
       afp.process(ajavaAnnos);
     } catch (ParseProblemException e) {
       for (Problem p : e.getProblems()) {
+        System.out.printf("about to call warn: %s%n", p.getVerboseMessage());
         afp.warn(null, p.getVerboseMessage());
+        System.out.printf("called warn: %s%n", p.getVerboseMessage());
       }
     }
   }
@@ -609,45 +606,8 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations stubAnnos) {
-    parseStubFile(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true, true);
-  }
-
-  /**
-   * Parse a stub file and adds annotations to {@code annotationFileAnnos}.
-   *
-   * @param filename name of stub file, used only for diagnostic messages
-   * @param inputStream of stub file to parse
-   * @param atypeFactory AnnotatedTypeFactory to use
-   * @param processingEnv ProcessingEnvironment to use
-   * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
-   * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
-   * @param isBuiltinStub true if the stub file is built-in to the checker; false if the stub file
-   *     was provided on the command line
-   */
-  private static void parseStubFile(
-      String filename,
-      InputStream inputStream,
-      AnnotatedTypeFactory atypeFactory,
-      ProcessingEnvironment processingEnv,
-      AnnotationFileAnnotations annotationFileAnnos,
-      boolean isJdkAsStub,
-      boolean isBuiltinStub) {
-    AnnotationFileParser afp =
-        new AnnotationFileParser(
-            filename,
-            atypeFactory,
-            processingEnv,
-            isJdkAsStub,
-            isBuiltinStub,
-            AnnotationFileType.STUB);
-    try {
-      afp.parseStubUnit(inputStream);
-      afp.process(annotationFileAnnos);
-    } catch (ParseProblemException e) {
-      for (Problem p : e.getProblems()) {
-        afp.warn(null, p.getVerboseMessage());
-      }
-    }
+    parseStubFile(
+        filename, inputStream, atypeFactory, processingEnv, stubAnnos, AnnotationFileType.JDK_STUB);
   }
 
   /**
@@ -658,25 +618,35 @@ public class AnnotationFileParser {
    *
    * @param inputStream the stream from which to read an annotation file
    */
-  private void parseStubUnit(InputStream inputStream) {
+  private void parseStubUnit(InputStream inputStream, AnnotationFileType fileType) {
+    System.out.printf("entering AnnotationFileParser.parseStubUnit  (%s) %s%n", fileType, filename);
+
     if (debugAnnotationFileParser) {
-      stubDebug(String.format("parsing stub file %s", filename));
+      stubDebug(String.format("parsing annotation file %s", filename));
     }
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
+    // System.out.printf("AnnotationFileParser.parseStubUnit 2 %s%n", filename);
 
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
     allAnnotations = getImportedAnnotations();
-    if (allAnnotations.isEmpty()) {
-      // This issues a warning if the stub file contains no import statements.  That is
-      // incorrect if the stub file contains fully-qualified annotations.
+    // System.out.printf("AnnotationFileParser.parseStubUnit 3 %s%n", filename);
+    // Issue a warning if the stub file contains no import statements.  The warning is
+    // incorrect if the stub file contains fully-qualified annotations.
+    if (allAnnotations.isEmpty()
+        && fileType.isStub()
+        && fileType != AnnotationFileType.AJAVA_AS_STUB) {
       stubWarnNotFound(
           null,
           String.format(
               "No supported annotations found! Does stub file %s import them?", filename));
     }
+    // System.out.printf("AnnotationFileParser.parseStubUnit 4 %s%n", filename);
     // Annotations in java.lang might be used without an import statement, so add them in case.
     allAnnotations.putAll(annosInPackage(findPackage("java.lang", null)));
+
+    // System.out.printf("AnnotationFileParser.parseStubUnit 5 %s%n", filename);
+    System.out.printf("exiting AnnotationFileParser.parseStubUnit  (%s) %s%n", fileType, filename);
   }
 
   /**
@@ -686,9 +656,15 @@ public class AnnotationFileParser {
    * @param annotationFileAnnos annotations from the file; side-effected by this method
    */
   private void process(AnnotationFileAnnotations annotationFileAnnos) {
+    if (debugProcess) {
+      System.out.printf("entering process%n");
+    }
     this.annotationFileAnnos = annotationFileAnnos;
     processStubUnit(this.stubUnit);
     this.annotationFileAnnos = null;
+    if (debugProcess) {
+      System.out.printf("exiting process%n");
+    }
   }
 
   /**
@@ -697,8 +673,14 @@ public class AnnotationFileParser {
    * @param su the StubUnit to process
    */
   private void processStubUnit(StubUnit su) {
+    if (debugProcess) {
+      System.out.printf("entering processStubUnit%n");
+    }
     for (CompilationUnit cu : su.getCompilationUnits()) {
       processCompilationUnit(cu);
+    }
+    if (debugProcess) {
+      System.out.printf("exiting processStubUnit%n");
     }
   }
 
@@ -708,6 +690,9 @@ public class AnnotationFileParser {
    * @param cu the CompilationUnit to process
    */
   private void processCompilationUnit(CompilationUnit cu) {
+    if (debugProcess) {
+      System.out.printf("entering processCompilationUnit%n");
+    }
 
     if (!cu.getPackageDeclaration().isPresent()) {
       packageAnnos = null;
@@ -718,7 +703,7 @@ public class AnnotationFileParser {
       processPackage(pDecl);
     }
 
-    if (fileType == AnnotationFileType.STUB) {
+    if (fileType.isStub()) {
       if (cu.getTypes() != null) {
         for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
           // Not processing an ajava file, so ignore the return value.
@@ -726,10 +711,19 @@ public class AnnotationFileParser {
         }
       }
     } else {
+      System.out.printf("about to call accept, cu=%s, root=%s%n", cu, root);
+      if (root == null) {
+        new Error("root == null").printStackTrace(System.out);
+      }
       root.accept(new AjavaAnnotationCollectorVisitor(), cu);
+      System.out.printf("called accept%n");
     }
 
     packageAnnos = null;
+
+    if (debugProcess) {
+      System.out.printf("exiting processCompilationUnit%n");
+    }
   }
 
   /**
@@ -738,6 +732,10 @@ public class AnnotationFileParser {
    * @param packDecl the package declaration to process
    */
   private void processPackage(PackageDeclaration packDecl) {
+    if (debugProcess) {
+      System.out.printf("entering processPackage%n");
+    }
+
     assert (packDecl != null);
     if (!isAnnotatedForThisChecker(packDecl.getAnnotations())) {
       return;
@@ -751,6 +749,10 @@ public class AnnotationFileParser {
       recordDeclAnnotation(elem, packDecl.getAnnotations(), packDecl);
     }
     // TODO: Handle atypes???
+
+    if (debugProcess) {
+      System.out.printf("exiting processPackage%n");
+    }
   }
 
   /**
@@ -776,7 +778,8 @@ public class AnnotationFileParser {
     // access modifier.  Also, interface methods have no access modifier, but they are still public.
     // Must include protected JDK methods.  For example, Object.clone is protected, but it contains
     // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
-    return (isBuiltinStub || (fileType == AnnotationFileType.STUB && !mergeStubsWithSource))
+    return (fileType == AnnotationFileType.BUILTIN_STUB
+            || (fileType.isStub() && !mergeStubsWithSource))
         && node.getModifiers().contains(Modifier.privateModifier());
   }
 
@@ -798,6 +801,10 @@ public class AnnotationFileParser {
    */
   private List<AnnotatedTypeVariable> processTypeDecl(
       TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
+    if (debugProcess) {
+      System.out.printf("entering processTypeDecl%n");
+    }
+
     assert typeBeingParsed != null;
     if (skipNode(typeDecl)) {
       return null;
@@ -928,6 +935,10 @@ public class AnnotationFileParser {
       typeParameters.removeAll(typeDeclTypeParameters);
     }
 
+    if (debugProcess) {
+      System.out.printf("exiting processTypeDecl%n");
+    }
+
     return null;
   }
 
@@ -959,6 +970,9 @@ public class AnnotationFileParser {
    */
   private List<AnnotatedTypeVariable> processType(
       ClassOrInterfaceDeclaration decl, TypeElement elt) {
+    if (debugProcess) {
+      System.out.printf("entering processType%n");
+    }
 
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
@@ -1011,6 +1025,10 @@ public class AnnotationFileParser {
         typeVariables.add((AnnotatedTypeVariable) typeV);
       }
     }
+    if (debugProcess) {
+      System.out.printf("exiting processType%n");
+    }
+
     return typeVariables;
   }
 
@@ -1023,6 +1041,9 @@ public class AnnotationFileParser {
    * @return the enum's type parameter declarations
    */
   private List<AnnotatedTypeVariable> processEnum(EnumDeclaration decl, TypeElement elt) {
+    if (debugProcess) {
+      System.out.printf("entering processEnum%n");
+    }
 
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
@@ -1041,6 +1062,9 @@ public class AnnotationFileParser {
       } else {
         typeVariables.add((AnnotatedTypeVariable) typeV);
       }
+    }
+    if (debugProcess) {
+      System.out.printf("exiting processEnum%n");
     }
     return typeVariables;
   }
@@ -1093,6 +1117,10 @@ public class AnnotationFileParser {
    */
   private List<AnnotatedTypeVariable> processCallableDeclaration(
       CallableDeclaration<?> decl, ExecutableElement elt) {
+    if (debugProcess) {
+      System.out.printf("entering processCallableDeclaration%n");
+    }
+
     if (!isAnnotatedForThisChecker(decl.getAnnotations())) {
       return null;
     }
@@ -1167,7 +1195,7 @@ public class AnnotationFileParser {
 
     if (warnIfStubRedundantWithBytecode
         && methodType.toString().equals(origMethodType.toString())
-        && !isBuiltinStub) {
+        && fileType != AnnotationFileType.BUILTIN_STUB) {
       warn(
           decl,
           String.format(
@@ -1176,8 +1204,12 @@ public class AnnotationFileParser {
 
     // Store the type.
     putMerge(annotationFileAnnos.atypes, elt, methodType);
-    if (fileType == AnnotationFileType.STUB) {
+    if (fileType.isStub()) {
       typeParameters.removeAll(methodType.getTypeVariables());
+    }
+
+    if (debugProcess) {
+      System.out.printf("exiting processCallableDeclaration%n");
     }
 
     return methodType.getTypeVariables();
@@ -1193,6 +1225,10 @@ public class AnnotationFileParser {
    */
   private void processParameters(
       CallableDeclaration<?> method, ExecutableElement elt, AnnotatedExecutableType methodType) {
+    if (debugProcess) {
+      System.out.printf("entering processParameters%n");
+    }
+
     List<Parameter> params = method.getParameters();
     List<? extends VariableElement> paramElts = elt.getParameters();
     List<? extends AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
@@ -1220,6 +1256,10 @@ public class AnnotationFileParser {
         annotate(paramType, param.getType(), param.getAnnotations(), param);
         putMerge(annotationFileAnnos.atypes, paramElt, paramType);
       }
+    }
+
+    if (debugProcess) {
+      System.out.printf("exiting processParameters%n");
     }
   }
 
@@ -1431,6 +1471,10 @@ public class AnnotationFileParser {
    * @param elt the element representing that same declaration
    */
   private void processField(FieldDeclaration decl, VariableElement elt) {
+    if (debugProcess) {
+      System.out.printf("entering processField%n");
+    }
+
     if (skipNode(decl)) {
       // Don't process private fields of the JDK.  They can't be referenced outside of the JDK
       // and might refer to types that are not accessible.
@@ -1453,6 +1497,10 @@ public class AnnotationFileParser {
     assert fieldVarDecl != null;
     annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations(), fieldVarDecl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
+
+    if (debugProcess) {
+      System.out.printf("exiting processField%n");
+    }
   }
 
   /**
@@ -1463,11 +1511,19 @@ public class AnnotationFileParser {
    * @param elt the enum constant declaration, as an element (the destination for annotations)
    */
   private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
+    if (debugProcess) {
+      System.out.printf("entering processEnumConstant%n");
+    }
+
     recordDeclAnnotationFromAnnotationFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
     annotate(enumConstType, decl.getAnnotations(), decl);
     putMerge(annotationFileAnnos.atypes, elt, enumConstType);
+
+    if (debugProcess) {
+      System.out.printf("exiting processEnumConstant%n");
+    }
   }
 
   /**
@@ -1563,7 +1619,7 @@ public class AnnotationFileParser {
    * @param elt an element to be annotated as {@code @FromStubFile}
    */
   private void recordDeclAnnotationFromAnnotationFile(Element elt) {
-    if (fileType == AnnotationFileType.AJAVA || isJdkAsStub) {
+    if (fileType == AnnotationFileType.AJAVA || fileType == AnnotationFileType.JDK_STUB) {
       return;
     }
     putOrAddToMap(
@@ -1881,6 +1937,10 @@ public class AnnotationFileParser {
    */
   private void processFakeOverride(
       ExecutableElement element, CallableDeclaration<?> decl, TypeElement fakeLocation) {
+    if (debugProcess) {
+      System.out.printf("entering processFakeOverride%n");
+    }
+
     // This is a fresh type, which this code may side-effect.
     AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(element);
 
@@ -1896,6 +1956,10 @@ public class AnnotationFileParser {
     List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
         annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>());
     l.add(Pair.of(fakeLocation.asType(), methodType));
+
+    if (debugProcess) {
+      System.out.printf("exiting processFakeOverride%n");
+    }
   }
 
   /**
@@ -2188,7 +2252,7 @@ public class AnnotationFileParser {
    *     not contain this checker
    */
   private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
-    if (isJdkAsStub) {
+    if (fileType == AnnotationFileType.JDK_STUB) {
       // The JDK stubs have purity annotations that should be read for all checkers.
       // TODO: Parse the JDK stubs, but only save the declaration annotations.
       return true;
@@ -2689,7 +2753,7 @@ public class AnnotationFileParser {
       // If the newType is from a JDK stub file, then keep the existing type.  This
       // way user-supplied stub files override JDK stub files.
       // This works because the JDK is always parsed last, on demand, after all other stub files.
-      if (!isJdkAsStub) {
+      if (fileType != AnnotationFileType.JDK_STUB) {
         atypeFactory.replaceAnnotations(newType, existingType);
       }
       m.put(key, existingType);
@@ -2740,7 +2804,7 @@ public class AnnotationFileParser {
    * @param warnIfNotFound whether to print warnings about types/members that were not found
    */
   private void stubWarnNotFound(NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
-    if ((!isBuiltinStub || warnIfNotFound) || debugAnnotationFileParser) {
+    if ((fileType.isCommandLine() || warnIfNotFound) || debugAnnotationFileParser) {
       warn(astNode, warning);
     }
   }
@@ -2768,7 +2832,7 @@ public class AnnotationFileParser {
    */
   @FormatMethod
   private void warn(@Nullable NodeWithRange<?> astNode, String warning, Object... args) {
-    if (!isBuiltinStub) {
+    if (!fileType.isBuiltIn()) {
       warn(astNode, String.format(warning, args));
     }
   }
@@ -2780,13 +2844,15 @@ public class AnnotationFileParser {
    * @param warning a warning message
    */
   private void warn(@Nullable NodeWithRange<?> astNode, String warning) {
-    if (!isJdkAsStub) {
+    System.out.printf("entering warn%n");
+    if (fileType != AnnotationFileType.JDK_STUB) {
       if (warnings.add(warning)) {
         processingEnv
             .getMessager()
             .printMessage(stubWarnDiagnosticKind, fileAndLine(astNode) + warning);
       }
     }
+    System.out.printf("exiting warn%n");
   }
 
   /**
@@ -2796,11 +2862,13 @@ public class AnnotationFileParser {
    * @param warning warning to print
    */
   private void stubDebug(String warning) {
+    System.out.printf("entering stubdebug%n");
     if (debugAnnotationFileParser && warnings.add(warning)) {
       processingEnv
           .getMessager()
           .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
     }
+    System.out.printf("exiting stubdebug%n");
   }
 
   /**
@@ -2813,6 +2881,10 @@ public class AnnotationFileParser {
   private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
+      if (debugProcess) {
+        System.out.printf("entering visitClass%n");
+      }
+
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
       if (javaParserNode instanceof TypeDeclaration<?>
           && !(javaParserNode instanceof AnnotationDeclaration)) {
@@ -2825,11 +2897,19 @@ public class AnnotationFileParser {
         typeParameters.removeAll(typeDeclTypeParameters);
       }
 
+      if (debugProcess) {
+        System.out.printf("exiting visitClass%n");
+      }
+
       return null;
     }
 
     @Override
     public Void visitVariable(VariableTree javacTree, Node javaParserNode) {
+      if (debugProcess) {
+        System.out.printf("entering visitVariable%n");
+      }
+
       if (TreeUtils.elementFromTree(javacTree) != null) {
         VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
         if (elt != null) {
@@ -2844,11 +2924,20 @@ public class AnnotationFileParser {
       }
 
       super.visitVariable(javacTree, javaParserNode);
+
+      if (debugProcess) {
+        System.out.printf("exiting visitVariable%n");
+      }
+
       return null;
     }
 
     @Override
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
+      if (debugProcess) {
+        System.out.printf("exiting visitMethod%n");
+      }
+
       ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
       List<AnnotatedTypeVariable> variablesToClear = null;
       if (javaParserNode instanceof CallableDeclaration<?>) {
@@ -2860,6 +2949,9 @@ public class AnnotationFileParser {
         typeParameters.removeAll(variablesToClear);
       }
 
+      if (debugProcess) {
+        System.out.printf("exiting visitMethod%n");
+      }
       return null;
     }
   }
