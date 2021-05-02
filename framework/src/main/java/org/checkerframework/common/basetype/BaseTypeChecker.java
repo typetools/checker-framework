@@ -515,14 +515,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
   // AbstractTypeProcessor delegation
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
+    // If messageStore is null, then initialization of the checker failed.
+    // Return to avoid further errors.
+    if (messageStore == null) {
+      return;
+    }
+
     if (!getSubcheckers().isEmpty()) {
-      if (messageStore != null) {
-        // TODO: I expected this to only be necessary if (parentChecker == null).
-        // However, the NestedAggregateChecker fails otherwise.
-        messageStore.clear();
-      } else {
-        new Error(String.format("messageStore == null for %s", this.getClass())).printStackTrace();
-      }
+      // TODO: I expected this to only be necessary if (parentChecker == null).
+      // However, the NestedAggregateChecker fails otherwise.
+      messageStore.clear();
     }
 
     // Errors (or other messages) issued via
