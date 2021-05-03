@@ -623,7 +623,7 @@ public class AnnotationFileParser {
    */
   private void parseStubUnit(InputStream inputStream) {
     if (debugAnnotationFileParser) {
-      stubDebug(String.format("parsing stub file %s", filename));
+      stubDebug(String.format("parsing annotation file %s", filename));
     }
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
@@ -631,7 +631,7 @@ public class AnnotationFileParser {
     // be refactored to be nicer.
     allAnnotations = getImportedAnnotations();
     if (allAnnotations.isEmpty()) {
-      // This issues a warning if the stub file contains no import statements.  That is
+      // Issue a warning if the stub file contains no import statements.  The warning is
       // incorrect if the stub file contains fully-qualified annotations.
       stubWarnNotFound(
           null,
@@ -708,7 +708,7 @@ public class AnnotationFileParser {
     String packageName = packDecl.getNameAsString();
     typeBeingParsed = new FqName(packageName, null);
     Element elem = elements.getPackageElement(packageName);
-    // If the element lookup fails, it's because we have an annotation for a
+    // If the element lookup fails (that is, elem == null), it's because we have an annotation for a
     // package that isn't on the classpath, which is fine.
     if (elem != null) {
       recordDeclAnnotation(elem, packDecl.getAnnotations(), packDecl);
