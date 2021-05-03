@@ -509,11 +509,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
   // AbstractTypeProcessor delegation
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
-    // If messageStore is null, then initialization of the checker failed.  Return to avoid further
-    // exceptions, which would prevent cached error messages from being displayed.
-    if (messageStore == null) {
-      return;
-    }
+
+    /// This is WRONG.
+    // // If messageStore is null, then initialization of the checker failed.  Return to avoid
+    // further
+    // // exceptions, which would prevent cached error messages from being displayed.
+    // if (messageStore == null) {
+    //   return;
+    // }
 
     if (!getSubcheckers().isEmpty()) {
       // TODO: I expected this to only be necessary if (parentChecker == null).
@@ -645,7 +648,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
       Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
     assert this.currentRoot == root;
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-    if (messageStore == null) {
+    // Temporary, to avoid losing messages.
+    // if (messageStore == null) {
+    if (true) {
       super.printOrStoreMessage(kind, message, source, root, trace);
     } else {
       CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace);
@@ -661,10 +666,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @param unit current compilation unit
    */
   private void printStoredMessages(CompilationUnitTree unit) {
-    if (messageStore != null) {
-      for (CheckerMessage msg : messageStore) {
-        super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
-      }
+    for (CheckerMessage msg : messageStore) {
+      super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
     }
   }
 
