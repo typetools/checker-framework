@@ -510,14 +510,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
 
-    /// This is WRONG.
-    // // If messageStore is null, then initialization of the checker failed.  Return to avoid
-    // further
-    // // exceptions, which would prevent cached error messages from being displayed.
-    // if (messageStore == null) {
-    //   return;
-    // }
-
     if (!getSubcheckers().isEmpty()) {
       // TODO: I expected this to only be necessary if (parentChecker == null).
       // However, the NestedAggregateChecker fails otherwise.
