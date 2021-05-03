@@ -272,10 +272,7 @@ public class AnnotationFileElementTypes {
               processingEnv,
               annotationFileAnnos,
               // THIS IS THE FIX.
-              // It's temporarily commented to help me fix diagnostic output.
-              // fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB :
-              // fileType);
-              fileType);
+              fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
         }
       } else {
         // We didn't find the files.
