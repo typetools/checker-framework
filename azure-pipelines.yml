@@ -19,6 +19,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
+  timeoutInMinutes: 70
   steps:
   - checkout: self
     fetchDepth: 25
@@ -136,6 +137,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
+  timeoutInMinutes: 70
   steps:
   - checkout: self
     fetchDepth: 25
