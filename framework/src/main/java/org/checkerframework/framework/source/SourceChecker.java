@@ -814,9 +814,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * {@inheritDoc}
    *
-   * <p>Type-checkers are not supposed to override this. Instead use initChecker. This allows us to
-   * handle BugInCF only here and doesn't require all overriding implementations to be aware of
-   * BugInCF.
+   * <p>Type-checkers are not supposed to override this. Instead override initChecker. This allows
+   * us to handle BugInCF only here and doesn't require all overriding implementations to be aware
+   * of BugInCF.
    *
    * @see AbstractProcessor#init(ProcessingEnvironment)
    * @see SourceChecker#initChecker()
@@ -1190,15 +1190,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Stores all messages and sorts them by location before outputting them for compound checkers.
-   * This method is overloaded with an additional stack trace argument. The stack trace is printed
-   * when the dumpOnErrors option is enabled.
+   * Do not call this method. Call {@link #reportError} or {@link #reportWarning} instead.
+   *
+   * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
+   * stores all messages and sorts them by location before outputting them.
    *
    * @param kind the kind of message to print
    * @param message the message text
    * @param source the source code position of the diagnostic message
    * @param root the compilation unit
-   * @param trace the stack trace where the checker encountered an error
+   * @param trace the stack trace where the checker encountered an error. It is printed when the
+   *     dumpOnErrors option is enabled.
    */
   protected void printOrStoreMessage(
       javax.tools.Diagnostic.Kind kind,
