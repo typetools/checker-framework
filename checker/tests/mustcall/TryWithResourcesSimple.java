@@ -13,7 +13,7 @@ public class TryWithResourcesSimple {
     }
   }
 
-  @SuppressWarnings("mustcall:type.invalid.annotations.on.use")
+  @SuppressWarnings("mustcall:annotations.on.use")
   public static @MustCall({"close", "myMethod"}) Socket getFancySocket() {
     return null;
   }
@@ -21,7 +21,7 @@ public class TryWithResourcesSimple {
   void test_fancy_sock(String address, int port) {
     // This is illegal, because getFancySock()'s return type has another MC method beyond "close",
     // which is the only MC method for Socket itself.
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     try (Socket socket = getFancySocket()) {
       @MustCall({}) Object s = socket;
     } catch (Exception e) {

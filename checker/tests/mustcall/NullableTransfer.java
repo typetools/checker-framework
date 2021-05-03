@@ -10,7 +10,7 @@ class NullableTransfer {
     if (is == null) {
       @MustCall({}) InputStream is2 = is;
     } else {
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       @MustCall({}) InputStream is3 = is;
       @MustCall("close") InputStream is4 = is;
     }
