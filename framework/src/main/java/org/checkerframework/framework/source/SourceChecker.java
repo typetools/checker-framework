@@ -610,7 +610,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param newRoot the new compilation unit root
    */
-  @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+  @SuppressWarnings("interning:assignment") // used in == tests
   protected void setRoot(CompilationUnitTree newRoot) {
     this.currentRoot = newRoot;
     visitor.setRoot(currentRoot);
@@ -814,9 +814,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * {@inheritDoc}
    *
-   * <p>Type-checkers are not supposed to override this. Instead use initChecker. This allows us to
-   * handle BugInCF only here and doesn't require all overriding implementations to be aware of
-   * BugInCF.
+   * <p>Type-checkers are not supposed to override this. Instead override initChecker. This allows
+   * us to handle BugInCF only here and doesn't require all overriding implementations to be aware
+   * of BugInCF.
    *
    * @see AbstractProcessor#init(ProcessingEnvironment)
    * @see SourceChecker#initChecker()
@@ -907,7 +907,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param p error is reported at the leaf of the path
    */
-  @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+  @SuppressWarnings("interning:assignment") // used in == tests
   protected void reportJavacError(TreePath p) {
     // If javac issued any errors, do not type check any file, so that the Checker Framework
     // does not have to deal with error types.
@@ -1062,7 +1062,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // Not a format method.  However, messageKey should be either a format string for `args`, or  a
   // property key that maps to a format string for `args`.
   // @FormatMethod
-  @SuppressWarnings("formatter:format.string.invalid") // arg is a format string or a property key
+  @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
   private void report(
       Object source,
       javax.tools.Diagnostic.Kind kind,
@@ -1190,15 +1190,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Stores all messages and sorts them by location before outputting them for compound checkers.
-   * This method is overloaded with an additional stack trace argument. The stack trace is printed
-   * when the dumpOnErrors option is enabled.
+   * Do not call this method. Call {@link #reportError} or {@link #reportWarning} instead.
+   *
+   * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
+   * stores all messages and sorts them by location before outputting them.
    *
    * @param kind the kind of message to print
    * @param message the message text
    * @param source the source code position of the diagnostic message
    * @param root the compilation unit
-   * @param trace the stack trace where the checker encountered an error
+   * @param trace the stack trace where the checker encountered an error. It is printed when the
+   *     dumpOnErrors option is enabled.
    */
   protected void printOrStoreMessage(
       javax.tools.Diagnostic.Kind kind,
@@ -2385,9 +2387,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (typeElement == null) {
       throw new BugInCF("enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
     }
-    @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
-    // @FullyQualifiedName
-    )
+    @SuppressWarnings("signature:assignment") // TypeElement.toString(): @FullyQualifiedName
     @FullyQualifiedName String name = typeElement.toString();
     return shouldSkipUses(name);
   }

@@ -8,7 +8,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
   "initialization.field.uninitialized",
   // Normally @UnknownInitialization is the only initialization annotation allowed on fields.
   // However, for the purposes of this test, fields must be annotated with @UnderInitialization.
-  "initialization.invalid.field.type"
+  "initialization.field.type"
 })
 public class Issue574 {
   @UnderInitialization(Object.class) Object o1;
@@ -35,9 +35,9 @@ public class Issue574 {
     @UnderInitialization(Number.class) Object l5 = flag ? o4 : o5;
     @UnderInitialization(Number.class) Object l6 = flag ? o4 : o6;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @UnderInitialization(Character.class) Object l7 = flag ? o1 : o2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @UnderInitialization(Integer.class) Object l8 = flag ? o4 : o5;
   }
 
@@ -47,7 +47,7 @@ public class Issue574 {
     @UnderInitialization(Object.class) Object l2 = flag ? o1 : i1;
     @UnderInitialization(Object.class) Object l3 = flag ? o1 : o3;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @UnderInitialization(Character.class) Object l4 = flag ? o1 : i1;
   }
 }

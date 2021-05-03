@@ -91,6 +91,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.FromStubFile;
+import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -129,8 +130,8 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AnnotationFileParser {
 
-  /** Whether or not the file being parsed is a stub file. If false, then it's an ajava file. */
-  private final boolean isParsingStubFile;
+  /** The type of file being parsed: stub file or ajava file. */
+  private final AnnotationFileType fileType;
 
   /**
    * If parsing an ajava file, represents the javac tree for the compilation root of the file being
@@ -188,7 +189,7 @@ public class AnnotationFileParser {
    * <p>The map is populated from import statements and also by {@link #getAnnotation(
    * AnnotationExpr, Map)} for annotations that are used fully-qualified.
    *
-   * @see #getAllAnnotations
+   * @see #getImportedAnnotations
    */
   private Map<String, TypeElement> allAnnotations;
 
@@ -244,6 +245,9 @@ public class AnnotationFileParser {
    */
   private final boolean isJdkAsStub;
 
+  /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
+  private final boolean mergeStubsWithSource;
+
   /**
    * The result of calling AnnotationFileParser.parse: the annotated types and declaration
    * annotations from the file.
@@ -285,19 +289,19 @@ public class AnnotationFileParser {
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
    * @param isJdkAsStub whether or not this is a stub file that's part of the JDK
-   * @param isParsingStubFile true if parsing a stubfile, false if parsing an ajava file
+   * @param fileType the type of file being parsed (stub file or ajava file)
    */
   private AnnotationFileParser(
       String filename,
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       boolean isJdkAsStub,
-      boolean isParsingStubFile) {
+      AnnotationFileType fileType) {
     this.filename = filename;
     this.atypeFactory = atypeFactory;
     this.processingEnv = processingEnv;
     this.elements = processingEnv.getElementUtils();
-    this.isParsingStubFile = isParsingStubFile;
+    this.fileType = fileType;
     this.root = null;
 
     // TODO: This should use SourceChecker.getOptions() to allow
@@ -316,6 +320,7 @@ public class AnnotationFileParser {
     this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
     this.isJdkAsStub = isJdkAsStub;
+    this.mergeStubsWithSource = atypeFactory.getChecker().hasOption("mergeStubsWithSource");
   }
 
   /**
@@ -402,7 +407,7 @@ public class AnnotationFileParser {
    *     fully-qualified name, with the same value.
    * @see #allAnnotations
    */
-  private Map<String, TypeElement> getAllAnnotations() {
+  private Map<String, TypeElement> getImportedAnnotations() {
     Map<String, TypeElement> result = new HashMap<>();
 
     // TODO: The size can be greater than 1, but this ignores all but the first element.
@@ -546,7 +551,8 @@ public class AnnotationFileParser {
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations ajavaAnnos) {
     AnnotationFileParser afp =
-        new AnnotationFileParser(filename, atypeFactory, processingEnv, false, false);
+        new AnnotationFileParser(
+            filename, atypeFactory, processingEnv, false, AnnotationFileType.AJAVA);
     try {
       afp.parseStubUnit(inputStream);
       JavaParserUtil.concatenateAddedStringLiterals(afp.stubUnit);
@@ -595,7 +601,8 @@ public class AnnotationFileParser {
       AnnotationFileAnnotations annotationFileAnnos,
       boolean isJdkAsStub) {
     AnnotationFileParser afp =
-        new AnnotationFileParser(filename, atypeFactory, processingEnv, isJdkAsStub, true);
+        new AnnotationFileParser(
+            filename, atypeFactory, processingEnv, isJdkAsStub, AnnotationFileType.STUB);
     try {
       afp.parseStubUnit(inputStream);
       afp.process(annotationFileAnnos);
@@ -616,15 +623,15 @@ public class AnnotationFileParser {
    */
   private void parseStubUnit(InputStream inputStream) {
     if (debugAnnotationFileParser) {
-      stubDebug(String.format("parsing stub file %s", filename));
+      stubDebug(String.format("parsing annotation file %s", filename));
     }
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
-    // getAllAnnotations() also modifies importedConstants and importedTypes. This should
+    // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
-    allAnnotations = getAllAnnotations();
+    allAnnotations = getImportedAnnotations();
     if (allAnnotations.isEmpty()) {
-      // This issues a warning if the stub file contains no import statements.  That is
+      // Issue a warning if the stub file contains no import statements.  The warning is
       // incorrect if the stub file contains fully-qualified annotations.
       stubWarnNotFound(
           null,
@@ -674,7 +681,7 @@ public class AnnotationFileParser {
       processPackage(pDecl);
     }
 
-    if (isParsingStubFile) {
+    if (fileType == AnnotationFileType.STUB) {
       if (cu.getTypes() != null) {
         for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
           // Not processing an ajava file, so ignore the return value.
@@ -701,7 +708,7 @@ public class AnnotationFileParser {
     String packageName = packDecl.getNameAsString();
     typeBeingParsed = new FqName(packageName, null);
     Element elem = elements.getPackageElement(packageName);
-    // If the element lookup fails, it's because we have an annotation for a
+    // If the element lookup fails (that is, elem == null), it's because we have an annotation for a
     // package that isn't on the classpath, which is fine.
     if (elem != null) {
       recordDeclAnnotation(elem, packDecl.getAnnotations(), packDecl);
@@ -710,16 +717,30 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Returns true if the given program construct is in the annotated JDK and is private.
+   * Returns true if the given program construct need not be read: it is private and one of the
+   * following is true:
    *
-   * <p>If so, it is skipped. Private constructs can't be referenced outside of the JDK and might
-   * refer to types that are not accessible.
+   * <ul>
+   *   <li>It is in the annotated JDK. Private constructs can't be referenced outside of the JDK and
+   *       might refer to types that are not accessible.
+   *   <li>It is not an ajava file and {@code -AmergeStubsWithSource} was not supplied. As described
+   *       at https://checkerframework.org/manual/#stub-multiple-specifications, source files take
+   *       precedence over stub files unless {@code -AmergeStubsWithSource} is supplied. As
+   *       described at https://checkerframework.org/manual/#ajava-using, source files do not take
+   *       precedence over ajava files (when reading an ajava file, it is as if {@code
+   *       -AmergeStubsWithSource} were supplied).
+   * </ul>
    *
    * @param node a declaration
    * @return true if the given program construct is in the annotated JDK and is private
    */
-  boolean isPrivateInJdk(NodeWithAccessModifiers<?> node) {
-    return isJdkAsStub && node.getModifiers().contains(Modifier.privateModifier());
+  private boolean skipNode(NodeWithAccessModifiers<?> node) {
+    // Must include everything with no access modifier, because stub files are allowed to omit the
+    // access modifier.  Also, interface methods have no access modifier, but they are still public.
+    // Must include protected JDK methods.  For example, Object.clone is protected, but it contains
+    // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
+    return (isJdkAsStub || (fileType == AnnotationFileType.STUB && !mergeStubsWithSource))
+        && node.getModifiers().contains(Modifier.privateModifier());
   }
 
   /**
@@ -741,7 +762,7 @@ public class AnnotationFileParser {
   private List<AnnotatedTypeVariable> processTypeDecl(
       TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
     assert typeBeingParsed != null;
-    if (isPrivateInJdk(typeDecl)) {
+    if (skipNode(typeDecl)) {
       return null;
     }
     String innerName;
@@ -823,7 +844,7 @@ public class AnnotationFileParser {
 
     // If processing an ajava file, then traversal is handled by a visitor, rather than the rest
     // of this method.
-    if (!isParsingStubFile) {
+    if (fileType == AnnotationFileType.AJAVA) {
       return typeDeclTypeParameters;
     }
 
@@ -1118,7 +1139,7 @@ public class AnnotationFileParser {
 
     // Store the type.
     putMerge(annotationFileAnnos.atypes, elt, methodType);
-    if (isParsingStubFile) {
+    if (fileType == AnnotationFileType.STUB) {
       typeParameters.removeAll(methodType.getTypeVariables());
     }
 
@@ -1373,7 +1394,7 @@ public class AnnotationFileParser {
    * @param elt the element representing that same declaration
    */
   private void processField(FieldDeclaration decl, VariableElement elt) {
-    if (isPrivateInJdk(decl)) {
+    if (skipNode(decl)) {
       // Don't process private fields of the JDK.  They can't be referenced outside of the JDK
       // and might refer to types that are not accessible.
       return;
@@ -1505,7 +1526,7 @@ public class AnnotationFileParser {
    * @param elt an element to be annotated as {@code @FromStubFile}
    */
   private void recordDeclAnnotationFromAnnotationFile(Element elt) {
-    if (!isParsingStubFile || isJdkAsStub) {
+    if (fileType == AnnotationFileType.AJAVA || isJdkAsStub) {
       return;
     }
     putOrAddToMap(
@@ -1956,7 +1977,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, MethodDeclaration methodDecl, boolean noWarn) {
-    if (isPrivateInJdk(methodDecl)) {
+    if (skipNode(methodDecl)) {
       return null;
     }
     final String wantedMethodName = methodDecl.getNameAsString();
@@ -2010,7 +2031,7 @@ public class AnnotationFileParser {
    */
   private @Nullable ExecutableElement findElement(
       TypeElement typeElt, ConstructorDeclaration constructorDecl) {
-    if (isPrivateInJdk(constructorDecl)) {
+    if (skipNode(constructorDecl)) {
       return null;
     }
     final int wantedMethodParams =
@@ -2163,7 +2184,7 @@ public class AnnotationFileParser {
     @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
     TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
     if (annoTypeElt == null) {
-      // If the annotation was not imported, then #getAllAnnotations did not add it to the
+      // If the annotation was not imported, then #getImportedAnnotations did not add it to the
       // allAnnotations field. This code adds the annotation when it is encountered (i.e. here).
       // Note that this does not call AnnotationFileParser#getTypeElement to avoid a spurious
       // diagnostic if the annotation is actually unknown.
@@ -2313,7 +2334,7 @@ public class AnnotationFileParser {
    * @param name classname (simple, or Outer.Inner, or fully-qualified)
    * @return the TypeElement for {@code name}, or null if not found
    */
-  @SuppressWarnings("signature:argument.type.incompatible") // string concatenation
+  @SuppressWarnings("signature:argument") // string concatenation
   private @Nullable TypeElement findTypeOfName(@FullyQualifiedName String name) {
     String packageName = typeBeingParsed.packageName;
     String packagePrefix = (packageName == null) ? "" : packageName + ".";
@@ -2542,7 +2563,7 @@ public class AnnotationFileParser {
    * @param faexpr a field access expression
    * @return the VariableElement for the given field access
    */
-  @SuppressWarnings("signature:argument.type.incompatible") // string manipulation
+  @SuppressWarnings("signature:argument") // string manipulation
   private @Nullable VariableElement findVariableElement(FieldAccessExpr faexpr) {
     if (findVariableElementFieldCache.containsKey(faexpr)) {
       return findVariableElementFieldCache.get(faexpr);
@@ -2629,7 +2650,8 @@ public class AnnotationFileParser {
     if (m.containsKey(key)) {
       AnnotatedTypeMirror existingType = m.get(key);
       // If the newType is from a JDK stub file, then keep the existing type.  This
-      // way user supplied stub files override JDK stub files.
+      // way user-supplied stub files override JDK stub files.
+      // This works because the JDK is always parsed last, on demand, after all other stub files.
       if (!isJdkAsStub) {
         atypeFactory.replaceAnnotations(newType, existingType);
       }

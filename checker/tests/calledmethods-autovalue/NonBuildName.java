@@ -27,7 +27,7 @@ abstract class NonBuildName {
 
   static void wrong() {
     Builder b = builder();
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     b.makeIt();
   }
 }

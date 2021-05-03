@@ -161,7 +161,7 @@ public abstract class AbstractAnalysis<
   }
 
   @Override
-  @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
+  @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
   public AnalysisResult<V, S> getResult() {
     if (isRunning) {
@@ -220,7 +220,7 @@ public abstract class AbstractAnalysis<
   }
 
   @Override
-  @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
+  @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
   public @Nullable S getRegularExitStore() {
     SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
@@ -232,7 +232,7 @@ public abstract class AbstractAnalysis<
   }
 
   @Override
-  @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
+  @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
   public @Nullable S getExceptionalExitStore() {
     SpecialBlock exceptionalExitBlock = cfg.getExceptionalExitBlock();
@@ -493,7 +493,7 @@ public abstract class AbstractAnalysis<
      */
     @Pure
     @EnsuresNonNullIf(result = false, expression = "poll()")
-    @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
+    @SuppressWarnings("nullness:contracts.conditional.postcondition") // forwarded
     public boolean isEmpty() {
       return queue.isEmpty();
     }

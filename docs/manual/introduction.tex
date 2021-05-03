@@ -276,7 +276,7 @@ required: @NonNull Object
 \end{Verbatim}
 
 This is a trivially simple example.  Even an unsound bug-finding tool like
-FindBugs, SpotBugs, or Error Prone could have detected this bug.  The
+SpotBugs or Error Prone could have detected this bug.  The
 Checker Framework's analysis is more powerful than those tools and detects
 more code defects than they do.
 
@@ -689,8 +689,8 @@ Type-checking modes:  enable/disable functionality
   Require that the string in a warning suppression annotation begin with a checker
   name.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
-  supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
-  \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
+  supplied, then \<@SuppressWarnings("assignment")> has no effect, but
+  \<@SuppressWarnings("nullness:assignment")> does.
 \end{itemize}
 
 Partially-annotated libraries
@@ -710,7 +710,7 @@ Partially-annotated libraries
   %  \<-AstubWarnIfOverwritesBytecode>,
   \<-AstubWarnIfRedundantWithBytecode>,
   \<-AstubWarnNote>,
-  Warn about problems with stub files; see Section~\ref{stub-using}.
+  Warn about problems with stub files; see Section~\ref{stub-troubleshooting}.
 
 \item \<-AmergeStubsWithSource>
   If both a stub file and a source file for a class are available, trust

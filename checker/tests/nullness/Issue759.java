@@ -35,7 +35,7 @@ class IncompatibleTypes {
 
   void possibleValues2(final Gen<?> genType) {
     lowercase2(genType.getConstants());
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     lowercase2(genType.getNullableConstants());
   }
 
@@ -43,7 +43,7 @@ class IncompatibleTypes {
 
   void possibleValues3(final Gen<?> genType) {
     lowercase3(genType.getConstants());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     lowercase3(genType.getNullableConstants());
   }
 

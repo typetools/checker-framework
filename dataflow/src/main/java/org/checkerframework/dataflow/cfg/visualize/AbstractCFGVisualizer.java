@@ -390,9 +390,7 @@ public abstract class AbstractCFGVisualizer<
     int count = 1;
     for (Block b : cfg.getDepthFirstOrderedBlocks()) {
       depthFirstOrder.computeIfAbsent(b, k -> new ArrayList<>());
-      @SuppressWarnings(
-          "nullness:assignment.type.incompatible") // computeIfAbsent's function doesn't
-      // return null
+      @SuppressWarnings("nullness:assignment") // computeIfAbsent's function doesn't return null
       @NonNull List<Integer> blockIds = depthFirstOrder.get(b);
       blockIds.add(count++);
     }

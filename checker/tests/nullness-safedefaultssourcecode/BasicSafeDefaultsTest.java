@@ -9,12 +9,12 @@ public class BasicSafeDefaultsTest {
 
   void m1() {
     @NonNull Object x1 = SdfuscLib.unannotated();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object x2 = SdfuscLib.returnsNullable();
     @NonNull Object x3 = SdfuscLib.returnsNonNull();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object x4 = SdfuscLibNotAnnotatedFor.unannotated();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object x5 = SdfuscLibNotAnnotatedFor.returnsNullable();
     @NonNull Object x6 = SdfuscLibNotAnnotatedFor.returnsNonNull();
   }

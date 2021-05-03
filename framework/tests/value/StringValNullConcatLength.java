@@ -22,6 +22,6 @@ public class StringValNullConcatLength {
   @ArrayLenRange(from = 2, to = 8) String string10 = string1 + string5;
 
   // Omitting that string2 can be null
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   @ArrayLen({3, 4}) String string9 = string2 + string4;
 }

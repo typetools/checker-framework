@@ -20,9 +20,9 @@ public class MethodValLUBTest {
         methodName = {"m1", "m2"},
         params = {0, 1})
     Object lub = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     c1m10 = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     c2m21 = unknown;
   }
 
@@ -50,9 +50,9 @@ public class MethodValLUBTest {
         methodName = {"m1", "m1"},
         params = {0, 1})
     Object lub = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     c1m10 = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     c1m11 = unknown;
   }
 
@@ -79,9 +79,9 @@ public class MethodValLUBTest {
         methodName = {"method", "method2", "method", "method2"},
         params = {0, 1, 0, 1})
     Object lub = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     classClass2Method0 = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     class2classMethod0 = unknown;
   }
 

@@ -28,7 +28,7 @@ public class Catch {
   void explictlyNotTopUnionType() throws Throwable {
     try {
       throw new Throwable();
-      // :: error: (exception.parameter.invalid)
+      // :: error: (exception.parameter)
     } catch (@H1S1 @H2Top IndexOutOfBoundsException | @H1S1 @H2Top NullPointerException ex) {
 
     }
@@ -45,7 +45,7 @@ public class Catch {
   void explictlyNotTopDeclaredType() throws Throwable {
     try {
       throw new Throwable();
-      // :: error: (exception.parameter.invalid)
+      // :: error: (exception.parameter)
     } catch (@H1S1 @H2Top RuntimeException ex) {
 
     }

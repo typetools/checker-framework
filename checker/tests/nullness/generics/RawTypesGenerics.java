@@ -15,7 +15,7 @@ public class RawTypesGenerics {
     // ok
     Test y = new Test<Integer>();
 
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     Test z = new Test<@Nullable Integer>();
   }
 

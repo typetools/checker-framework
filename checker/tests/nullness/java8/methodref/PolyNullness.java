@@ -24,11 +24,11 @@ class Context {
 
   void context() {
     PolyFunc f1 = Context::poly;
-    // :: error: (methodref.param.invalid)
+    // :: error: (methodref.param)
     PolyFunc f2 = Context::nonPoly;
 
     NonNullFunc f3 = Context::poly;
-    // :: error: (methodref.return.invalid)
+    // :: error: (methodref.return)
     MixedFunc f4 = Context::poly;
   }
 }

@@ -5,21 +5,21 @@ public final class Loops {
 
   public void test1a(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
     while (flag) {
-      // :: error: (unary.increment.type.incompatible)
+      // :: error: (unary.increment)
       offset++;
     }
   }
 
   public void test1b(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
     while (flag) {
-      // :: error: (compound.assignment.type.incompatible)
+      // :: error: (compound.assignment)
       offset += 1;
     }
   }
 
   public void test1c(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
     while (flag) {
-      // :: error: (compound.assignment.type.incompatible)
+      // :: error: (compound.assignment)
       offset2 += offset;
     }
   }
@@ -32,27 +32,27 @@ public final class Loops {
       offset++;
       offset2 += offset;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf("array") int x = offset;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf("array") int y = offset2;
   }
 
   public void test3(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
     while (flag) {
       offset--;
-      // :: error: (compound.assignment.type.incompatible)
+      // :: error: (compound.assignment)
       offset2 -= offset;
     }
   }
 
   public void test4(int[] a, @LTLengthOf("#1") int offset, @LTLengthOf("#1") int offset2) {
     while (flag) {
-      // :: error: (unary.increment.type.incompatible)
+      // :: error: (unary.increment)
       offset++;
-      // :: error: (compound.assignment.type.incompatible)
+      // :: error: (compound.assignment)
       offset += 1;
-      // :: error: (compound.assignment.type.incompatible)
+      // :: error: (compound.assignment)
       offset2 += offset;
     }
   }
@@ -70,14 +70,14 @@ public final class Loops {
     int otherOffset = offset;
     while (flag) {
       otherOffset += 1;
-      // :: error: (unary.increment.type.incompatible)
+      // :: error: (unary.increment)
       offset++;
-      // :: error: (compound.assignment.type.incompatible)
+      // :: error: (compound.assignment)
       offset += 1;
-      // :: error: (compound.assignment.type.incompatible)
+      // :: error: (compound.assignment)
       offset2 += offset;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf(value = "#1", offset = "-1000") int x = otherOffset;
   }
 }

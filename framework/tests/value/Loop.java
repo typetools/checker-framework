@@ -10,9 +10,9 @@ public class Loop {
     for (int g = 0; g < f2.length; g++) {
       x = g;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     double @BottomVal [] test = f2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @BottomVal int q = f2.length;
   }
 
@@ -21,7 +21,7 @@ public class Loop {
     for (int g = 0; g < param; g++) {
       x = g;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @BottomVal int q = param;
   }
 

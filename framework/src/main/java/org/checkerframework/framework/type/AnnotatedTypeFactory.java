@@ -3359,7 +3359,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (res == null) {
       TreePath path = getPath(tree);
       if (path != null) {
-        @SuppressWarnings("interning:assignment.type.incompatible") // used for == test
+        @SuppressWarnings("interning:assignment") // used for == test
         @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
         ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
 
@@ -3553,10 +3553,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *       exists and ignorejdkastub option is not supplied <br>
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker<br>
-   *   <li>Stub files provide via stubs system property <br>
-   *   <li>Stub files provide via stubs environment variable <br>
-   *   <li>Stub files provide via stubs compiler option
-   *   <li>Ajava files provided via ajava compiler option
+   *   <li>Stub files provided via -Astubs compiler option
+   *   <li>Ajava files provided via -Aajava compiler option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,

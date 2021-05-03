@@ -3,13 +3,13 @@
 
 /**
  * This test came from running the compilermsgs checker in the checker-framework/checker directory
- * It's to test the result of type argument inference. We used to have the following
- * return.type.incompatible found: FlowAnalysis[ extends @UnknownPropertyKey
- * CFAbstractAnalysis<Value[ extends @UnknownPropertyKey CFAbstractValue<Value[
- * extends @UnknownPropertyKey CFAbstractValue<Value> super @UnknownPropertyKey Void]>
- * super @UnknownPropertyKey Void], Store[ extends @UnknownPropertyKey CFAbstractStore<Value[
- * extends @UnknownPropertyKey CFAbstractValue<Value[ extends @UnknownPropertyKey
- * CFAbstractValue<Value> super @UnknownPropertyKey Void]> super @UnknownPropertyKey Void], Store[
+ * It's to test the result of type argument inference. We used to have the following return found:
+ * FlowAnalysis[ extends @UnknownPropertyKey CFAbstractAnalysis<Value[ extends @UnknownPropertyKey
+ * CFAbstractValue<Value[ extends @UnknownPropertyKey CFAbstractValue<Value>
+ * super @UnknownPropertyKey Void]> super @UnknownPropertyKey Void], Store[
+ * extends @UnknownPropertyKey CFAbstractStore<Value[ extends @UnknownPropertyKey
+ * CFAbstractValue<Value[ extends @UnknownPropertyKey CFAbstractValue<Value>
+ * super @UnknownPropertyKey Void]> super @UnknownPropertyKey Void], Store[
  * extends @UnknownPropertyKey CFAbstractStore<Value[ extends @UnknownPropertyKey
  * CFAbstractValue<Value[ extends @UnknownPropertyKey CFAbstractValue<Value>
  * super @UnknownPropertyKey Void]> super @UnknownPropertyKey Void], Store>
@@ -69,17 +69,13 @@ class CFAbstractAnalysis<V extends CFAbstractValue<V>> {}
 class GenericAnnotatedTypeFactory<
     Value extends CFAbstractValue<Value>, FlowAnalysis extends CFAbstractAnalysis<Value>> {
 
-  @SuppressWarnings("immutability:type.argument.type.incompatible")
+  @SuppressWarnings("immutability:type.argument")
   protected FlowAnalysis createFlowAnalysis() {
     FlowAnalysis result = invokeConstructorFor();
     return result;
   }
 
-  @SuppressWarnings({
-    "nullness:return.type.incompatible",
-    "lock:return.type.incompatible",
-    "immutabilitysub:type.argument.type.incompatible"
-  })
+  @SuppressWarnings({"nullness:return", "lock:return", "immutabilitysub:type.argument"})
   public static <T> T invokeConstructorFor() {
     return null;
   }

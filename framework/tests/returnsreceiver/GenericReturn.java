@@ -11,7 +11,7 @@ public class GenericReturn {
     }
 
     @This B dontRetThis() {
-      // :: error: return.type.incompatible
+      // :: error: return
       return null;
     }
   }
@@ -26,7 +26,7 @@ public class GenericReturn {
   static class Builder2 extends Builder<Builder2> {
 
     @This Builder2 setFoo(String foo) {
-      // :: error: return.type.incompatible
+      // :: error: return
       return null;
     }
   }

@@ -8,21 +8,21 @@ public class AssertIfChecked {
   @Nullable Object value;
 
   @EnsuresNonNullIf(result = true, expression = "value")
-  // :: error: (contracts.conditional.postcondition.invalid.returntype)
+  // :: error: (contracts.conditional.postcondition.returntype)
   public void badform1() {}
 
   @EnsuresNonNullIf(result = true, expression = "value")
-  // :: error: (contracts.conditional.postcondition.invalid.returntype)
+  // :: error: (contracts.conditional.postcondition.returntype)
   public Object badform2() {
     return new Object();
   }
 
   @EnsuresNonNullIf(result = false, expression = "value")
-  // :: error: (contracts.conditional.postcondition.invalid.returntype)
+  // :: error: (contracts.conditional.postcondition.returntype)
   public void badform3() {}
 
   @EnsuresNonNullIf(result = false, expression = "value")
-  // :: error: (contracts.conditional.postcondition.invalid.returntype)
+  // :: error: (contracts.conditional.postcondition.returntype)
   public Object badform4() {
     return new Object();
   }
@@ -34,7 +34,7 @@ public class AssertIfChecked {
 
   @EnsuresNonNullIf(result = true, expression = "value")
   public boolean badt1() {
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return value == null;
   }
 
@@ -45,19 +45,19 @@ public class AssertIfChecked {
 
   @EnsuresNonNullIf(result = false, expression = "value")
   public boolean badf1() {
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return value != null;
   }
 
   @EnsuresNonNullIf(result = true, expression = "value")
   public boolean bad2() {
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return value == null || unknown;
   }
 
   @EnsuresNonNullIf(result = false, expression = "value")
   public boolean bad3() {
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return value == null && unknown;
   }
 
@@ -76,7 +76,7 @@ public class AssertIfChecked {
 
   @EnsuresNonNullIf(result = true, expression = "#1")
   boolean testLitTTbad1(final @Nullable Object param) {
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return true;
   }
 
@@ -96,7 +96,7 @@ public class AssertIfChecked {
   @EnsuresNonNullIf(result = false, expression = "#1")
   boolean testLitFFbad1(final @Nullable Object param) {
     if (param == null) {
-      // :: error: (contracts.conditional.postcondition.not.satisfied)
+      // :: error: (contracts.conditional.postcondition)
       return false;
     }
     return true;
@@ -104,7 +104,7 @@ public class AssertIfChecked {
 
   @EnsuresNonNullIf(result = false, expression = "#1")
   boolean testLitFFbad2(final @Nullable Object param) {
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return false;
   }
 

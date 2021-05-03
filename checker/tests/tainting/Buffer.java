@@ -15,7 +15,7 @@ public class Buffer {
   public @PolyTainted Buffer() {}
 
   public @Untainted Buffer(@Tainted String s) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     this.someString = s;
   }
 
@@ -36,9 +36,9 @@ public class Buffer {
   }
 
   public @PolyTainted String unTaintedOnly(@Untainted Buffer this, @PolyTainted String s) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     list.add(s);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     someString = s;
     return s;
   }
@@ -51,11 +51,11 @@ public class Buffer {
     }
 
     void failingUses(@Tainted String tainted, @Untainted Buffer buffer) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       buffer.list.add(tainted);
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       buffer.someString = tainted;
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       buffer.append(tainted);
     }
 

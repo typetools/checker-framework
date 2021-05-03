@@ -25,7 +25,7 @@ public class InLambdaAnnotated {
     // The nested Mine.some() needs to infer the right type.
     Box<Mine<@Nullable Integer>> g =
         // TODO: This is a false positive.
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         Boxes.transform(
             el -> {
               return Mine.some();

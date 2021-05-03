@@ -53,7 +53,7 @@ public class AnonInnerDefaults {
   }
 
   public PolyIface getSafePolyIface(final UIElement e) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return new PolyIface() { // Anonymous inner class inference for @UI
       @Override
       public void doStuff() {
@@ -88,7 +88,7 @@ public class AnonInnerDefaults {
         new SafeIface() {
           @Override
           public void doStuff() {
-            // :: error: (call.invalid.ui)
+            // :: error: (call.ui)
             e.dangerous();
           }
         };
@@ -122,7 +122,7 @@ public class AnonInnerDefaults {
           }
         };
     PolyIface p3 =
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         new PolyIface() { // Anonymous inner class inference for @UI
           @Override
           public void doStuff() {
@@ -161,7 +161,7 @@ public class AnonInnerDefaults {
 
           @Override
           public void doSafeStuff() {
-            // :: error: (call.invalid.ui)
+            // :: error: (call.ui)
             e.dangerous(); // No inference here, just as an invalid call
           }
         };
@@ -176,12 +176,12 @@ public class AnonInnerDefaults {
           @Override
           @SafeEffect
           public void doSafeStuff() {
-            // :: error: (call.invalid.ui)
+            // :: error: (call.ui)
             e.dangerous(); // No inference here, just as an invalid call
           }
         };
     callSafePolyIface(
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         new PolyIface() { // Anonymous inner class inference for @UI
           @Override
           public void doStuff() {
@@ -214,7 +214,7 @@ public class AnonInnerDefaults {
               }
             });
     PolyIface maybeUIInstance =
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         (maybe()
             ? new PolyIface() { // Anonymous inner class inference for @UI
               @Override

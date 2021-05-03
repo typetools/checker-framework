@@ -84,13 +84,13 @@ public class ChapterExamples {
     T m;
 
     void test() {
-      // :: error: (method.invocation.invalid)
+      // :: error: (method.invocation)
       m.method();
 
       @GuardedByUnknown MyClass local = new @GuardedByUnknown MyClass();
       // :: error: (lock.not.held)
       local.field = new Object();
-      // :: error: (method.invocation.invalid)
+      // :: error: (method.invocation)
       local.method();
 
       // :: error: (lock.not.held)
@@ -265,7 +265,7 @@ public class ChapterExamples {
   @GuardedBy("lock") MyClass x = new MyClass();
 
   @GuardedBy("lock") MyClass y = x; // OK, because dereferences of y will require "lock" to be held.
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   @GuardedBy({}) MyClass z = x; // ILLEGAL because dereferences of z do not require "lock" to be held.
 
   @LockingFree
@@ -295,7 +295,7 @@ public class ChapterExamples {
   @GuardedBy({"a", "b"}) MyClass y5 = new MyClass();
 
   void myMethod2() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     y5 = x5; // ILLEGAL
   }
 
@@ -311,9 +311,9 @@ public class ChapterExamples {
   void someMethod() {
     o3 = o2; // OK, since o2 and o3 are guarded by exactly the same lock set.
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     o1 = o2; // Assignment type incompatible errors are issued for both assignments, since
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     o2 = o1; // {"lock"} and {} are not identical sets.
   }
 
@@ -409,7 +409,7 @@ public class ChapterExamples {
     helper1(e); // OK to pass to another routine without holding the lock.
     // :: error: (lock.not.held)
     e.field = new Object(); // ILLEGAL: the lock is not held
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     helper2(e);
     // :: error: (lock.not.held)
     helper3(e);
@@ -432,7 +432,7 @@ public class ChapterExamples {
     // :: error: (immutable.type.guardedby)
     @GuardedBy("lock") Integer c;
     synchronized (lock) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       c = a;
     }
 
@@ -443,21 +443,21 @@ public class ChapterExamples {
       d = b;
 
       // Expected, since b cannot be @GuardedBy("lock") since it is a boxed primitive.
-      // :: error: (method.invocation.invalid)
+      // :: error: (method.invocation)
       d = b.intValue(); // The de-sugared version does not issue an error.
     }
 
     c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
 
     // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
 
     synchronized (lock) {
       c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
 
       // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
-      // :: error: (method.invocation.invalid)
+      // :: error: (method.invocation)
       c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
     }
 
@@ -476,8 +476,8 @@ public class ChapterExamples {
     @GuardedBy("lock") Integer b = 1;
     @GuardedBy({}) int d;
     synchronized(lock) {
-      // TODO re-enable this error (assignment.type.incompatible)
-      d = b; // TODO: This should not result in assignment.type.incompatible because 'b' is actually syntactic sugar for b.intValue().
+      // TODO re-enable this error (assignment)
+      d = b; // TODO: This should not result in assignment because 'b' is actually syntactic sugar for b.intValue().
       d = b.intValue(); // The de-sugared version does not issue an error.
     }
 
@@ -524,9 +524,9 @@ public class ChapterExamples {
     lock2.lock();
     filename = filename.append(extension);
     filename = filename.append(null);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     filename = extension.append(extension);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     filename = extension.append(filename);
   }
 

@@ -14,7 +14,7 @@ enum SampleEnum {
 public class Issue2156 {
   void test() {
     requireUntainted(SampleEnum.FIRST);
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     requireUntainted(SampleEnum.SECOND);
   }
 

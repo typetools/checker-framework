@@ -22,7 +22,7 @@ class Issue1102Use<U extends Issue1102Base & Issue1102Itf> {
 
   void bar() {
     Issue1102Decl d = Issue1102Decl.newInstance(f);
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     d = Issue1102Decl.newInstance(g);
   }
 }
