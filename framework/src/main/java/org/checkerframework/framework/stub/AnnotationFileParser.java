@@ -115,17 +115,17 @@ import org.checkerframework.javacutil.TreeUtils;
  * This class has three static methods. Each method parses an annotation file and adds annotations
  * to the {@link AnnotationFileAnnotations} passed as an argument.
  *
- * <p>The first main entry point is {@link AnnotationFileParser#parseStubFile(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileType)},
- * which side-effects its last argument. It operates in two steps. First, it calls the Annotation
- * File Parser to parse an annotation file. Then, it walks the AST to create/collect types and
+ * <p>The first main entry point is {@link #parseStubFile(String, InputStream, AnnotatedTypeFactory,
+ * ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileUtil.AnnotationFileType)}, which
+ * side-effects its last argument. It operates in two steps. First, it calls the Annotation File
+ * Parser to parse an annotation file. Then, it walks the AST to create/collect types and
  * declaration annotations.
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
  * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
  * This behaves the same as {@link AnnotationFileParser#parseStubFile(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileType)}, but
- * takes an ajava file instead.
+ * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations,
+ * AnnotationFileUtil.AnnotationFileType)}, but takes an ajava file instead.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
