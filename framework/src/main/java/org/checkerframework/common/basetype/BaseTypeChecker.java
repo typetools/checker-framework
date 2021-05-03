@@ -648,9 +648,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       Diagnostic.Kind kind, String message, Tree source, CompilationUnitTree root) {
     assert this.currentRoot == root;
     StackTraceElement[] trace = Thread.currentThread().getStackTrace();
-    // Temporary, to avoid losing messages.
-    // if (messageStore == null) {
-    if (true) {
+    if (messageStore == null) {
       super.printOrStoreMessage(kind, message, source, root, trace);
     } else {
       CheckerMessage checkerMessage = new CheckerMessage(kind, message, source, this, trace);
