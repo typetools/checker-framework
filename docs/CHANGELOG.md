@@ -38,7 +38,8 @@ Method renamings:
  * `DependentTypesHelper.atReturnType` => `atMethodBody`
 
 **Closed issues:**
-#4410
+#1268, #3039, #4410, #4550, #4558, #4563, #4566, #4567, #4571, #4584, #4591,
+#4594, #4600.
 
 
 Version 3.12.0 (April 1, 2021)
