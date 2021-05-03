@@ -655,10 +655,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @param unit current compilation unit
    */
   private void printStoredMessages(CompilationUnitTree unit) {
-    if (messageStore != null) {
-      for (CheckerMessage msg : messageStore) {
-        super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
-      }
+    for (CheckerMessage msg : messageStore) {
+      super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
     }
   }
 
