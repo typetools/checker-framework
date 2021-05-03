@@ -121,38 +121,63 @@ aliasing patterns related to resource leaks:
 
 \sectionAndLabel{Ownership transfer}{resource-leak-ownership}
 
-TODO: fill this in.
+Consider the following code that safely closes a \<Socket>:
 
-%% \sectionAndLabel{Lightweight ownership annotations}{must-call-ownership-annos}
+\begin{verbatim}
+  void example(String myHost, int myPort) {
+    Socket s = new Socket(myHost, myPort);
+    closeSocket(s);
+  }
+  void closeSocket(@Owning @MustCall("close") Socket t) {
+    t.close();
+  }
+\end{verbatim}
 
-%% TODO: this explanation feels...lacking to me. It doesn't make that much sense IMO
-%% without explaining the must-call consistency checker's usage of Owning/NotOwning.
-%% It's therefore been commented out here. Some version of this needs to appear, either
-%% here or in the documentation of the consistency checker, when that is merged. For now,
-%% this manual page doesn't list @Owning or @NotOwning at all, because they can't be explained
-%% without context - so we've decided to treat them as if they don't exist, for now.
+The \<closeSocket()> routine takes ownership of the socket---that is,
+it takes responsibility for closing it. Without the \<@Owning>
+annotation on \<t>, the Resource Leak Checker would issue a false positive on this
+code, because it would warn when \<s>
+goes out of scope in \<example()>.
 
-%% In many programs, aliasing creates two or more program elements that represent the same
-%% underlying object on which some methods might need to be called (i.e. whose type has a non-empty
-%% \<@MustCall> qualifier). For example, an \<OutputStream> might be stored in both
-%% a local variable and a field. Typically, the Must Call Checker will over-approximate both
-%% the local variable and the field (and any other pointers to the object) as \<@MustCall(\{"close"\})>:
-%% that is, because all \<OutputStream> objects might need to be closed, each pointer to an
-%% \<OutputStream> might need to be closed, too. In practice, however, some of these pointers can be
-%% ignored: they are \emph{non-owning}. In the example of an \<OutputStream> that is stored in both
-%% a local variable and a field, for instance, it may be the case that the field is non-owning (such
-%% as a cache) and the local is owning; or, it might be the case that the field is owning (an open connection,
-%% for example, that will be closed later), and the local is non-owning.
+\<@Owning> and \<@NotOwning> always \emph{transfer} must-call obligations: must-call
+obligations are conserved (i.e. neither created nor destroyed) by any ownership annotations
+that you write, by construction. Writing \<@Owning> or \<@NotOwning> can never make the checker
+unsound (i.e. a real warning can never be hidden by them),
+but writing (or failing to write) these annotations can introduce false positives (i.e. extra warnings).
 
-%% The Must Call Checker supplies two annotations to support this concept: \<@Owning> and \<@NotOwning>.
-%% The Must Call Checker's support for these annotations is limited: method parameters annotated as
-%% \<@NotOwning> are treated as bottom (i.e. \<@MustCall(\{\})>) within the method bodies in which they
-%% appear. A client analysis of the Must Call Checker can use these annotations as a guide for which
-%% pointer to a given object is intended by the programmer as the pointer through which the must-call obligations
-%% of the object are satisfied, but these annotations are only hints.
+Constructor returns are always \<@Owning>.
+The Resource Leak Checker's default for unannotated method returns is \<@Owning>,
+and for unannotated parameters and fields is \<@NotOwning>. This treatment of parameter and
+return types ensures sound handling of unannotated third-party libraries: any
+object returned from such a library will be tracked by default, and the checker
+never assumes that passing an object to an unannotated library will satisfy its obligations.
+This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Resource
+Leak Checker. In this mode, the defaults described in this paragraph are always used, and explicit \<@Owning>
+and \<@NotOwning> annotations are ignored.
 
-%% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
-%% Call Checker.
+\sectionAndLabel{Owning fields}{resource-leak-owning-fields}
+
+By default, fields are treated as non-owning.
+
+Additional class-level checking is required for \<@Owning>
+fields, as the code
+satisfying their must-call obligations nearly always spans multiple
+procedures.
+
+For final, non-static owning fields,
+which cannot be overwritten after initialization of the enclosing
+object, the Resource Leak Checker enforces the ``resource acquisition is
+initialization (RAII)'' programming idiom: a distinguished
+``destructor''-like method \<d()> must ensure the field's must-call obligation is
+satisfied, and the enclosing class must have a \<@MustCall("d")> obligation to
+ensure the destructor is called.
+
+Non-final, non-static owning fields usually require one or more \<@CreatesObligation> annotations
+when they might be re-assigned. See Section~\ref{resource-leak-non-final-fields} for
+more details on how to annotate a non-final, non-static owning field.
+
+The Resource Leak Checker treats all static fields as non-owning, meaning that no assignment to one
+can satisfy a must-call obligation.
 
 \sectionAndLabel{Resource aliasing}{resource-leak-resource-alias}
 
