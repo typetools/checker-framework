@@ -356,13 +356,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   protected void visitClassTypeParameters(AnnotatedDeclaredType type, ClassTree tree) {
-    AnnotatedDeclaredType capturedType =
-        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type);
-    for (int i = 0, size = capturedType.getTypeArguments().size(); i < size; i++) {
-      AnnotatedTypeVariable typeParameter =
-          (AnnotatedTypeVariable) capturedType.getTypeArguments().get(i);
+    for (int i = 0, size = type.getTypeArguments().size(); i < size; i++) {
+      AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) type.getTypeArguments().get(i);
       TypeParameterTree typeParameterTree = tree.getTypeParameters().get(i);
-      visit(typeParameter, typeParameterTree);
+      scan(typeParameter, typeParameterTree);
     }
   }
 
@@ -370,15 +367,15 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       AnnotatedTypeVariable typeParameter, TypeParameterTree typeParameterTree) {
     List<? extends Tree> boundTrees = typeParameterTree.getBounds();
     if (boundTrees.size() == 1) {
-      visit(typeParameter.getUpperBound(), boundTrees.get(0));
+      scan(typeParameter.getUpperBound(), boundTrees.get(0));
     } else if (boundTrees.size() == 0) {
       // The upper bound is implicitly Object
-      visit(typeParameter.getUpperBound(), typeParameterTree);
+      scan(typeParameter.getUpperBound(), typeParameterTree);
     } else {
       AnnotatedIntersectionType intersectionType =
           (AnnotatedIntersectionType) typeParameter.getUpperBound();
       for (int j = 0; j < intersectionType.getBounds().size(); j++) {
-        visit(intersectionType.getBounds().get(j), boundTrees.get(j));
+        scan(intersectionType.getBounds().get(j), boundTrees.get(j));
       }
     }
   }
@@ -530,13 +527,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     if (type.isDeclaration() && !areBoundsValid(type.getUpperBound(), type.getLowerBound())) {
       reportInvalidBounds(type, tree);
     }
+    AnnotatedTypeVariable useOfTypeVar = type.asUse();
     if (!(tree instanceof TypeParameterTree)) {
-      return super.visitTypeVariable(type, tree);
+      return super.visitTypeVariable(useOfTypeVar, tree);
     }
     TypeParameterTree typeParameterTree = (TypeParameterTree) tree;
-    visitedNodes.put(type, defaultResult);
-    visitTypeParameterBounds(type, typeParameterTree);
-    visitedNodes.put(type, defaultResult);
+    visitedNodes.put(useOfTypeVar, defaultResult);
+    visitTypeParameterBounds(useOfTypeVar, typeParameterTree);
+    visitedNodes.put(useOfTypeVar, defaultResult);
     return null;
   }
 

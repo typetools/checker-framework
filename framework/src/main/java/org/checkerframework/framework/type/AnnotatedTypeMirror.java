@@ -1495,6 +1495,13 @@ public abstract class AnnotatedTypeMirror {
 
       AnnotatedTypeVariable result = this.shallowCopy();
       result.declaration = false;
+      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(1);
+      mapping.put(getUnderlyingType(), result);
+      AnnotatedTypeMirror upperBound =
+          atypeFactory
+              .getTypeVarSubstitutor()
+              .substituteWithoutCopyingTypeArguments(mapping, result.getUpperBound());
+      result.setUpperBound(upperBound);
 
       return result;
     }

@@ -24,6 +24,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -309,7 +310,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
     if (outside.getKind() == TypeKind.WILDCARD
         // TODO: tests fail with out this, but I don't understand why.
-        || TypesUtils.isCaptured(outside.getUnderlyingType())) {
+        || (TypesUtils.isCaptured(outside.getUnderlyingType())
+            && !TypesUtils.isCaptured(inside.getUnderlyingType()))) {
+      if (TypesUtils.isCaptured(outside.getUnderlyingType())) {
+        throw new BugInCF("sldfhskdf");
+      }
+
       Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
       if (previousResult != null) {
         return previousResult;

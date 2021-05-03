@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -4725,11 +4726,56 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
     AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
-    AnnotatedDeclaredType capturedType =
+    final AnnotatedDeclaredType capturedType =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(capturedTypeMirror, this, false);
-    capturedType.getTypeArguments(); // initialize the type arguments
-    if (uncapturedType.enclosingType != null) {
-      capturedType.enclosingType = uncapturedType.enclosingType.deepCopy();
+    AnnotatedTypeCopier copier =
+        new AnnotatedTypeCopier() {
+          @Override
+          public AnnotatedTypeMirror visitDeclared(
+              AnnotatedDeclaredType original,
+              IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
+            if (originalToCopy.containsKey(original)) {
+              return originalToCopy.get(original);
+            }
+            if (original == uncapturedType) {
+              originalToCopy.put(original, capturedType);
+              int size = uncapturedType.getTypeArguments().size();
+              List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>(size);
+              Map<TypeVariable, AnnotatedTypeMirror> typeVarMap = new HashMap<>(size);
+              for (int i = 0; i < size; i++) {
+                AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
+                AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
+                if (!TypesUtils.isCaptured(capturedArg.getUnderlyingType())) {
+                  AnnotatedTypeMirror copyArg = visit(uncapturedArg, originalToCopy);
+                  if (copyArg.getKind() == TypeKind.TYPEVAR) {
+                    typeVarMap.put(((AnnotatedTypeVariable) copyArg).getUnderlyingType(), copyArg);
+                  }
+                  newTypeArgs.add(i, copyArg);
+                }
+              }
+              for (int i = 0; i < size; i++) {
+                AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
+                if (TypesUtils.isCaptured(capturedArg.getUnderlyingType())) {
+                  AnnotatedTypeMirror newCapARg =
+                      typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                          typeVarMap, capturedArg);
+                  newTypeArgs.add(i, newCapARg);
+                }
+              }
+              capturedType.setTypeArguments(newTypeArgs);
+              if (capturedType.getEnclosingType() != null) {
+                capturedType.setEnclosingType(
+                    (AnnotatedDeclaredType) visit(capturedType.getEnclosingType(), originalToCopy));
+              }
+              return capturedType;
+            }
+            return super.visitDeclared(original, originalToCopy);
+          }
+        };
+
+    AnnotatedTypeMirror copy = copier.visit(uncapturedType, new IdentityHashMap<>());
+    if (copy != capturedType) {
+      throw new BugInCF("");
     }
 
     AnnotatedDeclaredType typeDeclaration =
@@ -4767,18 +4813,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               ((AnnotatedWildcardType) uncapturedTypeArg).getSuperBound(), capturedTypeArg);
         }
       } else {
-        // The type argument is not a captured type. Use the type argument from
-        // uncapturedType, which is fully annotated.
-        typeVariableMapping.put(typeVarTypeMirror, uncapturedTypeArg);
-        newTypeArgs.add(uncapturedTypeArg);
+        // The type argument is not a captured type.
+        typeVariableMapping.put(typeVarTypeMirror, capturedTypeArg);
+        if (capturedTypeArg.getKind() == TypeKind.TYPEVAR) {
+          AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) capturedTypeArg;
+          typeVariableMapping.put(typeVar.getUnderlyingType(), typeVar);
+        }
+        newTypeArgs.add(capturedTypeArg);
       }
     }
-
-    // Use the mapping above to substitute the type variables in capturedType.
-    capturedType =
-        (AnnotatedDeclaredType)
-            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                typeVariableMapping, capturedType);
 
     // Loop through the type arguments and set the annotations of each captured type.
     List<TypeVariable> orderToCapture = TypesUtils.order(capturedTypeMapping.keySet(), types);
@@ -4799,6 +4842,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     capturedType.setTypeArguments(newTypeArgs);
+    // Use the mapping above to substitute the type variables in capturedType.
 
     capturedType.addAnnotations(uncapturedType.getAnnotations());
     return capturedType;
@@ -4832,6 +4876,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // the exact AnnotatedTypeVariable in capturedTypeMapping.
     upperBound =
         typeVarSubstitutor.substituteWithoutCopyingTypeArguments(capturedTypeMapping, upperBound);
+    upperBound =
+        typeVarSubstitutor.substituteWithoutCopyingTypeArguments(typeVariableMapping, upperBound);
     capturedArg.setUpperBound(upperBound);
 
     AnnotatedTypeMirror lowerBound =
@@ -4839,6 +4885,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this, typeVariable.getLowerBound(), wildcard.getSuperBound());
     lowerBound =
         typeVarSubstitutor.substituteWithoutCopyingTypeArguments(capturedTypeMapping, lowerBound);
+    lowerBound =
+        typeVarSubstitutor.substituteWithoutCopyingTypeArguments(typeVariableMapping, lowerBound);
     capturedArg.setLowerBound(lowerBound);
 
     AnnotationMirrorSet p = new AnnotationMirrorSet(capturedArg.getUpperBound().getAnnotations());

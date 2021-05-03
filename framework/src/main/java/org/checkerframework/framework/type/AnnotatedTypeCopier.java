@@ -237,13 +237,11 @@ public class AnnotatedTypeCopier
     final AnnotatedTypeVariable copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.getUpperBoundField() != null) {
-      // TODO: figure out why asUse is needed here and remove it.
-      copy.setUpperBound(visit(original.getUpperBoundField(), originalToCopy).asUse());
+      copy.setUpperBound(visit(original.getUpperBoundField(), originalToCopy));
     }
 
     if (original.getLowerBoundField() != null) {
-      // TODO: figure out why asUse is needed here and remove it.
-      copy.setLowerBound(visit(original.getLowerBoundField(), originalToCopy).asUse());
+      copy.setLowerBound(visit(original.getLowerBoundField(), originalToCopy));
     }
 
     return copy;

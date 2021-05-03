@@ -59,7 +59,7 @@ public class BoundsInitializer {
   public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
     final DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
     if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
-      // No type arguments to infer.
+      // No type arguments to initialize.
       return;
     }
 
