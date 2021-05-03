@@ -80,11 +80,13 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
 - job: misc_jdk8
-  dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-   - misc_jdk11
-   - typecheck_jdk11
+  ## The dependsOn is commented out because misc_jdk8 does tests (such as Javadoc) that misc_jdk11
+  ## does not.  That is, misc_jdk8 might fail even if misc_jdk11 does not.
+  # dependsOn:
+  #  - junit_tests_jdk11
+  #  - nonjunit_tests_jdk11
+  #  - misc_jdk11
+  #  - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
