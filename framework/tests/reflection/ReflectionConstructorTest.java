@@ -48,7 +48,7 @@ public class ReflectionConstructorTest {
     try {
       Class<?> c = ReflectionConstructorTest.class;
       Constructor<?> init = c.getConstructor(new Class<?>[] {Integer.class});
-      // :: error: (assignment)
+      // :: error: (argument) :: error: (assignment)
       @Sibling1 Object o = init.newInstance(new Object[] {sibling2});
     } catch (Exception ignore) {
     }
