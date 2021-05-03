@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * <p>Parameters and fields are treated as if they have this annotation by default unless they have
  * {@link Owning}.
  *
- * @checker_framework.manual #must-call-checker Must Call Checker
+ * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})

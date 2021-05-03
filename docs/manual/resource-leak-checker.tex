@@ -1,0 +1,167 @@
+\htmlhr
+\chapterAndLabel{Resource Leak Checker for must-call obligations}{resource-leak-checker}
+
+The Resource Leak Checker guarantees that every object in the program
+has its must-call obligations fulfilled before it is de-allocated.
+Typically, this checker is used to detect and prevent resource leaks,
+which occur when the programmer does not explicitly dispose of some finite resource,
+such as a socket, file descriptor, or database connection. However, this checker
+is general enough to enforce any property of the form "the programmer must call
+all methods in the set of methods \emph{M} on object \emph{O} before \emph{O}
+is de-allocated" for any set of methods \emph{M} and object \emph{O}.
+For resource leaks, \emph{M} is the set containing \<close()> and \emph{O}
+is any object that implements the interface \<java.io.Closeable>.
+
+The Resource Leak Checker works in three stages:
+\begin{enumerate}
+\item The Must Call Checker (Section~\ref{must-call-checker})
+over-approximates a set of must-call methods \emph{MC} for each expression
+in the program by computing a type of the form \<@MustCall(>\emph{MC}\<)>.
+This type represents an over-approximation of that expression's must-call obligations.
+\item The Called Methods Checker (Section~\ref{called-methods-checker})
+under-approximates a set of definitely-called methods \emph{CM} for each expression
+in the program by computing a type of the form \<@CalledMethods(>\emph{CM}\<)>.
+This type represents a set of methods that were definitely called on that expression;
+that is, an under-approximation of the true set of methods that have already been called.
+\item When any program element goes out of scope (i.e. is de-allocated), the Resource
+Leak Checker compares the sets \emph{MC} and \emph{CM} at the point of de-allocation.
+If there exists some method in \emph{MC} that is not in \emph{CM}, an error is reported.
+\end{enumerate}
+
+By default, the Resource Leak Checker enforces that the \<close()> method is always
+called on any object whose dynamic type might implement \<java.io.Closeable>, via an annotated
+JDK. You can extend this guarantee to other types and methods by writing
+\<@MustCall> or \<@InheritableMustCall> annotations, as described in
+Section~\ref{must-call-annotations}.
+
+\sectionAndLabel{How to run the Resource Leak Checker}{resource-leak-run-checker}
+
+\begin{Verbatim}
+javac -processor ResourceLeak MyFile.java ...
+\end{Verbatim}
+
+The Resource Leak Checker supports the following optional command-line arguments,
+in addition to those listed by Section~\ref{called-methods-run-checker} for
+the Called Methods Checker:
+\begin{itemize}
+\item The \<-AnoLightweightOwnership> option disables ownership annotations,
+ ignoring them in favor of the default ownership assumptions.
+ See Section~\ref{resource-leak-ownership}.
+\item The \<-AnoResourceAliasing> option disables resource alias support,
+ treating \<@MustCallAlias> identically to \<@PolyMustCall>.
+ See Section~\ref{resource-leak-resource-alias}.
+\item The \<-AnoCreatesObligation> option disables obligation creation,
+ issuing errors whenever a new obligation might be created instead.
+ See Section~\ref{resource-leak-creates-obligation}.
+\item The \<-AcountMustCall> option prints an estimate of the number of
+must-call obligations in the analyzed program after typechecking is complete.
+\end{itemize}
+
+\sectionAndLabel{Resource Leak Checker annotations}{resource-leak-annotations}
+
+The Resource Leak Checker relies on the type qualifiers of its constituent checkers:
+the Must Call Checker (Section~\ref{must-call-annotations}) and
+the Called Methods Checker (Section~\ref{called-methods-spec}). You might need
+to write qualifiers from either type hierarchy. The most common annotations from
+these checkers that you might need to write are:
+
+\begin{description}
+
+\item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}],
+for example on an element with static type \<Object> that might contain a \<Socket>.
+
+\item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
+on any types in your program that have must-call obligations. See Section~\ref{must-call-on-class}.
+
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}] on a method in
+your code that fulfills a must-call obligation of one of its parameters or of a field.
+See Section~\ref{resource-leak-annotating-helpers}.
+
+\end{description}
+
+In addition, the Resource Leak Checker supports annotations that express common
+aliasing patterns related to resource leaks:
+
+\begin{description}
+
+\item[\refqualclass{checker/mustcall/qual}{Owning}]
+  indicates that the annotated element "owns" any resource associated with
+  it. That is, when the annotated element is de-allocated, its must-call
+  obligations will be checked. Assignment into an owning element fulfills
+  the must-call obligations of the right-hand side of the assignment; for
+  details on ownership transfer, see Section~\ref{resource-leak-ownership}.
+  By default, local variables and return types are considered \<@Owning>.
+  Note that \<@Owning> is a declaration annotation, not a type annotation.
+
+\item[\refqualclass{checker/mustcall/qual}{NotOwning}]
+  indicates that the annotated element "borrows" any resource associated with
+  it. That is, when the annotated element is de-allocated, its must-call
+  obligations will NOT be checked: there exists some other element which is
+  \<@Owning> that will be checked instead. For
+  details on ownership transfer, see Section~\ref{resource-leak-ownership}.
+  By default, fields and method parameters are considered \<@NotOwning>.
+  Note that \<@NotOwning> is a declaration annotation, not a type annotation.
+
+\item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
+  is a special polymorphic annotation that represents a "resource-aliasing"
+  relationship between two elements. Resource aliases are distinct program elements
+  that nevertheless control the same resource(s): fulfills the must-call obligations
+  of one element is equivalent to fulfills the obligations of the other.
+  For a more detailed description, see
+  Section~\ref{resource-leak-resource-alias}.
+
+\item[\refqualclasswithparams{checker/mustcall/qual}{CreatesObligation}{String value}]
+  is a declaration annotation that indicates that the annotated method "resets" the must-call
+  obligations of the target (i.e. the \<value> element of the annotation), which must
+  be an in-scope Java expression. The default target is \<"this">. Multiple \<@CreatesObligation>
+  annotations can be written on the same method, if their targets are distinct. For more details
+  on obligation creation, see Section~\ref{resource-leak-creates-obligation}.
+
+\end{description}
+
+\sectionAndLabel{Ownership transfer}{resource-leak-ownership}
+
+TODO: fill this in.
+
+%% \sectionAndLabel{Lightweight ownership annotations}{must-call-ownership-annos}
+
+%% TODO: this explanation feels...lacking to me. It doesn't make that much sense IMO
+%% without explaining the must-call consistency checker's usage of Owning/NotOwning.
+%% It's therefore been commented out here. Some version of this needs to appear, either
+%% here or in the documentation of the consistency checker, when that is merged. For now,
+%% this manual page doesn't list @Owning or @NotOwning at all, because they can't be explained
+%% without context - so we've decided to treat them as if they don't exist, for now.
+
+%% In many programs, aliasing creates two or more program elements that represent the same
+%% underlying object on which some methods might need to be called (i.e. whose type has a non-empty
+%% \<@MustCall> qualifier). For example, an \<OutputStream> might be stored in both
+%% a local variable and a field. Typically, the Must Call Checker will over-approximate both
+%% the local variable and the field (and any other pointers to the object) as \<@MustCall(\{"close"\})>:
+%% that is, because all \<OutputStream> objects might need to be closed, each pointer to an
+%% \<OutputStream> might need to be closed, too. In practice, however, some of these pointers can be
+%% ignored: they are \emph{non-owning}. In the example of an \<OutputStream> that is stored in both
+%% a local variable and a field, for instance, it may be the case that the field is non-owning (such
+%% as a cache) and the local is owning; or, it might be the case that the field is owning (an open connection,
+%% for example, that will be closed later), and the local is non-owning.
+
+%% The Must Call Checker supplies two annotations to support this concept: \<@Owning> and \<@NotOwning>.
+%% The Must Call Checker's support for these annotations is limited: method parameters annotated as
+%% \<@NotOwning> are treated as bottom (i.e. \<@MustCall(\{\})>) within the method bodies in which they
+%% appear. A client analysis of the Must Call Checker can use these annotations as a guide for which
+%% pointer to a given object is intended by the programmer as the pointer through which the must-call obligations
+%% of the object are satisfied, but these annotations are only hints.
+
+%% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
+%% Call Checker.
+
+\sectionAndLabel{Resource aliasing}{resource-leak-resource-alias}
+
+TODO: fill this in
+
+\sectionAndLabel{Creating obligations}{resource-leak-creates-obligation}
+
+TODO: fill this in
+
+% LocalWords:  de subchecker OutputStream MustCall MustCallUnknown
+% LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector
+% LocalWords:  Partitioner

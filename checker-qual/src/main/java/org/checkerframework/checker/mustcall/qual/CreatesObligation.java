@@ -60,7 +60,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  * Methods Checker, so the client has to "start over" as if a fresh {@code SocketContainer} object
  * had been created.
  *
- * @checker_framework.manual #must-call-checker Must Call Checker
+ * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
 @Target({ElementType.METHOD})
 @InheritedAnnotation
