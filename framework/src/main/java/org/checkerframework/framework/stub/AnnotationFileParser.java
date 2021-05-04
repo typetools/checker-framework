@@ -2606,8 +2606,11 @@ public class AnnotationFileParser {
   }
 
   /**
-   * If the key is already in the map, then add the annos to the list. Otherwise put the key and the
-   * annos in the map
+   * If the key is already in the {@code annotationFileAnnos.declAnnos} map, then add the annos to
+   * the map value. Otherwise put the key and the annos in the map.
+   *
+   * @param key a name (actually declaration element string)
+   * @param annos the the set of declaration annotations on it, as written in the annotation file
    */
   private void putOrAddToDeclAnnos(String key, Set<AnnotationMirror> annos) {
     if (annotationFileAnnos.declAnnos.containsKey(key)) {
