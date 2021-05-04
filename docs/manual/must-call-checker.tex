@@ -69,9 +69,6 @@ call \<foo>, \<bar>, both, or neither; it cannot not represent an object that ne
 to call some other method.
 
 The default type in unannotated code is \<@MustCall(\{\})>.
-A completely unannotated program will always type-check without warnings (so long as it
-does not use any classes in the annotated JDK, such as those that implement \<java.io.Closeable>).
-
 
 \sectionAndLabel{Writing \<@MustCall>/\<@InheritableMustCall> on a class}{must-call-on-class}
 
@@ -181,7 +178,6 @@ The defaulted Must Call annotations differ.
 \<MultiRandSelector> has an implicit bound, which defaults to top (that is,
 \<@MustCallUnknown>), as explained in Section~\ref{climb-to-top}.
 
-Sometimes you may want to explicitly write annotations.
 In many cases, including this one, you can eliminate the false positive
 warning without writing any \<@MustCall> annotations.
 You can either:
