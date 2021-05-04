@@ -1,15 +1,17 @@
 package org.checkerframework.dataflow.expression;
 
 import java.util.Objects;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * A ClassName represents the occurrence of a class as part of a static field access or method
- * invocation.
+ * A ClassName represents the occurrence of a class as part of a static field access, static method
+ * invocation, or class literal. It is not a legal expression on its own.
  */
 public class ClassName extends JavaExpression {
   /** The string representation of the raw type of this. */
@@ -18,11 +20,26 @@ public class ClassName extends JavaExpression {
   /**
    * Creates a new ClassName object for the given type.
    *
-   * @param type the type for this ClassName
+   * @param type the type for this ClassName: declared, primitive, an array of declared or
+   *     primitive, or void
    */
   public ClassName(TypeMirror type) {
     super(type);
-    if (type.getKind() != TypeKind.DECLARED) {
+    TypeMirror baseType;
+    TypeKind baseKind = type.getKind();
+    if (baseKind != TypeKind.ARRAY) {
+      baseType = type;
+    } else {
+      baseType = TypesUtils.getInnermostComponentType((ArrayType) type);
+      baseKind = baseType.getKind();
+    }
+    // Primitives, arrays, and void are permitted so FieldAccess can represent class literals.
+    // TYPEVAR and arrays is permitted for static method invocations.
+    // An alternate design would use a new JavaExpression for class literals.
+    if (!(baseKind == TypeKind.DECLARED
+        || baseKind.isPrimitive()
+        || baseKind == TypeKind.VOID
+        || baseKind == TypeKind.TYPEVAR)) {
       throw new Error(type + " is " + type.getKind());
     }
     String typeString = type.toString();
