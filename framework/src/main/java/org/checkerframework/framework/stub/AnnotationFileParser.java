@@ -2759,7 +2759,7 @@ public class AnnotationFileParser {
    * @param warning warning to print
    */
   private void stubDebug(String warning) {
-    if (warnings.add(warning) && debugAnnotationFileParser) {
+    if (debugAnnotationFileParser && warnings.add(warning)) {
       processingEnv
           .getMessager()
           .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
