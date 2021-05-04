@@ -181,9 +181,43 @@ can satisfy a must-call obligation.
 
 \sectionAndLabel{Resource aliasing}{resource-leak-resource-alias}
 
-TODO: fill this in
+\emph{Resource alias} sets are sets of pointers that
+definitely correspond to the same underlying system resource.
+Calling a must-call method on one element of a resource-alias set
+is equivalent to calling that method on all other members of the set.
+
+Programmers most often encounter resource alaising when using \emph{wrapper types}.
+For example, the Java \<BufferedOutputStream> wrapper adds buffering to some other delegate \<OutputStream>.
+The wrapper's \<close()> method invokes \<close()> on the delegate---so calling \<close()> on either
+will have the same effect (i.e., close the underlying resource).
+
+Resource aliasing relationships are expressed in source code via pairs of \<@MustCallAlias> annotations:
+one on a parameter of a method or constructor, and another on its return type.
+For example, one constructor of \<BufferedOutputStream> is:
+\begin{verbatim}
+@MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
+\end{verbatim}
+The Resource Leak Checker uses these annotations at call-sites the relevant variables as if
+calling the must-call methods on one also called them on the other.
+(Note that these \<@MustCallAlias> annotations already appear on
+\<BufferedOutputStream> in the annotated JDK, so you don't need to write
+them yourself.)
+
+A pair of \<@MustCallAlias> annotations on a method or constructor \<m>'s return type
+and its parameter \<p> can be verified if either of the following holds:
+\begin{enumerate}
+\item \<p> is passed to another method or constructor in a
+  \<@MustCallAlias> position, and \<m> returns that method's result,
+  or the call is a \<super()> constructor call annotated
+  with \<@MustCallAlias>.
+\item \<p> is stored in an \<@Owning> field of the enclosing class.
+\end{enumerate}
 
 \sectionAndLabel{Creating obligations}{resource-leak-creates-obligation}
+
+TODO: fill this in
+
+\sectionAndLabel{Re-assigning to non-final, owning fields}{resource-leak-non-final-fields}
 
 TODO: fill this in
 
