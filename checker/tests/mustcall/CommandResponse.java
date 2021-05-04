@@ -11,7 +11,7 @@ class CommandResponse {
     // that e.g. List<E> actually means List<E extends @Top Object>. In this case, that
     // causes an incompatibility with putAll, whose type requires @Bottom Object as the second
     // type parameter, because of the type of the data field.
-    // :: error: argument.type.incompatible
+    // :: error: argument
     data.putAll(m);
   }
 

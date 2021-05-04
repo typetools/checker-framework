@@ -11,7 +11,7 @@ class NonOwningPolyInteraction {
   }
 
   void bar(@Owning InputStream instream) {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) BufferedInputStream bis = new BufferedInputStream(instream);
     @MustCall({"close"}) BufferedInputStream bis2 = new BufferedInputStream(instream);
   }
@@ -30,7 +30,7 @@ class NonOwningPolyInteraction {
   // extra param(s) here and on the next constructor because Java requires constructors to have
   // different signatures.
   NonOwningPolyInteraction(@Owning InputStream instream, int x) {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) BufferedInputStream bis = new BufferedInputStream(instream);
     @MustCall({"close"}) BufferedInputStream bis2 = new BufferedInputStream(instream);
   }

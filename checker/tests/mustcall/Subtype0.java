@@ -17,15 +17,15 @@ public class Subtype0 {
       @Owning Subtype2 s2,
       @Owning Subtype3 s3,
       @Owning Subtype4 s4) {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) Object obj1 = s0;
     @MustCall({"a"}) Object obj2 = s0;
 
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) Object obj3 = s1;
     @MustCall({"a"}) Object obj4 = s1;
 
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) Object obj5 = s2;
     @MustCall({"a"}) Object obj6 = s2;
 
@@ -37,11 +37,11 @@ public class Subtype0 {
   }
 
   @MustCall({})
-  // :: error: inconsistent.mustcall.subtype :: error: super.invocation.invalid
+  // :: error: inconsistent.mustcall.subtype :: error: super.invocation
   public class Subtype3 extends Subtype0 {}
 
   @InheritableMustCall({})
-  // :: error: super.invocation.invalid
+  // :: error: super.invocation
   public class Subtype4 extends Subtype0 {}
 
   @MustCall({"a"}) public class Subtype5 extends Subtype0 {}

@@ -8,13 +8,13 @@ class Subtyping {
 
   void test_act(@Owning @MustCallUnknown Object o) {
     @MustCallUnknown Object act = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall("close") Object file = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({"close", "read"}) Object f2 = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) Object notAfile = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     unannotatedObj = o;
   }
 
@@ -22,20 +22,20 @@ class Subtyping {
     @MustCallUnknown Object act = o;
     @MustCall("close") Object file = o;
     @MustCall({"close", "read"}) Object f2 = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) Object notAfile = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     unannotatedObj = o;
   }
 
   void test_close_read(@Owning @MustCall({"close", "read"}) Object o) {
     @MustCallUnknown Object act = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall("close") Object file = o;
     @MustCall({"close", "read"}) Object f2 = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MustCall({}) Object notAfile = o;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     unannotatedObj = o;
   }
 
