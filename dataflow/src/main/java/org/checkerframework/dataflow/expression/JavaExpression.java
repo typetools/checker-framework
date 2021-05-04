@@ -23,6 +23,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -414,7 +415,11 @@ public abstract class JavaExpression {
             CollectionsPlume.mapList(JavaExpression::fromTree, mn.getArguments());
         JavaExpression methodReceiver;
         if (ElementUtils.isStatic(invokedMethod)) {
-          methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
+          @SuppressWarnings(
+              "nullness:assignment" // enclosingTypeElement(ExecutableElement): @NonNull
+          )
+          @NonNull TypeElement methodType = ElementUtils.enclosingTypeElement(invokedMethod);
+          methodReceiver = new ClassName(methodType.asType());
         } else {
           methodReceiver = getReceiver(mn);
         }
