@@ -623,7 +623,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
   /**
    * Stores all messages issued by this checker and its subcheckers for the current compilation
    * unit. The messages are printed after all checkers have processed the current compilation unit.
-   * If this checker has no subcheckers and is not a subchecker for any other checker, then
+   * The purpose is to sort messages, grouping together all messages about a particular line of
+   * code.
+   *
+   * <p>If this checker has no subcheckers and is not a subchecker for any other checker, then
    * messageStore is null and messages will be printed as they are issued by this checker.
    */
   private TreeSet<CheckerMessage> messageStore = null;
@@ -655,10 +658,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @param unit current compilation unit
    */
   private void printStoredMessages(CompilationUnitTree unit) {
-    if (messageStore != null) {
-      for (CheckerMessage msg : messageStore) {
-        super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
-      }
+    for (CheckerMessage msg : messageStore) {
+      super.printOrStoreMessage(msg.kind, msg.message, msg.source, unit, msg.trace);
     }
   }
 

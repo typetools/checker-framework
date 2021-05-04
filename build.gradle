@@ -457,7 +457,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.1"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.2"
 }
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
@@ -906,7 +906,7 @@ subprojects {
         tasks.create(name: 'inferenceTests', group: 'Verification') {
             description 'Run inference tests.'
             if (project.name.is('checker')) {
-//                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
         }
 
