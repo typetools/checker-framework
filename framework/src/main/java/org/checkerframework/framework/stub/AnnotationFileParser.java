@@ -107,6 +107,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -1483,7 +1484,7 @@ public class AnnotationFileParser {
    */
   private void recordDeclAnnotation(
       Element elt, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
-    if (annotations == null) {
+    if (annotations == null || annotations.isEmpty()) {
       return;
     }
     Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
@@ -1504,7 +1505,7 @@ public class AnnotationFileParser {
       }
     }
     String eltName = ElementUtils.getQualifiedName(elt);
-    putOrAddToMap(annotationFileAnnos.declAnnos, eltName, annos);
+    putOrAddToDeclAnnos(eltName, annos);
   }
 
   /**
@@ -1517,10 +1518,8 @@ public class AnnotationFileParser {
     if (fileType == AnnotationFileType.AJAVA || fileType == AnnotationFileType.JDK_STUB) {
       return;
     }
-    putOrAddToMap(
-        annotationFileAnnos.declAnnos,
-        ElementUtils.getQualifiedName(elt),
-        Collections.singleton(fromStubFileAnno));
+    putOrAddToDeclAnnos(
+        ElementUtils.getQualifiedName(elt), Collections.singleton(fromStubFileAnno));
   }
 
   private void annotateTypeParameters(
@@ -2608,15 +2607,34 @@ public class AnnotationFileParser {
   }
 
   /**
-   * If the key is already in the map, then add the annos to the list. Otherwise put the key and the
-   * annos in the map
+   * If the key is already in the {@code annotationFileAnnos.declAnnos} map, then add the annos to
+   * the map value. Otherwise put the key and the annos in the map.
+   *
+   * @param key a name (actually declaration element string)
+   * @param annos the the set of declaration annotations on it, as written in the annotation file
    */
-  private static void putOrAddToMap(
-      Map<String, Set<AnnotationMirror>> map, String key, Set<AnnotationMirror> annos) {
-    if (map.containsKey(key)) {
-      map.get(key).addAll(annos);
+  private void putOrAddToDeclAnnos(String key, Set<AnnotationMirror> annos) {
+    Set<AnnotationMirror> stored = annotationFileAnnos.declAnnos.get(key);
+    if (stored == null) {
+      annotationFileAnnos.declAnnos.put(key, new HashSet<>(annos));
     } else {
-      map.put(key, new HashSet<>(annos));
+      if (fileType != AnnotationFileType.JDK_STUB) {
+        stored.addAll(annos);
+      } else {
+        // JDK annotations should not replace any annotation of the same type.
+        List<DeclaredType> storedAnnoTypes =
+            CollectionsPlume.mapList(AnnotationMirror::getAnnotationType, stored);
+        Types typeUtils = processingEnv.getTypeUtils();
+        for (AnnotationMirror anno : annos) {
+          DeclaredType annoType = anno.getAnnotationType();
+          boolean existing =
+              storedAnnoTypes.stream()
+                  .anyMatch(storedAnnoType -> typeUtils.isSameType(annoType, storedAnnoType));
+          if (!existing) {
+            stored.add(anno);
+          }
+        }
+      }
     }
   }
 

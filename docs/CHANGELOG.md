@@ -1,5 +1,14 @@
-Version 3.?.? (June 3, 2021)
+Version 3.?.? (June 1, 2021)
 ----------------------------
+
+**User-visible changes:**
+
+Stub files can now override declaration annotations in the annotated JDK.
+The could always override type annotations in the annotated JDK.
+
+**Implementation details:**
+
+**Closed issues:**
 
 
 Version 3.13.0 (May 3, 2021)
