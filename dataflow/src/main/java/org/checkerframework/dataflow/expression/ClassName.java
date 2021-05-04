@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
 import java.util.Objects;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -22,9 +21,6 @@ public class ClassName extends JavaExpression {
    */
   public ClassName(TypeMirror type) {
     super(type);
-    if (type.getKind() != TypeKind.DECLARED) {
-      throw new Error(type + " is " + type.getKind());
-    }
     String typeString = type.toString();
     if (typeString.endsWith(">")) {
       typeString = typeString.substring(0, typeString.indexOf("<"));
