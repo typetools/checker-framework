@@ -4,7 +4,7 @@
 The Must Call Checker conservatively over-approximates
 the set of methods that an object should call before it is de-allocated.
 The checker does not enforce that the methods are called before objects are de-allocated,
-nor is the are its annotations refined after a must-call method is called; rather,
+nor are its annotations refined after a must-call method is called; rather,
 it is intended to be run as a subchecker of another checker. On its own, it does not
 enforce any rules other than subtyping. Instead, the types that the Must Call Checker
 computes can be used by later checkers that require an over-approximation
