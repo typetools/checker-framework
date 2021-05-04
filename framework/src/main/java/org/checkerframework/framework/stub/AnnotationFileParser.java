@@ -1054,7 +1054,7 @@ public class AnnotationFileParser {
       // annotations.
       recordDeclAnnotation(elt, ((MethodDeclaration) decl).getType().getAnnotations(), decl);
     }
-    recordDeclAnnotationFromAnnotationFile(elt);
+    markAsFromStubFile(elt);
 
     AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
     AnnotatedExecutableType origMethodType =
@@ -1387,7 +1387,7 @@ public class AnnotationFileParser {
       // and might refer to types that are not accessible.
       return;
     }
-    recordDeclAnnotationFromAnnotationFile(elt);
+    markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     // AnnotationFileParser parses all annotations in type annotation position as type annotations
     recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), decl);
@@ -1414,7 +1414,7 @@ public class AnnotationFileParser {
    * @param elt the enum constant declaration, as an element (the destination for annotations)
    */
   private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
-    recordDeclAnnotationFromAnnotationFile(elt);
+    markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
     annotate(enumConstType, decl.getAnnotations(), decl);
@@ -1513,7 +1513,7 @@ public class AnnotationFileParser {
    *
    * @param elt an element to be annotated as {@code @FromStubFile}
    */
-  private void recordDeclAnnotationFromAnnotationFile(Element elt) {
+  private void markAsFromStubFile(Element elt) {
     if (fileType == AnnotationFileType.AJAVA || fileType == AnnotationFileType.JDK_STUB) {
       return;
     }
