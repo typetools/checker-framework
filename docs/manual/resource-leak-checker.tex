@@ -9,7 +9,7 @@ such as a socket, file descriptor, or database connection. However, this checker
 is general enough to enforce any property of the form "the programmer must call
 all methods in the set of methods \emph{M} on object \emph{O} before \emph{O}
 is de-allocated" for any set of methods \emph{M} and object \emph{O}.
-For resource leaks, \emph{M} is the set containing \<close()> and \emph{O}
+For resource leaks, by default \emph{M} is the set containing \<close()> and \emph{O}
 is any object that implements the interface \<java.io.Closeable>.
 
 The Resource Leak Checker works in three stages:
@@ -67,11 +67,11 @@ these checkers that you might need to write are:
 
 \begin{description}
 
-\item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}],
+\item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}]
 for example on an element with static type \<Object> that might contain a \<Socket>.
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
-on any types in your program that have must-call obligations. See Section~\ref{must-call-on-class}.
+on any classes defined in your program that have must-call obligations. See Section~\ref{must-call-on-class}.
 
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}] on a method in
 your code that fulfills a must-call obligation of one of its parameters or of a field.
@@ -105,7 +105,7 @@ aliasing patterns related to resource leaks:
 \item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
   is a special polymorphic annotation that represents a "resource-aliasing"
   relationship between two elements. Resource aliases are distinct program elements
-  that nevertheless control the same resource(s): fulfills the must-call obligations
+  that nevertheless control the same resource(s): fulfilling the must-call obligations
   of one element is equivalent to fulfills the obligations of the other.
   For a more detailed description, see
   Section~\ref{resource-leak-resource-alias}.
@@ -118,6 +118,31 @@ aliasing patterns related to resource leaks:
   on obligation creation, see Section~\ref{resource-leak-creates-obligation}.
 
 \end{description}
+
+\sectionAndLabel{Annotating helper methods}{resource-leak-annotating-helpers}
+
+Consider the following method:
+\begin{verbatim}
+@EnsuresCalledMethods(expr="#1", methods="close")
+public void closeSocket(Socket sock) throws IOException {
+    sock.close();
+}
+\end{verbatim}
+
+After any call to this method, its first parameter is guaranteed to have had \<close()> called on it
+(if the method returns normally). The \<@EnsuresCalledMethods> annotation in the code above expresses
+this fact. You may need to write such annotations in your own code.
+
+A common source of false positive errors from the Resource Leak Checker relates to these kind of helper
+methods. Suppose that the body of \<closeSocket> above had an additional call to some other method
+\<m()> after the call to \<sock.close()>. If \<m()> might have side-effects (i.e. it is not annotated
+as \<@SideEffectFree>), then the Called Methods Checker will be unable to verify that \<close()> is definitely
+called on \<sock> before \<closeSocket()> returns, and will issue an error. There are two possible fixes:
+\begin{itemize}
+\item add an \<@SideEffectFree> annotation to \<m()>, if it is in fact side-effect free; or
+\item re-order the calls to \<sock.close()> and \<m()> so that the call to \<sock.close()> appears
+last in \<closeSocket()>.
+\end{itemize}
 
 \sectionAndLabel{Ownership transfer}{resource-leak-ownership}
 
@@ -155,7 +180,7 @@ This feature can be disabled by passing the \<-AnoLightweightOwnership> command-
 Leak Checker. In this mode, the defaults described in this paragraph are always used, and explicit \<@Owning>
 and \<@NotOwning> annotations are ignored.
 
-\sectionAndLabel{Owning fields}{resource-leak-owning-fields}
+\subsectionAndLabel{Owning fields}{resource-leak-owning-fields}
 
 By default, fields are treated as non-owning.
 
@@ -197,7 +222,7 @@ For example, one constructor of \<BufferedOutputStream> is:
 \begin{verbatim}
 @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream arg0);
 \end{verbatim}
-The Resource Leak Checker uses these annotations at call-sites the relevant variables as if
+The Resource Leak Checker uses these annotations at call-sites to treat the relevant variables as if
 calling the must-call methods on one also called them on the other.
 (Note that these \<@MustCallAlias> annotations already appear on
 \<BufferedOutputStream> in the annotated JDK, so you don't need to write
@@ -213,13 +238,87 @@ and its parameter \<p> can be verified if either of the following holds:
 \item \<p> is stored in an \<@Owning> field of the enclosing class.
 \end{enumerate}
 
+Support for \<@MustCallAlias> can be disabled by passing the \<-AnoResourceAliases> command-line
+argument to the checker. In this mode, resource-alias sets are not tracked by the checker,
+and \<@MustCallAlias> is treated identically to \<@PolyMustCall>.
+
 \sectionAndLabel{Creating obligations}{resource-leak-creates-obligation}
 
-TODO: fill this in
+Every constructor of a class that has must-call obligations
+implicitly creates obligations for the newly-created object.
+However, non-constructor methods may also create obligations
+when re-assigning non-final, owning fields or allocating
+new system-level resources.
+A post-condition annotation,
+\<@CreatesObligation>,
+indicates for which expression an obligation is created.
 
-\sectionAndLabel{Re-assigning to non-final, owning fields}{resource-leak-non-final-fields}
+When checking a call to a method annotated as
+\<@CreatesObligation(>$expr$\<)>, the Resource Leak Checker
+(1) treats the \<@MustCall>
+obligation of $expr$ as \emph{satisfied},
+and (2) creates a fresh obligation to check.
+This is sound: the checker creates a new obligation for calls to
+\<@CreatesObligation> methods, and the Must Call Checker (Section~\ref{must-call-checker}) ensures the
+\<@MustCall> type for the target will have a \emph{superset} of any methods present
+before the call.
+There is an exception to this check: if an \<@CreatesObligation>
+method is invoked within a method that has an \<@CreatesObligation> annotation
+with the same target---imposing the obligation on its caller---then
+the new obligation is treated as satisfied immediately (because it is instead imposed
+on the callee of the latter).
 
-TODO: fill this in
+Support for \<@CreatesObligation> can be disabled by passing the \<-AnoCreatesObligation> command-line
+argument to the checker. In this mode, \<@CreatesObligation> annotations on methods are ignored at call-sites,
+but re-assigning a non-final, owning field is always an error.
+
+\subsectionAndLabel{Re-assigning to non-final, owning fields}{resource-leak-non-final-fields}
+
+\<@CreatesObligation> allows the Resource Leak Checker to verify uses of non-final fields
+that contain a resource, even if they are re-assigned. Consider
+the following example:
+
+\begin{verbatim}
+  @MustCall("close") // default qualifier for uses of SocketContainer
+  class SocketContainer {
+    private @Owning Socket sock;
+    public SocketContainer() { sock = ...; }
+    void close() { sock.close() };
+    @CreatesObligation("this")
+    void reconnect() {
+      if (!sock.isClosed()) {
+        sock.close();
+      }
+      sock = ...;
+    }
+  }
+\end{verbatim}
+
+In the lifetime of a \<SocketContainer> object, \<sock>
+might be re-assigned arbitrarily many times: once at each
+call to \<reconnect()>. This code is safe, however: \<reconnect()>
+ensures that \<sock> is closed before re-assigning it.
+
+The Resource Leak Checker enforces two rules to ensure that
+re-assignments to non-final, owning fields like \<sock> in the example
+above are sound:
+\begin{itemize}
+\item any method that re-assigns a non-final, owning field of an object
+  must be annotated with an \<@CreatesObligation> annotation
+  that targets that object.
+\item when a non-final, owning field $f$ is re-assigned at statement $s$,
+  its inferred \<@MustCall> obligation must be contained in its \<@CalledMethods>
+  type at the program point before $s$.
+\end{itemize}
+\noindent
+The first rule ensures that \<close()> is called after the last call
+to \<reconnect()>, and the second rule ensures that \<reconnect()>
+safely closes \<sock> before re-assigning it. Because calling
+an \<@CreatesObligation> method like \<reconnect()> also resets called-methods
+inference, calls to \<close> before the last call to \<reconnect()>
+are disregarded.
+
+% TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector
