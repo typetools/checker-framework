@@ -311,7 +311,7 @@ public class AnnotationFileParser {
     // TODO: This should use SourceChecker.getOptions() to allow
     // setting these flags per checker.
     Map<String, String> options = processingEnv.getOptions();
-    this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
+    this.warnIfNotFound = fileType.isCommandLine() || options.containsKey("stubWarnIfNotFound");
     this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
     this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
     this.warnIfStubRedundantWithBytecode =
