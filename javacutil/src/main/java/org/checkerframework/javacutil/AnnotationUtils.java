@@ -664,7 +664,7 @@ public class AnnotationUtils {
    * @deprecated use {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
    *     #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}
    */
-  @Deprecated // for use by the framework only
+  @Deprecated // for use only by the framework
   public static <T> T getElementValue(
       AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;

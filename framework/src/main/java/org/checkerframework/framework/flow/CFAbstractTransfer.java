@@ -247,7 +247,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}
    * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
    */
-  @Deprecated // use getWidenedValue() or getNarrowedValue()
+  @Deprecated // 2020-10-02
   protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
     if (annotatedValue == null) {
       return null;
