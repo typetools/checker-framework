@@ -1,9 +1,8 @@
-Version 3.13.1 (June 1, 2021)
+Version 3.?.? (June 3, 2021)
 ----------------------------
 
 The Must Call Checker over-approximates the methods that an object must call
 before it is de-allocated.
-
 
 Version 3.13.0 (May 3, 2021)
 ----------------------------
