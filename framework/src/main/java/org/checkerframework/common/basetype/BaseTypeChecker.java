@@ -509,7 +509,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
   // AbstractTypeProcessor delegation
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
-
     if (!getSubcheckers().isEmpty()) {
       // TODO: I expected this to only be necessary if (parentChecker == null).
       // However, the NestedAggregateChecker fails otherwise.
