@@ -414,7 +414,7 @@ public abstract class JavaExpression {
             CollectionsPlume.mapList(JavaExpression::fromTree, mn.getArguments());
         JavaExpression methodReceiver;
         if (ElementUtils.isStatic(invokedMethod)) {
-          methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
+          methodReceiver = new ClassName(ElementUtils.enclosingTypeElement(invokedMethod).asType());
         } else {
           methodReceiver = getReceiver(mn);
         }
