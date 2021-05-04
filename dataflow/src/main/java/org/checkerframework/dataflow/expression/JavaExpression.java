@@ -416,8 +416,7 @@ public abstract class JavaExpression {
         JavaExpression methodReceiver;
         if (ElementUtils.isStatic(invokedMethod)) {
           @SuppressWarnings(
-              "nullness:dereference.of.nullable" // enclosingTypeElement(ExecutableElement):
-          // @NonNull
+              "nullness:assignment" // enclosingTypeElement(ExecutableElement): @NonNull
           )
           @NonNull TypeElement methodType = ElementUtils.enclosingTypeElement(invokedMethod);
           methodReceiver = new ClassName(methodType.asType());
