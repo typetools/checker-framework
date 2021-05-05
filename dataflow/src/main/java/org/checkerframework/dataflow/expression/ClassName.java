@@ -25,6 +25,13 @@ public class ClassName extends JavaExpression {
    */
   public ClassName(TypeMirror type) {
     super(type);
+    String typeString = type.toString();
+    if (typeString.endsWith(">")) {
+      typeString = typeString.substring(0, typeString.indexOf("<"));
+    }
+    this.typeString = typeString;
+
+    // Check that the argument is legal.
     TypeMirror baseType;
     TypeKind baseKind = type.getKind();
     if (baseKind != TypeKind.ARRAY) {
@@ -42,11 +49,6 @@ public class ClassName extends JavaExpression {
         || baseKind == TypeKind.TYPEVAR)) {
       throw new Error(type + " is " + type.getKind());
     }
-    String typeString = type.toString();
-    if (typeString.endsWith(">")) {
-      typeString = typeString.substring(0, typeString.indexOf("<"));
-    }
-    this.typeString = typeString;
   }
 
   @Override
