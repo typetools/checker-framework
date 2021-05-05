@@ -975,6 +975,7 @@ public final class TreeUtils {
    *   <em>obj</em> . <em>f</em>
    * </pre>
    *
+   * @param tree a tree that might be a field access
    * @return true iff if tree is a field access expression (implicit or explicit)
    */
   public static boolean isFieldAccess(Tree tree) {
