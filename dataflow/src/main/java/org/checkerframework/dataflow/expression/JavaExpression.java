@@ -226,11 +226,11 @@ public abstract class JavaExpression {
   ///
 
   /**
-   * Returns the Java expression for a {@link FieldAccessNode}. The
-   * result may contain {@link Unknown} as receiver.
+   * Returns the Java expression for a {@link FieldAccessNode}. The result may contain {@link
+   * Unknown} as receiver.
    *
    * @param node the FieldAccessNode to convert to a JavaExpression
-   * @return the  {@link FieldAccess} or {@link ClassName) that corresponds to {@code node}
+   * @return the {@link FieldAccess} or {@link ClassName} that corresponds to {@code node}
    */
   public static JavaExpression fromNodeFieldAccess(FieldAccessNode node) {
     Node receiverNode = node.getReceiver();
@@ -277,10 +277,7 @@ public abstract class JavaExpression {
         // We right this wrong here.
         result = new ThisReference(fan.getReceiver().getType());
       } else if (fan.getFieldName().equals("class")) {
-        // "className.class" is considered a field access. This makes sense, since .class is similar
-        // to a field access which is the equivalent of a call to getClass(). However for the
-        // purposes of dataflow analysis, and value stores, this is the equivalent of a
-        // ClassNameNode.
+        // "className.class" is lexically a field access, but it is actually a class literal.
         result = new ClassName(fan.getReceiver().getType());
       } else {
         result = fromNodeFieldAccess(fan);

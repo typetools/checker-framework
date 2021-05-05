@@ -740,7 +740,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
       handleArtificialTree(classTree);
       // No need to handle possible errors from evaluating a class literal here
-      // since this is a synthetic code that can't fail.
+      // since this is synthetic code that can't fail.
       ClassNameNode className = new ClassNameNode(classTree);
       className.setInSource(false);
       insertNodeAfter(className, node);
@@ -2960,7 +2960,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   public Node visitMemberSelect(MemberSelectTree tree, Void p) {
     Node expr = scan(tree.getExpression(), p);
     if (!TreeUtils.isFieldAccess(tree) && !TreeUtils.isClassLiteral(tree)) {
-      // Could be a selector of a class or package, or a class literal.
+      // Could be a selector of a class or package.
       Element element = TreeUtils.elementFromUse(tree);
       if (ElementUtils.isTypeElement(element)) {
         ClassNameNode result = new ClassNameNode(tree, expr);
