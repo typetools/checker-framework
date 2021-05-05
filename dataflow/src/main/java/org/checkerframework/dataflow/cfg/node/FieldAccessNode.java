@@ -17,6 +17,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>expression</em> . <em>field</em>
  * </pre>
+ *
+ * Also represents class literals of the form <code><em>Type</em> .class</code>.
  */
 public class FieldAccessNode extends Node {
 
@@ -29,7 +31,7 @@ public class FieldAccessNode extends Node {
 
   public FieldAccessNode(Tree tree, Node receiver) {
     super(TreeUtils.typeOf(tree));
-    assert TreeUtils.isFieldAccess(tree);
+    assert TreeUtils.isFieldAccess(tree) || TreeUtils.isClassLiteral(tree);
     this.tree = tree;
     this.receiver = receiver;
     this.field = TreeUtils.getFieldName(tree);

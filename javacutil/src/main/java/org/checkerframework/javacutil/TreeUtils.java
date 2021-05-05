@@ -952,7 +952,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a class literal, such as.
+   * Determine whether {@code tree} is a class literal, such as
    *
    * <pre>
    *   <em>Object</em> . <em>class</em>
@@ -968,7 +968,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a field access expressions, such as.
+   * Determine whether {@code tree} is a field access expression, such as
    *
    * <pre>
    *   <em>f</em>
@@ -979,8 +979,11 @@ public final class TreeUtils {
    */
   public static boolean isFieldAccess(Tree tree) {
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-      // explicit field access
+      // explicit member access (or a class literal)
       MemberSelectTree memberSelect = (MemberSelectTree) tree;
+      if (memberSelect.getIdentifier().contentEquals("class")) {
+        return false;
+      }
       assert isUseOfElement(memberSelect) : "@AssumeAssertion(nullness): tree kind";
       Element el = TreeUtils.elementFromUse(memberSelect);
       return el.getKind().isField();
@@ -998,13 +1001,13 @@ public final class TreeUtils {
 
   /**
    * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
-   * tree} to be a field access, as determined by {@code isFieldAccess}.
+   * tree} to be a field access or a class literal.
    *
    * @param tree a field access tree
    * @return the name of the field accessed by {@code tree}
    */
   public static String getFieldName(Tree tree) {
-    assert isFieldAccess(tree);
+    assert isFieldAccess(tree) || isClassLiteral(tree);
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return mtree.getIdentifier().toString();

@@ -2959,8 +2959,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   @Override
   public Node visitMemberSelect(MemberSelectTree tree, Void p) {
     Node expr = scan(tree.getExpression(), p);
-    if (!TreeUtils.isFieldAccess(tree)) {
-      // Could be a selector of a class or package
+    if (!TreeUtils.isFieldAccess(tree) && !TreeUtils.isClassLiteral(tree)) {
+      // Could be a selector of a class or package, or a class literal.
       Element element = TreeUtils.elementFromUse(tree);
       if (ElementUtils.isTypeElement(element)) {
         ClassNameNode result = new ClassNameNode(tree, expr);

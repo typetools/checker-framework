@@ -226,15 +226,18 @@ public abstract class JavaExpression {
   ///
 
   /**
-   * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}. The
+   * Returns the Java expression for a {@link FieldAccessNode}. The
    * result may contain {@link Unknown} as receiver.
    *
    * @param node the FieldAccessNode to convert to a JavaExpression
-   * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}. Can
-   *     contain {@link Unknown} as receiver.
+   * @return the  {@link FieldAccess} or {@link ClassName) that corresponds to {@code node}
    */
-  public static FieldAccess fromNodeFieldAccess(FieldAccessNode node) {
+  public static JavaExpression fromNodeFieldAccess(FieldAccessNode node) {
     Node receiverNode = node.getReceiver();
+    if (node.getFieldName().equals("class")) {
+      // It's a class literal
+      return new ClassName(receiverNode.getType());
+    }
     JavaExpression receiver;
     if (node.isStatic()) {
       receiver = new ClassName(receiverNode.getType());
