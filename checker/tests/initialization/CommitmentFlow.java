@@ -15,7 +15,7 @@ public class CommitmentFlow {
     CommitmentFlow local = null;
 
     local = mystery;
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     local.hashCode();
 
     local = triedAndTrue;

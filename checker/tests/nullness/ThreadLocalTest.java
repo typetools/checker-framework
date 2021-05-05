@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class ThreadLocalTest {
 
   // implementation MUST override initialValue(), or SuppressWarnings is unsound
-  @SuppressWarnings("nullness:type.argument.type.incompatible")
+  @SuppressWarnings("nullness:type.argument")
   class MyThreadLocalNN extends ThreadLocal<@NonNull Integer> {
     @Override
     protected Integer initialValue() {
@@ -12,9 +12,9 @@ public class ThreadLocalTest {
   }
 
   void foo() {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     new ThreadLocal<@NonNull Object>();
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     new InheritableThreadLocal<@NonNull Object>();
     new ThreadLocal<@Nullable Object>();
     new InheritableThreadLocal<@Nullable Object>();

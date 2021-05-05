@@ -117,9 +117,7 @@ public final class SceneToStubWriter {
    * @param className a binary name
    * @return the part of the name representing the class's name without its package
    */
-  @SuppressWarnings(
-      "signature:return.type.incompatible") // A binary name without its package is still a
-  // binary name
+  @SuppressWarnings("signature:return") // A binary name without its package is still a binary name
   private static @BinaryName String basenamePart(@BinaryName String className) {
     int lastdot = className.lastIndexOf('.');
     return className.substring(lastdot + 1);
@@ -138,9 +136,14 @@ public final class SceneToStubWriter {
       return "@" + simpleAnnoName;
     }
     StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
-    for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-      AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-      sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+    if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
+      AnnotationFieldType aft = a.def().fieldTypes.get("value");
+      sj.add(aft.format(a.fieldValues.get("value")));
+    } else {
+      for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
+        AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
+        sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+      }
     }
     return sj.toString();
   }

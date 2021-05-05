@@ -467,19 +467,19 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         if (isUI) {
           checker.reportError(
               errorNode,
-              "override.effect.invalid",
-              overridingMethod,
+              "override.effect",
               declaringType,
-              safeOverriden,
-              overriddenType);
+              overridingMethod,
+              overriddenType,
+              safeOverriden);
         } else if (isPolyUI) {
           checker.reportError(
               errorNode,
-              "override.effect.invalid.polymorphic",
-              overridingMethod,
+              "override.effect.polymorphic",
               declaringType,
-              safeOverriden,
-              overriddenType);
+              overridingMethod,
+              overriddenType,
+              safeOverriden);
         }
       } else if (eff.isUI()) {
         uiOverriden = overriddenMethodElt;
@@ -496,11 +496,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
           if (!isAnonInstantiation && !overriddenType.hasAnnotation(UI.class)) {
             checker.reportError(
                 errorNode,
-                "override.effect.invalid.nonui",
-                overridingMethod,
+                "override.effect.nonui",
                 declaringType,
-                polyOverriden,
-                overriddenType);
+                overridingMethod,
+                overriddenType,
+                polyOverriden);
           }
         }
       }
@@ -513,12 +513,12 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       checker.reportWarning(
           errorNode,
           "override.effect.warning.inheritance",
-          overridingMethod,
           declaringType,
-          uiOverriden.toString(),
-          uiOverriden.getEnclosingElement().asType().toString(),
-          safeOverriden.toString(),
-          safeOverriden.getEnclosingElement().asType().toString());
+          overridingMethod,
+          uiOverriden.getEnclosingElement().asType(),
+          uiOverriden,
+          safeOverriden.getEnclosingElement().asType(),
+          safeOverriden);
     }
 
     Effect min =

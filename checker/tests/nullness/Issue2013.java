@@ -9,7 +9,7 @@ public class Issue2013 {
     private @Nullable String name = null;
 
     @EnsuresNonNull("name()")
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void ensureNameNonNull() {
       name = "name";
     }
@@ -29,7 +29,7 @@ public class Issue2013 {
     @Nullable String subname = null;
 
     @Override
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void ensureNameNonNull() {
       super.ensureNameNonNull();
       subname = "Sub";
@@ -54,7 +54,7 @@ public class Issue2013 {
 
     void use() {
       if (super.name() != null) {
-        // :: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition)
         requiresNameNonNull();
       }
 
@@ -63,7 +63,7 @@ public class Issue2013 {
       }
 
       if (super.name() != null) {
-        // :: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition)
         super.requiresNameNonNull();
       }
 
@@ -72,11 +72,11 @@ public class Issue2013 {
       }
 
       super.ensureNameNonNull();
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       requiresNameNonNull();
 
       super.ensureNameNonNull();
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       super.requiresNameNonNull();
 
       ensureNameNonNull();

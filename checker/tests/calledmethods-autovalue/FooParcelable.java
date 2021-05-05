@@ -24,7 +24,7 @@ abstract class FooParcelable implements Parcelable {
 
   public static void buildSomethingWrong() {
     Builder b = builder();
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     b.build();
   }
 

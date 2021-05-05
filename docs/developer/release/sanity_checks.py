@@ -11,8 +11,22 @@ Copyright (c) 2012 University of Washington
 """
 
 import zipfile
-from release_vars import *
-from release_utils import *
+
+from release_vars import CHECKER_FRAMEWORK
+from release_vars import CHECKER_FRAMEWORK_RELEASE
+from release_vars import SANITY_DIR
+
+from release_vars import execute
+
+from release_utils import are_in_file
+from release_utils import delete
+from release_utils import delete_path
+from release_utils import download_binary
+from release_utils import ensure_user_access
+from release_utils import execute_write_to_file
+from release_utils import insert_before_line
+from release_utils import os
+from release_utils import wget_file
 
 
 def javac_sanity_check(checker_framework_website, release_version):
@@ -80,8 +94,8 @@ def javac_sanity_check(checker_framework_website, release_version):
         "Javac sanity check",
         nullness_output,
         [
-            "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
-            "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)",
+            "NullnessExampleWithWarnings.java:23: error: (assignment)",
+            "NullnessExampleWithWarnings.java:33: error: (argument)",
         ],
     )
 
@@ -99,8 +113,8 @@ def javac_sanity_check(checker_framework_website, release_version):
         "Javac Shorthand Sanity Check",
         nullness_shorthand_output,
         [
-            "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
-            "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)",
+            "NullnessExampleWithWarnings.java:23: error: (assignment)",
+            "NullnessExampleWithWarnings.java:33: error: (argument)",
         ],
     )
 

@@ -6,7 +6,7 @@ public class Issue1590a {
 
   // :: error: (initialization.fields.uninitialized)
   public Issue1590a() {
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     init();
   }
 

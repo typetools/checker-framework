@@ -93,8 +93,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
    * @param checkerOptions options to pass to the compiler when running tests
    */
   @SuppressWarnings(
-      "signature:argument.type.incompatible" // for non-array non-primitive class, getName():
-  // @BinaryName
+      "signature:argument" // for non-array non-primitive class, getName(): @BinaryName
   )
   protected CheckerFrameworkPerDirectoryTest(
       List<File> testFiles,

@@ -139,8 +139,7 @@ public class CFTreeBuilder extends TreeBuilder {
         break;
       case WILDCARD:
         WildcardType wildcardType = (WildcardType) type;
-        boolean visitedBefore = visitedWildcards.contains(wildcardType);
-        visitedWildcards.add(wildcardType);
+        boolean visitedBefore = !visitedWildcards.add(wildcardType);
         if (!visitedBefore && wildcardType.getExtendsBound() != null) {
           Tree annotatedExtendsBound = createAnnotatedType(wildcardType.getExtendsBound());
           typeTree =

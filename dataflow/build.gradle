@@ -98,7 +98,7 @@ final dataflowShadedPom(publication) {
                 '\n' +
                 'It differs from the org.checkerframework:dataflow artifact in two ways.\n' +
                 'First, the packages in this artifact have been renamed to org.checkerframework.shaded.*.\n' +
-                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.' +
+                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.'
         licenses {
             license {
                 name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'

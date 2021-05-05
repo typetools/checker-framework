@@ -11,20 +11,20 @@ public class ArrayArgs {
     test(NonNull.class);
 
     String[] s1 = new String[] {null, null, null};
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     test(s1);
     String[] s2 = new String[] {"hello", null, "goodbye"};
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     test(s2);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String[] s3 = new String[] {"hello", null, "goodbye"};
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     @NonNull String[] s4 = new String[3];
 
     // TODO: when issue 25 is fixed, the following is safe
     // and no error needs to be raised.
     String[] s5 = new String[] {"hello", "goodbye"};
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     test(s5);
     @NonNull String[] s6 = new String[] {"hello", "goodbye"};
     test(s6);

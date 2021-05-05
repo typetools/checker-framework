@@ -20,9 +20,9 @@ public class LUBAssignmentTest {
   // LUB between @Sibling1 and @Sibling2 is @Parent, therefore the assignments
   // above refine the type of privateField to @Parent.
   void testFields() {
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsParent(privateField);
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsParent(publicField);
   }
 

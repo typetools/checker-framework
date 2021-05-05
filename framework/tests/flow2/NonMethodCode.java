@@ -19,7 +19,7 @@ public class NonMethodCode {
     if (g1 == f1) {
       @Odd String l3 = g1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l4 = g1;
   }
 
@@ -30,7 +30,7 @@ public class NonMethodCode {
     if (sg1 == sf1) {
       @Odd String l3 = sg1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l4 = sg1;
   }
 }

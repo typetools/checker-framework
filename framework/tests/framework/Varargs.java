@@ -4,7 +4,7 @@ public class Varargs {
   public void testVarargsInvocation() {
     @Odd String s = null;
     aVarargsMethod(s);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     aVarargsMethod(s, "");
     aVarargsMethod(s, s);
 
@@ -14,13 +14,13 @@ public class Varargs {
     moreVarargs(new String @Odd [1]);
     // :: warning: (cast.unsafe.constructor.invocation)
     moreVarargs(new @Odd String(), new @Odd String());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     // :: warning: (cast.unsafe.constructor.invocation)
     moreVarargs(new String(), new @Odd String());
     moreVarargs(
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         new String(),
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         new String());
   }
 

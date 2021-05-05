@@ -29,7 +29,7 @@ public class Asserts {
     assert ac.vals[i] != null : "@AssumeAssertion(nullness)";
     @NonNull Object o = ac.vals[i];
     i = 10;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object o2 = ac.vals[i];
   }
 
@@ -46,7 +46,7 @@ public class Asserts {
       expression = {"#1", "#2"})
   boolean sameLength(final boolean @Nullable [] seq1, final boolean @Nullable [] seq2) {
     // don't bother with the implementation
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return true;
   }
 

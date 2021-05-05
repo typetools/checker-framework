@@ -513,7 +513,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = enclosingPair.first;
     // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
-    @SuppressWarnings("interning:assignment.type.incompatible") // comparing AST nodes
+    @SuppressWarnings("interning:assignment") // comparing AST nodes
     @InternedDistinct Tree enclosingChild = enclosingPair.second;
 
     if (!isMask(enclosing)) {

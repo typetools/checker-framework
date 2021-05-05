@@ -11,24 +11,24 @@ public class IntroRules {
     @GTENegativeOne int c = 8;
     @LowerBoundUnknown int d = 7;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int e = 0;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int f = -1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int g = -6;
 
     @NonNegative int h = 0;
     @GTENegativeOne int i = 0;
     @LowerBoundUnknown int j = 0;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNegative int k = -1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNegative int l = -4;
 
     @GTENegativeOne int m = -1;
     @LowerBoundUnknown int n = -1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @GTENegativeOne int o = -9;
   }
 }

@@ -13,7 +13,7 @@ public class Issue2048 {
   class UseNbl<T> {
     // T by default is @Nullable and therefore doesn't
     // fulfill the bound of R.
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     void foo(Fooer<? extends T> fooer) {}
   }
 

@@ -32,9 +32,9 @@ public class Issue391 {
 
   void method2() {
     ClassA a = new ClassA();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     a.getValue();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     method();
   }
 

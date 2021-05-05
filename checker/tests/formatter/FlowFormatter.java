@@ -20,25 +20,25 @@ public class FlowFormatter {
     callUnqual(qual);
     callUnqual(wrong);
     callUnqual(null);
-    // :: error: (format.string.invalid)
+    // :: error: (format.string)
     f.format(null);
     @Format({ConversionCategory.GENERAL}) String nullAssign = null;
-    // :: error: (format.string.invalid)
+    // :: error: (format.string)
     f.format(nullAssign, "string");
     if (false) {
       nullAssign = "%s";
     }
     f.format(nullAssign, "string");
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Format({ConversionCategory.GENERAL}) String err0 = unqual;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Format({ConversionCategory.GENERAL}) String err2 = "%$s";
     @Format({ConversionCategory.GENERAL}) String ok = "%s";
 
     String u = "%s" + " %" + "d";
     String v = FormatUtil.asFormat(u, ConversionCategory.GENERAL, ConversionCategory.INT);
     f.format(u, "String", 1337);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format(u, "String", 7.4);
 
     try {
@@ -51,7 +51,7 @@ public class FlowFormatter {
     f.format(a, "String", 1337, 7.5);
 
     String b = "Fail: %d";
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format(b, "Wrong");
 
     @Format({
@@ -64,11 +64,11 @@ public class FlowFormatter {
     f.format(s, "OK", 42, 3.14, 'c');
 
     @Format({ConversionCategory.GENERAL, ConversionCategory.INT, ConversionCategory.FLOAT}) String t = "Fail: %s %d %f";
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format(t, "OK", "Wrong", 3.14);
 
     call(f, "Success: %tM");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     call(f, "Fail: %d");
 
     System.out.println(f.toString());
@@ -77,7 +77,7 @@ public class FlowFormatter {
 
   public static void call(Formatter f, @Format({ConversionCategory.TIME}) String s) {
     f.format(s, new Date());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format(s, "Wrong");
   }
 }

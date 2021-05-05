@@ -21,7 +21,7 @@ public class GuardSatisfiedTest {
   void testDefaulting(Object mustDefaultToGuardedByNothing, @GuardSatisfied Object p) {
     // Must assign in this direction to test the defaulting because assigning a RHS of
     // @GuardedBy({}) to a LHS @GuardSatisfied is legal.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     mustDefaultToGuardedByNothing = p;
     @GuardedBy({}) Object q = mustDefaultToGuardedByNothing;
   }
@@ -57,7 +57,7 @@ public class GuardSatisfiedTest {
 
     // :: error: (lock.not.held)
     o = methodToCall2(o);
-    // :: error: (lock.not.held) :: error: (assignment.type.incompatible)
+    // :: error: (lock.not.held) :: error: (assignment)
     p = methodToCall2(o);
     // :: error: (lock.not.held)
     methodToCall2(o);
@@ -66,7 +66,7 @@ public class GuardSatisfiedTest {
     synchronized (lock2) {
       // :: error: (lock.not.held)
       o = methodToCall2(o);
-      // :: error: (lock.not.held) :: error: (assignment.type.incompatible)
+      // :: error: (lock.not.held) :: error: (assignment)
       p = methodToCall2(o);
       // :: error: (lock.not.held)
       methodToCall2(o);
@@ -74,7 +74,7 @@ public class GuardSatisfiedTest {
     }
     synchronized (lock1) {
       o = methodToCall2(o);
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       p = methodToCall2(o);
       methodToCall2(o);
       // :: error: (lock.not.held)
@@ -115,7 +115,7 @@ public class GuardSatisfiedTest {
     // :: error: (lock.not.held)
     methodToCall4();
     // TODO: lock.not.held is getting swallowed below
-    //  error (assignment.type.incompatible) error (lock.not.held)
+    //  error (assignment) error (lock.not.held)
     // g = methodToCall4();
 
     // Separate the above test case into two for now
@@ -129,7 +129,7 @@ public class GuardSatisfiedTest {
     // to make sure this scenario issues a warning.
     // :: error: (lock.not.held)
     synchronized (lock1) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       g = methodToCall4();
     }
   }
@@ -158,18 +158,18 @@ public class GuardSatisfiedTest {
   }
 
   @GuardSatisfied(1) Object testReturnTypesMustMatchAndMustHaveAnIndex5(@GuardSatisfied(2) Object o) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return o;
   }
 
   // :: error: (guardsatisfied.return.must.have.index)
   @GuardSatisfied Object testReturnTypesMustMatchAndMustHaveAnIndex6(@GuardSatisfied(2) Object o) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return o;
   }
 
   void testParamsMustMatch(@GuardSatisfied(1) Object o, @GuardSatisfied(2) Object p) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     o = p;
   }
 
@@ -267,7 +267,7 @@ class Foo {
   @MayReleaseLocks
   // :: error: (guardsatisfied.with.mayreleaselocks)
   void m2(@GuardSatisfied Foo f) {
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     f.m1();
   }
 
@@ -277,7 +277,7 @@ class Foo {
   }
 
   void m3(@GuardSatisfied Foo f) {
-    // :: error: (method.guarantee.violated) :: error: (method.invocation.invalid)
+    // :: error: (method.guarantee.violated) :: error: (method.invocation)
     f.m1();
   }
 

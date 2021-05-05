@@ -24,7 +24,7 @@ public class Division {
     @m int am = 6 * UnitsTools.m, bm = 3 * UnitsTools.m;
     int x = am / bm;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @m int bad = am / bm;
 
     // Division removes the unit.
@@ -54,82 +54,82 @@ public class Division {
 
     // m / s = mPERs
     @mPERs int velocitym = m / s;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     velocitym = m / h;
 
     // km / h = kmPERh
     @kmPERh int velocitykm = km / h;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     velocitykm = km / s;
 
     // m2 / m = m
     @m int distancem = m2 / m;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     distancem = m2 / km;
 
     // km2 / km = km
     @km int distancekm = km2 / km;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     distancekm = km2 / m;
 
     // mm2 / mm = mm
     @mm int distancemm = mm2 / mm;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     distancemm = km2 / mm;
 
     // m3 / m2 = m
     distancem = m3 / m2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     distancem = m3 / km2;
 
     // km3 / km2 = km
     distancekm = km3 / km2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     distancekm = km3 / m2;
 
     // mm3 / mm2 = mm
     distancemm = mm3 / mm2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     distancemm = km3 / mm2;
 
     // m / mPERs = s
     @s int times = m / mPERs;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     times = km / mPERs;
 
     // km / kmPERh = h
     @h int timeh = km / kmPERh;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     timeh = m / kmPERh;
 
     // mPERs / s = mPERs2
     @mPERs2 int accel1 = mPERs / s;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     accel1 = kmPERh / s;
 
     // mPERs / mPERs2 = s
     @s int times2 = mPERs / mPERs2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     times2 = kmPERh / mPERs2;
 
     // mPERs2 = N / kg
     @mPERs2 int accel2 = N / kg;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     accel2 = N / km;
 
     // mPERs2 = kN / t
     @mPERs2 int accel3 = kN / t;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     accel3 = N / t;
 
     // kg = N / mPERs2
     @kg int mass = N / mPERs2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     mass = s / mPERs2;
 
     // t = kN / mPERs2
     @t int mass2 = kN / mPERs2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     mass2 = N / mPERs2;
   }
 

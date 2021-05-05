@@ -60,7 +60,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
         continue;
       }
-      @SuppressWarnings("signature:argument.type.incompatible") // -processor is a binary name
+      @SuppressWarnings("signature:argument") // -processor is a binary name
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
       if (atf != null) {
         defaultValueAtypeFactories.add(atf);

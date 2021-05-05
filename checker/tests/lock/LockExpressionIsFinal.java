@@ -196,7 +196,7 @@ public class LockExpressionIsFinal {
 
     // Test expressions that are not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
     @GuardedBy("java.lang.String.class") Object guarded4;
-    // :: error: (expression.unparsable.type.invalid)
+    // :: error: (expression.unparsable)
     @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)") Object guarded5;
 
     @GuardedBy(

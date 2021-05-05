@@ -22,7 +22,7 @@
       <java fork="true" failonerror="true"
             classpath="${checker.lib}"
             classname="org.checkerframework.framework.util.CheckerMain"
-            taskname="javac-jsr308">
+            taskname="javac-cf">
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
         <arg value="-classpath"/>
@@ -56,7 +56,7 @@
       <java fork="true" failonerror="true"
             classpath="${checker.lib}"
             classname="org.checkerframework.framework.util.CheckerMain"
-            taskname="javac-jsr308">
+            taskname="javac-cf">
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
         <arg value="-classpath"/>

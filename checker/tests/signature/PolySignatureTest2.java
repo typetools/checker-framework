@@ -12,7 +12,7 @@ public class PolySignatureTest2 {
   }
 
   @DotSeparatedIdentifiers String m2(@DotSeparatedIdentifiers Name n) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return n.toString();
   }
 }

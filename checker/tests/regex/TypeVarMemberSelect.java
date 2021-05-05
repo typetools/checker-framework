@@ -9,7 +9,7 @@ class Box<T extends @Regex(1) Object> {
 class TypeVarMemberSelect<V extends Box<@Regex(2) String>> {
 
   void test(V v) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex(2) String local1 = v.t1;
 
     // Previously the type of the right hand side would have been T which is wrong.  This test

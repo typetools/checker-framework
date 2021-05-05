@@ -52,31 +52,31 @@ class EnsuresQualifierTest {
 
   void client1() {
     field1IsParent();
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     @Parent int p = field1;
   }
 
   void client2() {
     field1IsParent_2(true);
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     @Parent int p = field1;
   }
 
   void client3() {
     field1IsSibling2();
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     @Sibling2 int x = field1;
   }
 
   void client4() {
     field1IsSibling2_2(true);
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     @Sibling2 int x = field1;
   }
 
   void client5() {
     parentIsSibling1();
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     @Sibling1 int x = parent;
   }
 }

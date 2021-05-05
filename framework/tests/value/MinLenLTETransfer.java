@@ -9,7 +9,7 @@ public class MinLenLTETransfer {
 
   void lte_bad_check(int[] a) {
     if (1 <= a.length) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       int @MinLen(2) [] b = a;
     }
   }

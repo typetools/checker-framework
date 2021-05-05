@@ -13,7 +13,7 @@ public class SimplePolymorphic {
 
   // Check that polymorphic supertype with accumulator type doesn't cause a crash.
   void noCrashOnPolySuper(@TestAccumulation("foo") Object obj) {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @PolyTestAccumulation Object obj2 = obj;
   }
 }

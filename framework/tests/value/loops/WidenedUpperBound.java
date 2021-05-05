@@ -14,7 +14,7 @@ public class WidenedUpperBound {
     for (forIndex = 0; forIndex < 4323; forIndex++) {
       @IntRange(from = 0, to = 4322) int x = forIndex;
     }
-    //// ::error: (assignment.type.incompatible)
+    //// ::error: (assignment)
     @IntRange(from = 0, to = 4322) int x = forIndex;
     @IntRange(from = 4323) int y = forIndex;
 
@@ -23,7 +23,7 @@ public class WidenedUpperBound {
       @IntRange(from = 0, to = 1233) int z = whileIndex;
       whileIndex++;
     }
-    //// ::error: (assignment.type.incompatible)
+    //// ::error: (assignment)
     @IntRange(from = 0, to = 1233) int a = whileIndex;
     @IntRange(from = 1234) int b = whileIndex;
 
@@ -32,7 +32,7 @@ public class WidenedUpperBound {
       @IntRange(from = 0, to = 2344) int c = doWhileIndex;
       doWhileIndex++;
     } while (doWhileIndex < 2345);
-    //// ::error: (assignment.type.incompatible)
+    //// ::error: (assignment)
     @IntRange(from = 0, to = 2344) int d = doWhileIndex;
     @IntRange(from = 2345) int e = doWhileIndex;
   }
@@ -42,7 +42,7 @@ public class WidenedUpperBound {
     for (forIndex = 4323; forIndex > 0; forIndex--) {
       @IntRange(from = 1, to = 4323) int x = forIndex;
     }
-    //// ::error: (assignment.type.incompatible)
+    //// ::error: (assignment)
     @IntRange(from = 1, to = 4323) int x = forIndex;
     @IntRange(to = 0) int y = forIndex;
 
@@ -51,7 +51,7 @@ public class WidenedUpperBound {
       @IntRange(from = 1, to = 1234) int z = whileIndex;
       whileIndex--;
     }
-    //// ::error: (assignment.type.incompatible)
+    //// ::error: (assignment)
     @IntRange(from = 1, to = 1234) int a = whileIndex;
     @IntRange(to = 0) int b = whileIndex;
 
@@ -60,7 +60,7 @@ public class WidenedUpperBound {
       @IntRange(from = 1, to = 2344) int c = doWhileIndex;
       doWhileIndex--;
     } while (doWhileIndex > 0);
-    //// ::error: (assignment.type.incompatible)
+    //// ::error: (assignment)
     @IntRange(from = 1, to = 2344) int d = doWhileIndex;
     @IntRange(to = 0) int e = doWhileIndex;
   }

@@ -123,9 +123,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         List<String> exprs =
             AnnotationUtils.getElementValueArray(sameLenAnno, sameLenValueElement, String.class);
-        if (exprs.contains(varName)) {
-          exprs.remove(varName);
-        }
+        exprs.remove(varName);
         if (exprs.isEmpty()) {
           atm.replaceAnnotation(UNKNOWN);
         } else {

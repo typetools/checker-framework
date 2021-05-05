@@ -16,7 +16,7 @@ public class ConflictingAnnotationsTest {
   }
 
   void test() {
-    // :: warning: argument.type.incompatible
+    // :: warning: argument
     expectsSibling1(getWPINamespaceSibling1());
   }
 

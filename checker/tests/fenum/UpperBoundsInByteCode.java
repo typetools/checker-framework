@@ -6,7 +6,7 @@ public class UpperBoundsInByteCode {
   UncheckedByteCode<@Fenum("Bar") Object> bar;
 
   void typeVarWithNonObjectUpperBound(@Fenum("A") int a) {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     UncheckedByteCode.methodWithTypeVarBoundedByNumber(a);
     UncheckedByteCode.methodWithTypeVarBoundedByNumber(1);
   }
@@ -14,11 +14,11 @@ public class UpperBoundsInByteCode {
   void wildcardsInByteCode() {
     UncheckedByteCode.unboundedWildcardParam(foo);
     UncheckedByteCode.lowerboundedWildcardParam(bar);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     UncheckedByteCode.upperboundedWildcardParam(foo);
   }
 
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   SourceCode<@Fenum("Foo") String> foo2;
 
   class SourceCode<T extends Object> {}

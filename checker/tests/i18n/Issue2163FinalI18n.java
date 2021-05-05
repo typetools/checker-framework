@@ -8,43 +8,43 @@ import org.checkerframework.checker.i18n.qual.*;
 }
 
 @UnknownLocalizableKey class Issue2163FinalAB {
-  // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKey Issue2163FinalAB() {}
 }
 
 @UnknownLocalizableKey class Issue2163FinalAC {
-  // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKeyBottom Issue2163FinalAC() {}
 }
 
 @LocalizableKey class Issue2163FinalBA {
-  // :: error: (type.invalid.annotations.on.use)
+  // :: error: (annotations.on.use)
   @UnknownLocalizableKey Issue2163FinalBA() {}
 }
 
 @LocalizableKey class Issue2163FinalBB {
-  // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKey Issue2163FinalBB() {}
 }
 
 @LocalizableKey class Issue2163FinalBC {
-  // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKeyBottom Issue2163FinalBC() {}
 }
 
 @LocalizableKeyBottom class Issue2163FinalCA {
-  // :: error: (type.invalid.annotations.on.use)
+  // :: error: (annotations.on.use)
   @UnknownLocalizableKey Issue2163FinalCA() {}
 }
 
 @LocalizableKeyBottom class Issue2163FinalCB {
-  // :: error: (type.invalid.annotations.on.use) :: warning: (inconsistent.constructor.type) ::
-  // error: (super.invocation.invalid)
+  // :: error: (annotations.on.use) :: warning: (inconsistent.constructor.type) ::
+  // error: (super.invocation)
   @LocalizableKey Issue2163FinalCB() {}
 }
 
 @LocalizableKeyBottom class Issue2163FinalCC {
-  // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
+  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKeyBottom Issue2163FinalCC() {}
 }
 

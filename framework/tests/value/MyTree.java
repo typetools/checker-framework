@@ -20,23 +20,23 @@ public class MyTree<Value> {
     newTree("hello").put("bye");
 
     MyTree<@UnknownVal String> myTree1 = newTree("hello").put("bye");
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     MyTree<@StringVal("hello") String> myTree1b = newTree("hello").put("bye");
 
     // Note: This is a false positive: the type of newTree("hello").put("hello") should be
     // inferred as MyTree<@StringVal("hello") String> and the assignment should therefore pass.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     MyTree<@StringVal("hello") String> myTree2 = newTree("hello").put("hello");
     MyTree<@StringVal("hello") String> myTree2b =
         MyTree.<@StringVal("hello") String>newTree("hello").put("hello");
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     MyTree<@StringVal("error") String> myTree2c = newTree("hello").put("hello");
 
     MyTree<@UnknownVal String> myTree3 = newTree("hello");
     myTree3.put("bye");
 
     MyTree<@StringVal("hello") String> myTree4 = newTree("hello");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     myTree4.put("bye");
   }
 }

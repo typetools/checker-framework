@@ -33,7 +33,7 @@ public class ExplictTypeVarAnnos<E extends @Nullable Object, @Nullable F> {
     return result;
   }
 
-  @SuppressWarnings("method.invocation.invalid")
+  @SuppressWarnings("method.invocation")
   Consumer<E> field = getConsumer2();
 
   public Consumer<E> getField() {
@@ -42,6 +42,6 @@ public class ExplictTypeVarAnnos<E extends @Nullable Object, @Nullable F> {
 
   static class A<Q extends @NonNull Object> {}
 
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   static class B<S> extends A<S> {}
 }

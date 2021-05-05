@@ -28,19 +28,19 @@ public class GenericsBounds5 {
     l.add(p);
   }
 
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   Collection1<@Nullable ? extends @Nullable Integer> f = new Collection1<@NonNull Integer>();
 
   void bad(Collection1<@NonNull Integer> nnarg) {
     // These have to be forbidden, because f1 might refer to a
     // collection that has NonNull as type argument.
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     addNull1(nnarg);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     addNull2(nnarg);
 
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     addNull3(nnarg, Integer.valueOf(4));
   }
 }

@@ -9,7 +9,7 @@ public class GenericAliasInvalid {
   public static class SuperSetOne extends HashSet<@Odd Map<@Odd List<@Odd String>, @Odd String>> {}
 
   public void test() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Set<Map<@Odd List<@Odd String>, @Odd String>> t = new SuperSetOne();
   }
 }

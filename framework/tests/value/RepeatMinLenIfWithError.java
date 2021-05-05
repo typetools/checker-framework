@@ -40,7 +40,7 @@ public class RepeatMinLenIfWithError {
     a = "checker";
     c = "framework";
     b = "hello"; // condition not satisfied here
-    // :: error:  (contracts.conditional.postcondition.not.satisfied)
+    // :: error:  (contracts.conditional.postcondition)
     return true;
   }
 
@@ -53,7 +53,7 @@ public class RepeatMinLenIfWithError {
     a = "checker";
     c = "framework";
     b = "hello"; // condition not satisfied here
-    // :: error:  (contracts.conditional.postcondition.not.satisfied)
+    // :: error:  (contracts.conditional.postcondition)
     return true;
   }
 }
