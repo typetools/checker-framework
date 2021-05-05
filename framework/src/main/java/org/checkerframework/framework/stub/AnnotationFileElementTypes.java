@@ -318,7 +318,7 @@ public class AnnotationFileElementTypes {
                     : "directory " + parentPath.getAbsolutePath());
             String msg =
                 checker.getClass().getSimpleName()
-                    + " did not find annotation file "
+                    + " did not find annotation file or directory "
                     + path
                     + " on classpath or within "
                     + parentPathDescription

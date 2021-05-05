@@ -3,29 +3,36 @@ import org.checkerframework.checker.units.qual.Acceleration;
 import org.checkerframework.checker.units.qual.Area;
 import org.checkerframework.checker.units.qual.C;
 import org.checkerframework.checker.units.qual.Current;
+import org.checkerframework.checker.units.qual.Force;
 import org.checkerframework.checker.units.qual.K;
 import org.checkerframework.checker.units.qual.Length;
 import org.checkerframework.checker.units.qual.Luminance;
 import org.checkerframework.checker.units.qual.Mass;
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.Substance;
 import org.checkerframework.checker.units.qual.Temperature;
 import org.checkerframework.checker.units.qual.Time;
 import org.checkerframework.checker.units.qual.cd;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kN;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.min;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.checker.units.util.UnitsTools;
 
 public class Addition {
@@ -77,6 +84,11 @@ public class Addition {
     @km2 int bSquareKilometer = 5 * UnitsTools.km2;
     @km2 int sSquareKilometer = aSquareKilometer + bSquareKilometer;
 
+    // Cubic kilometer
+    @km3 int aCubicKilometer = 5 * UnitsTools.km3;
+    @km3 int bCubicKilometer = 5 * UnitsTools.km3;
+    @km3 int sCubicKilometer = aCubicKilometer + bCubicKilometer;
+
     // Kilometer per hour
     @kmPERh int aKilometerPerHour = 5 * UnitsTools.kmPERh;
     @kmPERh int bKilometerPerHour = 5 * UnitsTools.kmPERh;
@@ -91,6 +103,11 @@ public class Addition {
     @m2 int aSquareMeter = 5 * UnitsTools.m2;
     @m2 int bSquareMeter = 5 * UnitsTools.m2;
     @m2 int sSquareMeter = aSquareMeter + bSquareMeter;
+
+    // Cubic meter
+    @m3 int aCubicMeter = 5 * UnitsTools.m3;
+    @m3 int bCubicMeter = 5 * UnitsTools.m3;
+    @m3 int sCubicMeter = aCubicMeter + bCubicMeter;
 
     // Meter per second
     @mPERs int aMeterPerSecond = 5 * UnitsTools.mPERs;
@@ -117,10 +134,25 @@ public class Addition {
     @mm2 int bSquareMillimeter = 5 * UnitsTools.mm2;
     @mm2 int sSquareMillimeter = aSquareMillimeter + bSquareMillimeter;
 
+    // Cubic millimeter
+    @mm3 int aCubicMillimeter = 5 * UnitsTools.mm3;
+    @mm3 int bCubicMillimeter = 5 * UnitsTools.mm3;
+    @mm3 int sCubicMillimeter = aCubicMillimeter + bCubicMillimeter;
+
     // Mole
     @mol int aMole = 5 * UnitsTools.mol;
     @mol int bMole = 5 * UnitsTools.mol;
     @mol int sMole = aMole + bMole;
+
+    // Newton
+    @N int aNewton = 5 * UnitsTools.N;
+    @N int bNewton = 5 * UnitsTools.N;
+    @N int sNewton = aNewton + bNewton;
+
+    // Kilonewton
+    @kN int aKilonewton = 5 * UnitsTools.kN;
+    @kN int bKilonewton = 5 * UnitsTools.kN;
+    @kN int sKilonewton = aKilonewton + bKilonewton;
 
     // Second
     @s int aSecond = 5 * UnitsTools.s;
@@ -143,6 +175,10 @@ public class Addition {
     // Current
     @Current int aCurrent = 5 * UnitsTools.A;
     @Current int bCurrent = 5 * UnitsTools.A;
+
+    // Force
+    @Force int aForce = 5 * UnitsTools.N;
+    @Force int bForce = 5 * UnitsTools.N;
 
     // Length
     @Length int aLength = 5 * UnitsTools.m;
@@ -205,6 +241,10 @@ public class Addition {
     // :: error: (assignment)
     @Time int sTime = aArea + bTime;
 
+    // Force
+    // :: error: (assignment)
+    sMass = aForce + bForce;
+
     // Units
     // Amperes
     @A int aAmpere = 5 * UnitsTools.A;
@@ -281,6 +321,18 @@ public class Addition {
     // Second
     @s int aSecond = 5 * UnitsTools.s;
     @s int bSecond = 5 * UnitsTools.s;
+
+    // Metric Ton
+    @t int aMetricTon = 5 * UnitsTools.t;
+    @t int bMetricTon = 5 * UnitsTools.t;
+
+    // Newton
+    @N int aNewton = 5 * UnitsTools.N;
+    @N int bNewton = 5 * UnitsTools.N;
+
+    // Kilonewton
+    @kN int aKilonewton = 5 * UnitsTools.kN;
+    @kN int bKilonewton = 5 * UnitsTools.kN;
 
     // Units
     // Amperes
@@ -358,5 +410,17 @@ public class Addition {
     // Second
     // :: error: (assignment)
     @s int sSecond = aSecond + bSquareKilometer;
+
+    // Newton
+    // :: error: (assignment)
+    sKilogram = aNewton + bNewton;
+
+    // Kilonewton
+    // :: error: (assignment)
+    @kN int sKilonewton = aKilonewton + bNewton;
+
+    // Metric Ton
+    // :: error: (assignment)
+    @N int sNewton = aNewton + bMetricTon;
   }
 }
