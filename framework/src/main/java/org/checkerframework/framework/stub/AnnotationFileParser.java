@@ -311,7 +311,7 @@ public class AnnotationFileParser {
     // TODO: This should use SourceChecker.getOptions() to allow
     // setting these flags per checker.
     Map<String, String> options = processingEnv.getOptions();
-    this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
+    this.warnIfNotFound = fileType.isCommandLine() || options.containsKey("stubWarnIfNotFound");
     this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
     this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
     this.warnIfStubRedundantWithBytecode =
@@ -580,7 +580,8 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Parse a stub file that is a part of the annotated JDK and side-effects the last two arguments.
+   * Parse a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
+   * argument.
    *
    * @param filename name of stub file, used only for diagnostic messages
    * @param inputStream of stub file to parse
@@ -600,7 +601,8 @@ public class AnnotationFileParser {
 
   /**
    * Delegate to the Stub Parser to parse the annotation file to an AST, and save it in {@link
-   * #stubUnit}. Also modifies other fields of this.
+   * #stubUnit}. Also sets {@link #allAnnotations}. Does not copy annotations out of {@link
+   * #stubUnit}; that is done by the {@code process*} methods.
    *
    * <p>Subsequently, all work uses the AST.
    *
@@ -631,7 +633,7 @@ public class AnnotationFileParser {
 
   /**
    * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
-   * means copying annotations from Stub Parser data structures to {@code annotationFileAnnos}.
+   * means copying annotations from Stub Parser data structures to {@code #annotationFileAnnos}.
    *
    * @param annotationFileAnnos annotations from the file; side-effected by this method
    */
@@ -1054,7 +1056,7 @@ public class AnnotationFileParser {
       // annotations.
       recordDeclAnnotation(elt, ((MethodDeclaration) decl).getType().getAnnotations(), decl);
     }
-    recordDeclAnnotationFromAnnotationFile(elt);
+    markAsFromStubFile(elt);
 
     AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
     AnnotatedExecutableType origMethodType =
@@ -1387,7 +1389,7 @@ public class AnnotationFileParser {
       // and might refer to types that are not accessible.
       return;
     }
-    recordDeclAnnotationFromAnnotationFile(elt);
+    markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     // AnnotationFileParser parses all annotations in type annotation position as type annotations
     recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), decl);
@@ -1414,7 +1416,7 @@ public class AnnotationFileParser {
    * @param elt the enum constant declaration, as an element (the destination for annotations)
    */
   private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
-    recordDeclAnnotationFromAnnotationFile(elt);
+    markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
     annotate(enumConstType, decl.getAnnotations(), decl);
@@ -1483,7 +1485,7 @@ public class AnnotationFileParser {
    */
   private void recordDeclAnnotation(
       Element elt, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
-    if (annotations == null) {
+    if (annotations == null || annotations.isEmpty()) {
       return;
     }
     Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
@@ -1504,7 +1506,7 @@ public class AnnotationFileParser {
       }
     }
     String eltName = ElementUtils.getQualifiedName(elt);
-    putOrAddToMap(annotationFileAnnos.declAnnos, eltName, annos);
+    putOrAddToDeclAnnos(eltName, annos);
   }
 
   /**
@@ -1513,14 +1515,12 @@ public class AnnotationFileParser {
    *
    * @param elt an element to be annotated as {@code @FromStubFile}
    */
-  private void recordDeclAnnotationFromAnnotationFile(Element elt) {
+  private void markAsFromStubFile(Element elt) {
     if (fileType == AnnotationFileType.AJAVA || fileType == AnnotationFileType.JDK_STUB) {
       return;
     }
-    putOrAddToMap(
-        annotationFileAnnos.declAnnos,
-        ElementUtils.getQualifiedName(elt),
-        Collections.singleton(fromStubFileAnno));
+    putOrAddToDeclAnnos(
+        ElementUtils.getQualifiedName(elt), Collections.singleton(fromStubFileAnno));
   }
 
   private void annotateTypeParameters(
@@ -2608,15 +2608,17 @@ public class AnnotationFileParser {
   }
 
   /**
-   * If the key is already in the map, then add the annos to the list. Otherwise put the key and the
-   * annos in the map
+   * If the key is already in the {@code annotationFileAnnos.declAnnos} map, then add the annos to
+   * the map value. Otherwise put the key and the annos in the map.
+   *
+   * @param key a name (actually declaration element string)
+   * @param annos the the set of declaration annotations on it, as written in the annotation file
    */
-  private static void putOrAddToMap(
-      Map<String, Set<AnnotationMirror>> map, String key, Set<AnnotationMirror> annos) {
-    if (map.containsKey(key)) {
-      map.get(key).addAll(annos);
+  private void putOrAddToDeclAnnos(String key, Set<AnnotationMirror> annos) {
+    if (annotationFileAnnos.declAnnos.containsKey(key)) {
+      annotationFileAnnos.declAnnos.get(key).addAll(annos);
     } else {
-      map.put(key, new HashSet<>(annos));
+      annotationFileAnnos.declAnnos.put(key, new HashSet<>(annos));
     }
   }
 
