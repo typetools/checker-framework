@@ -6,6 +6,9 @@ Version 3.?.? (June 1, 2021)
 Stub files can now override declaration annotations in the annotated JDK.
 The could always override type annotations in the annotated JDK.
 
+Command-line argument `-AstubWarnIfNotFound` is treated as true for stub
+files provided on the command line.
+
 **Implementation details:**
 
 **Closed issues:**
