@@ -6,10 +6,10 @@ Version 3.?.? (June 1, 2021)
 Command-line argument `-AstubWarnIfNotFound` is treated as true for stub
 files provided on the command line.
 
+**Implementation details:**
+
 The package names in the dataflow-shaded artifact include the version number of
 the artifact using `_` in place of `.`.
-
-**Implementation details:**
 
 **Closed issues:**
 
