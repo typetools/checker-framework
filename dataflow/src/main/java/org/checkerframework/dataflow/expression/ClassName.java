@@ -17,8 +17,7 @@ public class ClassName extends JavaExpression {
   /**
    * Creates a new ClassName object for the given type.
    *
-   * @param type the type for this ClassName: declared, primitive, an array of declared or
-   *     primitive, or void
+   * @param type the type for this ClassName
    */
   public ClassName(TypeMirror type) {
     super(type);
