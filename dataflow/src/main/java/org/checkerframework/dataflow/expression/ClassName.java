@@ -10,8 +10,8 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * A ClassName represents the occurrence of a class as part of a static field access, static method
- * invocation, or class literal. It is not a legal expression on its own.
+ * A ClassName represents either a class literal or the occurrence of a class as part of a static
+ * field access or static method invocation.
  */
 public class ClassName extends JavaExpression {
   /** The string representation of the raw type of this. */
