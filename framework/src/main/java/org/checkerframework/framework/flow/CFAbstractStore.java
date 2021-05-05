@@ -728,8 +728,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (je instanceof FieldAccess) {
       return fieldValues.get((FieldAccess) je);
     } else {
-      // It's a class literal.  Can we return a more informative value?
-      return null;
+      return classValues.get((ClassName) je);
     }
   }
 
