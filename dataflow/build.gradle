@@ -7,16 +7,15 @@ dependencies {
     // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
     // artifact, see shadowJar block below, and also in checker.jar, see the comment in
     // ../build.gradle in the shadowJar block.
-
-    // Dependencies added to "shadow" appear as dependencies in Maven Central.
-    shadow project(':checker-qual')
 }
 
 shadowJar {
     archiveFileName = "dataflow-shaded.jar"
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
-    // The version number includes both "." and possibly "-SNAPSHOT"
+    archiveName('dataflow-shaded')
+    // The version number includes both "." and possibly "-SNAPSHOT", so convert it to a legal
+    // package name.
     String shadedPkg = "shaded_${project.version}".replace('-', '_').replace('.','_')
     relocate 'org.checkerframework.dataflow', "org.checkerframework.${shadedPkg}.dataflow"
     relocate 'org.checkerframework.javacutil', "org.checkerframework.${shadedPkg}.javacutil"
@@ -126,8 +125,8 @@ publishing {
         }
 
         dataflowShaded(MavenPublication) {
-            project.shadow.component it
             dataflowShadedPom it
+
             artifact shadowJar
             artifact sourcesJar
             artifact javadocJar
