@@ -79,6 +79,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
 
@@ -1626,7 +1627,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.emptyMap();
     }
 
-    Map<String, String> activeOpts = new HashMap<>(SystemUtil.mapCapacity(options));
+    Map<String, String> activeOpts = new HashMap<>(CollectionsPlume.mapCapacity(options));
 
     for (Map.Entry<String, String> opt : options.entrySet()) {
       String key = opt.getKey();
