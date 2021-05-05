@@ -102,6 +102,7 @@ public class AnnotationFileUtil {
         case BUILTIN_STUB:
           return false;
         case COMMAND_LINE_STUB:
+        case AJAVA_AS_STUB:
         case AJAVA:
           return true;
         default:
