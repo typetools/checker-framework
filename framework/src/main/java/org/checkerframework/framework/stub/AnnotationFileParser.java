@@ -1485,7 +1485,7 @@ public class AnnotationFileParser {
    */
   private void recordDeclAnnotation(
       Element elt, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
-    if (annotations == null) {
+    if (annotations == null || annotations.isEmpty()) {
       return;
     }
     Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
