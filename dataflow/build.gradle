@@ -1,12 +1,12 @@
 dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
-    implementation 'org.plumelib:plume-util:1.5.1'
+    implementation 'org.plumelib:plume-util:1.5.3'
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
-    // artifact, see shadowJar block below, and also in checker.jar, see the comment in
-    // ../build.gradle in the shadowJar block.
+    // artifact (see shadowJar block below) and also in checker.jar (see the comment in
+    // ../build.gradle in the shadowJar block).
 }
 
 shadowJar {
