@@ -2623,10 +2623,8 @@ public class AnnotationFileParser {
         stored.addAll(annos);
       } else {
         // JDK annotations should not replace any annotation of the same type.
-        List<DeclaredType> origStored = new ArrayList<>(stored);
-        Types typeUtils = processingEnv.getTypeUtils();
+        List<AnnotationMirror> origStored = new ArrayList<>(stored);
         for (AnnotationMirror anno : annos) {
-          DeclaredType annoType = anno.getAnnotationType();
           if (!AnnotationUtils.containsSameByName(origStored, anno)) {
             stored.add(anno);
           }
