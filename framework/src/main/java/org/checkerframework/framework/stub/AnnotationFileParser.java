@@ -107,7 +107,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -2624,15 +2623,11 @@ public class AnnotationFileParser {
         stored.addAll(annos);
       } else {
         // JDK annotations should not replace any annotation of the same type.
-        List<DeclaredType> storedAnnoTypes =
-            CollectionsPlume.mapList(AnnotationMirror::getAnnotationType, stored);
+        List<DeclaredType> origStored = new ArrayList<>(stored);
         Types typeUtils = processingEnv.getTypeUtils();
         for (AnnotationMirror anno : annos) {
           DeclaredType annoType = anno.getAnnotationType();
-          boolean existing =
-              storedAnnoTypes.stream()
-                  .anyMatch(storedAnnoType -> typeUtils.isSameType(annoType, storedAnnoType));
-          if (!existing) {
+          if (!AnnotationUtils.containsSameByName(origStored, anno)) {
             stored.add(anno);
           }
         }
