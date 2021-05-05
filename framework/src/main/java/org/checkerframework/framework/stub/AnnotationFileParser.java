@@ -580,7 +580,8 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Parse a stub file that is a part of the annotated JDK and side-effects the last two arguments.
+   * Parse a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
+   * argument.
    *
    * @param filename name of stub file, used only for diagnostic messages
    * @param inputStream of stub file to parse
@@ -600,7 +601,8 @@ public class AnnotationFileParser {
 
   /**
    * Delegate to the Stub Parser to parse the annotation file to an AST, and save it in {@link
-   * #stubUnit}. Also modifies other fields of this.
+   * #stubUnit}. Also sets {@link #allAnnotations}. Does not copy annotations out of {@link
+   * #stubUnit}; that is done by the {@code process*} methods.
    *
    * <p>Subsequently, all work uses the AST.
    *
@@ -631,7 +633,7 @@ public class AnnotationFileParser {
 
   /**
    * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
-   * means copying annotations from Stub Parser data structures to {@code annotationFileAnnos}.
+   * means copying annotations from Stub Parser data structures to {@code #annotationFileAnnos}.
    *
    * @param annotationFileAnnos annotations from the file; side-effected by this method
    */
