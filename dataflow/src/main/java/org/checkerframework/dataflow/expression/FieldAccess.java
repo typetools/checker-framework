@@ -12,8 +12,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * A FieldAccess represents a field access or a class literal. A class literal contains {@code
- * .class} in source code, e.g., SomeClass.class, SomeClass[].class, int.class, or int[].class.
+ * A FieldAccess represents a field access. It does not represent a class literal such as {@code
+ * SomeClass.class} or {@code int[].class}.
  */
 public class FieldAccess extends JavaExpression {
   /** The receiver of the field access. */
