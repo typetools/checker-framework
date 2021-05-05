@@ -1,16 +1,21 @@
 import org.checkerframework.checker.units.qual.Area;
 import org.checkerframework.checker.units.qual.Prefix;
+import org.checkerframework.checker.units.qual.Volume;
 import org.checkerframework.checker.units.qual.degrees;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.checker.units.util.UnitsTools;
 
 public class BasicUnits {
@@ -60,6 +65,15 @@ public class BasicUnits {
     // :: error: (assignment)
     @km2 int bae1 = m * m;
 
+    @Volume int vol = m * m * m;
+    @m3 int gvol = m * m * m;
+
+    // :: error: (assignment)
+    @Volume int bvol = m * m * m * m;
+
+    // :: error: (assignment)
+    @km3 int bvol1 = m * m * m;
+
     @radians double rad = 20.0d * UnitsTools.rad;
     @degrees double deg = 30.0d * UnitsTools.deg;
 
@@ -106,6 +120,10 @@ public class BasicUnits {
     speed /= 2;
 
     speed = (speed /= 2);
+
+    @kg int kiloGrams = 1000 * UnitsTools.kg;
+    @t int metricTons = UnitsTools.fromKiloGramToMetricTon(kiloGrams);
+    kiloGrams = UnitsTools.fromMetricTonToKiloGram(metricTons);
   }
 
   void prefixOutputTest() {
