@@ -33,9 +33,9 @@ public class ClassName extends JavaExpression {
       baseType = TypesUtils.getInnermostComponentType((ArrayType) type);
       baseKind = baseType.getKind();
     }
-    // Primitives, arrays, and void are permitted so FieldAccess can represent class literals.
-    // TYPEVAR and arrays is permitted for static method invocations.
-    // An alternate design would use a new JavaExpression for class literals.
+    // Primitives, arrays, and void are permitted because ClassName can represent class literals.
+    // (An alternate design would use a different JavaExpression for class literals.)
+    // TYPEVAR and arrays are permitted for static method invocations.
     if (!(baseKind == TypeKind.DECLARED
         || baseKind.isPrimitive()
         || baseKind == TypeKind.VOID
