@@ -1,13 +1,10 @@
 package org.checkerframework.dataflow.expression;
 
 import java.util.Objects;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * A ClassName represents either a class literal or the occurrence of a class as part of a static
@@ -20,8 +17,10 @@ public class ClassName extends JavaExpression {
   /**
    * Creates a new ClassName object for the given type.
    *
-   * @param type the type for this ClassName: declared, primitive, type variable, an array of one of
-   *     them, or void
+   * @param type the type for the new ClassName. If it will represent a class literal, the type is
+   *     declared primitive, void, or array of one of them. If it represents part of a static field
+   *     access or static method invocation, the type is declared, type variable, or array
+   *     (including array of primitive).
    */
   public ClassName(TypeMirror type) {
     super(type);
@@ -30,25 +29,6 @@ public class ClassName extends JavaExpression {
       typeString = typeString.substring(0, typeString.indexOf("<"));
     }
     this.typeString = typeString;
-
-    // Check that the argument is legal.
-    TypeMirror baseType;
-    TypeKind baseKind = type.getKind();
-    if (baseKind != TypeKind.ARRAY) {
-      baseType = type;
-    } else {
-      baseType = TypesUtils.getInnermostComponentType((ArrayType) type);
-      baseKind = baseType.getKind();
-    }
-    // Primitives, arrays, and void are permitted because ClassName can represent class literals.
-    // (An alternate design would use a different JavaExpression for class literals.)
-    // TYPEVAR and arrays are permitted for static method invocations.
-    if (!(baseKind == TypeKind.DECLARED
-        || baseKind.isPrimitive()
-        || baseKind == TypeKind.VOID
-        || baseKind == TypeKind.TYPEVAR)) {
-      throw new Error(type + " is " + type.getKind());
-    }
   }
 
   @Override
