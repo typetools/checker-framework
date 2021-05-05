@@ -4,16 +4,25 @@ dependencies {
     implementation 'org.plumelib:plume-util:1.5.1'
 
     // External dependencies:
-    // If you add an external dependency, you must shadow its packages.
-    // See the comment in ../build.gradle in the shadowJar block.
+    // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
+    // artifact, see shadowJar block below, and also in checker.jar, see the comment in
+    // ../build.gradle in the shadowJar block.
+
+    // Dependencies added to "shadow" appear as dependencies in Maven Central.
+    shadow project(':checker-qual')
 }
 
 shadowJar {
     archiveFileName = "dataflow-shaded.jar"
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
-    relocate 'org.checkerframework.dataflow', 'org.checkerframework.shaded.dataflow'
-    relocate 'org.checkerframework.javacutil', 'org.checkerframework.shaded.javacutil'
+    // The version number includes both "." and possibly "-SNAPSHOT"
+    String shadedPkg = "shaded_${project.version}".replace('-', '_').replace('.','_')
+    relocate 'org.checkerframework.dataflow', "org.checkerframework.${shadedPkg}.dataflow"
+    relocate 'org.checkerframework.javacutil', "org.checkerframework.${shadedPkg}.javacutil"
+
+    // Relocate external dependencies
+    relocate 'org.plume', "org.checkerframework.${shadedPkg}.org.plume"
 }
 
 artifacts {
@@ -117,6 +126,7 @@ publishing {
         }
 
         dataflowShaded(MavenPublication) {
+            project.shadow.component it
             dataflowShadedPom it
             artifact shadowJar
             artifact sourcesJar
