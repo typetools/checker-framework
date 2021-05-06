@@ -13,6 +13,9 @@ files provided on the command line.
 
 **Implementation details:**
 
+The package names in the dataflow-shaded artifact include the version number of
+the artifact using `_` in place of `.`.
+
 **Closed issues:**
 
 
