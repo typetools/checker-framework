@@ -234,8 +234,12 @@ public abstract class JavaExpression {
    */
   public static JavaExpression fromNodeFieldAccess(FieldAccessNode node) {
     Node receiverNode = node.getReceiver();
-    if (node.getFieldName().equals("class")) {
-      // It's a class literal
+    String fieldName = node.getFieldName();
+    if (fieldName.equals("this")) {
+      // The CFG represents "className.this" as a FieldAccessNode, but it isn't a field access.
+      return new ThisReference(receiverNode.getType());
+    } else if (fieldName.equals("class")) {
+      // The CFG represents "className.class" as a FieldAccessNode; bit it is a class literal.
       return new ClassName(receiverNode.getType());
     }
     JavaExpression receiver;
@@ -270,18 +274,7 @@ public abstract class JavaExpression {
   public static JavaExpression fromNode(Node receiverNode) {
     JavaExpression result = null;
     if (receiverNode instanceof FieldAccessNode) {
-      FieldAccessNode fan = (FieldAccessNode) receiverNode;
-
-      if (fan.getFieldName().equals("this")) {
-        // For some reason, "className.this" is considered a field access.
-        // We right this wrong here.
-        result = new ThisReference(fan.getReceiver().getType());
-      } else if (fan.getFieldName().equals("class")) {
-        // "className.class" is lexically a field access, but it is actually a class literal.
-        result = new ClassName(fan.getReceiver().getType());
-      } else {
-        result = fromNodeFieldAccess(fan);
-      }
+      result = fromNodeFieldAccess((FieldAccessNode) receiverNode);
     } else if (receiverNode instanceof ExplicitThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof ThisNode) {

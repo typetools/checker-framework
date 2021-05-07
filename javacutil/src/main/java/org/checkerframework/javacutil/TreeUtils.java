@@ -980,7 +980,7 @@ public final class TreeUtils {
    */
   public static boolean isFieldAccess(Tree tree) {
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-      // explicit member access (or a class literal)
+      // explicit member access (or a class literal or a qualified this)
       MemberSelectTree memberSelect = (MemberSelectTree) tree;
       if (memberSelect.getIdentifier().contentEquals("class")) {
         return false;
