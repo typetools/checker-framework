@@ -59,7 +59,7 @@ public class FieldAccess extends JavaExpression {
       Error e =
           new Error(
               String.format(
-                  "bad field name %s in new FieldAccess(%s, %s, %s)%n",
+                  "bad field name \"%s\" in new FieldAccess(%s, %s, %s)%n",
                   fieldName, receiver, type, fieldElement));
       e.printStackTrace(System.out);
       e.printStackTrace(System.err);

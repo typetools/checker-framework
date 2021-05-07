@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -427,8 +428,8 @@ public abstract class JavaExpression {
       case IDENTIFIER:
         IdentifierTree identifierTree = (IdentifierTree) tree;
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
-        if (identifierTree.getName().contentEquals("this")
-            || identifierTree.getName().contentEquals("super")) {
+        Name identifierName = identifierTree.getName();
+        if (identifierName.contentEquals("this") || identifierName.contentEquals("super")) {
           result = new ThisReference(typeOfId);
           break;
         }
@@ -537,8 +538,14 @@ public abstract class JavaExpression {
   private static JavaExpression fromMemberSelect(MemberSelectTree memberSelectTree) {
     TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
     if (TreeUtils.isClassLiteral(memberSelectTree)) {
+      // the identifier is "class"
       return new ClassName(expressionType);
     }
+    if (TreeUtils.isExplicitThisDereference(memberSelectTree)) {
+      // the identifier is "class"
+      return new ThisReference(expressionType);
+    }
+
     assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
     Element ele = TreeUtils.elementFromUse(memberSelectTree);
     if (ElementUtils.isTypeElement(ele)) {
