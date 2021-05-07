@@ -35,7 +35,7 @@ public class FieldAccessNode extends Node {
    */
   public FieldAccessNode(Tree tree, Node receiver) {
     super(TreeUtils.typeOf(tree));
-    assert TreeUtils.isFieldAccess(tree) || TreeUtils.isClassLiteral(tree);
+    assert TreeUtils.isFieldAccess(tree);
     this.tree = tree;
     this.receiver = receiver;
     this.field = TreeUtils.getFieldName(tree);

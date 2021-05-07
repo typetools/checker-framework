@@ -54,7 +54,8 @@ public class FieldAccess extends JavaExpression {
     super(type);
     this.receiver = receiver;
     this.field = fieldElement;
-    if (fieldElement.toString().equals("class")) {
+    String fieldName = fieldElement.toString();
+    if (fieldName.equals("class") || fieldName.equals("this")) {
       throw new Error(String.format("FieldAccess: %s %s %s%n", receiver, type, fieldElement));
     }
   }
