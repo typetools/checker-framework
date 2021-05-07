@@ -13,15 +13,12 @@ shadowJar {
     archiveFileName = "dataflow-shaded.jar"
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
-    archiveName('dataflow-shaded')
-    // The version number includes both "." and possibly "-SNAPSHOT", so convert it to a legal
-    // package name.
-    String shadedPkg = "shaded_${project.version}".replace('-', '_').replace('.','_')
-    relocate 'org.checkerframework.dataflow', "org.checkerframework.${shadedPkg}.dataflow"
-    relocate 'org.checkerframework.javacutil', "org.checkerframework.${shadedPkg}.javacutil"
+
+    relocate 'org.checkerframework.dataflow', "org.checkerframework.shaded.dataflow"
+    relocate 'org.checkerframework.javacutil', "org.checkerframework.shaded.javacutil"
 
     // Relocate external dependencies
-    relocate 'org.plume', "org.checkerframework.${shadedPkg}.org.plume"
+    relocate 'org.plume', "org.checkerframework.shaded.org.plume"
 }
 
 artifacts {
