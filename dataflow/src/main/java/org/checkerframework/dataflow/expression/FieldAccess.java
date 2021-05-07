@@ -56,7 +56,14 @@ public class FieldAccess extends JavaExpression {
     this.field = fieldElement;
     String fieldName = fieldElement.toString();
     if (fieldName.equals("class") || fieldName.equals("this")) {
-      throw new Error(String.format("FieldAccess: %s %s %s%n", receiver, type, fieldElement));
+      Error e =
+          new Error(
+              String.format(
+                  "bad field name %s in new FieldAccess(%s, %s, %s)%n",
+                  fieldName, receiver, type, fieldElement));
+      e.printStackTrace(System.out);
+      e.printStackTrace(System.err);
+      throw e;
     }
   }
 
