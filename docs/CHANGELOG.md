@@ -1,8 +1,26 @@
-Version 3.?.? (June 3, 2021)
+Version 3.?.? (June 1, 2021)
 ----------------------------
+
+**User-visible changes:**
 
 The Must Call Checker over-approximates the methods that an object must call
 before it is de-allocated.
+
+The Units Checker supports new qualifiers (thanks to Rene Kraneis):
+ * `@Volume`, `@m3`, `@mm3`, `@km3`
+ * `@Force`, `@N`, `@kN`
+ * `@t` (metric ton, a unit of mass)
+
+Stub files can now override declaration annotations in the annotated JDK.
+Previously, stub files only overrode type annotations in the annotated JDK.
+
+Command-line argument `-AstubWarnIfNotFound` is treated as true for stub
+files provided on the command line.
+
+**Implementation details:**
+
+**Closed issues:**
+
 
 Version 3.13.0 (May 3, 2021)
 ----------------------------
