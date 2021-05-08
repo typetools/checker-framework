@@ -151,6 +151,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
 There are also method annotations:
 
 \begin{description}
+\label{called-methods-ensurescalledmethods}
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
   guarantees to be called.
@@ -164,6 +165,27 @@ There are also method annotations:
 
   guarantees that \<p.x()> and \<p.y()> will always be called before \<m> returns.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+  Sometimes, you need to help the Called Methods Checker to verify the property.
+  Consider this example:
+  \begin{Verbatim}
+  @EnsuresCalledMethods(value="#1", methods="close")
+  public void closeSocket(Socket sock) throws IOException {
+      sock.close();
+      m();
+  }
+  \end{Verbatim}
+
+  If \<m()> might have side-effects (i.e. it is not annotated as
+  \<@SideEffectFree>), then the Called Methods Checker will be unable to verify
+  that \<close()> is definitely called on \<sock> before \<closeSocket()>
+  returns, and will issue an error. There are two possible fixes:
+
+  \begin{itemize}
+  \item add an \<@SideEffectFree> annotation to \<m()>, if it is in fact side-effect free; or
+  \item re-order the calls to \<sock.close()> and \<m()> so that the call to \<sock.close()> appears
+  last in \<closeSocket()>.
+  \end{itemize}
 
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsIf}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
