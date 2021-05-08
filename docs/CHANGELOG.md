@@ -8,13 +8,13 @@ The Units Checker supports new qualifiers (thanks to Rene Kraneis):
  * `@Force`, `@N`, `@kN`
  * `@t` (metric ton, a unit of mass)
 
+Stub files can now override declaration annotations in the annotated JDK.
+Previously, stub files only overrode type annotations in the annotated JDK.
+
 Command-line argument `-AstubWarnIfNotFound` is treated as true for stub
 files provided on the command line.
 
 **Implementation details:**
-
-The package names in the dataflow-shaded artifact include the version number of
-the artifact using `_` in place of `.`.
 
 **Closed issues:**
 

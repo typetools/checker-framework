@@ -143,7 +143,7 @@ function configure_and_exec_dljc {
     BUILD_CMD="ant clean compile ${EXTRA_BUILD_ARGS}"
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
-      WPI_RESULTS_AVAILABLE="no"
+      WPI_RESULTS_AVAILABLE="no build file found for ${REPO_NAME}"
       return
   fi
 
@@ -190,7 +190,7 @@ function configure_and_exec_dljc {
 
   if [[ $DLJC_STATUS -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
-      WPI_RESULTS_AVAILABLE="no"
+      WPI_RESULTS_AVAILABLE="dljc timed out for ${DIR}"
       return
   fi
 
@@ -202,8 +202,8 @@ function configure_and_exec_dljc {
       echo "typecheck output is in ${DIR}/dljc-out/typecheck.out"
       echo "stdout is in $dljc_stdout"
   else
-      WPI_RESULTS_AVAILABLE="no"
-      echo "dljc failed"
+      WPI_RESULTS_AVAILABLE="file ${DIR}/dljc-out/wpi.log does not exist"
+      echo "dljc failed: ${WPI_RESULTS_AVAILABLE}"
       echo "dljc output is in ${DIR}/dljc-out/"
       echo "stdout is in $dljc_stdout"
   fi
@@ -239,7 +239,7 @@ elif [ "${has_java8}" = "yes" ]; then
   configure_and_exec_dljc "$@"
 fi
 
-if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
+if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
     # if running under Java 11 fails, try to run
     # under Java 8 instead
     if [ "${has_java8}" = "yes" ]; then
@@ -251,8 +251,8 @@ fi
 
 # support wpi-many.sh's ability to delete projects without usable results
 # automatically
-if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
-    echo "dljc could not run the build successfully."
+if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+    echo "dljc could not run the build successfully: ${WPI_RESULTS_AVAILABLE}"
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
     touch "${DIR}/.cannot-run-wpi"
 fi
