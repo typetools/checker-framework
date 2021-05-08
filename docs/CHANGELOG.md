@@ -3,6 +3,14 @@ Version 3.?.? (June 1, 2021)
 
 **User-visible changes:**
 
+The Units Checker supports new qualifiers (thanks to Rene Kraneis):
+ * `@Volume`, `@m3`, `@mm3`, `@km3`
+ * `@Force`, `@N`, `@kN`
+ * `@t` (metric ton, a unit of mass)
+
+Stub files can now override declaration annotations in the annotated JDK.
+Previously, stub files only overrode type annotations in the annotated JDK.
+
 Command-line argument `-AstubWarnIfNotFound` is treated as true for stub
 files provided on the command line.
 

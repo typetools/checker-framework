@@ -2615,10 +2615,21 @@ public class AnnotationFileParser {
    * @param annos the the set of declaration annotations on it, as written in the annotation file
    */
   private void putOrAddToDeclAnnos(String key, Set<AnnotationMirror> annos) {
-    if (annotationFileAnnos.declAnnos.containsKey(key)) {
-      annotationFileAnnos.declAnnos.get(key).addAll(annos);
-    } else {
+    Set<AnnotationMirror> stored = annotationFileAnnos.declAnnos.get(key);
+    if (stored == null) {
       annotationFileAnnos.declAnnos.put(key, new HashSet<>(annos));
+    } else {
+      if (fileType != AnnotationFileType.JDK_STUB) {
+        stored.addAll(annos);
+      } else {
+        // JDK annotations should not replace any annotation of the same type.
+        List<AnnotationMirror> origStored = new ArrayList<>(stored);
+        for (AnnotationMirror anno : annos) {
+          if (!AnnotationUtils.containsSameByName(origStored, anno)) {
+            stored.add(anno);
+          }
+        }
+      }
     }
   }
 
