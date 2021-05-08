@@ -54,6 +54,17 @@ public class FieldAccess extends JavaExpression {
     super(type);
     this.receiver = receiver;
     this.field = fieldElement;
+    String fieldName = fieldElement.toString();
+    if (fieldName.equals("class") || fieldName.equals("this")) {
+      Error e =
+          new Error(
+              String.format(
+                  "bad field name \"%s\" in new FieldAccess(%s, %s, %s)%n",
+                  fieldName, receiver, type, fieldElement));
+      e.printStackTrace(System.out);
+      e.printStackTrace(System.err);
+      throw e;
+    }
   }
 
   public boolean isFinal() {

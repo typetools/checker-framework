@@ -7,8 +7,8 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
- * A ClassName represents the occurrence of a class as part of a static field access or method
- * invocation.
+ * A ClassName represents either a class literal or the occurrence of a class as part of a static
+ * field access or static method invocation.
  */
 public class ClassName extends JavaExpression {
   /** The string representation of the raw type of this. */
