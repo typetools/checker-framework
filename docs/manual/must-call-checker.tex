@@ -3,8 +3,12 @@
 
 The Must Call Checker conservatively over-approximates
 the set of methods that an object should call before it is de-allocated.
-It is intended to be run as a subchecker of another checker: on its own, it does not
-enforce any rules other than subtyping.
+The checker does not enforce that the methods are called before objects are de-allocated,
+nor are its annotations refined after a must-call method is called; rather,
+it is intended to be run as a subchecker of another checker. On its own, it does not
+enforce any rules other than subtyping. Instead, the types that the Must Call Checker
+computes can be used by later checkers that require an over-approximation
+of the methods that each object in the program should call.
 
 For example, consider a \<java.io.OutputStream>.  This \<OutputStream>
 might have an obligation to call the \<close()> method, to release an
@@ -188,12 +192,6 @@ You can either:
 \item removing the explicit bound from \<Partition>, changing its declaration to
   \code{interface Partition<ELEMENT, CLASS>}.
 \end{itemize}
-
-\noindent
-These two changes are semantically equivalent.  In this case, we preferred
-the former, since the latter would remove the explicit \<@Nullable>
-annotations on \<ELEMENT> and \<CLASS>.
-
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector
