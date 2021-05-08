@@ -14,8 +14,10 @@ shadowJar {
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
 
-    relocate 'org.checkerframework.dataflow', "org.checkerframework.shaded.dataflow"
-    relocate 'org.checkerframework.javacutil', "org.checkerframework.shaded.javacutil"
+    relocate ('org.checkerframework', 'org.checkerframework.shaded') {
+        // Shade all Checker Framework packages, except for the dataflow qualifiers.
+        exclude 'org.checkerframework.dataflow.qual.*'
+    }
 
     // Relocate external dependencies
     relocate 'org.plume', "org.checkerframework.shaded.org.plume"
