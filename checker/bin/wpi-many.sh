@@ -276,7 +276,7 @@ else
     # results can be inspected by hand (that is, those that WPI succeeded on).
     # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java".
     # shellcheck disable=SC2046
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-J" | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-J" | sed "s/'//g" | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
         echo "${listpath} has size zero"
@@ -292,11 +292,14 @@ else
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
+    echo "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" "FROM" "${listpath}"
+
     # shellcheck disable=SC2046
     "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
         $(< "${listpath}")
 
-    rm -f "${listpath}"
+    echo "listpath: ${listpath}"
+    # rm -f "${listpath}"
   else
     echo "skipping computation of lines of code because the operating system is not linux: ${OSTYPE}}"
   fi
