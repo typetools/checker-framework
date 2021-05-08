@@ -1,0 +1,15 @@
+package java.util;
+
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+public final class Objects {
+
+  // `@EnsuresNonNull({})` overrides `@EnsuresNonNull("#1")` in the annotated JDK.
+
+  @EnsuresNonNull({})
+  public static <T> T requireNonNull(@Nullable T obj);
+
+  @EnsuresNonNull({})
+  public static <T> T requireNonNull(@Nullable T obj, String message);
+}

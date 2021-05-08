@@ -952,7 +952,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a class literal, such as.
+   * Determine whether {@code tree} is a class literal, such as
    *
    * <pre>
    *   <em>Object</em> . <em>class</em>
@@ -968,18 +968,21 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a field access expressions, such as.
+   * Determine whether {@code tree} is a field access expression, such as
    *
    * <pre>
    *   <em>f</em>
    *   <em>obj</em> . <em>f</em>
    * </pre>
    *
+   * This method currently also returns true for class literals and qualified this.
+   *
+   * @param tree a tree that might be a field access
    * @return true iff if tree is a field access expression (implicit or explicit)
    */
   public static boolean isFieldAccess(Tree tree) {
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-      // explicit field access
+      // explicit member access (or a class literal or a qualified this)
       MemberSelectTree memberSelect = (MemberSelectTree) tree;
       assert isUseOfElement(memberSelect) : "@AssumeAssertion(nullness): tree kind";
       Element el = TreeUtils.elementFromUse(memberSelect);
@@ -998,7 +1001,8 @@ public final class TreeUtils {
 
   /**
    * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
-   * tree} to be a field access, as determined by {@code isFieldAccess}.
+   * tree} to be a field access, as determined by {@code isFieldAccess} (which currently also
+   * returns true for class literals and qualified this).
    *
    * @param tree a field access tree
    * @return the name of the field accessed by {@code tree}
