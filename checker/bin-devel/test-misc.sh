@@ -13,6 +13,10 @@ source "$SCRIPTDIR"/build.sh
 
 PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
 
+## Sanity check that javac scripts work
+"$CHECKERFRAMEWORK/checker/bin/javac" -processor nullness "$CHECKERFRAMEWORK/docs/examples/NullnessExample.java"
+"$CHECKERFRAMEWORK/checker/bin-devel/javac" -processor nullness "$CHECKERFRAMEWORK/docs/examples/NullnessExample.java"
+
 ## Checker Framework demos
 "$PLUME_SCRIPTS/git-clone-related" typetools checker-framework.demos
 ./gradlew :checker:demosTests --console=plain --warning-mode=all --no-daemon
