@@ -2621,8 +2621,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param cls the class whose location is the base of the file path
    * @param filePath the name/path of the file to be read
-   * @param boolean permitNonExisting if true, return an empty Properties if the file does not exist
-   *     or cannot be parsed; if false, issue an error
+   * @param permitNonExisting if true, return an empty Properties if the file does not exist or
+   *     cannot be parsed; if false, issue an error
    * @return the properties
    */
   protected Properties getProperties(Class<?> cls, String filePath, boolean permitNonExisting) {
