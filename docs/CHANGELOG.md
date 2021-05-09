@@ -16,6 +16,8 @@ files provided on the command line.
 
 **Implementation details:**
 
+Method `SourceChecker.getProperties` takes a third formal parameter `permitNonExisting`.
+
 **Closed issues:**
 
 
