@@ -292,14 +292,11 @@ else
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
-    echo "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" "FROM" "${listpath}"
-
     # shellcheck disable=SC2046
     "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
         $(< "${listpath}")
 
-    echo "listpath: ${listpath}"
-    # rm -f "${listpath}"
+    rm -f "${listpath}"
   else
     echo "skipping computation of lines of code because the operating system is not linux: ${OSTYPE}}"
   fi
