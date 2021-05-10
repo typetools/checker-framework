@@ -60,6 +60,9 @@ import org.checkerframework.framework.qual.JavaExpression;
  * Methods Checker, so the client has to "start over" as if a fresh {@code SocketContainer} object
  * had been created.
  *
+ * <p>When the -AnoAccumulationFrames command-line argument is passed to the checker, this
+ * annotation is ignored and all fields are treated as non-owning.
+ *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Target({ElementType.METHOD})

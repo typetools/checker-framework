@@ -46,6 +46,9 @@ import java.lang.annotation.Target;
  *       parameters and returns).
  * </ul>
  *
+ * When the -AnoResourceAliases command-line argument is passed to the checker, this annotation is
+ * treated identically to {@link PolyMustCall}.
+ *
  * @checker_framework.manual #must-call-checker Must Call Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */

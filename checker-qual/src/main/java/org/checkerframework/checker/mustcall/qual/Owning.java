@@ -12,6 +12,9 @@ import java.lang.annotation.Target;
  * <p>Method return types are treated as if they have this annotation by default unless their method
  * is annotated as {@link NotOwning}.
  *
+ * <p>When the -AnoLightweightOwnership command-line argument is passed to the checker, this
+ * annotation and {@link NotOwning} are ignored.
+ *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Retention(RetentionPolicy.RUNTIME)

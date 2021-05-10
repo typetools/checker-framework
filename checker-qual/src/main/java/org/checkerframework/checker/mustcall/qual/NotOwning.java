@@ -12,6 +12,9 @@ import java.lang.annotation.Target;
  * <p>Parameters and fields are treated as if they have this annotation by default unless they have
  * {@link Owning}.
  *
+ * <p>When the -AnoLightweightOwnership command-line argument is passed to the checker, this
+ * annotation and {@link Owning} are ignored.
+ *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
