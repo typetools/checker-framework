@@ -3,9 +3,6 @@ Version 3.?.? (June 1, 2021)
 
 **User-visible changes:**
 
-The Must Call Checker over-approximates the methods that an object must call
-before it is de-allocated.
-
 The Units Checker supports new qualifiers (thanks to Rene Kraneis):
  * `@Volume`, `@m3`, `@mm3`, `@km3`
  * `@Force`, `@N`, `@kN`
