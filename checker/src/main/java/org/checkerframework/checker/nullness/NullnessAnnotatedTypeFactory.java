@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -16,6 +17,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
@@ -731,7 +734,7 @@ public class NullnessAnnotatedTypeFactory
   // If
   //  1. rhs is @Nullable
   //  2. lhs is a field of this
-  //  3. in a constructor
+  //  3. in a constructor, initializer block, or field initializer
   // then change rhs to @MonotonicNonNull.
   @Override
   public void wpiAdjustForUpdateField(
@@ -740,8 +743,10 @@ public class NullnessAnnotatedTypeFactory
       return;
     }
     TreePath lhsPath = getPath(lhsTree);
-    if (TreePathUtil.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
-        && TreePathUtil.inConstructor(lhsPath)) {
+    ClassTree enclosingClassTree = TreePathUtil.enclosingClass(lhsPath);
+    TypeElement enclosingClassElement = TreeUtils.elementFromDeclaration(enclosingClassTree);
+    ClassSymbol enclosingClassSymbol = ((VarSymbol) element).enclClass();
+    if (enclosingClassElement.equals(enclosingClassSymbol) && TreePathUtil.inConstructor(lhsPath)) {
       rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
     }
   }

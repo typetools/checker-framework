@@ -60,6 +60,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -152,17 +153,41 @@ public class NullnessVisitor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
-    // allow MonotonicNonNull to be initialized to null at declaration
-    if (varTree.getKind() == Tree.Kind.VARIABLE) {
-      Element elem = TreeUtils.elementFromDeclaration((VariableTree) varTree);
-      if (atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
-          && !checker.getLintOption(
-              NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
-              NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
-        return;
-      }
+    // Allow a MonotonicNonNull field to be initialized to null at declaration or in initializer
+    // block.  (Permitting in an initializer block is, strictly speaking, unsound because the
+    // initializer block might have previously set the field to a non-null value.)
+    Element elem = initializedElement(varTree);
+    if (elem != null
+        && atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
+        && !checker.getLintOption(
+            NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+            NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
+      return;
     }
     super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+  }
+
+  /**
+   * Returns the variable element, if this is an initialization; otherwise returns null.
+   *
+   * @param varTree the initialized element, or null
+   */
+  @SuppressWarnings("UnusedMethod")
+  private Element initializedElement(Tree varTree) {
+    switch (varTree.getKind()) {
+      case VARIABLE:
+        // It's a variable declaration.
+        return TreeUtils.elementFromDeclaration((VariableTree) varTree);
+      case IDENTIFIER:
+        // It's an identifier; if not within a method, it may be a static block.
+        if (TreePathUtil.enclosingMethod(getCurrentPath()) == null) {
+          return TreeUtils.elementFromUse((IdentifierTree) varTree);
+        } else {
+          return null;
+        }
+      default:
+        return null;
+    }
   }
 
   @Override
