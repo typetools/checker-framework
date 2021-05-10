@@ -170,7 +170,8 @@ public class NullnessVisitor
   /**
    * Returns the variable element, if this is an initialization; otherwise returns null.
    *
-   * @param varTree the initialized element, or null
+   * @param varTree an assignment LHS
+   * @return the initialized element, or null
    */
   @SuppressWarnings("UnusedMethod")
   private Element initializedElement(Tree varTree) {

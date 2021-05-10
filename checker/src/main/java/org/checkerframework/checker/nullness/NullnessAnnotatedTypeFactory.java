@@ -2,7 +2,6 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -743,10 +742,10 @@ public class NullnessAnnotatedTypeFactory
       return;
     }
     TreePath lhsPath = getPath(lhsTree);
-    ClassTree enclosingClassTree = TreePathUtil.enclosingClass(lhsPath);
-    TypeElement enclosingClassElement = TreeUtils.elementFromDeclaration(enclosingClassTree);
-    ClassSymbol enclosingClassSymbol = ((VarSymbol) element).enclClass();
-    if (enclosingClassElement.equals(enclosingClassSymbol) && TreePathUtil.inConstructor(lhsPath)) {
+    TypeElement enclosingClassOfLhs =
+        TreeUtils.elementFromDeclaration(TreePathUtil.enclosingClass(lhsPath));
+    ClassSymbol enclosingClassOfField = ((VarSymbol) element).enclClass();
+    if (enclosingClassOfLhs.equals(enclosingClassOfField) && TreePathUtil.inConstructor(lhsPath)) {
       rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
     }
   }
