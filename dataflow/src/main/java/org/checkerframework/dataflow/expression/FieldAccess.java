@@ -11,14 +11,30 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/**
+ * A FieldAccess represents a field access. It does not represent a class literal such as {@code
+ * SomeClass.class} or {@code int[].class}.
+ */
 public class FieldAccess extends JavaExpression {
+  /** The receiver of the field access. */
   protected final JavaExpression receiver;
+  /** The field being accessed. */
   protected final VariableElement field;
 
+  /**
+   * Returns the receiver.
+   *
+   * @return the receiver
+   */
   public JavaExpression getReceiver() {
     return receiver;
   }
 
+  /**
+   * Returns the field.
+   *
+   * @return the field
+   */
   public VariableElement getField() {
     return field;
   }
