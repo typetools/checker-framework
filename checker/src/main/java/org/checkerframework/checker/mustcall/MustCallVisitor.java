@@ -1,17 +1,21 @@
 package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -19,6 +23,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -57,6 +62,39 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
     }
     return super.visitReturn(node, p);
+  }
+
+  @Override
+  protected boolean validateType(Tree tree, AnnotatedTypeMirror type) {
+    if (TreeUtils.isClassTree(tree)) {
+      Element classEle = TreeUtils.elementFromDeclaration((ClassTree) tree);
+      AnnotationMirror inheritableMustCall =
+          atypeFactory.getDeclAnnotation(classEle, InheritableMustCall.class);
+      if (inheritableMustCall != null) {
+        AnnotationMirror explict = atypeFactory.fromElement(classEle).getAnnotation();
+        if (explict != null) {
+          List<String> mustCallVal =
+              AnnotationUtils.getElementValueArray(
+                  inheritableMustCall, atypeFactory.inheritableMustCallValueElement, String.class);
+          AnnotationMirror inheritedMCAnno = atypeFactory.createMustCall(mustCallVal);
+
+          // Issue an error if there is an inconsistent, user-written @MustCall annotation.
+          AnnotationMirror writtenMCAnno = type.getAnnotation();
+          if (writtenMCAnno != null
+              && !atypeFactory.getQualifierHierarchy().isSubtype(inheritedMCAnno, writtenMCAnno)) {
+
+            checker.reportError(
+                tree,
+                "inconsistent.mustcall.subtype",
+                classEle.getSimpleName(),
+                writtenMCAnno,
+                inheritableMustCall);
+            return false;
+          }
+        }
+      }
+    }
+    return super.validateType(tree, type);
   }
 
   @Override

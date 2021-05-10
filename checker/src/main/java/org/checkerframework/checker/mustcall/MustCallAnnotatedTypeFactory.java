@@ -11,7 +11,6 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +37,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.QualifierUpperBounds;
 import org.checkerframework.framework.type.SubtypeIsSubsetQualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -62,20 +63,14 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** The {@code @}{@link MustCall}{@code ()} annotation. It is the default in unannotated code. */
   public final AnnotationMirror BOTTOM;
 
-  /** The {@code @}{@link PolyMustCall} annoattion. */
+  /** The {@code @}{@link PolyMustCall} annotation. */
   final AnnotationMirror POLY;
-
-  /**
-   * A cache of locations at which an inconsistent.mustcall.subtype error has already been issued,
-   * to avoid issuing duplicate errors. Cleared with each compilation unit.
-   */
-  private final Set<Element> issuedInconsistentMustCallSubtype = new HashSet<>();
 
   /**
    * Map from trees representing expressions to the temporary variables that represent them in the
    * store.
    */
-  /* package-private */ HashMap<Tree, LocalVariableNode> tempVars = new HashMap<>();
+  /* package-private */ final HashMap<Tree, LocalVariableNode> tempVars = new HashMap<>();
 
   /** The MustCall.value field/element. */
   final ExecutableElement mustCallValueElement =
@@ -114,7 +109,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
     super.setRoot(root);
-    issuedInconsistentMustCallSubtype.clear();
     // TODO: This should probably be guarded by isSafeToClearSharedCFG from
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
@@ -233,37 +227,66 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
-  public AnnotatedTypeMirror fromElement(Element elt) {
-    AnnotatedTypeMirror type = super.fromElement(elt);
-    // Support @InheritableMustCall meaning @MustCall on all class declaration elements.
-    if (ElementUtils.isTypeElement(elt)) {
-      AnnotationMirror inheritableMustCall = getDeclAnnotation(elt, InheritableMustCall.class);
+  protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
+    return new MustCallDefaultQualifierForUseTypeAnnotator();
+  }
+
+  /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
+  class MustCallDefaultQualifierForUseTypeAnnotator extends DefaultQualifierForUseTypeAnnotator {
+
+    /** Creates an {@code MustCallDefaultQualifierForUseTypeAnnotator}. */
+    public MustCallDefaultQualifierForUseTypeAnnotator() {
+      super(MustCallAnnotatedTypeFactory.this);
+    }
+
+    @Override
+    protected Set<AnnotationMirror> getExplicitAnnos(Element element) {
+      Set<AnnotationMirror> explict = super.getExplicitAnnos(element);
+      if (explict.isEmpty() && ElementUtils.isTypeElement(element)) {
+        AnnotationMirror inheritableMustCall =
+            getDeclAnnotation(element, InheritableMustCall.class);
+        if (inheritableMustCall != null) {
+          List<String> mustCallVal =
+              AnnotationUtils.getElementValueArray(
+                  inheritableMustCall, inheritableMustCallValueElement, String.class);
+          return Collections.singleton(createMustCall(mustCallVal));
+        }
+      }
+      return explict;
+    }
+  }
+
+  @Override
+  protected QualifierUpperBounds createQualifierUpperBounds() {
+    return new MustCallQualifierUpperBounds();
+  }
+
+  /** Support @InheritableMustCall meaning @MustCall on all subtypes. */
+  class MustCallQualifierUpperBounds extends QualifierUpperBounds {
+
+    /**
+     * Creates a {@link QualifierUpperBounds} from the MustCall Checker the annotations that are in
+     * the type hierarchy.
+     */
+    public MustCallQualifierUpperBounds() {
+      super(MustCallAnnotatedTypeFactory.this);
+    }
+
+    @Override
+    protected Set<AnnotationMirror> getAnnotationFromElement(Element element) {
+      Set<AnnotationMirror> explict = super.getAnnotationFromElement(element);
+      if (!explict.isEmpty()) {
+        return explict;
+      }
+      AnnotationMirror inheritableMustCall = getDeclAnnotation(element, InheritableMustCall.class);
       if (inheritableMustCall != null) {
         List<String> mustCallVal =
             AnnotationUtils.getElementValueArray(
                 inheritableMustCall, inheritableMustCallValueElement, String.class);
-        AnnotationMirror inheritedMCAnno = createMustCall(mustCallVal);
-        // Issue an error if there is an inconsistent, user-written @MustCall annotation.
-        // Otherwise, replace the implicit @MustCall({}) with the inherited must-call annotation.
-        AnnotationMirror writtenMCAnno = type.getAnnotationInHierarchy(this.TOP);
-        if (writtenMCAnno != null
-            && !this.getQualifierHierarchy().isSubtype(inheritedMCAnno, writtenMCAnno)) {
-          if (!issuedInconsistentMustCallSubtype.contains(elt)
-              && !this.checker.shouldSkipUses(elt)) {
-            checker.reportError(
-                elt,
-                "inconsistent.mustcall.subtype",
-                elt.getSimpleName(),
-                writtenMCAnno,
-                inheritableMustCall);
-            issuedInconsistentMustCallSubtype.add(elt);
-          }
-        } else {
-          type.replaceAnnotation(inheritedMCAnno);
-        }
+        return Collections.singleton(createMustCall(mustCallVal));
       }
+      return Collections.emptySet();
     }
-    return type;
   }
 
   /**
