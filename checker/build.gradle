@@ -100,7 +100,7 @@ assemble.dependsOn copyJarsToDist
 
 task printPlumeUtilJarPath {
     description "Print the path to plume-util.jar"
-    doFirst { println project.configurations.compile.find { it.name.startsWith("plume-util") } }
+        doFirst { println compileJava.classpath.asPath }
 }
 
 task allSourcesJar(type: Jar, group: 'Build') {
