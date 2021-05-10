@@ -153,9 +153,10 @@ public class NullnessVisitor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
-    // Allow a MonotonicNonNull field to be initialized to null at declaration or in initializer
-    // block.  (Permitting in an initializer block is, strictly speaking, unsound because the
-    // initializer block might have previously set the field to a non-null value.)
+    // Allow a MonotonicNonNull field to be initialized to null at its declaration, in a
+    // constructor, or in an initializer block.  (The latter two are, strictly speaking, unsound
+    // because the constructor or initializer block might have previously set the field to a
+    // non-null value.  Maybe add an option to disable that behavior.)
     Element elem = initializedElement(varTree);
     if (elem != null
         && atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
@@ -181,7 +182,7 @@ public class NullnessVisitor
         return TreeUtils.elementFromDeclaration((VariableTree) varTree);
       case IDENTIFIER:
         // It's an identifier; if not within a method, it may be a static block.
-        if (TreePathUtil.enclosingMethod(getCurrentPath()) == null) {
+        if (TreePathUtil.inConstructor(getCurrentPath())) {
           return TreeUtils.elementFromUse((IdentifierTree) varTree);
         } else {
           return null;
