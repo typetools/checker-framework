@@ -33,6 +33,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -180,13 +181,25 @@ public class NullnessVisitor
       case VARIABLE:
         // It's a variable declaration.
         return TreeUtils.elementFromDeclaration((VariableTree) varTree);
+
+      case MEMBER_SELECT:
+        MemberSelectTree mst = (MemberSelectTree) varTree;
+        ExpressionTree receiver = mst.getExpression();
+        // This recognizes "this.fieldname = ..." but not for "MyClass.this.fieldname = ...".
+        if (receiver.getKind() != Tree.Kind.IDENTIFIER
+            || !((IdentifierTree) receiver).getName().contentEquals("this")) {
+          return null;
+        }
+        // fallthrough
       case IDENTIFIER:
         // It's an identifier; if not within a method, it may be a static block.
-        if (TreePathUtil.inConstructor(getCurrentPath())) {
-          return TreeUtils.elementFromUse((IdentifierTree) varTree);
+        TreePath path = getCurrentPath();
+        if (TreePathUtil.inConstructor(path)) {
+          return TreeUtils.elementFromUse((ExpressionTree) varTree);
         } else {
           return null;
         }
+
       default:
         return null;
     }
