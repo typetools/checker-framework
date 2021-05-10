@@ -185,14 +185,13 @@ public class NullnessVisitor
       case MEMBER_SELECT:
         MemberSelectTree mst = (MemberSelectTree) varTree;
         ExpressionTree receiver = mst.getExpression();
-        // This recognizes "this.fieldname = ..." but not for "MyClass.this.fieldname = ...".
+        // This recognizes "this.fieldname = ..." but not "MyClass.this.fieldname = ...".
         if (receiver.getKind() != Tree.Kind.IDENTIFIER
             || !((IdentifierTree) receiver).getName().contentEquals("this")) {
           return null;
         }
         // fallthrough
       case IDENTIFIER:
-        // It's an identifier; if not within a method, it may be a static block.
         TreePath path = getCurrentPath();
         if (TreePathUtil.inConstructor(path)) {
           return TreeUtils.elementFromUse((ExpressionTree) varTree);
