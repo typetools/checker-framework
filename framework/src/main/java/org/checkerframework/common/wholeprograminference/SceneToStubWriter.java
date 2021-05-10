@@ -46,11 +46,11 @@ import scenelib.annotations.field.AnnotationFieldType;
 // For example, "Outer$Inner" is a base name.
 
 /**
- * SceneToStubWriter provides a static method that writes an {@link AScene} in stub file format to a
- * file {@link #write}. This class is the equivalent of {@code IndexFileWriter} from the Annotation
- * File Utilities, but outputs the results in the stub file format instead of jaif format. This
- * class is not part of the Annotation File Utilities, a library for manipulating .jaif files,
- * because it has nothing to do with .jaif files.
+ * Static method {@link #write} writes an {@link AScene} to a file in stub file format. This class
+ * is the equivalent of {@code IndexFileWriter} from the Annotation File Utilities, but outputs the
+ * results in the stub file format instead of jaif format. This class is not part of the Annotation
+ * File Utilities, a library for manipulating .jaif files, because it has nothing to do with .jaif
+ * files.
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
  * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). {@link
