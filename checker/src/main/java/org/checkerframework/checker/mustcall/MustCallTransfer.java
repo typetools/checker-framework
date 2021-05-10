@@ -137,12 +137,7 @@ public class MustCallTransfer extends CFTransfer {
     CFValue value = store.getValue(expr);
     CFValue defaultTypeAsCFValue =
         analysis.createSingleAnnotationValue(defaultType, expr.getType());
-    CFValue newValue;
-    if (value == null) {
-      newValue = defaultTypeAsCFValue;
-    } else {
-      newValue = value.leastUpperBound(defaultTypeAsCFValue);
-    }
+    CFValue newValue = defaultTypeAsCFValue.leastUpperBound(value);
     store.clearValue(expr);
     store.insertValue(expr, newValue);
   }

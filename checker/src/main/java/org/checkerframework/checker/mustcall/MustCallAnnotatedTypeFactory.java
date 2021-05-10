@@ -69,6 +69,23 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /**
    * Map from trees representing expressions to the temporary variables that represent them in the
    * store.
+   *
+   * <p>Consider the following code, adapted from Apache Zookeeper:
+   *
+   * <pre>
+   *   sock = SocketChannel.open();
+   *   sock.socket().setSoLinger(false, -1);
+   * </pre>
+   *
+   * This code is safe from resource leaks: sock is an unconnected socket and therefore has no
+   * must-call obligation. The expression sock.socket() similarly has no must-call obligation
+   * because it is a resource alias, but without a temporary variable that represents that
+   * expression in the store, the resource leak checker wouldn't be able to determine that.
+   *
+   * <p>These temporary variables are only created once---here---but are used by all three parts of
+   * the resource leak checker by calling {@link #getTempVar(Node)}. The temporary variables are
+   * shared in the same way that subcheckers share CFG structure; see {@link
+   * #getSharedCFGForTree(Tree)}.
    */
   /* package-private */ final HashMap<Tree, LocalVariableNode> tempVars = new HashMap<>();
 
@@ -402,7 +419,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Return the temporary variable for node, if it exists.
+   * Return the temporary variable for node, if it exists. See {@link #tempVars}.
    *
    * @param node a CFG node
    * @return the corresponding temporary variable, or null if there is not one
