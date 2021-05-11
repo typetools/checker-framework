@@ -1,0 +1,19 @@
+// DO NOT INCLUDE ANNOTATIONS THAT RELY ON ACCUMULATION FRAMES IN THIS FILE.
+// This file is loaded regardless of the -AnoAccumulationFrames option. All
+// assumptions that rely on the presence of accumulation frames (such as @MustCall({})
+// on unconnected sockets) MUST go in SocketAccumulationFrames.astub. CreatesObligation
+// okay, because the OCC turns that off anyway.
+
+import org.checkerframework.checker.mustcall.qual.*;
+
+package javax.servlet;
+
+// This interface doesn't appear in the annotated JDK, because it is part
+// Java EE not Java SE. Therefore, this annotated version appears here in a
+// stub file rather than in typetools/jdk.
+interface ServletResponse {
+    // The link below justifies why these annotations are correct
+    // https://stackoverflow.com/questions/1159168/should-one-call-close-on-httpservletresponse-getoutputstream-getwriter
+    @NotOwning ServletOutputStream getOutputStream() throws IOException;
+    @NotOwning PrintWriter getWriter() throws IOException;
+}
