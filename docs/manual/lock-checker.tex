@@ -87,7 +87,7 @@ This section describes the lock annotations you can write on types and methods.
 
   Section~\ref{java-expressions-as-arguments} explains which
   expressions the Lock Checker is able to analyze as lock expressions.
-  These include \code{<self>}, i.e. the value of the annotated reference
+  These include \code{<self>}, the value of the annotated reference
   (non-primitive) variable.  For example, \code{@GuardedBy("<self>") Object o}
   indicates that the value referenced by \<o> is guarded by the intrinsic
   (monitor) lock of the value referenced by \<o>.
