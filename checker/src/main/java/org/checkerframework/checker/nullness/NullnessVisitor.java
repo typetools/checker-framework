@@ -170,7 +170,7 @@ public class NullnessVisitor
   }
 
   /**
-   * Returns the variable element, if this is an initialization; otherwise returns null.
+   * Returns the variable element, if the argument is an initialization; otherwise returns null.
    *
    * @param varTree an assignment LHS
    * @return the initialized element, or null
@@ -185,7 +185,10 @@ public class NullnessVisitor
       case MEMBER_SELECT:
         MemberSelectTree mst = (MemberSelectTree) varTree;
         ExpressionTree receiver = mst.getExpression();
-        // This recognizes "this.fieldname = ..." but not "MyClass.this.fieldname = ...".
+        // This recognizes "this.fieldname = ..." but not "MyClass.fieldname = ..." or
+        // "MyClass.this.fieldname = ...".  The latter forms are probably rare in a constructor.
+        // Note that this method should return non-null only for fields of this class, not fields of
+        // any other class, including outer classes.
         if (receiver.getKind() != Tree.Kind.IDENTIFIER
             || !((IdentifierTree) receiver).getName().contentEquals("this")) {
           return null;
