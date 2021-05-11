@@ -98,8 +98,8 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 
 assemble.dependsOn copyJarsToDist
 
-task printPlumeUtilJarPath {
-    description "Print the path to plume-util.jar"
+task printClasspath {
+    description "Print the classpath for compileJava"
         doFirst { println compileJava.classpath.asPath }
 }
 
