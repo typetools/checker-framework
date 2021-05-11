@@ -1,3 +1,5 @@
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 public class MonotonicNonNullInferenceTest {
 
   // :: warning: (initialization.static.field.uninitialized)
@@ -35,5 +37,41 @@ public class MonotonicNonNullInferenceTest {
     instanceString1 = arg;
     instanceString2 = arg;
     instanceString3 = arg;
+  }
+
+  void hasSideEffect() {}
+
+  void testMonotonicNonNull() {
+    @NonNull String s;
+    if (staticString1 != null) {
+      hasSideEffect();
+      s = staticString1;
+    }
+    /*
+    if (staticString2 != null) {
+      hasSideEffect();
+      s = staticString2;
+    }
+    */
+    /*
+    if (staticString3 != null) {
+      hasSideEffect();
+      s = staticString3;
+    }
+    */
+    if (instanceString1 != null) {
+      hasSideEffect();
+      s = instanceString1;
+    }
+    /*
+    if (instanceString2 != null) {
+      hasSideEffect();
+      s = instanceString2;
+    }
+    */
+    if (instanceString3 != null) {
+      hasSideEffect();
+      s = instanceString3;
+    }
   }
 }
