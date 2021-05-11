@@ -141,7 +141,7 @@ A typical invocation of \<wpi.sh> is
 The result is a set of log files placed in the \<dljc-out/> folder of the
 target project. The results of type-checking with each candidate set of
 annotations will be concatenated into the file \<dljc-out/wpi.log>; the final
-results (i.e. those obtained using the most precise, consistent set of annotations)
+results (i.e., those obtained using the most precise, consistent set of annotations)
 will appear at the end of this file.
 The inferred annotations appear in \<.stub> files in a
 temporary directory whose name appears in the \<dlcj-out/wpi.log> file.
@@ -177,7 +177,7 @@ Here is an explanation of the arguments:
   The directory to use for the `-g` option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
-  project (i.e. each target project has its own Gradle home). This default
+  project (i.e., each target project has its own Gradle home). This default
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
@@ -260,7 +260,7 @@ Log files are copied into a results directory.
 For a failed run, the log file indicates the reason that WPI could not
 be run to completion on the project.
 For a successful run, the log file indicates whether the project was verified
-(i.e. no errors were reported), or whether the checker issued warnings
+(i.e., no errors were reported), or whether the checker issued warnings
 (which might be true positive or false positive warnings).
 
 \item Use \<wpi-summary.sh> to summarize the logs in the output results directory.
@@ -328,7 +328,7 @@ An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
   The directory to use for the `-g` option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
-  project (i.e. each target project has its own Gradle home). This default
+  project (i.e., each target project has its own Gradle home). This default
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 

@@ -1203,7 +1203,7 @@ systems) \code{<self>}.
   variable or declaration where you could write \<this> in code.
   Notably, it cannot be used in annotations on declarations of
   static fields or methods.  For a field, \<this> is the field's
-  receiver, i.e. its container.  For a local variable, it is the
+  receiver (sometimes called its container).  For a local variable, it is the
   method's receiver.
 
 \item
@@ -1212,7 +1212,7 @@ systems) \code{<self>}.
   discouraged in Java).
 
 \item
-  \code{<self>}, i.e. the value of the annotated reference (non-primitive) variable.
+  \code{<self>}, the value of the annotated reference (non-primitive) variable.
   Currently only defined for the \<@GuardedBy> type system.
   For example, \code{@GuardedBy("<self>") Object o} indicates that the value
   referenced by \<o> is guarded by the intrinsic (monitor) lock of the value
