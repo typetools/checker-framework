@@ -177,9 +177,9 @@ There are also method annotations:
   \end{Verbatim}
 
   If \<m()> might have side-effects (i.e. it is not annotated as
-  \<@SideEffectFree>), then the Called Methods Checker will be unable to verify
-  that \<close()> is definitely called on \<sock> before \<closeSocket()>
-  returns, and will issue an error. There are two possible fixes:
+  \<@SideEffectFree>), then the Called Methods Checker issues an error because
+  it cannot verify that \<close()> is definitely called on \<sock> before
+  \<closeSocket()> returns. There are two possible fixes:
 
   \begin{itemize}
   \item add an \<@SideEffectFree> annotation to \<m()>, if it is in fact side-effect free; or
