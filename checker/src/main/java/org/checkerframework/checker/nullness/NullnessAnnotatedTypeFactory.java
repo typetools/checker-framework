@@ -719,6 +719,8 @@ public class NullnessAnnotatedTypeFactory
     return AnnotationUtils.areSameByName(am, NULLABLE);
   }
 
+  // If a reference field has no initializer, then its default value is null.  Treat that as
+  // @MonotonicNonNull rather than as @Nullable.
   @Override
   public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
     AnnotatedTypeMirror result = super.getDefaultValueAnnotatedType(typeMirror);
