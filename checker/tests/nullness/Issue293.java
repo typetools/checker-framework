@@ -45,7 +45,7 @@ public class Issue293 {
         s = null;
       }
     } finally {
-      // :: error: argument.type.incompatible
+      // :: error: argument
       write(s);
     }
   }

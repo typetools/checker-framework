@@ -9,10 +9,10 @@ public class StartsEndsWith {
   void refineStartsWith(String str) {
     if (str.startsWith("prefix")) {
       @MinLen(6) String s6 = str;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @MinLen(7) String s7 = str;
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @MinLen(6) String s6 = str;
     }
   }
@@ -20,10 +20,10 @@ public class StartsEndsWith {
   void refineEndsWith(String str) {
     if (str.endsWith("suffix")) {
       @MinLen(6) String s6 = str;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @MinLen(7) String s7 = str;
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @MinLen(6) String s6 = str;
     }
   }
@@ -31,7 +31,7 @@ public class StartsEndsWith {
   void refineStartsEndsWith(String str) {
     if (str.startsWith("longprefix") && str.endsWith("prefix")) {
       @MinLen(10) String s10 = str;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @MinLen(11) String s11 = str;
     }
   }
@@ -39,7 +39,7 @@ public class StartsEndsWith {
   void refineStartsArrayLen(String str, @ArrayLen(10) String prefix) {
     if (str.startsWith(prefix)) {
       @MinLen(10) String sg10 = str;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @ArrayLen(10) String s10 = str;
     }
   }

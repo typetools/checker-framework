@@ -8,13 +8,13 @@ public class MinLenVarargs {
   }
 
   public static void main(String[] args) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     check(new String[] {"goodbye"});
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     check("goodbye");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     check();
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     check("hello", "goodbye");
   }
 }

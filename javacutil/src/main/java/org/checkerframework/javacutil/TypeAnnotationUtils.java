@@ -173,7 +173,7 @@ public class TypeAnnotationUtils {
       }
       for (Symbol.MethodSymbol key : map1.keySet()) {
         Attribute attr1 = map1.get(key);
-        @SuppressWarnings("nullness:assignment.type.incompatible") // same keys in map1 & map2
+        @SuppressWarnings("nullness:assignment") // same keys in map1 & map2
         @NonNull Attribute attr2 = map2.get(key);
         if (!attributeEquals(attr1, attr2, types)) {
           return false;

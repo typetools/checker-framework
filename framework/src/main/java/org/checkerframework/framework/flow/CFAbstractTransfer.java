@@ -247,7 +247,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}
    * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
    */
-  @Deprecated // use getWidenedValue() or getNarrowedValue()
+  @Deprecated // 2020-10-02
   protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
     if (annotatedValue == null) {
       return null;
@@ -342,7 +342,7 @@ public abstract class CFAbstractTransfer<
       }
 
       CFGLambda lambda = (CFGLambda) underlyingAST;
-      @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+      @SuppressWarnings("interning:assignment") // used in == tests
       @InternedDistinct Tree enclosingTree =
           TreePathUtil.enclosingOfKind(
               factory.getPath(lambda.getLambdaTree()),

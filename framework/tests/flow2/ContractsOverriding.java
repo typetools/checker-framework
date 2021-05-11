@@ -29,18 +29,18 @@ public class ContractsOverriding {
 
     @Override
     @RequiresOdd("f")
-    // :: error: (contracts.precondition.override.invalid)
+    // :: error: (contracts.precondition.override)
     void m1() {}
 
     @Override
     @RequiresQualifier(expression = "f", qualifier = Odd.class)
-    // :: error: (contracts.precondition.override.invalid)
+    // :: error: (contracts.precondition.override)
     void m2() {}
 
     @Override
     // g is a different field than in the supertype
     @RequiresOdd("g")
-    // :: error: (contracts.precondition.override.invalid)
+    // :: error: (contracts.precondition.override)
     void m3() {}
 
     @Override
@@ -57,16 +57,16 @@ public class ContractsOverriding {
     String g;
 
     @Override
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void m1() {}
 
     @Override
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void m2() {}
 
     @Override
     @EnsuresOdd("g")
-    // :: error: (contracts.postcondition.override.invalid)
+    // :: error: (contracts.postcondition.override)
     void m3() {
       g = odd;
     }
@@ -108,19 +108,19 @@ public class ContractsOverriding {
 
     @Override
     boolean m1() {
-      // :: error: (contracts.conditional.postcondition.not.satisfied)
+      // :: error: (contracts.conditional.postcondition)
       return true;
     }
 
     @Override
     boolean m2() {
-      // :: error: (contracts.conditional.postcondition.not.satisfied)
+      // :: error: (contracts.conditional.postcondition)
       return true;
     }
 
     @Override
     @EnsuresOddIf(expression = "g", result = true)
-    // :: error: (contracts.conditional.postcondition.true.override.invalid)
+    // :: error: (contracts.conditional.postcondition.true.override)
     boolean m3() {
       g = odd;
       return true;

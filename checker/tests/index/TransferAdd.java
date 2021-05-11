@@ -18,7 +18,7 @@ public class TransferAdd {
     @GTENegativeOne int d = a + 0;
     @GTENegativeOne int e = 0 + a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int f = a + 1;
 
     @NonNegative int g = b + 0;
@@ -31,19 +31,19 @@ public class TransferAdd {
     // adding values
 
     @Positive int k = i + j;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int l = b + c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int m = d + c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int n = d + e;
 
     @Positive int o = h + g;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int p = h + d;
 
     @NonNegative int q = b + c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNegative int r = q + d;
 
     @NonNegative int s = k + d;
@@ -51,7 +51,7 @@ public class TransferAdd {
 
     // increments
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int u = b++;
 
     @Positive int u1 = b;
@@ -66,19 +66,19 @@ public class TransferAdd {
 
     @NonNegative int w1 = n1p1;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int w2 = n1p1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int w3 = n1p1++;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNegative int x = n1p2++;
 
     @NonNegative int x1 = n1p2;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int y = ++d;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int z = e++;
   }
 }

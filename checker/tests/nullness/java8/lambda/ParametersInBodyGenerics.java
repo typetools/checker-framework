@@ -13,7 +13,7 @@ public class ParametersInBodyGenerics {
   }
 
   void test() {
-    // :: error: (lambda.param.type.incompatible)
+    // :: error: (lambda.param)
     NullableConsumer fn0 = (List<String> i) -> i.get(0).toString();
     NullableConsumer fn2 =
         (List<@Nullable String> i) -> {
@@ -21,7 +21,7 @@ public class ParametersInBodyGenerics {
           i.get(0).toString();
         };
     NullableConsumer fn3 =
-        // :: error: (lambda.param.type.incompatible)
+        // :: error: (lambda.param)
         (List<String> i) -> {
           i.get(0).toString();
         };

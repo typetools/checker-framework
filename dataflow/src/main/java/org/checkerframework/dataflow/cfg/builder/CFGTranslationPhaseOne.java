@@ -387,8 +387,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     exceptionalExitLabel = new Label();
     tryStack = new TryStack(exceptionalExitLabel);
     returnTargetL = new TryFinallyScopeCell(regularExitLabel);
-    breakLabels = new HashMap<>();
-    continueLabels = new HashMap<>();
+    breakLabels = new HashMap<>(2);
+    continueLabels = new HashMap<>(2);
     returnNodes = new ArrayList<>();
     declaredClasses = new ArrayList<>();
     declaredLambdas = new ArrayList<>();
@@ -740,7 +740,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
       handleArtificialTree(classTree);
       // No need to handle possible errors from evaluating a class literal here
-      // since this is a synthetic code that can't fail.
+      // since this is synthetic code that can't fail.
       ClassNameNode className = new ClassNameNode(classTree);
       className.setInSource(false);
       insertNodeAfter(className, node);

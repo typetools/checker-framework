@@ -18,7 +18,7 @@ public class Issue2334 {
   void m2() {
     if (stringField.indexOf('d') != -1) {
       hasSideEffect();
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNegative int i = stringField.indexOf('d');
     }
   }
@@ -33,7 +33,7 @@ public class Issue2334 {
   void m4() {
     if (stringField.indexOf('d') != -1) {
       System.out.println("hey");
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNegative int i = stringField.indexOf('d');
     }
   }

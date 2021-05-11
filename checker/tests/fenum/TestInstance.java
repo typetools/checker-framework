@@ -1,6 +1,6 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 
-@SuppressWarnings("fenum:assignment.type.incompatible")
+@SuppressWarnings("fenum:assignment")
 public class TestInstance {
   public final @Fenum("A") Object ACONST1 = new Object();
   public final @Fenum("A") Object ACONST2 = new Object();
@@ -14,22 +14,22 @@ public class TestInstance {
 class FenumUserTestInstance {
   @Fenum("A") Object state1 = new TestInstance().ACONST1;
 
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   @Fenum("B") Object state2 = new TestInstance().ACONST1;
 
   void foo(TestInstance t) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     state1 = new Object();
 
     state1 = t.ACONST2;
     state1 = t.ACONST3;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     state1 = t.BCONST1;
 
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     state1.hashCode();
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     t.ACONST1.hashCode();
 
     // sanity check: unqualified instantiation and call work.
@@ -38,7 +38,7 @@ class FenumUserTestInstance {
 
     if (t.ACONST1 == t.ACONST2) {}
 
-    // :: error: (binary.type.incompatible)
+    // :: error: (binary)
     if (t.ACONST1 == t.BCONST2) {}
   }
 }

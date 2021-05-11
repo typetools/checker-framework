@@ -15,7 +15,7 @@ public class Polymorphism {
     @Interned String interned = "interned";
 
     interned = identity(interned);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     interned = identity(notInterned); // invalid
   }
 
@@ -29,7 +29,7 @@ public class Polymorphism {
     @Interned Polymorphism interned = null;
 
     interned = interned.getSelf();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     interned = notInterned.getSelf(); // invalid
   }
 
@@ -38,10 +38,10 @@ public class Polymorphism {
     if (s.equals("n")) {
       // This code type-checkd when the hierarchy contained just @UnknownInterned and
       // @Interned, but no longer does because of @InternedDistinct.
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return "m";
     } else {
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return new String("m"); // invalid
     }
   }

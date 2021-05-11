@@ -21,7 +21,7 @@ class Issue269 {
   void method2(CallbackNN callback) {
     // Forbid this call, because the bound is not respected.
     // TODO: false negative. See #635.
-    //// :: error: (argument.type.incompatible)
+    //// :: error: (argument)
     // :: warning: [unchecked] unchecked call to handler(H) as a member of the raw type
     // Issue269.CallbackNN
     callback.handler(null);

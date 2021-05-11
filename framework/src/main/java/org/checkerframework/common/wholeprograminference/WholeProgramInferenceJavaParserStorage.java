@@ -694,7 +694,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public Map<String, CallableDeclarationAnnos> callableDeclarations = new HashMap<>();
     /** Mapping from field names to wrappers for those fields. */
-    public Map<String, FieldAnnos> fields = new HashMap<>();
+    public Map<String, FieldAnnos> fields = new HashMap<>(2);
 
     /**
      * Transfers all annotations inferred by whole program inference for the methods and fields in

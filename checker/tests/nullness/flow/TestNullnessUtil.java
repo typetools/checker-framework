@@ -23,7 +23,7 @@ public class TestNullnessUtil {
     // one way to use as a cast:
     @NonNull Object[] l2 = NullnessUtil.castNonNullDeep(a);
     // Careful, the non-deep version only casts the main modifier.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object[] l2b = NullnessUtil.castNonNull(a);
     // OK
     @Nullable Object[] l2c = NullnessUtil.castNonNull(a);
@@ -33,7 +33,7 @@ public class TestNullnessUtil {
     // one way to use as a cast:
     @NonNull Object[] l2 = NullnessUtil.castNonNullDeep(a);
     // Careful, the non-deep version only casts the main modifier.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object[] l2b = NullnessUtil.castNonNull(a);
     // OK
     @Nullable Object[] l2c = NullnessUtil.castNonNull(a);
@@ -63,7 +63,7 @@ public class TestNullnessUtil {
   */
 
   void testMultiArr1(@Nullable Object @NonNull [] @Nullable [] a) {
-    // :: error: (assignment.type.incompatible) :: error: (accessing.nullable)
+    // :: error: (assignment) :: error: (accessing.nullable)
     @NonNull Object l3 = a[0][0];
     // one way to use as a cast:
     @NonNull Object[][] l4 = NullnessUtil.castNonNullDeep(a);

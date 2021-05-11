@@ -361,7 +361,7 @@ public class I18nFormatterTreeUtil {
           paramIndex = JavaExpressionParseUtil.parameterIndex(formatforArg);
           if (paramIndex == -1) {
             // report errors here
-            checker.reportError(tree, "i18nformat.invalid.formatfor");
+            checker.reportError(tree, "i18nformat.formatfor");
           } else {
             paramIndex--;
           }

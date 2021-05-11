@@ -8,13 +8,13 @@ public class Initializer {
   public String a;
   public String b = "abc";
 
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   public String c = null;
 
   public String d = ("");
 
   public Initializer() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = null;
     a = "";
     c = "";

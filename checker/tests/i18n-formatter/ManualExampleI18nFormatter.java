@@ -29,9 +29,9 @@ public class ManualExampleI18nFormatter {
     }
     @I18nFormat({NUMBER, DATE}) String f2 = f;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     f = "{0, number} {1, number}"; // error: NUMBER is stronger (more restrictive) than DATE
-    // :: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
+    // :: error: (i18nformat.excess.arguments) :: error: (assignment)
     f = "{0} {1} {2}"; // error: too many arguments
   }
 }

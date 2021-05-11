@@ -13,11 +13,11 @@ public class Anonymous {
   }
 
   void testPublicInference() {
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsSibling2(field2);
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsParent(field1);
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsParent(field2);
   }
 

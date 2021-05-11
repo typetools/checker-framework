@@ -11,7 +11,7 @@ public class EnsuresNonNullIfTestSimple {
 
   @EnsuresNonNullIf(result = true, expression = "values")
   public boolean repNulledBAD() {
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return values == null;
   }
 
@@ -35,7 +35,7 @@ public class EnsuresNonNullIfTestSimple {
         values.hashCode();
     } else {
         // we called on "s", so we don't know anything about "values".
-        // : : (assignment.type.incompatible)
+        // : : (assignment)
         @NonNull Object y = values;
     }
     */

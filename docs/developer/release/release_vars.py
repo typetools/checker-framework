@@ -72,7 +72,7 @@ LIVE_SITE_DIR = "/cse/www2/types/checker-framework"
 # Per-user directory for the temporary files created by the release process
 # ("USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566.
 # Another alternative is: USER = os.getenv('USER').)
-TMP_DIR = "/scratch/" + pwd.getpwuid(os.geteuid())[0] + "/jsr308-release"
+TMP_DIR = "/scratch/" + pwd.getpwuid(os.geteuid())[0] + "/cf-release"
 
 # Location this and other release scripts are contained in
 SCRIPTS_DIR = TMP_DIR + "/checker-framework/docs/developer/release"

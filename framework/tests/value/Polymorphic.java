@@ -14,19 +14,19 @@ public class Polymorphic {
 
   void minlen_id(int @MinLen(5) [] a) {
     int @MinLen(5) [] b = identity_array(a);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @MinLen(6) [] c = identity_array(b);
   }
 
   void use(int @ArrayLenRange(from = 5, to = 25) [] a) {
     int @ArrayLenRange(from = 5, to = 25) [] b = identity_array(a);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @ArrayLenRange(from = 1, to = 13) [] c = identity_array(a);
   }
 
   void use2(@IntRange(from = 5, to = 25) int a) {
     @IntRange(from = 5, to = 25) int b = identity_int(a);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal(3) int x = identity_int(a);
   }
 }

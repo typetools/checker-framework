@@ -40,6 +40,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
@@ -120,6 +121,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /* Initialization */
   /* --------------------------------------------------------- */
 
+  /**
+   * Creates a new CFAbstractStore.
+   *
+   * @param analysis the analysis class this store belongs to
+   * @param sequentialSemantics should the analysis use sequential Java semantics?
+   */
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
     localVariableValues = new HashMap<>();
@@ -227,7 +234,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (sideEffectsUnrefineAliases) {
         fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
       } else {
-        Map<FieldAccess, V> newFieldValues = new HashMap<>();
+        Map<FieldAccess, V> newFieldValues = new HashMap<>(SystemUtil.mapCapacity(fieldValues));
         for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
           FieldAccess fieldAccess = e.getKey();
           V otherVal = e.getValue();
@@ -717,8 +724,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     available
    */
   public @Nullable V getValue(FieldAccessNode n) {
-    FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(n);
-    return fieldValues.get(fieldAccess);
+    JavaExpression je = JavaExpression.fromNodeFieldAccess(n);
+    if (je instanceof FieldAccess) {
+      return fieldValues.get((FieldAccess) je);
+    } else if (je instanceof ClassName) {
+      return classValues.get((ClassName) je);
+    } else if (je instanceof ThisReference) {
+      // "return thisValue" is wrong, because the node refers to an outer this.
+      // So, return null for now.  TODO: improve.
+      return null;
+    } else {
+      throw new BugInCF(
+          "Unexpected JavaExpression %s %s for FieldAccessNode %s",
+          je.getClass().getSimpleName(), je, n);
+    }
   }
 
   /**

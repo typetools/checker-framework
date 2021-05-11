@@ -33,13 +33,13 @@ public class OldInherited {
 
   public static void testBadParent() {
     OldInherited o = new OldInherited();
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     o.requiresGetThis();
   }
 
   public static void testBadChild() {
     OldInheritedChild o = new OldInheritedChild();
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     o.requiresGetThis();
   }
 }

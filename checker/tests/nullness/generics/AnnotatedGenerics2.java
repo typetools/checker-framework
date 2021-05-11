@@ -17,13 +17,13 @@ public class AnnotatedGenerics2 {
          myFieldNble = myFieldNN;
          myFieldT = myFieldNN;
 
-         // TODO:: error: (assignment.type.incompatible)
+         // TODO:: error: (assignment)
          myFieldNN = myFieldNble;
          myFieldNble = myFieldNble;
-         // TODO:: error: (assignment.type.incompatible)
+         // TODO:: error: (assignment)
          myFieldT = myFieldNble;
 
-         // TODO:: error: (assignment.type.incompatible)
+         // TODO:: error: (assignment)
          myFieldNN = myFieldT;
          myFieldNble = myFieldT;
          myFieldT = myFieldT;
@@ -37,15 +37,15 @@ public class AnnotatedGenerics2 {
     }
 
     void fields2() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldNN = myFieldNble;
       myFieldNble = myFieldNble;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldT = myFieldNble;
     }
 
     void fields3() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldNN = myFieldT;
       myFieldNble = myFieldT;
       myFieldT = myFieldT;
@@ -56,13 +56,13 @@ public class AnnotatedGenerics2 {
       myFieldNble = myParamNN;
       myFieldT = myParamNN;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldNN = myParamNble;
       myFieldNble = myParamNble;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldT = myParamNble;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldNN = myParamT;
       myFieldNble = myParamT;
       myFieldT = myParamT;
@@ -83,13 +83,13 @@ public class AnnotatedGenerics2 {
         myFieldNble = myFieldNN;
         myFieldT = myFieldNN;
 
-        // TODO:: error: (assignment.type.incompatible)
+        // TODO:: error: (assignment)
         myFieldNN = myFieldNble;
         myFieldNble = myFieldNble;
-        // TODO:: error: (assignment.type.incompatible)
+        // TODO:: error: (assignment)
         myFieldT = myFieldNble;
 
-        // TODO:: error: (assignment.type.incompatible)
+        // TODO:: error: (assignment)
         myFieldNN = myFieldT;
         myFieldNble = myFieldT;
         myFieldT = myFieldT;
@@ -103,10 +103,10 @@ public class AnnotatedGenerics2 {
     }
 
     void fields2() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldNN = myFieldNble;
       myFieldNble = myFieldNble;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldT = myFieldNble;
     }
 
@@ -121,10 +121,10 @@ public class AnnotatedGenerics2 {
       myFieldNble = myParamNN;
       myFieldT = myParamNN;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldNN = myParamNble;
       myFieldNble = myParamNble;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       myFieldT = myParamNble;
 
       myFieldNN = myParamT;

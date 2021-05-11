@@ -5,7 +5,7 @@ public class Issue2888 {
 
   void foo() {
     noa = null;
-    // :: error: (accessing.nullable) :: error: (assignment.type.incompatible)
+    // :: error: (accessing.nullable) :: error: (assignment)
     noa[0] = null;
   }
 

@@ -148,7 +148,7 @@ Multiple expected messages can be given on the same line using the
 a warning from the same line of code:
 
   @Regex String s1 = null;
-  // :: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
+  // :: error: (assignment) :: warning: (cast.unsafe)
   @Regex(3) String s2 = (@Regex(2) String) s;
 
 

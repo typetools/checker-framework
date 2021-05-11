@@ -4,7 +4,7 @@ public class Refinement2 {
 
   void eq_test(int x, @IntVal({1, 5, 6}) int w) {
     if (x == 1) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @BottomVal int q = x;
 
     } else if (x == 2) {
@@ -13,7 +13,7 @@ public class Refinement2 {
     }
 
     if (x != 1) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @IntVal({1}) int y = x;
       @IntVal({2}) int z = x;
     }
@@ -22,12 +22,12 @@ public class Refinement2 {
 
       @IntVal({1}) int y = x;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @IntVal({2}) int z = x;
     } else {
       @IntVal({2}) int y = x;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @IntVal({1}) int z = x;
     }
 
@@ -38,9 +38,9 @@ public class Refinement2 {
       // These two assignments are illegal because one of x or w could be 1,
       // while the other is not. So no refinement can be applied.
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @IntVal({2}) int y = x;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @IntVal({5, 6}) int z = w;
     }
   }
@@ -48,7 +48,7 @@ public class Refinement2 {
   void testDeadCode(int x) {
     if (x == 4 || x == 5) {
       @IntVal({4, 5}) int a = x;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @BottomVal int a2 = x;
     }
     if (x == 4 && x == 5) {
@@ -85,7 +85,7 @@ public class Refinement2 {
         @BottomVal int z2 = y;
       } else {
         // y should be @UnknownVal here.
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         @IntVal({1, 2, 3}) int z = y;
       }
     }

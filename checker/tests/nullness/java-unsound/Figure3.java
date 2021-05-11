@@ -3,7 +3,7 @@ public class Figure3 {
     class Constraint<B extends A> extends Type<B> {}
 
     <B> Constraint<? super B> bad() {
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return null;
     }
 

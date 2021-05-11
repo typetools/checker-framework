@@ -13,7 +13,7 @@ public class Issue1633 {
   // supplyNonNull is a supplier that does not return null.
 
   void foo1(Optional1633<String> o, Supplier<@Nullable String> supplyNullable) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     @Nullable String str = o.orElseGetUnannotated(supplyNullable);
   }
 
@@ -26,7 +26,7 @@ public class Issue1633 {
   }
 
   void foo3(Optional1633<String> o, Supplier<@Nullable String> supplyNullable) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     @Nullable String str2 = o.orElseGetNonNull(supplyNullable);
   }
 
@@ -39,12 +39,12 @@ public class Issue1633 {
   }
 
   void foo41(Optional1633<String> o) {
-    @SuppressWarnings("return.type.incompatible") // https://tinyurl.com/cfissue/979
+    @SuppressWarnings("return") // https://tinyurl.com/cfissue/979
     @Nullable String str3 = o.orElseGetPolyNull(() -> null);
   }
 
   void foo41nw(Optional1633<String> o) {
-    @SuppressWarnings("return.type.incompatible") // https://tinyurl.com/cfissue/979
+    @SuppressWarnings("return") // https://tinyurl.com/cfissue/979
     @Nullable String str3 = o.orElseGetPolyNullNoWildcard(() -> null);
   }
 
@@ -53,12 +53,12 @@ public class Issue1633 {
   }
 
   void foo6(Optional1633<String> o, Supplier<@NonNull String> supplyNonNull) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String str1 = o.orElseGetNullable(supplyNonNull);
   }
 
   void foo6nw(Optional1633<String> o, Supplier<@NonNull String> supplyNonNull) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String str1 = o.orElseGetNullableNoWildcard(supplyNonNull);
   }
 

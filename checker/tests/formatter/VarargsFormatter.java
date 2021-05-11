@@ -29,7 +29,7 @@ public class VarargsFormatter {
     f.format("%s %d", new Object[2], 123);
     // :: error: (format.missing.arguments)
     f.format("%d %s %s", 132, new Object[2]);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format("%d %d", new Object[2], 123);
     // "error: (format.specifier.null)" could be a warning rather than an error, but that would
     // require reasoning about the values in an array construction expression.

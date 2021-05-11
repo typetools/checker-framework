@@ -7,5 +7,5 @@ class Method {
 }
 
 class Constructor<T> {
-  @Top Object newInstance(@Top Constructor<T> this, @ReflectBottom Object obj, @ReflectBottom Object @Top [] args);
+  @Top Object newInstance(@Top Constructor<T> this, @ReflectBottom Object @Top [] args);
 }

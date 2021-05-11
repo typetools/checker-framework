@@ -11,7 +11,7 @@ public class UBPoly {
   }
 
   public static void poly(char[] a, @NonNegative @PolyUpperBound int i) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     access(a, i);
   }
 
