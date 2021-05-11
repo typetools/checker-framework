@@ -241,19 +241,19 @@ that method, but it never causes
 missed warnings (i.e., the checker is sound).
 
 At a call site to a method annotated as
-\<@CreatesObligation(>\|expr\|<)>, the Resource Leak Checker
+\<@CreatesObligation(>\emph{expr}<)>, the Resource Leak Checker
 \begin{enumerate}
 \item
-  treats the \<@MustCall> obligation of \|expr| as \emph{satisfied},
+  treats the \<@MustCall> obligation of \emph{expr} as \emph{satisfied},
 \item
-  creates a fresh obligation to check, as if \|expr| was a newly-allocated local
+  creates a fresh obligation to check, as if \emph{expr} was a newly-allocated local
   variable.  Treating the obligation before the call as satisfied is sound: the
   checker creates a new obligation for calls to \<@CreatesObligation> methods,
   and the Must Call Checker (\chapterpageref{must-call-checker}) ensures the
   \<@MustCall> type for the target will have a \emph{superset} of any methods
   present before the call.
 \item
-  Requires that the expression corresponding to \|expr| (that is, \|expr|
+  Requires that the expression corresponding to \emph{expr} (that is, \emph{expr}
   viewpoint-adapted to the method call site) is owning.  Otherwise, the checker
   will issue a \<reset.not.owning> error at the call-site. You can avoid this
   error by extracting the relevant expression into a new local variable (because
