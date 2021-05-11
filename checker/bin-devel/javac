@@ -24,7 +24,7 @@ binaryDir="${mydir}"/../dist
 javacJar=${binaryDir}/javac.jar
 
 cfDir="${mydir}"/../..
-annoToolsDir="${cfDir}"/../annotation-tools
+# annoToolsDir="${cfDir}"/../annotation-tools
 stubparserDir="${cfDir}"/../stubparser
 classes="build/classes/java/main"
 testclasses="build/classes/java/test"
