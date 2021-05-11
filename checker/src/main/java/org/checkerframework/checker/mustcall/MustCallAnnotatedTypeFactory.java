@@ -251,7 +251,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
   class MustCallDefaultQualifierForUseTypeAnnotator extends DefaultQualifierForUseTypeAnnotator {
 
-    /** Creates an {@code MustCallDefaultQualifierForUseTypeAnnotator}. */
+    /** Creates a {@code MustCallDefaultQualifierForUseTypeAnnotator}. */
     public MustCallDefaultQualifierForUseTypeAnnotator() {
       super(MustCallAnnotatedTypeFactory.this);
     }
