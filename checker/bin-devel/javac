@@ -32,7 +32,7 @@ resources="build/resources/main"
 
 buildDirs="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${testclasses}":"${cfDir}"/framework/"${resources}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${cfDir}"/checker-qual/"${classes}":"${stubparserDir}"/javaparser-core/stubparser.jar:$( (cd "${cfDir}" && ./gradlew -q :checker:printPlumeUtilJarPath) )
 
-echo $buildDirs
+echo "${buildDirs}"
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
