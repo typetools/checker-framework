@@ -52,7 +52,7 @@ public class ArrayInit {
       @IntRange(from = 1, to = 20) int longLength,
       @BottomVal int bottom) {
     int @ArrayLen({1, 2}) [] a = new int[shortLength];
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @ArrayLen({1, 2}) [] b = new int[longLength];
     int @ArrayLenRange(from = 1, to = 20) [] d = new int[longLength];
     int @ArrayLen({0}) [] c = new int[bottom];
@@ -103,20 +103,20 @@ public class ArrayInit {
 
   public void subtyping1(int @ArrayLen({1, 5}) [] a) {
     int @ArrayLenRange(from = 1, to = 5) [] b = a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @ArrayLenRange(from = 2, to = 5) [] c = a;
   }
 
   public void subtyping2(int @ArrayLenRange(from = 1, to = 5) [] a) {
     int @ArrayLen({1, 2, 3, 4, 5}) [] b = a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @ArrayLen({1, 5}) [] c = a;
   }
 
   public void subtyping3(int @ArrayLenRange(from = 1, to = 17) [] a) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @ArrayLenRange(from = 1, to = 12) [] b = a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @ArrayLenRange(from = 5, to = 18) [] c = a;
     int @ArrayLenRange(from = 0, to = 20) [] d = a;
   }
@@ -172,7 +172,7 @@ public class ArrayInit {
   public void coerce(int @ArrayLen({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 36}) [] a) {
     int @ArrayLenRange(from = 1, to = 36) [] b = a;
     if (a.length < 15) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       int @ArrayLen({1, 2, 3, 4, 5, 6, 7, 8, 9, 10}) [] c = a;
     }
   }

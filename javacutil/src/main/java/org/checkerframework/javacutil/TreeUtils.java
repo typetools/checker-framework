@@ -194,7 +194,7 @@ public final class TreeUtils {
    * @param tree an expression tree
    * @return the outermost non-parenthesized tree enclosed by the given tree
    */
-  @SuppressWarnings("interning:return.type.incompatible") // polymorphism implementation
+  @SuppressWarnings("interning:return") // polymorphism implementation
   public static @PolyInterned ExpressionTree withoutParens(
       final @PolyInterned ExpressionTree tree) {
     ExpressionTree t = tree;
@@ -536,7 +536,8 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the given method is synthetic.
+   * Returns true if the given method is synthetic. Also returns true if the method is a generated
+   * default constructor, which does not appear in source code but is not considered synthetic.
    *
    * @param ee a method or constructor element
    * @return true iff the given method is synthetic
@@ -544,7 +545,7 @@ public final class TreeUtils {
   public static boolean isSynthetic(ExecutableElement ee) {
     MethodSymbol ms = (MethodSymbol) ee;
     long mod = ms.flags();
-    // GENERATEDCONSTR is for generated constructors, which seem not to have SYNTHETIC set.
+    // GENERATEDCONSTR is for generated constructors, which do not have SYNTHETIC set.
     return (mod & (Flags.SYNTHETIC | Flags.GENERATEDCONSTR)) != 0;
   }
 
@@ -951,7 +952,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a class literal, such as.
+   * Determine whether {@code tree} is a class literal, such as
    *
    * <pre>
    *   <em>Object</em> . <em>class</em>
@@ -967,18 +968,21 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a field access expressions, such as.
+   * Determine whether {@code tree} is a field access expression, such as
    *
    * <pre>
    *   <em>f</em>
    *   <em>obj</em> . <em>f</em>
    * </pre>
    *
+   * This method currently also returns true for class literals and qualified this.
+   *
+   * @param tree a tree that might be a field access
    * @return true iff if tree is a field access expression (implicit or explicit)
    */
   public static boolean isFieldAccess(Tree tree) {
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-      // explicit field access
+      // explicit member access (or a class literal or a qualified this)
       MemberSelectTree memberSelect = (MemberSelectTree) tree;
       assert isUseOfElement(memberSelect) : "@AssumeAssertion(nullness): tree kind";
       Element el = TreeUtils.elementFromUse(memberSelect);
@@ -997,7 +1001,8 @@ public final class TreeUtils {
 
   /**
    * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
-   * tree} to be a field access, as determined by {@code isFieldAccess}.
+   * tree} to be a field access, as determined by {@code isFieldAccess} (which currently also
+   * returns true for class literals and qualified this).
    *
    * @param tree a field access tree
    * @return the name of the field accessed by {@code tree}

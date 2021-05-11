@@ -435,7 +435,7 @@ public class NullnessAnnotatedTypeFactory
         AnnotationMirror NONNULL = ((NullnessAnnotatedTypeFactory) atypeFactory).NONNULL;
         // If a @Nullable expression is cast to a primitive, then an unboxing.of.nullable
         // error is issued.  Treat the cast as if it were annotated as @NonNull to avoid an
-        // type.invalid.annotations.on.use error.
+        // annotations.on.use error.
         if (!type.isAnnotatedInHierarchy(NONNULL)) {
           type.addAnnotation(NONNULL);
         }
@@ -719,6 +719,8 @@ public class NullnessAnnotatedTypeFactory
     return AnnotationUtils.areSameByName(am, NULLABLE);
   }
 
+  // If a reference field has no initializer, then its default value is null.  Treat that as
+  // @MonotonicNonNull rather than as @Nullable.
   @Override
   public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
     AnnotatedTypeMirror result = super.getDefaultValueAnnotatedType(typeMirror);

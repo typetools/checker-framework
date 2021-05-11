@@ -18,7 +18,7 @@ class TryFinallyScopeMap extends HashMap<Name, Label> {
 
   /** Create a new TryFinallyScopeMap. */
   protected TryFinallyScopeMap() {
-    this.accessedNames = new LinkedHashMap<>();
+    this.accessedNames = new LinkedHashMap<>(2);
   }
 
   @Override
@@ -39,8 +39,7 @@ class TryFinallyScopeMap extends HashMap<Name, Label> {
   }
 
   @Override
-  @SuppressWarnings(
-      "keyfor:contracts.conditional.postcondition.not.satisfied") // get adds everything
+  @SuppressWarnings("keyfor:contracts.conditional.postcondition") // get adds everything
   public boolean containsKey(@Nullable Object key) {
     return true;
   }

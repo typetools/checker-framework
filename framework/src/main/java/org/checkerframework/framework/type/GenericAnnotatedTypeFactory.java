@@ -38,6 +38,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -112,6 +114,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -173,12 +176,18 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * The Java types on which users may write this type system's type annotations. null means no
    * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
+   *
+   * <p>If the relevant type is generic, this contains its erasure.
+   *
+   * <p>Although a {@code Class<?>} object exists for every element, this does not contain those
+   * {@code Class<?>} objects because the elements will be compared to TypeMirrors for which Class
+   * objects may not exist (they might not be on the classpath).
    */
   public @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
-   * Whether users may write type annotations on arrays. Ignored unless relevantJavaTypes is
-   * non-null.
+   * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
+   * is non-null.
    */
   boolean arraysAreRelevant = false;
 
@@ -344,9 +353,12 @@ public abstract class GenericAnnotatedTypeFactory<
       this.relevantJavaTypes = null;
       this.arraysAreRelevant = true;
     } else {
-      this.relevantJavaTypes = new HashSet<TypeMirror>();
+      Types types = getChecker().getTypeUtils();
+      Elements elements = getElementUtils();
+      Class<?>[] classes = relevantJavaTypesAnno.value();
+      this.relevantJavaTypes = new HashSet<>(SystemUtil.mapCapacity(classes.length));
       this.arraysAreRelevant = false;
-      for (Class<?> clazz : relevantJavaTypesAnno.value()) {
+      for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
           arraysAreRelevant = true;
         } else if (clazz.isArray()) {
@@ -354,8 +366,8 @@ public abstract class GenericAnnotatedTypeFactory<
               "Don't use arrays other than Object[] in @RelevantJavaTypes on "
                   + this.getClass().getSimpleName());
         } else {
-          relevantJavaTypes.add(
-              TypesUtils.typeFromClass(clazz, getChecker().getTypeUtils(), getElementUtils()));
+          TypeMirror relevantType = TypesUtils.typeFromClass(clazz, types, elements);
+          relevantJavaTypes.add(types.erasure(relevantType));
         }
       }
     }
@@ -1693,7 +1705,7 @@ public abstract class GenericAnnotatedTypeFactory<
   @Override
   public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
     AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-    dependentTypesHelper.atReturnType(returnType, m);
+    dependentTypesHelper.atMethodBody(returnType, m);
     return returnType;
   }
 
@@ -2216,6 +2228,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return true if users can write type annotations from this type system on the given Java type
    */
   public boolean isRelevant(TypeMirror tm) {
+    tm = types.erasure(tm);
     Boolean cachedResult = allFoundRelevantTypes.get(tm);
     if (cachedResult != null) {
       return cachedResult;

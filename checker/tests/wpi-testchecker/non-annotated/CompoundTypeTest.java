@@ -10,7 +10,7 @@ public class CompoundTypeTest {
   }
 
   void test() {
-    // :: warning: (argument.type.incompatible)
+    // :: warning: (argument)
     expectsCompoundType(field);
   }
 

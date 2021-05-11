@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
@@ -9,4 +10,5 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * @checker_framework.manual #map-key-checker Map Key Checker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
+@SupportedOptions({"assumeKeyFor"})
 public class KeyForSubchecker extends BaseTypeChecker {}

@@ -22,6 +22,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
@@ -399,13 +400,14 @@ public abstract class UBQualifier {
      * @return a copy of the map
      */
     private Map<String, Set<OffsetEquation>> copyMap() {
-      Map<String, Set<OffsetEquation>> result = new HashMap<>();
+      Map<String, Set<OffsetEquation>> result = new HashMap<>(SystemUtil.mapCapacity(map));
       for (String sequenceName : map.keySet()) {
-        Set<OffsetEquation> equations = new HashSet<>();
-        for (OffsetEquation offsetEquation : map.get(sequenceName)) {
-          equations.add(new OffsetEquation(offsetEquation));
+        Set<OffsetEquation> oldEquations = map.get(sequenceName);
+        Set<OffsetEquation> newEquations = new HashSet<>(SystemUtil.mapCapacity(oldEquations));
+        for (OffsetEquation offsetEquation : oldEquations) {
+          newEquations.add(new OffsetEquation(offsetEquation));
         }
-        result.put(sequenceName, equations);
+        result.put(sequenceName, newEquations);
       }
       return result;
     }
@@ -443,11 +445,11 @@ public abstract class UBQualifier {
     private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
         List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
 
-      Map<String, Set<OffsetEquation>> map = new HashMap<>();
+      Map<String, Set<OffsetEquation>> map = new HashMap<>(SystemUtil.mapCapacity(sequences));
       if (offsets.isEmpty()) {
         for (String sequence : sequences) {
           // Not `Collections.singleton(extraEq)` because the values get modified
-          Set<OffsetEquation> thisSet = new HashSet<>();
+          Set<OffsetEquation> thisSet = new HashSet<>(1);
           thisSet.add(extraEq);
           map.put(sequence, thisSet);
         }
@@ -456,11 +458,7 @@ public abstract class UBQualifier {
         for (int i = 0; i < sequences.size(); i++) {
           String sequence = sequences.get(i);
           String offset = offsets.get(i);
-          Set<OffsetEquation> set = map.get(sequence);
-          if (set == null) {
-            set = new HashSet<>();
-            map.put(sequence, set);
-          }
+          Set<OffsetEquation> set = map.computeIfAbsent(sequence, __ -> new HashSet<>());
           OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
           if (eq.hasError()) {
             return null;
@@ -820,7 +818,7 @@ public abstract class UBQualifier {
       Set<String> sequences = new HashSet<>(map.keySet());
       sequences.retainAll(otherLtl.map.keySet());
 
-      Map<String, Set<OffsetEquation>> lubMap = new HashMap<>();
+      Map<String, Set<OffsetEquation>> lubMap = new HashMap<>(SystemUtil.mapCapacity(sequences));
       for (String sequence : sequences) {
         Set<OffsetEquation> offsets1 = map.get(sequence);
         Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);

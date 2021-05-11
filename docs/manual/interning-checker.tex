@@ -240,7 +240,7 @@ public InternedClass intern() {
   @Interned InternedClass that = this; // error
 
   if (!pool.contains(this)) {
-    @SuppressWarnings("interning:assignment.type.incompatible")
+    @SuppressWarnings("interning:assignment")
     @Interned InternedClass internedThis = this;
     pool.add(internedThis);
   }
@@ -261,7 +261,7 @@ warning at the constructor.
 @Interned class AnotherInternedClass {
   // manually verified that all constructor invocations used such that all
   // new objects are interned
-  @SuppressWarnings("super.invocation.invalid")
+  @SuppressWarnings("super.invocation")
   @Interned AnotherInternedClass() {}
 }
 \end{Verbatim}

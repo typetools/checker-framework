@@ -11,9 +11,9 @@ public class NullableGeneric<T> {
     public NullablePair(T1 a, T2 b) {
       this.a = a;
       this.b = b;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.nna = a;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.nnb = b;
     }
   }

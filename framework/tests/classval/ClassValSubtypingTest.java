@@ -20,25 +20,25 @@ public class ClassValSubtypingTest {
   }
 
   void assignUnknown() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     c = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     cd = unknown;
   }
 
   void assignments() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = ab;
     ab = a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = cd;
   }
 }
@@ -62,25 +62,25 @@ class ClassBoundSubtypingTest {
   }
 
   void assignUnknown() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     c = unknown;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     cd = unknown;
   }
 
   void assignments() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = ab;
     ab = a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = cd;
   }
 }
@@ -95,19 +95,19 @@ class ClassValClassBoundSubtypingTest {
   @ClassBound({"a", "b"}) Object abBound = null;
 
   void assignments1() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = aBound;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = aBound;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = abBound;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ab = abBound;
   }
 
   void assignments2() {
     aBound = a;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     aBound = ab;
 
     abBound = a;

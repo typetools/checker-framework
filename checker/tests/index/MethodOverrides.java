@@ -13,7 +13,7 @@ public class MethodOverrides {
 }
 
 class MethodOverrides2 extends MethodOverrides {
-  // :: error: (override.return.invalid)
+  // :: error: (override.return)
   int read() {
     return -1;
   }

@@ -32,8 +32,8 @@ import org.plumelib.util.StringsPlume;
 /**
  * Generates a stub file from a single class or an entire package.
  *
- * <p>A stub file can be used to add annotations to methods of classes, that are only available in
- * binary or the source of which cannot be edited.
+ * <p>TODO: StubGenerator needs to be reimplemented, because it no longer works due to changes in
+ * JDK 9.
  *
  * @checker_framework.manual #stub Using stub classes
  */

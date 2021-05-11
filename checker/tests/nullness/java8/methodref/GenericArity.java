@@ -19,7 +19,7 @@ class TestGenFunc {
 
   void context() {
     GenFunc f = TestGenFunc::apply;
-    // :: error: (methodref.param.invalid)
+    // :: error: (methodref.param)
     GenFunc2 f2 = TestGenFunc::apply;
   }
 }

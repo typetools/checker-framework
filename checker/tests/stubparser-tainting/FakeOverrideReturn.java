@@ -17,11 +17,11 @@ public class FakeOverrideReturn {
     tf = sup.returnsTaintedInt();
     tf = mid.returnsTaintedInt();
     tf = sub.returnsTaintedInt();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     uf = sup.returnsTaintedInt();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     uf = mid.returnsTaintedInt();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     uf = sub.returnsTaintedInt();
 
     tf = sup.returnsUntaintedInt();
@@ -34,7 +34,7 @@ public class FakeOverrideReturn {
     tf = sup.returnsTaintedIntWithFakeOverride();
     tf = mid.returnsTaintedIntWithFakeOverride();
     tf = sub.returnsTaintedIntWithFakeOverride();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     uf = sup.returnsTaintedIntWithFakeOverride();
     uf = mid.returnsTaintedIntWithFakeOverride();
     uf = sub.returnsTaintedIntWithFakeOverride();
@@ -43,9 +43,9 @@ public class FakeOverrideReturn {
     tf = mid.returnsUntaintedIntWithFakeOverride();
     tf = sub.returnsUntaintedIntWithFakeOverride();
     uf = sup.returnsUntaintedIntWithFakeOverride();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     uf = mid.returnsUntaintedIntWithFakeOverride();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     uf = sub.returnsUntaintedIntWithFakeOverride();
   }
 

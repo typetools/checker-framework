@@ -52,10 +52,10 @@ public class JavaExprContext {
   staticGraphClass graphField1 = new staticGraphClass();
   nonstaticGraphClass graphField2 = new nonstaticGraphClass();
 
-  @SuppressWarnings("assignment.type.incompatible")
+  @SuppressWarnings("assignment")
   @KeyFor("graphField1.adjList") String key1 = "";
 
-  @SuppressWarnings("assignment.type.incompatible")
+  @SuppressWarnings("assignment")
   @KeyFor("graphField2.adjList") String key2 = "";
 
   boolean b1 = staticGraphClass.addEdge2(key1, graphField1);

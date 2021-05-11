@@ -52,28 +52,28 @@ public class NullnessFieldInvar {
 
   class Use {
     void test(Super superO, Sub sub, SubSub1 subSub1, SubSub2 subSub2) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x1 = superO.o;
       @NonNull Object x2 = sub.o;
       @NonNull Object x3 = subSub1.o;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x5 = sub.subO;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x6 = subSub1.subO;
       @NonNull Object x7 = subSub2.subO;
     }
 
     <SP extends Super, SB extends Sub, SS1 extends SubSub1, SS2 extends SubSub2> void test2(
         SP superO, SB sub, SS1 subSub1, SS2 subSub2) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x1 = superO.o;
       @NonNull Object x2 = sub.o;
       @NonNull Object x3 = subSub1.o;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x5 = sub.subO;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x6 = subSub1.subO;
       @NonNull Object x7 = subSub2.subO;
     }
@@ -102,9 +102,9 @@ public class NullnessFieldInvar {
     @Nullable Object subO;
 
     void test() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x = o; // error
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x2 = subO; // error
 
       @NonNull Object x3 = super.o;
@@ -122,9 +122,9 @@ public class NullnessFieldInvar {
     @Nullable Object subO;
 
     void test() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x = o; // error
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object x2 = subO; // error
 
       @NonNull Object x3 = super.o;

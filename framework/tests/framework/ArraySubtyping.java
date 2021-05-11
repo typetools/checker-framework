@@ -9,22 +9,22 @@ public class ArraySubtyping {
   @Odd String[] str2 = new @Odd String[1];
 
   void m() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     obj1 = obj2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     obj2 = obj1;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     str1 = str2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     str2 = str1;
 
     obj1 = str1;
     obj2 = str2;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     obj1 = str2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     obj2 = str1;
   }
 }

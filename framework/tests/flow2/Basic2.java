@@ -8,7 +8,7 @@ public class Basic2 {
   // basic tests to make sure everything works
   void t1(@Odd String p1, String p2) {
     String l1 = p1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l2 = p2;
   }
 
@@ -18,14 +18,14 @@ public class Basic2 {
     if (b1) {
       l1 = p2;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l3 = l1;
 
     l1 = p1;
     while (b1) {
       l1 = p2;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l4 = l1;
   }
 
@@ -77,7 +77,7 @@ public class Basic2 {
     c1.f2 = p2;
     @Odd String l2 = c1.f1;
     c2.f1 = p2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l3 = c1.f1;
   }
 
@@ -87,16 +87,16 @@ public class Basic2 {
     c1.c.f1 = p1;
     @Odd String l2 = c1.c.f1;
     c1.f1 = p2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l3 = c1.f1;
 
     c1.f1 = p1;
     c1.c.f1 = p1;
     @Odd String l4 = c1.c.f1;
     c2.c = c2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l5 = c1.f1;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l6 = c1.c.f1;
   }
 
@@ -105,7 +105,7 @@ public class Basic2 {
     if (b1) {
       c1.f1 = p1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = c1.f1;
 
     if (b1) {
@@ -127,7 +127,7 @@ public class Basic2 {
   void t7(@Odd String p1, String p2, boolean b1, C c1, C c2) {
     c1.f1 = p1;
     nonpure();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l1 = c1.f1;
 
     c1.f1 = p1;
@@ -139,7 +139,7 @@ public class Basic2 {
   void t8(@Odd String a1[], String a2[], String p3) {
     String l1 = a1[0];
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd String l2 = a2[0];
 
     @Odd String l3 = l1;
@@ -147,7 +147,7 @@ public class Basic2 {
     a1[0] = l1;
     a1[1] = l3;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a1[2] = p3;
 
     a2[0] = l1;
@@ -166,7 +166,7 @@ public class Basic2 {
     p1 = l1;
     T l2 = p2;
     p2 = l2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd T l3 = p1;
     @Odd T l4 = p2;
   }
@@ -182,13 +182,13 @@ public class Basic2 {
 
   // for-each loop
   void t11(@Odd String p1, String p2, List<String> list, List<@Odd String> oddList) {
-    // :: error: (enhancedfor.type.incompatible)
+    // :: error: (enhancedfor)
     for (@Odd String i : list) {}
     for (@Odd String i : oddList) {
       @Odd String l1 = i;
     }
     for (@Odd String i : oddList) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       i = p2;
     }
     for (String i : oddList) {

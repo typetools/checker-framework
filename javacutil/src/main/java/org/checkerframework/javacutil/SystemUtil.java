@@ -10,7 +10,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -186,8 +189,7 @@ public class SystemUtil {
    * @param dest a list to add to
    * @param source a list of elements to add
    */
-  @SuppressWarnings(
-      "nullness:argument.type.incompatible" // true positive:  `dest` might be incompatible with
+  @SuppressWarnings("nullness:argument" // true positive:  `dest` might be incompatible with
   // null and `source` might contain null.
   )
   public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {
@@ -232,6 +234,52 @@ public class SystemUtil {
     T[] result = Arrays.copyOf(array1, array1.length + array2.length);
     System.arraycopy(array2, 0, result, array1.length, array2.length);
     return result;
+  }
+
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param numElements the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(int numElements) {
+    // Equivalent to: (int) (numElements / 0.75) + 1
+    // where 0.75 is the default load factor.
+    return (numElements * 4 / 3) + 1;
+  }
+
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param c a collection whose size is the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(Collection<?> c) {
+    return mapCapacity(c.size());
+  }
+
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param m a map whose size is the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(Map<?, ?> m) {
+    return mapCapacity(m.size());
+  }
+
+  /**
+   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+   * or HashSet constructor, so that the set or map will not resize.
+   *
+   * @param s a set whose size is the maximum expected number of elements in the map or set
+   * @return the initial capacity to pass to a HashMap or HashSet constructor
+   */
+  public static int mapCapacity(Set<?> s) {
+    return mapCapacity(s.size());
   }
 
   ///

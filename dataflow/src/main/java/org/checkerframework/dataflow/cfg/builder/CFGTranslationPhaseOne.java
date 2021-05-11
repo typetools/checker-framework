@@ -387,8 +387,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     exceptionalExitLabel = new Label();
     tryStack = new TryStack(exceptionalExitLabel);
     returnTargetL = new TryFinallyScopeCell(regularExitLabel);
-    breakLabels = new HashMap<>();
-    continueLabels = new HashMap<>();
+    breakLabels = new HashMap<>(2);
+    continueLabels = new HashMap<>(2);
     returnNodes = new ArrayList<>();
     declaredClasses = new ArrayList<>();
     declaredLambdas = new ArrayList<>();
@@ -492,10 +492,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     Set<Node> existing = treeLookupMap.get(tree);
     if (existing == null) {
       treeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
-    } else if (!existing.contains(node)) {
-      existing.add(node);
     } else {
-      // Nothing to do if existing already contains the Node.
+      existing.add(node);
     }
 
     Tree enclosingParens = parenMapping.get(tree);
@@ -536,10 +534,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     Set<Node> existing = convertedTreeLookupMap.get(tree);
     if (existing == null) {
       convertedTreeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
-    } else if (!existing.contains(node)) {
-      existing.add(node);
     } else {
-      // Nothing to do if existing already contains the Node.
+      existing.add(node);
     }
   }
 
@@ -744,7 +740,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
       handleArtificialTree(classTree);
       // No need to handle possible errors from evaluating a class literal here
-      // since this is a synthetic code that can't fail.
+      // since this is synthetic code that can't fail.
       ClassNameNode className = new ClassNameNode(classTree);
       className.setInSource(false);
       insertNodeAfter(className, node);
@@ -2708,6 +2704,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         default:
           if (ElementUtils.isTypeDeclaration(element)) {
             node = new ClassNameNode(tree);
+            break;
+          } else if (ElementUtils.isBindingVariable(element)) {
+            // Note: BINDING_VARIABLE should be added as a direct case above when instanceof pattern
+            // matching and Java15 are supported.
+            node = new LocalVariableNode(tree);
             break;
           }
           throw new BugInCF("bad element kind " + element.getKind());

@@ -10,19 +10,19 @@ public class SimpleRegex {
 
   void validRegString() {
     @Regex String s1 = "validRegex";
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s2 = "(InvalidRegex"; // error
   }
 
   void compileCall() {
     Pattern.compile("test.*[^123]$");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Pattern.compile("$test.*[^123"); // error
   }
 
   void requireValidReg(@Regex String reg, String nonReg) {
     Pattern.compile(reg);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Pattern.compile(nonReg); // error
   }
 
@@ -31,18 +31,18 @@ public class SimpleRegex {
     @Regex String s2 = reg + "d.*sf";
     @Regex String s3 = reg + reg;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String n1 = nonReg; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String n2 = reg + "(df"; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String n3 = reg + nonReg; // error
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String o1 = nonReg; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String o2 = nonReg + "sdf"; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String o3 = nonReg + reg; // error
   }
 
@@ -51,7 +51,7 @@ public class SimpleRegex {
 
   void testCompoundConcatenation() {
     takesRegex(regex);
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (compound.assignment)
     regex += ")"; // error
     takesRegex(regex);
 
@@ -59,7 +59,7 @@ public class SimpleRegex {
     // nonRegex is refined by flow to be a regular expression
     takesRegex(nonRegex);
     nonRegex += ")";
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     takesRegex(nonRegex); // error
   }
 
@@ -69,9 +69,9 @@ public class SimpleRegex {
     @Regex char c1 = 'c';
     @Regex Character c2 = 'c';
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex char c3 = '('; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex Character c4 = '('; // error
   }
 
@@ -79,13 +79,13 @@ public class SimpleRegex {
     @Regex String s1 = "rege" + 'x';
     @Regex String s2 = 'r' + "egex";
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s4 = "rege" + '('; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s5 = "reg(" + 'x'; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s6 = '(' + "egex"; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s7 = 'r' + "ege("; // error
   }
 
@@ -93,13 +93,13 @@ public class SimpleRegex {
     Pattern.compile("non(", Pattern.LITERAL);
     Pattern.compile(foo("regex"), Pattern.LITERAL);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Pattern.compile(foo("regex("), Pattern.LITERAL); // error
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Pattern.compile("non("); // error
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Pattern.compile(foo("regex")); // error
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Pattern.compile("non(", Pattern.CASE_INSENSITIVE); // error
   }
 
@@ -133,9 +133,9 @@ public class SimpleRegex {
   //        char @Regex [] c2 = {'(', 'r', 'e', 'g', 'e', 'x', ')', '.', '*'};
   //        char @Regex [] c3 = {r, 'e', 'g', 'e', 'x'};
   //
-  //        // :: error: (assignment.type.incompatible)
+  //        // :: error: (assignment)
   //        char @Regex [] c4 = {'(', 'r', 'e', 'g', 'e', 'x'};   // error
-  //        // :: error: (assignment.type.incompatible)
+  //        // :: error: (assignment)
   //        char @Regex [] c5 = {c, '.', '*'};   // error
   //    }
 }

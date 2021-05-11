@@ -26,28 +26,28 @@ public class TransferDivide {
     /** pos / pos -> nn */
     @NonNegative int l = d / c;
     @NonNegative int m = c / d;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int n = c / d;
 
     /** nn / pos -> nn */
     @NonNegative int o = b / c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int p = b / d;
 
     /** pos / nn -> nn */
     @NonNegative int q = d / l;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int r = c / l;
 
     /** nn / nn -> nn */
     @NonNegative int s = b / q;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int t = b / q;
 
     /** n1p / pos -> n1p */
     @GTENegativeOne int u = a / d;
     @GTENegativeOne int v = a / c;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNegative int w = a / c;
 
     /** n1p / nn -> n1p */

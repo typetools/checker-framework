@@ -182,8 +182,8 @@ TreeAnnotator
   </li>
   <li>
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
-      <code>mkdir -p /scratch/$USER/jsr308-release<br/></code>
-      <code>cd /scratch/$USER/jsr308-release<br/></code>
+      <code>mkdir -p /scratch/$USER/cf-release<br/></code>
+      <code>cd /scratch/$USER/cf-release<br/></code>
       <code>test -d checker-framework && (cd checker-framework && git pull --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
       <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
@@ -335,7 +335,7 @@ git config --global user.email you@example.com</pre>
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
       <tr>
-        <td colspan="2" class="top_file">/scratch/$USER/jsr308-release</td>
+        <td colspan="2" class="top_file">/scratch/$USER/cf-release</td>
         <td>Contains repositories and scripts to perform a release</td>
       </tr>
       <tr>
@@ -624,11 +624,11 @@ git config --global user.email you@example.com</pre>
     </ul>
     <h3 id="future_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
     The first step in running the release process, after the pre-release checklist, is to copy the
-    release scripts into the <code>jsr308-release</code> directory.  We could automate this.
+    release scripts into the <code>cf-release</code> directory.  We could automate this.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
-      <li>Create a read-only script in jsr308-release/scripts.</li>
-      <li>Edit the script so that it downloads all release scripts into the jsr308-release directory.</li>
+      <li>Create a read-only script in cf-release/scripts.</li>
+      <li>Edit the script so that it downloads all release scripts into the cf-release directory.</li>
       <li>Update this document to reflect this new process.</li>
     </ul>
     <h3 id="future_option_parsing">Option Parsing</h3> <!-- omit from toc -->

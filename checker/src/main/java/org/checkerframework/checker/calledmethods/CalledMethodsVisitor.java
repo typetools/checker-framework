@@ -16,8 +16,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This visitor implements the custom error message finalizer.invocation.invalid. It also supports
- * counting the number of framework build calls.
+ * This visitor implements the custom error message finalizer.invocation. It also supports counting
+ * the number of framework build calls.
  */
 public class CalledMethodsVisitor extends AccumulationVisitor {
 
@@ -46,7 +46,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
     return super.visitMethodInvocation(node, p);
   }
 
-  /** Turns some method.invocation.invalid errors into finalizer.invocation.invalid errors. */
+  /** Turns some method.invocation errors into finalizer.invocation errors. */
   @Override
   protected void reportMethodInvocabilityError(
       MethodInvocationTree node, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {
@@ -66,7 +66,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         }
       }
 
-      checker.reportError(node, "finalizer.invocation.invalid", missingMethods.toString());
+      checker.reportError(node, "finalizer.invocation", missingMethods.toString());
     } else {
       super.reportMethodInvocabilityError(node, found, expected);
     }

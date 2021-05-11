@@ -9,10 +9,10 @@ public class MinLenLUB {
     } else {
       arr = arg2;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @MinLen(10) [] res = arr;
     int @MinLen(4) [] res2 = arr;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @BottomVal [] res3 = arr;
   }
 
@@ -23,10 +23,10 @@ public class MinLenLUB {
     } else {
       arr = arg2;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @MinLen(10) [] res = arr;
     int @MinLen(4) [] res2 = arr;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int @BottomVal [] res3 = arr;
   }
 

@@ -29,7 +29,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  *   {@literal @}s int sec1 = 7 * UnitsTools.s;
  *   {@literal @}s int sec2 = triplePolyUnit(sec1);
  *
- *    // :: error: (assignment.type.incompatible)
+ *    // :: error: (assignment)
  *   {@literal @}s int sec3 = triplePolyUnit(m1);
  *  }
  * </code></pre>

@@ -15,39 +15,39 @@ public class WildcardSubtype {
   class NonNullMyClassVisitor extends Visitor<@NonNull MyClass> {}
 
   void test(MyClassVisitor myClassVisitor, NonNullMyClassVisitor nonNullMyClassVisitor) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     take(new Visitor<@Nullable Object>());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     take(new Visitor<@Nullable Object>());
 
     Visitor<?> visitor1 = myClassVisitor;
     Visitor<?> visitor2 = nonNullMyClassVisitor;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Visitor<? extends @NonNull Object> visitor3 = myClassVisitor;
     Visitor<? extends @NonNull Object> visitor4 = nonNullMyClassVisitor;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Visitor<? extends @NonNull Object> visitor5 = new MyClassVisitor();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Visitor<? extends @NonNull Object> visitor6 = new MyClassVisitor();
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     take(new MyClassVisitor());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     take(new MyClassVisitor());
   }
 
   void take(Visitor<@NonNull ? extends @NonNull Object> v) {}
 
   void bar() {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     take(new Visitor<@Nullable Object>());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     take(new MyClassVisitor());
   }
 
   void baz() {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     take(new MyClassVisitor());
     take(new NonNullMyClassVisitor());
   }

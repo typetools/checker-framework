@@ -45,7 +45,7 @@ class Test2<X extends @Nullable Object> {
 
 class Test3<X extends @Nullable Object> {
   APair<@NonNull X, @NonNull X> test1(@Nullable X p) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return APair.of(p, (X) null);
   }
 }
@@ -53,10 +53,10 @@ class Test3<X extends @Nullable Object> {
 class Test4 {
   APair<@Nullable String, Integer> psi = PairSub.of("Hi", 42);
   APair<@Nullable String, Integer> psi2 = PairSub.of(null, 42);
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   APair<String, Integer> psi3 = PairSub.of(null, 42);
 
   APair<@Nullable String, Integer> psisw = PairSubSwitching.ofPSS(42, null);
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   APair<String, Integer> psisw2 = PairSubSwitching.ofPSS(42, null);
 }

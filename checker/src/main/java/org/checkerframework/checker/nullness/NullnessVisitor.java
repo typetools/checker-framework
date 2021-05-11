@@ -131,7 +131,7 @@ public class NullnessVisitor
   @Override
   public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
     // The Nullness Checker issues a more comprehensible "nullness.on.primitive" error rather
-    // than the "type.invalid.annotations.on.use" error this method would issue.
+    // than the "annotations.on.use" error this method would issue.
     return true;
   }
 
@@ -240,8 +240,7 @@ public class NullnessVisitor
         && (checker.getLintOption("soundArrayCreationNullness", false)
             // temporary, for backward compatibility
             || checker.getLintOption("forbidnonnullarraycomponents", false))) {
-      checker.reportError(
-          node, "new.array.type.invalid", componentType.getAnnotations(), type.toString());
+      checker.reportError(node, "new.array", componentType.getAnnotations(), type.toString());
     }
 
     return super.visitNewArray(node, p);
@@ -653,14 +652,14 @@ public class NullnessVisitor
         boolean nullnessCheckerAnno = containsSameByName(atypeFactory.getNullnessAnnotations(), a);
         if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
           // The type is not non-null => warning
-          checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
+          checker.reportWarning(node, "new.class", type.getAnnotations());
           // Note that other consistency checks are made by isValid.
         }
       }
       if (t.toString().contains("@PolyNull")) {
         // TODO: this is a hack, but PolyNull gets substituted
         // afterwards
-        checker.reportWarning(node, "new.class.type.invalid", type.getAnnotations());
+        checker.reportWarning(node, "new.class", type.getAnnotations());
       }
     }
     // TODO: It might be nicer to introduce a framework-level

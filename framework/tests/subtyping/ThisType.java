@@ -10,7 +10,7 @@ public class ThisType {
 
   void t2(ThisType this) {
     ThisType l1 = this;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Encrypted ThisType l2 = this;
   }
 }

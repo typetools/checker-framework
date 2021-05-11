@@ -69,10 +69,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * -Afactory=checkers.nullness.NullnessAnnotatedTypeFactory}). The factory needs to have a
  * constructor of the form {@code <init>(ProcessingEnvironment, CompilationUnitTree)}.
  */
-/*
- * The code here is one of the most ugliest I have ever written.  I should revise
- * it in the future.  - Mahmood
- */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions({"checker"})
 public class FactoryTestChecker extends BaseTypeChecker {

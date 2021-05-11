@@ -276,7 +276,7 @@ else
     # results can be inspected by hand (that is, those that WPI succeeded on).
     # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java".
     # shellcheck disable=SC2046
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-J" | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-J" | sed "s/'//g" | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
         echo "${listpath} has size zero"

@@ -29,11 +29,11 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
 
     if ((kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT)) {
       if (!atypeFactory.getTypeHierarchy().isSubtype(exprType, varType)) {
-        checker.reportError(node, "compound.assignment.type.incompatible", varType, exprType);
+        checker.reportError(node, "compound.assignment", varType, exprType);
       }
     } else if (exprType.getAnnotation(UnknownUnits.class) == null) {
       // Only allow mul/div with unqualified units
-      checker.reportError(node, "compound.assignment.type.incompatible", varType, exprType);
+      checker.reportError(node, "compound.assignment", varType, exprType);
     }
 
     return null; // super.visitCompoundAssignment(node, p);

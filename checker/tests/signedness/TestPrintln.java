@@ -10,10 +10,10 @@ public class TestPrintln {
     @Unsigned int a = Integer.parseUnsignedInt("2147483647");
     System.out.println(a);
     @Unsigned int b = Integer.parseUnsignedInt("2147483648");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     System.out.println(b);
     @Unsigned int c = Integer.parseUnsignedInt("4000000000");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     System.out.println(c);
   }
 }

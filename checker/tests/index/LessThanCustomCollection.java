@@ -28,10 +28,10 @@ public class LessThanCustomCollection {
       int[] array, @IndexOrHigh("#1") @LessThan("#3 + 1") int start, @IndexOrHigh("#1") int end) {
     this.array = array;
     // can't est. that end - start is the length of this.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     this.end = end;
     // start is @LessThan(end + 1) but should be @LessThan(this.end + 1)
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     this.start = start;
   }
 
@@ -42,7 +42,7 @@ public class LessThanCustomCollection {
 
   public double get(@IndexFor("this") int index) {
     // TODO: This is a bug.
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     checkElementIndex(index, length());
     // Because index is an index for "this" the index + start
     // must be an index for array.
@@ -62,7 +62,7 @@ public class LessThanCustomCollection {
     for (int i = start; i < end; i++) {
       if (areEqual(array[i], target)) {
         // Don't know that is is greater than start.
-        // :: error: (return.type.incompatible)
+        // :: error: (return)
         return i - start;
       }
     }

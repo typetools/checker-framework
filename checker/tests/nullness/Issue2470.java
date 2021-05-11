@@ -30,7 +30,7 @@ public class Issue2470 {
 
   static void buggy() {
     new Example()
-        // :: error: (contracts.precondition.not.satisfied)
+        // :: error: (contracts.precondition)
         .print();
   }
 
@@ -43,7 +43,7 @@ public class Issue2470 {
   static void buggy2() {
     new Example()
         .setS("test")
-        // :: error:(contracts.precondition.not.satisfied)
+        // :: error:(contracts.precondition)
         .print();
   }
 

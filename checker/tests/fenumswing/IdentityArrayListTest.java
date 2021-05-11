@@ -9,7 +9,7 @@ public class IdentityArrayListTest {
   // The type of the third argument to Arrays.copyOf should be:
   // Class<? extends T @FenumTop []>
   // But the annotated JDK does not have annotations for the Fenum Checker.
-  @SuppressWarnings("argument.type.incompatible")
+  @SuppressWarnings("argument")
   public <T> T[] toArray(T[] a) {
     // Warnings only with -Alint=cast:strict.
     // TODO:: warning: (cast.unsafe)

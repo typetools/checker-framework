@@ -24,7 +24,7 @@ public interface TestConfiguration {
    *
    * e.g.,
    *
-   * <pre>MethodInvocation.java:17: error: (method.invocation.invalid)</pre>
+   * <pre>MethodInvocation.java:17: error: (method.invocation)</pre>
    *
    * If getDiagnosticFiles does NOT return an empty list, then the only diagnostics expected by the
    * TestExecutor will be the ones found in these files. If it does return an empty list, then the
