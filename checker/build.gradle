@@ -100,7 +100,7 @@ assemble.dependsOn copyJarsToDist
 
 task printClasspath {
     description "Print the classpath for compileJava"
-        doFirst { println compileJava.classpath.asPath }
+    doFirst { println compileJava.classpath.asPath }
 }
 
 task allSourcesJar(type: Jar, group: 'Build') {
