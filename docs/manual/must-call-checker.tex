@@ -4,7 +4,7 @@
 The Must Call Checker conservatively over-approximates
 the set of methods that an object should call before it is de-allocated.
 The checker does not enforce that the methods are called before objects are de-allocated,
-nor are its annotations refined after a must-call method is called; rather,
+nor are its annotations refined after a method is called; rather,
 it is intended to be run as a subchecker of another checker. On its own, it does not
 enforce any rules other than subtyping. Instead, the types that the Must Call Checker
 computes can be used by later checkers that require an over-approximation
@@ -14,12 +14,13 @@ For example, consider a \<java.io.OutputStream>.  This \<OutputStream>
 might have an obligation to call the \<close()> method, to release an
 underlying file resource. The type of this \<OutputStream> is
 \<@MustCall(\{"close"\})>.  Or, the \<OutputStream> might not have such an
-obligation, if the underlying resource is a byte array. The type of this
-\<OutputStream> is \<@MustCall(\{\})>.  For an arbitrary \<OutputStream>,
-the Must Call Checker over-approximates the methods that it should call
-by assigning it the type \<@MustCall(\{"close"\}) OutputStream>, which can
-be read as ``an OutputStream that might need to call \<close()> (but no
-other methods) before it is de-allocated''.
+obligation, if the underlying resource is a byte array (or if \<close()>
+has already been called). The type of this \<OutputStream> is
+\<@MustCall(\{\})>.  For an arbitrary \<OutputStream>, the Must Call
+Checker over-approximates the methods that it should call by assigning it
+the type \<@MustCall(\{"close"\}) OutputStream>, which can be read as ``an
+OutputStream that might need to call \<close()> (but no other methods)
+before it is de-allocated''.
 
 \sectionAndLabel{Must Call annotations}{must-call-annotations}
 
@@ -67,12 +68,11 @@ Any expression of type \<@MustCall(\{\}) Object> also has type
 The type \<@MustCall(\{"foo"\}) Object>
 contains objects that need to call \<foo> and objects that need to call
 nothing, but the type does not contain an
-object that needs to call \<bar> (or both \<foo> and \<bar>) is not permitted.
+object that needs to call \<bar> (or both \<foo> and \<bar>).
 \<@MustCall(\{"foo", "bar"\}) Object> represents all objects that need to
 call \<foo>, \<bar>, both, or neither; it cannot not represent an object that needs
 to call some other method.
 
-The default type in unannotated code is \<@MustCall(\{\})>.
 
 \sectionAndLabel{Writing \<@MustCall>/\<@InheritableMustCall> on a class}{must-call-on-class}
 
@@ -80,9 +80,9 @@ As explained in Section~\ref{upper-bound-for-use}, a type
 annotation on a type declaration means that every use of the type has that
 annotation by default. \<@MustCall> annotations on a class declaration should
 usually also be shared by subclasses. To do so, a programmer can either write
-an \<@MustCall> annotation on every subclass, or can write \<@InheritableMustCall>
+a \<@MustCall> annotation on every subclass, or can write \<@InheritableMustCall>
 on only the class, which will cause the checker to treat every subclass as if
-they had an identical \<@MustCall> annotation.  The latter is the preferred style.
+it has an identical \<@MustCall> annotation.  The latter is the preferred style.
 
 For example, given the following class annotation:
 \begin{Verbatim}
@@ -133,8 +133,8 @@ a declaration annotation.
 \sectionAndLabel{Assumptions about reflection}{must-call-reflection}
 
 The Must Call Checker is unsound with respect to reflection: it assumes
-that objects instantiated reflectively do not have must-call obligations (i.e. that their
-type is \<@MustCall({})>. If the checker is run with \<-AresolveReflection>, then
+that objects instantiated reflectively do not have must-call obligations (i.e., that their
+type is \<@MustCall(\{\})>. If the checker is run with \<-AresolveReflection>, then
 this assumption applies only to types that cannot be resolved.
 
 \sectionAndLabel{Type parameter bounds often need to be annotated}{must-call-type-params}
