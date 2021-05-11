@@ -725,8 +725,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     available
    */
   public @Nullable V getValue(FieldAccessNode n) {
-    FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(n);
-    return fieldValues.get(fieldAccess);
+    JavaExpression je = JavaExpression.fromNodeFieldAccess(n);
+    if (je instanceof FieldAccess) {
+      return fieldValues.get((FieldAccess) je);
+    } else if (je instanceof ClassName) {
+      return classValues.get((ClassName) je);
+    } else if (je instanceof ThisReference) {
+      // "return thisValue" is wrong, because the node refers to an outer this.
+      // So, return null for now.  TODO: improve.
+      return null;
+    } else {
+      throw new BugInCF(
+          "Unexpected JavaExpression %s %s for FieldAccessNode %s",
+          je.getClass().getSimpleName(), je, n);
+    }
   }
 
   /**

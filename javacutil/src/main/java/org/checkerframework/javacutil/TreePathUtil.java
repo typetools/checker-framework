@@ -356,7 +356,7 @@ public final class TreePathUtil {
     StringJoiner result = new StringJoiner(System.lineSeparator() + "    ");
     result.add("TreePath:");
     for (Tree t : path) {
-      result.add(TreeUtils.toStringTruncated(t, 65));
+      result.add(TreeUtils.toStringTruncated(t, 65) + " " + t.getKind());
     }
     return result.toString();
   }
