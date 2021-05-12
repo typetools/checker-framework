@@ -47,28 +47,22 @@ public class MonotonicNonNullInferenceTest {
       hasSideEffect();
       s = staticString1;
     }
-    /*
     if (staticString2 != null) {
       hasSideEffect();
       s = staticString2;
     }
-    */
-    /*
     if (staticString3 != null) {
       hasSideEffect();
       s = staticString3;
     }
-    */
     if (instanceString1 != null) {
       hasSideEffect();
       s = instanceString1;
     }
-    /*
     if (instanceString2 != null) {
       hasSideEffect();
       s = instanceString2;
     }
-    */
     if (instanceString3 != null) {
       hasSideEffect();
       s = instanceString3;
