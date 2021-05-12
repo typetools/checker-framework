@@ -18,11 +18,11 @@ class ValueMethodIdentifier {
   /** String.endsWith(String) method. */
   private final ExecutableElement endsWithMethod;
   /** The {@code java.lang.Math#min()} methods. */
-  private final List<ExecutableElement> mathMinMethod;
+  private final List<ExecutableElement> mathMinMethods;
   /** The {@code java.lang.Math#max()} methods. */
-  private final List<ExecutableElement> mathMaxMethod;
+  private final List<ExecutableElement> mathMaxMethods;
   /** Arrays.copyOf() methods. */
-  private final List<ExecutableElement> copyOfMethod;
+  private final List<ExecutableElement> copyOfMethods;
 
   /**
    * Initialize elements with methods that have special handling in the value checker.
@@ -34,19 +34,20 @@ class ValueMethodIdentifier {
     getLengthMethod = TreeUtils.getMethod("java.lang.reflect.Array", "getLength", 1, processingEnv);
     startsWithMethod = TreeUtils.getMethod("java.lang.String", "startsWith", 1, processingEnv);
     endsWithMethod = TreeUtils.getMethod("java.lang.String", "endsWith", 1, processingEnv);
-    mathMinMethod = TreeUtils.getMethods("java.lang.Math", "min", 2, processingEnv);
-    mathMaxMethod = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
-    copyOfMethod = TreeUtils.getMethods("java.util.Arrays", "copyOf", 2, processingEnv);
+    mathMinMethods = TreeUtils.getMethods("java.lang.Math", "min", 2, processingEnv);
+    mathMaxMethods = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
+    copyOfMethods = TreeUtils.getMethods("java.util.Arrays", "copyOf", 2, processingEnv);
+    copyOfMethods.add(TreeUtils.getMethod("java.util.Arrays", "copyOf", 3, processingEnv));
   }
 
   /** Returns true iff the argument is an invocation of Math.min. */
   public boolean isMathMin(Tree methodTree, ProcessingEnvironment processingEnv) {
-    return TreeUtils.isMethodInvocation(methodTree, mathMinMethod, processingEnv);
+    return TreeUtils.isMethodInvocation(methodTree, mathMinMethods, processingEnv);
   }
 
   /** Returns true iff the argument is an invocation of Math.max. */
   public boolean isMathMax(Tree methodTree, ProcessingEnvironment processingEnv) {
-    return TreeUtils.isMethodInvocation(methodTree, mathMaxMethod, processingEnv);
+    return TreeUtils.isMethodInvocation(methodTree, mathMaxMethods, processingEnv);
   }
 
   /** Determines whether a tree is an invocation of the {@code String.length()} method. */
@@ -111,6 +112,6 @@ class ValueMethodIdentifier {
    * @return true iff the argument is an invocation of {@code Arrays.copyOf()} method
    */
   public boolean isArraysCopyOfInvocation(Tree tree, ProcessingEnvironment processingEnv) {
-    return TreeUtils.isMethodInvocation(tree, copyOfMethod, processingEnv);
+    return TreeUtils.isMethodInvocation(tree, copyOfMethods, processingEnv);
   }
 }
