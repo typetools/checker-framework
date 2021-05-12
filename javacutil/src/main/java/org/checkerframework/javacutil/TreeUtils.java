@@ -1569,4 +1569,24 @@ public final class TreeUtils {
       }
     }
   }
+
+  /**
+   * Returns true if two expressions originating from the same scope are identical, i.e. they are
+   * syntactically represented in the same way (modulo parentheses) and represent the same value.
+   *
+   * <p>If the expression includes one or more method calls, assumes the method calls are
+   * deterministic.
+   *
+   * @param expr1 the first expression to compare
+   * @param expr2 the second expression to compare; expr2 must originate from the same scope as
+   *     expr1
+   * @return true if the expressions expr1 and expr2 are syntactically identical
+   */
+  public static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
+    expr1 = TreeUtils.withoutParens(expr1);
+    expr2 = TreeUtils.withoutParens(expr2);
+    // Converting to a string in order to compare is somewhat inefficient, and it doesn't handle
+    // internal parentheses.  We could create a visitor instead.
+    return expr1.getKind() == expr2.getKind() && expr1.toString().equals(expr2.toString());
+  }
 }
