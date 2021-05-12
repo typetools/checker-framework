@@ -918,8 +918,6 @@ public final class TreeUtils {
         }
       }
     }
-    // TODO: Include a list of candidates (either those with the same name, or if none, all methods)
-    // in the error message.
     List<String> candidates = new ArrayList<>();
     for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
       if (exec.getSimpleName().contentEquals(methodName)) {
@@ -928,13 +926,11 @@ public final class TreeUtils {
     }
     if (candidates.isEmpty()) {
       for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-        if (exec.getSimpleName().contentEquals(methodName)) {
-          candidates.add(executableElementToString(exec));
-        }
+        candidates.add(executableElementToString(exec));
       }
     }
     throw new BugInCF(
-        "TreeUtils.getMethod: found no match for %s.%s(%s): %s",
+        "TreeUtils.getMethod: found no match for %s.%s(%s); candidates: %s",
         typeName, methodName, Arrays.toString(paramTypes), candidates);
   }
 
