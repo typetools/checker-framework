@@ -96,6 +96,8 @@ public class NullnessAnnotatedTypeFactory
 
   /** The Class.getCanonicalName() method. */
   protected final ExecutableElement classGetCanonicalName;
+  /** The Arrays.copyOf() methods that operate on arrays of references. */
+  private final List<ExecutableElement> copyOfMethods;
 
   /** Cache for the nullness annotations. */
   protected final Set<Class<? extends Annotation>> nullnessAnnos;
@@ -235,6 +237,10 @@ public class NullnessAnnotatedTypeFactory
 
     classGetCanonicalName =
         TreeUtils.getMethod("java.lang.Class", "getCanonicalName", 0, processingEnv);
+    copyOfMethods =
+        Arrays.asList(
+            TreeUtils.getMethod("java.util.Arrays", "copyOf", processingEnv, "T[]", "int"),
+            TreeUtils.getMethod("java.util.Arrays", "copyOf", 3, processingEnv));
 
     postInit();
 
@@ -531,6 +537,32 @@ public class NullnessAnnotatedTypeFactory
         componentType.replaceAnnotation(INITIALIZED);
       }
       return null;
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isMethodInvocation(tree, copyOfMethods, processingEnv)) {
+        List<? extends ExpressionTree> args = tree.getArguments();
+        ExpressionTree lengthArg = args.get(1);
+        if (TreeUtils.isArrayLengthAccess(lengthArg)) {
+          // TODO: This syntactic test may not be not correct if the array expression has a side
+          // effect.  This code could require that it has no method calls, assignments, etc.
+          ExpressionTree arrayArg = args.get(0);
+          System.out.printf(
+              "arrayArg: %s  equal? %s%n",
+              arrayArg,
+              TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression()));
+          if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
+            AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
+            AnnotatedTypeMirror arrayArgComponentType = arrayArgType.getComponentType();
+            // Maybe this call is only necessary if argNullness is @NonNull.
+            ((AnnotatedArrayType) type)
+                .getComponentType()
+                .replaceAnnotations(arrayArgComponentType.getAnnotations());
+          }
+        }
+      }
+      return super.visitMethodInvocation(tree, type);
     }
   }
 
