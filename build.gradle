@@ -292,6 +292,11 @@ task maybeCloneAndBuildDependencies() {
     }
     doLast {
         if (!file(stubparserJar).exists()) {
+            exec {
+                workingDir ${stubparser}/javaparser-core/target
+                executable 'ls'
+                ignoreExitValue = true
+            }
             throw new RuntimeException("Can't find stubparser jar: " + stubparserJar)
         }
     }
