@@ -548,10 +548,6 @@ public class NullnessAnnotatedTypeFactory
           // TODO: This syntactic test may not be not correct if the array expression has a side
           // effect.  This code could require that it has no method calls, assignments, etc.
           ExpressionTree arrayArg = args.get(0);
-          System.out.printf(
-              "arrayArg: %s  equal? %s%n",
-              arrayArg,
-              TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression()));
           if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
             AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
             AnnotatedTypeMirror arrayArgComponentType = arrayArgType.getComponentType();
