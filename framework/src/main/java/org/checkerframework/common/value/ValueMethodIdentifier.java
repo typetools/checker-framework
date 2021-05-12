@@ -40,12 +40,24 @@ class ValueMethodIdentifier {
     copyOfMethods.add(TreeUtils.getMethod("java.util.Arrays", "copyOf", 3, processingEnv));
   }
 
-  /** Returns true iff the argument is an invocation of Math.min. */
+  /**
+   * Returns true iff the argument is an invocation of Math.min.
+   *
+   * @param methodTree a tree
+   * @param processingEnv the processing environment
+   * @return true iff the argument is an invocation of Math.min
+   */
   public boolean isMathMin(Tree methodTree, ProcessingEnvironment processingEnv) {
     return TreeUtils.isMethodInvocation(methodTree, mathMinMethods, processingEnv);
   }
 
-  /** Returns true iff the argument is an invocation of Math.max. */
+  /**
+   * Returns true iff the argument is an invocation of Math.max.
+   *
+   * @param methodTree a tree
+   * @param processingEnv the processing environment
+   * @return true iff the argument is an invocation of Math.max
+   */
   public boolean isMathMax(Tree methodTree, ProcessingEnvironment processingEnv) {
     return TreeUtils.isMethodInvocation(methodTree, mathMaxMethods, processingEnv);
   }
