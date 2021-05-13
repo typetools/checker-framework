@@ -163,8 +163,12 @@ function configure_and_exec_dljc {
     JDK_VERSION_ARG="--jdkVersion 11"
   fi
 
+  # it would be preferable to just use ${*@Q} below, but we can't rely on
+  # the presence of bash 4.4.
+  QUOTED_ARGS=$(printf '%q ' "$@")
+
   # This command also includes "clean"; I'm not sure why it is necessary.
-  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} $@ -- ${BUILD_CMD}"
+  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${QUOTED_ARGS} -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
