@@ -42,10 +42,10 @@ def createDataflowShaded(shadedPkgName) {
     }
 }
 
-// Creates a new shaded datflow artifact.  To add a new one, add a new method call below, and add
+// Creates a new shaded dataflow artifact.  To add a new one, add a new method call below, and add
 // the new jar to publishing and signing blocks.
 createDataflowShaded('shaded')
-createDataflowShaded('NullAway')
+createDataflowShaded('nullaway')
 
 task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
     description 'Test the live variable analysis test for dataflow framework.'
@@ -154,10 +154,10 @@ publishing {
             artifact javadocJar
         }
 
-        datflowShadedNullAway(MavenPublication) {
-            dataflowShadedPom(it, 'NullAway')
+        datflowShadednullaway(MavenPublication) {
+            dataflowShadedPom(it, 'nullaway')
 
-            artifact getTasksByName('datflowNullAwayJar',false).iterator().next()
+            artifact getTasksByName('datflownullawayJar',false).iterator().next()
             artifact sourcesJar
             artifact javadocJar
         }
@@ -166,6 +166,6 @@ publishing {
 signing {
     sign publishing.publications.dataflow
     sign publishing.publications.dataflowShaded
-    sign publishing.publications.datflowShadedNullAway
+    sign publishing.publications.datflowShadednullaway
 
 }
