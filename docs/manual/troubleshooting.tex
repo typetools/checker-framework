@@ -825,26 +825,6 @@ identical to the javac Java compiler.
 Putting the Checker Framework's \<javac> earlier in your \<PATH> will
 ensure that the Checker Framework's version is used.
 
-\item
-If you are developing a checker within the Checker Framework, there is
-a developer version of \<javac> in the \<bin-devel> directory. This
-version will use compiled classes from \<dataflow/build>,
-\<javacutil/build>, \<framework/build>,
-and \<checker/build> in the \<checker-framework> directory instead of
-the compiled jar files.
-
-To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
-
-\begin{Verbatim}
-export PATH=$CHECKERFRAMEWORK/checker/bin-devel:${PATH}
-\end{Verbatim}
-
-The developer version of \<javac> allows you to not have to rebuild
-the jar files after every code change, in turn allowing you to test
-your changes faster. Source files can be compiled using command \<./gradlew
-compileJava>, or can be automatically compiled by
-an IDE such as Eclipse.
-
 \item Test that everything works:
 
   \begin{itemize}
