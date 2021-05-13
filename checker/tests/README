@@ -37,7 +37,7 @@ $CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
 org.checkerframework.checker.nullness.NullnessChecker.
 
   cd $CHECKERFRAMEWORK
-  ./gradlew compileJava && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
+  ./gradlew copyJarsToDist && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
