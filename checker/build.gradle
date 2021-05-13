@@ -657,12 +657,25 @@ task wpiManyTests(group: "Verification") {
 
     doLast {
         // Run wpi-many.sh
-        exec {
-            commandLine 'bin/wpi-many.sh',
-                    '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
-                    '-o', "${project.projectDir}/build/wpi-many-tests",
-                    '-s',
-                    '--', '--checker', 'nullness,interning,lock,regex,signature'
+        try {
+            exec {
+                commandLine 'bin/wpi-many.sh',
+                        '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
+                        '-o', "${project.projectDir}/build/wpi-many-tests",
+                        '-s',
+                        '--', '--checker', 'nullness,interning,lock,regex,signature'
+            }
+        } catch (Exception e) {
+            println("Failure: Running wpi-many.sh failed with a non-zero exit code.")
+            File wpiOut = new File("${typecheckFilesDir}/wpi-out")
+            if (wpiOut.exists()) {
+                println("========= Output from last run of wpi.sh: ========")
+                exec {
+                    commandLine 'cat', "${typecheckFilesDir}/wpi-out"
+                }
+                println("========= End of output from last run of wpi.sh: ========")
+                throw e
+            }
         }
         def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
         // collect the logs from running WPI
