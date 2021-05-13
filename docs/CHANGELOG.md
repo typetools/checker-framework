@@ -18,7 +18,7 @@ files provided on the command line.
 
 Method `SourceChecker.getProperties` takes a third formal parameter `permitNonExisting`.
 
-Remove checker/bin-devel/javac, checker/bin-devel/javac-debug, and CheckerDevelMain.
+Removed CheckerDevelMain.
 
 **Closed issues:**
 
