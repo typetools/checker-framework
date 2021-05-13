@@ -657,6 +657,7 @@ task wpiManyTests(group: "Verification") {
 
     doLast {
         // Run wpi-many.sh
+        def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
         try {
             exec {
                 commandLine 'bin/wpi-many.sh',
@@ -677,7 +678,6 @@ task wpiManyTests(group: "Verification") {
                 throw e
             }
         }
-        def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
         // collect the logs from running WPI
         def typecheckFiles = fileTree(typecheckFilesDir).matching {
             include "**/*-typecheck.out"
