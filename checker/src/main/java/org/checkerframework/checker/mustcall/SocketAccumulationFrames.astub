@@ -1,0 +1,41 @@
+// This version of the standard assumptions for sockets is intended for use with accumulation frame support (i.e.
+// without the -AnoAccumulationFrames argument to the checker). It includes @MustCall({}) annotations for no-argument
+// socket constructors, which would be unsound if accumulation frame support was disabled. The checker chooses
+// whether to use it automatically, when invoked via the Object Construction Checker.
+
+package java.net;
+
+
+import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.checker.calledmethods.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
+
+
+class Socket implements Closeable {
+    @MustCall({}) Socket();
+    @MustCall({}) Socket(Proxy arg0);
+}
+
+class ServerSocket implements Closeable {
+    @MustCall({}) ServerSocket() throws IOException;
+}
+
+package javax.net;
+
+class SocketFactory {
+    @Owning @MustCall({})  Socket createSocket() throws IOException;
+}
+
+class ServerSocketFactory {
+    @Owning @MustCall({})  ServerSocket createServerSocket() throws IOException;
+}
+
+package java.nio.channels;
+
+class SocketChannel extends AbstractSelectableChannel implements ByteChannel, ScatteringByteChannel, GatheringByteChannel, NetworkChannel {
+    static @MustCall({})  SocketChannel open() throws IOException;
+}
+
+class ServerSocketChannel extends AbstractSelectableChannel implements NetworkChannel {
+    static @MustCall({})  ServerSocketChannel open() throws IOException;
+}
