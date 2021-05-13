@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -917,14 +918,34 @@ public final class TreeUtils {
         }
       }
     }
+    List<String> candidates = new ArrayList<>();
+    for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+      if (exec.getSimpleName().contentEquals(methodName)) {
+        candidates.add(executableElementToString(exec));
+      }
+    }
+    if (candidates.isEmpty()) {
+      for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+        candidates.add(executableElementToString(exec));
+      }
+    }
     throw new BugInCF(
-        "TreeUtils.getMethod: found no match for "
-            + typeName
-            + "."
-            + methodName
-            + "("
-            + Arrays.toString(paramTypes)
-            + ")");
+        "TreeUtils.getMethod: found no match for %s.%s(%s); candidates: %s",
+        typeName, methodName, Arrays.toString(paramTypes), candidates);
+  }
+
+  /**
+   * Formats the ExecutableElement in the way that getMethod() expects it.
+   *
+   * @param exec an executable element
+   * @return the ExecutableElement, formatted in the way that getMethod() expects it
+   */
+  private static String executableElementToString(ExecutableElement exec) {
+    StringJoiner result = new StringJoiner(", ", exec.getSimpleName() + "(", ")");
+    for (VariableElement param : exec.getParameters()) {
+      result.add(TypeAnnotationUtils.unannotatedType(param.asType()).toString());
+    }
+    return result.toString();
   }
 
   /**
