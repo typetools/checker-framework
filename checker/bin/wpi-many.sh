@@ -6,6 +6,9 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
+set -eo pipefail
+# not set -u, because this script checks variables directly
+
 DEBUG=0
 # To enable debugging, uncomment the following line.
 # DEBUG=1
@@ -31,6 +34,14 @@ done
 
 # Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTPATH="${SCRIPTDIR}/wpi-many.sh"
+
+# report line numbers when the script fails, for debugging in CI, from
+# https://unix.stackexchange.com/a/522815
+trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi-many.sh:";
+         pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
 
 echo "Starting wpi-many.sh. The output of this script is purely informational."
 
@@ -124,8 +135,6 @@ export JAVA_HOME="${JAVA11_HOME}"
 
 echo "Finished configuring wpi-many.sh. Results will be placed in ${OUTDIR}-results/."
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
 mkdir -p "${OUTDIR}"
@@ -180,7 +189,7 @@ do
            continue
         fi
     else
-        rm -rf "${REPO_NAME}/dljc-out"
+        rm -rf -- "${REPO_NAME}/dljc-out"
     fi
 
     cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
@@ -199,7 +208,7 @@ do
         # whose owner is the github user always causes an error on this line,
         # because the `unannotated` remote is already set. The output is piped
         # to /dev/null to suppress that error.
-        git remote add unannotated "${ORIGIN}" &> /dev/null
+        git remote add unannotated "${ORIGIN}" || true &> /dev/null
     fi
 
     REPO_FULLPATH=$(pwd)
@@ -215,10 +224,8 @@ do
       fi
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
-      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out"
     fi
-
-    rm -f "${OUTDIR}-results/wpi-out"
 
     cd "${OUTDIR}" || exit 5
 
@@ -228,7 +235,7 @@ do
         # delete it right away.
         if [ "${SKIP_OR_DELETE_UNUSABLE}" = "delete" ]; then
           echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-          rm -rf "./${REPO_NAME_HASH}"
+          rm -rf -- "./${REPO_NAME_HASH}"
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
@@ -250,7 +257,7 @@ do
 
     cd "${OUTDIR}" || exit 5
 
-done <"${INLIST}"
+done < "${INLIST}"
 
 ## This section is here rather than in wpi-summary.sh because counting lines can be moderately expensive.
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script

@@ -6,6 +6,8 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
+set -eo pipefail
+# not set -u, because this script checks variables directly
 
 while getopts "d:t:b:g:" opt; do
   case $opt in
@@ -24,6 +26,14 @@ done
 
 # Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
+
+# report line numbers when the script fails, for debugging in CI, from
+# https://unix.stackexchange.com/a/522815
+trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
+         pr -tn $SCRIPTPATH | tail -n+$((LINENO - 3)) | head -n7' ERR
 
 echo "Starting wpi.sh. The output of this script is purely informational."
 
@@ -211,22 +221,29 @@ function configure_and_exec_dljc {
 
 #### Check and setup dependencies
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-# clone or update DLJC
-(cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
-"${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
-if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-    echo "Failed to clone do-like-javac"
+# clone or update DLJC, if the user did not set the DLJC environment variable
+# if the user DID set the DLJC environment variable, check that there is a dljc
+# executable there and then output a message with the path of the dljc that will be used
+if [ "${DLJC}x" = "x" ]; then
+  (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
+  "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
+  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
+      echo "Failed to clone do-like-javac"
+      exit 1
+  fi
+  DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
+else
+  if [! -f "${DLJC}" ]; then
+    echo "Failure: ${DLJC} was set, but does not exist."
     exit 1
+  fi
 fi
-DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
 echo "Finished configuring wpi.sh."
 
-rm -f "${DIR}/.cannot-run-wpi"
+rm -f -- "${DIR}/.cannot-run-wpi"
 
 cd "${DIR}" || exit 5
 
@@ -254,7 +271,7 @@ fi
 if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
     echo "dljc could not run the build successfully: ${WPI_RESULTS_AVAILABLE}"
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
-    touch "${DIR}/.cannot-run-wpi"
+    echo "${WPI_RESULTS_AVAILABLE}" > "${DIR}/.cannot-run-wpi"
 fi
 
 export JAVA_HOME="${JAVA_HOME_BACKUP}"
