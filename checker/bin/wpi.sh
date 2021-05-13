@@ -233,7 +233,7 @@ if [ "${DLJC}x" = "x" ]; then
   fi
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 else
-  if [! -f "${DLJC}" ]; then
+  if [ ! -f "${DLJC}" ]; then
     echo "Failure: ${DLJC} was set, but does not exist."
     exit 1
   fi
