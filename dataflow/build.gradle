@@ -1,7 +1,13 @@
+plugins {
+    id 'java-library'
+}
+
 dependencies {
-    implementation project(':javacutil')
-    implementation project(':checker-qual')
-    implementation 'org.plumelib:plume-util:1.5.3'
+    api project(':javacutil')
+    api project(':checker-qual')
+
+    // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
+    api 'org.plumelib:plume-util:1.5.3'
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
