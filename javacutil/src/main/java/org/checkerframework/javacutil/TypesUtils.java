@@ -156,9 +156,11 @@ public final class TypesUtils {
    * @param type the declared type
    * @return the name corresponding to that type
    */
+  @SuppressWarnings("signature:return") // todo: add fake override of Name.toString.
   public static @CanonicalNameOrEmpty String getQualifiedName(DeclaredType type) {
     TypeElement element = (TypeElement) type.asElement();
-    return element.getQualifiedName().toString();
+    @CanonicalNameOrEmpty Name name = element.getQualifiedName();
+    return name.toString();
   }
 
   /**
