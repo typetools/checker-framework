@@ -113,8 +113,8 @@ if [ "x${EXTRA_BUILD_ARGS}" = "x" ]; then
 fi
 
 if [ "x${GRADLECACHEDIR}" = "x" ]; then
-  # Assume that each project should use its own gradle cache. This is more expensive, but prevents crashes on
-  # distributed file systems, such as the UW CSE machines.
+  # Assume that each project should use its own gradle cache. This is more expensive,
+  # but prevents crashes on distributed file systems, such as the UW CSE machines.
   GRADLECACHEDIR=".gradle"
 fi
 
