@@ -164,7 +164,7 @@ function configure_and_exec_dljc {
   fi
 
   # This command also includes "clean"; I'm not sure why it is necessary.
-  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${*@Q} -- ${BUILD_CMD}"
+  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} $@ -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
@@ -234,7 +234,7 @@ if [ "${DLJC}x" = "x" ]; then
 else
   # The user did set the DLJC environment variable.
   if [ ! -f "${DLJC}" ]; then
-    echo "Failure: DLJC is set to ${DLJC} which does not exist."
+    echo "Failure: DLJC is set to ${DLJC} which is not a file or does not exist."
     exit 1
   fi
 fi

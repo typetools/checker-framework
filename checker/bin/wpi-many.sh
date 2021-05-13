@@ -204,7 +204,7 @@ do
         # Running this script twice in a row on projects whose owner
         # is the github user always causes a harmless error on this
         # line, because the `unannotated` remote is already set.
-        git remote add unannotated "${ORIGIN}" || true &> /dev/null
+        git remote add unannotated "${ORIGIN}" &> /dev/null || true
     fi
 
     REPO_FULLPATH=$(pwd)

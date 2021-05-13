@@ -217,11 +217,6 @@ must be set.
 \item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
 from \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not
 set, the WPI scripts will download this dependency automatically.)
-% This next item is true because of the use of ${*@Q}: @Q is a Bash 4.4 feature and causes "bad substitution"
-% errors on earlier versions.
-\item Your system's default Bash shell must be version 4.4 or later.  As of May 2021, this was true
-on most Linux distributions, but not on Mac OSX. To use these scripts on OSX, you need to
-install Bash 4.4 or later yourself first.
 \item Other dependencies:
   ant,
   awk,
