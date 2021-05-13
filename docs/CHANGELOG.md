@@ -1,4 +1,4 @@
-Version 3.?.? (June 1, 2021)
+Version 3.14.0 (June 1, 2021)
 ----------------------------
 
 **User-visible changes:**
@@ -17,6 +17,8 @@ files provided on the command line.
 **Implementation details:**
 
 Method `SourceChecker.getProperties` takes a third formal parameter `permitNonExisting`.
+
+Method `TreeUtils.getMethodName()` returns a `String` rather than a `Name`.
 
 **Closed issues:**
 

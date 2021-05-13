@@ -156,9 +156,9 @@ public final class TypesUtils {
    * @param type the declared type
    * @return the name corresponding to that type
    */
-  public static @CanonicalNameOrEmpty Name getQualifiedName(DeclaredType type) {
+  public static @CanonicalNameOrEmpty String getQualifiedName(DeclaredType type) {
     TypeElement element = (TypeElement) type.asElement();
-    return element.getQualifiedName();
+    return element.getQualifiedName().toString();
   }
 
   /**
