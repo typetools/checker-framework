@@ -200,14 +200,10 @@ do
 
     if [ "${OWNER}" = "${GITHUB_USER}" ]; then
         ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
-        # Piping to /dev/null is usually a bad idea.
-        # However, in this case it is intentional: the goal is to
-        # suppress error output, because there is no real harm done if
-        # the `unannotated` remote is not added - it's just a convenience
-        # for data analysis. But, running this script twice in a row on projects
-        # whose owner is the github user always causes an error on this line,
-        # because the `unannotated` remote is already set. The output is piped
-        # to /dev/null to suppress that error.
+        # The `unannotated` remote is just a convenience for data analysis.
+        # Running this script twice in a row on projects whose owner
+        # is the github user always causes a harmless error on this
+        # line, because the `unannotated` remote is already set.
         git remote add unannotated "${ORIGIN}" || true &> /dev/null
     fi
 

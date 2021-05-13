@@ -219,9 +219,9 @@ from \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this 
 set, the WPI scripts will download this dependency automatically.)
 % This next item is true because of the use of ${*@Q}: @Q is a Bash 4.4 feature and causes "bad substitution"
 % errors on earlier versions.
-\item Your system's default Bash shell must be version 4.4 or later (as of May 2021, this was true
+\item Your system's default Bash shell must be version 4.4 or later.  As of May 2021, this was true
 on most Linux distributions, but not on Mac OSX. To use these scripts on OSX, you need to
-install Bash 4.4 or later yourself first).
+install Bash 4.4 or later yourself first.
 \item Other dependencies:
   ant,
   awk,
@@ -343,7 +343,7 @@ An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
 \item[-s]
   If this flag is present, then projects which are not buildable --- for which
   no supported build file is present or for which running the standard build
-  commands fail --- are skipped on future runs but are NOT deleted immediately
+  commands fail --- are skipped on future runs but are \emph{not} deleted immediately
   (such projects are deleted immediately if this flag is not present). This flag is useful
   if you intend to run \<wpi-many.sh> several times on the same set of repositories
   (for example, during checker development), to avoid re-downloading unusable projects.

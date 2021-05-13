@@ -221,10 +221,9 @@ function configure_and_exec_dljc {
 
 #### Check and setup dependencies
 
-# clone or update DLJC, if the user did not set the DLJC environment variable
-# if the user DID set the DLJC environment variable, check that there is a dljc
-# executable there and then output a message with the path of the dljc that will be used
+# Clone or update DLJC
 if [ "${DLJC}x" = "x" ]; then
+  # The user did not set the DLJC environment variable.
   (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
   "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
   if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
@@ -233,8 +232,9 @@ if [ "${DLJC}x" = "x" ]; then
   fi
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 else
+  # The user did set the DLJC environment variable.
   if [ ! -f "${DLJC}" ]; then
-    echo "Failure: ${DLJC} was set, but does not exist."
+    echo "Failure: DLJC is set to ${DLJC} which does not exist."
     exit 1
   fi
 fi
