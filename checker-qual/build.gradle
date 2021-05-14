@@ -1,3 +1,4 @@
+
 buildscript {
     repositories {
         mavenCentral()
@@ -7,6 +8,9 @@ buildscript {
         classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:5.3.0"
         // Don't add implementation dependencies; checker-qual.jar should have no dependencies.
     }
+}
+plugins {
+    id 'java-library'
 }
 
 apply plugin: 'biz.aQute.bnd.builder'
