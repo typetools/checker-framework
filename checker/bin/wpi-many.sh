@@ -38,8 +38,8 @@ shift $(( OPTIND - 1 ))
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPTPATH="${SCRIPTDIR}/wpi-many.sh"
 
-# report line numbers when the script fails, for debugging in CI, from
-# https://unix.stackexchange.com/a/522815
+# Report line numbers when the script fails for debugging. Adapted from
+# https://unix.stackexchange.com/a/522815.
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi-many.sh:";
          pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
 
