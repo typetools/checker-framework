@@ -98,11 +98,6 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 
 assemble.dependsOn copyJarsToDist
 
-task printPlumeUtilJarPath {
-    description "Print the path to plume-util.jar"
-    doFirst { println project.configurations.compile.find { it.name.startsWith("plume-util") } }
-}
-
 task allSourcesJar(type: Jar, group: 'Build') {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
     destinationDirectory = file("${projectDir}/dist")

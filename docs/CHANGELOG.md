@@ -20,6 +20,8 @@ Method `SourceChecker.getProperties` takes a third formal parameter `permitNonEx
 
 Method `TreeUtils.getMethodName()` returns a `String` rather than a `Name`.
 
+Removed CheckerDevelMain.
+
 **Closed issues:**
 
 
