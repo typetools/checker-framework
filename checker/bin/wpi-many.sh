@@ -43,7 +43,7 @@ SCRIPTPATH="${SCRIPTDIR}/wpi-many.sh"
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi-many.sh:";
          pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
 
-echo "Starting wpi-many.sh. The output of this script is purely informational."
+echo "Starting wpi-many.sh."
 
 # check required arguments and environment variables:
 
@@ -307,4 +307,4 @@ fi
 
 export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
-echo "Exiting wpi-many.sh. The output of this script was purely informational. Results were placed in ${OUTDIR}-results/."
+echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."

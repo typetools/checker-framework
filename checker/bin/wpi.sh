@@ -35,7 +35,7 @@ SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
          pr -tn $SCRIPTPATH | tail -n+$((LINENO - 3)) | head -n7' ERR
 
-echo "Starting wpi.sh. The output of this script is purely informational."
+echo "Starting wpi.sh."
 
 # check required arguments and environment variables:
 
