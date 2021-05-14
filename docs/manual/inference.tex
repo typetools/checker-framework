@@ -306,26 +306,17 @@ An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
   % The need to be an absolute pathname is a bug in wpi-many.sh that should be fixed.
   The file must be specified as an absolute, not relative, path.
   Each line
-  should have 2 or 3 elements, separated by whitespace:
+  should have 2 elements, separated by whitespace:
   \begin{enumerate}
   \item
     The URL of the git repository on GitHub. The URL must be of the form
     https://github.com/username/repository .  The script is reliant on the
     number of slashes, so excluding ``https://'' is an error.
   \item The commit hash to use.
-  \item
-    If the repository's owner is the user specified by the -u flag, the
-    original (upstream) GitHub repository.  Its only use is to be made an
-    upstream named "unannotated".
   \end{enumerate}
 
 \item[-t timeout]
   The timeout for running the checker on each project, in seconds.
-
-\item[-u user]
-  The GitHub owner for repositories that have been forked and
-  modified. These repositories must have a third entry in the infile
-  indicating their origin. Default is "\$USER".
 
 \item[-g GRADLECACHEDIR]
   The directory to use for the `-g` option to Gradle (the Gradle home
