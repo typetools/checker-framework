@@ -214,6 +214,9 @@ must be set.
 \item If set, the \verb|JAVA8_HOME| environment variable must point to a Java 8 JDK.
 \item If set, the \verb|JAVA11_HOME| environment variable must point to a Java 11 JDK.
 \item \<CHECKERFRAMEWORK> environment variable must point to a built copy of the Checker Framework.
+\item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
+from \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not
+set, the WPI scripts will download this dependency automatically.)
 \item Other dependencies:
   ant,
   awk,
@@ -335,7 +338,7 @@ An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
 \item[-s]
   If this flag is present, then projects which are not buildable --- for which
   no supported build file is present or for which running the standard build
-  commands fail --- are skipped on future runs but are NOT deleted immediately
+  commands fail --- are skipped on future runs but are \emph{not} deleted immediately
   (such projects are deleted immediately if this flag is not present). This flag is useful
   if you intend to run \<wpi-many.sh> several times on the same set of repositories
   (for example, during checker development), to avoid re-downloading unusable projects.

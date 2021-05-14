@@ -642,25 +642,56 @@ task wpiManyTests(group: "Verification") {
 
     doFirst {
         delete("${project.projectDir}/build/wpi-many-tests-results/")
+        // wpi-many.sh is run in skip mode so that logs are preserved, but
+        // we don't actually want to skip previously-failing tests when we
+        // re-run the tests locally.
+        delete fileTree("${project.projectDir}/build/wpi-many-tests") {
+            include '**/.cannot-run-wpi'
+        }
     }
 
     doLast {
         // Run wpi-many.sh
-        exec {
-            commandLine 'bin/wpi-many.sh',
-                    '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
-                    '-o', "${project.projectDir}/build/wpi-many-tests",
-                    '--', '--checker', 'nullness,interning,lock,regex,signature'
-        }
         def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
+        try {
+            exec {
+                commandLine 'bin/wpi-many.sh',
+                        '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
+                        '-o', "${project.projectDir}/build/wpi-many-tests",
+                        '-s',
+                        '--', '--checker', 'nullness,interning,lock,regex,signature'
+            }
+        } catch (Exception e) {
+            println("Failure: Running wpi-many.sh failed with a non-zero exit code.")
+            File wpiOut = new File("${typecheckFilesDir}/wpi-out")
+            if (wpiOut.exists()) {
+                println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+                exec {
+                    commandLine 'cat', "${typecheckFilesDir}/wpi-out"
+                }
+                println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+                throw e
+            }
+        }
         // collect the logs from running WPI
         def typecheckFiles = fileTree(typecheckFilesDir).matching {
             include "**/*-typecheck.out"
         }
         if (typecheckFiles.size() == 0) {
+            println("Failure: No *-typecheck.out files in ${typecheckFilesDir}")
+            println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
             exec {
-                workingDir "${project.projectDir}/build/wpi-many-tests-results/"
-                executable 'find'
+                commandLine 'cat', "${typecheckFilesDir}/wpi-out"
+            }
+            println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+            def logFiles = fileTree(typecheckFilesDir).matching {
+                include "**/*.log"
+            }
+            logFiles.visit { FileVisitDetails details ->
+                def filename = "${typecheckFilesDir}" + details.getName()
+                println("======== printing contents of ${filename} ========")
+                details.getFile().eachLine { line -> println(line) }
+                println("======== end of contents of ${filename} ========")
             }
             throw new GradleException("Failure: No *-typecheck.out files in ${project.projectDir}/build/wpi-many-tests-results/")
         }
