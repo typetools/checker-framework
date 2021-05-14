@@ -259,7 +259,7 @@ done < "${INLIST}"
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
-results_available=$(grep -Zvl -e "no build file found for" \
+results_available=$(grep -vl -e "no build file found for" \
     -e "dljc could not run the Checker Framework" \
     -e "dljc could not run the build successfully" \
     -e "dljc timed out for" \
