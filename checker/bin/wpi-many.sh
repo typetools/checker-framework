@@ -13,7 +13,7 @@ DEBUG=0
 # To enable debugging, uncomment the following line.
 # DEBUG=1
 
-while getopts "o:i:u:t:g:s" opt; do
+while getopts "o:i:t:g:s" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
        ;;
