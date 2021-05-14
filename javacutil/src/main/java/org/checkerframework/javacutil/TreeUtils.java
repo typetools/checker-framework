@@ -1077,14 +1077,14 @@ public final class TreeUtils {
    * @param tree a method access tree
    * @return the name of the method accessed by {@code tree}
    */
-  public static Name getMethodName(Tree tree) {
+  public static String getMethodName(Tree tree) {
     assert isMethodAccess(tree);
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
       MemberSelectTree mtree = (MemberSelectTree) tree;
-      return mtree.getIdentifier();
+      return mtree.getIdentifier().toString();
     } else {
       IdentifierTree itree = (IdentifierTree) tree;
-      return itree.getName();
+      return itree.getName().toString();
     }
   }
 
