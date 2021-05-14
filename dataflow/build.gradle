@@ -27,9 +27,9 @@ def createDataflowShaded(shadedPkgName) {
         archiveClassifier.set('')
 
         from shadowJar.source
-        configurations = [project.configurations.runtime]
+        configurations = shadowJar.configurations
 
-        destinationDirectory = file("${buildDir}/shadow/datflow${shadedPkgName}")
+        destinationDirectory = file("${buildDir}/shadow/dataflow${shadedPkgName}")
 
 
         relocate('org.checkerframework', "org.checkerframework.${shadedPkgName}") {
