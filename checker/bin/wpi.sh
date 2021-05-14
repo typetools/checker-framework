@@ -6,6 +6,8 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
+set -eo pipefail
+# not set -u, because this script checks variables directly
 
 while getopts "d:t:b:g:" opt; do
   case $opt in
@@ -25,7 +27,15 @@ done
 # Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
 
-echo "Starting wpi.sh. The output of this script is purely informational."
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
+
+# Report line numbers when the script fails, from
+# https://unix.stackexchange.com/a/522815
+trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
+         pr -tn $SCRIPTPATH | tail -n+$((LINENO - 3)) | head -n7' ERR
+
+echo "Starting wpi.sh."
 
 # check required arguments and environment variables:
 
@@ -103,8 +113,8 @@ if [ "x${EXTRA_BUILD_ARGS}" = "x" ]; then
 fi
 
 if [ "x${GRADLECACHEDIR}" = "x" ]; then
-  # Assume that each project should use its own gradle cache. This is more expensive, but prevents crashes on
-  # distributed file systems, such as the UW CSE machines.
+  # Assume that each project should use its own gradle cache. This is more expensive,
+  # but prevents crashes on distributed file systems, such as the UW CSE machines.
   GRADLECACHEDIR=".gradle"
 fi
 
@@ -153,8 +163,12 @@ function configure_and_exec_dljc {
     JDK_VERSION_ARG="--jdkVersion 11"
   fi
 
+  # In bash 4.4, ${QUOTED_ARGS} below can be replaced by ${*@Q} .
+  # (But, this script does not assume that bash is at least version 4.4.)
+  QUOTED_ARGS=$(printf '%q ' "$@")
+
   # This command also includes "clean"; I'm not sure why it is necessary.
-  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${*@Q} -- ${BUILD_CMD}"
+  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${QUOTED_ARGS} -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
@@ -211,22 +225,29 @@ function configure_and_exec_dljc {
 
 #### Check and setup dependencies
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-# clone or update DLJC
-(cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
-"${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
-if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-    echo "Failed to clone do-like-javac"
+# Clone or update DLJC
+if [ "${DLJC}x" = "x" ]; then
+  # The user did not set the DLJC environment variable.
+  (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
+  "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
+  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
+      echo "Failed to clone do-like-javac"
+      exit 1
+  fi
+  DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
+else
+  # The user did set the DLJC environment variable.
+  if [ ! -f "${DLJC}" ]; then
+    echo "Failure: DLJC is set to ${DLJC} which is not a file or does not exist."
     exit 1
+  fi
 fi
-DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
 echo "Finished configuring wpi.sh."
 
-rm -f "${DIR}/.cannot-run-wpi"
+rm -f -- "${DIR}/.cannot-run-wpi"
 
 cd "${DIR}" || exit 5
 
@@ -254,7 +275,7 @@ fi
 if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
     echo "dljc could not run the build successfully: ${WPI_RESULTS_AVAILABLE}"
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
-    touch "${DIR}/.cannot-run-wpi"
+    echo "${WPI_RESULTS_AVAILABLE}" > "${DIR}/.cannot-run-wpi"
 fi
 
 export JAVA_HOME="${JAVA_HOME_BACKUP}"
