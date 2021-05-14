@@ -18,6 +18,8 @@ files provided on the command line.
 
 Method `SourceChecker.getProperties` takes a third formal parameter `permitNonExisting`.
 
+Removed CheckerDevelMain.
+
 **Closed issues:**
 
 
