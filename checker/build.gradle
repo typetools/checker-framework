@@ -670,11 +670,11 @@ task wpiManyTests(group: "Verification") {
             println("Failure: Running wpi-many.sh failed with a non-zero exit code.")
             File wpiOut = new File("${typecheckFilesDir}/wpi-out")
             if (wpiOut.exists()) {
-                println("========= Output from last run of wpi.sh: ========")
+                println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
                 exec {
                     commandLine 'cat', "${typecheckFilesDir}/wpi-out"
                 }
-                println("========= End of output from last run of wpi.sh: ========")
+                println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
                 throw e
             }
         }
@@ -684,11 +684,11 @@ task wpiManyTests(group: "Verification") {
         }
         if (typecheckFiles.size() == 0) {
             println("Failure: No *-typecheck.out files in ${typecheckFilesDir}")
-            println("========= Output from last run of wpi.sh: ========")
+            println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
             exec {
                 commandLine 'cat', "${typecheckFilesDir}/wpi-out"
             }
-            println("========= End of output from last run of wpi.sh: ========")
+            println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
             def logFiles = fileTree(typecheckFilesDir).matching {
                 include "**/*.log"
             }
