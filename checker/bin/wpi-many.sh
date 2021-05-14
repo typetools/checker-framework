@@ -259,11 +259,14 @@ done < "${INLIST}"
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
+# this command is allowed to fail, because if no projects returned results then none
+# of these expressions will match, and we want to enter the special handling for that
+# case that appears below
 results_available=$(grep -vl -e "no build file found for" \
     -e "dljc could not run the Checker Framework" \
     -e "dljc could not run the build successfully" \
     -e "dljc timed out for" \
-    "${OUTDIR}-results/"*.log)
+    "${OUTDIR}-results/"*.log || true)
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
 
@@ -291,12 +294,13 @@ else
         exit 1
     fi
 
-    cd "${SCRIPTDIR}/.do-like-javac" || exit 5
+    mkdir -p "${SCRIPTDIR}/.scc"
+    cd "${SCRIPTDIR}/.scc" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
     # shellcheck disable=SC2046
-    "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
+    "${SCRIPTDIR}/.scc/scc" --output "${OUTDIR}-results/loc.txt" \
         $(< "${listpath}")
 
     rm -f "${listpath}"
