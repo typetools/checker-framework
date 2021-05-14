@@ -30,8 +30,8 @@ shift $(( OPTIND - 1 ))
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
 
-# Report line numbers when the script fails for debugging. Adapted from
-# https://unix.stackexchange.com/a/522815.
+# Report line numbers when the script fails, from
+# https://unix.stackexchange.com/a/522815
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
          pr -tn $SCRIPTPATH | tail -n+$((LINENO - 3)) | head -n7' ERR
 
@@ -163,8 +163,8 @@ function configure_and_exec_dljc {
     JDK_VERSION_ARG="--jdkVersion 11"
   fi
 
-  # it would be preferable to just use ${*@Q} below, but we can't rely on
-  # the presence of bash 4.4.
+  # In bash 4.4, ${QUOTED_ARGS} below can be replaced by ${*@Q} .
+  # (But, this script does not assume that bash is at least version 4.4.)
   QUOTED_ARGS=$(printf '%q ' "$@")
 
   # This command also includes "clean"; I'm not sure why it is necessary.
