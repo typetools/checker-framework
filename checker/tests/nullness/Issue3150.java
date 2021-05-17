@@ -5,15 +5,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue3150 {
   void foo(@Nullable Object nble, @NonNull Object nn) {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     requireNonNull1(null);
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     requireNonNull1(nble);
     requireNonNull1("hello");
     requireNonNull1(nn);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requireNonNull2(null);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requireNonNull2(nble);
     requireNonNull1("hello");
     requireNonNull1(nn);

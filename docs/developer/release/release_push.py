@@ -45,9 +45,10 @@ from release_utils import read_command_line_option
 from release_utils import read_first_line
 from release_utils import set_umask
 from release_utils import subprocess
-from release_utils import sys
 from release_utils import version_number_to_array
 from sanity_checks import javac_sanity_check, maven_sanity_check
+
+import sys
 
 
 def check_release_version(previous_release, new_release):

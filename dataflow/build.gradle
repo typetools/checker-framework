@@ -1,19 +1,26 @@
 dependencies {
     implementation project(':javacutil')
     implementation project(':checker-qual')
-    implementation 'org.plumelib:plume-util:1.5.1'
+    implementation 'org.plumelib:plume-util:1.5.3'
 
     // External dependencies:
-    // If you add an external dependency, you must shadow its packages.
-    // See the comment in ../build.gradle in the shadowJar block.
+    // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
+    // artifact (see shadowJar block below) and also in checker.jar (see the comment in
+    // ../build.gradle in the shadowJar block).
 }
 
 shadowJar {
     archiveFileName = "dataflow-shaded.jar"
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier = ''
-    relocate 'org.checkerframework.dataflow', 'org.checkerframework.shaded.dataflow'
-    relocate 'org.checkerframework.javacutil', 'org.checkerframework.shaded.javacutil'
+
+    relocate ('org.checkerframework', 'org.checkerframework.shaded') {
+        // Shade all Checker Framework packages, except for the dataflow qualifiers.
+        exclude 'org.checkerframework.dataflow.qual.*'
+    }
+
+    // Relocate external dependencies
+    relocate 'org.plume', "org.checkerframework.shaded.org.plume"
 }
 
 artifacts {
@@ -98,7 +105,7 @@ final dataflowShadedPom(publication) {
                 '\n' +
                 'It differs from the org.checkerframework:dataflow artifact in two ways.\n' +
                 'First, the packages in this artifact have been renamed to org.checkerframework.shaded.*.\n' +
-                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.' +
+                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.'
         licenses {
             license {
                 name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
@@ -118,6 +125,7 @@ publishing {
 
         dataflowShaded(MavenPublication) {
             dataflowShadedPom it
+
             artifact shadowJar
             artifact sourcesJar
             artifact javadocJar

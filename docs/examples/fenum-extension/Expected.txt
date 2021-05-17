@@ -1,94 +1,94 @@
-FenumDemo.java:6: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("A") int ACONST1 = 1;
-                                                  ^
+FenumDemo.java:6: error: [assignment] incompatible types in assignment.
+  public static final @Fenum("A") int ACONST1 = 1;
+                                                ^
   found   : @FenumUnqualified int
   required: @Fenum("A") int
-FenumDemo.java:7: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("A") int ACONST2 = 2;
-                                                  ^
+FenumDemo.java:7: error: [assignment] incompatible types in assignment.
+  public static final @Fenum("A") int ACONST2 = 2;
+                                                ^
   found   : @FenumUnqualified int
   required: @Fenum("A") int
-FenumDemo.java:9: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("B") int BCONST1 = 4;
-                                                  ^
+FenumDemo.java:9: error: [assignment] incompatible types in assignment.
+  public static final @Fenum("B") int BCONST1 = 4;
+                                                ^
   found   : @FenumUnqualified int
   required: @Fenum("B") int
-FenumDemo.java:10: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("B") int BCONST2 = 5;
-                                                  ^
+FenumDemo.java:10: error: [assignment] incompatible types in assignment.
+  public static final @Fenum("B") int BCONST2 = 5;
+                                                ^
   found   : @FenumUnqualified int
   required: @Fenum("B") int
-FenumDemo.java:12: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @MyFenum int CCONST1 = 5;
-                                               ^
+FenumDemo.java:12: error: [assignment] incompatible types in assignment.
+  public static final @MyFenum int CCONST1 = 5;
+                                             ^
   found   : @FenumUnqualified int
   required: @MyFenum int
-FenumDemo.java:13: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @MyFenum int CCONST2 = 6;
-                                               ^
+FenumDemo.java:13: error: [assignment] incompatible types in assignment.
+  public static final @MyFenum int CCONST2 = 6;
+                                             ^
   found   : @FenumUnqualified int
   required: @MyFenum int
-FenumDemo.java:19: error: [assignment.type.incompatible] incompatible types in assignment.
-    @Fenum("B") int state2 = TestStatic.ACONST1; // Incompatible fenums forbidden!
-                                       ^
+FenumDemo.java:19: error: [assignment] incompatible types in assignment.
+  @Fenum("B") int state2 = TestStatic.ACONST1; // Incompatible fenums forbidden!
+                                     ^
   found   : @Fenum("A") int
   required: @Fenum("B") int
-FenumDemo.java:28: error: [assignment.type.incompatible] incompatible types in assignment.
-        state1 = 4; // Direct use of value forbidden!
-                 ^
+FenumDemo.java:28: error: [assignment] incompatible types in assignment.
+    state1 = 4; // Direct use of value forbidden!
+             ^
   found   : @FenumUnqualified int
   required: @Fenum("A") int
-FenumDemo.java:29: error: [assignment.type.incompatible] incompatible types in assignment.
-        state1 = TestStatic.BCONST1; // Incompatible fenums forbidden!
-                           ^
+FenumDemo.java:29: error: [assignment] incompatible types in assignment.
+    state1 = TestStatic.BCONST1; // Incompatible fenums forbidden!
+                       ^
   found   : @Fenum("B") int
   required: @Fenum("A") int
-FenumDemo.java:32: error: [argument.type.incompatible] incompatible argument for parameter p of fenumArg.
-        fenumArg(5); // Direct use of value forbidden!
-                 ^
+FenumDemo.java:32: error: [argument] incompatible argument for parameter p of fenumArg.
+    fenumArg(5); // Direct use of value forbidden!
+             ^
   found   : @FenumUnqualified int
   required: @Fenum("A") int
-FenumDemo.java:33: error: [argument.type.incompatible] incompatible argument for parameter p of fenumArg.
-        fenumArg(TestStatic.BCONST1); // Incompatible fenums forbidden!
-                           ^
+FenumDemo.java:33: error: [argument] incompatible argument for parameter p of fenumArg.
+    fenumArg(TestStatic.BCONST1); // Incompatible fenums forbidden!
+                       ^
   found   : @Fenum("B") int
   required: @Fenum("A") int
-FenumDemo.java:36: error: [assignment.type.incompatible] incompatible types in assignment.
-        state3 = 8;
-                 ^
+FenumDemo.java:36: error: [assignment] incompatible types in assignment.
+    state3 = 8;
+             ^
   found   : @FenumUnqualified int
   required: @MyFenum int
-FenumDemo.java:37: error: [assignment.type.incompatible] incompatible types in assignment.
-        state3 = TestStatic.ACONST2; // Incompatible fenums forbidden!
-                           ^
+FenumDemo.java:37: error: [assignment] incompatible types in assignment.
+    state3 = TestStatic.ACONST2; // Incompatible fenums forbidden!
+                       ^
   found   : @Fenum("A") int
   required: @MyFenum int
-FenumDemo.java:40: error: [argument.type.incompatible] incompatible argument for parameter p of myFenumArg.
-        myFenumArg(8); // Direct use of value forbidden!
-                   ^
+FenumDemo.java:40: error: [argument] incompatible argument for parameter p of myFenumArg.
+    myFenumArg(8); // Direct use of value forbidden!
+               ^
   found   : @FenumUnqualified int
   required: @MyFenum int
-FenumDemo.java:41: error: [argument.type.incompatible] incompatible argument for parameter p of myFenumArg.
-        myFenumArg(TestStatic.BCONST2); // Incompatible fenums forbidden!
-                             ^
+FenumDemo.java:41: error: [argument] incompatible argument for parameter p of myFenumArg.
+    myFenumArg(TestStatic.BCONST2); // Incompatible fenums forbidden!
+                         ^
   found   : @Fenum("B") int
   required: @MyFenum int
-FenumDemo.java:54: error: [binary.type.incompatible] binary operation between incompatible fenums: @Fenum("A") int and @Fenum("B") int
-        if (TestStatic.ACONST1 < TestStatic.BCONST2) {}
-                               ^
-FenumDemo.java:56: error: [binary.type.incompatible] binary operation between incompatible fenums: @Fenum("A") int and @Fenum("B") int
-        if (TestStatic.ACONST1 == TestStatic.BCONST2) {}
-                               ^
-FenumDemo.java:58: error: [binary.type.incompatible] binary operation between incompatible fenums: @Fenum("A") int and @MyFenum int
-        if (TestStatic.ACONST1 >= TestStatic.CCONST2) {}
-                               ^
-FenumDemo.java:61: error: [binary.type.incompatible] binary operation between incompatible fenums: @Fenum("A") int and @FenumUnqualified int
-        if (TestStatic.ACONST1 < 5) {}
-                               ^
-FenumDemo.java:63: error: [binary.type.incompatible] binary operation between incompatible fenums: @Fenum("B") int and @FenumUnqualified int
-        if (TestStatic.BCONST1 > 5) {}
-                               ^
-FenumDemo.java:65: error: [binary.type.incompatible] binary operation between incompatible fenums: @MyFenum int and @FenumUnqualified int
-        if (TestStatic.CCONST1 == 5) {}
-                               ^
+FenumDemo.java:54: error: [binary] binary operation between incompatible fenums: @Fenum("A") int and @Fenum("B") int
+    if (TestStatic.ACONST1 < TestStatic.BCONST2) {}
+                           ^
+FenumDemo.java:56: error: [binary] binary operation between incompatible fenums: @Fenum("A") int and @Fenum("B") int
+    if (TestStatic.ACONST1 == TestStatic.BCONST2) {}
+                           ^
+FenumDemo.java:58: error: [binary] binary operation between incompatible fenums: @Fenum("A") int and @MyFenum int
+    if (TestStatic.ACONST1 >= TestStatic.CCONST2) {}
+                           ^
+FenumDemo.java:61: error: [binary] binary operation between incompatible fenums: @Fenum("A") int and @FenumUnqualified int
+    if (TestStatic.ACONST1 < 5) {}
+                           ^
+FenumDemo.java:63: error: [binary] binary operation between incompatible fenums: @Fenum("B") int and @FenumUnqualified int
+    if (TestStatic.BCONST1 > 5) {}
+                           ^
+FenumDemo.java:65: error: [binary] binary operation between incompatible fenums: @MyFenum int and @FenumUnqualified int
+    if (TestStatic.CCONST1 == 5) {}
+                           ^
 21 errors

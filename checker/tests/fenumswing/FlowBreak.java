@@ -32,7 +32,7 @@ public class FlowBreak {
     // 2. The normal end of the loop body [@SwingHorizontalOrientation]
     // 3. The path from the break to here [@SwingVerticalOrientation]
     // Currently, the third path is ignored and we do not get this error message.
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return o;
   }
 }

@@ -18,13 +18,13 @@ public class InvariantTypes {
   // tested above:  String[] sa = {"a"};
   @Regex String[] rsa = {"a"};
   String[] nrsa = {"(a"};
-  // :: error: (array.initializer.type.incompatible) :: error: (assignment.type.incompatible)
+  // :: error: (array.initializer) :: error: (assignment)
   @Regex String[] rsaerr = {"(a"};
 
   List<String> ls = Arrays.asList("alice", "bob", "carol");
   List<@Regex String> lrs = Arrays.asList("alice", "bob", "carol");
   List<String> lnrs = Arrays.asList("(alice", "bob", "carol");
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   List<@Regex String> lrserr = Arrays.asList("(alice", "bob", "carol");
 
   void unqm(String[] sa) {}
@@ -33,7 +33,7 @@ public class InvariantTypes {
 
   void recalls() {
     unqm(new String[] {"a"});
-    // TODOINVARR:: error: (argument.type.incompatible)
+    // TODOINVARR:: error: (argument)
     unqm(new @Regex String[] {"a"});
     rem(new String[] {"a"});
     rem(new @Regex String[] {"a"});
@@ -41,12 +41,12 @@ public class InvariantTypes {
 
   void unqcalls() {
     unqm(new String[] {"a("});
-    // TODOINVARR:: error: (argument.type.incompatible)
-    // :: error: (array.initializer.type.incompatible)
+    // TODOINVARR:: error: (argument)
+    // :: error: (array.initializer)
     unqm(new @Regex String[] {"a("});
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     rem(new String[] {"a("});
-    // :: error: (array.initializer.type.incompatible)
+    // :: error: (array.initializer)
     rem(new @Regex String[] {"a("});
   }
 
@@ -66,9 +66,9 @@ public class InvariantTypes {
 
   void retunqcalls() {
     @Regex String[] re = mixedm(new String[] {"a("});
-    // TODOINVARR:: error: (argument.type.incompatible)
+    // TODOINVARR:: error: (argument)
     String[] u = retunqm(new String[] {"a"});
-    // TODOINVARR:: error: (argument.type.incompatible)
+    // TODOINVARR:: error: (argument)
     re = mixedm(new String[2]);
   }
 
@@ -80,7 +80,7 @@ public class InvariantTypes {
     lunqm(Arrays.asList("alice", "bob", "carol"));
     lrem(Arrays.asList("alice", "bob", "carol"));
     lunqm(Arrays.asList("(alice", "bob", "carol"));
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     lrem(Arrays.asList("(alice", "bob", "carol"));
   }
 
@@ -94,7 +94,7 @@ public class InvariantTypes {
     new ReTests(Arrays.asList("alice", "bob", "carol"), 0);
     new ReTests(Arrays.asList("alice", "bob", "carol"));
     new ReTests(Arrays.asList("(alice", "bob", "carol"), 0);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     new ReTests(Arrays.asList("(alice", "bob", "carol"));
   }
 

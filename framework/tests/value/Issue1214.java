@@ -26,11 +26,11 @@ public class Issue1214 {
       n = 3;
     }
     @IntVal({0, 1, 2}) int ok = n;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({0, 1}) int ng1 = n;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({0, 2}) int ng2 = n;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal(0) int ng3 = n;
   }
 
@@ -46,7 +46,7 @@ public class Issue1214 {
       n = 3;
     }
     @IntVal({0, 1}) int ok = n;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal(0) int ng = n;
   }
 
@@ -60,11 +60,11 @@ public class Issue1214 {
       n = 2;
     }
     @IntVal({0, 1, 2}) int ok = n;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({0, 1}) int ng1 = n;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({0, 2}) int ng2 = n;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal(0) int ng3 = n;
   }
 }

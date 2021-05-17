@@ -4,7 +4,7 @@ public class Issue1590 {
   private String a;
 
   public Issue1590() {
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     init();
   }
 

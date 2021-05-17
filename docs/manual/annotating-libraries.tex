@@ -493,6 +493,10 @@ stub file), then, for each type hierarchy, the last annotation read is used.
 
 The annotated JDK is read as a stub file.
 You can override JDK annotations by providing your own stub file.
+If your stub file contains a JDK method \<m>, then no type annotations from
+the JDK's \<m> are used.  If the JDK's \<m> contains a declaration
+annotation \<@D>, it is used unless your stub file contains a different
+\<@D> annotation for \<m>.
 
 The command-line option \<-AmergeStubsWithSource> tells the checker to use
 both source files and stub files.  The checker permits only values that are
@@ -804,9 +808,17 @@ Some command-line options make the stub parser issue more warnings:
 \begin{description}
 \item[\<-AstubWarnIfNotFound>]
   Warn whenever some element of a stub file cannot be found.
+  This is the default for stub files provided on the command line;
+  supplying the command-line option enables it for built-in stub files as well.
   The \<@NoStubParserWarning> annotation on a package or type in a stub file
   overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
   will be issued.
+
+  % These warnings are not enabled by default because they would produce too
+  % much output.  An example of an innocuous warning is when a stub file is
+  % written for library version B but library version A is on the classpath.  A
+  % warning is issued for every method that is in the stub file but not in
+  % version A which is on the classpath.
 
 \item[\<-AstubWarnIfNotFoundIgnoresClasses>]
   Modifies the behavior of \<-AstubWarnIfNotFound>
@@ -817,7 +829,9 @@ Some command-line options make the stub parser issue more warnings:
 \item[\<-AstubWarnIfRedundantWithBytecode>]
   Warn if a stub file entry is redundant with bytecode information.  The
   warning means that the stub file's type is the same as the bytecode type,
-  so that entry in the stub file is not necessary.
+  so that entry in the stub file has no effect.  You could remove the
+  entry in the stub file to make it shorter, or you could add an annotation
+  to the stub file to make the entry have an effect.
 
 %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
 % \item[\<-AstubWarnIfOverwritesBytecode>]

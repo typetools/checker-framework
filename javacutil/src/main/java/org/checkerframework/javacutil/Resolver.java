@@ -365,8 +365,8 @@ public class Resolver {
    * @throws IllegalAccessException if the field is not accessible
    */
   @SuppressWarnings({
-    "nullness:argument.type.incompatible",
-    "interning:argument.type.incompatible"
+    "nullness:argument",
+    "interning:argument"
   }) // assume that the fields all accept null and uninterned values
   private void setField(Object receiver, String fieldName, @Nullable Object value)
       throws NoSuchFieldException, IllegalAccessException {

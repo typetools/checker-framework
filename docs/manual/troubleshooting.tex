@@ -478,7 +478,7 @@ you will get an error such as
 
 \begin{smaller}
 \begin{Verbatim}[]
-[expression.unparsable.type.invalid] Expression in dependent type annotation invalid:
+[expression.unparsable] Expression in dependent type annotation invalid:
 Use "#1" rather than "value"
 \end{Verbatim}
 \end{smaller}
@@ -825,26 +825,6 @@ identical to the javac Java compiler.
 Putting the Checker Framework's \<javac> earlier in your \<PATH> will
 ensure that the Checker Framework's version is used.
 
-\item
-If you are developing a checker within the Checker Framework, there is
-a developer version of \<javac> in the \<bin-devel> directory. This
-version will use compiled classes from \<dataflow/build>,
-\<javacutil/build>, \<framework/build>,
-and \<checker/build> in the \<checker-framework> directory instead of
-the compiled jar files.
-
-To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
-
-\begin{Verbatim}
-export PATH=$CHECKERFRAMEWORK/checker/bin-devel:${PATH}
-\end{Verbatim}
-
-The developer version of \<javac> allows you to not have to rebuild
-the jar files after every code change, in turn allowing you to test
-your changes faster. Source files can be compiled using command \<./gradlew
-compileJava>, or can be automatically compiled by
-an IDE such as Eclipse.
-
 \item Test that everything works:
 
   \begin{itemize}
@@ -888,11 +868,6 @@ We strongly recommend that you enable continuous integration (CI) builds on
 your fork of the projects, so that you learn quickly about errors.  See the
 \ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html\#ci}{CI
   instructions} in the Checker Framework Developer Manual.
-
-If you make a change to the
-annotated JDK, you need to upload a JDK artifact.
-Follow the instructions at
-\url{https://github.com/typetools/annotated-libraries}.
 
 
 \subsubsectionAndLabel{Debugging continuous integration builds}{building-ci-debug}

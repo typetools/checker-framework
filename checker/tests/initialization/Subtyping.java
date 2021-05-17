@@ -7,10 +7,10 @@ public class Subtyping {
       @UnderInitialization(Object.class) Object underObject,
       @UnknownInitialization(Subtyping.class) Object unknownSubtyping,
       @UnderInitialization(Subtyping.class) Object underSubtyping) {
-    // ::error: (assignment.type.incompatible)
+    // ::error: (assignment)
     underObject = unknownObject;
     underObject = underSubtyping;
-    // ::error: (assignment.type.incompatible)
+    // ::error: (assignment)
     underObject = unknownSubtyping;
   }
 
@@ -29,11 +29,11 @@ public class Subtyping {
       @UnderInitialization(Object.class) Object underObject,
       @UnknownInitialization(Subtyping.class) Object unknownSubtyping,
       @UnderInitialization(Subtyping.class) Object underSubtyping) {
-    // ::error: (assignment.type.incompatible)
+    // ::error: (assignment)
     underSubtyping = unknownObject;
-    // ::error: (assignment.type.incompatible)
+    // ::error: (assignment)
     underSubtyping = unknownSubtyping;
-    // ::error: (assignment.type.incompatible)
+    // ::error: (assignment)
     underSubtyping = underObject;
   }
 
@@ -42,10 +42,10 @@ public class Subtyping {
       @UnderInitialization(Object.class) Object underObject,
       @UnknownInitialization(Subtyping.class) Object unknownSubtyping,
       @UnderInitialization(Subtyping.class) Object underSubtyping) {
-    // ::error: (assignment.type.incompatible)
+    // ::error: (assignment)
     unknownSubtyping = unknownObject;
     unknownSubtyping = underSubtyping;
-    // ::error: (assignment.type.incompatible)
+    // ::error: (assignment)
     unknownSubtyping = underObject;
   }
 }

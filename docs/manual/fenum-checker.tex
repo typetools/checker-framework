@@ -188,7 +188,7 @@ To remove this warning message, add a \code{@SuppressWarnings} annotation to eit
 the field or class declaration, for example:
 
 \begin{Verbatim}
-@SuppressWarnings("fenum:assignment.type.incompatible") // initialization of fake enums
+@SuppressWarnings("fenum:assignment") // initialization of fake enums
 class MyConsts {
   public static final @Fenum("A") int ACONST1 = 1;
   public static final @Fenum("A") int ACONST2 = 2;
@@ -203,7 +203,7 @@ The following example introduces two fenums in class \code{TestStatic}
 and then performs a few typical operations.
 
 \begin{Verbatim}
-@SuppressWarnings("fenum:assignment.type.incompatible")   // initialization of fake enums
+@SuppressWarnings("fenum:assignment")   // initialization of fake enums
 public class TestStatic {
   public static final @Fenum("A") int ACONST1 = 1;
   public static final @Fenum("A") int ACONST2 = 2;

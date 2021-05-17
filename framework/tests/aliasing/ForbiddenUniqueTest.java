@@ -9,7 +9,7 @@ public class ForbiddenUniqueTest {
   void notAllowed() {
     // :: error: (unique.location.forbidden)
     @Unique Object[] arr;
-    // :: error: (type.argument.type.incompatible) :: error: (unique.location.forbidden)
+    // :: error: (type.argument) :: error: (unique.location.forbidden)
     List<@Unique Object> list;
   }
 

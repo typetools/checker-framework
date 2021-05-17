@@ -40,7 +40,7 @@ public class Distinct {
   }
 
   public void testAssignment4() {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     i1 = f2;
   }
 
@@ -53,12 +53,12 @@ public class Distinct {
   }
 
   public void testAssignment7() {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     d1 = f2;
   }
 
   public void testAssignment8() {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     d1 = i2;
   }
 

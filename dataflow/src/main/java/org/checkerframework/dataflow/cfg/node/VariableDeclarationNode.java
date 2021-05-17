@@ -8,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for a local variable declaration:
+ * A node for a variable declaration, including local variables and fields:
  *
  * <pre>
  *   <em>modifier</em> <em>type</em> <em>identifier</em>;

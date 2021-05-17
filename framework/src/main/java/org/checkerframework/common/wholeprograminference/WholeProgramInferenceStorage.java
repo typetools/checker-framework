@@ -148,6 +148,9 @@ public interface WholeProgramInferenceStorage<T> {
    * called, the new {@code AnnotatedTypeMirror} has a better type estimate for the given location.
    * Therefore, it is not a problem to remove all annotations before inserting the new annotations.
    *
+   * <p>The {@code update*} methods in {@link WholeProgramInference} perform LUB. This one just does
+   * replacement. (Thus, the naming may be a bit confusing.)
+   *
    * @param newATM the type whose annotations will be added to the {@code AnnotatedTypeMirror}
    * @param curATM the annotations currently stored at the location, used to check if the element
    *     that will be updated has explicit annotations in source code

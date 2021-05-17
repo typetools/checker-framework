@@ -900,7 +900,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     or {@link MostlyNoElementQualifierHierarchy} instead. This method will be removed in a
    *     future release.
    */
-  @Deprecated
+  @Deprecated // 2020-09-10
   public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
       org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
     throw new TypeSystemError(
@@ -3000,7 +3000,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param type the canonical annotation
    * @deprecated use {@code addAliasedTypeAnnotation}
    */
-  @Deprecated // use addAliasedTypeAnnotation
+  @Deprecated // 2020-12-15
   protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
     addAliasedTypeAnnotation(aliasClass, type);
   }
@@ -3037,11 +3037,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param aliasName the canonical name of the aliased annotation
    * @param canonicalAnno the canonical annotation
-   * @deprecated use {@code addAliasedTypeAnnotation}
+   * @deprecated use {@link #addAliasedTypeAnnotation}
    */
   // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
   // name of an external annotation is a canoncal name.
-  @Deprecated // use addAliasedTypeAnnotation
+  @Deprecated // 2020-12-15
   protected void addAliasedAnnotation(
       @FullyQualifiedName String aliasName, AnnotationMirror canonicalAnno) {
     addAliasedTypeAnnotation(aliasName, canonicalAnno);
@@ -3095,7 +3095,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     being copied over
    * @deprecated use {@code addAliasedTypeAnnotation}
    */
-  @Deprecated // use addAliasedTypeAnnotation
+  @Deprecated // 2020-12-15
   protected void addAliasedAnnotation(
       Class<?> aliasClass, Class<?> canonical, boolean copyElements, String... ignorableElements) {
     addAliasedTypeAnnotation(aliasClass, canonical, copyElements, ignorableElements);
@@ -3359,7 +3359,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (res == null) {
       TreePath path = getPath(tree);
       if (path != null) {
-        @SuppressWarnings("interning:assignment.type.incompatible") // used for == test
+        @SuppressWarnings("interning:assignment") // used for == test
         @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
         ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
 
@@ -3553,10 +3553,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *       exists and ignorejdkastub option is not supplied <br>
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker<br>
-   *   <li>Stub files provide via stubs system property <br>
-   *   <li>Stub files provide via stubs environment variable <br>
-   *   <li>Stub files provide via stubs compiler option
-   *   <li>Ajava files provided via ajava compiler option
+   *   <li>Stub files provided via -Astubs compiler option
+   *   <li>Ajava files provided via -Aajava compiler option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,

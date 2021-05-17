@@ -9,21 +9,21 @@ public class RefinementEq {
     if (-1 == a) {
       @GTENegativeOne int b = a;
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @GTENegativeOne int c = a;
     }
 
     if (0 == j) {
       @NonNegative int k = j;
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNegative int l = j;
     }
 
     if (1 == s) {
       @Positive int t = s;
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Positive int u = s;
     }
   }

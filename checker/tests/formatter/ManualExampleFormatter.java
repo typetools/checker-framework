@@ -26,9 +26,9 @@ public class ManualExampleFormatter {
     }
     @Format({FLOAT, INT}) String f2 = f;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     f = "%f %d %s"; // error: too many arguments
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     f = "%d %d"; // error: %d is not weaker than %f
 
     String.format(f, 0.8, 42);

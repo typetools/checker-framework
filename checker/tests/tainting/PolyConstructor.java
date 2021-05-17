@@ -15,13 +15,13 @@ public class PolyConstructor {
     @Tainted PolyConstructor o2 = new @Tainted PolyConstructor();
     @PolyTainted PolyConstructor o3 = new @PolyTainted PolyConstructor();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Untainted PolyConstructor o4 = new @Tainted PolyConstructor(untainted);
     @Untainted PolyConstructor o5 = new PolyConstructor(untainted);
 
     // This currently isn't supported, but could be in the future.
     @Untainted PolyConstructor o6 = new PolyConstructor();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Tainted PolyConstructor o7 = new PolyConstructor();
   }
 }

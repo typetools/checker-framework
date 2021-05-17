@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @DefaultQualifierInHierarchy
 public @interface CalledMethods {
   /**
-   * Methods that have definitely been called, on any expression whose type is annotated.
+   * Methods that have definitely been called on the expression whose type is annotated.
    *
    * @return methods that have definitely been called
    */

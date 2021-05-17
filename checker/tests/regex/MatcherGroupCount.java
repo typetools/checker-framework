@@ -28,7 +28,7 @@ public class MatcherGroupCount {
         System.out.println("Group: " + mat.group(2));
       }
       if (mat.groupCount() >= 2) {
-        // :: error: (group.count.invalid)
+        // :: error: (group.count)
         System.out.println("Group: " + mat.group(3));
       }
       if (2 < mat.groupCount()) {
@@ -38,7 +38,7 @@ public class MatcherGroupCount {
         System.out.println("Group: " + mat.group(0));
       } else {
         System.out.println("Group: " + mat.group(5));
-        // :: error: (group.count.invalid)
+        // :: error: (group.count)
         System.out.println("Group: " + mat.group(6));
       }
     } else {

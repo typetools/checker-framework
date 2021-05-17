@@ -14,7 +14,7 @@ public class Marks5 {
   // unless BOTH are empty, in which case return an empty Optional.
 
   Optional<BigDecimal> clever(Optional<BigDecimal> first, Optional<BigDecimal> second) {
-    @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver.invalid"})
+    @SuppressWarnings({"methodref.inference.unimplemented", "methodref.receiver"})
     Optional<BigDecimal> result =
         Stream.of(first, second)
             .filter(Optional::isPresent)
@@ -25,7 +25,7 @@ public class Marks5 {
 
   Optional<BigDecimal> clever2(Optional<BigDecimal> first, Optional<BigDecimal> second) {
     Stream<Optional<BigDecimal>> s = Stream.of(first, second);
-    @SuppressWarnings("assignment.type.incompatible")
+    @SuppressWarnings("assignment")
     Stream<@Present Optional<BigDecimal>> filtered =
         s.<Optional<BigDecimal>>filter(Optional::isPresent);
     Stream<BigDecimal> present = filtered.<BigDecimal>map(Optional::get);

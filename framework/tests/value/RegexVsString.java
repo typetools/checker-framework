@@ -4,7 +4,7 @@ import org.checkerframework.common.value.qual.*;
 
 public class RegexVsString {
   void stringToRegex1(@StringVal({"(a)"}) String a) {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @MatchesRegex("(a)") String a2 = a;
   }
 
@@ -18,7 +18,7 @@ public class RegexVsString {
 
   void regexToString(@MatchesRegex("^a$") String a) {
     // TODO: This is a false positive.  In the future, eliminate it.
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @StringVal({"a"}) String a2 = a;
   }
 }

@@ -89,7 +89,7 @@ public class TestTreeKinds {
   @GuardedBy("lock") MyParametrizedType<MyClass> myParametrizedType = new MyParametrizedType<>();
 
   MyClass getFooWithWrongReturnType() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return foo; // return of guarded object
   }
 
@@ -125,10 +125,10 @@ public class TestTreeKinds {
   @GuardedBy("lock") myEnumType myEnum;
 
   void testEnumType() {
-    // TODO: assignment.type.incompatible is technically correct, but we could
+    // TODO: assignment is technically correct, but we could
     // make it friendlier for the user if constant enum values on the RHS
     // automatically cast to the @GuardedBy annotation of the LHS.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     myEnum = myEnumType.ABC;
   }
 
@@ -324,12 +324,12 @@ public class TestTreeKinds {
     // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even
     // @GuardedByUnknown is not allowed.
     try {
-      // :: error: (throw.type.invalid)
+      // :: error: (throw)
       throw exception;
     } catch (Exception e) {
     }
     // casting of a guarded object to an unguarded object
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @GuardedBy({}) Object e1 = (Object) exception;
     // OK, since the local variable's type gets refined to @GuardedBy("lock")
     Object e2 = (Object) exception;
@@ -392,7 +392,7 @@ public class TestTreeKinds {
       lockTheLock();
       requiresLockHeldMethod();
     } else {
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       requiresLockHeldMethod();
     }
 
@@ -489,7 +489,7 @@ public class TestTreeKinds {
     int e = 0;
     // :: error: (immutable.type.guardedby)
     @GuardedByUnknown int f = 0;
-    // :: error: (immutable.type.guardedby) :: error: (assignment.type.incompatible)
+    // :: error: (immutable.type.guardedby) :: error: (assignment)
     @GuardedByBottom int g = 0;
   }
 

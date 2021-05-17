@@ -216,7 +216,7 @@ public class ForwardAnalysisImpl<
   }
 
   @Override
-  @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
+  @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
   public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
     return CollectionsPlume.<ReturnNode, Pair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(

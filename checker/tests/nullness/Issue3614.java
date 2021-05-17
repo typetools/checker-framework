@@ -78,7 +78,7 @@ public class Issue3614 {
   }
 
   public static @PolyNull Integer plus1Err(@PolyNull Integer b0, @PolyNull Integer b1) {
-    // :: error: (return.type.incompatible) :: error: (unboxing.of.nullable)
+    // :: error: (return) :: error: (unboxing.of.nullable)
     return (b0 == null) ? null : (b0 + b1);
   }
 

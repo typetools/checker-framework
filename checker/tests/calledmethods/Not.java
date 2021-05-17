@@ -27,7 +27,7 @@ public class Not {
 
   void test3(Foo f) {
     f.a();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.notA();
     f.notB();
   }
@@ -35,16 +35,16 @@ public class Not {
   void test4(Foo f) {
     f.b();
     f.notA();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.notB();
   }
 
   void test5(Foo f) {
     f.a();
     f.b();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.notA();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.notB();
   }
 
@@ -59,7 +59,7 @@ public class Not {
   }
 
   void test7(@CalledMethods("a") Foo f) {
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.notA();
   }
 

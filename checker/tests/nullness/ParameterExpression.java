@@ -18,17 +18,17 @@ public class ParameterExpression {
     o3.toString();
   }
 
-  @SuppressWarnings("assert.postcondition.not.satisfied")
+  @SuppressWarnings("assert.postcondition")
   // "#0" is illegal syntax; it should be "#1"
   @EnsuresNonNull("#0")
   // :: error: (flowexpr.parse.error)
   public void m2(final @Nullable Object o) {}
 
-  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @SuppressWarnings("contracts.postcondition")
   @EnsuresNonNull("#1")
   public void m3(final @Nullable Object o) {}
 
-  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @SuppressWarnings("contracts.postcondition")
   @EnsuresNonNull("#3")
   public void m4(@Nullable Object x1, @Nullable Object x2, final @Nullable Object x3) {}
 
@@ -53,7 +53,7 @@ public class ParameterExpression {
   @EnsuresNonNull("param")
   // :: error: (flowexpr.parse.error)
   public void m6b(Object param) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     param = null;
   }
 
@@ -76,29 +76,29 @@ public class ParameterExpression {
   }
 
   @EnsuresNonNull("field")
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   // :: warning: (expression.parameter.name.shadows.field)
   public void m7a(Object field) {
     field = new Object();
   }
 
   @EnsuresNonNull("field")
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   // :: warning: (expression.parameter.name.shadows.field)
   public void m7b(Object field) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     field = null;
   }
 
   @EnsuresNonNull("field")
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   // :: warning: (expression.parameter.name.shadows.field)
   public void m7c(@Nullable Object field) {
     field = new Object();
   }
 
   @EnsuresNonNull("field")
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   // :: warning: (expression.parameter.name.shadows.field)
   public void m7d(@Nullable Object field) {
     field = null;
@@ -138,7 +138,7 @@ public class ParameterExpression {
   // :: warning: (expression.parameter.name.shadows.field)
   public boolean m13a(@Nullable Object field) {
     field = new Object();
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return true;
   }
 
@@ -153,7 +153,7 @@ public class ParameterExpression {
   // :: warning: (expression.parameter.name.shadows.field)
   public boolean m13c(@Nullable Object field) {
     field = null;
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return true;
   }
 
@@ -165,6 +165,6 @@ public class ParameterExpression {
   }
 
   // Annotations on formal parameters referring to a formal parameter of the same method.
-  // :: error: (expression.unparsable.type.invalid)
+  // :: error: (expression.unparsable)
   public void m14(@KeyFor("param2") Object param1, Map<Object, Object> param2) {}
 }

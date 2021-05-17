@@ -35,7 +35,7 @@ public class LambdaNullness {
   Supplier<Integer> f2a = () -> 42;
 
   // No parameters, expression body
-  // :: error: (return.type.incompatible)
+  // :: error: (return)
   Supplier<Integer> f2b = () -> null;
 
   // No parameters, expression body
@@ -48,7 +48,7 @@ public class LambdaNullness {
   // No parameters, block body with return
   Supplier<@Nullable Integer> f4b =
       () -> {
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         @NonNull String s = null;
 
         return null;
@@ -69,7 +69,7 @@ public class LambdaNullness {
           for (int i = 1; i < 10; i++) {
             result *= i;
           }
-          // :: error: (return.type.incompatible)
+          // :: error: (return)
           return null;
         }
       };
@@ -79,7 +79,7 @@ public class LambdaNullness {
 
   // Single declared-type parameter
   FunctionNull<@Nullable String, String> f9 =
-      // :: error: (lambda.param.type.incompatible)
+      // :: error: (lambda.param)
       (@NonNull String x) -> {
         return x + "";
       };

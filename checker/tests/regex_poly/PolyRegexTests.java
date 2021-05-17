@@ -14,7 +14,7 @@ public class PolyRegexTests {
   }
 
   public void testNonRegex(String str) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s = method(str); // error
   }
 
@@ -23,7 +23,7 @@ public class PolyRegexTests {
   }
 
   public void testInternNonRegex(String str) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s = str.intern(); // error
   }
 
@@ -32,7 +32,7 @@ public class PolyRegexTests {
   }
 
   public void testToStringNonRegex(String str) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex String s = str.toString(); // error
   }
 
@@ -41,11 +41,11 @@ public class PolyRegexTests {
   }
 
   public void testPolyRegexConcatErrors(@PolyRegex String polyReg, String nonPolyReg) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test1 = polyReg + nonPolyReg; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test2 = nonPolyReg + polyReg; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test3 = nonPolyReg + nonPolyReg; // error
   }
 
@@ -56,16 +56,16 @@ public class PolyRegexTests {
 
   public void testRegexPolyRegexConcatErrors(
       @PolyRegex String polyReg, @Regex String reg, String str) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test1 = polyReg + str; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test2 = str + polyReg; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test3 = reg + str; // error
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test4 = str + reg; // error
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @PolyRegex String test5 = str + str; // error
   }
 

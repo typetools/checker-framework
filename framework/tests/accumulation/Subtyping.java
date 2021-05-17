@@ -7,15 +7,15 @@ public class Subtyping {
   void top(@TestAccumulation() Object o1) {
     @TestAccumulation() Object o2 = o1;
     @TestAccumulation("foo")
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     Object o3 = o1;
     @TestAccumulation("bar")
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     Object o4 = o1;
     @TestAccumulation({"foo", "bar"})
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     Object o5 = o1;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @TestAccumulationBottom Object o6 = o1;
   }
 
@@ -23,25 +23,25 @@ public class Subtyping {
     @TestAccumulation() Object o2 = o1;
     @TestAccumulation("foo") Object o3 = o1;
     @TestAccumulation("bar")
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     Object o4 = o1;
     @TestAccumulation({"foo", "bar"})
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     Object o5 = o1;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @TestAccumulationBottom Object o6 = o1;
   }
 
   void bar(@TestAccumulation("bar") Object o1) {
     @TestAccumulation() Object o2 = o1;
     @TestAccumulation("foo")
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     Object o3 = o1;
     @TestAccumulation("bar") Object o4 = o1;
     @TestAccumulation({"foo", "bar"})
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     Object o5 = o1;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @TestAccumulationBottom Object o6 = o1;
   }
 
@@ -50,7 +50,7 @@ public class Subtyping {
     @TestAccumulation("foo") Object o3 = o1;
     @TestAccumulation("bar") Object o4 = o1;
     @TestAccumulation({"foo", "bar"}) Object o5 = o1;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @TestAccumulationBottom Object o6 = o1;
   }
 
@@ -59,7 +59,7 @@ public class Subtyping {
     @TestAccumulation("foo") Object o3 = o1;
     @TestAccumulation("bar") Object o4 = o1;
     @TestAccumulation({"foo", "bar"}) Object o5 = o1;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @TestAccumulationBottom Object o6 = o1;
   }
 

@@ -17,7 +17,7 @@ public class OverrideANNA {
 
   static class Sub extends Super {
     @Override
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void setf(@UnknownInitialization Sub this) {}
   }
 

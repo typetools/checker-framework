@@ -15,15 +15,15 @@ public class Issue738 {
         methodB(is, os);
         break;
       case 2:
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         methodB2(is, os);
         break;
       case 3:
-        // :: error: (type.argument.type.incompatible)
+        // :: error: (type.argument)
         methodB3(is, os);
         break;
       case 4:
-        // :: error: (type.argument.type.incompatible)
+        // :: error: (type.argument)
         methodB4(is, os);
         break;
     }
