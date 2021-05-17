@@ -70,8 +70,7 @@ public class Multiples {
 
     // N
     @N int N = 5 * UnitsTools.N;
-    @N(Prefix.one)
-    int alsoN = N;
+    @N(Prefix.one) int alsoN = N;
     @N(Prefix.giga)
     // :: error: (assignment)
     int notN = N;
@@ -81,8 +80,7 @@ public class Multiples {
 
     // kN
     @kN int kN = 5 * UnitsTools.kN;
-    @N(Prefix.kilo)
-    int alsokN = kN;
+    @N(Prefix.kilo) int alsokN = kN;
     @N(Prefix.giga)
     // :: error: (assignment)
     int notkN = kN;
