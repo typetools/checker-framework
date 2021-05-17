@@ -1,3 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
 ext {
     annotatedJdkHome = '../../jdk'
 }
@@ -23,15 +27,15 @@ def versions = [
 
 
 dependencies {
-    implementation project(':javacutil')
-    implementation project(':dataflow')
-    implementation files("${stubparserJar}")
+    api project(':javacutil')
+    api project(':dataflow')
+    api files("${stubparserJar}")
     // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
-    implementation('org.checkerframework:annotation-file-utilities:*') {
+    api('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
-    implementation project(':checker-qual')
+    api project(':checker-qual')
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages.
@@ -44,7 +48,7 @@ dependencies {
     // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
     // dependencies" section of https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
     // (It isn't at https://mvnrepository.com/artifact/org.checkerframework.annotatedlib/guava/28.2-jre, which is the bug.)
-    implementation 'com.google.errorprone:error_prone_annotations:2.6.0'
+    implementation 'com.google.errorprone:error_prone_annotations:2.7.1'
     implementation ('org.checkerframework.annotatedlib:guava:30.1.1-jre') {
         // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
         exclude group: 'org.checkerframework'
