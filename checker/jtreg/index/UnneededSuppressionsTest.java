@@ -22,12 +22,12 @@ public class UnneededSuppressionsTest {
 
   @SuppressWarnings({"tainting", "lowerbound"})
   void method3() {
-    @SuppressWarnings("upperbound:assignment.type.incompatible")
+    @SuppressWarnings("upperbound:assignment")
     int z = 0;
   }
 
   void method4() {
-    @SuppressWarnings("lowerbound:assignment.type.incompatible")
+    @SuppressWarnings("lowerbound:assignment")
     @NonNegative int x = -1;
   }
 

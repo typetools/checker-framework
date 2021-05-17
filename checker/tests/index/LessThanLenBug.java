@@ -4,7 +4,7 @@ import org.checkerframework.common.value.qual.MinLen;
 public class LessThanLenBug {
   public static void m1(int[] shorter) {
     int[] longer = new int[4 * shorter.length];
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf("longer") int x = shorter.length;
     int i = longer[x];
   }

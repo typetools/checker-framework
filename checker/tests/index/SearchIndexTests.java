@@ -5,7 +5,7 @@ public class SearchIndexTests {
   public void test(short[] a, short instant) {
     int i = Arrays.binarySearch(a, instant);
     @SearchIndexFor("a") int z = i;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SearchIndexFor("a") int y = 7;
     @LTLengthOf("a") int x = i;
   }
@@ -44,11 +44,11 @@ public class SearchIndexTests {
 
   void subtyping1(
       @SearchIndexFor({"#3", "#4"}) int x, @NegativeIndexFor("#3") int y, int[] a, int[] b) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SearchIndexFor({"a", "b"}) int z = y;
     @SearchIndexFor("a") int w = y;
     @SearchIndexFor("b") int p = x;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NegativeIndexFor({"a", "b"}) int q = x;
   }
 }

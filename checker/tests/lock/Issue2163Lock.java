@@ -4,7 +4,7 @@ public class Issue2163Lock {
   @GuardedBy Issue2163Lock() {}
 
   void test() {
-    // :: error: (constructor.invocation.invalid) :: error: (guardsatisfied.location.disallowed)
+    // :: error: (constructor.invocation) :: error: (guardsatisfied.location.disallowed)
     new @GuardSatisfied Issue2163Lock();
   }
 }

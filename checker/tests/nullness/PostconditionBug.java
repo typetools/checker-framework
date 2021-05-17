@@ -5,7 +5,7 @@ public class PostconditionBug {
 
   void a(@UnknownInitialization PostconditionBug this) {
     @NonNull String f = "abc";
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     f = null;
   }
 }

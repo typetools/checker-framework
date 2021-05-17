@@ -10,16 +10,16 @@ public class GetProperty {
     String s = "line.separator";
 
     nno = System.getProperty("line.separator");
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     nno = System.getProperty(s);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     nno = System.getProperty("not.a.builtin.property");
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     nno = p.getProperty("line.separator");
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     nno = p.getProperty(s);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     nno = p.getProperty("not.a.builtin.property");
   }
 }

@@ -138,7 +138,7 @@ MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null r
 You are allowed to use any substring of a message key, so long as the
 substring extends at each end to a period or an end of the key.  For
 example, to suppress a warning with message key
-\code{"assignment.type.incompatible"}, you could use
+\code{"assignment"}, you could use
 \<@SuppressWarnings("assignment")>,
 \<@SuppressWarnings("assignment.type")>,
 \<@SuppressWarnings("type.incompatible")>, or other variants.
@@ -166,8 +166,8 @@ option, the Checker Framework only suppresses warnings when the string is in
 the \code{"\emph{checkername}"} or \code{"\emph{checkername}:\emph{messagekey}"}
 format, as in
 \<@SuppressWarnings("nullness")> or
-\<@SuppressWarnings("nullness:assignment.type.incompatible")>.
-For example, \<@SuppressWarnings("assignment.type.incompatible")> and
+\<@SuppressWarnings("nullness:assignment")>.
+For example, \<@SuppressWarnings("assignment")> and
 \<@SuppressWarnings("all")> have no effect (they are ignored) when
 \code{-ArequirePrefixInWarningSuppressions} is used.  You can use
 \<@SuppressWarnings("allcheckers")> to suppress all Checker Framework

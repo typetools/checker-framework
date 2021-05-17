@@ -24,14 +24,14 @@ public class SimpleInference {
 
   static void doStuffWrong() {
     SimpleInference s = new SimpleInference();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     s.build();
   }
 
   static void doStuffWrong2() {
     SimpleInference s = new SimpleInference();
     s.a();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     s.doublebuild();
   }
 }

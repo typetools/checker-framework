@@ -34,7 +34,7 @@ public class UBLiteralFlow {
     } else {
       result = lineStart;
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return result;
   }
 
@@ -124,12 +124,12 @@ public class UBLiteralFlow {
    */
   private static @LTLengthOf(value = "#1", offset = "1") int lineStartIndex3(String s, int start) {
     if (s.length() == 0) {
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return -1;
     }
     if (start == 0) {
       // It doesn't make sense to call this routine with 0, but return 0 anyway.
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return 0;
     }
     if (start > s.length()) {
@@ -146,7 +146,7 @@ public class UBLiteralFlow {
     if (lineStart >= s.length()) {
       return -1;
     } else {
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return lineStart;
     }
   }

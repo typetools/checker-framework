@@ -14,7 +14,7 @@ public class Figure6<Ignore> {
 
     <B> A coerce(B t) {
       Constraint<? super B> constraint = null;
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       return upcast(constraint).curry(t);
     }
   }

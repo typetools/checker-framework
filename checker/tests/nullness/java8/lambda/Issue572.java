@@ -10,7 +10,7 @@ public class Issue572 {
   }
 
   public <A, B> A konst(@NonNull A a, @Nullable B b) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     return biApply(((first, second) -> first), a, b);
   }
 }

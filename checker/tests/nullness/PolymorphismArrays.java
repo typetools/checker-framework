@@ -8,7 +8,7 @@ public class PolymorphismArrays {
 
   public static boolean @PolyNull [] bad(boolean @PolyNull [] seq) {
     // Cannot directly return null;
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return null;
   }
 

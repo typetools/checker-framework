@@ -13,7 +13,7 @@ public class CompoundStringAssignment {
     // but only if the RHS was a method call.
     local += getSib1();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @H1Bot @H2Bot String isBot = local;
     @H1S1 @H2S1 String isSib1 = local;
   }
@@ -24,9 +24,9 @@ public class CompoundStringAssignment {
     String local2 = top;
     local2 += getSib1();
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @H1Bot @H2Bot String isBot2 = local2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @H1S1 @H2S1 String isSib12 = local2;
   }
 
@@ -36,7 +36,7 @@ public class CompoundStringAssignment {
     String local3 = null;
     local3 += sib1;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @H1Bot @H2Bot String isBot3 = local3;
     @H1S1 @H2S1 String isSib13 = local3;
   }

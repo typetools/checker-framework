@@ -7,7 +7,7 @@ public class Index166 {
 
   public void testMethodInvocation() {
     requiresIndex("012345", 5);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresIndex("012345", 6);
   }
 

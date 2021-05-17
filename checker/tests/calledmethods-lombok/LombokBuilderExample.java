@@ -8,7 +8,7 @@ public class LombokBuilderExample {
   @lombok.NonNull Object bar;
 
   static void test() {
-    // :: error: (finalizer.invocation.invalid)
+    // :: error: (finalizer.invocation)
     builder().build();
   }
 }

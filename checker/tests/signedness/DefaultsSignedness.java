@@ -12,7 +12,7 @@ public class DefaultsSignedness {
 
     conByte = testByte;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     botByte = testByte;
 
     // Test shorts with literal values
@@ -23,7 +23,7 @@ public class DefaultsSignedness {
 
     conShort = testShort;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     botShort = testShort;
 
     // Test ints with literal values
@@ -34,7 +34,7 @@ public class DefaultsSignedness {
 
     conInt = testInt;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     botInt = testInt;
 
     // Test longs with literal values
@@ -45,7 +45,7 @@ public class DefaultsSignedness {
 
     conLong = testLong;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     botLong = testLong;
 
     // Test chars with literal values
@@ -56,7 +56,7 @@ public class DefaultsSignedness {
 
     conChar = testChar;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     botChar = testChar;
   }
 
@@ -80,7 +80,7 @@ public class DefaultsSignedness {
 
     sinByte = testByte;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     conByte = testByte;
 
     // Test shorts
@@ -89,7 +89,7 @@ public class DefaultsSignedness {
 
     sinShort = testShort;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     conShort = testShort;
 
     // Test ints
@@ -98,7 +98,7 @@ public class DefaultsSignedness {
 
     sinInt = testInt;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     conInt = testInt;
 
     // Test longs
@@ -107,7 +107,7 @@ public class DefaultsSignedness {
 
     sinLong = testLong;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     conLong = testLong;
 
     // Test floats
@@ -129,7 +129,7 @@ public class DefaultsSignedness {
 
     sinBoxedByte = testBoxedByte;
 
-    //// :: error: (assignment.type.incompatible)
+    //// :: error: (assignment)
     conBoxedByte = testBoxedByte;
 
     // Test boxed shorts
@@ -138,7 +138,7 @@ public class DefaultsSignedness {
 
     sinBoxedShort = testBoxedShort;
 
-    //// :: error: (assignment.type.incompatible)
+    //// :: error: (assignment)
     conBoxedShort = testBoxedShort;
 
     // Test boxed Integers
@@ -147,7 +147,7 @@ public class DefaultsSignedness {
 
     sinBoxedInteger = testBoxedInteger;
 
-    //// :: error: (assignment.type.incompatible)
+    //// :: error: (assignment)
     conBoxedInteger = testBoxedInteger;
 
     // Test boxed Longs
@@ -156,7 +156,7 @@ public class DefaultsSignedness {
 
     sinBoxedLong = testBoxedLong;
 
-    //// :: error: (assignment.type.incompatible)
+    //// :: error: (assignment)
     conBoxedLong = testBoxedLong;
     */
   }
@@ -177,7 +177,7 @@ public class DefaultsSignedness {
 
     unkObj = testObj;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     sinObj = testObj;
   }
 

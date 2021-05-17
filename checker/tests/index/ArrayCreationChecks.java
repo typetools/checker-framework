@@ -26,25 +26,25 @@ public class ArrayCreationChecks {
     // :: error: (array.length.negative)
     int[] newArray = new int[x + y];
     @LTEqLengthOf("newArray") int i = x;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IndexOrHigh("newArray") int j = y;
   }
 
   void test5(@GTENegativeOne int x, @GTENegativeOne int y) {
     // :: error: (array.length.negative)
     int[] newArray = new int[x + y];
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IndexOrHigh("newArray") int i = x;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IndexOrHigh("newArray") int j = y;
   }
 
   void test6(int x, int y) {
     // :: error: (array.length.negative)
     int[] newArray = new int[x + y];
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IndexFor("newArray") int i = x;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IndexOrHigh("newArray") int j = y;
   }
 }

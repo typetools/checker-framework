@@ -37,12 +37,7 @@ $CHECKERFRAMEWORK/checker/tests/nullness/ and the checker is
 org.checkerframework.checker.nullness.NullnessChecker.
 
   cd $CHECKERFRAMEWORK
-  ./gradlew compileJava && checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
-
-or (to build distribution files)
-
-  cd $CHECKERFRAMEWORK
-  ./gradlew assemble && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
+  ./gradlew copyJarsToDist && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
@@ -148,7 +143,7 @@ Multiple expected messages can be given on the same line using the
 a warning from the same line of code:
 
   @Regex String s1 = null;
-  // :: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
+  // :: error: (assignment) :: warning: (cast.unsafe)
   @Regex(3) String s2 = (@Regex(2) String) s;
 
 

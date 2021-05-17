@@ -15,7 +15,7 @@ public class Issue961 {
 
   abstract class MapContains<K extends @NonNull Object, V extends @NonNull Object> {
     // this isn't initialized, but just ignore the error.
-    @SuppressWarnings("method.invocation.invalid")
+    @SuppressWarnings("method.invocation")
     V def = setDef();
 
     Map<K, V> map = new HashMap<>();

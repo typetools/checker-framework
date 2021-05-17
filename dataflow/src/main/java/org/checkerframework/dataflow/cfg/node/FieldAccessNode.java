@@ -27,6 +27,12 @@ public class FieldAccessNode extends Node {
 
   // TODO: add method to get modifiers (static, access level, ..)
 
+  /**
+   * Creates a new FieldAccessNode.
+   *
+   * @param tree the tree from which to create a FieldAccessNode
+   * @param receiver the receiver for the resuling FieldAccessNode
+   */
   public FieldAccessNode(Tree tree, Node receiver) {
     super(TreeUtils.typeOf(tree));
     assert TreeUtils.isFieldAccess(tree);

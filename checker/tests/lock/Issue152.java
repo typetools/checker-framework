@@ -17,7 +17,7 @@ public class Issue152 {
     private @GuardedBy("myLock") Object locked;
 
     void method() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.locked = super.locked;
     }
   }
@@ -29,7 +29,7 @@ public class Issue152 {
 
     class InnerClass {
       private final Object lock = new Object();
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @GuardedBy("this.lock") Object field2 = field;
     }
   }

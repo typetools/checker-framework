@@ -14,7 +14,7 @@ interface ToOverride<T> {
 public class WildcardOverride implements ToOverride<Object> {
   // invalid because the overriden method takes @Nullable args and this one doesn't
   @Override
-  // :: error: (override.param.invalid)
+  // :: error: (override.param)
   public int transform(List<Object> function) {
     return 0;
   }
@@ -23,7 +23,7 @@ public class WildcardOverride implements ToOverride<Object> {
 interface ToOverride2<T> {
   // For nullness this should be typed as
   // @NonNull List<? [ extends @NonNull Object super T [ extends @Nullable super @NonNull ]>
-  // :: error: (bound.type.incompatible)
+  // :: error: (bound)
   public abstract int transform(List<@NonNull ? super T> function);
 }
 

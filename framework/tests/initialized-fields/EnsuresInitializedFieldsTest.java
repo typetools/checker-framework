@@ -17,13 +17,13 @@ public class EnsuresInitializedFieldsTest {
   @EnsuresInitializedFields(
       value = "this",
       fields = {"x", "y"})
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   void setsX() {
     x = 1;
   }
 
   @EnsuresInitializedFields(fields = {"x", "y"})
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   void setsX2() {
     x = 1;
   }
@@ -31,7 +31,7 @@ public class EnsuresInitializedFieldsTest {
   @EnsuresInitializedFields(
       value = "#1",
       fields = {"x", "y"})
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   void setsX(EnsuresInitializedFieldsTest eift) {
     eift.x = 1;
   }

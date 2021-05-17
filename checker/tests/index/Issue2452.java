@@ -25,14 +25,14 @@ class Issue2452 {
   void testMinLenSubtractPositive(String @MinLen(10) [] s) {
     @Positive int i1 = s.length - 9;
     @NonNegative int i0 = Array.getLength(s) - 10;
-    // ::  error: (assignment.type.incompatible)
+    // ::  error: (assignment)
     @NonNegative int im1 = Array.getLength(s) - 11;
   }
 
   void testLessThanLength(String[] s, @IndexOrHigh("#1") int i, @IndexOrHigh("#1") int j) {
     if (i < Array.getLength(s)) {
       @IndexFor("s") int in = i;
-      // ::  error: (assignment.type.incompatible)
+      // ::  error: (assignment)
       @IndexFor("s") int jn = j;
     }
   }

@@ -325,7 +325,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return getClassNameFromType(classType) + array;
         case DECLARED:
           StringBuilder className =
-              new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType).toString());
+              new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType));
           if (classType.getEnclosingType() != null) {
             while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
               classType = classType.getEnclosingType();

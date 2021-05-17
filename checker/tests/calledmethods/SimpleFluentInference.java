@@ -32,7 +32,7 @@ public class SimpleFluentInference {
     SimpleFluentInference s =
         new SimpleFluentInference()
             .a()
-            // :: error: finalizer.invocation.invalid
+            // :: error: finalizer.invocation
             .build();
   }
 
@@ -46,7 +46,7 @@ public class SimpleFluentInference {
             .a()
             .b()
             .c()
-            // :: error: finalizer.invocation.invalid
+            // :: error: finalizer.invocation
             .build();
   }
 
@@ -54,7 +54,7 @@ public class SimpleFluentInference {
     SimpleFluentInference s = new SimpleFluentInference().a();
     int i = 10;
     while (i > 0) {
-      // :: error: finalizer.invocation.invalid
+      // :: error: finalizer.invocation
       s.b().build();
       i--;
       s = new SimpleFluentInference();

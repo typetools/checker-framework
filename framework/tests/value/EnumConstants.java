@@ -19,16 +19,16 @@ public class EnumConstants {
 
   static void subtyping1(@EnumVal("VALUE") MyEnum value) {
     @EnumVal("VALUE") MyEnum value2 = value;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @EnumVal("OTHER_VALUE") MyEnum value3 = value;
     @UnknownVal MyEnum value4 = value;
     @EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum value5 = value;
   }
 
   static void subtyping2(@EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum value) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @EnumVal("VALUE") MyEnum value2 = value;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @EnumVal("OTHER_VALUE") MyEnum value3 = value;
     @UnknownVal MyEnum value4 = value;
     @EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum value5 = value;
@@ -38,7 +38,7 @@ public class EnumConstants {
   static void enumConstants() {
     @EnumVal("VALUE") MyEnum v1 = MyEnum.VALUE;
     @EnumVal({"VALUE", "OTHER_VALUE"}) MyEnum v2 = MyEnum.VALUE;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @EnumVal("OTHER_VALUE") MyEnum v3 = MyEnum.VALUE;
   }
 
@@ -50,9 +50,9 @@ public class EnumConstants {
 
   // These are just paranoia based on the implementation strategy for enum constant defaulting.
   static void nonConstantEnum(MyEnum m) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @EnumVal("m") MyEnum m2 = m;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @EnumVal("m3") MyEnum m3 = m;
   }
 
@@ -61,7 +61,7 @@ public class EnumConstants {
   static void testEnums() {
     enums();
     enums(MyEnum.VALUE);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     enums(MyEnum.OTHER_VALUE);
   }
 

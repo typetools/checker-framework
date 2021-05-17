@@ -30,24 +30,24 @@ public class SpecialNames {
   SpecialNames(String x) {}
 
   static void test(SpecialNames s) {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @CalledMethods("withOwners") SpecialNames x = s.withFilters(new SpecialNames().withName("owner"));
   }
 
   static void test2(SpecialNames s) {
     s.setFilters(new SpecialNames("owner"));
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @CalledMethods("withOwners") SpecialNames x = s;
   }
 
   static void test3(SpecialNames s) {
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @CalledMethods("withOwners") SpecialNames x = s.withFilters(new SpecialNames().withName("owner"));
   }
 
   static void test4(SpecialNames s) {
     s.setFilters(new SpecialNames("owner"));
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @CalledMethods("withOwners") SpecialNames x = s;
   }
 

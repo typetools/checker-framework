@@ -122,16 +122,16 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
       case "jspecify_nullness_mismatch":
       case "jspecify_nullness_not_enough_information":
         switch (cfDiagnostic.getMessage()) {
-          case "argument.type.incompatible":
-          case "assignment.type.incompatible":
+          case "argument":
+          case "assignment":
           case "condition.nullable":
           case "dereference.of.nullable":
           case "initialization.field.uninitialized":
           case "locking.nullable":
-          case "override.param.invalid":
-          case "override.return.invalid":
-          case "return.type.incompatible":
-          case "type.argument.type.incompatible":
+          case "override.param":
+          case "override.return":
+          case "return":
+          case "type.argument":
           case "unboxing.of.nullable":
             return true;
           default:

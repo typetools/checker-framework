@@ -100,6 +100,9 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
+  \ahrefloc{must-call-checker}{Must Call Checker} to over-approximate the
+  methods that should be called on an object before it is de-allocated (see \chapterpageref{must-call-checker})
+\item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
 % \item
@@ -200,7 +203,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.12.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.13.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -273,7 +276,7 @@ required: @NonNull Object
 \end{Verbatim}
 
 This is a trivially simple example.  Even an unsound bug-finding tool like
-FindBugs, SpotBugs, or Error Prone could have detected this bug.  The
+SpotBugs or Error Prone could have detected this bug.  The
 Checker Framework's analysis is more powerful than those tools and detects
 more code defects than they do.
 
@@ -435,7 +438,8 @@ type-checkers for all the annotations that you have written.
 \subsectionAndLabel{Using annotated libraries}{annotated-libraries-using}
 
 When your code uses a library that is not currently being compiled, the
-Checker Framework looks up the library's annotations in its class files.
+Checker Framework looks up the library's annotations in its class files or
+in a stub file.
 
 Some projects are already distributed with type annotations by their
 maintainers, so you do not need to do anything special.
@@ -443,8 +447,26 @@ An example is all the libraries in \url{https://github.com/plume-lib/}.
 Over time, this should become more common.
 
 For some other libraries, the Checker Framework developers have provided an
-annotated version of the library.
-The annotated libraries appear in
+annotated version of the library, either as a stub file or as compiled class files.
+(If some library is not available in either of these forms,
+you can contribute by annotating it, which will
+help you and all other Checker Framework users; see
+\chapterpageref{annotating-libraries}.)
+
+Some stub files are used automatically by a checker, without any action on
+your part.  For others, you must pass the \<-Astubs=...> command-line argument.
+As a special case, if an \<.astub> file appears in
+\<checker/resources/>, then pass the command-line option
+use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
+The ``\<checker.jar>'' should be literal --- don't provide a path.
+This special syntax only works for ``\<checker.jar>''.
+%% There aren't any such libraries at the moment.
+% (Examples of such libraries are:
+% % This list appears here to make it searchable/discoverable.
+% ...
+% .)
+
+The annotated libraries that are provided as class files appear in
 \ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Maven Central Repository}.
 The annotated library has \emph{identical} behavior to the upstream,
@@ -458,12 +480,7 @@ commons-csv,
 commons-io,
 guava,
 and
-java-getopt.
-If the library you are interested in does not appear
-\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{in
-  the Maven Central Repository}, you can contribute by annotating it, which will
-help you and all other Checker Framework users; see
-\chapterpageref{annotating-libraries}.)
+java-getopt.)
 
 To use an annotated library:
 
@@ -672,8 +689,8 @@ Type-checking modes:  enable/disable functionality
   Require that the string in a warning suppression annotation begin with a checker
   name.  Otherwise, the suppress warning annotation does not
   suppress any warnings.  For example, if this command-line option is
-  supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
-  \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
+  supplied, then \<@SuppressWarnings("assignment")> has no effect, but
+  \<@SuppressWarnings("nullness:assignment")> does.
 \end{itemize}
 
 Partially-annotated libraries
@@ -693,7 +710,7 @@ Partially-annotated libraries
   %  \<-AstubWarnIfOverwritesBytecode>,
   \<-AstubWarnIfRedundantWithBytecode>,
   \<-AstubWarnNote>,
-  Warn about problems with stub files; see Section~\ref{stub-using}.
+  Warn about problems with stub files; see Section~\ref{stub-troubleshooting}.
 
 \item \<-AmergeStubsWithSource>
   If both a stub file and a source file for a class are available, trust
@@ -1602,14 +1619,14 @@ or suppress warnings.
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
-% LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle
+% LocalWords:  int XDTA newdir Awarns signedness urgin bytecodes gradle m1
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
 % LocalWords:  callees Xmx unconfuse fenum propkey forName
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
-% LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
+% LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext m2
 % LocalWords:  AignoreRawTypeArguments AsuggestPureMethods ApermitMissingJdk
 % LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
 % LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AnoPrintErrorStack
@@ -1632,5 +1649,6 @@ or suppress warnings.
 % LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
-% LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors
+% LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors AutoValue
 % LocalWords:  specification'' AwarnUnneededSuppressionsExceptions
+% LocalWords:  requireNonNull

@@ -12,7 +12,7 @@ public class FlowNullness {
     }
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -26,7 +26,7 @@ public class FlowNullness {
     }
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -42,7 +42,7 @@ public class FlowNullness {
     }
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -58,7 +58,7 @@ public class FlowNullness {
     }
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -74,7 +74,7 @@ public class FlowNullness {
     @NonNull String a = str;
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -91,7 +91,7 @@ public class FlowNullness {
     @NonNull String a = str;
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -107,7 +107,7 @@ public class FlowNullness {
     @NonNull String a = str;
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -124,7 +124,7 @@ public class FlowNullness {
     @NonNull String a = str;
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -137,7 +137,7 @@ public class FlowNullness {
     @NonNull String a = str;
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -151,7 +151,7 @@ public class FlowNullness {
     }
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -164,7 +164,7 @@ public class FlowNullness {
     }
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
   }
 
@@ -174,7 +174,7 @@ public class FlowNullness {
     @NonNull String a = str;
 
     str = null;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String b = str;
 
     String s2 = new String();
@@ -307,7 +307,7 @@ public class FlowNullness {
   }
 
   void testNonNullArg(@Nullable Object arg) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     nonNullArg(arg); // error
     nonNullArg(arg); // no error
   }

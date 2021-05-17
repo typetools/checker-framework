@@ -11,14 +11,14 @@ public class AssignmentDuringInitialization {
   String f6;
 
   {
-    // :: error:  (assignment.type.incompatible)
+    // :: error:  (assignment)
     f1 = f2;
     f2 = f1;
     f2.toString(); // Null pointer exception here
   }
 
   public AssignmentDuringInitialization() {
-    // :: error:  (assignment.type.incompatible)
+    // :: error:  (assignment)
     f3 = f4;
     f4 = f3;
     f4.toString(); // Null pointer exception here

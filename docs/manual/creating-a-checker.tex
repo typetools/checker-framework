@@ -279,7 +279,7 @@ Here is a good way to proceed.
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @NonNegative int c = us;  // expected error on this line
     @NonNegative int d = nn;
   }
@@ -1116,22 +1116,22 @@ similar to Java subtype rules, but taking the type qualifiers into account.
     myNonNullObject = myObject;  // invalid assignment
   \end{Verbatim}
 
-\item invalid generic argument (type.argument.type.incompatible) when a type
+\item invalid generic argument (type.argument) when a type
   is bound to an incompatible generic type variable
 
-\item invalid method invocation (method.invocation.invalid) when a
+\item invalid method invocation (method.invocation) when a
   method is invoked on an object whose type is incompatible with the
   method receiver type
 
-\item invalid overriding parameter type (override.parameter.invalid)
+\item invalid overriding parameter type (override.param)
   when a parameter in a method declaration is incompatible with that
   parameter in the overridden method's declaration
 
-\item invalid overriding return type (override.return.invalid) when the
+\item invalid overriding return type (override.return) when the
   return type in a method declaration is incompatible with the
   return type in the overridden method's declaration
 
-\item invalid overriding receiver type (override.receiver.invalid)
+\item invalid overriding receiver type (override.receiver)
   when a receiver in a method declaration is incompatible with that
   receiver in the overridden method's declaration
 
@@ -1774,6 +1774,18 @@ You can also supply \<.astub> files in that directory for other libraries.
 You should list those other libraries in a
 \refqualclass{framework/qual}{StubFiles} annotation on the checker's main
 class, so that they will also be automatically used.
+
+When a stub file should be used by multiple checkers (for example, if it
+contains purity annotations that are needed by multiple distinct checkers),
+the stub file should appear in directory \<checker/src/main/resources/>.
+In the distribution, it will appear at the top level of the \<checker.jar> file.
+It will not be used automatically; a user must pass the
+\<-Astubs=checker.jar/\emph{stubfilename.astub}> command-line argument
+(see Section~\ref{annotated-libraries-using})
+
+While creating a stub file, you may find the debugging options described in
+Section~\ref{stub-troubleshooting} useful.
+
 \end{itemize}
 
 
@@ -1875,6 +1887,8 @@ in LSP (Language Server Protocol) format.
 
 \item \code{-AstubDebug}:
   Print debugging messages while processing stub files.
+  Section~\ref{stub-troubleshooting} describes more diagnostic command-line
+  arguments.
 
 \end{itemize}
 
@@ -2374,7 +2388,7 @@ build powerful and useful checkers.
 Beyond this document,
 other useful resources include the Java Infrastructure
 Developer's guide at
-\url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
+\url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.asciidoc} and the compiler
 mailing list archives at
 \url{http://mail.openjdk.java.net/pipermail/compiler-dev/}
 (subscribe at

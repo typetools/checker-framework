@@ -13,13 +13,13 @@ public class Xor {
   }
 
   void test1(Foo f) {
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.aXorB();
   }
 
   void test2(Foo f) {
     f.c();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.aXorB();
   }
 
@@ -36,7 +36,7 @@ public class Xor {
   void test5(Foo f) {
     f.a();
     f.b();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.aXorB();
   }
 
@@ -58,7 +58,7 @@ public class Xor {
   void test8(Foo f) {
     callA(f);
     // THIS IS AN UNAVOIDABLE FALSE POSITIVE
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     f.aXorB();
   }
 }

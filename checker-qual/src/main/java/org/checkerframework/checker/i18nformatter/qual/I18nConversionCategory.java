@@ -128,18 +128,15 @@ public enum I18nConversionCategory {
       return a;
     }
 
-    @SuppressWarnings(
-        "nullness:argument.type.incompatible") // types field  is only null in UNUSED and
-    // GENERAL
+    @SuppressWarnings("nullness:argument" // types field  is only null in UNUSED and GENERAL
+    )
     Set<Class<?>> as = arrayToSet(a.types);
-    @SuppressWarnings(
-        "nullness:argument.type.incompatible") // types field  is only null in UNUSED and
-    // GENERAL
+    @SuppressWarnings("nullness:argument" // types field  is only null in UNUSED and GENERAL
+    )
     Set<Class<?>> bs = arrayToSet(b.types);
     as.retainAll(bs); // intersection
     for (I18nConversionCategory v : new I18nConversionCategory[] {DATE, NUMBER}) {
-      @SuppressWarnings("nullness:argument.type.incompatible") // in those values, `types` field is
-      // non-null
+      @SuppressWarnings("nullness:argument") // in those values, `types` field is non-null
       Set<Class<?>> vs = arrayToSet(v.types);
       if (vs.equals(as)) {
         return v;
