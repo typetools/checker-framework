@@ -228,7 +228,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public BaseTypeVisitor(BaseTypeChecker checker) {
     this(checker, null);
-    showchecks = checker.hasOption("showchecks");
   }
 
   /**
@@ -250,6 +249,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
+    showchecks = checker.hasOption("showchecks");
   }
 
   /**
