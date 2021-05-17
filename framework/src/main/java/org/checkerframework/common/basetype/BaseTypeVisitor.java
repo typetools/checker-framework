@@ -221,12 +221,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
+  private final boolean showchecks;
+
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
    *     TypeHierarchy#isSubtype})
    */
   public BaseTypeVisitor(BaseTypeChecker checker) {
     this(checker, null);
+    showchecks = checker.hasOption("showchecks");
   }
 
   /**
@@ -2752,7 +2755,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected final void commonAssignmentCheckStartDiagnostic(
       AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
-    if (checker.hasOption("showchecks")) {
+    if (showchecks) {
       long valuePos = positions.getStartPosition(root, valueTree);
       System.out.printf(
           "%s %s (line %3d): actual tree = %s %s%n     actual: %s %s%n   expected: %s %s%n",
@@ -2783,7 +2786,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree) {
-    if (checker.hasOption("showchecks")) {
+    if (showchecks) {
       commonAssignmentCheckEndDiagnostic(
           (success
                   ? "success: actual is subtype of expected"
@@ -2809,7 +2812,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected final void commonAssignmentCheckEndDiagnostic(
       String message, AnnotatedTypeMirror varType, AnnotatedTypeMirror valueType, Tree valueTree) {
-    if (checker.hasOption("showchecks")) {
+    if (showchecks) {
       long valuePos = positions.getStartPosition(root, valueTree);
       System.out.printf(
           " %s (line %3d): actual tree = %s %s%n     actual: %s %s%n   expected: %s %s%n",
@@ -3910,7 +3913,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         int index,
         List<AnnotatedTypeMirror> overriderParams,
         List<AnnotatedTypeMirror> overriddenParams) {
-      if (success && !checker.hasOption("showchecks")) {
+      if (success && !showchecks) {
         return;
       }
 
@@ -3925,7 +3928,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               ? ((MethodTree) overriderTree).getParameters().get(index)
               : overriderTree;
 
-      if (checker.hasOption("showchecks")) {
+      if (showchecks) {
         System.out.printf(
             " %s (line %3d):%n"
                 + "     overrider: %s %s (parameter %d type %s)%n"
@@ -4005,7 +4008,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param success whether the check succeeded or failed
      */
     private void checkReturnMsg(boolean success) {
-      if (success && !checker.hasOption("showchecks")) {
+      if (success && !showchecks) {
         return;
       }
 
@@ -4023,7 +4026,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         posTree = overriderTree;
       }
 
-      if (checker.hasOption("showchecks")) {
+      if (showchecks) {
         System.out.printf(
             " %s (line %3d):%n"
                 + "     overrider: %s %s (return type %s)%n"
