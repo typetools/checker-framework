@@ -7,22 +7,30 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 
 public class ThisReference extends JavaExpression {
+  /** The printed representation of the type of this. */
+  String typeToString;
+
   public ThisReference(TypeMirror type) {
     super(type);
+    typeToString = type.toString();
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    return obj instanceof ThisReference;
+    return obj instanceof ThisReference
+        // TypeMirrors should be compared using Types.isSameType(), but no Types instance is
+        // available here.
+        && typeToString.equals(((ThisReference) obj).typeToString);
   }
 
   @Override
   public int hashCode() {
-    return 0;
+    return typeToString.hashCode();
   }
 
   @Override
   public String toString() {
+    // TODO: This should include the type.
     return "this";
   }
 
@@ -48,7 +56,7 @@ public class ThisReference extends JavaExpression {
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    return je instanceof ThisReference;
+    return this.equals(je);
   }
 
   @Override
