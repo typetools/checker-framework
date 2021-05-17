@@ -106,7 +106,7 @@ public class QualifierUpperBounds {
     if (type.getKind() == TypeKind.DECLARED) {
       DeclaredType declaredType = (DeclaredType) type;
       bounds.addAll(getAnnotationFromElement(declaredType.asElement()));
-      qname = TypesUtils.getQualifiedName(declaredType).toString();
+      qname = TypesUtils.getQualifiedName(declaredType);
     } else if (type.getKind().isPrimitive()) {
       qname = type.toString();
     } else {
