@@ -194,12 +194,12 @@ still use both tools.  The
 system.
 
 \item
-Versions of \ahref{https://github.com/uber/NullAway}{NullAway} 0.9.1 and
-earlier incompatible with the Checker Framework.  (More precisely, each
-version of NullAway version 0.9.1 and earlier is compatible with only one
-specific version of the Checker Framework.)  Those versions of NullAway use
-an outdated version of the Checker Framework's dataflow analysis library,
-which conflicts with the Checker Framework itself.
+Versions 0.9.0 and 0.9.1 of
+\ahref{https://github.com/uber/NullAway}{NullAway} are compatible
+only with Checker Framework version 3.6.0 through 3.8.0.  Those versions of
+Error Prone use version 3.6.0 of the Checker Framework's dataflow analysis
+without shading it.  If you want to use a newer version of the Checker
+Framework, then use an older or newer version of NullAway.
 
 \end{itemize}
 
