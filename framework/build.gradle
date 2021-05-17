@@ -1,3 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
 ext {
     annotatedJdkHome = '../../jdk'
 }
@@ -23,15 +27,15 @@ def versions = [
 
 
 dependencies {
-    implementation project(':javacutil')
-    implementation project(':dataflow')
-    implementation files("${stubparserJar}")
+    api project(':javacutil')
+    api project(':dataflow')
+    api files("${stubparserJar}")
     // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
-    implementation('org.checkerframework:annotation-file-utilities:*') {
+    api('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
-    implementation project(':checker-qual')
+    api project(':checker-qual')
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages.
