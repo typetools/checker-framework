@@ -16,6 +16,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
@@ -96,6 +98,8 @@ public class NullnessAnnotatedTypeFactory
 
   /** The Class.getCanonicalName() method. */
   protected final ExecutableElement classGetCanonicalName;
+  /** The Arrays.copyOf() methods that operate on arrays of references. */
+  private final List<ExecutableElement> copyOfMethods;
 
   /** Cache for the nullness annotations. */
   protected final Set<Class<? extends Annotation>> nullnessAnnos;
@@ -235,6 +239,10 @@ public class NullnessAnnotatedTypeFactory
 
     classGetCanonicalName =
         TreeUtils.getMethod("java.lang.Class", "getCanonicalName", 0, processingEnv);
+    copyOfMethods =
+        Arrays.asList(
+            TreeUtils.getMethod("java.util.Arrays", "copyOf", processingEnv, "T[]", "int"),
+            TreeUtils.getMethod("java.util.Arrays", "copyOf", 3, processingEnv));
 
     postInit();
 
@@ -532,6 +540,29 @@ public class NullnessAnnotatedTypeFactory
       }
       return null;
     }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isMethodInvocation(tree, copyOfMethods, processingEnv)) {
+        List<? extends ExpressionTree> args = tree.getArguments();
+        ExpressionTree lengthArg = args.get(1);
+        if (TreeUtils.isArrayLengthAccess(lengthArg)) {
+          // TODO: This syntactic test may not be not correct if the array expression has a side
+          // effect that affects the array length.  This code could require that the expression has
+          // no method calls, assignments, etc.
+          ExpressionTree arrayArg = args.get(0);
+          if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
+            AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
+            AnnotatedTypeMirror arrayArgComponentType = arrayArgType.getComponentType();
+            // Maybe this call is only necessary if argNullness is @NonNull.
+            ((AnnotatedArrayType) type)
+                .getComponentType()
+                .replaceAnnotations(arrayArgComponentType.getAnnotations());
+          }
+        }
+      }
+      return super.visitMethodInvocation(tree, type);
+    }
   }
 
   protected class NullnessTypeAnnotator
@@ -733,7 +764,7 @@ public class NullnessAnnotatedTypeFactory
   // If
   //  1. rhs is @Nullable
   //  2. lhs is a field of this
-  //  3. in a constructor
+  //  3. in a constructor, initializer block, or field initializer
   // then change rhs to @MonotonicNonNull.
   @Override
   public void wpiAdjustForUpdateField(
@@ -742,8 +773,10 @@ public class NullnessAnnotatedTypeFactory
       return;
     }
     TreePath lhsPath = getPath(lhsTree);
-    if (TreePathUtil.enclosingClass(lhsPath).equals(((VarSymbol) element).enclClass())
-        && TreePathUtil.inConstructor(lhsPath)) {
+    TypeElement enclosingClassOfLhs =
+        TreeUtils.elementFromDeclaration(TreePathUtil.enclosingClass(lhsPath));
+    ClassSymbol enclosingClassOfField = ((VarSymbol) element).enclClass();
+    if (enclosingClassOfLhs.equals(enclosingClassOfField) && TreePathUtil.inConstructor(lhsPath)) {
       rhsATM.replaceAnnotation(MONOTONIC_NONNULL);
     }
   }
