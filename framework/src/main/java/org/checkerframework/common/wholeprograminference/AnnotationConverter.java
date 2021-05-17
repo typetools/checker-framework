@@ -8,7 +8,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -143,14 +142,14 @@ public class AnnotationConverter {
         return new ArrayAFT((ScalarAFT) componentAFT);
 
       case DECLARED:
-        Name className = TypesUtils.getQualifiedName((DeclaredType) tm);
-        if (className.contentEquals("java.lang.String")) {
+        String className = TypesUtils.getQualifiedName((DeclaredType) tm);
+        if (className.equals("java.lang.String")) {
           return BasicAFT.forType(String.class);
-        } else if (className.contentEquals("java.lang.Class")) {
+        } else if (className.equals("java.lang.Class")) {
           return ClassTokenAFT.ctaft;
         } else {
           // This must be an enum constant.
-          return new EnumAFT(className.toString());
+          return new EnumAFT(className);
         }
 
       default:

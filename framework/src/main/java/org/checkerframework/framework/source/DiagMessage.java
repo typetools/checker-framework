@@ -33,10 +33,6 @@ public class DiagMessage {
    * @param messageKey the message key
    * @param args the arguments that will be interpolated into the localized message
    */
-  @SuppressWarnings({
-    "nullness:assignment", // this call to Arrays.copyOf is polymorphic
-    "nullness:argument" // https://tinyurl.com/cfissue/3448
-  })
   public DiagMessage(Kind kind, @CompilerMessageKey String messageKey, Object... args) {
     this.kind = kind;
     this.messageKey = messageKey;

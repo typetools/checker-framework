@@ -1,5 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
 dependencies {
-    implementation project(':checker-qual')
+    api project(':checker-qual')
     // Don't add implementation dependencies; checker-util.jar should have no dependencies.
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
