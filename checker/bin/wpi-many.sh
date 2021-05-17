@@ -13,13 +13,11 @@ DEBUG=0
 # To enable debugging, uncomment the following line.
 # DEBUG=1
 
-while getopts "o:i:u:t:g:s" opt; do
+while getopts "o:i:t:g:s" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
        ;;
     i) INLIST="$OPTARG"
-       ;;
-    u) GITHUB_USER="$OPTARG"
        ;;
     t) TIMEOUT="$OPTARG"
        ;;
@@ -116,10 +114,6 @@ if [ "x${INLIST}" = "x" ]; then
     exit 4
 fi
 
-if [ "x${GITHUB_USER}" = "x" ]; then
-    GITHUB_USER="${USER}"
-fi
-
 if [ "x${GRADLECACHEDIR}" = "x" ]; then
   GRADLECACHEDIR=".gradle"
 fi
@@ -195,17 +189,6 @@ do
     cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
     git checkout "${HASH}"
-
-    OWNER=$(echo "${REPO}" | cut -d / -f 4)
-
-    if [ "${OWNER}" = "${GITHUB_USER}" ]; then
-        ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
-        # The `unannotated` remote is just a convenience for data analysis.
-        # Running this script twice in a row on projects whose owner
-        # is the github user always causes a harmless error on this
-        # line, because the `unannotated` remote is already set.
-        git remote add unannotated "${ORIGIN}" &> /dev/null || true
-    fi
 
     REPO_FULLPATH=$(pwd)
 
