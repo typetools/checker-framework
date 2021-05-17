@@ -7,6 +7,7 @@
 # https://checkerframework.org/manual/#whole-program-inference
 
 set -eo pipefail
+set -x
 # not set -u, because this script checks variables directly
 
 DEBUG=0
