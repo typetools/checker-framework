@@ -11,8 +11,10 @@ The Units Checker supports new qualifiers (thanks to Rene Kraneis):
 Stub files can now override declaration annotations in the annotated JDK.
 Previously, stub files only overrode type annotations in the annotated JDK.
 
-Command-line argument `-AstubWarnIfNotFound` is treated as true for stub
-files provided on the command line.
+By default, command-line argument `-AstubWarnIfNotFound` is treated as true
+for stub files provided on the command line and false for built-in stub
+files.  Use `-AstubWarnIfNotFound` to enable it for all stub files, and use
+`-AstubNoWarnIfNotFound` to disable it for all stub files.
 
 **Implementation details:**
 

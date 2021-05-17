@@ -807,12 +807,17 @@ Some command-line options make the stub parser issue more warnings:
 
 \begin{description}
 \item[\<-AstubWarnIfNotFound>]
-  Warn whenever some element of a stub file cannot be found.
-  This is the default for stub files provided on the command line;
-  supplying the command-line option enables it for built-in stub files as well.
+\item[\<-AstubNoWarnIfNotFound>]
+  The Checker Framework can warn when a stub file contains a nonexistent
+  element, for example when the stub file mentions a method that the class
+  does not contain.
+  By default, the Checker Framework warns about such problems in a stub
+  file provided on the command line, but does not warn about built-in stub files.
+  These command-line options turn the warnings on or off (respectively) for
+  all stub files. \\
   The \<@NoStubParserWarning> annotation on a package or type in a stub file
-  overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
-  will be issued.
+  causes no warning to be issued for that package or type, regardless of
+  the command-line options.
 
   % These warnings are not enabled by default because they would produce too
   % much output.  An example of an innocuous warning is when a stub file is
