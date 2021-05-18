@@ -416,7 +416,7 @@ task htmlValidate(type: Exec, group: 'Format') {
             "/api/",
             "/build/",
             "/docs/manual/manual.html",
-	    "/docs/manual/plume-bib/docs/index.html",
+            "/docs/manual/plume-bib/docs/index.html",
             "/checker/jdk/nullness/src/java/lang/ref/package.html"
     ]
 }
