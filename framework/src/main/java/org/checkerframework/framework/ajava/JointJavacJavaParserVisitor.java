@@ -382,15 +382,12 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
   public Void visitCase(CaseTree javacTree, Node javaParserNode) {
     SwitchEntry node = castNode(SwitchEntry.class, javaParserNode, javacTree);
     processCase(javacTree, node);
-    // The expression is null if and only if the case is the default case.
-    // Java 12 introduced multiple label cases, but expressions should contain at most one
-    // element for Java 11 and below.
-    List<Expression> expressions = node.getLabels();
-    if (javacTree.getExpression() == null) {
-      assert expressions.isEmpty();
-    } else {
-      assert expressions.size() == 1;
-      javacTree.getExpression().accept(this, expressions.get(0));
+    // Java 12 introduced multiple label cases:
+    List<Expression> labels = node.getLabels();
+    List<? extends ExpressionTree> treeExpressions = javacTree.getExpressions();
+    assert node.getLabels().size() == treeExpressions.size();
+    for (int i = 0; i < treeExpressions.size(); i++) {
+      treeExpressions.get(i).accept(this, labels.get(i));
     }
 
     processStatements(javacTree.getStatements(), node.getStatements());

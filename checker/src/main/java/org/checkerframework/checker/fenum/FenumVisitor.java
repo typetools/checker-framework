@@ -7,6 +7,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -49,8 +50,9 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
     for (CaseTree caseExpr : node.getCases()) {
-      ExpressionTree realCaseExpr = caseExpr.getExpression();
-      if (realCaseExpr != null) {
+      List<? extends ExpressionTree> realCaseExprs = caseExpr.getExpressions();
+      // Check all the case options against the switch expression type:
+      for (ExpressionTree realCaseExpr : realCaseExprs) {
         AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
         // There is currently no "switch" message key, so it is treated
