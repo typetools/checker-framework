@@ -127,6 +127,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
   }
 
   ////////// Printer //////////
+  @SuppressWarnings("deprecation") // For *Visitor7
   static class ElementPrinter extends AbstractElementVisitor7<Void, Void> {
     private static final String INDENTION = "    ";
 
