@@ -88,6 +88,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -130,6 +131,7 @@ import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -145,6 +147,7 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.tree.YieldTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -256,6 +259,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     processBinary(javacTree, node);
     javacTree.getLeftOperand().accept(this, node.getLeft());
     javacTree.getRightOperand().accept(this, node.getRight());
+    return null;
+  }
+
+  @Override
+  public Void visitBindingPattern(BindingPatternTree tree, Node node) {
     return null;
   }
 
@@ -1171,6 +1179,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
   }
 
   @Override
+  public Void visitSwitchExpression(SwitchExpressionTree tree, Node node) {
+    return null;
+  }
+
+  @Override
   public Void visitSynchronized(SynchronizedTree javacTree, Node javaParserNode) {
     SynchronizedStmt node = castNode(SynchronizedStmt.class, javaParserNode, javacTree);
     processSynchronized(javacTree, node);
@@ -1371,6 +1384,11 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
         throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
     }
 
+    return null;
+  }
+
+  @Override
+  public Void visitYield(YieldTree tree, Node node) {
     return null;
   }
 
