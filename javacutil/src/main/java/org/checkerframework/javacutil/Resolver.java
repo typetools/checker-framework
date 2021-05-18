@@ -74,17 +74,22 @@ public class Resolver {
       FIND_VAR.setAccessible(true);
 
       FIND_IDENT =
-          Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, KindSelector.class);
+          Resolve.class.getDeclaredMethod(
+              "findIdentInternal", Env.class, Name.class, KindSelector.class);
       FIND_IDENT.setAccessible(true);
 
       FIND_IDENT_IN_TYPE =
           Resolve.class.getDeclaredMethod(
-              "findIdentInType", Env.class, Type.class, Name.class, KindSelector.class);
+              "findIdentInTypeInternal", Env.class, Type.class, Name.class, KindSelector.class);
       FIND_IDENT_IN_TYPE.setAccessible(true);
 
       FIND_IDENT_IN_PACKAGE =
           Resolve.class.getDeclaredMethod(
-              "findIdentInPackage", Env.class, TypeSymbol.class, Name.class, KindSelector.class);
+              "findIdentInPackageInternal",
+              Env.class,
+              TypeSymbol.class,
+              Name.class,
+              KindSelector.class);
       FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
       FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
