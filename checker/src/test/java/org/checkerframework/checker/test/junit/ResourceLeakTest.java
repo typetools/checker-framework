@@ -2,7 +2,7 @@ package org.checkerframework.checker.test.junit;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -11,7 +11,7 @@ public class ResourceLeakTest extends CheckerFrameworkPerDirectoryTest {
   public ResourceLeakTest(List<File> testFiles) {
     super(
         testFiles,
-        CalledMethodsChecker.class,
+        ResourceLeakChecker.class,
         "resourceleak",
         "-Anomsgtext",
         "-nowarn",
