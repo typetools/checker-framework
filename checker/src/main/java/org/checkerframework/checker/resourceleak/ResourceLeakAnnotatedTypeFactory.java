@@ -23,7 +23,7 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarAr
 import org.checkerframework.checker.mustcall.CreatesObligationElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.MustCallNoAccumulationFramesChecker;
+import org.checkerframework.checker.mustcall.MustCallNoCreatesObligationChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesObligation;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -270,8 +270,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         || getDeclAnnotation(decl, CreatesObligation.List.class) != null;
   }
 
-  public boolean useAccumulationFrames() {
-    return !checker.hasOption(MustCallChecker.NO_ACCUMULATION_FRAMES);
+  public boolean canCreateObligations() {
+    return !checker.hasOption(MustCallChecker.NO_CREATES_OBLIGATION);
   }
 
   @Override
@@ -279,8 +279,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
       T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
     if (checkerClass.equals(MustCallChecker.class)) {
-      if (!useAccumulationFrames()) {
-        return super.getTypeFactoryOfSubchecker(MustCallNoAccumulationFramesChecker.class);
+      if (!canCreateObligations()) {
+        return super.getTypeFactoryOfSubchecker(MustCallNoCreatesObligationChecker.class);
       }
     }
     return super.getTypeFactoryOfSubchecker(checkerClass);

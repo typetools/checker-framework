@@ -148,7 +148,7 @@ class MustCallInvokedChecker {
     doOwnershipTransferToParameters(defs, node);
     // Count calls to @CreatesObligation methods as creating new resources, for now.
     if (node instanceof MethodInvocationNode
-        && typeFactory.useAccumulationFrames()
+        && typeFactory.canCreateObligations()
         && typeFactory.hasCreatesObligation((MethodInvocationNode) node)) {
       checkCreatesObligationInvocation(defs, (MethodInvocationNode) node);
       incrementNumMustCall(node);
@@ -559,16 +559,16 @@ class MustCallInvokedChecker {
               && typeFactory.getDeclAnnotation(lhsElement, Owning.class) != null;
       // Check that there is no obligation on the lhs, if the field is non-final and owning.
       if (isOwningField
-          && typeFactory.useAccumulationFrames()
+          && typeFactory.canCreateObligations()
           && !ElementUtils.isFinal(lhsElement)) {
         checkReassignmentToField(node, newDefs);
       }
       // Remove obligations from local variables, now that the owning field is responsible.
-      // (When accumulation frames are turned off, non-final fields cannot take ownership).
+      // (When obligation creation is turned off, non-final fields cannot take ownership).
       if (isOwningField
           && rhs instanceof LocalVariableNode
           && isVarInDefs(newDefs, (LocalVariableNode) rhs)
-          && (typeFactory.useAccumulationFrames() || ElementUtils.isFinal(lhsElement))) {
+          && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
         Set<LocalVarWithTree> setContainingRhs =
             getSetContainingAssignmentTreeOfVar(newDefs, (LocalVariableNode) rhs);
         newDefs.remove(setContainingRhs);

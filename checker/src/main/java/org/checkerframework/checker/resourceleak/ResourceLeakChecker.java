@@ -1,13 +1,13 @@
 package org.checkerframework.checker.resourceleak;
 
 import static javax.tools.Diagnostic.Kind.WARNING;
-import static org.checkerframework.checker.mustcall.MustCallChecker.NO_ACCUMULATION_FRAMES;
+import static org.checkerframework.checker.mustcall.MustCallChecker.NO_CREATES_OBLIGATION;
 
 import java.util.LinkedHashSet;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.MustCallNoAccumulationFramesChecker;
+import org.checkerframework.checker.mustcall.MustCallNoCreatesObligationChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -19,7 +19,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  */
 @SupportedOptions({
   ResourceLeakChecker.COUNT_MUST_CALL,
-  MustCallChecker.NO_ACCUMULATION_FRAMES,
+  MustCallChecker.NO_CREATES_OBLIGATION,
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
   MustCallChecker.NO_RESOURCE_ALIASES
 })
@@ -48,8 +48,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
         super.getImmediateSubcheckerClasses();
 
-    if (this.processingEnv.getOptions().containsKey(NO_ACCUMULATION_FRAMES)) {
-      checkers.add(MustCallNoAccumulationFramesChecker.class);
+    if (this.processingEnv.getOptions().containsKey(NO_CREATES_OBLIGATION)) {
+      checkers.add(MustCallNoCreatesObligationChecker.class);
     } else {
       checkers.add(MustCallChecker.class);
     }

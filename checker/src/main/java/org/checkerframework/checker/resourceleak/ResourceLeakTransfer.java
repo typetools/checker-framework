@@ -104,7 +104,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   }
 
   void handleCreatesObligation(MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
-    if (!rlTypeFactory.useAccumulationFrames()) {
+    if (!rlTypeFactory.canCreateObligations()) {
       return;
     }
 
