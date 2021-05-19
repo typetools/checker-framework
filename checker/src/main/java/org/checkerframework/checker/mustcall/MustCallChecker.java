@@ -7,7 +7,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 
 /**
  * This typechecker ensures that {@code @}{@link MustCall} annotations are consistent with one
- * another. The Object Construction Checker verifies that the given methods are actually called.
+ * another. The Resource Leak Checker verifies that the given methods are actually called.
  */
 @StubFiles({
   "JavaEE.astub",

@@ -12,9 +12,6 @@ final class ZookeeperTernaryCrash {
       }
       final List<SubjectName> result = new ArrayList<SubjectName>();
       for (List<?> entry : entries) {
-        // This warning is caused by the wildcard, for sure, though I'm
-        // not sure if it is a false positive or not.
-        // :: warning: cast.unsafe
         final Integer type = entry.size() >= 2 ? (Integer) entry.get(0) : null;
         if (type != null) {
           if (type == SubjectName.DNS || type == SubjectName.IP) {

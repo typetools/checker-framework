@@ -248,6 +248,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     return new MustCallDefaultQualifierForUseTypeAnnotator();
   }
 
+  /**
+   * Get the element corresponding to the {@link MustCall} value argument, for use with {@link
+   * AnnotationUtils#getElementValueArray}.
+   *
+   * @return the element
+   */
+  public ExecutableElement getMustCallValueElement() {
+    return mustCallValueElement;
+  }
+
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
   class MustCallDefaultQualifierForUseTypeAnnotator extends DefaultQualifierForUseTypeAnnotator {
 

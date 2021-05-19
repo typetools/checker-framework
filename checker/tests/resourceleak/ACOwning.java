@@ -61,7 +61,7 @@ class ACOwning {
   }
 
   @MustCall({})
-  // :: error: super.invocation.invalid
+  // :: error: super.invocation
   private class SubFoo extends Foo {
 
     void test() {

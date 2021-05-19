@@ -10,9 +10,6 @@ import org.checkerframework.checker.mustcall.qual.*;
   @Owning Socket sock = null;
 
   public SocketContainer3(String host, int port) throws Exception {
-    // Even if the field appears to always be initialized to null,
-    // so why isn't this safe?
-    // :: error: required.method.not.called
     sock = new Socket(host, port);
   }
 

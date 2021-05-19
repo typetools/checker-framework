@@ -11,8 +11,8 @@ import org.checkerframework.checker.mustcall.qual.*;
   @Owning Socket sock = new Socket();
 
   public SocketContainer2(String host, int port) throws Exception {
-    // It's not okay to assign to a field with an initializer!
-    // :: error: required.method.not.called
+    // This assignment is safe, because the only possible value of sock here is the unconnected
+    // socket in the field initializer.
     sock = new Socket(host, port);
   }
 

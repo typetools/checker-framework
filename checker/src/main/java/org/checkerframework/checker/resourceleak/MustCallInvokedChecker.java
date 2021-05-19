@@ -727,7 +727,7 @@ class MustCallInvokedChecker {
             JavaExpression.fromNode(lhs), node.getTree(), MustCall.class);
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
-            mcAnno, typeFactory.mustCallValueElement, String.class);
+            mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
 
     if (mcValues.isEmpty()) {
       return;

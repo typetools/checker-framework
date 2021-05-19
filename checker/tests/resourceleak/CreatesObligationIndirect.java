@@ -42,7 +42,7 @@ import org.checkerframework.checker.mustcall.qual.*;
     // Ideally, we'd issue a reset.not.owning error on the next line instead, but not being able to
     // parse
     // the case and requiring it to be in a local var is okay too.
-    // :: error: mustcall.not.parseable
+    // :: error: createsobligation.target.unparseable
     ((CreatesObligationIndirect) r).reset();
   }
 

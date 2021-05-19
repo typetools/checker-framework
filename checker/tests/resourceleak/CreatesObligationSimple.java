@@ -22,7 +22,7 @@ import org.checkerframework.checker.mustcall.qual.*;
     CreatesObligationSimple cos = makeNoMC();
     @MustCall({}) CreatesObligationSimple a = cos;
     cos.reset();
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @CalledMethods({"reset"}) CreatesObligationSimple b = cos;
     @CalledMethods({}) CreatesObligationSimple c = cos;
   }
@@ -32,7 +32,7 @@ import org.checkerframework.checker.mustcall.qual.*;
     CreatesObligationSimple cos = makeNoMC();
     @MustCall({}) CreatesObligationSimple a = cos;
     cos.resetThis();
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @CalledMethods({"resetThis"}) CreatesObligationSimple b = cos;
     @CalledMethods({}) CreatesObligationSimple c = cos;
   }
