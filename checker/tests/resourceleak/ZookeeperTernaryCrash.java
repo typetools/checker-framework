@@ -1,6 +1,7 @@
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 
 final class ZookeeperTernaryCrash {
 
@@ -12,7 +13,10 @@ final class ZookeeperTernaryCrash {
       }
       final List<SubjectName> result = new ArrayList<SubjectName>();
       for (List<?> entry : entries) {
-        final Integer type = entry.size() >= 2 ? (Integer) entry.get(0) : null;
+        // the need to add this annotation is annoying, but it's better than the alternative,
+        // which would be to prevent boxed primitives from having must-call types at all
+        // :: warning: cast.unsafe
+        final Integer type = entry.size() >= 2 ? (@MustCall({}) Integer) entry.get(0) : null;
         if (type != null) {
           if (type == SubjectName.DNS || type == SubjectName.IP) {
             final Object o = entry.get(1);
