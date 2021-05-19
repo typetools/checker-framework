@@ -956,7 +956,7 @@ the receiver expression at call sites to \<append>. For example,
 \begin{Verbatim}
 @Untainted Buffer untaintedBuffer = ...;
 @Tainted String taintedString = ...;
-untaintedBuffer.append(taintedString); // error: argument.type.incompatible
+untaintedBuffer.append(taintedString); // error: argument
 \end{Verbatim}
 The above \<append> call is illegal because the \<@PolyTainted> is instantiated to \<@Untainted> and
 the type of the argument is \<@Tainted> which is a supertype of \<@Untainted>.  If the type of

@@ -11,7 +11,7 @@ plugins {
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.2.4"
+    id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 apply plugin: "de.undercouch.download"
 
@@ -24,7 +24,7 @@ repositories {
 
 gitProperties {
     // logically belongs in framework, but only checker resources are copied to .jar file
-    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources"
+    gitPropertiesResourceDir = file("${project.rootDir}/checker/src/main/resources")
 }
 
 ext {
@@ -42,7 +42,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.1.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -100,7 +100,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.12.1-SNAPSHOT'
+    version '3.13.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -112,12 +112,7 @@ allprojects {
         // Holds the combined classpath of all subprojects including the subprojects themselves.
         allProjects
 
-        // There's a bug in IntelliJ that adds the processor path to the classpath when building
-        // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
-        // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
-        // processor path as a work around for this problem.
-        annotationProcessor.exclude group:'org.checkerframework', module:'javacutil'
-        annotationProcessor.exclude group:'org.checkerframework', module:'dataflow'
+        // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
@@ -218,7 +213,7 @@ allprojects {
                     '-Werror',
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-                    // are suppressible warns with a "// fall through" comment.
+                    // warnings are suppressible with a "// fall through" comment.
                     "-Xlint:-options,-fallthrough",
                     "-Xlint",
             ]
@@ -252,6 +247,8 @@ allprojects {
                         '-Xep:AnnotateFormatMethod:OFF',
                         // Warns for every use of "@checker_framework.manual"
                         '-Xep:InvalidBlockTag:OFF',
+                        // Recommends writing @InlineMe which is an Error-Prone-specific annotation
+                        '-Xep:InlineMeSuggester:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -292,11 +289,18 @@ task maybeCloneAndBuildDependencies() {
                 executable "${stubparser}/.travis-build-without-test.sh"
             }
         } else {
-            executable 'checker/bin-devel/build.sh'
+            exec {
+                executable 'checker/bin-devel/build.sh'
+            }
         }
     }
     doLast {
         if (!file(stubparserJar).exists()) {
+            exec {
+                workingDir ${stubparser}/javaparser-core/target
+                executable 'ls'
+                ignoreExitValue = true
+            }
             throw new RuntimeException("Can't find stubparser jar: " + stubparserJar)
         }
     }
@@ -378,21 +382,21 @@ List<String> getJavaFilesToFormat(projectName) {
         if (!details.path.contains("nullness-javac-errors")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
-                && details.name.endsWith('java')) {
+                && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
     // Collect all java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
     // Collect all java files in jtregJdk11 directory
     fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
@@ -412,6 +416,7 @@ task htmlValidate(type: Exec, group: 'Format') {
             "/api/",
             "/build/",
             "/docs/manual/manual.html",
+            "/docs/manual/plume-bib/docs/index.html",
             "/checker/jdk/nullness/src/java/lang/ref/package.html"
     ]
 }
@@ -462,7 +467,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.1"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.2"
 }
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
@@ -642,7 +647,7 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.6.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.7.1'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -746,7 +751,7 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        // These pass and are run by nonJunitTests.
+        // These pass and are run by typecheckTests.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
@@ -759,7 +764,8 @@ subprojects {
             'org.checkerframework.framework.util.PurityChecker')
         createCheckTypeTask(project.name, 'Signature',
             'org.checkerframework.checker.signature.SignatureChecker')
-        // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
+        // These pass on some subprojects, which the `typecheck` task runs.
+        // TODO: Incrementally add @AnnotatedFor on more classes.
         createCheckTypeTask(project.name, 'Nullness',
             'org.checkerframework.checker.nullness.NullnessChecker',
             ['-AskipUses=com.sun.*'])
@@ -885,7 +891,7 @@ subprojects {
 
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
-            description 'Run all Checker Framework tests except for the Junit tests.'
+            description 'Run all Checker Framework tests except for the Junit tests and inference tests.'
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('jtregTests')
             }
@@ -897,13 +903,20 @@ subprojects {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                 }
-                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
             }
 
             if (project.name.is('dataflow')) {
                 dependsOn('liveVariableTest')
                 dependsOn('issue3447Test')
+            }
+        }
+
+        // Create an inferenceTests task per project
+        tasks.create(name: 'inferenceTests', group: 'Verification') {
+            description 'Run inference tests.'
+            if (project.name.is('checker')) {
+                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
         }
 
@@ -921,11 +934,11 @@ subprojects {
         }
 
         // Create an allTests task per project.
-        // allTests = test + nonJunitTests + typecheck
+        // allTests = test + nonJunitTests + inferenceTests + typecheck
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
-            dependsOn('nonJunitTests', 'test', 'typecheck')
+            dependsOn('test', 'nonJunitTests', 'inferenceTests', 'typecheck')
         }
 
         task javadocPrivate(dependsOn: javadoc) {

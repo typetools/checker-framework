@@ -5,7 +5,7 @@ import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 public class SimpleVPA {
 
   class MyClass {
-    // :: error: (expression.unparsable.type.invalid)
+    // :: error: (expression.unparsable)
     @FlowExp("this.bad") Object field;
   }
 
@@ -14,7 +14,7 @@ public class SimpleVPA {
     MyClass myClass = new MyClass();
 
     @FlowExp("bad")
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Object o = myClass.field;
   }
 }

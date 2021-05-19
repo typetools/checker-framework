@@ -28,7 +28,7 @@ public class ArrayCreationParsing {
 
   void method(@FlowExp("new java.lang.String[2]") Object param) {
     value3 = param;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     value1 = param;
   }
 }

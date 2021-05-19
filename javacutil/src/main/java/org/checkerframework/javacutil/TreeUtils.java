@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -133,7 +134,7 @@ public final class TreeUtils {
    * @return true iff tree is a call to the given method
    */
   private static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
-    return getMethodName(tree.getMethodSelect()).equals(name);
+    return getMethodName(tree.getMethodSelect()).contentEquals(name);
   }
 
   /**
@@ -194,7 +195,7 @@ public final class TreeUtils {
    * @param tree an expression tree
    * @return the outermost non-parenthesized tree enclosed by the given tree
    */
-  @SuppressWarnings("interning:return.type.incompatible") // polymorphism implementation
+  @SuppressWarnings("interning:return") // polymorphism implementation
   public static @PolyInterned ExpressionTree withoutParens(
       final @PolyInterned ExpressionTree tree) {
     ExpressionTree t = tree;
@@ -536,7 +537,8 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the given method is synthetic.
+   * Returns true if the given method is synthetic. Also returns true if the method is a generated
+   * default constructor, which does not appear in source code but is not considered synthetic.
    *
    * @param ee a method or constructor element
    * @return true iff the given method is synthetic
@@ -544,7 +546,7 @@ public final class TreeUtils {
   public static boolean isSynthetic(ExecutableElement ee) {
     MethodSymbol ms = (MethodSymbol) ee;
     long mod = ms.flags();
-    // GENERATEDCONSTR is for generated constructors, which seem not to have SYNTHETIC set.
+    // GENERATEDCONSTR is for generated constructors, which do not have SYNTHETIC set.
     return (mod & (Flags.SYNTHETIC | Flags.GENERATEDCONSTR)) != 0;
   }
 
@@ -916,14 +918,34 @@ public final class TreeUtils {
         }
       }
     }
+    List<String> candidates = new ArrayList<>();
+    for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+      if (exec.getSimpleName().contentEquals(methodName)) {
+        candidates.add(executableElementToString(exec));
+      }
+    }
+    if (candidates.isEmpty()) {
+      for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+        candidates.add(executableElementToString(exec));
+      }
+    }
     throw new BugInCF(
-        "TreeUtils.getMethod: found no match for "
-            + typeName
-            + "."
-            + methodName
-            + "("
-            + Arrays.toString(paramTypes)
-            + ")");
+        "TreeUtils.getMethod: found no match for %s.%s(%s); candidates: %s",
+        typeName, methodName, Arrays.toString(paramTypes), candidates);
+  }
+
+  /**
+   * Formats the ExecutableElement in the way that getMethod() expects it.
+   *
+   * @param exec an executable element
+   * @return the ExecutableElement, formatted in the way that getMethod() expects it
+   */
+  private static String executableElementToString(ExecutableElement exec) {
+    StringJoiner result = new StringJoiner(", ", exec.getSimpleName() + "(", ")");
+    for (VariableElement param : exec.getParameters()) {
+      result.add(TypeAnnotationUtils.unannotatedType(param.asType()).toString());
+    }
+    return result.toString();
   }
 
   /**
@@ -951,7 +973,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a class literal, such as.
+   * Determine whether {@code tree} is a class literal, such as
    *
    * <pre>
    *   <em>Object</em> . <em>class</em>
@@ -967,18 +989,21 @@ public final class TreeUtils {
   }
 
   /**
-   * Determine whether {@code tree} is a field access expressions, such as.
+   * Determine whether {@code tree} is a field access expression, such as
    *
    * <pre>
    *   <em>f</em>
    *   <em>obj</em> . <em>f</em>
    * </pre>
    *
+   * This method currently also returns true for class literals and qualified this.
+   *
+   * @param tree a tree that might be a field access
    * @return true iff if tree is a field access expression (implicit or explicit)
    */
   public static boolean isFieldAccess(Tree tree) {
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-      // explicit field access
+      // explicit member access (or a class literal or a qualified this)
       MemberSelectTree memberSelect = (MemberSelectTree) tree;
       assert isUseOfElement(memberSelect) : "@AssumeAssertion(nullness): tree kind";
       Element el = TreeUtils.elementFromUse(memberSelect);
@@ -997,7 +1022,8 @@ public final class TreeUtils {
 
   /**
    * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
-   * tree} to be a field access, as determined by {@code isFieldAccess}.
+   * tree} to be a field access, as determined by {@code isFieldAccess} (which currently also
+   * returns true for class literals and qualified this).
    *
    * @param tree a field access tree
    * @return the name of the field accessed by {@code tree}
@@ -1563,5 +1589,25 @@ public final class TreeUtils {
           return false;
       }
     }
+  }
+
+  /**
+   * Returns true if two expressions originating from the same scope are identical, i.e. they are
+   * syntactically represented in the same way (modulo parentheses) and represent the same value.
+   *
+   * <p>If the expression includes one or more method calls, assumes the method calls are
+   * deterministic.
+   *
+   * @param expr1 the first expression to compare
+   * @param expr2 the second expression to compare; expr2 must originate from the same scope as
+   *     expr1
+   * @return true if the expressions expr1 and expr2 are syntactically identical
+   */
+  public static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
+    expr1 = TreeUtils.withoutParens(expr1);
+    expr2 = TreeUtils.withoutParens(expr2);
+    // Converting to a string in order to compare is somewhat inefficient, and it doesn't handle
+    // internal parentheses.  We could create a visitor instead.
+    return expr1.getKind() == expr2.getKind() && expr1.toString().equals(expr2.toString());
   }
 }

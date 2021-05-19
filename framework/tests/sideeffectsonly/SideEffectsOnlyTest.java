@@ -10,12 +10,12 @@ public class SideEffectsOnlyTest {
     method1(x);
     method3(x);
     method2(x);
-    // :: error: argument.type.incompatible
+    // :: error: argument
     method3(x);
   }
 
   @EnsuresQualifier(expression = "#1", qualifier = SideEffectsOnlyToyBottom.class)
-  // :: error: contracts.postcondition.not.satisfied
+  // :: error: contracts.postcondition
   void method(Object x) {}
 
   @SideEffectsOnly({"this"})

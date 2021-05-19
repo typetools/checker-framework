@@ -6,6 +6,8 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
+set -eo pipefail
+# not set -u, because this script checks variables directly
 
 while getopts "d:t:b:g:" opt; do
   case $opt in
@@ -25,7 +27,15 @@ done
 # Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
 
-echo "Starting wpi.sh. The output of this script is purely informational."
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
+
+# Report line numbers when the script fails, from
+# https://unix.stackexchange.com/a/522815
+trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
+         pr -tn $SCRIPTPATH | tail -n+$((LINENO - 3)) | head -n7' ERR
+
+echo "Starting wpi.sh."
 
 # check required arguments and environment variables:
 
@@ -103,8 +113,8 @@ if [ "x${EXTRA_BUILD_ARGS}" = "x" ]; then
 fi
 
 if [ "x${GRADLECACHEDIR}" = "x" ]; then
-  # Assume that each project should use its own gradle cache. This is more expensive, but prevents crashes on
-  # distributed file systems, such as the UW CSE machines.
+  # Assume that each project should use its own gradle cache. This is more expensive,
+  # but prevents crashes on distributed file systems, such as the UW CSE machines.
   GRADLECACHEDIR=".gradle"
 fi
 
@@ -143,7 +153,7 @@ function configure_and_exec_dljc {
     BUILD_CMD="ant clean compile ${EXTRA_BUILD_ARGS}"
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
-      WPI_RESULTS_AVAILABLE="no"
+      WPI_RESULTS_AVAILABLE="no build file found for ${REPO_NAME}"
       return
   fi
 
@@ -153,8 +163,12 @@ function configure_and_exec_dljc {
     JDK_VERSION_ARG="--jdkVersion 11"
   fi
 
+  # In bash 4.4, ${QUOTED_ARGS} below can be replaced by ${*@Q} .
+  # (But, this script does not assume that bash is at least version 4.4.)
+  QUOTED_ARGS=$(printf '%q ' "$@")
+
   # This command also includes "clean"; I'm not sure why it is necessary.
-  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} $* -- ${BUILD_CMD}"
+  DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${QUOTED_ARGS} -- ${BUILD_CMD}"
 
   if [ ! "x${TIMEOUT}" = "x" ]; then
       TMP="${DLJC_CMD}"
@@ -168,28 +182,29 @@ function configure_and_exec_dljc {
   eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1
 
   mkdir -p "${DIR}/dljc-out/"
-  dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout-$(date +%Y%m%d%H%M%S)-XXX")
+  dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout-$(date +%Y%m%d-%H%M%S)-XXX")
 
   PATH_BACKUP="${PATH}"
   export PATH="${JAVA_HOME}/bin:${PATH}"
 
   # use simpler syntax because this line was crashing mysteriously in CI, to get better debugging output
   # shellcheck disable=SC2129
+  echo "WORKING DIR: $(pwd)" >> "$dljc_stdout"
   echo "JAVA_HOME: ${JAVA_HOME}" >> "$dljc_stdout"
   echo "PATH: ${PATH}" >> "$dljc_stdout"
   echo "DLJC_CMD: ${DLJC_CMD}" >> "$dljc_stdout"
-  eval "${DLJC_CMD}" < /dev/null >> "$dljc_stdout" 2>&1
-  DLJC_STATUS=$?
+  DLJC_STATUS=0
+  eval "${DLJC_CMD}" < /dev/null >> "$dljc_stdout" 2>&1 || DLJC_STATUS=$?
 
   export PATH="${PATH_BACKUP}"
 
-  echo "=== DLJC standard out/err follows: ==="
+  echo "=== DLJC standard out/err (${dljc_stdout}) follows: ==="
   cat "${dljc_stdout}"
   echo "=== End of DLJC standard out/err.  ==="
 
   if [[ $DLJC_STATUS -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
-      WPI_RESULTS_AVAILABLE="no"
+      WPI_RESULTS_AVAILABLE="dljc timed out for ${DIR}"
       return
   fi
 
@@ -201,8 +216,8 @@ function configure_and_exec_dljc {
       echo "typecheck output is in ${DIR}/dljc-out/typecheck.out"
       echo "stdout is in $dljc_stdout"
   else
-      WPI_RESULTS_AVAILABLE="no"
-      echo "dljc failed"
+      WPI_RESULTS_AVAILABLE="file ${DIR}/dljc-out/wpi.log does not exist"
+      echo "dljc failed: ${WPI_RESULTS_AVAILABLE}"
       echo "dljc output is in ${DIR}/dljc-out/"
       echo "stdout is in $dljc_stdout"
   fi
@@ -210,22 +225,29 @@ function configure_and_exec_dljc {
 
 #### Check and setup dependencies
 
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-# clone or update DLJC
-(cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
-"${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
-if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-    echo "Failed to clone do-like-javac"
+# Clone or update DLJC
+if [ "${DLJC}x" = "x" ]; then
+  # The user did not set the DLJC environment variable.
+  (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
+  "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
+  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
+      echo "Failed to clone do-like-javac"
+      exit 1
+  fi
+  DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
+else
+  # The user did set the DLJC environment variable.
+  if [ ! -f "${DLJC}" ]; then
+    echo "Failure: DLJC is set to ${DLJC} which is not a file or does not exist."
     exit 1
+  fi
 fi
-DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 
 #### Main script
 
 echo "Finished configuring wpi.sh."
 
-rm -f "${DIR}/.cannot-run-wpi"
+rm -f -- "${DIR}/.cannot-run-wpi"
 
 cd "${DIR}" || exit 5
 
@@ -238,7 +260,7 @@ elif [ "${has_java8}" = "yes" ]; then
   configure_and_exec_dljc "$@"
 fi
 
-if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
+if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
     # if running under Java 11 fails, try to run
     # under Java 8 instead
     if [ "${has_java8}" = "yes" ]; then
@@ -250,10 +272,10 @@ fi
 
 # support wpi-many.sh's ability to delete projects without usable results
 # automatically
-if [ "${WPI_RESULTS_AVAILABLE}" = "no" ]; then
-    echo "dljc could not run the build successfully."
+if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+    echo "dljc could not run the build successfully: ${WPI_RESULTS_AVAILABLE}"
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
-    touch "${DIR}/.cannot-run-wpi"
+    echo "${WPI_RESULTS_AVAILABLE}" > "${DIR}/.cannot-run-wpi"
 fi
 
 export JAVA_HOME="${JAVA_HOME_BACKUP}"

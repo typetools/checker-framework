@@ -24,7 +24,7 @@ public class RequiresNonNullTest {
     field1 = new Object();
     method1(); // OK, satisfies method precondition
     field1 = null;
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     method1(); // error, does not satisfy method precondition
   }
 
@@ -34,7 +34,7 @@ public class RequiresNonNullTest {
   public void requiresNonNullField() {}
 
   public void clientFail(RequiresNonNullTest arg1) {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     arg1.requiresNonNullField();
   }
 
@@ -78,9 +78,9 @@ public class RequiresNonNullTest {
   }
 
   public void statClientFail(RequiresNonNullTest arg1) {
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     arg1.reqStaticName();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     arg1.reqStaticQualName();
   }
 
@@ -91,7 +91,7 @@ public class RequiresNonNullTest {
     }
 
     public void subClientFail(NNOESubTest arg4) {
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       arg4.requiresNonNullField();
     }
 
@@ -117,7 +117,7 @@ public class RequiresNonNullTest {
       arg5.field = "ha!";
 
       // TODO: The error message should say something about the hidden field.
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       arg5.requiresNonNullField();
 
       // TODO: Add test like:
@@ -126,7 +126,7 @@ public class RequiresNonNullTest {
     }
 
     public void hidingClient2(NNOEHidingTest arg6) {
-      // :: error: (contracts.precondition.not.satisfied)
+      // :: error: (contracts.precondition)
       arg6.requiresNonNullField();
     }
 

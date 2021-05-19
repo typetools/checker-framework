@@ -6,24 +6,24 @@ public class RefinementNEq {
 
   void test_not_equal(int a, int j, int s) {
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNegative int aa = a;
     if (-1 != a) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @GTENegativeOne int b = a;
     } else {
       @GTENegativeOne int c = a;
     }
 
     if (0 != j) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNegative int k = j;
     } else {
       @NonNegative int l = j;
     }
 
     if (1 != s) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @Positive int t = s;
     } else {
       @Positive int u = s;

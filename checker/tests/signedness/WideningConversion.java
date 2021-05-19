@@ -34,28 +34,28 @@ public class WideningConversion {
     si = si1 + si2;
 
     si = c1 + c2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     si = c1 + ui2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     si = ui1 + c2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     si = ui1 + ui2;
 
     @Unsigned int ui;
     ui = c1 + c2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ui = c1 + i2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ui = i1 + c2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ui = i1 + i2;
 
     ui = c1 + c2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ui = c1 + si2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ui = si1 + c2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ui = si1 + si2;
 
     ui = c1 + c2;

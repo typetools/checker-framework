@@ -8,12 +8,12 @@ public class SideEffectsMultiple {
   void test(Object x) {
     method(x);
     method1(x);
-    // :: error: argument.type.incompatible
+    // :: error: argument
     method2(x);
   }
 
   @EnsuresQualifier(expression = "#1", qualifier = SideEffectsOnlyToyBottom.class)
-  // :: error: contracts.postcondition.not.satisfied
+  // :: error: contracts.postcondition
   void method(Object x) {}
 
   @SideEffectsOnly({"this", "#1"})

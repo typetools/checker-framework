@@ -40,7 +40,7 @@ public class RawMethodInvocation {
 
   RawMethodInvocation(long constructor_escapes_raw) {
     a = "";
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     nonRawMethod();
     b = "";
   }

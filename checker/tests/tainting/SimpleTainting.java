@@ -12,7 +12,7 @@ public class SimpleTainting {
   }
 
   void stringRef(String ref) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     execute(ref); // error
     tainted(ref);
   }
@@ -26,14 +26,14 @@ public class SimpleTainting {
     execute(s1 + s1);
     execute(s1 += s1);
     execute(s1 + "m");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     execute(s1 + s2); // error
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     execute(s2 + s1); // error
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     execute(s2 + "m"); // error
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     execute(s2 + s2); // error
 
     tainted(s1 + s1);

@@ -5,7 +5,7 @@ public class Issue345 {
   String f2;
 
   {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     f1 = f2;
     f2 = f1;
     f2.toString(); // Null pointer exception here

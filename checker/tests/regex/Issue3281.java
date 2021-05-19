@@ -14,7 +14,7 @@ public class Issue3281 {
 
   void m1(String s) {
     if (true) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       Pattern.compile(s);
     }
   }
@@ -22,7 +22,7 @@ public class Issue3281 {
   void m2(String s) {
     RegexUtil.isRegex(s);
     if (true) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       Pattern.compile(s);
     }
   }
@@ -30,7 +30,7 @@ public class Issue3281 {
   void m2f(String s) {
     RegexUtil.isRegex(s);
     if (true) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = s;
     }
   }
@@ -51,7 +51,7 @@ public class Issue3281 {
   void m4f(String s, String s2) {
     RegexUtil.isRegex(s);
     if (RegexUtil.isRegex(s2)) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = s;
     }
   }
@@ -59,7 +59,7 @@ public class Issue3281 {
   void m5f(String s, String s2) {
     RegexUtil.isRegex(s);
     if (b) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = s;
     }
   }

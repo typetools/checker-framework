@@ -30,11 +30,11 @@ class Uses {
   @OddInt(Const.ok1)
   Object good1;
 
-  // :: error: (annotation.type.incompatible)
+  // :: error: (annotation)
   @OddInt(4)
   Object bad1;
 
-  // :: error: (annotation.type.incompatible)
+  // :: error: (annotation)
   @OddInt(Const.notodd)
   Object bad2;
 
@@ -44,11 +44,11 @@ class Uses {
   @OddIntArr({Const.ok1, Const.ok2})
   Object good3;
 
-  // :: error: (annotation.type.incompatible)
+  // :: error: (annotation)
   @OddIntArr(4)
   Object bada1;
 
-  // :: error: (annotation.type.incompatible)
+  // :: error: (annotation)
   @OddIntArr({Const.ok1, 4})
   Object bada2;
 
@@ -58,11 +58,11 @@ class Uses {
   @OddRec({@OddIntArr({Const.ok1, Const.ok2}), @OddIntArr({Const.ok1, Const.ok2})})
   void goodrec2() {}
 
-  // :: error: (annotation.type.incompatible)
+  // :: error: (annotation)
   @OddRec(@OddIntArr({Const.ok1, 4}))
   void badrec1() {}
 
-  // :: error: (annotation.type.incompatible)
+  // :: error: (annotation)
   @OddRec({@OddIntArr({Const.ok1, Const.ok2}), @OddIntArr({3, Const.ok2})})
   void badrec2() {}
 }

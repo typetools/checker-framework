@@ -1,7 +1,7 @@
 interface DefaultMethods {
 
   default void method(String param) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     param = null;
 
     String s = null;

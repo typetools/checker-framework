@@ -12,7 +12,7 @@ public class SideEffectsOnlyField {
   static void test(SideEffectsOnlyField arg) {
     method(arg);
     method3(arg);
-    // :: error: argument.type.incompatible
+    // :: error: argument
     method2(arg.a);
     method2(arg.b);
   }
@@ -20,7 +20,7 @@ public class SideEffectsOnlyField {
   @EnsuresQualifier(
       expression = {"#1.a", "#1.b"},
       qualifier = SideEffectsOnlyToyBottom.class)
-  // :: error: contracts.postcondition.not.satisfied
+  // :: error: contracts.postcondition
   static void method(SideEffectsOnlyField x) {}
 
   @SideEffectsOnly("#1.a")

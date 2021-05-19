@@ -3,7 +3,7 @@ public class StringBuilderOffset {
     StringBuilder stringBuilder = new StringBuilder();
     char[] chars = new char[10];
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     stringBuilder.append(chars, 5, 7);
 
     stringBuilder.append(chars, 5, 4);

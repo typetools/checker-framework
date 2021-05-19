@@ -12,7 +12,7 @@ public class FormatMethodAndFormat {
 
   void client() {
     // Without the @Format annotation (with just the @FormatMethod anno), this would be legal.
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     log("%s %s", "hello", "goodbye");
   }
 }

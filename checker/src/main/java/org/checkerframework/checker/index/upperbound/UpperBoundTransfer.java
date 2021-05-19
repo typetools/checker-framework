@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.index.Subsequence;
@@ -18,12 +20,14 @@ import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
 import org.checkerframework.common.value.ValueCheckerUtils;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
@@ -105,6 +109,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   /** The type factory associated with this transfer function. */
   private UpperBoundAnnotatedTypeFactory atypeFactory;
 
+  /** The int TypeMirror. */
+  TypeMirror intTM;
+
   /**
    * Creates a new UpperBoundTransfer.
    *
@@ -113,6 +120,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public UpperBoundTransfer(CFAnalysis analysis) {
     super(analysis);
     atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+    intTM = atypeFactory.types.getPrimitiveType(TypeKind.INT);
   }
 
   /**
@@ -451,7 +459,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     JavaExpression receiver = null;
     if (NodeUtils.isArrayLengthFieldAccess(lengthAccess)) {
-      FieldAccess fa = JavaExpression.fromNodeFieldAccess((FieldAccessNode) lengthAccess);
+      FieldAccess fa =
+          (FieldAccess) JavaExpression.fromNodeFieldAccess((FieldAccessNode) lengthAccess);
       receiver = fa.getReceiver();
 
     } else if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthAccess)) {
@@ -659,8 +668,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       sameLenSequences =
           AnnotationUtils.getElementValueArray(
               sameLenAnno, atypeFactory.sameLenValueElement, String.class);
-      if (!sameLenSequences.contains(sequenceJe.toString())) {
-        sameLenSequences.add(sequenceJe.toString());
+      String sequenceString = sequenceJe.toString();
+      if (!sameLenSequences.contains(sequenceString)) {
+        sameLenSequences.add(sequenceString);
       }
     }
 
@@ -683,7 +693,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   public TransferResult<CFValue, CFStore> visitFieldAccess(
       FieldAccessNode n, TransferInput<CFValue, CFStore> in) {
     if (NodeUtils.isArrayLengthFieldAccess(n)) {
-      FieldAccess arrayLength = JavaExpression.fromNodeFieldAccess(n);
+      FieldAccess arrayLength = (FieldAccess) JavaExpression.fromNodeFieldAccess(n);
       JavaExpression arrayJe = arrayLength.getReceiver();
       Tree arrayTree = n.getReceiver().getTree();
       TransferResult<CFValue, CFStore> result = visitLengthAccess(n, in, arrayJe, arrayTree);
@@ -819,5 +829,26 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     Node switchNode = assign.getExpression();
     refineSubtrahendWithOffset(switchNode, caseNode, false, in, result.getThenStore());
     return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitIntegerLiteral(
+      IntegerLiteralNode n, TransferInput<CFValue, CFStore> pi) {
+    TransferResult<CFValue, CFStore> result = super.visitIntegerLiteral(n, pi);
+
+    int intValue = n.getValue();
+    AnnotationMirror newAnno;
+    switch (intValue) {
+      case 0:
+        newAnno = atypeFactory.ZERO;
+        break;
+      case -1:
+        newAnno = atypeFactory.NEGATIVEONE;
+        break;
+      default:
+        return result;
+    }
+    CFValue c = new CFValue(analysis, Collections.singleton(newAnno), intTM);
+    return new RegularTransferResult<>(c, result.getRegularStore());
   }
 }

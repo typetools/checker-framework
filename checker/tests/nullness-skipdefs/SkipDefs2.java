@@ -11,7 +11,7 @@ public class SkipDefs2 {
 
   static class DontSkip {
     static Object foo() {
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return null;
     }
   }

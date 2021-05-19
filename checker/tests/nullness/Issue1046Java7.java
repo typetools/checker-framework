@@ -19,7 +19,7 @@ public class Issue1046Java7 {
 
     void test1(Function<? super MyInterface> p, Function<? super @Nullable MyInterface> p2) {
       transform(p);
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       transform2(p);
       transform(p2);
       transform2(p2);

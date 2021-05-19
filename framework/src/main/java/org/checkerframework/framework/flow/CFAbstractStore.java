@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -37,7 +39,6 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -45,6 +46,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
@@ -91,7 +93,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     return fieldValues;
   }
 
-  /** Information collected about arrays, using the internal representation {@link ArrayAccess}. */
+  /**
+   * Information collected about array elements, using the internal representation {@link
+   * ArrayAccess}.
+   */
   protected Map<ArrayAccess, V> arrayValues;
 
   /**
@@ -125,6 +130,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /* Initialization */
   /* --------------------------------------------------------- */
 
+  /**
+   * Creates a new CFAbstractStore.
+   *
+   * @param analysis the analysis class this store belongs to
+   * @param sequentialSemantics should the analysis use sequential Java semantics?
+   */
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
     localVariableValues = new HashMap<>();
@@ -266,7 +277,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
         }
       } else {
-        Map<FieldAccess, V> newFieldValues = new HashMap<>();
+        Map<FieldAccess, V> newFieldValues =
+            new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
         for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
           FieldAccess fieldAccess = e.getKey();
           V otherVal = e.getValue();
@@ -370,10 +382,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the greatest lower
-   * bound of the new and old value is inserted into the store unless it's bottom. Some checkers do
-   * not override {@link QualifierHierarchy#greatestLowerBound(AnnotationMirror, AnnotationMirror)}
-   * and the default implementation will return the bottom qualifier incorrectly. So this method
-   * conservatively does not insert the glb if it is bottom.
+   * bound of the new and old value is inserted into the store.
    *
    * <p>Note that this happens per hierarchy, and if the store already contains information about a
    * hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
@@ -421,6 +430,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
 
+    V newValue = analysis.createSingleAnnotationValue(newAnno, expr.getType());
     V oldValue = getValue(expr);
     if (oldValue == null) {
       insertValue(
@@ -429,25 +439,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           permitNondeterministic);
       return;
     }
-    QualifierHierarchy qualifierHierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-    AnnotationMirror top = qualifierHierarchy.getTopAnnotation(newAnno);
-    AnnotationMirror oldAnno =
-        qualifierHierarchy.findAnnotationInHierarchy(oldValue.annotations, top);
-    if (oldAnno == null) {
-      insertValue(
-          expr,
-          analysis.createSingleAnnotationValue(newAnno, expr.getType()),
-          permitNondeterministic);
-      return;
-    }
-
-    AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(newAnno, oldAnno);
-    if (AnnotationUtils.areSame(qualifierHierarchy.getBottomAnnotation(top), glb)) {
-      glb = newAnno;
-    }
-
-    insertValue(
-        expr, analysis.createSingleAnnotationValue(glb, expr.getType()), permitNondeterministic);
+    computeNewValueAndInsert(
+        expr, newValue, CFAbstractValue<V>::greatestLowerBound, permitNondeterministic);
   }
 
   /** Returns true if {@code expr} can be stored in this store. */
@@ -518,6 +511,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     true, permits nondeterministic expressions to be placed in the store
    * @return true if the given (expression, value) pair can be inserted in the store
    */
+  @EnsuresNonNullIf(expression = "#2", result = true)
   protected boolean shouldInsert(
       JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
     if (value == null) {
@@ -556,6 +550,25 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected void insertValue(
       JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
+    computeNewValueAndInsert(
+        expr, value, (old, newValue) -> newValue.mostSpecific(old, null), permitNondeterministic);
+  }
+
+  /**
+   * Inserts the result of applying {@code merger} to {@code value} and the previous value for
+   * {@code expr}.
+   *
+   * @param expr the JavaExpression
+   * @param value the value of the JavaExpression
+   * @param merger the function used to merge {@code value} and the previous value of {@code expr}
+   * @param permitNondeterministic if false, does nothing if {@code expr} is nondeterministic; if
+   *     true, permits nondeterministic expressions to be placed in the store
+   */
+  protected void computeNewValueAndInsert(
+      JavaExpression expr,
+      @Nullable V value,
+      BinaryOperator<V> merger,
+      boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
       return;
     }
@@ -563,7 +576,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (expr instanceof LocalVariable) {
       LocalVariable localVar = (LocalVariable) expr;
       V oldValue = localVariableValues.get(localVar);
-      V newValue = value.mostSpecific(oldValue, null);
+      V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
@@ -574,7 +587,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
       if (sequentialSemantics || isMonotonic || fieldAcc.isUnassignableByOtherCode()) {
         V oldValue = fieldValues.get(fieldAcc);
-        V newValue = value.mostSpecific(oldValue, null);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           fieldValues.put(fieldAcc, newValue);
         }
@@ -584,7 +597,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
         V oldValue = methodValues.get(method);
-        V newValue = value.mostSpecific(oldValue, null);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           methodValues.put(method, newValue);
         }
@@ -593,7 +606,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       ArrayAccess arrayAccess = (ArrayAccess) expr;
       if (sequentialSemantics) {
         V oldValue = arrayValues.get(arrayAccess);
-        V newValue = value.mostSpecific(oldValue, null);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           arrayValues.put(arrayAccess, newValue);
         }
@@ -602,7 +615,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       ThisReference thisRef = (ThisReference) expr;
       if (sequentialSemantics || thisRef.isUnassignableByOtherCode()) {
         V oldValue = thisValue;
-        V newValue = value.mostSpecific(oldValue, null);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           thisValue = newValue;
         }
@@ -611,7 +624,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       ClassName className = (ClassName) expr;
       if (sequentialSemantics || className.isUnassignableByOtherCode()) {
         V oldValue = classValues.get(className);
-        V newValue = value.mostSpecific(oldValue, null);
+        V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           classValues.put(className, newValue);
         }
@@ -755,8 +768,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     available
    */
   public @Nullable V getValue(FieldAccessNode n) {
-    FieldAccess fieldAccess = JavaExpression.fromNodeFieldAccess(n);
-    return fieldValues.get(fieldAccess);
+    JavaExpression je = JavaExpression.fromNodeFieldAccess(n);
+    if (je instanceof FieldAccess) {
+      return fieldValues.get((FieldAccess) je);
+    } else if (je instanceof ClassName) {
+      return classValues.get((ClassName) je);
+    } else if (je instanceof ThisReference) {
+      // "return thisValue" is wrong, because the node refers to an outer this.
+      // So, return null for now.  TODO: improve.
+      return null;
+    } else {
+      throw new BugInCF(
+          "Unexpected JavaExpression %s %s for FieldAccessNode %s",
+          je.getClass().getSimpleName(), je, n);
+    }
   }
 
   /**

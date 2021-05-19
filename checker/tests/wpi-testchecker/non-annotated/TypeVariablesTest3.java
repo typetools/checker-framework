@@ -8,7 +8,7 @@ public class TypeVariablesTest3<@Sibling1 T extends @Sibling1 Object> {
   public T tField;
 
   void foo(T param) {
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     param = sibling2;
   }
 
@@ -17,7 +17,7 @@ public class TypeVariablesTest3<@Sibling1 T extends @Sibling1 Object> {
   }
 
   void bar(@Sibling2 T param) {
-    // :: warning: (assignment.type.incompatible)
+    // :: warning: (assignment)
     tField = param;
   }
 }

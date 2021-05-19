@@ -12,9 +12,43 @@ Copyright (c) 2013-2016 University of Washington. All rights reserved.
 
 import os
 from os.path import expanduser
-from release_vars import *
-from release_utils import *
+
+from release_vars import AFU_LIVE_RELEASES_DIR
+from release_vars import CF_VERSION
+from release_vars import CHECKER_FRAMEWORK
+from release_vars import CHECKER_LIVE_RELEASES_DIR
+from release_vars import CHECKLINK
+from release_vars import DEV_SITE_DIR
+from release_vars import DEV_SITE_URL
+from release_vars import INTERM_ANNO_REPO
+from release_vars import INTERM_CHECKER_REPO
+from release_vars import LIVE_SITE_DIR
+from release_vars import LIVE_SITE_URL
+from release_vars import RELEASE_BUILD_COMPLETED_FLAG_FILE
+from release_vars import SANITY_DIR
+from release_vars import SCRIPTS_DIR
+from release_vars import TMP_DIR
+
+from release_vars import execute
+
+from release_utils import continue_or_exit
+from release_utils import current_distribution_by_website
+from release_utils import delete_if_exists
+from release_utils import delete_path
+from release_utils import ensure_group_access
+from release_utils import get_announcement_email
+from release_utils import print_step
+from release_utils import prompt_to_continue
+from release_utils import prompt_yes_no
+from release_utils import push_changes_prompt_if_fail
+from release_utils import read_command_line_option
+from release_utils import read_first_line
+from release_utils import set_umask
+from release_utils import subprocess
+from release_utils import version_number_to_array
 from sanity_checks import javac_sanity_check, maven_sanity_check
+
+import sys
 
 
 def check_release_version(previous_release, new_release):
@@ -301,13 +335,6 @@ def main(argv):
     new_cf_version = CF_VERSION
     check_release_version(current_cf_version, new_cf_version)
 
-    dev_afu_website_file = os.path.join(
-        DEV_SITE_DIR, "annotation-file-utilities", "index.html"
-    )
-    live_afu_website_file = os.path.join(
-        LIVE_SITE_DIR, "annotation-file-utilities", "index.html"
-    )
-
     print(
         "Checker Framework and AFU:  current-version=%s    new-version=%s"
         % (current_cf_version, new_cf_version)
@@ -315,7 +342,7 @@ def main(argv):
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/dev/
-    # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory
+    # The output of the link checker is written to files in the /scratch/$USER/cf-release directory
     # whose locations will be output at the command prompt if the link checker reported errors.
 
     # In rare instances (such as when a link is correct but the link checker is
@@ -428,7 +455,7 @@ def main(argv):
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/
-    # The output of the link checker is written to files in the /scratch/$USER/jsr308-release directory whose locations
+    # The output of the link checker is written to files in the /scratch/$USER/cf-release directory whose locations
     # will be output at the command prompt. Review the link checker output.
 
     # The set of broken links that is displayed by this check will differ from those in push
@@ -517,7 +544,7 @@ def main(argv):
             + "* For the release title, enter: Checker Framework "
             + new_cf_version
             + "\n"
-            + "* For the description, insert the latest Checker Framework changelog entry (available at https://checkerframework.org/changelog.txt). Please include the first line with the release version and date.\n"
+            + "* For the description, insert the latest Checker Framework changelog entry (available at https://checkerframework.org/CHANGELOG.md). Please include the first line with the release version and date.\n"
             + '* Find the link below "Attach binaries by dropping them here or selecting them." Click on "selecting them" and upload checker-framework-'
             + new_cf_version
             + ".zip from your machine.\n"

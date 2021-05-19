@@ -19,12 +19,12 @@ public class JdkCheck11 {
   }
 
   String orElseThrowTest2(Optional<String> mos) {
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     return mos.orElseThrow();
   }
 
   String orElseThrowTestFlow(Optional<String> mos) {
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     mos.orElseThrow();
     return mos.get();
   }

@@ -14,7 +14,7 @@ public class OverrideNNOE2 {
 
     @Override
     @RequiresNonNull({"f", "g"})
-    // :: error: (contracts.precondition.override.invalid)
+    // :: error: (contracts.precondition.override)
     void call() {
       g.hashCode();
     }

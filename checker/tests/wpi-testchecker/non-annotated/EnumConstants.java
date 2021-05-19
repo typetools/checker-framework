@@ -15,7 +15,7 @@ public class EnumConstants {
   void requiresS1(@Sibling1 MyEnum e) {}
 
   void test() {
-    // :: warning: argument.type.incompatible
+    // :: warning: argument
     requiresS1(MyEnum.ONE);
   }
 }

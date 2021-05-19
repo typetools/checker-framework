@@ -31,7 +31,7 @@ public class Issue524 {
       // Without a fix for issue 524 in place, the error lock.not.held
       // (unguarded access to field, variable or parameter 'q' guarded by 'localLock') is
       // issued for the following line.
-      // :: error: (expression.unparsable.type.invalid)
+      // :: error: (expression.unparsable)
       q.field.toString();
     }
   }

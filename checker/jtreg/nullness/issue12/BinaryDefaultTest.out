@@ -1,7 +1,7 @@
-BinaryDefaultTest.java:15:73: compiler.err.proc.messager: [argument.type.incompatible] incompatible types in argument.
+BinaryDefaultTest.java:15:73: compiler.err.proc.messager: [argument] incompatible types in argument.
 found   : @Initialized @Nullable BinaryDefaultTestInterface
 required: @Initialized @NonNull BinaryDefaultTestInterface
-BinaryDefaultTest.java:16:71: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
+BinaryDefaultTest.java:16:71: compiler.err.proc.messager: [assignment] incompatible types in assignment.
 found   : @Initialized @Nullable BinaryDefaultTestBinary
 required: @UnknownInitialization @NonNull BinaryDefaultTestBinary
 2 errors

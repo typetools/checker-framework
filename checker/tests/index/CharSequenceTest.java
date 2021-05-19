@@ -12,7 +12,7 @@ public class CharSequenceTest {
   // StringBuilder
   void minLenCharSequence() {
     @MinLen(10) CharSequence str = "0123456789";
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @MinLen(10) CharSequence sb = new StringBuilder("0123456789");
   }
   // Tests the subSequence method
@@ -20,7 +20,7 @@ public class CharSequenceTest {
     // Local variable used because of https://github.com/kelloggm/checker-framework/issues/165
     String str = "0123456789";
     str.subSequence(5, 8);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     str.subSequence(5, 13);
   }
 
@@ -32,7 +32,7 @@ public class CharSequenceTest {
     String s = "0123456789";
     sink(s, 8);
     StringBuilder sb = new StringBuilder("0123456789");
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     sink(sb, 8);
   }
   // Tests forwardning sequences as CharSequence
@@ -59,21 +59,21 @@ public class CharSequenceTest {
   void testCharAt(CharSequence cs, int i, @IndexFor("#1") int j) {
     cs.charAt(j);
     cs.subSequence(j, j);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     cs.charAt(i);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     cs.subSequence(i, j);
   }
 
   void testAppend(Appendable app, CharSequence cs, @IndexFor("#2") int i) throws IOException {
     app.append(cs, i, i);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     app.append(cs, 1, 2);
   }
 
   void testAppend(StringWriter app, CharSequence cs, @IndexFor("#2") int i) throws IOException {
     app.append(cs, i, i);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     app.append(cs, 1, 2);
   }
 }

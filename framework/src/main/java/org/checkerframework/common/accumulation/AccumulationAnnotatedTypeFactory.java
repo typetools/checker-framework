@@ -412,7 +412,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
       if (a2Val.containsAll(a1Val)) {
         return a2;
       }
-      a1Val.addAll(a2Val);
+      a1Val.addAll(a2Val); // union
       return createAccumulatorAnnotation(a1Val);
     }
 
@@ -457,7 +457,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
       if (a2Val.containsAll(a1Val)) {
         return a1;
       }
-      a1Val.retainAll(a2Val);
+      a1Val.retainAll(a2Val); // intersection
       return createAccumulatorAnnotation(a1Val);
     }
 
@@ -535,7 +535,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
    *   <li>contains a parse-able predicate
    * </ul>
    *
-   * Used by the visitor to throw "predicate.invalid" errors; thus must be package-private.
+   * Used by the visitor to throw "predicate" errors; thus must be package-private.
    *
    * @param anm any annotation supported by this checker
    * @return null if there is nothing wrong with the annotation, or an error message indicating the

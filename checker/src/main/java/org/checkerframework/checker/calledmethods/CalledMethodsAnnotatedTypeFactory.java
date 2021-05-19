@@ -52,7 +52,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
-   * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
+   * #adjustMethodNameUsingValueChecker}.
    */
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
@@ -151,6 +151,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition. Otherwise,
    *     return the first argument.
    */
+  // This cannot return a Name because filterTreeToMethodName cannot.
   public String adjustMethodNameUsingValueChecker(
       final String methodName, final MethodInvocationTree tree) {
     if (!useValueChecker) {
@@ -158,12 +159,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
 
     ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
-    if (!"com.amazonaws.services.ec2.model.DescribeImagesRequest"
-        .equals(ElementUtils.enclosingTypeElement(invokedMethod).getQualifiedName().toString())) {
+    if (!ElementUtils.enclosingTypeElement(invokedMethod)
+        .getQualifiedName()
+        .contentEquals("com.amazonaws.services.ec2.model.DescribeImagesRequest")) {
       return methodName;
     }
 
-    if ("withFilters".equals(methodName) || "setFilters".equals(methodName)) {
+    if (methodName.equals("withFilters") || methodName.equals("setFilters")) {
       ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
       for (Tree filterTree : tree.getArguments()) {
         if (TreeUtils.isMethodInvocation(
@@ -200,13 +202,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param valueATF the type factory from the Value Checker
    * @return the adjusted method name, or null if the method name should not be adjusted
    */
+  // This cannot return a Name because filterKindToMethodName cannot.
   private @Nullable String filterTreeToMethodName(
       Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
     while (filterTree != null && filterTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
 
       MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
-      if ("withName".equals(filterMethodName)
+      if (filterMethodName.contentEquals("withName")
           && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
         Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
         String withNameArg = ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);

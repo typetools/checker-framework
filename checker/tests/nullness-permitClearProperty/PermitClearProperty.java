@@ -11,52 +11,52 @@ public class PermitClearProperty {
   static final @StringVal("my.property.name") String MY_PROPERTY_NAME = "my.property.name";
 
   @NonNull String getLineSeparator1() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.getProperty("line.separator");
   }
 
   @NonNull String getLineSeparator2() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.getProperty(LINE_SEPARATOR);
   }
 
   @NonNull String getMyProperty1() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.getProperty("my.property.name");
   }
 
   @NonNull String getMyProperty2() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.getProperty(MY_PROPERTY_NAME);
   }
 
   @NonNull String getAProperty(String propName) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.getProperty(propName);
   }
 
   @NonNull String clearLineSeparator1() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.clearProperty("line.separator");
   }
 
   @NonNull String clearLineSeparator2() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.clearProperty(LINE_SEPARATOR);
   }
 
   @NonNull String clearMyProperty1() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.clearProperty("my.property.name");
   }
 
   @NonNull String clearMyProperty2() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.clearProperty(MY_PROPERTY_NAME);
   }
 
   @NonNull String clearAProperty(String propName) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.clearProperty(propName);
   }
 
@@ -67,59 +67,59 @@ public class PermitClearProperty {
   // All calls to setProperty are legal because they cannot unset a property.
 
   @NonNull String setLineSeparator1() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.setProperty("line.separator", "somevalue");
   }
 
   @NonNull String setLineSeparator2() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.setProperty(LINE_SEPARATOR, "somevalue");
   }
 
   @NonNull String setMyProperty1() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.setProperty("my.property.name", "somevalue");
   }
 
   @NonNull String setMyProperty2() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.setProperty(MY_PROPERTY_NAME, "somevalue");
   }
 
   @NonNull String setAProperty(String propName) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return System.setProperty(propName, "somevalue");
   }
 
   // These calls to setProperty are illegal because null is not a permitted value.
 
   @NonNull String setLineSeparatorNull1() {
-    // :: error: (return.type.incompatible)
-    // :: error: (argument.type.incompatible)
+    // :: error: (return)
+    // :: error: (argument)
     return System.setProperty("line.separator", null);
   }
 
   @NonNull String setLineSeparatorNull2() {
-    // :: error: (argument.type.incompatible)
-    // :: error: (return.type.incompatible)
+    // :: error: (argument)
+    // :: error: (return)
     return System.setProperty(LINE_SEPARATOR, null);
   }
 
   @NonNull String setMyPropertyNull1() {
-    // :: error: (argument.type.incompatible)
-    // :: error: (return.type.incompatible)
+    // :: error: (argument)
+    // :: error: (return)
     return System.setProperty("my.property.name", null);
   }
 
   @NonNull String setMyPropertyNull2() {
-    // :: error: (argument.type.incompatible)
-    // :: error: (return.type.incompatible)
+    // :: error: (argument)
+    // :: error: (return)
     return System.setProperty(MY_PROPERTY_NAME, null);
   }
 
   @NonNull String setAPropertyNull(String propName) {
-    // :: error: (argument.type.incompatible)
-    // :: error: (return.type.incompatible)
+    // :: error: (argument)
+    // :: error: (return)
     return System.setProperty(propName, null);
   }
 }

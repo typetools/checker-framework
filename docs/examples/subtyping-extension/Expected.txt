@@ -1,7 +1,7 @@
 Demo.java:13: warning: [cast.unsafe] cast from "@PossiblyUnencrypted String" to "@Encrypted String" cannot be statically verified
         return (@Encrypted String) new String(b);
                ^
-Demo.java:36: error: [argument.type.incompatible] incompatible argument for parameter msg of sendOverTheInternet.
+Demo.java:36: error: [argument] incompatible argument for parameter msg of sendOverTheInternet.
         sendOverTheInternet(password); // invalid
                             ^
   found   : @PossiblyUnencrypted String

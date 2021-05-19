@@ -3,18 +3,18 @@ import org.checkerframework.checker.nullness.qual.*;
 public class TernaryGenerics {
   class Generic1<T extends @NonNull Object> {
     void cond(boolean b, T p) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull T r1 = b ? p : null;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull T r2 = b ? null : p;
     }
   }
 
   class Generic2<T extends @Nullable Object> {
     void cond(boolean b, T p) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull T r1 = b ? p : null;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull T r2 = b ? null : p;
     }
   }
@@ -23,7 +23,7 @@ public class TernaryGenerics {
     void cond(boolean b, @Nullable T p) {
       @Nullable T r1 = b ? p : null;
       @Nullable T r2 = b ? null : p;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull T r3 = b ? null : p;
     }
   }

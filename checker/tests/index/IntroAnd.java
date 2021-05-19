@@ -5,7 +5,7 @@ public class IntroAnd {
     @NonNegative int a = 1 & 0;
     @NonNegative int b = a & 5;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int c = a & b;
     @NonNegative int d = a & b;
     @NonNegative int e = b & a;
@@ -33,7 +33,7 @@ public class IntroAnd {
   }
 
   void test_pos(@Positive int x, @Positive int y) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Positive int z = x & y;
   }
 }

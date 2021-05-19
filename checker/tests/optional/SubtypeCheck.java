@@ -14,13 +14,13 @@ public class SubtypeCheck {
     @MaybePresent Optional<String> mp2 = mp;
     @MaybePresent Optional<String> mp3 = p;
     @MaybePresent Optional<String> mp4 = ob;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @Present Optional<String> p2 = mp;
     @Present Optional<String> p3 = p;
     @Present Optional<String> p4 = ob;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @OptionalBottom Optional<String> ob2 = mp;
-    // :: error: assignment.type.incompatible
+    // :: error: assignment
     @OptionalBottom Optional<String> ob3 = p;
     @OptionalBottom Optional<String> ob4 = ob;
   }
