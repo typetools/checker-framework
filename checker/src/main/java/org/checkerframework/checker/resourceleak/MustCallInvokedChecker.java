@@ -486,7 +486,7 @@ class MustCallInvokedChecker {
             .anyMatch(
                 anno ->
                     AnnotationUtils.areSameByName(
-                        anno, "org.checkerframework.checker.objectconstruction.qual.Owning"))) {
+                        anno, "org.checkerframework.checker.mustcall.qual.Owning"))) {
           // transfer ownership!
           newDefs.remove(getSetContainingAssignmentTreeOfVar(newDefs, local));
         }
