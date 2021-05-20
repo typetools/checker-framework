@@ -52,6 +52,7 @@ def createDataflowShaded(shadedPkgName) {
 // the new jar to publishing and signing blocks.
 createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
+createDataflowShaded('errorprone')
 
 task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
     description 'Test the live variable analysis test for dataflow framework.'
@@ -167,11 +168,19 @@ publishing {
             artifact sourcesJar
             artifact javadocJar
         }
+
+        datflowShadederrorprone(MavenPublication) {
+            dataflowShadedPom(it, 'errorprone')
+
+            artifact getTasksByName('datflowerrorproneJar',false).iterator().next()
+            artifact sourcesJar
+            artifact javadocJar
+        }
     }
 }
 signing {
     sign publishing.publications.dataflow
     sign publishing.publications.dataflowShaded
     sign publishing.publications.datflowShadednullaway
-
+    sign publishing.publications.datflowShadederrorprone
 }
