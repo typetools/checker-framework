@@ -225,7 +225,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             if (!fieldMCAnno.isEmpty()) {
               error =
                   " @EnsuresCalledMethods written on MustCall methods doesn't contain "
-                      + MustCallInvokedChecker.formatMissingMustCallMethods(fieldMCAnno);
+                      + MustCallConsistencyAnalyzer.formatMissingMustCallMethods(fieldMCAnno);
             }
           }
         }
@@ -238,7 +238,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       checker.reportError(
           field,
           "required.method.not.called",
-          MustCallInvokedChecker.formatMissingMustCallMethods(fieldMCAnno),
+          MustCallConsistencyAnalyzer.formatMissingMustCallMethods(fieldMCAnno),
           field.asType().toString(),
           error);
     }

@@ -28,7 +28,7 @@ import org.checkerframework.checker.mustcall.qual.CreatesObligation;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.MustCallInvokedChecker.LocalVarWithTree;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.LocalVarWithTree;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -102,9 +102,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
-    MustCallInvokedChecker mustCallInvokedChecker =
-        new MustCallInvokedChecker(this, (ResourceLeakChecker) this.checker, this.analysis);
-    mustCallInvokedChecker.checkMustCallInvoked(cfg);
+    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
+        new MustCallConsistencyAnalyzer(this, (ResourceLeakChecker) this.checker, this.analysis);
+    mustCallConsistencyAnalyzer.analyze(cfg);
     super.postAnalyze(cfg);
     tempVarToNode.clear();
   }

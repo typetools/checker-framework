@@ -76,7 +76,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * types are invoked before the corresponding objects become unreachable
  */
 /* package-private */
-class MustCallInvokedChecker {
+class MustCallConsistencyAnalyzer {
 
   /** By default, should we transfer ownership to the caller when a variable is returned? */
   static final boolean TRANSFER_OWNERSHIP_AT_RETURN = true;
@@ -91,7 +91,7 @@ class MustCallInvokedChecker {
   private final CFAnalysis analysis;
 
   /* package-private */
-  MustCallInvokedChecker(
+  MustCallConsistencyAnalyzer(
       ResourceLeakAnnotatedTypeFactory typeFactory,
       ResourceLeakChecker checker,
       CFAnalysis analysis) {
@@ -111,7 +111,7 @@ class MustCallInvokedChecker {
    * @param cfg the control flow graph of a method
    */
   /* package-private */
-  void checkMustCallInvoked(ControlFlowGraph cfg) {
+  void analyze(ControlFlowGraph cfg) {
     // add any owning parameters to initial set of variables to track
     BlockWithLocals firstBlockLocals =
         new BlockWithLocals(cfg.getEntryBlock(), computeOwningParameters(cfg));
