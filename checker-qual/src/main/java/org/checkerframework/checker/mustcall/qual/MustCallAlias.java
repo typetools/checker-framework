@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * Calling {@code close()} on the returned {@code OutputStream} will close the underlying socket,
  * but the Socket may also be closed directly, which has the same effect.
  *
- * <h3>Verifying {@code @MustCallAlias} annotations</h3>
+ * <h2>Verifying {@code @MustCallAlias} annotations</h2>
  *
  * Suppose that {@code @MustCallAlias} is written on the type of formal parameter {@code p}.
  *
