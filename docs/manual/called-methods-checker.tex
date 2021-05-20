@@ -178,6 +178,13 @@ There are also method annotations:
 
   guarantees that \<p.x()> and \<p.y()> will always be called if \<m> returns \<true>.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+\item[\refqualclass{checker/calledmethods/qual}{RequiresCalledMethods}]
+  This declaration annotation specifies a pre-condition on a method, indicating that the expressions
+  in its \<value> argument must have called-methods types that include all the methods named
+  in its \<methods> argument. If the expression is a parameter of the annotated method, you should
+  use an \<@CalledMethods> annotation on the parameter instead.
+
 \end{description}
 
 \sectionAndLabel{Default handling for Lombok and AutoValue}{called-methods-framework-details}
