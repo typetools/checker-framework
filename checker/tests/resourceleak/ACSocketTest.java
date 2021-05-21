@@ -408,7 +408,7 @@ public class ACSocketTest {
   }
 
   private void updateSocketAddresses(SelectionKey sockKey) {
-    // :: error: required.method.not.called
+    // no error here as SelectionKey.channel()'s return is @NotOwning
     Socket socket = ((SocketChannel) sockKey.channel()).socket();
     SocketAddress localSocketAddress = socket.getLocalSocketAddress();
     SocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
@@ -420,14 +420,6 @@ public class ACSocketTest {
     } finally {
       channel1.close();
     }
-  }
-
-  // SelectionKey doesn't implement Closeable
-  private void updateSocketAddressesWithOwning(@Owning SelectionKey sockKey) {
-    // :: error: required.method.not.called
-    Socket socket = ((SocketChannel) sockKey.channel()).socket();
-    SocketAddress localSocketAddress = socket.getLocalSocketAddress();
-    SocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
   }
 
   @NotOwning
