@@ -148,6 +148,12 @@ class MustCallConsistencyAnalyzer {
     }
   }
 
+  /**
+   * Update a set of facts to account for a method or constructor invocation
+   *
+   * @param facts the facts to update
+   * @param node the method or constructor invocation
+   */
   private void handleInvocation(Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     doOwnershipTransferToParameters(facts, node);
     // Count calls to @CreatesObligation methods as creating new resources, for now.
