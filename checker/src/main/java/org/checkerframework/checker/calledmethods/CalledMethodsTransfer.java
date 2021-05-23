@@ -49,20 +49,20 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
     exceptionalStores = makeExceptionalStores(node, input);
-    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
+    TransferResult<CFValue, CFStore> superResult = super.visitMethodInvocation(node, input);
     Node receiver = node.getTarget().getReceiver();
     if (receiver != null) {
       String methodName = node.getTarget().getMethod().getSimpleName().toString();
       methodName =
           ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
               .adjustMethodNameUsingValueChecker(methodName, node.getTree());
-      accumulate(receiver, result, methodName);
+      accumulate(receiver, superResult, methodName);
     }
     TransferResult<CFValue, CFStore> finalResult =
         new ConditionalTransferResult<>(
-            result.getResultValue(),
-            result.getThenStore(),
-            result.getElseStore(),
+            superResult.getResultValue(),
+            superResult.getThenStore(),
+            superResult.getElseStore(),
             exceptionalStores);
     exceptionalStores = null;
     return finalResult;
@@ -76,12 +76,12 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     }
 
     List<String> valuesAsList = Arrays.asList(values);
-    // If dataflow has already recorded information about the target, fetch it and integrate
-    // it into the list of values in the new annotation.
     JavaExpression target = JavaExpression.fromNode(node);
     if (CFAbstractStore.canInsertJavaExpression(target)) {
       CFValue flowValue = result.getRegularStore().getValue(target);
       if (flowValue != null) {
+        // Dataflow has already recorded information about the target.  Integrate it into the list
+        // of values in the new annotation.
         Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
         assert flowAnnos.size() <= 1;
         for (AnnotationMirror anno : flowAnnos) {
@@ -104,9 +104,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * Create a set of stores for the exceptional paths out of the block containing {@code node}, to
-   * allow the fact that the method being invoked in {@code node} was definitely called to be
-   * propagated along those paths.
+   * Create a set of stores for the exceptional paths out of the block containing {@code node}. This
+   * allows propagation, along those paths, of the fact that the method being invoked in {@code
+   * node} was definitely called.
    *
    * @param node a method invocation
    * @param input the transfer input associated with the method invocation
