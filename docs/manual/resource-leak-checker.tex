@@ -176,7 +176,8 @@ procedures.
 For final, non-static owning fields,
 the Resource Leak Checker enforces the ``resource acquisition is
 initialization (RAII)'' programming idiom.  Some
-``destructor''-like method \<d()> must satisfy the field's must-call obligation,
+``destructor''-like method \<d()> must satisfy the field's must-call obligation
+(and this fact must be expressed via a corresponding \<@EnsuresCalledMethods> annotation),
 and the enclosing class must have a \<@MustCall("d")> obligation to
 ensure the destructor is called.
 
@@ -244,14 +245,10 @@ At a call site to a method annotated as
 \<@CreatesObligation(>\emph{expr}<)>, the Resource Leak Checker
 \begin{enumerate}
 \item
-  treats the \<@MustCall> obligation of \emph{expr} as \emph{satisfied},
+  treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied},
 \item
   creates a fresh obligation to check, as if \emph{expr} was a newly-allocated local
-  variable.  Treating the obligation before the call as satisfied is sound: the
-  checker creates a new obligation for calls to \<@CreatesObligation> methods,
-  and the Must Call Checker (\chapterpageref{must-call-checker}) ensures the
-  \<@MustCall> type for the target will have a \emph{superset} of any methods
-  present before the call.
+  variable.
 \item
   Requires that the expression corresponding to \emph{expr} (that is, \emph{expr}
   viewpoint-adapted to the method call site) is owning.  Otherwise, the checker
@@ -259,6 +256,14 @@ At a call site to a method annotated as
   error by extracting the relevant expression into a new local variable (because
   locals are \<@Owning> by default).
 \end{enumerate}
+
+Treating the obligation before the call as satisfied is sound: the
+checker creates a new obligation for calls to \<@CreatesObligation> methods,
+and the Must Call Checker (\chapterpageref{must-call-checker}) ensures the
+\<@MustCall> type for the target will have a \emph{superset} of any methods
+present before the call. Intuitively, calling an \<@CreatesObligation> method
+"resets" the obligations of the target, so whether they were satisfied before
+the call or not is irrelevant.
 
 If an \<@CreatesObligation>
 method is invoked within a method that has an \<@CreatesObligation> annotation
@@ -315,10 +320,11 @@ above are sound:
 \noindent
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
-safely closes \<sock> before re-assigning it. Because calling
-an \<@CreatesObligation> method like \<reconnect()> also resets called-methods
-inference, calls to \<close> before the last call to \<reconnect()>
-are disregarded.
+safely closes \<sock> before re-assigning it. Because the Called Methods Checker
+treats calls to an \<@CreatesObligation> method like \<reconnect()> as if the call might
+cause arbitrary side-effects, after such a call the only method known to have been
+definitely called is the \<@CreatesObligation> method: previous calls
+(including e.g. to \<close()>) are discarded.
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
 
