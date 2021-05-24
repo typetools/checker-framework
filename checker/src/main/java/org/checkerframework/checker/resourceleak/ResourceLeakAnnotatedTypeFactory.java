@@ -19,7 +19,6 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.mustcall.CreatesObligationElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -43,21 +42,23 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
+/**
+ * The type factory for the Resource Leak Checker. The main difference between this and the Called
+ * Methods type factory from which it is derived is that this version's {@link
+ * #postAnalyze(ControlFlowGraph)} method checks that must-call obligations are fulfilled.
+ */
 public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesObligationElementSupplier {
 
-  final ExecutableElement calledMethodsValueElement =
-      TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
-
+  /** The MustCall.value field/element */
   final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
-  final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
-      TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
-
+  /** The EnsuresCalledMethods.value field/element */
   final ExecutableElement ensuresCalledMethodsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "value", 0, processingEnv);
 
+  /** The EnsuresCalledMethods.methods field/element */
   final ExecutableElement ensuresCalledMethodsMethodsElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "methods", 0, processingEnv);
 
@@ -74,6 +75,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * annotation and the corresponding nodes.
    */
   private BiMap<LocalVariableNode, Tree> tempVarToNode = HashBiMap.create();
+
   /**
    * Default constructor matching super. Should be called automatically.
    *
@@ -178,8 +180,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *
    * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which will account for flow-sensitive
    * refinement.
+   *
+   * @param tree the tree
+   * @return the strings in its must-call type
    */
-  List<String> getMustCallValue(Tree tree) {
+  /* package-private */ List<String> getMustCallValue(Tree tree) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     if (mustCallAnnotatedTypeFactory == null) {
@@ -196,8 +201,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *
    * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which will account for flow-sensitive
    * refinement.
+   *
+   * @param element the element
+   * @return the strings in its must-call type
    */
-  List<String> getMustCallValue(Element element) {
+  /* package-private */ List<String> getMustCallValue(Element element) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType =
@@ -207,7 +215,14 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return getMustCallValues(mustCallAnnotation);
   }
 
-  private List<String> getMustCallValues(AnnotationMirror mustCallAnnotation) {
+  /**
+   * Helper method for getting the must-call values from a must-call annotation.
+   *
+   * @param mustCallAnnotation a {@link MustCall} annotation, or null
+   * @return the list of strings in mustCallAnnotation's value element, or the empty list if it was
+   *     null
+   */
+  private List<String> getMustCallValues(@Nullable AnnotationMirror mustCallAnnotation) {
     List<String> mustCallValues =
         (mustCallAnnotation != null)
             ? AnnotationUtils.getElementValueArray(
@@ -216,18 +231,34 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return mustCallValues;
   }
 
+  /**
+   * Helper method to get the temporary variable that represents the given node, if one exists.
+   *
+   * @param node a node
+   * @return the tempvar for node's expression, or null if one does not exist
+   */
   /* package-private */
-  LocalVariableNode getTempVarForTree(Node node) {
+  @Nullable LocalVariableNode getTempVarForTree(Node node) {
     return tempVarToNode.inverse().get(node.getTree());
   }
 
-  /* package-private */
-  boolean isTempVar(Node node) {
+  /**
+   * Is the given node a temporary variable?
+   *
+   * @param node a node
+   * @return true iff the given node is a temporary variable
+   */
+  /* package-private */ boolean isTempVar(Node node) {
     return tempVarToNode.containsKey(node);
   }
 
-  /* package-private */
-  void addTempVar(LocalVariableNode tmpVar, Tree tree) {
+  /**
+   * Registers a temporary variables by adding it to this type factory's tempvar map.
+   *
+   * @param tmpVar a temporary variable
+   * @param tree the tree of the expression the tempvar represents
+   */
+  /* package-private */ void addTempVar(LocalVariableNode tmpVar, Tree tree) {
     tempVarToNode.put(tmpVar, tree);
   }
 
@@ -236,17 +267,34 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * not consider dataflow, and is only safe to use on declarations, such as method trees or
    * parameter trees. Use {@link #getMustCallValue(ImmutableSet, CFStore)} (and check for emptiness)
    * if you are trying to determine whether a local variable has must-call obligations.
+   *
+   * @param declTree a tree representing a declaration
+   * @return whether that declaration has must-call obligations
    */
-  boolean hasMustCall(Tree t) {
-    return !getMustCallValue(t).isEmpty();
+  /* package-private */ boolean hasMustCall(Tree declTree) {
+    return !getMustCallValue(declTree).isEmpty();
   }
 
-  boolean hasMustCallAlias(Tree tree) {
+  /**
+   * Returns true if the given tree has an {@link MustCallAlias} annotation and resource-alias
+   * tracking is not disabled.
+   *
+   * @param tree a tree
+   * @return true if the given tree has an {@link MustCallAlias} annotation
+   */
+  /* package-private */ boolean hasMustCallAlias(Tree tree) {
     Element elt = TreeUtils.elementFromTree(tree);
     return hasMustCallAlias(elt);
   }
 
-  boolean hasMustCallAlias(Element elt) {
+  /**
+   * Returns true if the given element has an {@link MustCallAlias} annotation and resource-alias
+   * tracking is not disabled.
+   *
+   * @param elt an element
+   * @return true if the given element has an {@link MustCallAlias} annotation
+   */
+  /* package-private */ boolean hasMustCallAlias(Element elt) {
     if (checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
       return false;
     }
@@ -270,6 +318,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         || getDeclAnnotation(decl, CreatesObligation.List.class) != null;
   }
 
+  /**
+   * Does this type factory support {@link CreatesObligation}?
+   *
+   * @return true iff the -AnoCreatesObligation was not supplied to the checker
+   */
   public boolean canCreateObligations() {
     return !checker.hasOption(MustCallChecker.NO_CREATES_OBLIGATION);
   }
