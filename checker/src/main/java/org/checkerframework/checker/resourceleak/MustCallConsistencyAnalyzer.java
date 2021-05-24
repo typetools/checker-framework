@@ -90,19 +90,31 @@ class MustCallConsistencyAnalyzer {
   /** {@code @MustCall} errors reported thus far, to avoid duplicates */
   private final Set<LocalVarWithTree> reportedMustCallErrors = new HashSet<>();
 
+  /**
+   * The type factory for the Resource Leak Checker, which is used to get called methods types and
+   * to access the Must Call Checker.
+   */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
 
+  /** The Resource Leak Checker, used to issue errors. */
   private final ResourceLeakChecker checker;
 
+  /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
   private final CFAnalysis analysis;
 
+  /**
+   * The constructor for the consistency analyzer. Typically, a user would instantiate a new
+   * consistency analyzer using this constructor in the type factory's postAnalyze method, and then
+   * call {@link #analyze(ControlFlowGraph)}.
+   *
+   * @param typeFactory the type factory
+   * @param analysis the analysis from the type factory. Usually this would have protected access,
+   *     so this constructor cannot get it directly.
+   */
   /* package-private */
-  MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory,
-      ResourceLeakChecker checker,
-      CFAnalysis analysis) {
+  MustCallConsistencyAnalyzer(ResourceLeakAnnotatedTypeFactory typeFactory, CFAnalysis analysis) {
     this.typeFactory = typeFactory;
-    this.checker = checker;
+    this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
   }
 
@@ -176,20 +188,20 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * If node is an invocation of a this or super constructor that has a MCA return type and an MCA
-   * parameter, check if any variable in defs is being passed to the other constructor. If so,
-   * remove it from defs.
+   * parameter, check if any variable in facts is being passed to the other constructor. If so,
+   * remove it from facts.
    *
-   * @param defs current defs
+   * @param facts current facts
    * @param node a super or this constructor invocation
    */
   private void handleThisOrSuperConstructorMustCallAlias(
-      Set<ImmutableSet<LocalVarWithTree>> defs, Node node) {
+      Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     Node mcaParam = getMustCallAliasParamVar(node);
     // If the MCA param is also in the def set, then remove it -
     // its obligation has been fulfilled by being passed on to the MCA constructor (because we must
     // be in a constructor body if we've encountered a this/super constructor call).
     if (mcaParam instanceof LocalVariableNode) {
-      removeFactContainingVar(defs, (LocalVariableNode) mcaParam);
+      removeFactContainingVar(facts, (LocalVariableNode) mcaParam);
     }
   }
 
@@ -331,8 +343,11 @@ class MustCallConsistencyAnalyzer {
   /**
    * Given a node representing a method or constructor call, checks that if the call has a non-empty
    * {@code @MustCall} type, then its result is pseudo-assigned to some location that can take
-   * ownership of the result. Searches for the set of same resources in defs and add the new
-   * LocalVarWithTree to it if one exists. Otherwise creates a new set.
+   * ownership of the result. Searches for the set of same resources in {@code facts} and add the
+   * new LocalVarWithTree to it if one exists. Otherwise creates a new set.
+   *
+   * @param facts the current facts
+   * @param node the node to check
    */
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     Tree tree = node.getTree();
@@ -382,16 +397,21 @@ class MustCallConsistencyAnalyzer {
    * method's return type is annotated with MustCallAlias and the argument in the corresponding
    * position is an owning field, or when the method's return type is non-owning, which can either
    * be because the method has no return type or because it is annotated with {@link NotOwning}.
+   *
+   * @param facts the current set of facts
+   * @param node the invocation (of a method or of a constructor) node to check
+   * @return true iff the result of node should not be tracked in facts, based on the criteria
+   *     described above
    */
   private boolean skipTrackingInvocationResult(
-      Set<ImmutableSet<LocalVarWithTree>> defs, Node node) {
+      Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     Tree callTree = node.getTree();
     if (callTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
       MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
 
       if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
           || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
-        handleThisOrSuperConstructorMustCallAlias(defs, node);
+        handleThisOrSuperConstructorMustCallAlias(facts, node);
         return true;
       }
       return returnTypeIsMustCallAliasWithIgnorable((MethodInvocationNode) node)
@@ -446,8 +466,11 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * logic to transfer ownership of locals to {@code @Owning} parameters at a method or constructor
-   * call
+   * Logic to transfer ownership of locals to {@code @Owning} parameters at a method or constructor
+   * call.
+   *
+   * @param facts the current set of facts
+   * @param node a method or constructor invocation node
    */
   private void doOwnershipTransferToParameters(
       Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
@@ -492,10 +515,14 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * If the return type of the enclosing method is {@code @Owning}, transfer ownership of the return
-   * value and stop tracking it in the facts
+   * value and stop tracking it in the facts.
+   *
+   * @param node a return node
+   * @param cfg the CFG of the relevant method
+   * @param facts the current set of dataflow facts
    */
   private void handleReturn(
-      ReturnNode node, ControlFlowGraph cfg, Set<ImmutableSet<LocalVarWithTree>> newFacts) {
+      ReturnNode node, ControlFlowGraph cfg, Set<ImmutableSet<LocalVarWithTree>> facts) {
     if (isTransferOwnershipAtReturn(cfg)) {
       Node result = node.getResult();
       Node temp = typeFactory.getTempVarForTree(result);
@@ -503,7 +530,7 @@ class MustCallConsistencyAnalyzer {
         result = temp;
       }
       if (result instanceof LocalVariableNode) {
-        removeFactContainingVar(newFacts, (LocalVariableNode) result);
+        removeFactContainingVar(facts, (LocalVariableNode) result);
       }
     }
   }
@@ -512,7 +539,12 @@ class MustCallConsistencyAnalyzer {
    * Should we transfer ownership to the return type of the method corresponding to a CFG? Returns
    * true when either (1) there is an explicit {@link Owning} annotation on the return type or (2)
    * the policy is to transfer ownership by default, and there is no {@link NotOwning} annotation on
-   * the return type
+   * the return type.
+   *
+   * @param cfg the CFG of the method
+   * @return true iff one of these is true: (1) the return type has an Owning annotation, or (2)
+   *     ownership is transferred by default on returns and the method has no NotOwning annotation.
+   *     Exception: always false if the checker is running in no-lightweight-ownership mode.
    */
   private boolean isTransferOwnershipAtReturn(ControlFlowGraph cfg) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
@@ -536,9 +568,9 @@ class MustCallConsistencyAnalyzer {
    * Updates a set of facts to account for an assignment
    *
    * @param node the assignment
-   * @param newFacts the set of facts to update
+   * @param facts the set of facts to update
    */
-  private void handleAssignment(AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> newFacts) {
+  private void handleAssignment(AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> facts) {
     // use the temporary variable for the rhs if it exists
     Node rhs = removeCasts(node.getExpression());
     if (typeFactory.getTempVarForTree(rhs) != null) {
@@ -556,14 +588,14 @@ class MustCallConsistencyAnalyzer {
       if (isOwningField
           && typeFactory.canCreateObligations()
           && !ElementUtils.isFinal(lhsElement)) {
-        checkReassignmentToField(node, newFacts);
+        checkReassignmentToField(node, facts);
       }
       // Remove obligations from local variables, now that the owning field is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership).
       if (isOwningField
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
-        removeFactContainingVar(newFacts, (LocalVariableNode) rhs);
+        removeFactContainingVar(facts, (LocalVariableNode) rhs);
       }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
@@ -572,17 +604,17 @@ class MustCallConsistencyAnalyzer {
         // assigned to the variable will be closed.  So, if the RHS is a tracked variable, remove
         // its set from the defs
         if (rhs instanceof LocalVariableNode) {
-          removeFactContainingVar(newFacts, (LocalVariableNode) rhs);
+          removeFactContainingVar(facts, (LocalVariableNode) rhs);
         }
       } else {
-        doGenKillForPseudoAssignment(node, newFacts, lhsVar, rhs);
+        doGenKillForPseudoAssignment(node, facts, lhsVar, rhs);
       }
     }
   }
 
   /**
    * Remove any facts from a fact set that contain a {@link LocalVarWithTree} with a particular
-   * variable
+   * variable.
    *
    * @param facts the set of facts
    * @param var the variable
@@ -594,8 +626,11 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * remove any {@link TypeCastNode}s wrapping a node, returning the operand nested within the type
-   * casts
+   * Remove any {@link TypeCastNode}s wrapping a node, returning the operand nested within the type
+   * casts.
+   *
+   * @param node a node
+   * @return node, but with any surrounding typecasts removed
    */
   private Node removeCasts(Node node) {
     while (node instanceof TypeCastNode) {
@@ -675,7 +710,11 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * If a {@link LocalVarWithTree} is present in {@code varWithTreeSet} whose variable element is
-   * {@code element}, add it to {@code lvwtSet}
+   * {@code element}, add it to {@code lvwtSet}.
+   *
+   * @param varWithTreeSet a fact
+   * @param element the element to search for in the fact
+   * @param lvwtSet the set to add to
    */
   private void addLocalVarWithTreeToSetIfPresent(
       ImmutableSet<LocalVarWithTree> varWithTreeSet,
@@ -693,10 +732,10 @@ class MustCallConsistencyAnalyzer {
    * satisfies the must-call obligations.
    *
    * @param node an assignment to a non-final, owning field
-   * @param newDefs currently in-scope variables that are being tracked
+   * @param facts currently in-scope variables that are being tracked
    */
   private void checkReassignmentToField(
-      AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> newDefs) {
+      AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> facts) {
 
     Node lhsNode = node.getTarget();
 
@@ -728,8 +767,7 @@ class MustCallConsistencyAnalyzer {
     // Check that there is a corresponding createsObligation annotation, unless this is
     // 1) an assignment to a field of a newly-declared local variable that can't be in scope
     // for the containing method, or 2) the rhs is a null literal (so there's nothing to reset).
-    if (!(receiver instanceof LocalVariableNode
-            && varInFacts(newDefs, (LocalVariableNode) receiver))
+    if (!(receiver instanceof LocalVariableNode && varInFacts(facts, (LocalVariableNode) receiver))
         && !(node.getExpression() instanceof NullLiteralNode)) {
       checkEnclosingMethodIsCreatesObligation(node, enclosingMethod);
     }
@@ -840,9 +878,14 @@ class MustCallConsistencyAnalyzer {
         checked);
   }
 
-  /** Gets a standardized name for an object whose field is being re-assigned. */
-  private String receiverAsString(FieldAccessNode lhs) {
-    Node receiver = lhs.getReceiver();
+  /**
+   * Gets a standardized name for an object whose field is being re-assigned.
+   *
+   * @param fieldAccessNode a field access node
+   * @return the name of the object whose field is being accessed (the receiver), as a string
+   */
+  private String receiverAsString(FieldAccessNode fieldAccessNode) {
+    Node receiver = fieldAccessNode.getReceiver();
     if (receiver instanceof ThisNode) {
       return "this";
     }
@@ -889,6 +932,13 @@ class MustCallConsistencyAnalyzer {
     return result;
   }
 
+  /**
+   * If a temporary variable exists for node after typecasts have been removed, return it.
+   * Otherwise, return node.
+   *
+   * @param node a node
+   * @return either a tempvar for node's content sans typecasts, or node
+   */
   private Node removeCastsAndGetTmpVarIfPresent(Node node) {
     // TODO create temp vars for TypeCastNodes as well, so we don't need to explicitly remove casts
     // here
@@ -897,6 +947,13 @@ class MustCallConsistencyAnalyzer {
     return tmpVar != null ? tmpVar : node;
   }
 
+  /**
+   * Get the nodes representign the arguments of a method or constructor invocation from the
+   * invocation node.
+   *
+   * @param node a MethodInvocation or ObjectCreation node
+   * @return a list of the arguments, in order
+   */
   private List<Node> getArgumentsOfMethodOrConstructor(Node node) {
     List<Node> arguments;
     if (node instanceof MethodInvocationNode) {
@@ -911,6 +968,14 @@ class MustCallConsistencyAnalyzer {
     return arguments;
   }
 
+  /**
+   * Get the elements representing the formal parameters of a method or constructor, from an
+   * invocation of that method or constructor.
+   *
+   * @param node a method invocation or object creation node
+   * @return a list of the declarations of the formal parameters of the method or constructor being
+   *     invoked
+   */
   private List<? extends VariableElement> getFormalsOfMethodOrConstructor(Node node) {
     ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode) {
@@ -927,6 +992,13 @@ class MustCallConsistencyAnalyzer {
     return formals;
   }
 
+  /**
+   * Does the method being invoked have a not-owning return type?
+   *
+   * @param node a method invocation
+   * @return true iff (1) the checker is not in no-lightweight-ownership mode, (2) the method has a
+   *     non-void return type, and (3) a NotOwning annotation is present on the method declaration
+   */
   private boolean hasNotOwningReturnType(MethodInvocationNode node) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
       // Default to always transferring at return if not using LO, just like ECJ does.
@@ -940,8 +1012,8 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * get all successor blocks for some block, except for those corresponding to ignored exception
-   * types
+   * Get all successor blocks for some block, except for those corresponding to ignored exception
+   * types.
    *
    * @param block input block
    * @return set of pairs (b, t), where b is a relevant successor block, and t is the type of
@@ -977,7 +1049,7 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Propagates a set of facts to relevant successors, and performs consistency checks when
-   * variables are going out of scope
+   * variables are going out of scope.
    *
    * @param visited block-facts pairs already handled
    * @param worklist current worklist
@@ -1065,7 +1137,7 @@ class MustCallConsistencyAnalyzer {
             // issuing an error about a call to a CreatesObligation method that might throw
             // an exception. Otherwise, use the store after.
             CFStore mcStore;
-            if (exceptionType != null && isInvocationOfCOMethod(last)) {
+            if (exceptionType != null && isInvocationOfCreatesObligationMethod(last)) {
               mcStore = mcAtf.getStoreBefore(last);
             } else {
               mcStore = mcAtf.getStoreAfter(last);
@@ -1092,6 +1164,10 @@ class MustCallConsistencyAnalyzer {
    * is to accommodate our handling of ternary expressions, where we track the temporary variable
    * for the expression at the program point before that expression; see {@link
    * #handleTernarySuccIfNeeded(Block, Block, Set)}.
+   *
+   * @param store the store to check
+   * @param assign the lvt to check
+   * @return true if the variable is not present in store and is not for a ternary
    */
   private boolean varNotPresentInStoreAndNotForTernary(CFStore store, LocalVarWithTree assign) {
     return store.getValue(assign.localVar) == null
@@ -1147,12 +1223,12 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * returns true if node is a MethodInvocationNode of a method with a CreatesObligation annotation.
+   * Returns true if node is a MethodInvocationNode of a method with a CreatesObligation annotation.
    *
    * @param node a node
    * @return true if node is a MethodInvocationNode of a method with a CreatesObligation annotation
    */
-  private boolean isInvocationOfCOMethod(Node node) {
+  private boolean isInvocationOfCreatesObligationMethod(Node node) {
     if (!(node instanceof MethodInvocationNode)) {
       return false;
     }
@@ -1190,7 +1266,11 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks whether there is some fact {@code f} in {@code facts} such that {@code f} contains a
-   * {@link LocalVarWithTree} whose local variable is {@code node}
+   * {@link LocalVarWithTree} whose local variable is {@code node}.
+   *
+   * @param facts the set of facts to search
+   * @param node the local variable to look for
+   * @return true iff there is a fact in facts that represents node
    */
   private static boolean varInFacts(
       Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode node) {
@@ -1201,7 +1281,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * gets the single fact in a set of facts containing some variable
+   * Gets the single fact in a set of facts containing some variable.
    *
    * @param facts set of facts
    * @param node variable of interest
@@ -1219,9 +1299,14 @@ class MustCallConsistencyAnalyzer {
         .orElse(null);
   }
 
-  /** checks if the variable has been declared in a try-with-resources header */
-  private static boolean isTryWithResourcesVariable(LocalVariableNode lhs) {
-    Tree tree = lhs.getTree();
+  /**
+   * Checks if the variable has been declared in a try-with-resources header.
+   *
+   * @param node a local variable node
+   * @return true iff node was declared in a try-with-resources header
+   */
+  private static boolean isTryWithResourcesVariable(LocalVariableNode node) {
+    Tree tree = node.getTree();
     return tree != null
         && TreeUtils.elementFromTree(tree).getKind().equals(ElementKind.RESOURCE_VARIABLE);
   }
@@ -1335,12 +1420,17 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
-   * the methods in {@code mustCallValue}?
+   * the methods in {@code mustCallValues}?
+   *
+   * @param mustCallValues the strings representing the must-call obligations
+   * @param cmAnno an annotation from the called-methods type hierarchy
+   * @return true iff cmAnno is a subtype of a called-methods annotation with the same values as
+   *     mustCallValues
    */
   private boolean calledMethodsSatisfyMustCall(
-      List<String> mustCallValue, AnnotationMirror cmAnno) {
+      List<String> mustCallValues, AnnotationMirror cmAnno) {
     AnnotationMirror cmAnnoForMustCallMethods =
-        typeFactory.createCalledMethods(mustCallValue.toArray(new String[0]));
+        typeFactory.createCalledMethods(mustCallValues.toArray(new String[0]));
     return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
   }
 
@@ -1349,6 +1439,9 @@ class MustCallConsistencyAnalyzer {
    * positives? For now we ignore {@code java.lang.Throwable}, {@code NullPointerException}, and the
    * runtime exceptions that can occur at any point during the program due to something going wrong
    * in the JVM, like OutOfMemoryErrors or ClassCircularityErrors.
+   *
+   * @param exceptionClassName the fully-qualified name of the exception
+   * @return true if the given exception class should be ignored
    */
   private static boolean isIgnoredExceptionType(@FullyQualifiedName Name exceptionClassName) {
     // any method call has a CFG edge for Throwable/RuntimeException/Error to represent run-time
@@ -1380,6 +1473,10 @@ class MustCallConsistencyAnalyzer {
   /**
    * Updates {@code visited} and {@code worklist} if the input {@code state} has not been visited
    * yet.
+   *
+   * @param state the current state
+   * @param visited the previously-analyzed states
+   * @param worklist the states that will be analyzed
    */
   private static void propagate(
       BlockWithFacts state, Set<BlockWithFacts> visited, Deque<BlockWithFacts> worklist) {
@@ -1411,9 +1508,19 @@ class MustCallConsistencyAnalyzer {
    * need to handle the set of facts reaching the block during analysis.
    */
   private static class BlockWithFacts {
+
+    /** the block */
     public final Block block;
+
+    /** the facts */
     public final ImmutableSet<ImmutableSet<LocalVarWithTree>> facts;
 
+    /**
+     * Create a new BlockWithFacts from a block and a set of facts.
+     *
+     * @param b the block
+     * @param facts the set of facts (may be the empty set)
+     */
     public BlockWithFacts(Block b, Set<ImmutableSet<LocalVarWithTree>> facts) {
       this.block = b;
       this.facts = ImmutableSet.copyOf(facts);
@@ -1444,9 +1551,19 @@ class MustCallConsistencyAnalyzer {
    * assignment to a local, pinpointing the expression whose MustCall may not be satisfied).
    */
   /* package-private */ static class LocalVarWithTree {
+
+    /** the variable */
     public final LocalVariable localVar;
+
+    /** the tree at which it was assigned, for error reporting */
     public final Tree tree;
 
+    /**
+     * Create a new LVT.
+     *
+     * @param localVarNode the local variable
+     * @param tree the tree
+     */
     public LocalVarWithTree(LocalVariable localVarNode, Tree tree) {
       this.localVar = localVarNode;
       this.tree = tree;
