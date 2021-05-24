@@ -75,7 +75,8 @@ class ACRegularExitPointTest {
         new Runnable() {
           public void run() {
             Foo f;
-          };
+          }
+          ;
         };
     r.run();
   }
@@ -86,7 +87,8 @@ class ACRegularExitPointTest {
           public void run() {
             // :: error: required.method.not.called
             Foo g = new Foo();
-          };
+          }
+          ;
         };
     r.run();
   }
@@ -97,7 +99,8 @@ class ACRegularExitPointTest {
           public void run() {
             Foo g = makeFoo();
             g.a();
-          };
+          }
+          ;
         };
     r.run();
   }

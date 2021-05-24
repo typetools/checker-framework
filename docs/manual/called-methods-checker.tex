@@ -203,6 +203,16 @@ There are also method annotations:
 
   guarantees that \<p.x()> and \<p.y()> will always be called if \<m> returns \<true>.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsVarArgs}]
+  This version of \<@EnsuresCalledMethods> always applies to the varargs parameter of the
+  annotated method. It has only one argument, which is the list of methods that are guaranteed
+  to be called on the varargs parameter's elements before the method returns. This annotation
+  currently cannot be verified, and a \<ensuresvarargs.unverified> error is always issued
+  when it is used. When annotating a method as \<@EnsuresCalledMethodsVarArgs>, you should verify
+  that the named methods are actually called on every element of the varargs parameter via some
+  other method (such as manual inspection) and then suppress the warning.
+
 \end{description}
 
 \sectionAndLabel{Default handling for Lombok and AutoValue}{called-methods-framework-details}
