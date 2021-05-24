@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -227,7 +226,7 @@ class MustCallConsistencyAnalyzer {
     List<JavaExpression> targetExprs =
         CreatesObligationElementSupplier.getCreatesObligationExpressions(
             node, typeFactory, typeFactory);
-    Set<JavaExpression> missing = new HashSet<>();
+    Set<String> missing = new HashSet<>();
     for (JavaExpression target : targetExprs) {
       boolean validTarget = false;
       if (target instanceof LocalVariable) {
@@ -303,7 +302,7 @@ class MustCallConsistencyAnalyzer {
         }
       }
       if (!validTarget) {
-        missing.add(target);
+        missing.add(target.toString());
       }
     }
 
@@ -312,8 +311,7 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    String missingStrs =
-        missing.stream().map(JavaExpression::toString).collect(Collectors.joining(", "));
+    String missingStrs = String.join(", ", missing);
     checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
   }
 
@@ -498,13 +496,13 @@ class MustCallConsistencyAnalyzer {
           VariableElement formal = formalParams.get(i);
           Set<AnnotationMirror> annotationMirrors = typeFactory.getDeclAnnotations(formal);
 
-          if (annotationMirrors.stream()
-              .anyMatch(
-                  anno ->
-                      AnnotationUtils.areSameByName(
-                          anno, "org.checkerframework.checker.mustcall.qual.Owning"))) {
-            // transfer ownership!
-            facts.remove(getFactContainingVar(facts, local));
+          for (AnnotationMirror anno : annotationMirrors) {
+            if (AnnotationUtils.areSameByName(
+                anno, "org.checkerframework.checker.mustcall.qual.Owning")) {
+              // transfer ownership!
+              facts.remove(getFactContainingVar(facts, local));
+              break;
+            }
           }
         }
       }
@@ -663,12 +661,14 @@ class MustCallConsistencyAnalyzer {
       // if rhs is a variable tracked in the fact, gen the lhs
       if (rhs instanceof LocalVariableNode) {
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-        if (fact.stream()
-            .anyMatch(lvwt -> lvwt.localVar.getElement().equals(rhsVar.getElement()))) {
-          gen = lhsVarWithTreeToGen;
-          // we remove temp vars from tracking once they are assigned to another location
-          if (typeFactory.isTempVar(rhsVar)) {
-            addLocalVarWithTreeToSetIfPresent(fact, rhsVar.getElement(), kill);
+        for (LocalVarWithTree lvwt : fact) {
+          if (lvwt.localVar.getElement().equals(rhsVar.getElement())) {
+            gen = lhsVarWithTreeToGen;
+            // we remove temp vars from tracking once they are assigned to another location
+            if (typeFactory.isTempVar(rhsVar)) {
+              addLocalVarWithTreeToSetIfPresent(fact, rhsVar.getElement(), kill);
+            }
+            break;
           }
         }
       }
@@ -715,10 +715,11 @@ class MustCallConsistencyAnalyzer {
       ImmutableSet<LocalVarWithTree> varWithTreeSet,
       Element element,
       Set<LocalVarWithTree> lvwtSet) {
-    varWithTreeSet.stream()
-        .filter(lvwt -> lvwt.localVar.getElement().equals(element))
-        .findFirst()
-        .ifPresent(lvwtSet::add);
+    for (LocalVarWithTree lvwt : varWithTreeSet) {
+      if (lvwt.localVar.getElement().equals(element)) {
+        lvwtSet.add(lvwt);
+      }
+    }
   }
 
   /**
@@ -786,17 +787,19 @@ class MustCallConsistencyAnalyzer {
     Node rhs = node.getExpression();
     CFStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
     CFValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
-    AnnotationMirror cmAnno =
-        cmValue == null
-            ? typeFactory.top
-            : cmValue.getAnnotations().stream()
-                .filter(
-                    anno ->
-                        AnnotationUtils.areSameByName(
-                            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods"))
-                .findAny()
-                .orElse(typeFactory.top);
-
+    AnnotationMirror cmAnno = null;
+    if (cmValue != null) {
+      for (AnnotationMirror anno : cmValue.getAnnotations()) {
+        if (AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+          cmAnno = anno;
+          break;
+        }
+      }
+    }
+    if (cmAnno == null) {
+      cmAnno = typeFactory.top;
+    }
     if (!calledMethodsSatisfyMustCall(mcValues, cmAnno)) {
       Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
       if (!checker.shouldSkipUses(lhsElement)) {
@@ -1037,9 +1040,11 @@ class MustCallConsistencyAnalyzer {
       }
       return result;
     } else {
-      return block.getSuccessors().stream()
-          .map(b -> Pair.<Block, TypeMirror>of(b, null))
-          .collect(Collectors.toSet());
+      Set<Pair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      for (Block b : block.getSuccessors()) {
+        result.add(Pair.of(b, null));
+      }
+      return result;
     }
   }
 
@@ -1081,9 +1086,13 @@ class MustCallConsistencyAnalyzer {
                   + exceptionType;
       CFStore succRegularStore = analysis.getInput(succ).getRegularStore();
       for (ImmutableSet<LocalVarWithTree> fact : curFacts) {
-        boolean noInfoInSuccStoreForVars =
-            fact.stream()
-                .allMatch(assign -> varNotPresentInStoreAndNotForTernary(succRegularStore, assign));
+        boolean noInfoInSuccStoreForVars = true;
+        for (LocalVarWithTree lvwt : fact) {
+          if (!varNotPresentInStoreAndNotForTernary(succRegularStore, lvwt)) {
+            noInfoInSuccStoreForVars = false;
+            break;
+          }
+        }
         if (succ instanceof SpecialBlockImpl /* exit block */ || noInfoInSuccStoreForVars) {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
@@ -1270,10 +1279,15 @@ class MustCallConsistencyAnalyzer {
    */
   private static boolean varInFacts(
       Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode node) {
-    return facts.stream()
-        .flatMap(Set::stream)
-        .map(assign -> assign.localVar.getElement())
-        .anyMatch(elem -> elem.equals(node.getElement()));
+    Element nodeElement = node.getElement();
+    for (Set<LocalVarWithTree> fact : facts) {
+      for (LocalVarWithTree lvwt : fact) {
+        if (lvwt.localVar.getElement().equals(nodeElement)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -1284,15 +1298,17 @@ class MustCallConsistencyAnalyzer {
    * @return the fact in {@code facts} containing {@code node}, or {@code null} if there is no such
    *     fact
    */
-  private static ImmutableSet<LocalVarWithTree> getFactContainingVar(
+  private static @Nullable ImmutableSet<LocalVarWithTree> getFactContainingVar(
       Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode node) {
-    return facts.stream()
-        .filter(
-            set ->
-                set.stream()
-                    .anyMatch(assign -> assign.localVar.getElement().equals(node.getElement())))
-        .findAny()
-        .orElse(null);
+    Element nodeElement = node.getElement();
+    for (ImmutableSet<LocalVarWithTree> fact : facts) {
+      for (LocalVarWithTree lvwt : fact) {
+        if (lvwt.localVar.getElement().equals(nodeElement)) {
+          return fact;
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -1336,18 +1352,17 @@ class MustCallConsistencyAnalyzer {
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
       CFValue lhsCFValue = cmStore != null ? cmStore.getValue(localVarWithTree.localVar) : null;
-      AnnotationMirror cmAnno;
+      AnnotationMirror cmAnno = null;
 
       if (lhsCFValue != null) { // When store contains the lhs
-        cmAnno =
-            lhsCFValue.getAnnotations().stream()
-                .filter(
-                    anno ->
-                        AnnotationUtils.areSameByName(
-                            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods"))
-                .findAny()
-                .orElse(typeFactory.top);
-      } else {
+        for (AnnotationMirror anno : lhsCFValue.getAnnotations()) {
+          if (AnnotationUtils.areSameByName(
+              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+            cmAnno = anno;
+          }
+        }
+      }
+      if (cmAnno == null) {
         cmAnno =
             typeFactory
                 .getAnnotatedType(localVarWithTree.localVar.getElement())
@@ -1361,8 +1376,8 @@ class MustCallConsistencyAnalyzer {
     }
 
     if (!mustCallSatisfied) {
-      if (reportedMustCallErrors.stream().noneMatch(fact::contains)) {
-        LocalVarWithTree firstlocalVarWithTree = fact.iterator().next();
+      LocalVarWithTree firstlocalVarWithTree = fact.iterator().next();
+      if (!reportedMustCallErrors.contains(firstlocalVarWithTree)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstlocalVarWithTree.tree))) {
           reportedMustCallErrors.add(firstlocalVarWithTree);
           checker.reportError(
