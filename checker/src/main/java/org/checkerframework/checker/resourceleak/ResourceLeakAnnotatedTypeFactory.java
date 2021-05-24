@@ -135,14 +135,13 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       LocalVariable local = lvt.localVar;
       CFValue value = mcStore == null ? null : mcStore.getValue(local);
       if (value != null) {
-        mcAnno =
-            value.getAnnotations().stream()
-                .filter(
-                    anno ->
-                        AnnotationUtils.areSameByName(
-                            anno, "org.checkerframework.checker.mustcall.qual.MustCall"))
-                .findAny()
-                .orElse(null);
+        for (AnnotationMirror anno : value.getAnnotations()) {
+          if (AnnotationUtils.areSameByName(
+              anno, "org.checkerframework.checker.mustcall.qual.MustCall")) {
+            mcAnno = anno;
+            break;
+          }
+        }
       }
       // If it wasn't in the store, fall back to the default must-call type for the class.
       // TODO: we currently end up in this case when checking a call to the return type

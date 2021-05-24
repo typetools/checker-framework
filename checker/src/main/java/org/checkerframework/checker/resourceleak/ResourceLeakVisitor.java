@@ -191,14 +191,15 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
                       ensuresCalledMethodsAnno,
                       rlTypeFactory.ensuresCalledMethodsValueElement,
                       String.class);
-              if (values.stream()
-                  .anyMatch(value -> value.contains(field.getSimpleName().toString()))) {
-                List<String> methods =
-                    AnnotationUtils.getElementValueArray(
-                        ensuresCalledMethodsAnno,
-                        rlTypeFactory.ensuresCalledMethodsMethodsElement,
-                        String.class);
-                fieldMCAnno.removeAll(methods);
+              for (String value : values) {
+                if (value.contains(field.getSimpleName().toString())) {
+                  List<String> methods =
+                      AnnotationUtils.getElementValueArray(
+                          ensuresCalledMethodsAnno,
+                          rlTypeFactory.ensuresCalledMethodsMethodsElement,
+                          String.class);
+                  fieldMCAnno.removeAll(methods);
+                }
               }
             }
 
