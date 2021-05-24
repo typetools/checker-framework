@@ -84,9 +84,6 @@ import org.checkerframework.javacutil.TypesUtils;
 /* package-private */
 class MustCallConsistencyAnalyzer {
 
-  /** By default, should we transfer ownership to the caller when a variable is returned? */
-  static final boolean TRANSFER_OWNERSHIP_AT_RETURN = true;
-
   /** {@code @MustCall} errors reported thus far, to avoid duplicates */
   private final Set<LocalVarWithTree> reportedMustCallErrors = new HashSet<>();
 
@@ -543,9 +540,8 @@ class MustCallConsistencyAnalyzer {
    * the return type.
    *
    * @param cfg the CFG of the method
-   * @return true iff one of these is true: (1) the return type has an Owning annotation, or (2)
-   *     ownership is transferred by default on returns and the method has no NotOwning annotation.
-   *     Exception: always false if the checker is running in no-lightweight-ownership mode.
+   * @return true iff the return type has an Owning annotation and the checker is not running in
+   *     no-lightweight-ownership mode.
    */
   private boolean isTransferOwnershipAtReturn(ControlFlowGraph cfg) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
@@ -558,9 +554,7 @@ class MustCallConsistencyAnalyzer {
       // TODO: lambdas?
       MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
-      return (typeFactory.getDeclAnnotation(executableElement, Owning.class) != null)
-          || (TRANSFER_OWNERSHIP_AT_RETURN
-              && typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null);
+      return typeFactory.getDeclAnnotation(executableElement, Owning.class) != null;
     }
     return false;
   }
