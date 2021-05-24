@@ -224,7 +224,7 @@ allprojects {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()]
             }
 
-            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
             // TODO: enable Error Prone on test classes.
             if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
