@@ -186,7 +186,7 @@ clean {
 }
 
 // Add non-junit tests
-createCheckTypeTask(project.name,, "CompilerMessages",
+createCheckTypeTask(project.name, "CompilerMessages",
     'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
 checkCompilerMessages {
     doFirst {
