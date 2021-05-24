@@ -552,7 +552,7 @@ class MustCallConsistencyAnalyzer {
       // TODO: lambdas?
       MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
-      return typeFactory.getDeclAnnotation(executableElement, Owning.class) != null;
+      return typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null;
     }
     return false;
   }
