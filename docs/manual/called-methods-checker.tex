@@ -213,6 +213,12 @@ There are also method annotations:
   that the named methods are actually called on every element of the varargs parameter via some
   other method (such as manual inspection) and then suppress the warning.
 
+\item[\refqualclass{checker/calledmethods/qual}{RequiresCalledMethods}]
+  This declaration annotation specifies a pre-condition on a method, indicating that the expressions
+  in its \<value> argument must have called-methods types that include all the methods named
+  in its \<methods> argument. If the expression is a parameter of the annotated method, you should
+  use an \<@CalledMethods> annotation on the parameter instead.
+
 \end{description}
 
 \sectionAndLabel{Default handling for Lombok and AutoValue}{called-methods-framework-details}
