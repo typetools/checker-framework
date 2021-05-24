@@ -2,25 +2,23 @@ package org.checkerframework.checker.resourceleak;
 
 import static javax.lang.model.element.ElementKind.METHOD;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
+import org.checkerframework.checker.mustcall.CreatesObligationElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesObligation;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.source.DiagMessage;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -38,7 +36,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
 
-  /** @param checker the type-checker associated with this visitor */
+  /**
+   * Create the visitor.
+   *
+   * @param checker the type-checker associated with this visitor
+   */
   public ResourceLeakVisitor(final BaseTypeChecker checker) {
     super(checker);
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
@@ -49,36 +51,12 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     return new ResourceLeakAnnotatedTypeFactory(checker);
   }
 
-  /**
-   * Issue an error at every EnsuresCalledMethodsVarArgs annotation, because using it is unsound.
-   */
-  @Override
-  public Void visitAnnotation(final AnnotationTree node, final Void p) {
-    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
-    if (AnnotationUtils.areSameByName(
-        anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
-      // we can't verify these yet.  emit an error (which will have to be suppressed) for now
-      checker.report(node, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.unverified"));
-      return null;
-    }
-    return super.visitAnnotation(node, p);
-  }
-
   @Override
   public Void visitMethod(MethodTree node, Void p) {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
-    AnnotationMirror ecmva =
-        rlTypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
-    if (ecmva != null) {
-      if (!elt.isVarArgs()) {
-        checker.report(
-            node, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.annotation.invalid"));
-        return null;
-      }
-    }
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    List<String> coValues = getCOValues(elt, mcAtf, rlTypeFactory);
+    List<String> coValues = getLiteralCreatesObligationValues(elt, mcAtf, rlTypeFactory);
     if (!coValues.isEmpty()) {
       // Check the validity of the annotation, by ensuring that if this method is overriding another
       // method
@@ -86,7 +64,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       // allow e.g. a field to
       // be overwritten by a CO method, but the CO effect wouldn't occur.
       for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
-        List<String> overriddenCoValues = getCOValues(overridden, mcAtf, rlTypeFactory);
+        List<String> overriddenCoValues =
+            getLiteralCreatesObligationValues(overridden, mcAtf, rlTypeFactory);
         if (!overriddenCoValues.containsAll(coValues)) {
           String foundCoValueString = String.join(", ", coValues);
           String neededCoValueString = String.join(", ", overriddenCoValues);
@@ -113,7 +92,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
    * @return the string value
    */
-  private static String getCOValue(
+  private static String getLiteralCreatesObligationValue(
       AnnotationMirror createsObligation, MustCallAnnotatedTypeFactory mcAtf) {
     return AnnotationUtils.getElementValue(
         createsObligation, mcAtf.getCreatesObligationValueElement(), String.class, "this");
@@ -122,7 +101,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   /**
    * Returns all the literal strings present in the @CreatesObligation annotations on the given
    * element. This version correctly handles multiple CreatesObligation annotations on the same
-   * element.
+   * element. This differs from {@link
+   * org.checkerframework.checker.mustcall.CreatesObligationElementSupplier#getCreatesObligationExpressions(MethodInvocationNode,
+   * GenericAnnotatedTypeFactory, CreatesObligationElementSupplier)} in that this version does not
+   * take into account the calling context when parsing the strings; instead, the literal values
+   * written by the programmer are returned.
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
@@ -132,33 +115,29 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *     iff there are no @CreatesObligation annotations on elt. The returned list is always
    *     modifiable if it is non-empty.
    */
-  /*package-private*/ static List<String> getCOValues(
+  /*package-private*/ static List<String> getLiteralCreatesObligationValues(
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
       ResourceLeakAnnotatedTypeFactory atypeFactory) {
     AnnotationMirror createsObligationList =
         atypeFactory.getDeclAnnotation(elt, CreatesObligation.List.class);
+    List<String> result = new ArrayList<>(4);
     if (createsObligationList != null) {
       List<AnnotationMirror> createObligations =
           AnnotationUtils.getElementValueArray(
               createsObligationList,
               mcAtf.getCreatesObligationListValueElement(),
               AnnotationMirror.class);
-      List<String> result = new ArrayList<>();
       for (AnnotationMirror co : createObligations) {
-        result.add(getCOValue(co, mcAtf));
+        result.add(getLiteralCreatesObligationValue(co, mcAtf));
       }
-      return result;
     }
     AnnotationMirror createsObligation =
         atypeFactory.getDeclAnnotation(elt, CreatesObligation.class);
     if (createsObligation != null) {
-      // don't use Collections.singletonList because it's not guaranteed to be mutable
-      List<String> result = new ArrayList<>(1);
-      result.add(getCOValue(createsObligation, mcAtf));
-      return result;
+      result.add(getLiteralCreatesObligationValue(createsObligation, mcAtf));
     }
-    return Collections.emptyList();
+    return result;
   }
 
   @Override
@@ -180,6 +159,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that {@code
    * m2} has an annotation {@code @EnsuresCalledMethods(value = "this.field", methods = "m")},
    * guaranteeing that the {@code @MustCall} obligation of the field will be satisfied.
+   *
+   * @param field the declaration of the field to check
    */
   private void checkOwningField(Element field) {
 
