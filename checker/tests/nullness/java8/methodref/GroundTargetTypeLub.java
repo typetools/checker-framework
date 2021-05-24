@@ -15,10 +15,10 @@ class GroundTargetType {
   }
 
   Supplier<? extends @Nullable Object> fn = GroundTargetType::myMethod;
-  // :: error: (methodref.return.invalid)
+  // :: error: (methodref.return)
   Supplier<? extends @NonNull Object> fn2 = GroundTargetType::myMethod;
 
   // Supplier2
-  // :: error: (methodref.return.invalid)
+  // :: error: (methodref.return)
   Supplier2<? extends @NonNull Object> fn3 = GroundTargetType::myMethod;
 }

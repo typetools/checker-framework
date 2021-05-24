@@ -9,7 +9,7 @@ public class Issue829 {
   }
 
   public static Double getDoubleError(boolean flag) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return flag ? null : 1.0;
   }
 }

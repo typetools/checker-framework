@@ -5,8 +5,6 @@
 # to org.checkerframework.framework.util.CheckerMain
 #
 
-# When editing, keep this file in sync with ../bin-devel/javac and../bin-devel/javac-debug .
-
 mydir="$(dirname "$0")"
 case $(uname -s) in
     CYGWIN*)

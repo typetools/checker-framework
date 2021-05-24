@@ -9,14 +9,14 @@ public class GenericsBounds4 {
   }
 
   Collection1<? extends @Nullable Object> f1 = new Collection1<@NonNull Object>();
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   Collection1<@Nullable ? extends @Nullable Object> f2 = new Collection1<@NonNull Object>();
   Collection1<@Nullable ? extends @Nullable Object> f3 = new Collection1<@Nullable Object>();
 
   void bad() {
     // This has to be forbidden, because f1 might refer to a
     // collection that has NonNull as type argument.
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f1.add(null);
 
     // This is forbidden by the Java type rules:

@@ -15,7 +15,7 @@ class Utils {
     // null for simplicity, but could be anything
     Consumer<@Nullable Object> nullConsumer = null;
 
-    // Previous reasoning for this to generate an (argument.type.incompatible) error was:
+    // Previous reasoning for this to generate an (argument) error was:
     // C could be @NonNull Object, so argument is incompatible?
     //
     // This is poor reasoning, however, because the type of the formal parameter should be:

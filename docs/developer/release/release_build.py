@@ -52,10 +52,10 @@ from release_utils import prompt_w_default
 from release_utils import prompt_yes_no
 from release_utils import read_command_line_option
 from release_utils import set_umask
-from release_utils import sys
 
 from distutils.dir_util import copy_tree
 import datetime
+import sys
 
 # Turned on by the --debug command-line option.
 debug = False

@@ -4,7 +4,7 @@ import org.checkerframework.common.value.qual.MinLen;
 public class ReflectArray {
 
   void testNewInstance(int i) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Array.newInstance(Object.class, i);
     if (i >= 0) {
       Array.newInstance(Object.class, i);
@@ -19,7 +19,7 @@ public class ReflectArray {
 
   void testMinLen(Object @MinLen(1) [] a) {
     Array.get(a, 0);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Array.get(a, 1);
   }
 }

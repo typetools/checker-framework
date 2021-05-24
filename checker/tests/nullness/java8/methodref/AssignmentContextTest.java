@@ -11,12 +11,12 @@ interface FunctionAC2 {
 public class AssignmentContextTest {
   // Test assign
   FunctionAC f1 = String::toString;
-  // :: error: (methodref.receiver.invalid)
+  // :: error: (methodref.receiver)
   FunctionAC2 f2 = String::toString;
 
   // Test casts
   Object o1 = (Object) (FunctionAC) String::toString;
-  // :: error: (methodref.receiver.invalid)
+  // :: error: (methodref.receiver)
   Object o2 = (Object) (FunctionAC2) String::toString;
 
   void take(FunctionAC f) {
@@ -26,7 +26,7 @@ public class AssignmentContextTest {
 
   void take2(FunctionAC2 f) {
     // Test argument assingment
-    // :: error: (methodref.receiver.invalid)
+    // :: error: (methodref.receiver)
     take2(String::toString);
   }
 
@@ -37,7 +37,7 @@ public class AssignmentContextTest {
 
   FunctionAC2 supply2() {
     // Test return assingment
-    // :: error: (methodref.receiver.invalid)
+    // :: error: (methodref.receiver)
     return String::toString;
   }
 }

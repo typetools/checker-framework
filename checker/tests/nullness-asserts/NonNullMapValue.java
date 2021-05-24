@@ -45,13 +45,13 @@ public class NonNullMapValue {
 
   void testMyMap(String key) {
     @NonNull String value;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     value = myMap.get(key); // should issue warning
     if (myMap.containsKey(key)) {
       value = myMap.get(key);
     }
     for (String keyInMap : myMap.keySet()) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       value = myMap.get(key); // should issue warning
     }
     for (String keyInMap : myMap.keySet()) {
@@ -153,7 +153,7 @@ public class NonNullMapValue {
   public void withinElseInvalid(Map<Object, Object> map, Object key) {
     if (map.containsKey(key)) {
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object v = map.get(key); // should issue warning
     }
   }
@@ -170,7 +170,7 @@ public class NonNullMapValue {
 
     // We get an override warning, because we do not use the annotated JDK in the
     // test suite. Ignore this.
-    @SuppressWarnings("override.return.invalid")
+    @SuppressWarnings("override.return")
     @org.checkerframework.dataflow.qual.Pure
     public @Nullable V get(@Nullable Object o);
   }

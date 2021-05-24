@@ -6,7 +6,7 @@ public class Generics {
 
     T m(@H1S2 @H2S2 T p) {
       T l = p;
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return l;
     }
 
@@ -19,7 +19,7 @@ public class Generics {
 
     T m(@H1S2 T p) {
       T l = p;
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return l;
     }
 

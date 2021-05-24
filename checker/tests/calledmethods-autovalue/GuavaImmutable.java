@@ -21,7 +21,7 @@ abstract class GuavaImmutable {
   }
 
   public static void buildSomethingWrong() {
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     builder().build();
   }
 

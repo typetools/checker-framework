@@ -9,7 +9,7 @@ public class Cast {
   }
 
   void objectiveParameter(Object object) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     integralParameter((Integer) object);
   }
 

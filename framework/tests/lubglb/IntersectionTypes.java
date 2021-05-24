@@ -25,7 +25,7 @@ public class IntersectionTypes {
 
   void foo3(@B Baz baz3) {
     call1(baz3);
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     call2(baz3);
   }
 }

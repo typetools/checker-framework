@@ -12,7 +12,7 @@ public class StringIndexOf {
 
   public static String nocheck(String l, String s) {
     int i = l.indexOf(s);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     return l.substring(0, i) + l.substring(i + s.length());
   }
 
@@ -29,7 +29,7 @@ public class StringIndexOf {
     if (i != -1) {
       return l.substring(0, i) + l.substring(i + "constant".length());
     }
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     return l.substring(0, i) + l.substring(i + "constant".length());
   }
 
@@ -38,7 +38,7 @@ public class StringIndexOf {
     if (i > -1) {
       return l.charAt(i);
     }
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     return l.charAt(i);
   }
 }

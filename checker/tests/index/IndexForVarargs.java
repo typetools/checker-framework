@@ -8,12 +8,12 @@ public class IndexForVarargs {
   void method(@IndexFor("#2") int i, String[]... varargs) {}
 
   void m() {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     get(1);
 
     get(1, "a", "b");
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     get(2, "abc");
 
     String[] stringArg1 = new String[] {"a", "b"};
@@ -22,12 +22,12 @@ public class IndexForVarargs {
 
     method(1, stringArg1, stringArg2);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     method(2, stringArg3);
 
     get(1, stringArg1);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     get(3, stringArg2);
   }
 }

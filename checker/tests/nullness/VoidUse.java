@@ -20,14 +20,14 @@ public class VoidUse {
     public void scan(Object tree, P p) {}
   }
 
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   class MyScanner extends Scanner<Void> {
     void use(MyScanner ms) {
       ms.scan(new Object(), null);
     }
   }
 
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   class MyScanner2 extends Scanner<@Nullable Object> {
     void use(MyScanner2 ms) {
       ms.scan(new Object(), null);

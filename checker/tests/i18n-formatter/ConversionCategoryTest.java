@@ -48,19 +48,19 @@ public class ConversionCategoryTest {
 
     @I18nFormat({I18nConversionCategory.DATE}) String s13 = "{0, date} {0, date}";
 
-    // :: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
+    // :: error: (i18nformat.excess.arguments) :: error: (assignment)
     @I18nFormat({I18nConversionCategory.GENERAL}) String b1 = "{1}";
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @I18nFormat({I18nConversionCategory.DATE}) String b2 = "{0, number}";
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @I18nFormat({I18nConversionCategory.GENERAL}) String b3 = "{0, number}";
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @I18nFormat({I18nConversionCategory.GENERAL}) String b4 = "{0, date}";
 
-    // :: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
+    // :: error: (i18nformat.excess.arguments) :: error: (assignment)
     @I18nFormat({I18nConversionCategory.DATE}) String b5 = "{0, date} {1, date}";
 
     // :: warning: (i18nformat.missing.arguments)

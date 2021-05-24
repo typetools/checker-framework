@@ -15,13 +15,13 @@ public class ShiftRight {
     @IndexOrHigh("a") int o = i >> 2;
     @IndexOrHigh("a") int p = i >>> 2;
     // Not true if a.length == 0
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IndexFor("a") int q = i >> 2;
   }
 
   void negative(Object[] a, @LTLengthOf(value = "#1", offset = "100") int i) {
     // Not true for some negative i
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @LTLengthOf(value = "#1", offset = "100") int q = i >> 2;
   }
 }

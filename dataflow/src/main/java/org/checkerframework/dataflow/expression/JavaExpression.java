@@ -18,11 +18,13 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -223,15 +225,22 @@ public abstract class JavaExpression {
   ///
 
   /**
-   * Returns the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}. The
-   * result may contain {@link Unknown} as receiver.
+   * Returns the Java expression for a {@link FieldAccessNode}. The result may contain {@link
+   * Unknown} as receiver.
    *
    * @param node the FieldAccessNode to convert to a JavaExpression
-   * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}. Can
-   *     contain {@link Unknown} as receiver.
+   * @return the {@link FieldAccess} or {@link ClassName} that corresponds to {@code node}
    */
-  public static FieldAccess fromNodeFieldAccess(FieldAccessNode node) {
+  public static JavaExpression fromNodeFieldAccess(FieldAccessNode node) {
     Node receiverNode = node.getReceiver();
+    String fieldName = node.getFieldName();
+    if (fieldName.equals("this")) {
+      // The CFG represents "className.this" as a FieldAccessNode, but it isn't a field access.
+      return new ThisReference(receiverNode.getType());
+    } else if (fieldName.equals("class")) {
+      // The CFG represents "className.class" as a FieldAccessNode; bit it is a class literal.
+      return new ClassName(receiverNode.getType());
+    }
     JavaExpression receiver;
     if (node.isStatic()) {
       receiver = new ClassName(receiverNode.getType());
@@ -264,21 +273,7 @@ public abstract class JavaExpression {
   public static JavaExpression fromNode(Node receiverNode) {
     JavaExpression result = null;
     if (receiverNode instanceof FieldAccessNode) {
-      FieldAccessNode fan = (FieldAccessNode) receiverNode;
-
-      if (fan.getFieldName().equals("this")) {
-        // For some reason, "className.this" is considered a field access.
-        // We right this wrong here.
-        result = new ThisReference(fan.getReceiver().getType());
-      } else if (fan.getFieldName().equals("class")) {
-        // "className.class" is considered a field access. This makes sense, since .class is similar
-        // to a field access which is the equivalent of a call to getClass(). However for the
-        // purposes of dataflow analysis, and value stores, this is the equivalent of a
-        // ClassNameNode.
-        result = new ClassName(fan.getReceiver().getType());
-      } else {
-        result = fromNodeFieldAccess(fan);
-      }
+      result = fromNodeFieldAccess((FieldAccessNode) receiverNode);
     } else if (receiverNode instanceof ExplicitThisNode) {
       result = new ThisReference(receiverNode.getType());
     } else if (receiverNode instanceof ThisNode) {
@@ -412,7 +407,11 @@ public abstract class JavaExpression {
             CollectionsPlume.mapList(JavaExpression::fromTree, mn.getArguments());
         JavaExpression methodReceiver;
         if (ElementUtils.isStatic(invokedMethod)) {
-          methodReceiver = new ClassName(TreeUtils.typeOf(mn.getMethodSelect()));
+          @SuppressWarnings(
+              "nullness:assignment" // enclosingTypeElement(ExecutableElement): @NonNull
+          )
+          @NonNull TypeElement methodType = ElementUtils.enclosingTypeElement(invokedMethod);
+          methodReceiver = new ClassName(methodType.asType());
         } else {
           methodReceiver = getReceiver(mn);
         }
@@ -427,8 +426,8 @@ public abstract class JavaExpression {
       case IDENTIFIER:
         IdentifierTree identifierTree = (IdentifierTree) tree;
         TypeMirror typeOfId = TreeUtils.typeOf(identifierTree);
-        if (identifierTree.getName().contentEquals("this")
-            || identifierTree.getName().contentEquals("super")) {
+        Name identifierName = identifierTree.getName();
+        if (identifierName.contentEquals("this") || identifierName.contentEquals("super")) {
           result = new ThisReference(typeOfId);
           break;
         }
@@ -537,8 +536,14 @@ public abstract class JavaExpression {
   private static JavaExpression fromMemberSelect(MemberSelectTree memberSelectTree) {
     TypeMirror expressionType = TreeUtils.typeOf(memberSelectTree.getExpression());
     if (TreeUtils.isClassLiteral(memberSelectTree)) {
+      // the identifier is "class"
       return new ClassName(expressionType);
     }
+    if (TreeUtils.isExplicitThisDereference(memberSelectTree)) {
+      // the identifier is "class"
+      return new ThisReference(expressionType);
+    }
+
     assert TreeUtils.isUseOfElement(memberSelectTree) : "@AssumeAssertion(nullness): tree kind";
     Element ele = TreeUtils.elementFromUse(memberSelectTree);
     if (ElementUtils.isTypeElement(ele)) {

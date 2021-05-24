@@ -126,7 +126,7 @@ public class Issue3275 {
 
   void assign_eet(@Nullable Object obj) {
     if ((obj == null) == true) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }
@@ -139,7 +139,7 @@ public class Issue3275 {
 
   void assign_eeb(@Nullable Object obj) {
     if ((obj == null) == b) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }
@@ -152,14 +152,14 @@ public class Issue3275 {
 
   void assign_enf(@Nullable Object obj) {
     if ((obj == null) != false) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }
 
   void assign_enb(@Nullable Object obj) {
     if ((obj == null) != b) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }
@@ -172,21 +172,21 @@ public class Issue3275 {
 
   void assign_nef(@Nullable Object obj) {
     if ((obj != null) == false) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }
 
   void assign_neb(@Nullable Object obj) {
     if ((obj != null) == b) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }
 
   void assign_nnt(@Nullable Object obj) {
     if ((obj != null) != true) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }
@@ -199,7 +199,7 @@ public class Issue3275 {
 
   void assign_nnb(@Nullable Object obj) {
     if ((obj != null) != b) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       f = obj;
     }
   }

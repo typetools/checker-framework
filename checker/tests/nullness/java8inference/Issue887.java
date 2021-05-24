@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public abstract class Issue887 {
   void test() {
-    // :: error: (argument.type.incompatible) :: error: (type.argument.type.incompatible)
+    // :: error: (argument) :: error: (type.argument)
     method(foo(null).get(0));
     methodNullable(fooNullable(null).get(0));
   }

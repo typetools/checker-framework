@@ -1,0 +1,21 @@
+// Contains assumptions about reflection. In particular, this
+// makes the results of reflection the default (i.e. bottom) type
+// in the Must Call type system. This choice is technically unsound:
+// if e.g. the java.net.Socket constructor is invoked via reflection,
+// then our checker will fail to track it. For usability, we found it
+// much more useful to ignore these warnings than to issue them.
+// If you wish to see warnings related to reflection, remove this stub file
+// when running the checker.
+
+// TODO: make this configurable so that users can easily turn this assumption off,
+// e.g. via a command-line option. For now, keep this as a stub file rather than
+// moving it to the annotated JDK so that re-compiling the checker without this
+// assumption is easy if we ever need to do it.
+
+package java.lang.reflect;
+
+import org.checkerframework.checker.mustcall.qual.MustCall;
+
+class Constructor<T> {
+    @MustCall({}) T newInstance(Object... initArgs);
+}

@@ -5,9 +5,9 @@ import org.checkerframework.framework.qual.HasQualifierParameter;
 @HasQualifierParameter(Tainted.class)
 public class Refine {
   void method(@Tainted Refine tainted, @Untainted Refine untainted) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Tainted Refine local = untainted;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Untainted Refine untaintedLocal = local;
     @Untainted Refine untaintedLocal2 = untaintedLocal;
   }

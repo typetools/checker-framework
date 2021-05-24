@@ -8,15 +8,15 @@ import org.checkerframework.checker.index.qual.NonNegative;
 public class Index167 {
   static void fn1(int[] arr, @IndexFor("#1") int i) {
     if (i >= 33) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       fn2(arr, i);
     }
     if (i > 33) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       fn2(arr, i);
     }
     if (i != 33) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       fn2(arr, i);
     }
   }

@@ -66,7 +66,7 @@ public class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
           void launder(@NonNull OUTER arg1, @Nullable OUTER arg2) {
               addToListo(arg1, arg2); // T is inferred to be <@Nullable OUTER>
-                                      // if we did not mark this as type.argument.type.incompatible
+                                      // if we did not mark this as type.argument
                                       // then we would have no idea that in the last
                                       // line of this example we are putting a null value into
                                       // a List of @NonNull Strings
@@ -78,13 +78,13 @@ public class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
        g.listo = new ArrayList<@NonNull String>();
        g.launder("", null);    // during this method call null would be added to g.listo
     */
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     OUTER_SCOPE_TV osNaked2 = methodD(os1, os2, "");
 
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     OUTER_SCOPE_TV osAnnoed = methodD(os2, os2, "");
 
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     String str = methodD2(os2, os1, "");
     OUTER_SCOPE_TV osNaked3 = methodD2(os1, os1, os2);
   }
@@ -153,7 +153,7 @@ public class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
   void contextOP(@H1S1 @H2S1 String s1, @H1Bot @H2Bot String s2) {
     // This test is actually here to test that the constraint P :> O is implied on p
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @H1Bot @H2Bot String loc = methodOP(s1, s2);
   }
 

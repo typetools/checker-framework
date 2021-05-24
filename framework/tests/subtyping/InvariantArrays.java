@@ -10,13 +10,13 @@ public class InvariantArrays {
   @Encrypted String[] esa;
 
   void tests() {
-    // TODOINVARR:: error: (assignment.type.incompatible)
+    // TODOINVARR:: error: (assignment)
     oa = eoa;
     // This error only occurs with the Encrypted type system;
     // other type systems don't suffer an error here.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     eoa = oa;
-    // TODOINVARR:: error: (assignment.type.incompatible)
+    // TODOINVARR:: error: (assignment)
     oa = esa;
     // OK
     oa = sa;
@@ -41,13 +41,13 @@ public class InvariantArrays {
     leoa = llera;
     eloa = ellera;
 
-    // TODOINVARR:: error: (assignment.type.incompatible)
+    // TODOINVARR:: error: (assignment)
     loa = eloa;
-    // TODOINVARR:: error: (assignment.type.incompatible)
+    // TODOINVARR:: error: (assignment)
     loa = ellra;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     eleoa = eloa;
-    // TODOINVARR:: error: (assignment.type.incompatible)
+    // TODOINVARR:: error: (assignment)
     leoa = eleoa;
   }
 }

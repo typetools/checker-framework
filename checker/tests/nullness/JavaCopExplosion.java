@@ -25,7 +25,7 @@ public class JavaCopExplosion {
     s2 = null;
     // :: warning: (nulltest.redundant)
     if (s2 != null || s != null) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       s = s2;
     } else {
       s = new String("Levitan");
@@ -74,13 +74,13 @@ public class JavaCopExplosion {
       // y = z;
       nnz = z;
       z = null;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       nnz = z;
 
       while (z == null) {
         break;
       }
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       nnz = z;
       while (z == null) {
         // do nothing

@@ -18,10 +18,10 @@ public class Issue1922 {
 
   // Find a key in a map and return String version of its value.
   public static String findKeyAndFetchString(Map<String, Object> someMap) {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     @Nullable @KeyFor("someMap") String myKey = Issue1922.<@KeyFor("someMap") String>findKey(someMap.keySet(), "Foo");
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Object value = someMap.get(myKey);
     return value.toString();
   }

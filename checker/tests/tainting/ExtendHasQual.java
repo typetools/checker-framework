@@ -5,7 +5,7 @@ import org.checkerframework.framework.qual.HasQualifierParameter;
 
 public class ExtendHasQual {
   static class Super {
-    @SuppressWarnings("super.invocation.invalid")
+    @SuppressWarnings("super.invocation")
     @Untainted Super() {}
   }
 

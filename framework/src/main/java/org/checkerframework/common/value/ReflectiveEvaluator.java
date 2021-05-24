@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
@@ -166,7 +165,7 @@ public class ReflectiveEvaluator {
     final ExecutableElement ele = TreeUtils.elementFromUse(tree);
     List<Class<?>> paramClasses = null;
     try {
-      @CanonicalNameOrEmpty Name className =
+      @CanonicalNameOrEmpty String className =
           TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
       paramClasses = getParameterClasses(ele);
       @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Class.toString

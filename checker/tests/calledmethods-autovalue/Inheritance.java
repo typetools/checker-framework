@@ -41,7 +41,7 @@ public class Inheritance {
 
   static void wrong() {
     PropHolder.Builder b = PropHolder.builder();
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     b.size(1).build();
   }
 }

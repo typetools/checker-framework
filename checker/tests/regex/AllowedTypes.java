@@ -50,7 +50,7 @@ public class AllowedTypes {
     @Regex boolean b; // error
 
     @Regex String regex = "a";
-    // :: error: (compound.assignment.type.incompatible)
+    // :: error: (compound.assignment)
     regex += "(";
 
     String nonRegex = "a";

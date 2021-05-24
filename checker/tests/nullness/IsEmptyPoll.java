@@ -18,13 +18,13 @@ public final class IsEmptyPoll extends ArrayList<String> {
 
   void mNullable(Queue<@Nullable String> q) {
     while (!q.isEmpty()) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull String firstNode = q.poll();
     }
   }
 
   void mNoCheck(Queue<@Nullable String> q) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull String firstNode = q.poll();
   }
 }

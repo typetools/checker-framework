@@ -94,8 +94,8 @@ def javac_sanity_check(checker_framework_website, release_version):
         "Javac sanity check",
         nullness_output,
         [
-            "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
-            "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)",
+            "NullnessExampleWithWarnings.java:23: error: (assignment)",
+            "NullnessExampleWithWarnings.java:33: error: (argument)",
         ],
     )
 
@@ -113,8 +113,8 @@ def javac_sanity_check(checker_framework_website, release_version):
         "Javac Shorthand Sanity Check",
         nullness_shorthand_output,
         [
-            "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
-            "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)",
+            "NullnessExampleWithWarnings.java:23: error: (assignment)",
+            "NullnessExampleWithWarnings.java:33: error: (argument)",
         ],
     )
 

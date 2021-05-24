@@ -8,7 +8,7 @@ public class FindBugs {
   }
 
   @NonNull MyList<@org.checkerframework.checker.nullness.qual.Nullable Object> getListOfNulls() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return null; // error
   }
 

@@ -178,7 +178,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
       if (AnnotationUtils.containsSame(seenTops, top)) {
         return Collections.singletonList(
-            new DiagMessage(Kind.ERROR, "type.invalid.conflicting.annos", annotations, type));
+            new DiagMessage(Kind.ERROR, "conflicting.annos", annotations, type));
       }
       seenTops.add(top);
     }
@@ -188,7 +188,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // wrong number of annotations
     if (!canHaveEmptyAnnotationSet && seenTops.size() < qualifierHierarchy.getWidth()) {
       return Collections.singletonList(
-          new DiagMessage(Kind.ERROR, "type.invalid.too.few.annotations", annotations, type));
+          new DiagMessage(Kind.ERROR, "too.few.annotations", annotations, type));
     }
 
     // success
@@ -221,8 +221,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * Most errors reported by this class are of the form type.invalid. This method reports when the
    * bounds of a wildcard or type variable don't make sense. Bounds make sense when the effective
    * annotations on the upper bound are supertypes of those on the lower bounds for all hierarchies.
-   * To ensure that this subtlety is not lost on users, we report "bound.type.incompatible" and
-   * print the bounds along with the invalid type rather than a "type.invalid".
+   * To ensure that this subtlety is not lost on users, we report "bound" and print the bounds along
+   * with the invalid type rather than a "type.invalid".
+   *
+   * @param type the type with invalid bounds
+   * @param tree where to report the error
    */
   protected void reportInvalidBounds(final AnnotatedTypeMirror type, final Tree tree) {
     final String label;
@@ -248,7 +251,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     checker.reportError(
         tree,
-        "bound.type.incompatible",
+        "bound",
         label,
         type.toString(),
         upperBound.toString(true),
@@ -260,8 +263,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     reportValidityResult("type.invalid", type, p);
   }
 
+  /**
+   * Report an "annotations.on.use" error for the given type and tree.
+   *
+   * @param type the type with invalid annotations
+   * @param p the tree where to report the error
+   */
   protected void reportInvalidAnnotationsOnUse(final AnnotatedTypeMirror type, final Tree p) {
-    reportValidityResultOnUnannotatedType("type.invalid.annotations.on.use", type, p);
+    reportValidityResultOnUnannotatedType("annotations.on.use", type, p);
   }
 
   @Override
@@ -446,8 +455,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   @Override
-  @SuppressWarnings(
-      "signature:argument.type.incompatible") // PrimitiveType.toString(): @PrimitiveType
+  @SuppressWarnings("signature:argument") // PrimitiveType.toString(): @PrimitiveType
   public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
     if (!checkTopLevelDeclaredOrPrimitiveType
         || checker.shouldSkipUses(type.getUnderlyingType().toString())) {
@@ -484,8 +492,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
   /**
    * Checks that the annotations on the type arguments supplied to a type or a method invocation are
-   * within the bounds of the type variables as declared, and issues the
-   * "type.argument.type.incompatible" error if they are not.
+   * within the bounds of the type variables as declared, and issues the "type.argument" error if
+   * they are not.
    *
    * @param type the type to check
    * @param tree the type's tree
@@ -569,7 +577,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     } // else
     //  When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
     //  be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
-    //  a bound.type.incompatible
+    //  a bound
 
     return true;
   }

@@ -1,3 +1,7 @@
 // No package statement.
+
+// Prevent a warning about a stub file having no import statements.
+import java.lang.SuppressWarnings;
+
 @SuppressWarnings("") // Any annotation.
-class Test {}
+class Driver {}

@@ -1,7 +1,7 @@
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
 public class Primitive {
-  @SuppressWarnings("type.incompatible")
+  @SuppressWarnings("assignment")
   @H1S2 int o = 4;
 
   @H1S2 @H2Poly int m(@H1S2 @H2Poly int p) {
@@ -13,7 +13,7 @@ public class Primitive {
   }
 
   void use2(@H1S2 @H2S2 int p) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @H1S2 @H2S1 int l = m(p);
   }
 }

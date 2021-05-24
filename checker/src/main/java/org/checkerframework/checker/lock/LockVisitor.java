@@ -369,7 +369,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // TODO: Find a cleaner, non-abstraction-breaking way to know whether method actual
         // parameters are being assigned to formal parameters.
 
-        if (!errorKey.equals("argument.type.incompatible")) {
+        if (!errorKey.equals("argument")) {
           // If both @GuardSatisfied have no index, the assignment is not allowed because
           // the LHS and RHS expressions may be guarded by different lock expressions.
           // The assignment is allowed when matching a formal parameter to an actual
@@ -482,7 +482,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     if (seaOfOverriderMethod.isWeakerThan(seaOfOverridenMethod)) {
       isValid = false;
       reportFailure(
-          "override.sideeffect.invalid",
+          "override.sideeffect",
           overriderTree,
           enclosingType,
           overriddenMethodType,
@@ -978,7 +978,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this
     // scenario).
     // Currently an annotation in such a tree, such as "new @GuardedBy("foo") Object()",
-    // results in a constructor.invocation.invalid error. This must be fixed first.
+    // results in a constructor.invocation error. This must be fixed first.
 
     path = path.getParentPath();
 
@@ -1094,8 +1094,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    */
   // TODO: If and when the de-sugared .toString() tree is accessible from BaseTypeVisitor,
   // the toString() method call should be visited instead of doing this. This would result
-  // in contracts.precondition.not.satisfied errors being issued instead of
-  // contracts.precondition.not.satisfied.field, so it would be clear that
+  // in contracts.precondition errors being issued instead of
+  // contracts.precondition.field, so it would be clear that
   // the error refers to an implicit method call, not a dereference (field access).
   private void checkPreconditionsForImplicitToStringCall(ExpressionTree tree) {
     AnnotationMirror gbAnno =
@@ -1133,11 +1133,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     LockStore store = atypeFactory.getStoreBefore(tree);
     for (LockExpression expression : expressions) {
       if (expression.error != null) {
-        checker.reportError(
-            tree, "expression.unparsable.type.invalid", expression.error.toString());
+        checker.reportError(tree, "expression.unparsable", expression.error.toString());
       } else if (expression.lockExpression == null) {
-        checker.reportError(
-            tree, "expression.unparsable.type.invalid", expression.expressionString);
+        checker.reportError(tree, "expression.unparsable", expression.expressionString);
       } else if (!isLockHeld(expression.lockExpression, store)) {
         checker.reportError(tree, "lock.not.held", expression.lockExpression.toString());
       }
