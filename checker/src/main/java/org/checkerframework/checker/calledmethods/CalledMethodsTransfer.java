@@ -119,7 +119,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   private Map<TypeMirror, CFStore> makeExceptionalStores(
       MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {
-      // this can happen in some weird (buggy?) cases
+      // This can happen in some weird (buggy?) cases:
+      // see https://github.com/typetools/checker-framework/issues/3585
       return Collections.emptyMap();
     }
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
