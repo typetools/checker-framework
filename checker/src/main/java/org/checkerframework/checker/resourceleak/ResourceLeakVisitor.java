@@ -1,13 +1,12 @@
 package org.checkerframework.checker.resourceleak;
 
-import static javax.lang.model.element.ElementKind.METHOD;
-
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
@@ -181,7 +180,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           if (fieldMCAnno.isEmpty()) {
             return;
           }
-          if (element.getKind().equals(METHOD)
+          if (element.getKind() == ElementKind.METHOD
               && enclosingMCAnno.contains(element.getSimpleName().toString())) {
             AnnotationMirror ensuresCalledMethodsAnno =
                 rlTypeFactory.getDeclAnnotation(element, EnsuresCalledMethods.class);
