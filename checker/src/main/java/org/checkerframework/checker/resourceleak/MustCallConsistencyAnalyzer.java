@@ -75,11 +75,11 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types within
- * a method, thereby detecting resource leaks. For any expression <emph>e</emph> in the method, the
- * analyzer ensures that at method exit, there exists a resource alias <emph>r</emph> of
- * <emph>e</emph> such that @MustCall(r) is contained in @CalledMethods(r). For any <emph>e</emph>
- * for which this property does not hold, the analyzer reports a {@code
- * "required.method.not.called"} error, indicating a possible resource leak.
+ * a method, thereby detecting resource leaks. For any expression <em>e</em> in the method, the
+ * analyzer ensures that at method exit, there exists a resource alias <em>r</em> of <em>e</em> such
+ * that @MustCall(r) is contained in @CalledMethods(r). For any <em>e</em> for which this property
+ * does not hold, the analyzer reports a {@code "required.method.not.called"} error, indicating a
+ * possible resource leak.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
@@ -575,7 +575,7 @@ class MustCallConsistencyAnalyzer {
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
 
     // Ownership transfer to @Owning field
-    if (lhsElement.getKind().equals(ElementKind.FIELD)) {
+    if (lhsElement.getKind() == ElementKind.FIELD) {
       boolean isOwningField =
           !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
               && typeFactory.getDeclAnnotation(lhsElement, Owning.class) != null;
@@ -1304,7 +1304,7 @@ class MustCallConsistencyAnalyzer {
   private static boolean isTryWithResourcesVariable(LocalVariableNode node) {
     Tree tree = node.getTree();
     return tree != null
-        && TreeUtils.elementFromTree(tree).getKind().equals(ElementKind.RESOURCE_VARIABLE);
+        && TreeUtils.elementFromTree(tree).getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
   /**
