@@ -54,17 +54,26 @@ enhancements.
 
 
 \paragraph{Potential version conflicts if you export the Dataflow Framework}
+
+If your tool uses the Dataflow Framework, then \textbf{please shade the
+  Dataflow Framework in your tool}.  You can do this using the Maven Shade
+Plugin, \url{https://maven.apache.org/plugins/maven-shade-plugin/}, or the
+Gradle Shadow Plugin, \url{https://imperceptiblethoughts.com/shadow/}.
+If you cannot shadow the Checker Framework and Dataflow Framework classes, then
+please ask the Checker Framework developers to create a shaded artifact
+just for you, every time they release the Checker Framework.
+See \code{dataflow/build.gradle} for instructions.
+
+The reason to shade the Dataflow Framework is to permit users to run multiple tools.
 Suppose that two tools both utilize the Dataflow Framework.
 If the two tools use different versions of the Dataflow Framework,
-then it may be impossible for users to run both tools.  The
-Checker Framework necessarily uses the Dataflow Framework.
-Because of this, you should distribute a version of the Dataflow Framework
-with where the packages name been renamed.  This can be done using the Maven Shade Plugin,
-\url{https://maven.apache.org/plugins/maven-shade-plugin/}, or the Gradle Shadow Plugin,
-\url{https://imperceptiblethoughts.com/shadow/}.
-If your tool cannot shadow the Checker Framework and Dataflow Framework classes, then
-you can create a pull request so that one is created for you during the Checker Framework release.
-See \code{dataflow/build.gradle} for instructions.
+then it may be impossible for users to run both tools due to a version conflict.
+The Checker Framework uses an unshaded version the Dataflow Framework,
+since the Dataflow Framework is part of the Checker Framework.
+If you do not shade the Dataflow Framework in your tool, then users will
+not be able to use both your tool and the Checker Framework (or any other
+tool that does not shade the Checker Framework and Dataflow Framework classes).
+
 
 \section{Organization}
 
@@ -1987,6 +1996,6 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
 %  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
-%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
+%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
 %  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
 %  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
