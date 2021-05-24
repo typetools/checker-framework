@@ -29,10 +29,12 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   /**
    * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} requires a TransferInput,
    * but the actual exceptional stores need to be modified in {@link #accumulate(Node,
-   * TransferResult, String...)}, which only has access to a TransferResult. So this variable is set
-   * to non-null in {@link #visitMethodInvocation(MethodInvocationNode, TransferInput)} before the
-   * call to super, which will call accumulate(); this field is then reset to null afterwards to
-   * prevent it from being used somewhere it shouldn't be.
+   * TransferResult, String...)}, which only has access to a TransferResult. So this field is set to
+   * non-null in {@link #visitMethodInvocation(MethodInvocationNode, TransferInput)} via a call to
+   * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} (which reads the CFStores
+   * from the TransferInput) before the call to accumulate(); accumulate() can then use this field
+   * to read the CFStores; and then finally this field is then reset to null afterwards to prevent
+   * it from being used somewhere it shouldn't be.
    */
   private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
 
@@ -99,7 +101,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         }
       }
       AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-      exceptionalStores.values().stream().forEach(s -> s.insertValue(target, newAnno));
+      exceptionalStores.forEach((tm, s) -> s.insertValue(target, newAnno));
     }
   }
 
@@ -122,8 +124,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     }
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
     Map<TypeMirror, CFStore> result = new LinkedHashMap<>();
-    block.getExceptionalSuccessors().keySet().stream()
-        .forEach(tm -> result.put(tm, input.getRegularStore().copy()));
+    block
+        .getExceptionalSuccessors()
+        .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
     return result;
   }
 }
