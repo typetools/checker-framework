@@ -5,6 +5,16 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 
+/**
+ * Indicates a method precondition: the method expects the specified expressions have definitely had
+ * the specified methods called on them at the point when the annotated method is invoked.
+ *
+ * <p>Do not use this annotation for formal parameters (instead, give them a {@code @CalledMethods}
+ * type). The {@code @RequiresCalledMethods} annotation is intended for other expressions, such as
+ * field accesses or method calls.
+ *
+ * @checker_framework.manual #called-methods-checker Called Methods Checker
+ */
 @PreconditionAnnotation(qualifier = CalledMethods.class)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface RequiresCalledMethods {
