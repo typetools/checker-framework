@@ -13,7 +13,7 @@ class ACRegularExitPointTest {
       return this;
     }
 
-    void c(@CalledMethods({"a"}) Foo this) {}
+    void c(@CalledMethods("a") Foo this) {}
   }
 
   @MustCall("a") class SubFoo extends Foo {}
@@ -22,7 +22,7 @@ class ACRegularExitPointTest {
     return new Foo();
   }
 
-  @CalledMethods({"a"}) Foo makeFooCallA() {
+  @CalledMethods("a") Foo makeFooCallA() {
     Foo f = new Foo();
     f.a();
     return f;
@@ -59,7 +59,6 @@ class ACRegularExitPointTest {
   }
 
   void testStoringInLocal() {
-
     Foo foo = makeFooCallA();
   }
 
@@ -109,7 +108,7 @@ class ACRegularExitPointTest {
 
     Foo f = makeFoo();
     f.a();
-    Function<Foo, @CalledMethods({"a"}) Foo> innerfunc =
+    Function<Foo, @CalledMethods("a") Foo> innerfunc =
         st -> {
           // :: error: required.method.not.called
           Foo fn1 = new Foo();
