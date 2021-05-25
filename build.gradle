@@ -473,7 +473,7 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
-    args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
+    args "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
 }
 
 
