@@ -54,26 +54,25 @@ enhancements.
 
 
 \paragraph{Potential version conflicts if you export the Dataflow Framework}
-Suppose that two tools both utilize the Dataflow Framework.  If neither one
-exports the Dataflow Framework's classes or the Checker Framework
-annotations, both tools can be run at the same time.  If both export the
-classes, then it may be impossible for users to run both tools, because
-they may require a different version of the Dataflow Framework.  The
-Checker Framework necessarily exports the Dataflow Framework.  If your tool
-cannot shadow the Checker Framework and Dataflow Framework classes, and you
-cannot conform to the Checker Framework release schedule, then instead of
-using the \code{dataflow} artifact at
-\url{https://search.maven.org/artifact/org.checkerframework/dataflow/},
-you can use the \code{dataflow-shaded} artifact at
-\url{https://search.maven.org/artifact/org.checkerframework/dataflow-shaded/}.
-It contains the Dataflow Framework in package
-\code{org.checkerframework.shaded.dataflow} and also its dependencies in
-their usual packages, namely the Checker Framework
-qualifiers and the plume-util project
-(\url{https://github.com/plume-lib/plume-util}).
-(There may still be a problem if two different non-Checker-Framework tools
-both export different, incompatible versions of the \code{dataflow-shaded}
-artifact.)
+
+If your tool uses the Dataflow Framework, then \textbf{please shade the
+  Dataflow Framework in your tool}.  You can do this using the Maven Shade
+Plugin, \url{https://maven.apache.org/plugins/maven-shade-plugin/}, or the
+Gradle Shadow Plugin, \url{https://imperceptiblethoughts.com/shadow/}.
+If you cannot shade the Checker Framework and Dataflow Framework classes, then
+please ask the Checker Framework developers to create a shaded artifact
+just for you, every time they release the Checker Framework.
+See \code{dataflow/build.gradle} for instructions.
+
+The reason to shade the Dataflow Framework is to permit users to run multiple tools.
+Suppose that two tools both utilize the Dataflow Framework.
+If the two tools use different versions of the Dataflow Framework,
+then it may be impossible for users to run both tools due to a version conflict.
+The Checker Framework uses an unshaded version the Dataflow Framework,
+since the Dataflow Framework is part of the Checker Framework.
+If you do not shade the Dataflow Framework in your tool, then users will
+not be able to use both your tool and the Checker Framework (or any other
+tool that does not shade the Checker Framework and Dataflow Framework classes).
 
 
 \section{Organization}
@@ -1997,6 +1996,6 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
 %  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
-%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
+%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
 %  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
 %  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
