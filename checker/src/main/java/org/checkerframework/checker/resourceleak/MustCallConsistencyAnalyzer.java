@@ -76,7 +76,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types within
  * a method, thereby detecting resource leaks. For any expression <em>e</em> in the method, the
  * analyzer ensures that at method exit, there exists a resource alias <em>r</em> of <em>e</em> such
- * that @MustCall(r) is contained in @CalledMethods(r). For any <em>e</em> for which this property
+ * that MustCall(r) is contained in CalledMethods(r). For any <em>e</em> for which this property
  * does not hold, the analyzer reports a {@code "required.method.not.called"} error, indicating a
  * possible resource leak.
  */
@@ -117,12 +117,12 @@ class MustCallConsistencyAnalyzer {
   /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts of
    * type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of resource aliases for
-   * some value with a non-empty {@code @MustCall} obligation. The analysis is currently implemented
-   * directly using a worklist; in the future, it should be transitioned to use the Checker dataflow
-   * framework.
+   * some value with a non-empty {@code @MustCall} obligation.
    *
    * @param cfg the control flow graph of the method to check
    */
+  // TODO: This analysis is currently implemented directly using a worklist; in the future, it
+  // should be transitioned to use the Checker dataflow framework.
   /* package-private */
   void analyze(ControlFlowGraph cfg) {
     Set<BlockWithFacts> visited = new LinkedHashSet<>();
