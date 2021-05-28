@@ -258,7 +258,7 @@ public class AnnotatedTypeCopier
   public AnnotatedTypeMirror visitNoType(
       AnnotatedNoType original,
       IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-    return makeCopy(original);
+    return makeOrReturnCopy(original, originalToCopy);
   }
 
   @Override
