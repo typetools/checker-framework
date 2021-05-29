@@ -5,48 +5,48 @@ import org.checkerframework.checker.nullness.qual.*;
 // see https://github.com/typetools/checker-framework/issues/223
 class RawField {
 
-    public @UnknownInitialization RawField a;
+  public @UnknownInitialization RawField a;
 
-    public RawField() {
-        // :: error: (assignment.type.incompatible)
-        a = null;
-        this.a = this;
-        a = this;
-    }
+  public RawField() {
+    // :: error: (assignment)
+    a = null;
+    this.a = this;
+    a = this;
+  }
 
-    // :: error: (initialization.fields.uninitialized)
-    public RawField(boolean foo) {}
+  // :: error: (initialization.fields.uninitialized)
+  public RawField(boolean foo) {}
 
-    void t1() {
-        // :: error: (method.invocation.invalid)
-        a.t1();
-    }
+  void t1() {
+    // :: error: (method.invocation)
+    a.t1();
+  }
 
-    void t2(@UnknownInitialization RawField a) {
-        this.a = a;
-    }
+  void t2(@UnknownInitialization RawField a) {
+    this.a = a;
+  }
 }
 
 class Options {
 
-    @UnknownInitialization Object arg;
+  @UnknownInitialization Object arg;
 
-    public Options(@UnknownInitialization Object arg) {
-        this.arg = arg;
-    }
+  public Options(@UnknownInitialization Object arg) {
+    this.arg = arg;
+  }
 
-    public void parse_or_usage() {
-        // use arg only under the assumption that it is @UnknownInitialization
-    }
+  public void parse_or_usage() {
+    // use arg only under the assumption that it is @UnknownInitialization
+  }
 }
 
 class MultiVersionControl {
 
-    @SuppressWarnings("fbc") // see https://github.com/typetools/checker-framework/issues/223
-    public void parseArgs(@UnknownInitialization MultiVersionControl this) {
-        Options options = new Options(this);
-        options.parse_or_usage();
-    }
+  @SuppressWarnings("nullness") // see https://github.com/typetools/checker-framework/issues/223
+  public void parseArgs(@UnknownInitialization MultiVersionControl this) {
+    Options options = new Options(this);
+    options.parse_or_usage();
+  }
 }
 
 // TODO: This checks that forbidden field assignments do not occur.  (The
@@ -61,7 +61,7 @@ class MultiVersionControl {
 //     Object f;
 //
 //     public UseUnknownInitializationField() {
-//         // :: (initialization.invalid.field.write.in.constructor)
+//         // :: (initialization.field.write.in.constructor)
 //         f = HasStaticUnknownInitializationField.f;
 //     }
 //

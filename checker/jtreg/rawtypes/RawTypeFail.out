@@ -1,6 +1,6 @@
 RawTypeFail.java:14:30: compiler.warn.prob.found.req: (compiler.misc.unchecked.assign), java.util.Map, java.util.Map<java.lang.String,java.lang.Object>
 RawTypeFail.java:15:31: compiler.warn.prob.found.req: (compiler.misc.unchecked.assign), java.util.HashMap, java.util.Map<java.lang.String,java.lang.Object>
-RawTypeFail.java:14:30: compiler.err.proc.messager: (assignment.type.incompatible)
-RawTypeFail.java:15:31: compiler.err.proc.messager: (assignment.type.incompatible)
+RawTypeFail.java:14:30: compiler.err.proc.messager: (assignment)
+RawTypeFail.java:15:31: compiler.err.proc.messager: (assignment)
 2 errors
 2 warnings

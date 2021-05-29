@@ -3,14 +3,14 @@
 
 import org.checkerframework.checker.lock.qual.Holding;
 
-class Issue805 {
-    @Holding("this.Issue805.class")
-    // :: error: (flowexpr.parse.error)
-    void method() {}
+public class Issue805 {
+  @Holding("this.Issue805.class")
+  // :: error: (flowexpr.parse.error)
+  void method() {}
 
-    @Holding("Issue805.class")
-    void method2() {}
+  @Holding("Issue805.class")
+  void method2() {}
 
-    @Holding("java.lang.String.class")
-    void method3() {}
+  @Holding("java.lang.String.class")
+  void method3() {}
 }

@@ -7,20 +7,20 @@ import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 @SuppressWarnings("all")
-class Issue953bLambda {
-    private static List<List<?>> strs = new ArrayList<>();
+public class Issue953bLambda {
+  private static List<List<?>> strs = new ArrayList<>();
 
-    public static <R, T> List<@NonNull R> mapList(
-            List<@NonNull T> list, Function<@NonNull T, @NonNull R> func) {
-        throw new RuntimeException();
-    }
+  public static <R, T> List<@NonNull R> mapList(
+      List<@NonNull T> list, Function<@NonNull T, @NonNull R> func) {
+    throw new RuntimeException();
+  }
 
-    public static void test() {
-        List<String> list =
-                mapList(
-                        strs,
-                        s -> {
-                            return "";
-                        });
-    }
+  public static void test() {
+    List<String> list =
+        mapList(
+            strs,
+            s -> {
+              return "";
+            });
+  }
 }

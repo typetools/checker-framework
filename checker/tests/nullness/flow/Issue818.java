@@ -3,70 +3,70 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue818 {
-    public static @Nullable Object o = null;
+public class Issue818 {
+  public static @Nullable Object o = null;
 
+  void method() {
+    Issue818.o = new Object();
+    o.toString();
+  }
+
+  void method2() {
+    o = new Object();
+    Issue818.o.toString();
+  }
+
+  void method3() {
+    o = new Object();
+    o.toString();
+  }
+
+  void method4() {
+    Issue818.o = new Object();
+    Issue818.o.toString();
+  }
+
+  static class StaticInnerClass {
     void method() {
-        Issue818.o = new Object();
-        o.toString();
+      Issue818.o = new Object();
+      o.toString();
     }
 
     void method2() {
-        o = new Object();
-        Issue818.o.toString();
+      o = new Object();
+      Issue818.o.toString();
     }
 
     void method3() {
-        o = new Object();
-        o.toString();
+      o = new Object();
+      o.toString();
     }
 
     void method4() {
-        Issue818.o = new Object();
-        Issue818.o.toString();
+      Issue818.o = new Object();
+      Issue818.o.toString();
+    }
+  }
+
+  class NonStaticInnerClass {
+    void method() {
+      Issue818.o = new Object();
+      o.toString();
     }
 
-    static class StaticInnerClass {
-        void method() {
-            Issue818.o = new Object();
-            o.toString();
-        }
-
-        void method2() {
-            o = new Object();
-            Issue818.o.toString();
-        }
-
-        void method3() {
-            o = new Object();
-            o.toString();
-        }
-
-        void method4() {
-            Issue818.o = new Object();
-            Issue818.o.toString();
-        }
+    void method2() {
+      o = new Object();
+      Issue818.o.toString();
     }
 
-    class NonStaticInnerClass {
-        void method() {
-            Issue818.o = new Object();
-            o.toString();
-        }
-
-        void method2() {
-            o = new Object();
-            Issue818.o.toString();
-        }
-
-        void method3() {
-            o = new Object();
-            o.toString();
-        }
-
-        void method4() {
-            Issue818.o = new Object();
-            Issue818.o.toString();
-        }
+    void method3() {
+      o = new Object();
+      o.toString();
     }
+
+    void method4() {
+      Issue818.o = new Object();
+      Issue818.o.toString();
+    }
+  }
 }

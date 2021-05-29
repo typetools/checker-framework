@@ -103,14 +103,14 @@ clean:
 
 check-tainting:
     [mkdir] Created dir: .../personalblog-demo/bin
-[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
-[jsr308.javac] javac 1.8.0-jsr308-3.5.0
-[jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:175: error: incompatible types in argument.
-[jsr308.javac]                     "where post.category like '%", category,
-[jsr308.javac]                                                    ^
-[jsr308.javac]   found   : @Tainted String
-[jsr308.javac]   required: @Untainted String
-[jsr308.javac] 1 error
+[cf.javac] Compiling 2 source files to .../personalblog-demo/bin
+[cf.javac] javac 1.8.0-jsr308-3.12.0
+[cf.javac] .../personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:175: error: incompatible types in argument.
+[cf.javac]                     "where post.category like '%", category,
+[cf.javac]                                                    ^
+[cf.javac]   found   : @Tainted String
+[cf.javac]   required: @Untainted String
+[cf.javac] 1 error
 
 BUILD FAILED
 .../personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
@@ -152,14 +152,14 @@ clean:
 
 check-tainting:
     [mkdir] Created dir: .../personalblog-demo/bin
-[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
-[jsr308.javac] javac 1.8.0-jsr308-3.5.0
-[jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types in argument.
-[jsr308.javac]                          pblog.getPostsByCategory(reqCategory));
-[jsr308.javac]                                                   ^
-[jsr308.javac]   found   : @Tainted String
-[jsr308.javac]   required: @Untainted String
-[jsr308.javac] 1 error
+[cf.javac] Compiling 2 source files to .../personalblog-demo/bin
+[cf.javac] javac 1.8.0-jsr308-3.12.0
+[cf.javac] .../personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types in argument.
+[cf.javac]                          pblog.getPostsByCategory(reqCategory));
+[cf.javac]                                                   ^
+[cf.javac]   found   : @Tainted String
+[cf.javac]   required: @Untainted String
+[cf.javac] 1 error
 
 BUILD FAILED
 .../personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
@@ -195,8 +195,8 @@ clean:
 
 check-tainting:
     [mkdir] Created dir: .../personalblog-demo/bin
-[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
-[jsr308.javac] javac 1.8.0-jsr308-3.5.0
+[cf.javac] Compiling 2 source files to .../personalblog-demo/bin
+[cf.javac] javac 1.8.0-jsr308-3.12.0
 
 BUILD SUCCESSFUL
 Total time: 2 seconds

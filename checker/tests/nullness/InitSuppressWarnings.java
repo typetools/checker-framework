@@ -3,8 +3,8 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class InitSuppressWarnings {
 
-    private void init_vars(@UnderInitialization(Object.class) InitSuppressWarnings this) {
-        @SuppressWarnings({"nullness"})
-        @Initialized InitSuppressWarnings initializedThis = this;
-    }
+  private void init_vars(@UnderInitialization(Object.class) InitSuppressWarnings this) {
+    @SuppressWarnings({"nullness"})
+    @Initialized InitSuppressWarnings initializedThis = this;
+  }
 }

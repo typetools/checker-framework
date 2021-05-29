@@ -3,14 +3,14 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 
 @DefaultQualifier(org.checkerframework.checker.nullness.qual.NonNull.class)
 interface Foo {
-    void foo(String a, String b);
+  void foo(String a, String b);
 }
 
 @DefaultQualifier(org.checkerframework.checker.nullness.qual.NonNull.class)
-class DefaultInterface {
+public class DefaultInterface {
 
-    public void test() {
+  public void test() {
 
-        @Nullable Foo foo = null;
-    }
+    @Nullable Foo foo = null;
+  }
 }

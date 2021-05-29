@@ -9,16 +9,18 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicLong;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -28,6 +30,9 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
+import org.plumelib.util.UniqueId;
 
 /**
  * A control flow graph (CFG for short) of a single method.
@@ -37,278 +42,314 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
  * ExceptionBlock#getExceptionalSuccessors}, {@link RegularBlock#getRegularSuccessor}) and
  * predecessors (method {@link Block#getPredecessors}) of the entry and exit blocks.
  */
-public class ControlFlowGraph {
+public class ControlFlowGraph implements UniqueId {
 
-    /** The entry block of the control flow graph. */
-    protected final SpecialBlock entryBlock;
+  /** The entry block of the control flow graph. */
+  protected final SpecialBlock entryBlock;
 
-    /** The regular exit block of the control flow graph. */
-    protected final SpecialBlock regularExitBlock;
+  /** The regular exit block of the control flow graph. */
+  protected final SpecialBlock regularExitBlock;
 
-    /** The exceptional exit block of the control flow graph. */
-    protected final SpecialBlock exceptionalExitBlock;
+  /** The exceptional exit block of the control flow graph. */
+  protected final SpecialBlock exceptionalExitBlock;
 
-    /** The AST this CFG corresponds to. */
-    protected final UnderlyingAST underlyingAST;
+  /** The AST this CFG corresponds to. */
+  public final UnderlyingAST underlyingAST;
 
-    /**
-     * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-     * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-     * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in
-     * treeLookup, while the Node for the post-conversion value is stored in convertedTreeLookup.
-     */
-    protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
+  /** The unique ID for the next-created object. */
+  static final AtomicLong nextUid = new AtomicLong(0);
+  /** The unique ID of this object. */
+  final transient long uid = nextUid.getAndIncrement();
 
-    /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-    protected final IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
+  @Override
+  public long getUid(@UnknownInitialization ControlFlowGraph this) {
+    return uid;
+  }
 
-    /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
-    protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
+  /**
+   * Maps from AST {@link Tree}s to sets of {@link Node}s.
+   *
+   * <ul>
+   *   <li>Most Trees that produce a value will have at least one corresponding Node.
+   *   <li>Trees that undergo conversions, such as boxing or unboxing, can map to two distinct
+   *       Nodes. The Node for the pre-conversion value is stored in {@link #treeLookup}, while the
+   *       Node for the post-conversion value is stored in {@link #convertedTreeLookup}.
+   * </ul>
+   *
+   * Some of the mapped-to nodes (in both {@link #treeLookup} and {@link #convertedTreeLookup}) do
+   * not appear in {@link #getAllNodes} because their blocks are not reachable in the control flow
+   * graph. Dataflow will not compute abstract values for these nodes.
+   */
+  protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
 
-    /**
-     * All return nodes (if any) encountered. Only includes return statements that actually return
-     * something
-     */
-    protected final List<ReturnNode> returnNodes;
+  /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
+  protected final IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
 
-    /**
-     * Class declarations that have been encountered when building the control-flow graph for a
-     * method.
-     */
-    protected final List<ClassTree> declaredClasses;
+  /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
+  protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
 
-    /**
-     * Lambdas encountered when building the control-flow graph for a method, variable initializer,
-     * or initializer.
-     */
-    protected final List<LambdaExpressionTree> declaredLambdas;
+  /**
+   * All return nodes (if any) encountered. Only includes return statements that actually return
+   * something
+   */
+  protected final List<ReturnNode> returnNodes;
 
-    public ControlFlowGraph(
-            SpecialBlock entryBlock,
-            SpecialBlockImpl regularExitBlock,
-            SpecialBlockImpl exceptionalExitBlock,
-            UnderlyingAST underlyingAST,
-            IdentityHashMap<Tree, Set<Node>> treeLookup,
-            IdentityHashMap<Tree, Set<Node>> convertedTreeLookup,
-            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
-            List<ReturnNode> returnNodes,
-            List<ClassTree> declaredClasses,
-            List<LambdaExpressionTree> declaredLambdas) {
-        super();
-        this.entryBlock = entryBlock;
-        this.underlyingAST = underlyingAST;
-        this.treeLookup = treeLookup;
-        this.unaryAssignNodeLookup = unaryAssignNodeLookup;
-        this.convertedTreeLookup = convertedTreeLookup;
-        this.regularExitBlock = regularExitBlock;
-        this.exceptionalExitBlock = exceptionalExitBlock;
-        this.returnNodes = returnNodes;
-        this.declaredClasses = declaredClasses;
-        this.declaredLambdas = declaredLambdas;
+  /**
+   * Class declarations that have been encountered when building the control-flow graph for a
+   * method.
+   */
+  protected final List<ClassTree> declaredClasses;
+
+  /**
+   * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
+   * initializer.
+   */
+  protected final List<LambdaExpressionTree> declaredLambdas;
+
+  public ControlFlowGraph(
+      SpecialBlock entryBlock,
+      SpecialBlockImpl regularExitBlock,
+      SpecialBlockImpl exceptionalExitBlock,
+      UnderlyingAST underlyingAST,
+      IdentityHashMap<Tree, Set<Node>> treeLookup,
+      IdentityHashMap<Tree, Set<Node>> convertedTreeLookup,
+      IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
+      List<ReturnNode> returnNodes,
+      List<ClassTree> declaredClasses,
+      List<LambdaExpressionTree> declaredLambdas) {
+    super();
+    this.entryBlock = entryBlock;
+    this.underlyingAST = underlyingAST;
+    this.treeLookup = treeLookup;
+    this.unaryAssignNodeLookup = unaryAssignNodeLookup;
+    this.convertedTreeLookup = convertedTreeLookup;
+    this.regularExitBlock = regularExitBlock;
+    this.exceptionalExitBlock = exceptionalExitBlock;
+    this.returnNodes = returnNodes;
+    this.declaredClasses = declaredClasses;
+    this.declaredLambdas = declaredLambdas;
+  }
+
+  /**
+   * Returns the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
+   * trees that don't produce a value.
+   *
+   * @param t a tree
+   * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
+   *     trees that don't produce a value
+   */
+  public @Nullable Set<Node> getNodesCorrespondingToTree(Tree t) {
+    if (convertedTreeLookup.containsKey(t)) {
+      return convertedTreeLookup.get(t);
+    } else {
+      return treeLookup.get(t);
     }
+  }
 
-    /**
-     * Returns the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
-     * trees that don't produce a value.
-     *
-     * @param t a tree
-     * @return the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
-     *     trees that don't produce a value
-     */
-    public @Nullable Set<Node> getNodesCorrespondingToTree(Tree t) {
-        if (convertedTreeLookup.containsKey(t)) {
-            return convertedTreeLookup.get(t);
-        } else {
-            return treeLookup.get(t);
+  /**
+   * Returns the entry block of the control flow graph.
+   *
+   * @return the entry block of the control flow graph
+   */
+  public SpecialBlock getEntryBlock() {
+    return entryBlock;
+  }
+
+  public List<ReturnNode> getReturnNodes() {
+    return returnNodes;
+  }
+
+  public SpecialBlock getRegularExitBlock() {
+    return regularExitBlock;
+  }
+
+  public SpecialBlock getExceptionalExitBlock() {
+    return exceptionalExitBlock;
+  }
+
+  /**
+   * Returns the AST this CFG corresponds to.
+   *
+   * @return the AST this CFG corresponds to
+   */
+  public UnderlyingAST getUnderlyingAST() {
+    return underlyingAST;
+  }
+
+  /**
+   * Returns the set of all basic blocks in this control flow graph.
+   *
+   * @return the set of all basic blocks in this control flow graph
+   */
+  public Set<Block> getAllBlocks(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
+    Set<Block> visited = new HashSet<>();
+    // worklist is always a subset of visited; any block in worklist is also in visited.
+    Queue<Block> worklist = new ArrayDeque<>();
+    Block cur = entryBlock;
+    visited.add(entryBlock);
+
+    // traverse the whole control flow graph
+    while (true) {
+      if (cur == null) {
+        break;
+      }
+
+      for (Block b : cur.getSuccessors()) {
+        if (visited.add(b)) {
+          worklist.add(b);
         }
+      }
+
+      cur = worklist.poll();
     }
 
-    /**
-     * Returns the entry block of the control flow graph.
-     *
-     * @return the entry block of the control flow graph
-     */
-    public SpecialBlock getEntryBlock() {
-        return entryBlock;
+    return visited;
+  }
+
+  /**
+   * Returns all nodes in this control flow graph.
+   *
+   * @return all nodes in this control flow graph
+   */
+  public List<Node> getAllNodes(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
+    List<Node> result = new ArrayList<>();
+    for (Block b : getAllBlocks()) {
+      result.addAll(b.getNodes());
     }
+    return result;
+  }
 
-    public List<ReturnNode> getReturnNodes() {
-        return returnNodes;
-    }
+  /**
+   * Returns all basic blocks in this control flow graph, in reversed depth-first postorder. Blocks
+   * may appear more than once in the sequence.
+   *
+   * @return the list of all basic block in this control flow graph in reversed depth-first
+   *     postorder sequence
+   */
+  public List<Block> getDepthFirstOrderedBlocks() {
+    List<Block> dfsOrderResult = new ArrayList<>();
+    Set<Block> visited = new HashSet<>();
+    // worklist can contain values that are not yet in visited.
+    Deque<Block> worklist = new ArrayDeque<>();
+    worklist.add(entryBlock);
+    while (!worklist.isEmpty()) {
+      Block cur = worklist.getLast();
+      if (visited.contains(cur)) {
+        dfsOrderResult.add(cur);
+        worklist.removeLast();
+      } else {
+        visited.add(cur);
 
-    public SpecialBlock getRegularExitBlock() {
-        return regularExitBlock;
-    }
-
-    public SpecialBlock getExceptionalExitBlock() {
-        return exceptionalExitBlock;
-    }
-
-    /**
-     * Returns the AST this CFG corresponds to.
-     *
-     * @return the AST this CFG corresponds to
-     */
-    public UnderlyingAST getUnderlyingAST() {
-        return underlyingAST;
-    }
-
-    /**
-     * Returns the set of all basic block in this control flow graph.
-     *
-     * @return the set of all basic block in this control flow graph
-     */
-    public Set<Block> getAllBlocks() {
-        Set<Block> visited = new HashSet<>();
-        Queue<Block> worklist = new ArrayDeque<>();
-        Block cur = entryBlock;
-        visited.add(entryBlock);
-
-        // traverse the whole control flow graph
-        while (true) {
-            if (cur == null) {
-                break;
-            }
-
-            Deque<Block> succs = getSuccessors(cur);
-
-            for (Block b : succs) {
-                if (!visited.contains(b)) {
-                    visited.add(b);
-                    worklist.add(b);
-                }
-            }
-
-            cur = worklist.poll();
+        for (Block b : cur.getSuccessors()) {
+          if (!visited.contains(b)) {
+            worklist.add(b);
+          }
         }
-
-        return visited;
+      }
     }
 
-    /**
-     * Rreturns the list of all basic block in this control flow graph in reversed depth-first
-     * postorder sequence. Blocks may appear more than once in the sequence.
-     *
-     * @return the list of all basic block in this control flow graph in reversed depth-first
-     *     postorder sequence
-     */
-    public List<Block> getDepthFirstOrderedBlocks() {
-        List<Block> dfsOrderResult = new ArrayList<>();
-        Set<Block> visited = new HashSet<>();
-        Deque<Block> worklist = new ArrayDeque<>();
-        worklist.add(entryBlock);
-        while (!worklist.isEmpty()) {
-            Block cur = worklist.getLast();
-            if (visited.contains(cur)) {
-                dfsOrderResult.add(cur);
-                worklist.removeLast();
-            } else {
-                visited.add(cur);
-                Deque<Block> successors = getSuccessors(cur);
-                successors.removeAll(visited);
-                worklist.addAll(successors);
-            }
-        }
+    Collections.reverse(dfsOrderResult);
+    return dfsOrderResult;
+  }
 
-        Collections.reverse(dfsOrderResult);
-        return dfsOrderResult;
+  /**
+   * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
+   * #getNodesCorrespondingToTree} uses that field.
+   *
+   * @return the copied tree-lookup map
+   */
+  public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
+    return new IdentityHashMap<>(treeLookup);
+  }
+
+  /**
+   * Returns the copied lookup-map of the assign node for unary operation.
+   *
+   * @return the copied lookup-map of the assign node for unary operation
+   */
+  public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
+    return new IdentityHashMap<>(unaryAssignNodeLookup);
+  }
+
+  /**
+   * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
+   * the CFG or null otherwise.
+   */
+  public @Nullable MethodTree getContainingMethod(Tree t) {
+    if (treeLookup.containsKey(t)) {
+      if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
+        UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+        return cfgMethod.getMethod();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in the
+   * CFG or null otherwise.
+   */
+  public @Nullable ClassTree getContainingClass(Tree t) {
+    if (treeLookup.containsKey(t)) {
+      if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
+        UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+        return cfgMethod.getClassTree();
+      }
+    }
+    return null;
+  }
+
+  public List<ClassTree> getDeclaredClasses() {
+    return declaredClasses;
+  }
+
+  public List<LambdaExpressionTree> getDeclaredLambdas() {
+    return declaredLambdas;
+  }
+
+  @Override
+  public String toString() {
+    CFGVisualizer<?, ?, ?> viz = new StringCFGVisualizer<>();
+    viz.init(Collections.singletonMap("verbose", true));
+    Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
+    viz.shutdown();
+    if (res == null) {
+      return "unvisualizable " + getClass().getCanonicalName();
+    }
+    String stringGraph = (String) res.get("stringGraph");
+    return stringGraph == null ? "unvisualizable " + getClass().getCanonicalName() : stringGraph;
+  }
+
+  /**
+   * Returns a verbose string representation of this, useful for debugging.
+   *
+   * @return a string representation of this
+   */
+  public String toStringDebug() {
+    String className = this.getClass().getSimpleName();
+    if (className.equals("ControlFlowGraph") && this.getClass() != ControlFlowGraph.class) {
+      className = this.getClass().getCanonicalName();
     }
 
-    /**
-     * Get a list of all successor Blocks for cur.
-     *
-     * @return a Deque of successor Blocks
-     */
-    private Deque<Block> getSuccessors(Block cur) {
-        Deque<Block> succs = new ArrayDeque<>();
-        if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
-            ConditionalBlock ccur = ((ConditionalBlock) cur);
-            succs.add(ccur.getThenSuccessor());
-            succs.add(ccur.getElseSuccessor());
-        } else {
-            assert cur instanceof SingleSuccessorBlock;
-            Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-            if (b != null) {
-                succs.add(b);
-            }
-        }
-
-        if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
-            ExceptionBlock ecur = (ExceptionBlock) cur;
-            for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
-                succs.addAll(exceptionSuccSet);
-            }
-        }
-        return succs;
+    StringJoiner result = new StringJoiner(String.format("%n  "));
+    result.add(className + "{");
+    result.add("entryBlock=" + entryBlock);
+    result.add("regularExitBlock=" + regularExitBlock);
+    result.add("exceptionalExitBlock=" + exceptionalExitBlock);
+    String astString = underlyingAST.toString().replaceAll("\\s", " ");
+    if (astString.length() > 65) {
+      astString = "\"" + astString.substring(0, 60) + "\"";
     }
-
-    /**
-     * Returns the copied tree-lookup map.
-     *
-     * @return the copied tree-lookup map
-     */
-    public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
-        return new IdentityHashMap<>(treeLookup);
-    }
-
-    /**
-     * Returns the copied lookup-map of the assign node for unary operation.
-     *
-     * @return the copied lookup-map of the assign node for unary operation
-     */
-    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
-        return new IdentityHashMap<>(unaryAssignNodeLookup);
-    }
-
-    /**
-     * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
-     * the CFG or null otherwise.
-     */
-    public @Nullable MethodTree getContainingMethod(Tree t) {
-        if (treeLookup.containsKey(t)) {
-            if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-                UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
-                return cfgMethod.getMethod();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
-     * the CFG or null otherwise.
-     */
-    public @Nullable ClassTree getContainingClass(Tree t) {
-        if (treeLookup.containsKey(t)) {
-            if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-                UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
-                return cfgMethod.getClassTree();
-            }
-        }
-        return null;
-    }
-
-    public List<ClassTree> getDeclaredClasses() {
-        return declaredClasses;
-    }
-
-    public List<LambdaExpressionTree> getDeclaredLambdas() {
-        return declaredLambdas;
-    }
-
-    @Override
-    public String toString() {
-        Map<String, Object> args = new HashMap<>();
-        args.put("verbose", true);
-
-        CFGVisualizer<?, ?, ?> viz = new StringCFGVisualizer<>();
-        viz.init(args);
-        Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
-        viz.shutdown();
-        if (res == null) {
-            return super.toString();
-        }
-        String stringGraph = (String) res.get("stringGraph");
-        return stringGraph == null ? super.toString() : stringGraph;
-    }
+    result.add("underlyingAST=" + underlyingAST);
+    result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
+    result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
+    result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
+    result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
+    result.add("declaredClasses=" + declaredClasses);
+    result.add("declaredLambdas=" + declaredLambdas);
+    result.add("}");
+    return result.toString();
+  }
 }

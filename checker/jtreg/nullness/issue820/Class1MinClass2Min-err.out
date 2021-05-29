@@ -1,2 +1,2 @@
-Class2Min.java:6:29: compiler.err.proc.messager: (assignment.type.incompatible)
+Class2Min.java:6:25: compiler.err.proc.messager: (assignment)
 1 error

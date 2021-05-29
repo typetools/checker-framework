@@ -2,165 +2,165 @@ import org.checkerframework.checker.signedness.qual.*;
 
 public class CompoundAssignmentsSignedness {
 
-    public void DivModTest(
-            @Unsigned int unsigned,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void DivModTest(
+      @Unsigned int unsigned,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        // :: error: (compound.assignment.unsigned.expression)
-        unknown /= unsigned;
+    // :: error: (compound.assignment.unsigned.expression)
+    unknown /= unsigned;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        // :: error: (compound.assignment.type.incompatible)
-        unsigned /= unknown;
+    // :: error: (compound.assignment.unsigned.variable)
+    // :: error: (compound.assignment)
+    unsigned /= unknown;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        unsigned /= constant;
+    // :: error: (compound.assignment.unsigned.variable)
+    unsigned /= constant;
 
-        // :: error: (compound.assignment.unsigned.expression)
-        // :: error: (compound.assignment.type.incompatible)
-        constant /= unsigned;
+    // :: error: (compound.assignment.unsigned.expression)
+    // :: error: (compound.assignment)
+    constant /= unsigned;
 
-        // :: error: (compound.assignment.unsigned.expression)
-        unknown /= polysigned;
+    // :: error: (compound.assignment.unsigned.expression)
+    unknown /= polysigned;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        // :: error: (compound.assignment.type.incompatible)
-        polysigned /= unknown;
+    // :: error: (compound.assignment.unsigned.variable)
+    // :: error: (compound.assignment)
+    polysigned /= unknown;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        // :: error: (compound.assignment.type.incompatible)
-        polysigned /= constant;
+    // :: error: (compound.assignment.unsigned.variable)
+    // :: error: (compound.assignment)
+    polysigned /= constant;
 
-        // :: error: (compound.assignment.unsigned.expression)
-        // :: error: (compound.assignment.type.incompatible)
-        constant /= polysigned;
+    // :: error: (compound.assignment.unsigned.expression)
+    // :: error: (compound.assignment)
+    constant /= polysigned;
 
-        // :: error: (compound.assignment.unsigned.expression)
-        unknown %= unsigned;
+    // :: error: (compound.assignment.unsigned.expression)
+    unknown %= unsigned;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        // :: error: (compound.assignment.type.incompatible)
-        unsigned %= unknown;
+    // :: error: (compound.assignment.unsigned.variable)
+    // :: error: (compound.assignment)
+    unsigned %= unknown;
 
-        // :: error: (compound.assignment.unsigned.expression)
-        unknown %= polysigned;
+    // :: error: (compound.assignment.unsigned.expression)
+    unknown %= polysigned;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        // :: error: (compound.assignment.type.incompatible)
-        polysigned %= unknown;
+    // :: error: (compound.assignment.unsigned.variable)
+    // :: error: (compound.assignment)
+    polysigned %= unknown;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        unsigned %= constant;
+    // :: error: (compound.assignment.unsigned.variable)
+    unsigned %= constant;
 
-        // :: error: (compound.assignment.unsigned.expression)
-        // :: error: (compound.assignment.type.incompatible)
-        constant %= unsigned;
+    // :: error: (compound.assignment.unsigned.expression)
+    // :: error: (compound.assignment)
+    constant %= unsigned;
 
-        // :: error: (compound.assignment.unsigned.variable)
-        // :: error: (compound.assignment.type.incompatible)
-        polysigned %= constant;
+    // :: error: (compound.assignment.unsigned.variable)
+    // :: error: (compound.assignment)
+    polysigned %= constant;
 
-        // :: error: (compound.assignment.unsigned.expression)
-        // :: error: (compound.assignment.type.incompatible)
-        constant %= polysigned;
-    }
+    // :: error: (compound.assignment.unsigned.expression)
+    // :: error: (compound.assignment)
+    constant %= polysigned;
+  }
 
-    public void SignedRightShiftTest(
-            @Unsigned int unsigned,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void SignedRightShiftTest(
+      @Unsigned int unsigned,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        // :: error: (compound.assignment.shift.signed)
-        unsigned >>= constant;
+    // :: error: (compound.assignment.shift.signed)
+    unsigned >>= constant;
 
-        constant >>= unsigned;
+    constant >>= unsigned;
 
-        // :: error: (compound.assignment.shift.signed)
-        polysigned >>= constant;
+    // :: error: (compound.assignment.shift.signed)
+    polysigned >>= constant;
 
-        constant >>= polysigned;
+    constant >>= polysigned;
 
-        // :: error: (compound.assignment.shift.signed)
-        unsigned >>= unknown;
+    // :: error: (compound.assignment.shift.signed)
+    unsigned >>= unknown;
 
-        unknown >>= unsigned;
+    unknown >>= unsigned;
 
-        // :: error: (compound.assignment.shift.signed)
-        polysigned >>= unknown;
+    // :: error: (compound.assignment.shift.signed)
+    polysigned >>= unknown;
 
-        unknown >>= polysigned;
-    }
+    unknown >>= polysigned;
+  }
 
-    public void UnsignedRightShiftTest(
-            @Signed int signed,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void UnsignedRightShiftTest(
+      @Signed int signed,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        // :: error: (compound.assignment.shift.unsigned)
-        signed >>>= constant;
+    // :: error: (compound.assignment.shift.unsigned)
+    signed >>>= constant;
 
-        constant >>>= signed;
+    constant >>>= signed;
 
-        // :: error: (compound.assignment.shift.unsigned)
-        signed >>>= unknown;
+    // :: error: (compound.assignment.shift.unsigned)
+    signed >>>= unknown;
 
-        unknown >>>= signed;
+    unknown >>>= signed;
 
-        // :: error: (compound.assignment.shift.unsigned)
-        polysigned >>>= constant;
+    // :: error: (compound.assignment.shift.unsigned)
+    polysigned >>>= constant;
 
-        constant >>>= polysigned;
+    constant >>>= polysigned;
 
-        // :: error: (compound.assignment.shift.unsigned)
-        polysigned >>>= unknown;
+    // :: error: (compound.assignment.shift.unsigned)
+    polysigned >>>= unknown;
 
-        unknown >>>= polysigned;
-    }
+    unknown >>>= polysigned;
+  }
 
-    public void LeftShiftTest(
-            @Signed int signed,
-            @Unsigned int unsigned,
-            @PolySigned int polysigned,
-            @UnknownSignedness int unknown,
-            @SignednessGlb int constant) {
+  public void LeftShiftTest(
+      @Signed int signed,
+      @Unsigned int unsigned,
+      @PolySigned int polysigned,
+      @UnknownSignedness int unknown,
+      @SignednessGlb int constant) {
 
-        signed <<= constant;
+    signed <<= constant;
 
-        constant <<= signed;
+    constant <<= signed;
 
-        signed <<= unknown;
+    signed <<= unknown;
 
-        unknown <<= signed;
+    unknown <<= signed;
 
-        unsigned <<= constant;
+    unsigned <<= constant;
 
-        constant <<= unsigned;
+    constant <<= unsigned;
 
-        unsigned <<= unknown;
+    unsigned <<= unknown;
 
-        unknown <<= unsigned;
+    unknown <<= unsigned;
 
-        polysigned <<= constant;
+    polysigned <<= constant;
 
-        constant <<= polysigned;
+    constant <<= polysigned;
 
-        polysigned <<= unknown;
+    polysigned <<= unknown;
 
-        unknown <<= polysigned;
-    }
+    unknown <<= polysigned;
+  }
 
-    public void mixedTest(@Unsigned int unsigned, @Signed int signed) {
+  public void mixedTest(@Unsigned int unsigned, @Signed int signed) {
 
-        // :: error: (compound.assignment.mixed.unsigned.variable)
-        // :: error: (compound.assignment.type.incompatible)
-        unsigned += signed;
+    // :: error: (compound.assignment.mixed.unsigned.variable)
+    // :: error: (compound.assignment)
+    unsigned += signed;
 
-        // :: error: (compound.assignment.mixed.unsigned.expression)
-        // :: error: (compound.assignment.type.incompatible)
-        signed += unsigned;
-    }
+    // :: error: (compound.assignment.mixed.unsigned.expression)
+    // :: error: (compound.assignment)
+    signed += unsigned;
+  }
 }

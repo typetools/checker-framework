@@ -1,12 +1,11 @@
 \htmlhr
 \chapterAndLabel{Generics and polymorphism}{polymorphism}
 
-This chapter describes support for Java generics (also known as
-``parametric polymorphism'') and polymorphism over type qualifiers.
-
-Section~\ref{method-qualifier-polymorphism} describes support for polymorphism over
+Section~\ref{generics} describes support for Java generics (also known as
+``parametric polymorphism'').
+Section~\ref{method-qualifier-polymorphism} describes polymorphism over
 type qualifiers for methods. Section~\ref{class-qualifier-polymorphism} describes
-support for polymorphism over type qualifiers for classes.
+polymorphism over type qualifiers for classes.
 
 
 \sectionAndLabel{Generics (parametric polymorphism or type polymorphism)}{generics}
@@ -133,7 +132,7 @@ It is an error if the lower bound is not a subtype of the upper bound.
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a supertype of @NonNull
+  class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a subtype of @NonNull
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -505,26 +504,35 @@ public static void addNumbers(List<? super @SignednessBottom Integer> list) { ..
 
 \sectionAndLabel{Qualifier polymorphism for methods\label{qualifier-polymorphism}}{method-qualifier-polymorphism}
 
-The Checker Framework supports type \emph{qualifier} polymorphism for
-methods, which permits a single method to have multiple different qualified
-type signatures.  This is similar to Java's generics, but is used in
-situations where you cannot use Java generics.  If you can use generics,
-you typically do not need to use a polymorphic qualifier such as \<@PolyNull>.
+Type qualifier polymorphism permits a single method to have multiple different qualified
+type signatures.
 
-To \emph{use} a polymorphic qualifier, just write it on a type.
-For example, you can write \<@PolyNull> anywhere in a method that you would write
-\<@NonNull> or \<@Nullable>.
-A polymorphic qualifier can be used in a method signature or body.
-It may not be used on a class declaration.
-(It may be used on a field declaration, but it has a different meaning;
-see Section~\ref{class-qualifier-polymorphism}. Also, if it is written on a method in a class with
-a qualifier parameter, then it has a slightly different meaning, see Section~\ref{class-qual-param-method}.)
+Here is where a polymorphic qualifier (e.g., \<@PolyNull>) can be used:
+\begin{itemize}
+\item Polymorphic qualifiers are most often used in method signatures.
+  See the examples below in Section~\ref{qualifier-polymorphism-examples}.
+\item Polymorphic qualifiers can also be written in method bodies
+  (implementations).
+\item If you can use generics, you typically do not need to use a
+  polymorphic qualifier.  Do not write a polymorphic qualifier on a type
+  variable declaration.
+\item Polymorphic qualifiers may not be used on a class declaration.
+  To apply qualifier polymorphism to classes, use a class qualifier
+  parameter; see Section~\ref{class-qualifier-polymorphism}.
+\item A polymorphic qualifier may be used on a field declaration only in a
+  class with a class qualifier parameter; see Section~\ref{class-qual-param-field}.
+\item If a class has a class qualifier parameter, then a polymorphic
+  qualifier written on a method in the class has a slightly different
+  meaning, see Section~\ref{class-qual-param-method}.
+\end{itemize}
 
-A method written using a polymorphic qualifier conceptually has multiple
+
+\subsectionAndLabel{Using polymorphic qualifiers in a method signature}{qualifier-polymorphism-examples}
+
+A method whose signature has a polymorphic qualifier (such as \<@PolyNull>) conceptually has multiple
 versions, somewhat like the generics feature of Java or a template in C++.
 In each version, each instance of the polymorphic qualifier has been
-replaced by the same other qualifier from the hierarchy.  See the examples
-below in Section~\ref{qualifier-polymorphism-examples}.
+replaced by the same other qualifier from the hierarchy.
 
 The method body must type-check with all signatures.  A method call is
 type-correct if it type-checks under any one of the signatures.  If a call
@@ -532,23 +540,6 @@ matches multiple signatures, then the compiler uses the most specific
 matching signature for the purpose of type-checking.  This is the same as
 Java's rule for resolving overloaded methods.
 
-To \emph{define} a polymorphic qualifier, mark the definition with
-\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
-\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
-qualifier for the Nullness type system:
-
-\begin{Verbatim}
-  import java.lang.annotation.ElementType;
-  import java.lang.annotation.Target;
-  import org.checkerframework.framework.qual.PolymorphicQualifier;
-
-  @PolymorphicQualifier
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface PolyNull {}
-\end{Verbatim}
-
-
-\subsectionAndLabel{Examples of using polymorphic qualifiers}{qualifier-polymorphism-examples}
 
 As an example of the use of \<@PolyNull>, method
 \sunjavadoc{java.base/java/lang/Class.html\#cast(java.lang.Object)}{Class.cast}
@@ -602,7 +593,7 @@ then the unification (lub) is \<@Nullable>, and so is the return type.
 \subsectionAndLabel{Relationship to subtyping and generics}{qualifier-polymorphism-vs-subtyping}
 
 Qualifier polymorphism has the same purpose and plays the same role as
-Java's generics.  You use them in the same cases, such as:
+Java's generics.  You use them for the similar reasons, such as:
 \begin{itemize}
 \item
   A method operates on collections with different types of
@@ -855,6 +846,45 @@ type-check) than writing just
   void m(@Nullable Object obj)
 \end{Verbatim}
 
+
+\subsectionAndLabel{Defining a polymorphic qualifier}{qualifier-polymorphism-define}
+
+To define a polymorphic qualifier, meta-annotate the definition with
+\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
+\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
+qualifier for the Nullness type system and is defined as follows:
+
+\begin{Verbatim}
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Target;
+  import org.checkerframework.framework.qual.PolymorphicQualifier;
+
+  @PolymorphicQualifier
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public @interface PolyNull {}
+\end{Verbatim}
+
+
+
+
+To \emph{define} a polymorphic qualifier, mark the definition with
+\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
+\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
+qualifier for the Nullness type system:
+
+\begin{Verbatim}
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Target;
+  import org.checkerframework.framework.qual.PolymorphicQualifier;
+
+  @PolymorphicQualifier
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public @interface PolyNull {}
+\end{Verbatim}
+
+
+
+
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
 
 Class qualifier parameters permit you to supply a type qualifier (only,
@@ -926,7 +956,7 @@ the receiver expression at call sites to \<append>. For example,
 \begin{Verbatim}
 @Untainted Buffer untaintedBuffer = ...;
 @Tainted String taintedString = ...;
-untaintedBuffer.append(taintedString); // error: argument.type.incompatible
+untaintedBuffer.append(taintedString); // error: argument
 \end{Verbatim}
 The above \<append> call is illegal because the \<@PolyTainted> is instantiated to \<@Untainted> and
 the type of the argument is \<@Tainted> which is a supertype of \<@Untainted>.  If the type of
@@ -953,7 +983,7 @@ is that same as that on \<myBuffer>.
 
 \subsectionAndLabel{Local variable defaults for types with qualifier parameters}{local-vars-qual-param-defaults}
 
-According to the CLIMB-to-top rule, local variables default to the top type (see
+Local variables default to the top type (see
 Section~\ref{climb-to-top}). Type refinement determines if a variable can be
 treated as a suitable subtype, and annotations on local variables are rarely
 needed as a result. However, since qualifier parameters add invariant subtyping,

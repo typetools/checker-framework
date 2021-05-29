@@ -7,21 +7,21 @@ import org.checkerframework.checker.tainting.qual.Untainted;
  * <p>Also see all-systems/GenericsEnclosing for the type-system independent test.
  */
 class MyG<X> {
-    X f;
+  X f;
 
-    void m(X p) {}
+  void m(X p) {}
 }
 
 class ExtMyG extends MyG<@Untainted Object> {
-    class EInner1 {
-        class EInner2 {
-            void bar() {
-                // :: error: (assignment.type.incompatible)
-                f = 1;
-                m("test");
-                // :: error: (argument.type.incompatible)
-                m(1);
-            }
-        }
+  class EInner1 {
+    class EInner2 {
+      void bar() {
+        // :: error: (assignment)
+        f = 1;
+        m("test");
+        // :: error: (argument)
+        m(1);
+      }
     }
+  }
 }

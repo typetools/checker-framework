@@ -6,11 +6,11 @@ sourceSets {
 }
 
 dependencies {
-    // If this version changes, then the version
-    // docs/developer/release/maven-artifacts/framework-test-pom.xml must be changed, too.
-    implementation  group: 'junit', name: 'junit', version: '4.13'
+    implementation  group: 'junit', name: 'junit', version: '4.13.2'
     implementation project(':javacutil')
     implementation project(':checker-qual')
+
+    implementation 'org.plumelib:plume-util:1.5.3'
 
     if (Jvm.current().toolsJar) {
         tagletImplementation files(Jvm.current().toolsJar)
@@ -19,17 +19,32 @@ dependencies {
 
 jar.archiveBaseName = 'framework-test'
 
-task deployArtifactsToLocalRepo(dependsOn: jar) {
-    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
-    doLast {
-        mvnDeployToLocalRepo(project, "${pomFiles}/framework-test-pom.xml")
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading to Maven repositories. */
+final frameworkTest(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+    publication.pom {
+        name = 'Checker Framework Testing Library'
+        description = 'framework-test contains utility classes for testing type-checkers\n' +
+                'that are built on the Checker Framework.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
     }
 }
-
-task deployArtifactsToSonatype {
-    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
-    dependsOn ('jar', 'sourcesJar', 'javadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/framework-test-pom.xml")
+publishing {
+    publications {
+        frameworkTest(MavenPublication) {
+            frameworkTest it
+        }
     }
+}
+signing {
+    sign publishing.publications.frameworkTest
 }

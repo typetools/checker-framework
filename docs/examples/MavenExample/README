@@ -6,6 +6,4 @@ mvn compile
 
 You should see output that includes:
 
-MavenExample.java:[25,29] error: [assignment.type.incompatible] incompatible types in assignment.
-
-This example is for use with JDK 8.  For JDK 11, see ../MavenExampleJDK11.
+MavenExample.java:[29,29] error: [assignment] incompatible types in assignment.

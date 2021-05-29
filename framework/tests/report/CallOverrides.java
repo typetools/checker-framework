@@ -1,33 +1,33 @@
 import org.checkerframework.common.util.report.qual.*;
 
-class CallOverrides {
-    class A {
-        void m() {}
-    }
+public class CallOverrides {
+  class A {
+    void m() {}
+  }
 
-    class B extends A {
-        @ReportCall
-        void m() {}
-    }
+  class B extends A {
+    @ReportCall
+    void m() {}
+  }
 
-    class C extends B {}
+  class C extends B {}
 
-    void test() {
-        C c = new C();
+  void test() {
+    C c = new C();
 
-        // :: error: (methodcall)
-        c.m();
+    // :: error: (methodcall)
+    c.m();
 
-        B b = c;
+    B b = c;
 
-        // :: error: (methodcall)
-        b.m();
+    // :: error: (methodcall)
+    b.m();
 
-        A a = c;
+    A a = c;
 
-        // This call is not reported, because we statically
-        // don't know that one of the subtypes has the ReportCall
-        // annotation.
-        a.m();
-    }
+    // This call is not reported, because we statically
+    // don't know that one of the subtypes has the ReportCall
+    // annotation.
+    a.m();
+  }
 }

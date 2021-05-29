@@ -52,7 +52,8 @@ localization resource and all keys exist in that resource.
   \refqualclass{checker/i18nformatter/qual}{I18nFormat}\code{(...)}
   qualifiers; see
   Section~\ref{i18n-format-conversion-categories}.
-  All \refqualclass{checker/i18nformatter/qual}{I18nFormatFor} annotations are unrelated by subtyping.
+  All \refqualclass{checker/i18nformatter/qual}{I18nFormatFor} annotations
+  are unrelated by subtyping, unless they are identical.
   The qualifiers in gray are used internally by
   the checker and should never be written by a programmer.
 }
@@ -363,17 +364,20 @@ the whole command on one line).
 \sectionAndLabel{Testing whether a string has an i18n format type}{i18n-format-testing}
 
 In the case that the checker cannot infer the i18n format type of a string,
-you can use the \refmethod{checker/i18nformatter}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}
+you can use the \refmethod{checker/i18nformatter/util}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}
 method to define the type of the string in the scope of a conditional statement.
 
 \begin{description}
 
-\item[\refmethod{checker/i18nformatter}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}]
+\item[\refmethod{checker/i18nformatter/util}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}]
   returns \<true> if the given string has the given i18n format type.
 
 \end{description}
 
 \noindent For an example, see Section~\ref{i18n-format-examples}.
+
+To use the \refclass{checker/i18nformatter/util}{I18nFormatUtil} class, the \<checker-util.jar> file
+must be on the classpath at run time.
 
 
 \sectionAndLabel{Examples of using the Internationalization Format Checker}{i18n-format-examples}
@@ -388,7 +392,7 @@ method to define the type of the string in the scope of a conditional statement.
       MessageFormat.format(value, "Text", new Date());
 \end{Verbatim}
   \item Using the
-    \refmethod{checker/i18nformatter}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}
+    \refmethod{checker/i18nformatter/util}{I18nFormatUtil}{hasFormat}{-java.lang.String-org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory...-}
     method to check whether a format
     string has particular conversion categories.
 \begin{Verbatim}

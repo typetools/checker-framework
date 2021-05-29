@@ -7,11 +7,11 @@ interface Bar {}
 
 class Baz implements Foo, Bar {}
 
-class IntersectionTypes {
-    void foo() {
-        Baz baz = new Baz();
-        call(baz);
-    }
+public class IntersectionTypes {
+  void foo() {
+    Baz baz = new Baz();
+    call(baz);
+  }
 
-    <T extends Foo & Bar> void call(T p) {}
+  <T extends Foo & Bar> void call(T p) {}
 }

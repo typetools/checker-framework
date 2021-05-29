@@ -68,7 +68,7 @@
 
   <div id="introduction">
     <p>This section of the tutorial is only for those who are interested
-    in writing their own type-checkers. Please feel free to skip this
+    in writing their own type-checkers. Others may skip this
     section.</p><!--Copied from the manual-->
 
     <p>Although the Checker Framework ships with <a href=
@@ -141,12 +141,12 @@ $ <strong>javacheck myqual/Encrypted.java myqual/PossiblyUnencrypted.java myqual
     classfiles to the processor classpath:</p>
     <pre>
 $ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted,myqual.PolyEncrypted encrypted/EncryptionDemo.java</strong>
-encrypted/EncryptionDemo.java:21: error: [assignment.type.incompatible] incompatible types in assignment.
+encrypted/EncryptionDemo.java:21: error: [assignment] incompatible types in assignment.
         @Encrypted int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
                                                          ^
   found   : @PossiblyUnencrypted int
   required: @Encrypted int
-encrypted/EncryptionDemo.java:32: error: [argument.type.incompatible] incompatible types in argument.
+encrypted/EncryptionDemo.java:32: error: [argument] incompatible types in argument.
         sendOverInternet(password);
                          ^
   found   : @PossiblyUnencrypted String
@@ -175,7 +175,7 @@ private @Encrypted char encryptCharacter(char character) {
     <p>You will see the following error:</p>
     <pre>
 $ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted,myqual.PolyEncrypted encrypted/EncryptionDemo.java</strong>
-encrypted/EncryptionDemo.java:34: error: [argument.type.incompatible] incompatible types in argument.
+encrypted/EncryptionDemo.java:34: error: [argument] incompatible types in argument.
         sendOverInternet(password);
                          ^
   found   : @PossiblyUnencrypted String
@@ -222,7 +222,8 @@ $ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingCh
 
   <div id="end">
     <div class="page-header short">
-      <h2>The end of the Checker Framework Tutorial <small><strong>Return
+      <h2>The end of the Checker Framework Tutorial <small><br/>
+      <strong>Return
       to the <a href="../index.html">main page</a> of the
       Tutorial.</strong></small></h2>
     </div>

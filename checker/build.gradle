@@ -8,17 +8,50 @@ sourceSets {
     testannotations
 }
 
+
+sourcesJar {
+    // The resources duplicate content from the src directory.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 dependencies {
-    implementation project(':framework')
-    implementation project(':dataflow')
     implementation project(':javacutil')
+    implementation project(':dataflow')
+    implementation project(':framework')
+    // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
+        exclude group: 'com.google.errorprone', module: 'javac'
+    }
     implementation project(':checker-qual')
-    // As of 2019/12/16, the version of reflection-util in the Annotation
+    implementation project(':checker-util')
+
+    // External dependencies:
+    // If you add an external dependency, you must shadow its packages.
+    // See the comment in ../build.gradle in the shadowJar block.
+
+    // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:0.2.2'
+    implementation 'org.plumelib:reflection-util:1.0.3'
+    implementation 'org.plumelib:plume-util:1.5.3'
 
-    testImplementation group: 'junit', name: 'junit', version: '4.13'
+    // Dependencies added to "shadow" appear as dependencies in Maven Central.
+    shadow project(':checker-qual')
+    shadow project(':checker-util')
+
+    // Called Methods Checker AutoValue + Lombok support
+    testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
+    testImplementation "com.google.auto.value:auto-value:1.7.4"
+    testImplementation "com.ryanharter.auto.value:auto-value-parcel:0.2.8"
+    testImplementation "org.projectlombok:lombok:1.18.20"
+    // Called Methods Checker support for detecting misuses of AWS APIs
+    testImplementation "com.amazonaws:aws-java-sdk-ec2"
+    testImplementation "com.amazonaws:aws-java-sdk-kms"
+    // The AWS SDK is used for testing the Called Methods Checker.
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.11.964")
+
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
 
@@ -28,13 +61,6 @@ dependencies {
 jar {
     manifest {
         attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
-    }
-    doLast {
-        new File("$projectDir/build/libs/README.txt").text =
-"""Do not use file checker-X.Y.Z.jar, which contains only the checker subproject
-and lacks other parts of the Checker Framework.
-Instead, use checker/dist/checker.jar.
-"""
     }
 }
 
@@ -52,6 +78,15 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
         }
 
         copy {
+            from file(project(':checker-util').tasks.getByName("jar").archivePath)
+            into "${projectDir}/dist"
+            rename { String fileName ->
+                // remove version number on checker-util.jar
+                fileName.replace(fileName, "checker-util.jar")
+            }
+        }
+
+        copy {
             from configurations.javacJar
             into "${projectDir}/dist"
             rename { String fileName ->
@@ -63,48 +98,86 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
 
 assemble.dependsOn copyJarsToDist
 
-task printPlumeUtilJarPath {
-    description "Print the path to plume-util.jar"
-    doFirst { println project.configurations.compile.find { it.name.startsWith("plume-util") } }
-}
-
-task allSourcesJar(type: Jar) {
+task allSourcesJar(type: Jar, group: 'Build') {
     description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-source.jar"
+    archiveClassifier = "sources"
     from (sourceSets.main.java, project(':framework').sourceSets.main.allJava,
-            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava,
+            project(':checker-qual').sourceSets.main.allJava, project(':checker-util').sourceSets.main.allJava)
 }
 
-task allJavadocJar(type: Jar) {
-    description 'Creates javadoc jar include Javadoc for all of the framework'
+task allJavadocJar(type: Jar, group: 'Build') {
+    description 'Creates javadoc jar including Javadoc for all of the Checker Framework'
     dependsOn rootProject.tasks.allJavadoc
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-javadoc.jar"
+    archiveClassifier = "javadoc"
     from rootProject.tasks.allJavadoc.destinationDir
 }
 
+// Shadowing Test Sources and Dependencies
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+    description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
+    includeEmptyDirs = false
+    archivesBaseName = 'checker'
+    archiveClassifier = ''
+
+    from shadowJar.source
+    configurations = shadowJar.configurations
+    // To see what files are incorporated into the shadow jar file:
+    // doLast { println sourceSets.main.runtimeClasspath.asPath }
+    manifest {
+        attributes("Main-Class": "org.checkerframework.framework.util.CheckerMain")
+    }
+    exclude 'org/checkerframework/**/qual/*'
+    exclude 'org/checkerframework/checker/*/util/*'
+    relocators = shadowJar.getRelocators()
+}
+
+jar {
+    dependsOn(checkerJar)
+    // Never build the skinny jar.
+    onlyIf {false}
+    archiveClassifier = 'skinny'
+}
 
 shadowJar {
-    description 'Creates the "fat" checker.jar in dist/.'
-    destinationDirectory = file("${projectDir}/dist")
-    archiveFileName = "checker.jar"
+    description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
+    doLast{
+        copy {
+            from archiveFile.get()
+            into file("${projectDir}/dist")
+            rename 'checker.*', 'checker.jar'
+        }
+    }
 }
+
 artifacts {
     // Don't add this here or else the Javadoc and the sources jar is built during the assemble task.
     // archives allJavadocJar
     // archives allSourcesJar
     archives shadowJar
+    archives checkerJar
 }
 
 clean {
     delete "${projectDir}/dist"
+    delete "tests/calledmethods-delomboked"
+    delete("tests/wpi-testchecker/annotated")
+    delete("tests/wpi-testchecker/inference-output")
+    delete("tests/wpi-nullness/annotated")
+    delete("tests/wpi-nullness/inference-output")
 }
 
 // Add non-junit tests
-createCheckTypeTask(project.name, 'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker', "CompilerMessages")
+createCheckTypeTask(project.name, "CompilerMessages",
+    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
 checkCompilerMessages {
     doFirst {
         options.compilerArgs += [
@@ -153,7 +226,7 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', 'https://github.com/typetools/checker-framework.demos.git']
+                    args = ['clone', '--depth', '1', 'https://github.com/typetools/checker-framework.demos.git']
                 }
             } else {
                 exec {
@@ -176,6 +249,12 @@ task allNullnessTests(type: Test, group: 'Verification') {
     include '**/Nullness*.class'
 }
 
+task allCalledMethodsTests(type: Test, group: 'Verification') {
+    description 'Run all Junit tests for the Called Methods Checker.'
+    include '**/CalledMethods*.class'
+    dependsOn 'delombok'
+}
+
 // These are tests that should only be run with JDK 11.
 task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     description 'Run the jtreg tests made for JDK 11.'
@@ -186,7 +265,7 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     String jtregOutput = "${buildDir}/jtregJdk11"
     String name = 'all'
     doLast {
-        if(isJava8) {
+        if (isJava8) {
             println "This test is only run with JDK 11."
             return;
         }
@@ -213,18 +292,486 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     }
 }
 
-task deployArtifactsToLocalRepo(dependsOn: shadowJar) {
-    description 'Deploys checker.jar to the local Maven repository'
+// JSpecify tests are excluded by default.  To run them:
+// ./gradlew NullnessJSpecifySamplesTest
+test {
+    exclude '**/org/checkerframework/checker/test/junit/NullnessJSpecifySamplesTest.class'
+}
+
+task delombok {
+    description 'Delomboks the source code tree in tests/calledmethods-lombok'
+
+    def srcDelomboked = 'tests/calledmethods-delomboked'
+    def srcJava = 'tests/calledmethods-lombok'
+
+    inputs.files file(srcJava)
+    outputs.dir file(srcDelomboked)
+
+    // Because there are Checker Framework annotations in the test source.
+    dependsOn project(':checker-qual').tasks.jar
+
     doLast {
-        mvnDeployToLocalRepo("${projectDir}/dist/checker.jar", "${pomFiles}/checker-pom.xml")
+        def collection = files(configurations.testCompileClasspath)
+        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+                classpath: collection.asPath)
+        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
     }
 }
 
-task deployArtifactsToSonatype {
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    description 'Deploys checker.jar (and their sources/javadoc jars) to the Sonatype repository'
-    dependsOn (shadowJar, 'allSourcesJar', 'allJavadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype("${projectDir}/dist/checker.jar", allSourcesJar.archiveFile.get().toString(), allJavadocJar.archiveFile.get().toString(), "${pomFiles}/checker-pom.xml")
+tasks.test.dependsOn("delombok")
+
+///
+/// Whole-program inference tests
+///
+
+test {
+    useJUnit {
+        // These are run in task wholeProgramInferenceTests.
+        excludeCategories 'org.checkerframework.checker.test.junit.wpirunners.WholeProgramInferenceTestCheckerJaifsTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.wpirunners.WholeProgramInferenceTestCheckerStubsTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.wpirunners.WholeProgramInferenceTestCheckerAjavaTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.wpirunners.WholeProgramInferenceNullnessJaifsTest'
     }
+}
+
+task testWpiTestCheckerStubs(type: Test) {
+    description 'Internal task.  Users should run wholeProgramInferenceTestCheckerStubTests instead.  This runs the wpi-testchecker tests with -Ainfer=stubs to generate stub files'
+
+    dependsOn(compileTestJava)
+    doFirst {
+        delete("tests/wpi-testchecker/annotated")
+        delete("${buildDir}/wpi-testchecker/")
+    }
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceTestCheckerStubsTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+
+    doLast {
+        copyNonannotatedToAnnotatedDirectory("wpi-testchecker")
+        // The stub file format doesn't support annotations on anonymous inner classes, so
+        // this test also expects errors on UsesAnonymous.java.
+        delete('tests/wpi-testchecker/annotated/UsesAnonymous.java')
+        copy {
+            from file('tests/wpi-testchecker/non-annotated/UsesAnonymous.java')
+            into file('tests/wpi-testchecker/annotated')
+        }
+    }
+}
+
+task testWpiTestCheckerStubsValidate(type: Test) {
+    description 'Internal task.  Users should run wholeProgramInferenceTestCheckerStubTests instead.  This re-runs the wpi-testchecker tests using the stub files generated by testWpiTestCheckerStubs'
+
+    dependsOn(testWpiTestCheckerStubs)
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceTestCheckerStubsValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+task testWpiTestCheckerAjava(type: Test) {
+    description 'Internal task.  Users sholud run wholeProgramInferenceTestCheckerAjavaTests instead.  This runs the wpi-testchecker tests with -Ainfer=ajava to generate stub files'
+
+    dependsOn(compileTestJava)
+    doFirst {
+        delete("tests/wpi-testchecker/annotated")
+        delete("${buildDir}/wpi-testchecker/")
+    }
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceTestCheckerAjavaTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+
+    doLast {
+        copyNonannotatedToAnnotatedDirectory("wpi-testchecker")
+    }
+}
+
+task testWpiTestCheckerAjavaValidate(type: Test) {
+    description 'Internal task.  Users should run wholeProgramInferenceTestCheckerAjavaTests instead.  This re-runs the wpi-testchecker tests using the ajava files generated by testWpiTestCheckerAjava'
+
+    dependsOn(testWpiTestCheckerAjava)
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceTestCheckerAjavaValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and the expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+// Copies directories as needed by WPI tests.
+// Formal parameter testdir is, for example, "wpi-testchecker".
+// Does work in directory "tests/${testdir}/".
+// 1. Copies whole-program inference test source code from the non-annotated/ to the annotated/ directory.
+// 2. Copies WPI output, such as .jaif or .stub files, to the inferference-output/ directory.
+void copyNonannotatedToAnnotatedDirectory(String testdir) {
+    // Copying all test files to another directory, removing all expected errors that should not
+    // occur after inserting inferred annotations from .jaif files.
+    copy {
+        from files("tests/${testdir}/non-annotated")
+        into file("tests/${testdir}/annotated")
+        filter { String line ->
+            line.contains('// :: error:') || line.contains('// :: warning:') ? null : line
+        }
+    }
+    // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
+    delete("tests/${testdir}/annotated/ExpectedErrors.java")
+    copy {
+        from file("tests/${testdir}/non-annotated/ExpectedErrors.java")
+        into file("tests/${testdir}/annotated")
+    }
+
+    delete("tests/${testdir}/inference-output")
+    file("build/whole-program-inference").renameTo(file("tests/${testdir}/inference-output"))
+}
+
+// This task is similar to the wholeProgramInferenceTestCheckerJaifTests task below, but it doesn't
+// run the insert-annotations-to-source tool. Instead, it tests the -Ainfer=stubs feature
+// and the -AmergeStubsWithSource feature to do WPI using stub files.
+task wholeProgramInferenceTestCheckerStubTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using stub files'
+    dependsOn(testWpiTestCheckerStubsValidate)
+    outputs.upToDateWhen { false }
+}
+
+// Like wholeProgramInferenceTestCheckerStubTests, but with ajava files instead
+task wholeProgramInferenceTestCheckerAjavaTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using ajava files'
+    dependsOn(testWpiTestCheckerAjavaValidate)
+    outputs.upToDateWhen { false }
+}
+
+task testWpiTestCheckerJaifs(type: Test) {
+    description 'Internal task.  Users should run wholeProgramInferenceNullnessJaifTests instead.  This runs the wpi-testchecker tests with -Ainfer=jaifs to generate .jaif files'
+
+    dependsOn(compileTestJava)
+    dependsOn(':checker-qual:jar')  // For the Value Checker annotations.
+    doFirst {
+        delete("tests/wpi-testchecker/annotated")
+    }
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceTestCheckerJaifsTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+
+    doLast {
+        copyNonannotatedToAnnotatedDirectory("wpi-testchecker")
+
+        // JAIF-based WPI fails these tests, which was added for stub-based WPI.
+        // See issue here: https://github.com/typetools/checker-framework/issues/3009
+        delete('tests/wpi-testchecker/annotated/ConflictingAnnotationsTest.java')
+        delete('tests/wpi-testchecker/annotated/MultiDimensionalArrays.java')
+
+        // Inserting annotations from .jaif files in-place.
+        String jaifsDir = "tests/wpi-testchecker/inference-output";
+        List<File> jaifs = fileTree(jaifsDir).matching {
+            include '*.jaif'
+        }.asList()
+        if (jaifs.isEmpty()) {
+            throw new GradleException("no .jaif files found in ${jaifsDir}")
+        }
+        String javasDir = "tests/wpi-testchecker/annotated/";
+        List<File> javas = fileTree(javasDir).matching {
+            include '*.java'
+        }.asList()
+        if (javas.isEmpty()) {
+            throw new GradleException("no .java files found in ${javasDir}")
+        }
+        exec {
+            executable "${afu}/scripts/insert-annotations-to-source"
+            // Script argument -cp must precede Java program argument -i.
+            // checker-qual is needed for Constant Value Checker annotations.
+            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}"]
+            args += ['-i']
+            for (File jaif : jaifs) {
+                args += [jaif.toString()]
+            }
+            for (File javaFile : javas) {
+                args += [javaFile.toString()]
+            }
+        }
+    }
+}
+
+task testWpiTestCheckerJaifsValidate(type: Test) {
+    description 'Internal task.  Users should run wholeProgramInferenceNullnessJaifTests instead.  This re-runs the wpi-testchecker tests using the .jaif files generated by testWpiTestCheckerJaifs'
+
+    dependsOn(testWpiTestCheckerJaifs)
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceTestCheckerJaifsValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+task wholeProgramInferenceTestCheckerJaifTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using .jaif files'
+    dependsOn(testWpiTestCheckerJaifsValidate)
+    outputs.upToDateWhen { false }
+}
+
+
+task testWpiNullnessJaifs(type: Test) {
+    description 'Internal task.  Users should run wholeProgramInferenceNullnessJaifTests instead.  This runs the wpi-nullness tests with -Ainfer=jaifs to generate .jaif files'
+
+    dependsOn(compileTestJava)
+    doFirst {
+        delete("tests/wpi-nullness/annotated")
+    }
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceNullnessJaifsTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+
+    doLast {
+        copyNonannotatedToAnnotatedDirectory("wpi-nullness")
+
+        // JAIF-based WPI fails these tests, which was added for stub-based WPI.
+        // See issue here: https://github.com/typetools/checker-framework/issues/3009
+        delete('tests/wpi-nullness/annotated/ConflictingAnnotationsTest.java')
+        delete('tests/wpi-nullness/annotated/MultiDimensionalArrays.java')
+
+        // Inserting annotations from .jaif files in-place.
+        String jaifsDir = "tests/wpi-nullness/inference-output";
+        List<File> jaifs = fileTree(jaifsDir).matching {
+            include '*.jaif'
+        }.asList()
+        if (jaifs.isEmpty()) {
+            throw new GradleException("no .jaif files found in ${jaifsDir}")
+        }
+        String javasDir = "tests/wpi-nullness/annotated/";
+        List<File> javas = fileTree(javasDir).matching {
+            include '*.java'
+        }.asList()
+        if (javas.isEmpty()) {
+            throw new GradleException("no .java files found in ${javasDir}")
+        }
+        exec {
+            executable "${afu}/scripts/insert-annotations-to-source"
+            // Script argument -cp must precede Java program argument -i.
+            args = ['-cp', "${sourceSets.test.output.asPath}"]
+            args += ['-i']
+            for (File jaif : jaifs) {
+                args += [jaif.toString()]
+            }
+            for (File javaFile : javas) {
+                args += [javaFile.toString()]
+            }
+        }
+    }
+}
+
+task testWpiNullnessJaifsValidate(type: Test) {
+    description 'Internal task.  Users should run wholeProgramInferenceNullnessJaifTests instead.  This re-runs the wpi-nullness tests using the .jaif files generated by testWpiNullnessJaifs'
+
+    dependsOn(testWpiNullnessJaifs)
+    outputs.upToDateWhen { false }
+    include '**/WholeProgramInferenceNullnessJaifsValidationTest.class'
+    testLogging {
+        // Always run the tests
+        outputs.upToDateWhen { false }
+
+        // Show the found unexpected diagnostics and expected diagnostics not found.
+        exceptionFormat "full"
+        events "passed", "skipped", "failed"
+    }
+}
+
+task wholeProgramInferenceNullnessJaifTests(dependsOn: 'shadowJar', group: 'Verification') {
+    description 'Run tests for whole-program inference using .jaif files'
+    dependsOn(testWpiNullnessJaifsValidate)
+    outputs.upToDateWhen { false }
+}
+
+
+// Empty task that just runs both the jaif and stub WPI tests.
+// It is run as part of the inferenceTests task.
+task wholeProgramInferenceTests(group: 'Verification') {
+    description "Run tests for all whole program inference modes."
+    dependsOn('wholeProgramInferenceTestCheckerJaifTests')
+    dependsOn('wholeProgramInferenceTestCheckerStubTests')
+    dependsOn('wholeProgramInferenceTestCheckerAjavaTests')
+    dependsOn('wholeProgramInferenceNullnessJaifTests')
+}
+
+// This is run as part of the inferenceTests task.
+task wpiManyTests(group: "Verification") {
+    description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
+    dependsOn(copyJarsToDist)
+    // This test must always be re-run when requested.
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        delete("${project.projectDir}/build/wpi-many-tests-results/")
+        // wpi-many.sh is run in skip mode so that logs are preserved, but
+        // we don't actually want to skip previously-failing tests when we
+        // re-run the tests locally.
+        delete fileTree("${project.projectDir}/build/wpi-many-tests") {
+            include '**/.cannot-run-wpi'
+        }
+    }
+
+    doLast {
+        // Run wpi-many.sh
+        def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
+        try {
+            exec {
+                commandLine 'bin/wpi-many.sh',
+                        '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
+                        '-o', "${project.projectDir}/build/wpi-many-tests",
+                        '-s',
+                        '--', '--checker', 'nullness,interning,lock,regex,signature'
+            }
+        } catch (Exception e) {
+            println("Failure: Running wpi-many.sh failed with a non-zero exit code.")
+            File wpiOut = new File("${typecheckFilesDir}/wpi-out")
+            if (wpiOut.exists()) {
+                println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+                exec {
+                    commandLine 'cat', "${typecheckFilesDir}/wpi-out"
+                }
+                println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+                throw e
+            }
+        }
+        // collect the logs from running WPI
+        def typecheckFiles = fileTree(typecheckFilesDir).matching {
+            include "**/*-typecheck.out"
+        }
+        if (typecheckFiles.size() == 0) {
+            println("Failure: No *-typecheck.out files in ${typecheckFilesDir}")
+            println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+            exec {
+                commandLine 'cat', "${typecheckFilesDir}/wpi-out"
+            }
+            println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+            def logFiles = fileTree(typecheckFilesDir).matching {
+                include "**/*.log"
+            }
+            logFiles.visit { FileVisitDetails details ->
+                def filename = "${typecheckFilesDir}" + details.getName()
+                println("======== printing contents of ${filename} ========")
+                details.getFile().eachLine { line -> println(line) }
+                println("======== end of contents of ${filename} ========")
+            }
+            throw new GradleException("Failure: No *-typecheck.out files in ${project.projectDir}/build/wpi-many-tests-results/")
+        }
+
+        // check that WPI causes the expected builds to succeed
+        typecheckFiles.visit { FileVisitDetails details ->
+            def filename = "${project.projectDir}/build/wpi-many-tests-results/" + details.getName()
+            def file = details.getFile()
+            if (file.length() == 0) {
+                throw new GradleException("Failure: WPI produced empty typecheck file " + filename)
+            }
+            file.eachLine { line ->
+                if (
+                        // Ignore the line that WPI echoes with the javac command being run.
+                        line.startsWith("Running ")
+                        // Warnings about bad path elements aren't related to WPI and are ignored.
+                        || line.startsWith("warning: [path]")
+                        // Ignore the summary line that reports the total number of warnings.
+                        || line.endsWith("warnings")) {
+                  return;
+                }
+                if (!line.trim().equals("")) {
+                    throw new GradleException("Failure: WPI scripts produced an unexpected output in " + filename + ". " +
+                            "Failing line is the following: " + line)
+                }
+            }
+        }
+    }
+}
+
+// This is run as part of the inferenceTests task.
+task wpiPlumeLibTests(group: "Verification") {
+    description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
+    dependsOn(copyJarsToDist)
+
+    // This test must always be re-run when requested.
+    outputs.upToDateWhen { false }
+
+    doLast {
+        exec {
+            commandLine 'bin-devel/wpi-plumelib/test-wpi-plumelib.sh'
+            ignoreExitValue = false
+        }
+    }
+}
+
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading to Maven repositories. */
+final checkerPom(publication) {
+    sharedPublicationConfiguration(publication)
+    // Don't use publication.from components.java which would publish the skinny jar as checker.jar.
+    publication.pom {
+        name = 'Checker Framework'
+        description = 'The Checker Framework enhances Java\'s type system to\n' +
+                'make it more powerful and useful. This lets software developers\n' +
+                'detect and prevent errors in their Java programs.\n' +
+                'The Checker Framework includes compiler plug-ins ("checkers")\n' +
+                'that find bugs or verify their absence. It also permits you to\n' +
+                'write your own compiler plug-ins.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+publishing {
+    publications {
+        checker(MavenPublication) {
+            project.shadow.component it
+            checkerPom it
+            artifact checkerJar
+            artifact allSourcesJar
+            artifact allJavadocJar
+        }
+    }
+}
+signing {
+    sign publishing.publications.checker
 }

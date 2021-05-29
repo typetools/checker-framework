@@ -18,14 +18,20 @@ please send us a link and a short description.
 % Sections are added to this chapter in reverse chronological order, at the top.
 
 
-\sectionAndLabel{Object Construction Checker}{object-construction-checker}
+\sectionAndLabel{Determinism checker}{deteriminism-checker}
 
-The \href{https://github.com/kelloggm/object-construction-checker}{Object
-  Construction Checker} verifies that your code correctly uses the builder
-pattern, never omitting a required argument. The checker has built-in
-support for \href{https://projectlombok.org/}{Lombok} and
-\href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}. Programmers
-can extend it to other builders by writing method specifications.
+The
+\href{https://github.com/t-rasmud/checker-framework/tree/nondet-checker}{Determinism
+  Checker} ensures that a program is deterministic across executions.  A
+determinismic program is easier to test, and it is easier to debug (such as
+comparing executions).
+
+The Determinism Checker focuses on sequential programs.  It detects
+determinism due to the iteration order of a hash table (or on any other
+property of hash codes), default formatting (such as Java's
+\<Object.toString()>, which includes a memory address), \<random>,
+date-and-time functions, and accessing system properties such as the file
+system or environment variables.
 
 
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
@@ -58,7 +64,7 @@ compile group: 'software.amazon.checkerframework', name: 'aws-kms-compliance-che
 
 \sectionAndLabel{UI Thread Checker for ReactiveX}{rx-thread-checker}
 
-The \href{https://plv.colorado.edu/benno/ase18.pdf}{Rx Thread \& Effect Checker}~\cite{SteinCSC2018} enforces
+The \href{https://www.bennostein.org/ase18.pdf}{Rx Thread \& Effect Checker}~\cite{SteinCSC2018} enforces
 UI Thread safety properties for stream-based Android applications and is available at
 \url{https://github.com/uber-research/RxThreadEffectChecker}.
 

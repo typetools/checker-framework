@@ -2,6 +2,9 @@
 
 package java.util;
 
+import org.checkerframework.checker.interning.qual.UsesObjectEquals;
+import org.checkerframework.checker.interning.qual.Interned;
+
 @UsesObjectEquals class XMLUtils {}
 
 /*

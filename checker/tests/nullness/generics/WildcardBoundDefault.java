@@ -5,14 +5,14 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 class MyGenClass<T extends @Nullable Object> {}
 
 @DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.UPPER_BOUND)
-class Varargs {
-    void test() {
-        ignore(newInstance());
-    }
+public class WildcardBoundDefault {
+  void test() {
+    ignore(newInstance());
+  }
 
-    static void ignore(MyGenClass<?>... consumer) {}
+  static void ignore(MyGenClass<?>... consumer) {}
 
-    static <T> MyGenClass<T> newInstance() {
-        return new MyGenClass<T>();
-    }
+  static <T> MyGenClass<T> newInstance() {
+    return new MyGenClass<T>();
+  }
 }

@@ -3,11 +3,11 @@
 import java.util.concurrent.ConcurrentHashMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue1142 {
+public class Issue1142 {
 
-    void foo() {
-        // :: error: (type.argument.type.incompatible)
-        ConcurrentHashMap<Integer, @Nullable Integer> chm1 = new ConcurrentHashMap<>();
-        chm1.put(1, null);
-    }
+  void foo() {
+    // :: error: (type.argument)
+    ConcurrentHashMap<Integer, @Nullable Integer> chm1 = new ConcurrentHashMap<>();
+    chm1.put(1, null);
+  }
 }

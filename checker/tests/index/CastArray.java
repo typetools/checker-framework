@@ -1,5 +1,5 @@
-class CastArray {
-    void test(Object a) {
-        int[] b = (int[]) a;
-    }
+public class CastArray {
+  void test(Object a) {
+    int[] b = (int[]) a;
+  }
 }

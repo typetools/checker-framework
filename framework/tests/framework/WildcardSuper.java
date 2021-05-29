@@ -1,9 +1,9 @@
 import java.util.List;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
-class WildcardSuper {
-    void test(List<? super @Odd String> list) {
-        // :: error: (assignment.type.incompatible)
-        @Odd Object odd = list.get(0);
-    }
+public class WildcardSuper {
+  void test(List<? super @Odd String> list) {
+    // :: error: (assignment)
+    @Odd Object odd = list.get(0);
+  }
 }

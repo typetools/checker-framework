@@ -7,25 +7,25 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class SubtractionIndex {
 
-    // Version without annotations
-    public static void main(String[] args) {
-        int N = 8;
-        int[] grid = new int[N];
-        for (int i = 0; i < N; i++) {
-            System.out.println(grid[(N - 1) - i]);
-        }
+  // Version without annotations
+  public static void main(String[] args) {
+    int N = 8;
+    int[] grid = new int[N];
+    for (int i = 0; i < N; i++) {
+      System.out.println(grid[(N - 1) - i]);
     }
+  }
 
-    // Version with annotations
-    public static void mainAnnotated(String[] args) {
-        int N = 8;
-        int @MinLen(8) [] grid = new int[N];
-        @SuppressWarnings("upperbound")
-        @LTLengthOf("grid") int zero = 0;
-        for (@LTLengthOf("grid") int i = zero; i < N; i++) {
-            System.out.println(grid[(N - 1) - i]);
-            System.out.println(grid[(N - i)]);
-            System.out.println(grid[(N - i) - 1]);
-        }
+  // Version with annotations
+  public static void mainAnnotated(String[] args) {
+    int N = 8;
+    int @MinLen(8) [] grid = new int[N];
+    @SuppressWarnings("upperbound")
+    @LTLengthOf("grid") int zero = 0;
+    for (@LTLengthOf("grid") int i = zero; i < N; i++) {
+      System.out.println(grid[(N - 1) - i]);
+      System.out.println(grid[(N - i)]);
+      System.out.println(grid[(N - i) - 1]);
     }
+  }
 }

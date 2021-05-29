@@ -3,12 +3,12 @@
 
 import java.util.StringTokenizer;
 
-class StringTokenizerMinLen {
-    void test(String str, String delim, boolean returnDelims) {
-        StringTokenizer st = new StringTokenizer(str, delim, returnDelims);
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            char c = token.charAt(0);
-        }
+public class StringTokenizerMinLen {
+  void test(String str, String delim, boolean returnDelims) {
+    StringTokenizer st = new StringTokenizer(str, delim, returnDelims);
+    while (st.hasMoreTokens()) {
+      String token = st.nextToken();
+      char c = token.charAt(0);
     }
+  }
 }

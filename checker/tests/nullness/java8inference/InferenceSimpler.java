@@ -5,17 +5,17 @@ import java.util.List;
 
 @SuppressWarnings("nullness") // don't bother with implementations
 class ISOuter {
-    static <V> List<V> wrap(V value) {
-        return null;
-    }
+  static <V> List<V> wrap(V value) {
+    return null;
+  }
 
-    static <T> List<T> empty() {
-        return null;
-    }
+  static <T> List<T> empty() {
+    return null;
+  }
 }
 
-class InferenceSimpler {
-    List<List<String>> foo() {
-        return ISOuter.wrap(ISOuter.empty());
-    }
+public class InferenceSimpler {
+  List<List<String>> foo() {
+    return ISOuter.wrap(ISOuter.empty());
+  }
 }

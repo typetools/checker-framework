@@ -147,8 +147,10 @@ indicates that the \<Class> object represents the \<java.util.HashMap> class.
 If multiple arguments are given, then the expression's run-time value is
 known to be in that set.
 
-The arguments are binary names
-(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1}{JLS \S 13.1}).
+Each argument is a ``fully-qualified binary name''
+(\refqualclass{checker/signature/qual}{FqBinaryName}):  a primitive or binary name
+(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1}{JLS
+  \S 13.1}), possibly followed by array brackets.
 
 \item[\reflectionAnno{ClassBound}{(String[] value)}]
 If an expression has \<@ClassBound> type, then its run-time value is known
@@ -160,8 +162,10 @@ represents \<java.util.HashMap> or a subclass of it.
 If multiple arguments are given, then the run-time value is equal to or a
 subclass of some class in that set.
 
-The arguments are binary names
-(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1}{JLS \S 13.1}).
+Each argument is a ``fully-qualified binary name''
+(\refqualclass{checker/signature/qual}{FqBinaryName}):  a primitive or binary name
+(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1}{JLS
+  \S 13.1}), possibly followed by array brackets.
 
 \item[\reflectionAnno{UnknownClass}{}] Indicates that there is no
   compile-time information about the run-time value of the class --- or

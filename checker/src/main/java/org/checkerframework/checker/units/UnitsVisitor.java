@@ -14,29 +14,28 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * <p>Ensure consistent use of compound assignments.
  */
 public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
-    public UnitsVisitor(BaseTypeChecker checker) {
-        super(checker);
+  public UnitsVisitor(BaseTypeChecker checker) {
+    super(checker);
+  }
+
+  @Override
+  public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+    ExpressionTree var = node.getVariable();
+    ExpressionTree expr = node.getExpression();
+    AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
+    AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
+
+    Kind kind = node.getKind();
+
+    if ((kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT)) {
+      if (!atypeFactory.getTypeHierarchy().isSubtype(exprType, varType)) {
+        checker.reportError(node, "compound.assignment", varType, exprType);
+      }
+    } else if (exprType.getAnnotation(UnknownUnits.class) == null) {
+      // Only allow mul/div with unqualified units
+      checker.reportError(node, "compound.assignment", varType, exprType);
     }
 
-    @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        ExpressionTree var = node.getVariable();
-        ExpressionTree expr = node.getExpression();
-        AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
-        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
-
-        Kind kind = node.getKind();
-
-        if ((kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT)) {
-            if (!atypeFactory.getTypeHierarchy().isSubtype(exprType, varType)) {
-                checker.reportError(
-                        node, "compound.assignment.type.incompatible", varType, exprType);
-            }
-        } else if (exprType.getAnnotation(UnknownUnits.class) == null) {
-            // Only allow mul/div with unqualified units
-            checker.reportError(node, "compound.assignment.type.incompatible", varType, exprType);
-        }
-
-        return null; // super.visitCompoundAssignment(node, p);
-    }
+    return null; // super.visitCompoundAssignment(node, p);
+  }
 }

@@ -1,1 +1,1 @@
-class Test2 extends Object {}
+public class Test2 extends Object {}

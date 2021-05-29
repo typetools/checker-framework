@@ -7,10 +7,10 @@ import org.checkerframework.framework.qual.NoQualifierParameter;
 // :: error: (conflicting.qual.param)
 public class TestNoQualifierParameterConflicting {
 
-    @HasQualifierParameter(Tainted.class)
-    static class Super {}
+  @HasQualifierParameter(Tainted.class)
+  static class Super {}
 
-    @NoQualifierParameter(Tainted.class)
-    // :: error: (missing.has.qual.param)
-    static class Sup extends Super {}
+  @NoQualifierParameter(Tainted.class)
+  // :: error: (conflicting.qual.param)
+  static class Sup extends Super {}
 }

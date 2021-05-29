@@ -87,7 +87,7 @@ This section describes the lock annotations you can write on types and methods.
 
   Section~\ref{java-expressions-as-arguments} explains which
   expressions the Lock Checker is able to analyze as lock expressions.
-  These include \code{<self>}, i.e. the value of the annotated reference
+  These include \code{<self>}, the value of the annotated reference
   (non-primitive) variable.  For example, \code{@GuardedBy("<self>") Object o}
   indicates that the value referenced by \<o> is guarded by the intrinsic
   (monitor) lock of the value referenced by \<o>.
@@ -919,8 +919,8 @@ $\Rightarrow$
 
 \subsectionAndLabel{Relationship to annotations in \emph{Java Concurrency in Practice}}{lock-jcip-annotations}
 
-The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
-\href{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
+The book \href{https://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
+\href{https://jcip.net/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
 \code{@GuardedBy} serves two related but distinct purposes:
 
 \begin{itemize}

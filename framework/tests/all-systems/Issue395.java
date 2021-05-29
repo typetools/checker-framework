@@ -3,9 +3,9 @@
 
 import java.util.ArrayList;
 
-class Issue395 {
+public class Issue395 {
 
-    Object[] testMethod() {
-        return new Object[] {new ArrayList<>()};
-    }
+  Object[] testMethod() {
+    return new Object[] {new ArrayList<>()};
+  }
 }

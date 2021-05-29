@@ -1,4 +1,4 @@
-// Upstream version (update version number when a new NetBeans release appears):
+// Upstream version (this is a clean-room reimplementation of its interface):
 // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
 
 package org.netbeans.api.annotations.common;

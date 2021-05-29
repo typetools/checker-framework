@@ -6,16 +6,16 @@ import java.util.List;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class Issue1111 {
-    void foo(Box<? super Integer> box, List<Integer> list) {
-        bar(box, list);
-    }
+  void foo(Box<? super Integer> box, List<Integer> list) {
+    bar(box, list);
+  }
 
-    void foo2(Box<@Untainted ? super Integer> box, List<Integer> list) {
-        // :: error: (argument.type.incompatible)
-        bar(box, list);
-    }
+  void foo2(Box<@Untainted ? super Integer> box, List<Integer> list) {
+    // :: error: (argument)
+    bar(box, list);
+  }
 
-    <T extends Number> void bar(Box<T> box, Iterable<? extends T> list) {}
+  <T extends Number> void bar(Box<T> box, Iterable<? extends T> list) {}
 
-    class Box<T extends Number> {}
+  class Box<T extends Number> {}
 }

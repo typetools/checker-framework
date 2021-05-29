@@ -4,20 +4,20 @@
 import java.util.Arrays;
 import java.util.List;
 
-class Issue808 {
-    void f() {
-        Arrays.asList(0, 0, "", Arrays.asList(new Object[0]));
-        foo(new Object(), bar());
-        new Issue808(bar());
-        foo(bar());
-        List<Object> list = Arrays.asList(new Object[0]);
-    }
+public class Issue808 {
+  void f() {
+    Arrays.asList(0, 0, "", Arrays.asList(new Object[0]));
+    foo(new Object(), bar());
+    new Issue808(bar());
+    foo(bar());
+    List<Object> list = Arrays.asList(new Object[0]);
+  }
 
-    <T> T bar() {
-        throw new RuntimeException();
-    }
+  <T> T bar() {
+    throw new RuntimeException();
+  }
 
-    void foo(Object... param) {}
+  void foo(Object... param) {}
 
-    Issue808(Object... param) {}
+  Issue808(Object... param) {}
 }

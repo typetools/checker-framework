@@ -1,0 +1,13 @@
+package java.lang;
+
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
+
+public final class Object {
+    public Class<@H1S1 ? extends @H1S1 Object> getClass();
+    @SuppressWarnings("all") // Used to cause crash.
+    public boolean equals(Object o);
+}
+
+class String {
+    public static String format(String format, @H1S1 Object @H1S2... args);
+}

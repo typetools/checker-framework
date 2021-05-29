@@ -1,2 +1,2 @@
-AnonymousClass.java:4:29: compiler.err.proc.messager: (assignment.type.incompatible)
+AnonymousClass.java:4:27: compiler.err.proc.messager: (assignment)
 1 error

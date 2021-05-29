@@ -1,2 +1,3 @@
+// :: error: (type.checking.not.run)
 // :: error: cannot find symbol
-class UnimportedExtends1 extends UnimportedClass {}
+public class UnimportedExtends1 extends UnimportedClass {}

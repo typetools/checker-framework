@@ -5,34 +5,28 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
 
-/**
- * A regular basic block that contains a sequence of {@link Node}s.
- *
- * <p>The following invariant holds.
- *
- * <pre>
- * forall n in getContents() :: n.getBlock() == this
- * </pre>
- */
+/** A regular basic block that contains a sequence of {@link Node}s. */
 public interface RegularBlock extends SingleSuccessorBlock {
 
-    /**
-     * Returns the unmodifiable sequence of {@link Node}s.
-     *
-     * @return the unmodifiable sequence of {@link Node}s
-     */
-    @Pure
-    List<Node> getContents();
+  /**
+   * Returns the unmodifiable sequence of {@link Node}s.
+   *
+   * @return the unmodifiable sequence of {@link Node}s
+   * @deprecated use {@link #getNodes} instead
+   */
+  @Deprecated // 2020-08-05
+  @Pure
+  List<Node> getContents();
 
-    /**
-     * Returns the regular successor block.
-     *
-     * @return the regular successor block
-     */
-    @Pure
-    @Nullable Block getRegularSuccessor();
+  /**
+   * Returns the regular successor block.
+   *
+   * @return the regular successor block
+   */
+  @Pure
+  @Nullable Block getRegularSuccessor();
 
-    /** Is this block empty (i.e., does it not contain any contents). */
-    @Pure
-    boolean isEmpty();
+  /** Is this block empty (i.e., does it not contain any contents). */
+  @Pure
+  boolean isEmpty();
 }

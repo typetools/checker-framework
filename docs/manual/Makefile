@@ -14,6 +14,7 @@ optional-checker.tex \
 interning-checker.tex \
 lock-checker.tex \
 index-checker.tex \
+called-methods-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
 regex-checker.tex \
@@ -24,12 +25,13 @@ signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
 signedness-checker.tex \
-aliasing-checker.tex \
 purity-checker.tex \
 constant-value-checker.tex \
 returns-receiver-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
+initialized-fields-checker.tex \
+aliasing-checker.tex \
 subtyping-checker.tex \
 external-checkers.tex \
 typestate-checker.tex \
@@ -39,6 +41,7 @@ warnings.tex \
 inference.tex \
 annotating-libraries.tex \
 creating-a-checker.tex \
+accumulation-checker.tex \
 external-tools.tex \
 faq.tex \
 troubleshooting.tex \
@@ -50,7 +53,7 @@ all: manual.pdf manual.html
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: ${TEX_FILES} bib-update figures-all check-labels
+manual.pdf: ${TEX_FILES} plume-bib-update figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
 html: manual.html
@@ -71,12 +74,12 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
 ../../checker/bin-devel/.plume-scripts:
-	cd ../.. && ./gradlew getPlumeScripts
+	cd ../.. && ./gradlew getPlumeScripts -q
 
 .PHONY: contributors.tex
 contributors.tex:
 # Update plume-scripts even if it is already cloned
-	cd ../.. && ./gradlew getPlumeScripts
+	cd ../.. && ./gradlew getPlumeScripts -q
 	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
@@ -93,15 +96,15 @@ favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 check-labels:
 	if ( grep -n '^\\\(chapter\|\(sub\)*section\|paragraph\){' *.tex ) ; then false ; else true ; fi
 
-export BIBINPUTS = $BIBINPUTS:.:bib
-bib:
-	(git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib || git clone --depth 1 -q https://github.com/mernst/plume-bib.git bib)
-.PHONY: bib-update
-bib-update: bib
+export BIBINPUTS = $BIBINPUTS:.:plume-bib
+plume-bib:
+	(git clone --depth 1 -q https://github.com/mernst/plume-bib.git || git clone --depth 1 -q https://github.com/mernst/plume-bib.git)
+.PHONY: plume-bib-update
+plume-bib-update: plume-bib
 # Even if this command fails, it does not terminate the make job.
 # However, to skip it, invoke make as:  make NOGIT=1 ...
 ifndef NOGIT
-	-(cd bib && git pull && make)
+	-(cd plume-bib && git pull && make)
 endif
 
 # Leaves manual.html, and .svg files that it references.

@@ -1,4 +1,4 @@
-NullnessInterning.java:19:16: compiler.warn.proc.messager: (assignment.type.incompatible)
-NullnessInterning.java:22:13: compiler.warn.proc.messager: (not.interned)
-NullnessInterning.java:22:18: compiler.warn.proc.messager: (not.interned)
+NullnessInterning.java:19:14: compiler.warn.proc.messager: (assignment)
+NullnessInterning.java:22:9: compiler.warn.proc.messager: (not.interned)
+NullnessInterning.java:22:14: compiler.warn.proc.messager: (not.interned)
 3 warnings

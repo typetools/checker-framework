@@ -4,19 +4,19 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 class MyOpt<T extends Object> {
-    static <S> MyOpt<@NonNull S> empty() {
-        throw new RuntimeException();
-    }
+  static <S> MyOpt<@NonNull S> empty() {
+    throw new RuntimeException();
+  }
 
-    static <S> MyOpt<S> of(S p) {
-        throw new RuntimeException();
-    }
+  static <S> MyOpt<S> of(S p) {
+    throw new RuntimeException();
+  }
 }
 
-class Issue1084 {
-    MyOpt<Long> get() {
-        return this.hashCode() > 0 ? MyOpt.of(5L) : MyOpt.empty();
-    }
+public class Issue1084 {
+  MyOpt<Long> get() {
+    return this.hashCode() > 0 ? MyOpt.of(5L) : MyOpt.empty();
+  }
 
-    MyOpt<byte[]> oba = MyOpt.empty();
+  MyOpt<byte[]> oba = MyOpt.empty();
 }

@@ -27,17 +27,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-@Deprecated // use {@link SuppressWarningsPrefix} instead
+@Deprecated // 2020-06-26
 // In the manual section #suppresswarnings-annotation-syntax, the term checkername is used instead
 // of prefix.
 public @interface SuppressWarningsKeys {
 
-    /**
-     * Returns array of strings, any one of which causes this checker to suppress a warning when
-     * passed as the argument of {@literal @}{@link SuppressWarnings}.
-     *
-     * @return array of strings, any one of which causes this checker to suppress a warning when
-     *     passed as the argument of {@literal @}{@link SuppressWarnings}
-     */
-    String[] value();
+  /**
+   * Returns array of strings, any one of which causes this checker to suppress a warning when
+   * passed as the argument of {@literal @}{@link SuppressWarnings}.
+   *
+   * @return array of strings, any one of which causes this checker to suppress a warning when
+   *     passed as the argument of {@literal @}{@link SuppressWarnings}
+   */
+  String[] value();
 }

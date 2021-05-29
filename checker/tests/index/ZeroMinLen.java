@@ -3,16 +3,16 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class ZeroMinLen {
 
-    int @MinLen(1) [] nums;
-    int[] nums2;
+  int @MinLen(1) [] nums;
+  int[] nums2;
 
-    @IndexFor("nums") int current_index;
+  @IndexFor("nums") int current_index;
 
-    @IndexFor("nums2") int current_index2;
+  @IndexFor("nums2") int current_index2;
 
-    void test() {
-        current_index = 0;
-        // :: error: (assignment.type.incompatible)
-        current_index2 = 0;
-    }
+  void test() {
+    current_index = 0;
+    // :: error: (assignment)
+    current_index2 = 0;
+  }
 }

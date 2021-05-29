@@ -87,9 +87,6 @@
                 with="checker-framework-${release.ver}.zip"/>
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
@@ -102,10 +99,18 @@
                        match="checker-qual-${release.version.regexp}{0,1}" replace="checker-qual-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
+                       match="checker-util-${release.version.regexp}{0,1}" replace="checker-util-${release.ver}"/>
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker/${release.version.regexp}{0,1}" replace="checker/${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
+                       match="checker-qual/${release.version.regexp}{0,1}" replace="checker-qual/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="checker-util/${release.version.regexp}{0,1}" replace="checker-util/${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
@@ -113,12 +118,6 @@
 
         <replaceregexp file="${checker}/../build-common.properties" byline="true"
                        match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
-
-        <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.tutorial}/webpages/security-error-cmd.html" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>
@@ -135,19 +134,6 @@
         <update file="${cf.docs.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
-
-        <update file="${cf.docs.examples}/MavenExampleJDK11/pom.xml"
-                start="${checkers.ver.0}" end="${checkers.ver.1}"
-                with="${release.ver}"/>
-
-        <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava8Example/build.gradle" byline="true"
-                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
-                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
-
-        <replaceregexp file="${cf.docs.examples}/lombok/build.gradle" byline="true"
-                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
-                       replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
-
 
     </target>
 
@@ -257,6 +243,7 @@
             <fileset dir="${checker.manual}">
                 <include name="*.svg"/>
                 <include name="manual001.png"/>
+                <include name="manual001.svg"/>
             </fileset>
         </copy>
 
@@ -274,7 +261,7 @@
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 
-        <copy todir="${dest.dir}" file="${checker}/../changelog.txt" />
+        <copy todir="${dest.dir}" file="${checker}/../docs/CHANGELOG.md" />
 
         <copy todir="${dest.dir}/api" flatten="false">
             <fileset dir="${checker}/../docs/api">

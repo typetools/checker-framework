@@ -1,0 +1,38 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':checker-qual')
+    // Don't add implementation dependencies; checker-util.jar should have no dependencies.
+
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+}
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+/** Adds information to the publication for uploading to Maven repositories. */
+final checkerUtilPom(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+    publication.pom {
+        name = 'Checker Util'
+        description = 'checker-util contains utility classes for programmers to use at run time.'
+        licenses {
+            license {
+                name = 'The MIT License'
+                url = 'http://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
+    }
+}
+publishing {
+    publications {
+        checkerUtil(MavenPublication) {
+            checkerUtilPom it
+        }
+    }
+}
+signing {
+    sign publishing.publications.checkerUtil
+}

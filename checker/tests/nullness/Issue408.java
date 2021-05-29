@@ -3,28 +3,28 @@
 
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
-class Issue408 {
-    static class Bar {
-        Bar() {
-            doIssue408();
-        }
-
-        String doIssue408(@UnderInitialization Bar this) {
-            return "";
-        }
+public class Issue408 {
+  static class Bar {
+    Bar() {
+      doIssue408();
     }
 
-    static class Baz extends Bar {
-        String myString = "hello";
-
-        @Override
-        String doIssue408(@UnderInitialization Baz this) {
-            // :: error: (dereference.of.nullable)
-            return myString.toLowerCase();
-        }
+    String doIssue408(@UnderInitialization Bar this) {
+      return "";
     }
+  }
 
-    public static void main(String[] args) {
-        new Baz();
+  static class Baz extends Bar {
+    String myString = "hello";
+
+    @Override
+    String doIssue408(@UnderInitialization Baz this) {
+      // :: error: (dereference.of.nullable)
+      return myString.toLowerCase();
     }
+  }
+
+  public static void main(String[] args) {
+    new Baz();
+  }
 }

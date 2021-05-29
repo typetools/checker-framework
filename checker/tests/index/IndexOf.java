@@ -4,12 +4,12 @@
 
 public class IndexOf {
 
-    public static String m(String arg) {
-        int split_pos = arg.indexOf(",-");
-        if (split_pos == 0) {
-            // Just discard the ',' if ",-" occurs at begining of string
-            arg = arg.substring(1);
-        }
-        return arg;
+  public static String m(String arg) {
+    int split_pos = arg.indexOf(",-");
+    if (split_pos == 0) {
+      // Just discard the ',' if ",-" occurs at begining of string
+      arg = arg.substring(1);
     }
+    return arg;
+  }
 }

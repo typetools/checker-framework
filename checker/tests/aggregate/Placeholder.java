@@ -1,5 +1,4 @@
 // We need a file to start the checker.
-// We should add more files to test
-// aggregate checker functionality.
+// We should add more files to test aggregate checker functionality.
 
-class Placeholder {}
+public class Placeholder {}

@@ -3,89 +3,89 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
-class Initializer {
+public class Initializer {
 
-    public String a;
-    public String b = "abc";
+  public String a;
+  public String b = "abc";
 
-    // :: error: (assignment.type.incompatible)
-    public String c = null;
+  // :: error: (assignment)
+  public String c = null;
 
-    public String d = ("");
+  public String d = ("");
 
-    public Initializer() {
-        // :: error: (assignment.type.incompatible)
-        a = null;
-        a = "";
-        c = "";
+  public Initializer() {
+    // :: error: (assignment)
+    a = null;
+    a = "";
+    c = "";
+  }
+
+  // :: error: (initialization.fields.uninitialized)
+  public Initializer(boolean foo) {}
+
+  public Initializer(int foo) {
+    a = "";
+    c = "";
+  }
+
+  public Initializer(float foo) {
+    setField();
+    c = "";
+  }
+
+  public Initializer(double foo) {
+    if (!setFieldMaybe()) {
+      a = "";
     }
+    c = "";
+  }
 
-    // :: error: (initialization.fields.uninitialized)
-    public Initializer(boolean foo) {}
-
-    public Initializer(int foo) {
-        a = "";
-        c = "";
+  // :: error: (initialization.fields.uninitialized)
+  public Initializer(double foo, boolean t) {
+    if (!setFieldMaybe()) {
+      // on this path, 'a' is not initialized
     }
+    c = "";
+  }
 
-    public Initializer(float foo) {
-        setField();
-        c = "";
-    }
+  @EnsuresQualifier(expression = "a", qualifier = NonNull.class)
+  public void setField(@UnknownInitialization Initializer this) {
+    a = "";
+  }
 
-    public Initializer(double foo) {
-        if (!setFieldMaybe()) {
-            a = "";
-        }
-        c = "";
-    }
+  @EnsuresQualifierIf(result = true, expression = "a", qualifier = NonNull.class)
+  public boolean setFieldMaybe(@UnknownInitialization Initializer this) {
+    a = "";
+    return true;
+  }
 
-    // :: error: (initialization.fields.uninitialized)
-    public Initializer(double foo, boolean t) {
-        if (!setFieldMaybe()) {
-            // on this path, 'a' is not initialized
-        }
-        c = "";
-    }
+  String f = "";
 
-    @EnsuresQualifier(expression = "a", qualifier = NonNull.class)
-    public void setField(@UnknownInitialization Initializer this) {
-        a = "";
-    }
+  void t1(@UnknownInitialization Initializer this) {
+    // :: error: (dereference.of.nullable)
+    this.f.toString();
+  }
 
-    @EnsuresQualifierIf(result = true, expression = "a", qualifier = NonNull.class)
-    public boolean setFieldMaybe(@UnknownInitialization Initializer this) {
-        a = "";
-        return true;
-    }
-
-    String f = "";
-
-    void t1(@UnknownInitialization Initializer this) {
-        // :: error: (dereference.of.nullable)
-        this.f.toString();
-    }
-
-    String fieldF = "";
+  String fieldF = "";
 }
 
 class SubInitializer extends Initializer {
 
-    String f = "";
+  String f = "";
 
-    void subt1(@UnknownInitialization(Initializer.class) SubInitializer this) {
-        fieldF.toString();
-        super.f.toString();
-        // :: error: (dereference.of.nullable)
-        this.f.toString();
-    }
+  void subt1(@UnknownInitialization(Initializer.class) SubInitializer this) {
+    fieldF.toString();
+    super.f.toString();
+    // :: error: (dereference.of.nullable)
+    this.f.toString();
+  }
 
-    void subt2(@UnknownInitialization SubInitializer this) {
-        // :: error: (dereference.of.nullable)
-        fieldF.toString();
-        // :: error: (dereference.of.nullable)
-        super.f.toString();
-        // :: error: (dereference.of.nullable)
-        this.f.toString();
-    }
+  void subt2(@UnknownInitialization SubInitializer this) {
+    // :: error: (dereference.of.nullable)
+    fieldF.toString();
+    // :: error: (dereference.of.nullable)
+    super.f.toString();
+    // :: error: (dereference.of.nullable)
+    this.f.toString();
+  }
 }

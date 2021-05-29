@@ -1,100 +1,100 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 public class LazyInitialization {
-    @Nullable Object nullable;
-    @NonNull Object nonnull;
-    @MonotonicNonNull Object lazy;
-    @MonotonicNonNull Object lazy2 = null;
-    final @Nullable Object lazy3;
+  @Nullable Object nullable;
+  @NonNull Object nonnull;
+  @MonotonicNonNull Object lazy;
+  @MonotonicNonNull Object lazy2 = null;
+  final @Nullable Object lazy3;
 
-    public LazyInitialization(@Nullable Object arg) {
-        lazy3 = arg;
-        nonnull = new Object();
+  public LazyInitialization(@Nullable Object arg) {
+    lazy3 = arg;
+    nonnull = new Object();
+  }
+
+  void randomMethod() {}
+
+  void testAssignment() {
+    lazy = "m";
+    // :: error: (assignment)
+    lazy = null; // null
+  }
+
+  void testLazyBeingNull() {
+    // :: error: (dereference.of.nullable)
+    nullable.toString(); // error
+    nonnull.toString();
+    // :: error: (dereference.of.nullable)
+    lazy.toString(); // error
+    // :: error: (dereference.of.nullable)
+    lazy3.toString(); // error
+  }
+
+  void testAfterInvocation() {
+    nullable = "m";
+    nonnull = "m";
+    lazy = "m";
+    if (lazy3 == null) {
+      return;
     }
 
-    void randomMethod() {}
+    randomMethod();
 
-    void testAssignment() {
-        lazy = "m";
-        // :: error: (assignment.type.incompatible)
-        lazy = null; // null
+    // :: error: (dereference.of.nullable)
+    nullable.toString(); // error
+    nonnull.toString();
+    lazy.toString();
+    lazy3.toString();
+  }
+
+  private double @MonotonicNonNull [] intersect;
+
+  public void check_modified(double[] a, int count) {
+    if (intersect != null) {
+      double @NonNull [] nnda = intersect;
     }
+  }
 
-    void testLazyBeingNull() {
-        // :: error: (dereference.of.nullable)
-        nullable.toString(); // error
-        nonnull.toString();
-        // :: error: (dereference.of.nullable)
-        lazy.toString(); // error
-        // :: error: (dereference.of.nullable)
-        lazy3.toString(); // error
+  class PptRelation1 {
+    public void init_hierarchy_new(PptTopLevel ppt, Object eq) {
+      ppt.equality_view = eq;
+      ppt.equality_view.toString();
     }
+  }
 
-    void testAfterInvocation() {
-        nullable = "m";
-        nonnull = "m";
-        lazy = "m";
-        if (lazy3 == null) {
-            return;
-        }
+  class PptTopLevel {
+    public @MonotonicNonNull Object equality_view;
+  }
 
-        randomMethod();
-
-        // :: error: (dereference.of.nullable)
-        nullable.toString(); // error
-        nonnull.toString();
-        lazy.toString();
-        lazy3.toString();
+  class PptRelation1b {
+    // This is the same code as in PptRelation1, but comes after the class
+    // declaration of PptTopLevel. This works as expected.
+    public void init_hierarchy_new(PptTopLevel ppt, Object eq) {
+      ppt.equality_view = eq;
+      ppt.equality_view.toString();
     }
+  }
 
-    private double @MonotonicNonNull [] intersect;
+  class PptRelation2 {
+    public @MonotonicNonNull Object equality_view2;
 
-    public void check_modified(double[] a, int count) {
-        if (intersect != null) {
-            double @NonNull [] nnda = intersect;
-        }
+    public void init_hierarchy_new(PptRelation2 pr1, PptRelation2 pr2, Object eq) {
+      // :: error: (dereference.of.nullable)
+      pr1.equality_view2.toString();
+
+      pr1.equality_view2 = eq;
+      pr1.equality_view2.toString();
+
+      // :: error: (dereference.of.nullable)
+      pr2.equality_view2.toString();
+      // :: error: (dereference.of.nullable)
+      this.equality_view2.toString();
+
+      pr2.equality_view2 = eq;
+      pr2.equality_view2.toString();
+
+      this.equality_view2 = eq;
+      this.equality_view2.toString();
     }
-
-    class PptRelation1 {
-        public void init_hierarchy_new(PptTopLevel ppt, Object eq) {
-            ppt.equality_view = eq;
-            ppt.equality_view.toString();
-        }
-    }
-
-    class PptTopLevel {
-        public @MonotonicNonNull Object equality_view;
-    }
-
-    class PptRelation1b {
-        // This is the same code as in PptRelation1, but comes after the class
-        // declaration of PptTopLevel. This works as expected.
-        public void init_hierarchy_new(PptTopLevel ppt, Object eq) {
-            ppt.equality_view = eq;
-            ppt.equality_view.toString();
-        }
-    }
-
-    class PptRelation2 {
-        public @MonotonicNonNull Object equality_view2;
-
-        public void init_hierarchy_new(PptRelation2 pr1, PptRelation2 pr2, Object eq) {
-            // :: error: (dereference.of.nullable)
-            pr1.equality_view2.toString();
-
-            pr1.equality_view2 = eq;
-            pr1.equality_view2.toString();
-
-            // :: error: (dereference.of.nullable)
-            pr2.equality_view2.toString();
-            // :: error: (dereference.of.nullable)
-            this.equality_view2.toString();
-
-            pr2.equality_view2 = eq;
-            pr2.equality_view2.toString();
-
-            this.equality_view2 = eq;
-            this.equality_view2.toString();
-        }
-    }
+  }
 }

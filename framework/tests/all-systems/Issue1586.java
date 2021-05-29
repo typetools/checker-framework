@@ -3,20 +3,20 @@
 
 import java.util.concurrent.ExecutorService;
 
-class T {
-    void f(ExecutorService es) {
-        es.execute(
+public class Issue1586 {
+  void f(ExecutorService es) {
+    es.execute(
+        () -> {
+          try {
+            System.err.println();
+          } catch (Throwable throwable) {
+            System.err.println();
+          } finally {
+            es.execute(
                 () -> {
-                    try {
-                        System.err.println();
-                    } catch (Throwable throwable) {
-                        System.err.println();
-                    } finally {
-                        es.execute(
-                                () -> {
-                                    System.err.println();
-                                });
-                    }
+                  System.err.println();
                 });
-    }
+          }
+        });
+  }
 }

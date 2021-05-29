@@ -12,68 +12,68 @@ import org.checkerframework.checker.interning.qual.Interned;
 
 public class BoxingInterning {
 
-    void needsInterned(@Interned Object arg) {}
+  void needsInterned(@Interned Object arg) {}
 
-    void method() {
+  void method() {
 
-        boolean aprimitive = true;
-        needsInterned(aprimitive);
-        @Interned Boolean aboxed = aprimitive;
+    boolean aprimitive = true;
+    needsInterned(aprimitive);
+    @Interned Boolean aboxed = aprimitive;
 
-        byte bprimitive = 5;
-        needsInterned(bprimitive);
-        @Interned Byte bboxed = bprimitive;
+    byte bprimitive = 5;
+    needsInterned(bprimitive);
+    @Interned Byte bboxed = bprimitive;
 
-        char cprimitive = 'a';
-        needsInterned(cprimitive);
-        @Interned Character c2 = c;
+    char cprimitive = 'a';
+    needsInterned(cprimitive);
+    @Interned Character c2 = c;
 
-        char cprimitive2 = (char) 0x2202;
-        // :: (argument.type.incompatible)
-        needsInterned(cprimitive2);
-        // :: (assignment.type.incompatible)
-        @Interned Character cboxed2 = cprimitive2;
+    char cprimitive2 = (char) 0x2202;
+    // :: (argument)
+    needsInterned(cprimitive2);
+    // :: (assignment)
+    @Interned Character cboxed2 = cprimitive2;
 
-        short dprimitive = 5;
-        needsInterned(dprimitive);
-        @Interned Short dboxed = dprimitive;
+    short dprimitive = 5;
+    needsInterned(dprimitive);
+    @Interned Short dboxed = dprimitive;
 
-        short dprimitive2 = 500;
-        // :: (argument.type.incompatible)
-        needsInterned(dprimitive2);
-        // :: (assignment.type.incompatible)
-        @Interned Short dboxed2 = dprimitive2;
+    short dprimitive2 = 500;
+    // :: (argument)
+    needsInterned(dprimitive2);
+    // :: (assignment)
+    @Interned Short dboxed2 = dprimitive2;
 
-        int eprimitive = 5;
-        needsInterned(eprimitive);
-        @Interned Integer eboxed = eprimitive;
+    int eprimitive = 5;
+    needsInterned(eprimitive);
+    @Interned Integer eboxed = eprimitive;
 
-        int eprimitive2 = 500;
-        // :: (argument.type.incompatible)
-        needsInterned(eprimitive2);
-        // :: (assignment.type.incompatible)
-        @Interned Integer eboxed2 = eprimitive2;
+    int eprimitive2 = 500;
+    // :: (argument)
+    needsInterned(eprimitive2);
+    // :: (assignment)
+    @Interned Integer eboxed2 = eprimitive2;
 
-        long fprimitive = 5;
-        needsInterned(fprimitive);
-        @Interned Long fboxed = fboxed;
+    long fprimitive = 5;
+    needsInterned(fprimitive);
+    @Interned Long fboxed = fboxed;
 
-        long fprimitive2 = 500;
-        // :: (argument.type.incompatible)
-        needsInterned(fprimitive2);
-        // :: (assignment.type.incompatible)
-        @Interned Long fboxed2 = fboxed2;
+    long fprimitive2 = 500;
+    // :: (argument)
+    needsInterned(fprimitive2);
+    // :: (assignment)
+    @Interned Long fboxed2 = fboxed2;
 
-        float g = (float) 3.14;
-        // :: (argument.type.incompatible)
-        needsInterned(g);
-        // :: (assignment.type.incompatible)
-        @Interned Float gboxed = g;
+    float g = (float) 3.14;
+    // :: (argument)
+    needsInterned(g);
+    // :: (assignment)
+    @Interned Float gboxed = g;
 
-        double h = 3.14;
-        // :: (argument.type.incompatible)
-        needsInterned(h);
-        // :: (assignment.type.incompatible)
-        @Interned Double hboxed = h;
-    }
+    double h = 3.14;
+    // :: (argument)
+    needsInterned(h);
+    // :: (assignment)
+    @Interned Double hboxed = h;
+  }
 }

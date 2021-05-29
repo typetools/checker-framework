@@ -5,4 +5,4 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.interning.InterningChecker Jdk11Release8.java --release 8
  */
 
-class Jdk11Release8 {}
+public class Jdk11Release8 {}

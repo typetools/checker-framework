@@ -1,0 +1,13 @@
+warning: No processor claimed any of these annotations: org.checkerframework.checker.nullness.qual.EnsuresNonNull,org.checkerframework.checker.nullness.qual.RequiresNonNull
+
+#
+# This is in method fqBinaryNameToType, but there are no calls to it, so WPI didn't infer a type for its formal parameter.
+#
+src/main/java/org/plumelib/bcelutil/BcelUtil.java:777: error: [argument] incompatible argument for parameter typename of parseFqBinaryName.
+        Signatures.ClassnameAndDimensions.parseFqBinaryName(classname);
+                                                            ^
+  found   : @SignatureUnknown String
+  required: @FqBinaryName String
+
+1 error
+1 warning

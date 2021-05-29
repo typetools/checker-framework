@@ -3,9 +3,9 @@
 
 import java.util.Collections;
 
-class Issue370 {
+public class Issue370 {
 
-    <T> Iterable<T> foo() {
-        return Collections.<T>emptyList();
-    }
+  <T> Iterable<T> foo() {
+    return Collections.<T>emptyList();
+  }
 }

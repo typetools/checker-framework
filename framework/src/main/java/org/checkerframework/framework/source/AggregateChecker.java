@@ -31,142 +31,144 @@ import javax.tools.Diagnostic.Kind;
  */
 public abstract class AggregateChecker extends SourceChecker {
 
-    protected final List<SourceChecker> checkers;
+  protected final List<SourceChecker> checkers;
 
-    /**
-     * Returns the list of supported checkers to be run together. Subclasses need to override this
-     * method.
-     */
-    protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
+  /**
+   * Returns the list of supported checkers to be run together. Subclasses need to override this
+   * method.
+   */
+  protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
 
-    /** Create a new AggregateChecker. */
-    protected AggregateChecker() {
-        Collection<Class<? extends SourceChecker>> checkerClasses = getSupportedCheckers();
+  /** Create a new AggregateChecker. */
+  protected AggregateChecker() {
+    Collection<Class<? extends SourceChecker>> checkerClasses = getSupportedCheckers();
 
-        checkers = new ArrayList<>(checkerClasses.size());
-        for (Class<? extends SourceChecker> checkerClass : checkerClasses) {
-            try {
-                SourceChecker instance = checkerClass.getDeclaredConstructor().newInstance();
-                instance.setParentChecker(this);
-                checkers.add(instance);
-            } catch (Exception e) {
-                message(Kind.ERROR, "Couldn't instantiate an instance of " + checkerClass);
-            }
-        }
+    checkers = new ArrayList<>(checkerClasses.size());
+    for (Class<? extends SourceChecker> checkerClass : checkerClasses) {
+      try {
+        SourceChecker instance = checkerClass.getDeclaredConstructor().newInstance();
+        instance.setParentChecker(this);
+        checkers.add(instance);
+      } catch (Exception e) {
+        message(Kind.ERROR, "Couldn't instantiate an instance of " + checkerClass);
+      }
     }
+  }
 
-    /**
-     * processingEnv needs to be set on each checker since we are not calling init on the checker,
-     * which leaves it null. If one of checkers is an AggregateChecker, its visitors will try use
-     * checker's processing env which should not be null.
-     */
-    @Override
-    protected void setProcessingEnvironment(ProcessingEnvironment env) {
-        super.setProcessingEnvironment(env);
-        for (SourceChecker checker : checkers) {
-            checker.setProcessingEnvironment(env);
-        }
+  /**
+   * processingEnv needs to be set on each checker since we are not calling init on the checker,
+   * which leaves it null. If one of checkers is an AggregateChecker, its visitors will try use
+   * checker's processing env which should not be null.
+   */
+  @Override
+  protected void setProcessingEnvironment(ProcessingEnvironment env) {
+    super.setProcessingEnvironment(env);
+    for (SourceChecker checker : checkers) {
+      checker.setProcessingEnvironment(env);
     }
+  }
 
-    @Override
-    public void initChecker() {
-        // No need to call super, it might result in reflective instantiations
-        // of visitor/factory classes.
-        // super.initChecker();
-        // To prevent the warning that initChecker wasn't called.
-        messager = processingEnv.getMessager();
+  @Override
+  public void initChecker() {
+    // No need to call super, it might result in reflective instantiations
+    // of visitor/factory classes.
+    // super.initChecker();
+    // To prevent the warning that initChecker wasn't called.
+    messager = processingEnv.getMessager();
 
-        // first initialize all checkers
-        for (SourceChecker checker : checkers) {
-            checker.initChecker();
-        }
-        // then share options as necessary
-        for (SourceChecker checker : checkers) {
-            // We need to add all options that are activated for the aggregate to
-            // the individual checkers.
-            checker.addOptions(super.getOptions());
-            // Each checker should "support" all possible lint options - otherwise
-            // subchecker A would complain about a lint option for subchecker B.
-            checker.setSupportedLintOptions(this.getSupportedLintOptions());
-        }
-        allCheckersInited = true;
+    // first initialize all checkers
+    for (SourceChecker checker : checkers) {
+      checker.initChecker();
     }
-
-    // Whether all checkers were successfully initialized.
-    private boolean allCheckersInited = false;
-
-    // AbstractTypeProcessor delegation
-    @Override
-    public final void typeProcess(TypeElement element, TreePath tree) {
-        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-        Log log = Log.instance(context);
-        if (log.nerrors > this.errsOnLastExit) {
-            // If there is a Java error, do not perform any
-            // of the component type checks, but come back
-            // for the next compilation unit.
-            this.errsOnLastExit = log.nerrors;
-            return;
-        }
-        if (!allCheckersInited) {
-            // If there was an initialization problem, an
-            // error was already output. Just quit.
-            return;
-        }
-        for (SourceChecker checker : checkers) {
-            checker.errsOnLastExit = this.errsOnLastExit;
-            checker.typeProcess(element, tree);
-            this.errsOnLastExit = checker.errsOnLastExit;
-        }
+    // then share options as necessary
+    for (SourceChecker checker : checkers) {
+      // We need to add all options that are activated for the aggregate to
+      // the individual checkers.
+      checker.addOptions(super.getOptions());
+      // Each checker should "support" all possible lint options - otherwise
+      // subchecker A would complain about a lint option for subchecker B.
+      checker.setSupportedLintOptions(this.getSupportedLintOptions());
     }
+    allCheckersInited = true;
+  }
 
-    @Override
-    public void typeProcessingOver() {
-        for (SourceChecker checker : checkers) {
-            checker.typeProcessingOver();
-        }
-        super.typeProcessingOver();
+  // Whether all checkers were successfully initialized.
+  private boolean allCheckersInited = false;
+
+  // AbstractTypeProcessor delegation
+  @Override
+  public final void typeProcess(TypeElement element, TreePath tree) {
+    Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
+    Log log = Log.instance(context);
+    if (log.nerrors > this.errsOnLastExit) {
+      // If there is a Java error, do not perform any of the component type checks, but come back
+      // for the next compilation unit.
+      this.errsOnLastExit = log.nerrors;
+      return;
     }
-
-    @Override
-    public final Set<String> getSupportedOptions() {
-        Set<String> options = new HashSet<>();
-        for (SourceChecker checker : checkers) {
-            options.addAll(checker.getSupportedOptions());
-        }
-        options.addAll(
-                expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
-        return options;
+    if (!allCheckersInited) {
+      // If there was an initialization problem, an
+      // error was already output. Just quit.
+      return;
     }
-
-    @Override
-    public final Map<String, String> getOptions() {
-        Map<String, String> options = new HashMap<>(super.getOptions());
-        for (SourceChecker checker : checkers) {
-            options.putAll(checker.getOptions());
-        }
-        return options;
+    for (SourceChecker checker : checkers) {
+      checker.errsOnLastExit = this.errsOnLastExit;
+      checker.typeProcess(element, tree);
+      if (checker.javacErrored) {
+        this.javacErrored = true;
+        return;
+      }
+      this.errsOnLastExit = checker.errsOnLastExit;
     }
+  }
 
-    @Override
-    public final Set<String> getSupportedLintOptions() {
-        Set<String> lints = new HashSet<>();
-        for (SourceChecker checker : checkers) {
-            lints.addAll(checker.getSupportedLintOptions());
-        }
-        return lints;
+  @Override
+  public void typeProcessingOver() {
+    for (SourceChecker checker : checkers) {
+      checker.typeProcessingOver();
     }
+    super.typeProcessingOver();
+  }
 
-    @Override
-    protected SourceVisitor<?, ?> createSourceVisitor() {
-        return new SourceVisitor<Void, Void>(this) {
-            // Aggregate checkers do not visit source,
-            // the checkers in the aggregate checker do.
-        };
+  @Override
+  public final Set<String> getSupportedOptions() {
+    Set<String> options = new HashSet<>();
+    for (SourceChecker checker : checkers) {
+      options.addAll(checker.getSupportedOptions());
     }
+    options.addAll(expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
+    return options;
+  }
 
-    // TODO some methods in a component checker should behave differently if they
-    // are part of an aggregate, e.g. getSuppressWarningKeys should additionally
-    // return the name of the aggregate checker.
-    // We could add a query method in SourceChecker that refers to the aggregate, if present.
-    // At the moment, all the component checkers manually need to add the name of the aggregate.
+  @Override
+  public final Map<String, String> getOptions() {
+    Map<String, String> options = new HashMap<>(super.getOptions());
+    for (SourceChecker checker : checkers) {
+      options.putAll(checker.getOptions());
+    }
+    return options;
+  }
+
+  @Override
+  public final Set<String> getSupportedLintOptions() {
+    Set<String> lints = new HashSet<>();
+    for (SourceChecker checker : checkers) {
+      lints.addAll(checker.getSupportedLintOptions());
+    }
+    return lints;
+  }
+
+  @Override
+  protected SourceVisitor<?, ?> createSourceVisitor() {
+    return new SourceVisitor<Void, Void>(this) {
+      // Aggregate checkers do not visit source,
+      // the checkers in the aggregate checker do.
+    };
+  }
+
+  // TODO some methods in a component checker should behave differently if they
+  // are part of an aggregate, e.g. getSuppressWarningKeys should additionally
+  // return the name of the aggregate checker.
+  // We could add a query method in SourceChecker that refers to the aggregate, if present.
+  // At the moment, all the component checkers manually need to add the name of the aggregate.
 }

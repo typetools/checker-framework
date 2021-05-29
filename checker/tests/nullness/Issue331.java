@@ -4,8 +4,8 @@
 import java.util.List;
 
 class TestTeranry {
-    void foo(boolean b, List<Object> res) {
-        Object o = b ? "x" : (b ? "y" : "z");
-        res.add(o);
-    }
+  void foo(boolean b, List<Object> res) {
+    Object o = b ? "x" : (b ? "y" : "z");
+    res.add(o);
+  }
 }

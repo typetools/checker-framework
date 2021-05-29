@@ -1,4 +1,4 @@
-// Upstream version:
+// Upstream version (this is a clean-room reimplementation of its interface):
 // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
 
 package org.springframework.lang;

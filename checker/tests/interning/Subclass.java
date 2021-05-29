@@ -4,8 +4,8 @@ import org.checkerframework.dataflow.qual.Pure;
 public abstract class Subclass implements Comparable<Subclass> // note non-generic
 {
 
-    @Pure
-    public int compareTo(Subclass other) {
-        return 0;
-    }
+  @Pure
+  public int compareTo(Subclass other) {
+    return 0;
+  }
 }

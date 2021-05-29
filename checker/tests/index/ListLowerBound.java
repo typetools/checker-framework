@@ -6,13 +6,13 @@ import org.checkerframework.checker.index.qual.NonNegative;
 
 public class ListLowerBound {
 
-    private void m(List<Object> l) {
-        // :: error: (argument.type.incompatible)
-        l.get(-1);
-        // :: error: (argument.type.incompatible)
-        ListIterator<Object> li = l.listIterator(-1);
+  private void m(List<Object> l) {
+    // :: error: (argument)
+    l.get(-1);
+    // :: error: (argument)
+    ListIterator<Object> li = l.listIterator(-1);
 
-        @NonNegative int ni = li.nextIndex();
-        @GTENegativeOne int pi = li.previousIndex();
-    }
+    @NonNegative int ni = li.nextIndex();
+    @GTENegativeOne int pi = li.previousIndex();
+  }
 }

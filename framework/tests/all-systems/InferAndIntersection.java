@@ -1,8 +1,8 @@
-class InferAndIntersection {
+public class InferAndIntersection {
 
-    <T> void toInfer(Iterable<T> t) {}
+  <T> void toInfer(Iterable<T> t) {}
 
-    <U extends Object & Iterable<Object>> void context(U u) {
-        toInfer(u);
-    }
+  <U extends Object & Iterable<Object>> void context(U u) {
+    toInfer(u);
+  }
 }

@@ -5,17 +5,17 @@
  * @compile -Aflowdotdir=. -Averbosecfg  -processor org.checkerframework.common.value.ValueChecker DOTCFGVisualizerForVarargsTest.java
  */
 
-class DOTCFGVisualizerForVarargsTest {
+public class DOTCFGVisualizerForVarargsTest {
 
-    public DOTCFGVisualizerForVarargsTest(Object... objs) {}
+  public DOTCFGVisualizerForVarargsTest(Object... objs) {}
 
-    public static void method(Object... objs) {}
+  public static void method(Object... objs) {}
 
-    public void call() {
-        new DOTCFGVisualizerForVarargsTest();
-        new DOTCFGVisualizerForVarargsTest(1, 2);
+  public void call() {
+    new DOTCFGVisualizerForVarargsTest();
+    new DOTCFGVisualizerForVarargsTest(1, 2);
 
-        method();
-        method("", null);
-    }
+    method();
+    method("", null);
+  }
 }

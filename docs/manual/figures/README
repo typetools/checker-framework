@@ -13,6 +13,8 @@ Please don't use:
       if they have multiline text
     * The figures might require fine tuning with Inkscape afterwards, or
       editing of the .svg files with a text editor.
+ * macSVG, which saves the .svg file as one line (!).
+    * Unless you manually fix the .svg file afterward.
 
 To create a new image:
 Copy an existing SVG and make modifications to it, so that its boxes and

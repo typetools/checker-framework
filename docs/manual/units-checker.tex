@@ -17,10 +17,16 @@ For example, consider the following code:
 
 Due to the annotations \<@m> and \<@s>, the variables \code{meters} and \code{secs} are guaranteed to contain
 only values with meters and seconds as units of measurement.
-Utility class \code{UnitsTools} provides constants with which
-unqualified integer are multiplied to get values of the corresponding unit.
 The assignment of an unqualified value to \code{meters}, as in
 \code{meters = 99}, will be flagged as an error by the Units Checker.
+Utility class \refclass{checker/units/util}{UnitsTools} provides constants
+that you can multiply with unqualified integer are multiplied to get values
+of the corresponding unit; for example, \code{meters = 99 *
+  UnitsTools.m} is legal, or just \code{meters = 99 *
+  m} if the file contains
+\<import static org.checkerframework.checker.units.util.UnitsTools.*;>.
+To use the \refclass{checker/units/util}{UnitsTools} class, the
+\<checker-util.jar> file must be on the classpath at run time.
 
 The division \code{meters/secs} takes the types of the two operands
 into account and determines that the result is of type
@@ -53,6 +59,8 @@ The following kind annotations are defined:
 
 \item[\refqualclass{checker/units/qual}{Current}]
 
+\item[\refqualclass{checker/units/qual}{Force}]
+
 \item[\refqualclass{checker/units/qual}{Length}]
 
 \item[\refqualclass{checker/units/qual}{Luminance}]
@@ -66,6 +74,8 @@ The following kind annotations are defined:
 \item[\refqualclass{checker/units/qual}{Temperature}]
 
 \item[\refqualclass{checker/units/qual}{Time}]
+
+\item[\refqualclass{checker/units/qual}{Volume}]
 \end{description}
 
 % \medskip
@@ -92,6 +102,11 @@ measurement is defined:
 \item For \code{@Current}:
   Ampere \refqualclass{checker/units/qual}{A}
 
+\item For \code{@Force}:
+  Newton \refqualclass{checker/units/qual}{N}
+  and the derived unit
+  kilonewton \refqualclass{checker/units/qual}{kN}
+
 \item For \code{@Length}:
   Meters \refqualclass{checker/units/qual}{m}
   and the derived units
@@ -103,8 +118,9 @@ measurement is defined:
 
 \item For \code{@Mass}:
   kilograms \refqualclass{checker/units/qual}{kg}
-  and the derived unit
-  grams \refqualclass{checker/units/qual}{g}
+  and the derived units
+  grams \refqualclass{checker/units/qual}{g} and
+  metric tons \refqualclass{checker/units/qual}{t}
 
 \item For \code{@Speed}:
   meters per second \refqualclass{checker/units/qual}{mPERs} and
@@ -123,6 +139,12 @@ measurement is defined:
   and the derived units
   minutes \refqualclass{checker/units/qual}{min} and
   hours \refqualclass{checker/units/qual}{h}
+
+\item For \code{@Volume}:
+  the derived units
+  cubic millimeters \refqualclass{checker/units/qual}{mm3},
+  cubic meters \refqualclass{checker/units/qual}{m3}, and
+  cubic kilometers \refqualclass{checker/units/qual}{km3}
 \end{enumerate}
 
 
@@ -144,7 +166,8 @@ example, after statically importing \code{UnitsTools.m},
 the expression \code{5 * m} represents five meters.
 As all these unit constants are public, static, and final with value
 one, the compiler will optimize away these multiplications.
-
+To use the \refclass{checker/units/util}{UnitsTools} class, the
+\<checker-util.jar> file must be on the classpath at run time.
 
 The polymorphic annotation \refqualclass{checker/units/qual}{PolyUnit}
 enables you to write a method that takes an argument of any unit type and
@@ -261,15 +284,16 @@ notation:
 \end{alltt}
 
 The annotations listed in \code{-Aunits} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac classpath)
-before you run the Units Checker with \code{javac}.  It
+the compiler during compilation.  Before you run the Units Checker with
+\code{javac}, they must be compiled and on the same path (the classpath or
+processorpath) as the Checker Framework.  It
 is not sufficient to supply their source files on the command line.
 
 \item
 You can also provide the fully-qualified paths to a set of directories
 that contain units qualifiers through the \code{-AunitsDirs} option,
-using a colon-no-space-separated notation. For example:
+using a colon-no-space-separated notation. For example,
+if the Checker Framework is on the classpath rather than the processorpath:
 
 \begin{alltt}
   javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -322,5 +346,5 @@ For examples, see class \code{UnitsTools}.
 % LocalWords:  UnitsTools toMeter toSecond mPERs Candela cd kmPERh mol nano ns
 % LocalWords:  milli RetentionPolicy SubtypeOf UnitsMultiple hz PolyUnit
 % LocalWords:  UnitsRelations Aunits MyFile mm2 m2 km2 enum ElementType
-%  LocalWords:  MixedUnits java mPERs2 api classpath bootclasspath
-%%  LocalWords:  AunitsDirs myProject myLibrary
+%  LocalWords:  MixedUnits java mPERs2 api classpath bootclasspath RUNTIME
+%%  LocalWords:  AunitsDirs myProject myLibrary Luminance processorpath

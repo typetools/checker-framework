@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+  <link rel="icon" type="image/png" href="../../manual/favicon-checkerframework.png" />
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <title>Checker Framework release process</title>
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
@@ -111,11 +112,22 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>Update the Checker Framework source code:
     <ul>
       <li>
-        <b>Update the list of contributors</b> by running
-        <code>make contributors.tex</code>
-        in <code>checker-framework/docs/manual/</code>.  Double-check the edits
-        with <code>git diff</code>; update the <code>plume-scripts/git-authors.sed</code> script if
+        <b>Update the list of contributors</b>.
+        <pre><code>cd docs/manual
+make contributors.tex
+git diff `git rev-list -1 --before 1.month.ago origin/master` HEAD -- contributors.tex
+</code></pre>
+        Update the <a href="https://github.com/plume-lib/plume-scripts/blob/master/git-authors.sed"><code>plume-scripts/git-authors.sed</code></a> script if
         any customizations are necessary.
+      </li>
+      <li>
+        <b>Update the AWS Java SDK BOM dependency.</b> In file <code>checker/build.gradle</code>,
+        edit the <code>com.amazonaws:aws-java-sdk-bom</code> dependency to be the latest version
+        number at
+        <a href="https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk">https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk</a>.
+        (The next time Dependabot opens a pull request for that dependency, you
+        might need to respond <code>@dependabot ignore this dependency</code> to
+        prevent such pull requests for the next month.)
       </li>
       <li>
         <b>Update AFU and Checker Framework change logs</b> by following the instructions
@@ -127,7 +139,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         (The AFU version is updated as part of the release scripts.)
 
         <p>
-        Update the minor version if there are any incompatibilities with the previous version.
+        Update the minor version (second number) if there are any incompatibilities
+        with the previous version.
         This includes incompatibilities for people who are maintaining a checker,
         which happens if the signature changes for any method in these classes:
         </p>
@@ -156,7 +169,7 @@ TreeAnnotator
         (TODO: Write a command that diffs these classes between the previous and current release.)
         </p>
         <p>
-        A rule of thumb is that any framework change that requires changes to more than one type-checker should be at least a minor version bump.
+        A rule of thumb is that any framework change that requires changes to more than one type-checker should be at least a minor version (second number in the version number) bump.
         </p>
       </li>
       <li>
@@ -169,27 +182,22 @@ TreeAnnotator
   </li>
   <li>
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
-      <code>mkdir -p /scratch/$USER/jsr308-release<br/></code>
-      <code>cd /scratch/$USER/jsr308-release<br/></code>
+      <code>mkdir -p /scratch/$USER/cf-release<br/></code>
+      <code>cd /scratch/$USER/cf-release<br/></code>
       <code>test -d checker-framework && (cd checker-framework && git pull --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
       <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
-      <code>python release_build.py all</code><br/><br/>
-      [TODO: Add <code>--auto</code> here, or not?]<br/>
+      <code>git pull && python3 release_build.py all</code><br/><br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
       There has been some work done in order to select only specific projects (AFU and Checker Framework)
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
-      See also <a href="#future_continuous_integration">Release in Continuous Integration</a> for more information
-      on the option &quot;--auto&quot;, which you can omit in order to
-      be asked more questions during the build.
   </li>
   <li>
       <strong>Run release_push</strong> to move release artifacts from the development website to the live site and to Maven Central <br/>
-      <code>python release_push.py release</code><br/><br/>
-      For minimal prompting, use the <code>--auto</code> option.<br/><br/>
+      <code>python3 release_push.py release</code><br/><br/>
       <div class="alert alert-danger">
         <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend
         to do an actual release.  If you just want to test the script, leave out &quot;release&quot;
@@ -200,12 +208,6 @@ TreeAnnotator
       in a row. This will sometimes update the repository permissions such that the script can proceed
       further each time.
   </li>
-  <li> <strong>Update the Gradle plugin.</strong>
-    Make a pull request
-    against <a href="https://github.com/kelloggm/checkerframework-gradle-plugin">kelloggm/checkerframework-gradle-plugin</a>
-    to update the Checker Framework version number by following the instructions in the
-    <a href="https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version">documentation</a>.
-   </li>
   <li> <strong>Update list of qualifiers in Project Lombok.</strong>
     Following the instructions in <a href="https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java#L108">HandlerUtil.java</a>.
     If the release did not add, remove, or rename any type qualifiers, no changes are required.
@@ -226,7 +228,6 @@ TreeAnnotator
     <li>Annotation File Utilities: <a href="https://travis-ci.org/typetools/annotation-tools/branches"><img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master" alt="Travis typetools/annotation-tools status"/></a></li>
     <li>Checker Framework: <a href="https://dev.azure.com/typetools/checker-framework/_build/latest?definitionId=2&branchName=master"><img src="https://dev.azure.com/typetools/checker-framework/_apis/build/status/typetools.checker-framework?branchName=master" alt="Azure Pipelines typetools/checker-framework status"/></a></li>
     <li>checker-framework.demos: <a href="https://travis-ci.org/typetools/checker-framework.demos/branches"><img src="https://travis-ci.org/typetools/checker-framework.demos.svg?branch=master" alt="Travis typetools/checker-framework.demos status"/></a></li>
-    <li>checker-framework-inference: <a href="https://travis-ci.org/typetools/checker-framework-inference/branches"><img src="https://travis-ci.org/typetools/checker-framework-inference.svg?branch=master" alt="Travis typetools/checker-framework-inference status"/></a></li>
     <li>Daikon: <a href="https://dev.azure.com/codespecs/daikon/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/codespecs/daikon/_apis/build/status/codespecs.daikon?branchName=master" alt="codespecs/daikon Azure Pipelines status"></a></li>
     <li>guava-typecheck: <a href="https://travis-ci.org/typetests/guava-typecheck/branches"><img src="https://travis-ci.org/typetests/guava-typecheck.svg?branch=master" alt="Travis typetests/guava-typecheck status"/></a></li>
   </ul>
@@ -272,11 +273,13 @@ TreeAnnotator
     </tr>
     <tr>
       <td>4.</td>
-      <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
-        Create a <code>~/.m2/settings.xml</code> file with the contents specified in
-        <code>/projects/swlab1/checker-framework/hosting-info/release-settings.txt</code>
+      <td><strong>Add your account information to gradle/build.properties in your home directory.</strong><br/>
+        Create a <code>~/.gradle/gradle.properties</code> file with the following:
+        <pre>
+SONATYPE_NEXUS_USERNAME=your_user_name
+SONATYPE_NEXUS_PASSWORD=your_password</pre>
         using the information you just created for your Sonatype Account on Buffalo or other
-        network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.m2/settings.xml</code>
+        network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.gradle/gradle.properties</code>
       </td>
     </tr>
     <tr>
@@ -286,8 +289,7 @@ TreeAnnotator
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
         the issue trackers.
-        You should be listed as a member of typetools on <a href="https://bitbucket.org/typetools/profile/members">Bitbucket</a> and a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
-        You should be listed as a member of typetests on <a href="https://bitbucket.org/typetests/profile/members">Bitbucket</a> and a committer on <a href="https://github.com/orgs/typetests/teams/committers">GitHub</a>.
+        You should be listed as a member of typetools on a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
       </td>
     </tr>
     <tr>
@@ -333,7 +335,7 @@ git config --global user.email you@example.com</pre>
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
       <tr>
-        <td colspan="2" class="top_file">/scratch/$USER/jsr308-release</td>
+        <td colspan="2" class="top_file">/scratch/$USER/cf-release</td>
         <td>Contains repositories and scripts to perform a release</td>
       </tr>
       <tr>
@@ -350,7 +352,7 @@ git config --global user.email you@example.com</pre>
         <td>Contains repositories for:
           annotation-tools, checker-framework, plume-bib, plume-scripts, stubparser<br/>
           The repositories in build are clones of repositories in interm.  The repositories
-          in interm are clones of the GitHub/Bitbucket repositories.  This is so that
+          in interm are clones of the GitHub repositories.  This is so that
           we can test and push the release to the interm repositories then check the
           release before we have made any irreversible changes.  Then, when the release
           is validated, all we do is run &quot;git push&quot; or &quot;hg push&quot; on all of the repos in interm.
@@ -369,27 +371,8 @@ git config --global user.email you@example.com</pre>
           won't be automatically committed when the release is committed.
         </td>
       </tr>
-
     </table>
-    <table class="table table-bordered file_layout_table">
-      <tr><th colspan="2">Jenkins Tools Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
 
-      <tr>
-        <td colspan="2" class="top_file">/scratch/secs-jenkins</td>
-        <td>Contains files used to run Jenkins including versions of Java.</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td colspan="2">java</td>
-        <td>Contains the versions of Java used to build the release.</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td colspan="2">tools</td>
-        <td>Contains the Hevea library and some TEXINPUTS for the release.</td>
-      </tr>
-
-    </table>
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Live Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
 
@@ -404,8 +387,8 @@ git config --global user.email you@example.com</pre>
           <a href="https://checkerframework.org/m2-repo">https://checkerframework.org/m2-repo</a>
         </td>
       </tr>
-
     </table>
+
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Staging (Development) Website Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
 
@@ -438,7 +421,7 @@ git config --global user.email you@example.com</pre>
     <table class="table table-bordered">
       <tr>
         <td>release_build.py</td>
-        <td>Reverts the build/interm repositories to the state of their master repositories in GitHub/Bitbucket.
+        <td>Reverts the build/interm repositories to the state of their master repositories in GitHub.
           It then builds the projects and all their artifacts and then stages a development
           version of all websites to
           <a href="https://checkerframework.org/dev/">https://checkerframework.org/dev/</a>
@@ -502,9 +485,9 @@ git config --global user.email you@example.com</pre>
       <li>Checker Framework:
         <ul>
           <li>List all issues (in issue trackers) resolved since the previous release:
-            <a href="https://checkerframework.org/changelog.txt">previous release</a>,
+            <a href="https://checkerframework.org/CHANGELOG.md">previous release</a>,
             <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-            <a href="https://github.com/typetools/checker-framework/blob/master/changelog.txt">current changelog</a>.
+            <a href="https://github.com/typetools/checker-framework/blob/master/docs/changelog.txt">current changelog</a>.
           </li>
           <li>
             Ensure the changelogs reflect version control commits since the last release, via the
@@ -560,7 +543,7 @@ git config --global user.email you@example.com</pre>
   <h2 id="backing_out">Backing Out an Uncommitted Release</h2>
   <p>At the time of this writing, there are 2 steps that cannot be reverted.</p>
   <ol>
-    <li>The push from the interm repositories to the GitHub/Bitbucket (release) repositories</li>
+    <li>The push from the interm repositories to the GitHub (release) repositories</li>
     <li>The release of the staged Maven artifacts</li>
   </ol>
   <p> If you have executed either of these steps and then realized there is a breaking error, you should do another
@@ -628,11 +611,10 @@ git config --global user.email you@example.com</pre>
     </ul>
     <h3 id="future_continuous_integration">Release in Continuous Integration</h3> <!-- omit from toc -->
     If we could run the release_build script nightly, we could head off broken links and other
-    release related errors.  There is an &quot;--auto&quot; option for this specific reason but a number of
-    errors start happening when we run the script from Buffalo.
+    release related errors.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
-      <li>Create a Buffalo task to run the release_build script using the &quot;--auto&quot; option.</li>
+      <li>Create a Buffalo task to run the release_build script without prompting.</li>
       <li>Observe the output of this task and identify possible errors.</li>
       <li>Fix up all observed errors until the release_build script runs without error.</li>
       <li>We probably want to move the link checking of the development site to the release_build script and
@@ -642,11 +624,11 @@ git config --global user.email you@example.com</pre>
     </ul>
     <h3 id="future_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
     The first step in running the release process, after the pre-release checklist, is to copy the
-    release scripts into the <code>jsr308-release</code> directory.  We could automate this.
+    release scripts into the <code>cf-release</code> directory.  We could automate this.
     <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
-      <li>Create a read-only script in jsr308-release/scripts.</li>
-      <li>Edit the script so that it downloads all release scripts into the jsr308-release directory.</li>
+      <li>Create a read-only script in cf-release/scripts.</li>
+      <li>Edit the script so that it downloads all release scripts into the cf-release directory.</li>
       <li>Update this document to reflect this new process.</li>
     </ul>
     <h3 id="future_option_parsing">Option Parsing</h3> <!-- omit from toc -->

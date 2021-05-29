@@ -4,32 +4,32 @@
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 class Issue1120Super {
-    Object f = new Object();
+  Object f = new Object();
 }
 
 final class Issue1120Sub extends Issue1120Super {
-    Object g;
+  Object g;
 
-    Issue1120Sub() {
-        this.party();
-        // this is @UnderInitialization(A.class)
-        g = new Object();
-        // this is @Initialized now
-        this.party();
-        this.bar();
-    }
+  Issue1120Sub() {
+    this.party();
+    // this is @UnderInitialization(A.class)
+    g = new Object();
+    // this is @Initialized now
+    this.party();
+    this.bar();
+  }
 
-    Issue1120Sub(int i) {
-        // this is @UnderInitialization(A.class)
-        this.party();
-        // :: error: (method.invocation.invalid)
-        this.bar();
-        g = new Object();
-    }
+  Issue1120Sub(int i) {
+    // this is @UnderInitialization(A.class)
+    this.party();
+    // :: error: (method.invocation)
+    this.bar();
+    g = new Object();
+  }
 
-    void bar() {
-        g.toString();
-    }
+  void bar() {
+    g.toString();
+  }
 
-    void party(@UnknownInitialization Issue1120Sub this) {}
+  void party(@UnknownInitialization Issue1120Sub this) {}
 }

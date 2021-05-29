@@ -4,23 +4,23 @@ import java.util.Optional;
 @SuppressWarnings("optional.parameter")
 public class FlowSensitivity {
 
-    String noCheck(Optional<String> opt) {
-        // :: error: (method.invocation.invalid)
-        return opt.get();
-    }
+  String noCheck(Optional<String> opt) {
+    // :: error: (method.invocation)
+    return opt.get();
+  }
 
-    String hasCheck1(Optional<String> opt) {
-        if (opt.isPresent()) {
-            return opt.get();
-        } else {
-            return "default";
-        }
+  String hasCheck1(Optional<String> opt) {
+    if (opt.isPresent()) {
+      return opt.get();
+    } else {
+      return "default";
     }
+  }
 
-    String hasCheck2(Optional<String> opt) {
-        if (!opt.isPresent()) {
-            return "default";
-        }
-        return opt.get();
+  String hasCheck2(Optional<String> opt) {
+    if (!opt.isPresent()) {
+      return "default";
     }
+    return opt.get();
+  }
 }

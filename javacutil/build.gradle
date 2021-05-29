@@ -1,27 +1,50 @@
+plugins {
+    id 'java-library'
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation project(':checker-qual')
+
     // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
     // https://mvnrepository.com/artifact/org.plumelib/plume-util
-    // Keep version number in sync with docs/developer/release/maven-artifacts/javacutil-pom.xml.
-    implementation 'org.plumelib:plume-util:1.1.5'
+    implementation 'org.plumelib:plume-util:1.5.3'
 
-    implementation project(':checker-qual')
+    // External dependencies:
+    // If you add an external dependency, you must shadow its packages both in checker.jar and
+    // and dataflow-shaded.jar.
+    // See the comment in ../build.gradle in the shadowJar block and ../dataflow/build.gradle in
+    // shadowJar block.
 }
 
-task deployArtifactsToLocalRepo(dependsOn: jar) {
-    description "Deploys ${jar.archiveFileName.get()} to the local Maven repository"
-    doLast {
-        mvnDeployToLocalRepo(project, "${pomFiles}/javacutil-pom.xml")
+apply from: rootProject.file("gradle-mvn-push.gradle")
+
+final javacUtilPom(publication) {
+    sharedPublicationConfiguration(publication)
+    publication.from components.java
+
+    publication.pom {
+        name = 'Javacutil'
+        description = 'javacutil contains utility classes for the javac compiler.'
+        licenses {
+            license {
+                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+                url = 'http://www.gnu.org/software/classpath/license.html'
+                distribution = 'repo'
+            }
+        }
     }
 }
-
-task deployArtifactsToSonatype {
-    description "Deploys ${jar.archiveFileName.get()} to the Sonatype repository"
-    dependsOn ('jar', 'sourcesJar', 'javadocJar')
-    doLast {
-        mvnSignAndDeployMultipleToSonatype(project, "${pomFiles}/javacutil-pom.xml")
+publishing {
+    publications {
+        javacUtil(MavenPublication) {
+            javacUtilPom it
+        }
     }
+}
+signing {
+    sign publishing.publications.javacUtil
 }

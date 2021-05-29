@@ -2,17 +2,17 @@ import org.checkerframework.checker.initialization.qual.*;
 
 public class PrivateMethodUnknownInit {
 
-    int x;
+  int x;
 
-    public PrivateMethodUnknownInit() {
-        x = 1;
-        m1();
-        // :: error: (method.invocation.invalid)
-        m2();
-    }
+  public PrivateMethodUnknownInit() {
+    x = 1;
+    m1();
+    // :: error: (method.invocation)
+    m2();
+  }
 
-    private void m1(
-            @UnknownInitialization(PrivateMethodUnknownInit.class) PrivateMethodUnknownInit this) {}
+  private void m1(
+      @UnknownInitialization(PrivateMethodUnknownInit.class) PrivateMethodUnknownInit this) {}
 
-    public void m2() {}
+  public void m2() {}
 }

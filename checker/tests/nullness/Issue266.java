@@ -3,21 +3,21 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue266 {
+public class Issue266 {
 
-    abstract static class Inner {
-        abstract String getThing();
-    }
+  abstract static class Inner {
+    abstract String getThing();
+  }
 
-    static @Nullable Inner method(@Nullable Object arg) {
-        final Object tmp = arg;
-        if (tmp == null) {
-            return null;
-        }
-        return new Inner() {
-            String getThing() {
-                return tmp.toString();
-            }
-        };
+  static @Nullable Inner method(@Nullable Object arg) {
+    final Object tmp = arg;
+    if (tmp == null) {
+      return null;
     }
+    return new Inner() {
+      String getThing() {
+        return tmp.toString();
+      }
+    };
+  }
 }

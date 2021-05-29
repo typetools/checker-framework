@@ -1,5 +1,5 @@
-warning: StubParser: in file myjdk.astub at line 6 ignored existing annotations on type: T[ extends @Initialized @Nullable Object super @Initialized @Nullable Void]
-Issue559.java:10: error: [argument.type.incompatible] incompatible types in argument.
+warning: AnnotationFileParser: in file myjdk.astub at line 6 ignored existing annotations on type: T[ extends @Initialized @Nullable Object super @Initialized @Nullable Void]
+Issue559.java:10: error: [argument] incompatible types in argument.
         o.orElse(null);
                  ^
   found   : null

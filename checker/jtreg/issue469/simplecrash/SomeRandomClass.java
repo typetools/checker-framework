@@ -1,7 +1,7 @@
 package simplecrash;
 
-class SomeRandomClass {
-    void randomStuff(LetItCrash letItCrash) {
-        letItCrash.makeItLongerAndCrash();
-    }
+public class SomeRandomClass {
+  void randomStuff(LetItCrash letItCrash) {
+    letItCrash.makeItLongerAndCrash();
+  }
 }

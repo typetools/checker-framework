@@ -5,7 +5,8 @@ This document describes a \emph{Dataflow Framework} for the Java
 Programming Language.  The framework is used in the
 \href{https://checkerframework.org/}{Checker Framework},
 \href{http://errorprone.info/}{Error Prone},
-\href{https://github.com/uber/NullAway}{NullAway}, and other contexts.
+\href{https://github.com/uber/NullAway}{NullAway},
+at Facebook, and in other contexts.
 
 The primary purpose of the Dataflow Framework is to estimate values:
 for each line of source code, it determines what
@@ -52,7 +53,26 @@ enhancements.
 \end{workinprogress}
 
 
+\paragraph{Potential version conflicts if you export the Dataflow Framework}
 
+If your tool uses the Dataflow Framework, then \textbf{please shade the
+  Dataflow Framework in your tool}.  You can do this using the Maven Shade
+Plugin, \url{https://maven.apache.org/plugins/maven-shade-plugin/}, or the
+Gradle Shadow Plugin, \url{https://imperceptiblethoughts.com/shadow/}.
+If you cannot shade the Checker Framework and Dataflow Framework classes, then
+please ask the Checker Framework developers to create a shaded artifact
+just for you, every time they release the Checker Framework.
+See \code{dataflow/build.gradle} for instructions.
+
+The reason to shade the Dataflow Framework is to permit users to run multiple tools.
+Suppose that two tools both utilize the Dataflow Framework.
+If the two tools use different versions of the Dataflow Framework,
+then it may be impossible for users to run both tools due to a version conflict.
+The Checker Framework uses an unshaded version the Dataflow Framework,
+since the Dataflow Framework is part of the Checker Framework.
+If you do not shade the Dataflow Framework in your tool, then users will
+not be able to use both your tool and the Checker Framework (or any other
+tool that does not shade the Checker Framework and Dataflow Framework classes).
 
 
 \section{Organization}
@@ -223,22 +243,22 @@ package org.checkerframework.dataflow.cfg;
 class CFGVisualizeLauncher
 \end{verbatim}
 
-\subsubsection{FlowExpressions}
+\subsubsection{JavaExpressions}
 \label{sec:flow_expressions_class}
 
 The Dataflow Framework records the abstract values of certain
-expressions, called FlowExpressions: local variables, field accesses,
+expressions, called JavaExpressions: local variables, field accesses,
 array accesses, references to \code{this}, and pure method calls.
-FlowExpressions are keys in the store of abstract values.
+JavaExpressions are keys in the store of abstract values.
 
 \begin{verbatim}
 package org.checkerframework.dataflow.analysis;
-class FlowExpressions
+class JavaExpressions
 \end{verbatim}
 
 Java expressions that appear in method pre- and postconditions are
-parsed into FlowExpressions using helper routines in
-\code{org.checkerframework.framework.util.FlowExpressionParseUtil}.
+parsed into JavaExpressions using helper routines in
+\code{org.checkerframework.framework.util.JavaExpressionParseUtil}.
 
 
 \subsubsection{AbstractValue}
@@ -284,7 +304,7 @@ class NullnessValue extends CFAbstractValue<NullnessValue>
 \label{sec:store_classes}
 
 A Store is a set of dataflow facts computed by an analysis, so it is a
-mapping from FlowExpressions to AbstractValues.  As with
+mapping from JavaExpressions to AbstractValues.  As with
 AbstractValues, one can take the least upper bound of two Stores.
 
 \begin{verbatim}
@@ -745,9 +765,9 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \code{ArrayAccess} & & \code{args[i]} \\
         \code{FieldAccess} & & \code{f}, \code{obj.f} \\
         \code{MethodAccess} & & \code{obj.hashCode} \\
-        \code{ThisLiteral} & Base class of references to \code{this} & \\
-        \code{ExplicitThisLiteral} & Explicit use of \code{this} in an expression & \\
-        \code{ImplicitThisLiteral} & Implicit use of \code{this} in an expression & \\
+        \code{This} & Base class of references to \code{this} & \\
+        \code{ExplicitThis} & Explicit use of \code{this} in an expression & \\
+        \code{ImplicitThis} & Implicit use of \code{this} in an expression & \\
         \code{Super} & Explicit use of \code{super} in expression. & \code{super(x, y)} \\
         \code{LocalVariable} & Use of a local variable, either as l-value or r-value & \\
         \midrule
@@ -845,16 +865,11 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \label{tab:nodes}
     \end{longtable}
 
-\autoref{tab:nodesWithException} shows all node types that can possibly throw
-an exception and the exception type to be thrown.
-Java class name of nodes are simplified as with \autoref{tab:nodes}.
-All exception types in \autoref{tab:nodesWithException} are in package \code{java.lang}.
 
-Considering \code{Error} such as \code{OutOfMemoryError} or \code{NoSuchFieldError},
-an exceptional edge of \code{Error} is not created except for method or
-constructor invocation, assertion statement or throw statement. Because
-it's not recommended to catch it due to a critical situation which is not
-to able to execute JVM and handle in an application.
+In theory, nearly any statement can throw an \code{Error} such as
+\code{OutOfMemoryError} or \code{NoSuchFieldError}.  The Dataflow Framework
+does not represent all that possible flow.  It only creates the exceptional
+edges shown in \autoref{tab:nodesWithException}.
 
 \begin{table}
     \begin{tabular}{ll}
@@ -868,21 +883,21 @@ to able to execute JVM and handle in an application.
         \code{IntegerDivision} & \code{ArithmeticException} \\
         \code{IntegerRemainder} & \code{ArithmeticException} \\
         \code{ObjectCreation} & \code{Throwable}, types in throws clause of the signature \\
+        \code{ArrayCreation} & \code{NegativeArraySizeException}, \code{OutOfMemoryError} \\
         \code{TypeCast} & \code{ClassCastException} \\
         \code{Throw} & Type of \code{e} when \code{throw e} \\
         \code{AssertionError} & \code{AssertionError} \\
+        \code{ClassName} & \code{ClassCircularityError}, \code{ClassFormatError}, \\
+        & \code{NoClassDefFoundError}, \code{OutOfMemoryError} \\
         \hline
     \end{tabular}
 
-        \caption{All node types that could throw Exception, and the types to be thrown.}
+        \caption{All node types that could throw Exception, and the types
+          to be thrown.
+          Java class name of nodes are simplified as with \autoref{tab:nodes}.
+          All exception types are in package \code{java.lang}.}
         \label{tab:nodesWithException}
 \end{table}
-
-\begin{workinprogress}
-ThisLiteral shouldn't be considered a literal value node, because a use of
-\code{this} is not a literal expression.  I would change the name and group
-it with accessor expressions.
-\end{workinprogress}
 
 \begin{workinprogress}
 Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
@@ -1391,7 +1406,7 @@ approximate the runtime behavior of different statements and expressions.
 
 
 Conceptually, the dataflow analysis computes an abstract value for
-every node and flow expression\footnote{Certain dataflow analysis
+every node and flow expression\footnote{Certain dataflow analyses
   might choose not to produce an abstract value for every node.  For
   instance, a constant propagation analysis would only be concerned
   with nodes of a numerical type, and could ignore other nodes.}.  The
@@ -1944,7 +1959,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl
 %  LocalWords:  ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
 %  LocalWords:  ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue
-%  LocalWords:  FlowExpressions AbstractValue AbstractValues PolyNull Poly
+%  LocalWords:  JavaExpressions AbstractValue AbstractValues PolyNull Poly
 %  LocalWords:  AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
 %  LocalWords:  NullnessCheckers CFAbstractStore InitializationStore Regex
 %  LocalWords:  NullnessStore TransferInput TransferResult TransferInputs
@@ -1959,8 +1974,8 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  BaseAnnotatedTypeFactory CFGSimple ValueLiteral txt
 %  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
-%  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess ThisLiteral
-%  LocalWords:  MethodAccess ExplicitThisLiteral ImplicitThisLiteral java
+%  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess This
+%  LocalWords:  MethodAccess ExplicitThis ImplicitThis java NullAway
 %  LocalWords:  LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType
 %  LocalWords:  BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot
 %  LocalWords:  ConditionalOr FloatingDivision FloatingRemainder LeftShift
@@ -1981,6 +1996,6 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
 %  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
-%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
+%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
 %  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
 %  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple

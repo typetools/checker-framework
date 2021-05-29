@@ -23,133 +23,133 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class AnnotationMirrorSet implements Set<AnnotationMirror> {
 
-    /** Backing set. */
-    private Set<AnnotationMirror> shadowSet =
-            new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+  /** Backing set. */
+  private Set<AnnotationMirror> shadowSet =
+      new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
 
-    /** Default constructor. */
-    public AnnotationMirrorSet() {}
+  /** Default constructor. */
+  public AnnotationMirrorSet() {}
 
-    public AnnotationMirrorSet(Collection<? extends AnnotationMirror> values) {
-        this();
-        this.addAll(values);
+  public AnnotationMirrorSet(Collection<? extends AnnotationMirror> values) {
+    this();
+    this.addAll(values);
+  }
+
+  @Override
+  public int size() {
+    return shadowSet.size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return shadowSet.isEmpty();
+  }
+
+  @Override
+  public boolean contains(Object o) {
+    return o instanceof AnnotationMirror
+        && AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) o);
+  }
+
+  @Override
+  public Iterator<AnnotationMirror> iterator() {
+    return shadowSet.iterator();
+  }
+
+  @Override
+  public Object[] toArray() {
+    return shadowSet.toArray();
+  }
+
+  @Override
+  public <T> T[] toArray(T[] a) {
+    return shadowSet.toArray(a);
+  }
+
+  @Override
+  public boolean add(AnnotationMirror annotationMirror) {
+    if (contains(annotationMirror)) {
+      return false;
     }
+    shadowSet.add(annotationMirror);
+    return true;
+  }
 
-    @Override
-    public int size() {
-        return shadowSet.size();
+  @Override
+  public boolean remove(Object o) {
+    if (o instanceof AnnotationMirror) {
+      AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
+      return found != null && shadowSet.remove(found);
     }
+    return false;
+  }
 
-    @Override
-    public boolean isEmpty() {
-        return shadowSet.isEmpty();
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        return o instanceof AnnotationMirror
-                && AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) o);
-    }
-
-    @Override
-    public Iterator<AnnotationMirror> iterator() {
-        return shadowSet.iterator();
-    }
-
-    @Override
-    public Object[] toArray() {
-        return shadowSet.toArray();
-    }
-
-    @Override
-    public <T> T[] toArray(T[] a) {
-        return shadowSet.toArray(a);
-    }
-
-    @Override
-    public boolean add(AnnotationMirror annotationMirror) {
-        if (contains(annotationMirror)) {
-            return false;
-        }
-        shadowSet.add(annotationMirror);
-        return true;
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        if (o instanceof AnnotationMirror) {
-            AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
-            return found != null && shadowSet.remove(found);
-        }
+  @Override
+  public boolean containsAll(Collection<?> c) {
+    for (Object o : c) {
+      if (!contains(o)) {
         return false;
+      }
     }
+    return true;
+  }
 
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        for (Object o : c) {
-            if (!contains(o)) {
-                return false;
-            }
-        }
-        return true;
+  @Override
+  public boolean addAll(Collection<? extends AnnotationMirror> c) {
+    boolean result = true;
+    for (AnnotationMirror a : c) {
+      if (!add(a)) {
+        result = false;
+      }
     }
+    return result;
+  }
 
-    @Override
-    public boolean addAll(Collection<? extends AnnotationMirror> c) {
-        boolean result = true;
-        for (AnnotationMirror a : c) {
-            if (!add(a)) {
-                result = false;
-            }
-        }
-        return result;
+  @Override
+  public boolean retainAll(Collection<?> c) {
+    Set<AnnotationMirror> newSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+    for (Object o : c) {
+      if (contains(o)) {
+        newSet.add((AnnotationMirror) o);
+      }
     }
+    if (newSet.size() != shadowSet.size()) {
+      shadowSet = newSet;
+      return true;
+    }
+    return false;
+  }
 
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        Set<AnnotationMirror> newSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
-        for (Object o : c) {
-            if (contains(o)) {
-                newSet.add((AnnotationMirror) o);
-            }
-        }
-        if (newSet.size() != shadowSet.size()) {
-            shadowSet = newSet;
-            return true;
-        }
-        return false;
+  @Override
+  public boolean removeAll(Collection<?> c) {
+    boolean result = true;
+    for (Object a : c) {
+      if (!remove(a)) {
+        result = false;
+      }
     }
+    return result;
+  }
 
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        boolean result = true;
-        for (Object a : c) {
-            if (!remove(a)) {
-                result = false;
-            }
-        }
-        return result;
-    }
+  @Override
+  public void clear() {
+    shadowSet.clear();
+  }
 
-    @Override
-    public void clear() {
-        shadowSet.clear();
-    }
+  /**
+   * Returns a new {@link AnnotationMirrorSet} that contains {@code value}.
+   *
+   * @param value AnnotationMirror to put in the set
+   * @return a new {@link AnnotationMirrorSet} that contains {@code value}
+   */
+  public static AnnotationMirrorSet singleElementSet(AnnotationMirror value) {
+    AnnotationMirrorSet newSet = new AnnotationMirrorSet();
+    newSet.add(value);
+    return newSet;
+  }
 
-    /**
-     * Returns a new {@link AnnotationMirrorSet} that contains {@code value}.
-     *
-     * @param value AnnotationMirror to put in the set
-     * @return a new {@link AnnotationMirrorSet} that contains {@code value}.
-     */
-    public static AnnotationMirrorSet singleElementSet(AnnotationMirror value) {
-        AnnotationMirrorSet newSet = new AnnotationMirrorSet();
-        newSet.add(value);
-        return newSet;
-    }
-
-    @Override
-    public String toString() {
-        return shadowSet.toString();
-    }
+  @Override
+  public String toString() {
+    return shadowSet.toString();
+  }
 }

@@ -9,7 +9,7 @@ the type qualifier annotations.
 The Subtyping Checker can accommodate all of the type system enhancements that
 can be declaratively specified (see Chapter~\ref{creating-a-checker}).
 This includes type introduction rules via the
-\refqualclass{framework/qual}{QualifierForLiterals} meta-annotation , and other features such as
+\refqualclass{framework/qual}{QualifierForLiterals} meta-annotation, and other features such as
 type refinement (Section~\ref{type-refinement}) and
 qualifier polymorphism (Section~\ref{method-qualifier-polymorphism}).
 
@@ -54,7 +54,8 @@ notation:
 \item
 Provide the fully-qualified paths to a set of directories that contain the
 annotations in the custom type system through the \code{-AqualDirs} option,
-using a colon-no-space-separated notation. For example:
+using a colon-no-space-separated notation. For example,
+if the Checker Framework is on the classpath rather than the processorpath:
 
 \begin{alltt}
   javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
@@ -64,13 +65,16 @@ using a colon-no-space-separated notation. For example:
 
 \end{itemize}
 
+If the Checker Framework is on the processorpath, place the annotations on
+the processorpath instead of on the classpath.
+
 
 \subsectionAndLabel{Compiling your qualifiers and your project}{subtyping-compiling}
 
 The annotations listed in \code{-Aquals} or \code{-AqualDirs} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac classpath)
-before you run the Subtyping Checker with \code{javac}.  It
+the compiler during compilation.  Before you run the Subtyping Checker with
+\code{javac}, they must be compiled and on the same path (the classpath or
+processorpath) as the Checker Framework.  It
 is not sufficient to supply their source files on the command line.
 
 
@@ -145,8 +149,8 @@ Don't forget to compile these classes:
 $ javac myPackage/qual/Encrypted.java myPackage/qual/PossiblyUnencrypted.java
 \end{Verbatim}
 
-The resulting \<.class> files should either be on your classpath, or on the
-processor path (set via the \<-processorpath> command-line option to javac).
+The resulting \<.class> files should either be on the same path (the classpath or
+processor path) as the Checker Framework.
 
 \item
   Write \code{@Encrypted} annotations in your program (say, in file
@@ -353,4 +357,4 @@ parameter type.
 %%  LocalWords:  DefaultQualifierInHierarchy sendText sendPassword MyType
 %  LocalWords:  getUserPassword CompassDirection MyTypeUnknown NotMyType
 %  LocalWords:  MyTypeBottom typecheck ciphertext plaintext decrypt fenums
-%%  LocalWords:  typedef antipattern
+%%  LocalWords:  typedef antipattern typestate''

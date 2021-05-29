@@ -3,17 +3,17 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue419 {
-    @SuppressWarnings("nullness")
-    <T> @NonNull T verifyNotNull(@Nullable T o) {
-        return o;
-    }
+public class Issue419 {
+  @SuppressWarnings("nullness")
+  <T> @NonNull T verifyNotNull(@Nullable T o) {
+    return o;
+  }
 
-    interface Pair<A, B> {
-        @Nullable A getFirst();
-    }
+  interface Pair<A, B> {
+    @Nullable A getFirst();
+  }
 
-    void m(Pair<String[], int[]> p) {
-        for (String s : verifyNotNull(p.getFirst())) {}
-    }
+  void m(Pair<String[], int[]> p) {
+    for (String s : verifyNotNull(p.getFirst())) {}
+  }
 }

@@ -197,11 +197,10 @@ category \refenum{checker/formatter/qual}{ConversionCategory}{INT}{}\@.  The fol
     % throw exceptions in \code{toString} and \code{formatTo}.
 \end{description}
 
-\noindent Further, all conversion categories accept \code{null}.
-% MAKES SENSE, BUT IS CONFUSING AND NOT REALLY RELEVEVANT
-% Unless otherwise noted, do not allow objects whose \code{toString} method throws an exception.
-% Objects that implement the \code{Formattable} interface and throw an
-% exception in \code{formatTo} are also not allowed.
+\noindent All conversion categories accept \code{null}.
+Furthermore, \<null> is always a legal argument array, because it is treated
+as supplying \<null> to each format specifer.  For example,
+\<String.format("\%d \%f \%s", (Object[]) null)> evaluates to \<"null null null">.
 
 The same format argument may serve as a replacement for multiple format specifiers.
 Until now, we have assumed that the format specifiers simply consume format arguments left to right.
@@ -234,8 +233,8 @@ intersections of previously-mentioned conversion categories:
 \begin{description}
 \item{\refenum{checker/formatter/qual}{ConversionCategory}{NULL}{}} is used if no object of any type can be
     passed as parameter. In this case, the only legal value is \code{null}.
-    The format string \code{"\%1\$f \%1\$c"}, for example requires that the first
-    format argument be \code{null}.  Passing a value such as \code{4} or
+    For example, the format string \code{"\%1\$f \%1\$c"} requires that the first
+    format argument be \code{null}.  Passing either \code{4} or
     \code{4.2} would lead to an exception.
 \item{\refenum{checker/formatter/qual}{ConversionCategory}{CHAR\_AND\_INT}{}} is used if a format argument is restricted by a \refenum{checker/formatter/qual}{ConversionCategory}{CHAR}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} conversion category (\code{CHAR} $\cap$ \code{INT}).
 \item{\refenum{checker/formatter/qual}{ConversionCategory}{INT\_AND\_TIME}{}} is used if a format argument is restricted by an \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{TIME}{} conversion category (\code{INT} $\cap$ \code{TIME}).
@@ -543,7 +542,7 @@ literal is a valid format string or not.  When a string is computed or is
 obtained from an external resource, then the string must be trusted or tested.
 
 One way to test a string is to call the
-\refmethod{checker/formatter}{FormatUtil}{asFormat}{-java.lang.String-org.checkerframework.checker.formatter.qual.ConversionCategory...-}
+\refmethod{checker/formatter/util}{FormatUtil}{asFormat}{-java.lang.String-org.checkerframework.checker.formatter.qual.ConversionCategory...-}
 method to check whether the format string is valid and its format
 specifiers match certain conversion categories.
 If this is not the case, \<asFormat> raises an exception.  Your code should
@@ -582,7 +581,7 @@ System.out.printf(format, "hello", 1337);
 \end{Verbatim}
 
 \noindent
-To use the \<FormatUtil> class, the \<checker-qual.jar> file
+To use the \refclass{checker/formatter/util}{FormatUtil} class, the \<checker-util.jar> file
 must be on the classpath at run time.
 
 %  LocalWords:  printf InvalidFormat Formatter FormatBottom specifier's

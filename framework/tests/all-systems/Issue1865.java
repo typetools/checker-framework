@@ -3,21 +3,21 @@
 
 abstract class Issue1865 {
 
-    // Widening conversion
+  // Widening conversion
 
-    abstract int f();
+  abstract int f();
 
-    abstract int max(int... array);
+  abstract int max(int... array);
 
-    void g() {
-        long l = max(f(), f());
-    }
+  void g() {
+    long l = max(f(), f());
+  }
 
-    // String conversion
+  // String conversion
 
-    abstract Object h(Object... args);
+  abstract Object h(Object... args);
 
-    void i() {
-        Object o = "" + h();
-    }
+  void i() {
+    Object o = "" + h();
+  }
 }

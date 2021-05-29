@@ -8,13 +8,13 @@
  *
  * @compile -XDrawDiagnostics ClientBuilder.java
  */
-class Module {
-    void buildClient() {
-        ClientBuilder<?> builder = ClientBuilder.newBuilder().setThing().setThing();
-    }
+public class Module {
+  void buildClient() {
+    ClientBuilder<?> builder = ClientBuilder.newBuilder().setThing().setThing();
+  }
 
-    void smaller() {
-        ClientBuilder<? extends ClientBuilder<? extends ClientBuilder<? extends ClientBuilder<?>>>>
-                builder = ClientBuilder.newBuilder();
-    }
+  void smaller() {
+    ClientBuilder<? extends ClientBuilder<? extends ClientBuilder<? extends ClientBuilder<?>>>>
+        builder = ClientBuilder.newBuilder();
+  }
 }

@@ -1,10 +1,10 @@
 package simplecrash;
 
-class LetItCrash implements CrashyInterface {
-    private Long longer = 0L;
+public class LetItCrash implements CrashyInterface {
+  private Long longer = 0L;
 
-    @Override
-    public void makeItLongerAndCrash() {
-        this.longer += 0;
-    }
+  @Override
+  public void makeItLongerAndCrash() {
+    this.longer += 0;
+  }
 }

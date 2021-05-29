@@ -1,5 +1,5 @@
 # Tests that are currently passing
-PASSING_TESTS = Bug109 compat issue265 issue594 issue607 multiple-errors package-anno shorthand
+PASSING_TESTS = Bug109 compat issue265 issue594 issue607 multiple-errors package-anno shorthand issue3597
 ifeq (,$(findstring 1.8,$(shell javac -version)))
   # issue309 and issue502 fail with Java 11 because of differences between Java 8 and Java 11 bytecode.
   # TODO: issue559 should work with an annotated jdk11.
@@ -52,6 +52,9 @@ shorthand:
 
 issue607:
 	$(MAKE) -C issue607
+
+issue3597:
+	$(MAKE) -C issue3597
 
 # All tests: passing and failing
 .PHONY: all skipped ${PASSING_TESTS}

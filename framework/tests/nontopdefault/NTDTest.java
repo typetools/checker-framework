@@ -1,5 +1,5 @@
-import testlib.nontopdefault.qual.NTDMiddle;
-import testlib.nontopdefault.qual.NTDTop;
+import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDMiddle;
+import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDTop;
 
 // Testcase for Issue 948:
 // https://github.com/typetools/checker-framework/issues/948
@@ -12,59 +12,59 @@ import testlib.nontopdefault.qual.NTDTop;
 // DefaultQualifierInHierarchy is @NTDMiddle
 // DefaultFor receivers is @NTDTop
 
-class NTDConstructorReceiverTest {
+public class NTDConstructorReceiverTest {
 
-    // default method receiver is @NTDTop
-    void DefaultMethodReceiver() {
+  // default method receiver is @NTDTop
+  void DefaultMethodReceiver() {
 
-        // this line produces a methodref.receiver.bound.invalid error, but it shouldn't if the
-        // receiver for inner class constructors are properly applied
-        Demand<InnerDefaultReceiver> constructorReference = InnerDefaultReceiver::new;
+    // this line produces a methodref.receiver.bound error, but it shouldn't if the
+    // receiver for inner class constructors are properly applied
+    Demand<InnerDefaultReceiver> constructorReference = InnerDefaultReceiver::new;
 
-        // this line does not as the receiver is explicitly declared to be @NTDTop
-        Demand<InnerExplicitReceiver> constructorReference2 = InnerExplicitReceiver::new;
+    // this line does not as the receiver is explicitly declared to be @NTDTop
+    Demand<InnerExplicitReceiver> constructorReference2 = InnerExplicitReceiver::new;
+  }
+
+  class InnerDefaultReceiver {
+    // takes on the default receiver for inner class constructor methods
+    InnerDefaultReceiver(NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {
+      // The type of NTDConstructorReceiverTest.this should be @NTDTop.
+      // :: error: (assignment)
+      @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
+      // :: error: (assignment)
+      @NTDMiddle NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver thatInner = this;
     }
 
-    class InnerDefaultReceiver {
-        // takes on the default receiver for inner class constructor methods
-        InnerDefaultReceiver(NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {
-            // The type of NTDConstructorReceiverTest.this should be @NTDTop.
-            // :: error: (assignment.type.incompatible)
-            @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-            // :: error: (assignment.type.incompatible)
-            @NTDMiddle NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver thatInner = this;
-        }
-
-        void method() {
-            // The TypeUseLocation.RECEIVER only applies to the outer most type, so
-            // NTDConstructorReceiverTest.this is given the
-            @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-            // :: error: (assignment.type.incompatible)
-            @NTDMiddle InnerDefaultReceiver thatInner = this;
-        }
-
-        void explicit(@NTDTop NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver this) {
-            // :: error: (assignment.type.incompatible)
-            @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-            // :: error: (assignment.type.incompatible)
-            @NTDMiddle NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver thatInner = this;
-        }
+    void method() {
+      // The TypeUseLocation.RECEIVER only applies to the outermost type, so
+      // NTDConstructorReceiverTest.this is given the
+      @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
+      // :: error: (assignment)
+      @NTDMiddle InnerDefaultReceiver thatInner = this;
     }
 
-    class InnerExplicitReceiver {
-        // explicitly set the receiver to be @NTDTop
-        InnerExplicitReceiver(@NTDTop NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {
-            // :: error: (assignment.type.incompatible)
-            @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-        }
-
-        InnerExplicitReceiver(
-                @NTDMiddle NTDConstructorReceiverTest NTDConstructorReceiverTest.this, int i) {
-            @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
-        }
+    void explicit(@NTDTop NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver this) {
+      // :: error: (assignment)
+      @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
+      // :: error: (assignment)
+      @NTDMiddle NTDConstructorReceiverTest.@NTDTop InnerDefaultReceiver thatInner = this;
     }
+  }
+
+  class InnerExplicitReceiver {
+    // explicitly set the receiver to be @NTDTop
+    InnerExplicitReceiver(@NTDTop NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {
+      // :: error: (assignment)
+      @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
+    }
+
+    InnerExplicitReceiver(
+        @NTDMiddle NTDConstructorReceiverTest NTDConstructorReceiverTest.this, int i) {
+      @NTDMiddle NTDConstructorReceiverTest that = NTDConstructorReceiverTest.this;
+    }
+  }
 }
 
 interface Demand<R> {
-    R supply();
+  R supply();
 }

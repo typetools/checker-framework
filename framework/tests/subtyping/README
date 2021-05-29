@@ -3,4 +3,3 @@ To add a new file to the test suite, see
 
 To run the tests, do
   (cd $CHECKERFRAMEWORK && ./gradlew SubtypingEncryptedTest)
-

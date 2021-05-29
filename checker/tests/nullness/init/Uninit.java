@@ -1,4 +1,4 @@
-// :: error: (initialization.fields.uninitialized)
 public class Uninit {
-    Object a;
+  // :: error: (initialization.field.uninitialized)
+  Object a;
 }

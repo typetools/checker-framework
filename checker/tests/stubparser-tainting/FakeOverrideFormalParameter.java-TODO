@@ -1,0 +1,86 @@
+// TODO: Fake overrides only work for return types, not formal parameters yet.
+
+import org.checkerframework.checker.tainting.qual.Tainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
+
+// Define this class because it's the name of the file
+public class FakeOverrideFormalParameter {}
+
+class FakeOverrideFPSuper {
+
+    void requiresTaintedInt(@Tainted int i) {}
+
+    void requiresUntaintedInt(@Untainted int i) {}
+
+    void requiresTaintedIntWithFakeOverride(@Tainted int i) {}
+
+    void requiresUntaintedIntWithFakeOverride(@Untainted int i) {}
+
+    void requiresTaintedInteger(@Tainted Integer i) {}
+
+    void requiresUntaintedInteger(@Untainted Integer i) {}
+
+    void requiresTaintedIntegerWithFakeOverride(@Tainted Integer i) {}
+
+    void requiresUntaintedIntegerWithFakeOverride(@Untainted Integer i) {}
+
+    void requiresTaintedFqInteger(java.lang.@Tainted Integer i) {}
+
+    void requiresUntaintedFqInteger(java.lang.@Untainted Integer i) {}
+
+    void requiresTaintedFqIntegerWithFakeOverride(java.lang.@Tainted Integer i) {}
+
+    void requiresUntaintedFqIntegerWithFakeOverride(java.lang.@Untainted Integer i) {}
+}
+
+class FakeOverrideFPMid extends FakeOverrideFPSuper {}
+
+class FakeOverrideFPSub extends FakeOverrideFPMid {}
+
+class FakeOverrideFPClient {
+
+    @Tainted int tf;
+
+    @Untainted int uf;
+
+    void m(@Tainted int t, @Untainted int u) {
+
+        FakeOverrideFPSuper sup = new FakeOverrideFPSuper();
+        FakeOverrideFPMid mid = new FakeOverrideFPMid();
+        FakeOverrideFPSub sub = new FakeOverrideFPSub();
+
+        sup.requiresTaintedInt(t);
+        mid.requiresTaintedInt(t);
+        sub.requiresTaintedInt(t);
+        sup.requiresTaintedInt(u);
+        mid.requiresTaintedInt(u);
+        sub.requiresTaintedInt(u);
+
+        // :: error: (argument)
+        sup.requiresUntaintedInt(t);
+        // :: error: (argument)
+        mid.requiresUntaintedInt(t);
+        // :: error: (argument)
+        sub.requiresUntaintedInt(t);
+        sup.requiresUntaintedInt(u);
+        mid.requiresUntaintedInt(u);
+        sub.requiresUntaintedInt(u);
+
+        sup.requiresTaintedIntWithFakeOverride(t);
+        // :: error: (argument)
+        mid.requiresTaintedIntWithFakeOverride(t);
+        // :: error: (argument)
+        sub.requiresTaintedIntWithFakeOverride(t);
+        sup.requiresTaintedIntWithFakeOverride(u);
+        mid.requiresTaintedIntWithFakeOverride(u);
+        sub.requiresTaintedIntWithFakeOverride(u);
+
+        // :: error: (argument)
+        sup.requiresUntaintedIntWithFakeOverride(t);
+        mid.requiresUntaintedIntWithFakeOverride(t);
+        sub.requiresUntaintedIntWithFakeOverride(t);
+        sup.requiresUntaintedIntWithFakeOverride(u);
+        mid.requiresUntaintedIntWithFakeOverride(u);
+        sub.requiresUntaintedIntWithFakeOverride(u);
+    }
+}

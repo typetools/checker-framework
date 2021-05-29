@@ -20,101 +20,99 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class SystemGetPropertyHandler {
 
-    /**
-     * If true, client code may clear system properties, and this class (SystemGetPropertyHandler)
-     * has no effect.
-     */
-    private final boolean permitClearProperty;
+  /**
+   * If true, client code may clear system properties, and this class (SystemGetPropertyHandler) has
+   * no effect.
+   */
+  private final boolean permitClearProperty;
 
-    /** The processing environment. */
-    private final ProcessingEnvironment env;
+  /** The processing environment. */
+  private final ProcessingEnvironment env;
 
-    /** The factory for constructing and looking up types. */
-    private final NullnessAnnotatedTypeFactory factory;
+  /** The factory for constructing and looking up types. */
+  private final NullnessAnnotatedTypeFactory factory;
 
-    /** The System.getProperty(String) method. */
-    private final ExecutableElement systemGetProperty;
+  /** The System.getProperty(String) method. */
+  private final ExecutableElement systemGetProperty;
 
-    /** The System.setProperty(String) method. */
-    private final ExecutableElement systemSetProperty;
+  /** The System.setProperty(String) method. */
+  private final ExecutableElement systemSetProperty;
 
-    /**
-     * System properties that are defined at startup on every JVM.
-     *
-     * <p>This list is from the Javadoc of System.getProperties, for Java 11.
-     */
-    public static final Collection<String> predefinedSystemProperties =
-            new HashSet<>(
-                    Arrays.asList(
-                            "java.version",
-                            "java.version.date",
-                            "java.vendor",
-                            "java.vendor.url",
-                            "java.vendor.version",
-                            "java.home",
-                            "java.vm.specification.version",
-                            "java.vm.specification.vendor",
-                            "java.vm.specification.name",
-                            "java.vm.version",
-                            "java.vm.vendor",
-                            "java.vm.name",
-                            "java.specification.version",
-                            "java.specification.vendor",
-                            "java.specification.name",
-                            "java.class.version",
-                            "java.class.path",
-                            "java.library.path",
-                            "java.io.tmpdir",
-                            "java.compiler",
-                            "os.name",
-                            "os.arch",
-                            "os.version",
-                            "file.separator",
-                            "path.separator",
-                            "line.separator",
-                            "user.name",
-                            "user.home",
-                            "user.dir"));
+  /**
+   * System properties that are defined at startup on every JVM.
+   *
+   * <p>This list is from the Javadoc of System.getProperties, for Java 11.
+   */
+  public static final Collection<String> predefinedSystemProperties =
+      new HashSet<>(
+          Arrays.asList(
+              "java.version",
+              "java.version.date",
+              "java.vendor",
+              "java.vendor.url",
+              "java.vendor.version",
+              "java.home",
+              "java.vm.specification.version",
+              "java.vm.specification.vendor",
+              "java.vm.specification.name",
+              "java.vm.version",
+              "java.vm.vendor",
+              "java.vm.name",
+              "java.specification.version",
+              "java.specification.vendor",
+              "java.specification.name",
+              "java.class.version",
+              "java.class.path",
+              "java.library.path",
+              "java.io.tmpdir",
+              "java.compiler",
+              "os.name",
+              "os.arch",
+              "os.version",
+              "file.separator",
+              "path.separator",
+              "line.separator",
+              "user.name",
+              "user.home",
+              "user.dir"));
 
-    /**
-     * Creates a SystemGetPropertyHandler.
-     *
-     * @param env the processing environment
-     * @param factory the factory for constructing and looking up types
-     * @param permitClearProperty if true, client code may clear system properties, and this object
-     *     does nothing
-     */
-    public SystemGetPropertyHandler(
-            ProcessingEnvironment env,
-            NullnessAnnotatedTypeFactory factory,
-            boolean permitClearProperty) {
-        this.env = env;
-        this.factory = factory;
-        this.permitClearProperty = permitClearProperty;
+  /**
+   * Creates a SystemGetPropertyHandler.
+   *
+   * @param env the processing environment
+   * @param factory the factory for constructing and looking up types
+   * @param permitClearProperty if true, client code may clear system properties, and this object
+   *     does nothing
+   */
+  public SystemGetPropertyHandler(
+      ProcessingEnvironment env,
+      NullnessAnnotatedTypeFactory factory,
+      boolean permitClearProperty) {
+    this.env = env;
+    this.factory = factory;
+    this.permitClearProperty = permitClearProperty;
 
-        systemGetProperty =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "getProperty", 1, env);
-        systemSetProperty =
-                TreeUtils.getMethod(java.lang.System.class.getName(), "setProperty", 2, env);
+    systemGetProperty = TreeUtils.getMethod("java.lang.System", "getProperty", 1, env);
+    systemSetProperty = TreeUtils.getMethod("java.lang.System", "setProperty", 2, env);
+  }
+
+  /**
+   * Apply rules regarding System.getProperty and related methods.
+   *
+   * @param tree a method invocation
+   * @param method the method being invoked
+   */
+  public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
+    if (permitClearProperty) {
+      return;
     }
-
-    /**
-     * Apply rules regarding System.getProperty and related methods.
-     *
-     * @param tree a method invocation
-     * @param method the method being invoked
-     */
-    public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
-        if (permitClearProperty) {
-            return;
-        }
-        if (TreeUtils.isMethodInvocation(tree, systemGetProperty, env)
-                || TreeUtils.isMethodInvocation(tree, systemSetProperty, env)) {
-            String literal = NullnessVisitor.literalFirstArgument(tree);
-            if (literal != null && predefinedSystemProperties.contains(literal)) {
-                AnnotatedTypeMirror type = method.getReturnType();
-                type.replaceAnnotation(factory.NONNULL);
-            }
-        }
+    if (TreeUtils.isMethodInvocation(tree, systemGetProperty, env)
+        || TreeUtils.isMethodInvocation(tree, systemSetProperty, env)) {
+      String literal = NullnessVisitor.literalFirstArgument(tree);
+      if (literal != null && predefinedSystemProperties.contains(literal)) {
+        AnnotatedTypeMirror type = method.getReturnType();
+        type.replaceAnnotation(factory.NONNULL);
+      }
     }
+  }
 }

@@ -3,25 +3,25 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 // Tests that the unchecked bytecode defaults option does not
 // affect defaulting nor suppress errors in source code.
 
-class BytecodeDefaultsTest {
-    void f() {
-        g("");
-    }
+public class BytecodeDefaultsTest {
+  void f() {
+    g("");
+  }
 
-    void g(String s) {}
+  void g(String s) {}
 }
 
 @AnnotatedFor("nullness")
 class HasErrors {
-    Object f() {
-        // :: error: (return.type.incompatible)
-        return null;
-    }
+  Object f() {
+    // :: error: (return)
+    return null;
+  }
 }
 
 class HasErrors2 {
-    Object f() {
-        // :: error: (return.type.incompatible)
-        return null;
-    }
+  Object f() {
+    // :: error: (return)
+    return null;
+  }
 }

@@ -6,11 +6,11 @@ import java.util.List;
 
 @SuppressWarnings("all") // just check for crash
 public class Issue1111 {
-    void foo(Box<? super Integer> box, List<Integer> list) {
-        bar(box, list);
-    }
+  void foo(Box<? super Integer> box, List<Integer> list) {
+    bar(box, list);
+  }
 
-    <T extends Number> void bar(Box<T> box, Iterable<? extends T> list) {}
+  <T extends Number> void bar(Box<T> box, Iterable<? extends T> list) {}
 
-    class Box<T extends Number> {}
+  class Box<T extends Number> {}
 }

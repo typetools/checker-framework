@@ -5,19 +5,19 @@
 // framework/tests/all-systems
 // checker/tests/nullness
 
-class Issue2048 {
-    interface Foo {}
+public class Issue2048 {
+  interface Foo {}
 
-    interface Fooer<R extends Foo> {}
+  interface Fooer<R extends Foo> {}
 
-    class UseNbl<T> {
-        // T by default is @Nullable and therefore doesn't
-        // fulfill the bound of R.
-        // :: error: (type.argument.type.incompatible)
-        void foo(Fooer<? extends T> fooer) {}
-    }
+  class UseNbl<T> {
+    // T by default is @Nullable and therefore doesn't
+    // fulfill the bound of R.
+    // :: error: (type.argument)
+    void foo(Fooer<? extends T> fooer) {}
+  }
 
-    class UseNN<T extends Object> {
-        void foo(Fooer<? extends T> fooer) {}
-    }
+  class UseNN<T extends Object> {
+    void foo(Fooer<? extends T> fooer) {}
+  }
 }

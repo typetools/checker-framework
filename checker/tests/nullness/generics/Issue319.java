@@ -3,47 +3,47 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-class Issue319 {
-    class Foo<T> {
-        Foo(@Nullable T t) {}
-    }
+public class Issue319 {
+  class Foo<T> {
+    Foo(@Nullable T t) {}
+  }
 
-    <T> Foo<T> newFoo(@Nullable T t) {
-        return new Foo<>(t);
-    }
+  <T> Foo<T> newFoo(@Nullable T t) {
+    return new Foo<>(t);
+  }
 
-    void pass() {
-        Foo<Boolean> f = newFoo(Boolean.FALSE);
-    }
+  void pass() {
+    Foo<Boolean> f = newFoo(Boolean.FALSE);
+  }
 
-    void fail() {
-        Foo<Boolean> f = newFoo(null);
-    }
+  void fail() {
+    Foo<Boolean> f = newFoo(null);
+  }
 
-    void workaround() {
-        Foo<Boolean> f = Issue319.this.<Boolean>newFoo(null);
-    }
+  void workaround() {
+    Foo<Boolean> f = Issue319.this.<Boolean>newFoo(null);
+  }
 }
 
 class Issue319NN {
-    class Foo<T> {
-        Foo(@NonNull T t) {}
-    }
+  class Foo<T> {
+    Foo(@NonNull T t) {}
+  }
 
-    <T> Foo<T> newFoo(@NonNull T t) {
-        return new Foo<>(t);
-    }
+  <T> Foo<T> newFoo(@NonNull T t) {
+    return new Foo<>(t);
+  }
 
-    void pass() {
-        Foo<Boolean> f = newFoo(Boolean.FALSE);
-    }
+  void pass() {
+    Foo<Boolean> f = newFoo(Boolean.FALSE);
+  }
 
-    void fail() {
-        // :: error: (argument.type.incompatible)
-        Foo<Boolean> f = newFoo(null);
-    }
+  void fail() {
+    // :: error: (argument)
+    Foo<Boolean> f = newFoo(null);
+  }
 
-    void pass2() {
-        Foo<@Nullable Boolean> f = newFoo(Boolean.FALSE);
-    }
+  void pass2() {
+    Foo<@Nullable Boolean> f = newFoo(Boolean.FALSE);
+  }
 }
