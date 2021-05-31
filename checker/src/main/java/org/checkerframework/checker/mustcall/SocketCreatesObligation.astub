@@ -1,7 +1,7 @@
-// This version of the standard assumptions for sockets is intended for use with accumulation frame support (i.e.
-// without the -AnoAccumulationFrames argument to the checker). It includes @MustCall({}) annotations for no-argument
-// socket constructors, which would be unsound if accumulation frame support was disabled. The checker chooses
-// whether to use it automatically, when invoked via the Object Construction Checker.
+// This version of the standard assumptions for sockets is intended for use with obligation creation support (i.e.
+// without the -AnoCreatesObligation argument to the checker). It includes @MustCall({}) annotations for no-argument
+// socket constructors, which would be unsound if obligation creation support was disabled. The checker chooses
+// whether to use it automatically, when invoked via the Resource Leak Checker.
 
 package java.net;
 
