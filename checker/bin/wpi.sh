@@ -207,7 +207,7 @@ function configure_and_exec_dljc {
   # Framework crashed, so output the log file for easier debugging.
   wpi_no_output_message="No WPI outputs were discovered; it is likely that WPI failed or the Checker Framework crashed"
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
-    wpi_log_path="${DIR}"/dljc_out/wpi.log
+    wpi_log_path="${DIR}"/dljc-out/wpi.log
     echo "=== ${wpi_no_output_message}: printing ${wpi_log_path} ==="
     cat "${wpi_log_path}"
     echo "=== end of ${wpi_log_path} ==="
