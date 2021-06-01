@@ -373,6 +373,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       }
       return isSubtype(outsideLower, inside) && isSubtype(inside, outsideUpper);
     } catch (Throwable ex) {
+      // Work around:
+      // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8265255
+      checker.reportWarning(null, "maybe.jdk.bug");
       return false;
     }
   }
