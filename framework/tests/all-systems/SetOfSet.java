@@ -2,7 +2,7 @@ package wildcards;
 
 @SuppressWarnings({
   "initialization",
-  "initializedfields:contracts.postcondition.not.satisfied"
+  "initializedfields:contracts.postcondition"
 }) // field isn't set
 public class SetOfSet<E> {
 
