@@ -12,14 +12,14 @@ public class WildcardArrayBound {
         Other<? extends @Untainted MyInterface @Untainted []> x,
         Other<@Tainted MyInterface @Untainted []> y) {
       Other<? extends @Untainted Serializable> z = y;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       x = y;
     }
 
     void use(
         Other<? extends @Untainted MyInterface @Untainted []> x,
         Other<@Tainted MyInterface @Untainted []> y) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       x = y;
       @Untainted Serializable s = x.getU();
       @Untainted MyInterface @Untainted [] sw = x.getU();

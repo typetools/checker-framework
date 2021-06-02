@@ -11,21 +11,21 @@ public class SameTypeBounds {
     // The upper and lower bound must have the same annotation because the bounds are collasped
     // during capture conversion.
     MyGen<? super Object> o = p;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     p = o;
   }
 
   void test2(MyGen<Object> p) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     MyGen<@Untainted ? super @Untainted Object> o = p;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     p = o;
   }
 
   void test3(MyGen<@Untainted Object> p) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     MyGen<? super @Tainted Object> o = p;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     p = o;
   }
 
@@ -39,7 +39,7 @@ public class SameTypeBounds {
     // TODO: error: invalid type
     Gen<? super MyClass> o = p;
     o = p2;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     p = p2;
   }
 }
