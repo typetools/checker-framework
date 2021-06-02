@@ -5,7 +5,7 @@ public class CheckerFrameworkBuilder {
 
   /**
    * Most of this test was copied from
-   * https://raw.githubusercontent.com/rzwitserloot/lombok/master/test/transform/resource/after-delombok/CheckerFrameworkBuilder.java
+   * https://raw.githubusercontent.com/projectlombok/lombok/master/test/transform/resource/after-delombok/CheckerFrameworkBuilder.java
    * with the exception of the following lines until the next long comment. I have made one change
    * outside the scope of these comments: - I fixed the placement of the type annotations, which
    * were originally on scoping constructs. I think this is a bug in the delombok pretty-printer

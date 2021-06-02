@@ -128,7 +128,7 @@ public class NullnessAnnotatedTypeFactory
           "javax.annotation.Nonnull",
           // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
           "javax.validation.constraints.NotNull",
-          // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/NonNull.java
+          // https://github.com/projectlombok/lombok/blob/master/src/core/lombok/NonNull.java
           "lombok.NonNull",
           // https://search.maven.org/search?q=a:checker-compat-qual
           "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
