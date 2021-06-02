@@ -9,12 +9,14 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * Indicates a method precondition: when the method is invoked, the specified expressions must have
  * had the specified methods called on them.
  *
- * <p>Do not use this annotation for formal parameters; instead, give them a {@code @}{@link
- * CalledMethods} type. The {@code @RequiresCalledMethods} annotation is intended for other
+ * <p>Do not use this annotation for formal parameters; instead, give their type a {@code @}{@link
+ * CalledMethods} annotation. The {@code @RequiresCalledMethods} annotation is intended for other
  * expressions, such as field accesses or method calls.
  *
  * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @PreconditionAnnotation(qualifier = CalledMethods.class)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface RequiresCalledMethods {
@@ -34,4 +36,22 @@ public @interface RequiresCalledMethods {
    */
   @QualifierArgument("value")
   String[] methods();
+
+  /**
+   * A wrapper annotation that makes the {@link RequiresCalledMethods} annotation repeatable.
+   *
+   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+   * writes more than one {@link RequiresCalledMethods} annotation at the same location.
+   */
+  @Documented
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+  @interface List {
+    /**
+     * Returns the repeatable annotations.
+     *
+     * @return the repeatable annotations
+     */
+    RequiresCalledMethods[] value();
+  }
 }
