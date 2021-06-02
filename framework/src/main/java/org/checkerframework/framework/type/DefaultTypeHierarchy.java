@@ -375,8 +375,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     } catch (Throwable ex) {
       // Work around:
       // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8265255
-      checker.reportWarning(null, "maybe.jdk.bug");
-      return false;
+      if (ex.getMessage().contains("AsSuperVisitor")) {
+        return false;
+      }
+      throw ex;
     }
   }
 
