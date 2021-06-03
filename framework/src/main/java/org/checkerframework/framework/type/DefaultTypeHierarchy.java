@@ -7,8 +7,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Covariant;
@@ -1123,15 +1121,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (subtype.isUninferredTypeArgument()) {
       return subtype.atypeFactory.ignoreUninferredTypeArguments;
     }
-    TypeMirror superTypeMirror = supertype.getUnderlyingType();
-    if (supertype.getKind() == TypeKind.TYPEVAR) {
-      TypeVariable atv = (TypeVariable) supertype.getUnderlyingType();
-      if (TypesUtils.isCaptured(atv)) {
-        superTypeMirror = TypesUtils.getCapturedWildcard(atv);
-      }
-    }
 
-    if (superTypeMirror.getKind() == TypeKind.WILDCARD) {
+    if (supertype.getKind() == TypeKind.WILDCARD) {
       // This can happen at a method invocation where a type variable in the method
       // declaration is substituted with a wildcard.
       // For example:
@@ -1149,8 +1140,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return isPrimarySubtype(subtype, supertype);
 
       } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype)) {
-        // TODO: wildcard capture conversion
-        // TODO: can this be removed?
         // Two unannotated uses of wildcard types are the same type
         return true;
       }
