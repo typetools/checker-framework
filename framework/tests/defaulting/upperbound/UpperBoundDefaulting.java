@@ -43,7 +43,7 @@ public class UpperBoundDefaulting {
 
     MyArrayList<@UbBottom ? extends @UbExplicit Object> eubExplicitToBottom = iebList;
 
-    // :: error: (assignment.type)
+    // :: error: (assignment)
     MyArrayList<@UbBottom ? extends @UbImplicit Object> eubImplicitToBottom = iebList;
   }
 
