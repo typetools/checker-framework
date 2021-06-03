@@ -100,7 +100,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   @Override
   public boolean isValidUse(
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-    // MustCallAlias annotations are always permitted on type uses, despite not technically be a
+    // MustCallAlias annotations are always permitted on type uses, despite not technically being a
     // part of the type hierarchy. It's necessary to get the annotation from the
     // element because MustCallAlias is aliased to PolyMustCall, which is what useType
     // would contain. Note that isValidUse does not need to consider component types,
