@@ -139,7 +139,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   private boolean commonAssignmentCheckOnResourceVariable = false;
 
   /**
-   * Mark (using the {@link #commonAssignmentCheckOnResourceVariable} field of this class) any
+   * Mark (using the {@code #commonAssignmentCheckOnResourceVariable} field of this class) any
    * assignments where the LHS is a resource variable, so that close doesn't need to be considered.
    * See {@link #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String,
    * Object...)} for the code that uses and removes the mark.

@@ -3,7 +3,10 @@
 
 The Called Methods Checker tracks the names of methods that have definitely
 been called on an object. This checker is useful for checking any property
-of the form ``call method A before method B''.
+of the form ``call method A before method B''. For the purpose of this
+section, a method has ``definitely been called'' if it is \emph{invoked}:
+a method that might never return or that might throw an exception has
+definitely been called on every path after the call, including exceptional paths.
 
 The Called Methods Checker provides built-in support for one such property:
 that clients of the builder pattern for object
@@ -178,6 +181,13 @@ There are also method annotations:
 
   guarantees that \<p.x()> and \<p.y()> will always be called if \<m> returns \<true>.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+\item[\refqualclass{checker/calledmethods/qual}{RequiresCalledMethods}]
+  This declaration annotation specifies a pre-condition on a method, indicating that the expressions
+  in its \<value> argument must have called-methods types that include all the methods named
+  in its \<methods> argument. If the expression is a parameter of the annotated method, you should
+  use an \<@CalledMethods> annotation on the parameter instead.
+
 \end{description}
 
 \sectionAndLabel{Default handling for Lombok and AutoValue}{called-methods-framework-details}
