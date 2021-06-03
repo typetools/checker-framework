@@ -279,6 +279,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   protected boolean areEqualInHierarchy(
       final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
+    if (type1.getClass() != type2.getClass()) {
+      return false;
+    }
     return equalityComparer.areEqualInHierarchy(type1, type2, currentTop);
   }
 
