@@ -62,10 +62,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   /* package-private */ final ExecutableElement calledMethodsValueElement =
       TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
 
-  /**
-   * The value argument to {@link
-   * org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs}
-   */
+  /** The {@link EnsuresCalledMethodsVarArgs#value} element/argument. */
   /* package-private */ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
 
