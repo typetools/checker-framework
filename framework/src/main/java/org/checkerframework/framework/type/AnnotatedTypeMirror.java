@@ -1438,8 +1438,9 @@ public abstract class AnnotatedTypeMirror {
   private static void checkBound(
       String boundDescription, AnnotatedTypeMirror boundType, AnnotatedTypeMirror thisType) {
     if (boundType == null || boundType.isDeclaration()) {
+
       throw new BugInCF(
-          "%s bounds should never be null or a declaration.%n  new bound = %s%n  type = %s",
+          "%s bounds should never be null or a declaration.  new bound = %s  type = %s",
           boundDescription, boundType, thisType);
     }
   }
