@@ -44,7 +44,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
     AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
     if (AnnotationUtils.areSameByName(
         anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
-      // we can't verify these yet.  emit an error (which will have to be suppressed) for now
+      // We can't verify these yet.  Emit an error (which will have to be suppressed) for now.
       checker.report(node, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.unverified"));
       return null;
     }
