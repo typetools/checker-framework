@@ -23,6 +23,7 @@ Method `TreeUtils.getMethodName()` returns a `String` rather than a `Name`.
 Removed CheckerDevelMain.
 
 **Closed issues:**
+#3993, #4116, #4586, #4598, #4612, #4614.
 
 
 Version 3.13.0 (May 3, 2021)

@@ -100,7 +100,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.13.1-SNAPSHOT'
+    version '3.14.0'
 
     repositories {
         mavenCentral()
@@ -172,8 +172,10 @@ allprojects {
         // Add standard javac options
         tasks.withType(JavaCompile) { compilationTask ->
             dependsOn(':installGitHooks')
-            // Put source files in deterministic order, for debugging.
-            compilationTask.source = compilationTask.source.sort()
+            // Sorting is commented out because it disables incremental compilation.
+            // Uncomment when needed.
+            // // Put source files in deterministic order, for debugging.
+            // compilationTask.source = compilationTask.source.sort()
             sourceCompatibility = 8
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
@@ -224,7 +226,7 @@ allprojects {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()]
             }
 
-            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
             // TODO: enable Error Prone on test classes.
             if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
@@ -473,7 +475,7 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
-    args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
+    args "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
 }
 
 

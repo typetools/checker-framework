@@ -58,6 +58,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
 
+  /** The {@link CalledMethods#value} element/argument. */
+  /* package-private */ final ExecutableElement calledMethodsValueElement =
+      TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
+
   /**
    * The value argument to {@link
    * org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs}
