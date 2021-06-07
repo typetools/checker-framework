@@ -4727,7 +4727,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     final AnnotatedDeclaredType capturedType =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(capturedTypeMirror, this, false);
 
-    copier.copy(uncapturedType, capturedType);
+    captureTypeArgCopier.copy(uncapturedType, capturedType);
 
     AnnotatedDeclaredType typeDeclaration =
         (AnnotatedDeclaredType) getAnnotatedType(uncapturedType.getUnderlyingType().asElement());
@@ -4799,61 +4799,80 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return capturedType;
   }
 
-  Copier copier = new Copier();
+  /**
+   * Copy the non-wildcard type args from a uncapturedType to its captureType. Also, ensure that
+   * type variables in capturedType are the same object when they are refer to the same type
+   * variable.
+   *
+   * <p>To use, Call {@code #copy(AnnotatedDeclaredType, AnnotatedDeclaredType)} rather than a visit
+   * method.
+   */
+  private final CaptureTypeArgCopier captureTypeArgCopier = new CaptureTypeArgCopier();
 
-  class Copier extends AnnotatedTypeCopier {
-    AnnotatedDeclaredType capturedType;
-    AnnotatedDeclaredType uncapturedType;
+  /**
+   * Copy the non-wildcard type args from {@code uncapturedType} to {@code captureType}. Also,
+   * ensure that type variables in {@code capturedType} are the same object when they are refer to
+   * the same type variable.
+   *
+   * <p>To use, Call {@link #copy(AnnotatedDeclaredType, AnnotatedDeclaredType)} rather than a visit
+   * method.
+   */
+  private class CaptureTypeArgCopier extends AnnotatedTypeCopier {
 
-    public void copy(AnnotatedDeclaredType uncapturedType, AnnotatedDeclaredType capturedType) {
-      this.uncapturedType = uncapturedType;
-      this.capturedType = capturedType;
-      AnnotatedTypeMirror copy = visit(uncapturedType, new IdentityHashMap<>());
-      if (copy != capturedType) {
-        throw new BugInCF("");
-      }
-    }
+    /**
+     * Copy the non-wildcard type args from {@code uncapturedType} to {@code capturedType}. Also,
+     * ensure that type variables {@code capturedType} are the same object when they are refer to
+     * the same type variable.
+     *
+     * @param uncapturedType a declared type that has not under gone capture conversion
+     * @param capturedType the captured version of {@code uncapturedType} before it has been
+     *     annotated.
+     */
+    private void copy(AnnotatedDeclaredType uncapturedType, AnnotatedDeclaredType capturedType) {
 
-    @Override
-    public AnnotatedTypeMirror visitDeclared(
-        AnnotatedDeclaredType original,
-        IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-      if (originalToCopy.containsKey(original)) {
-        return originalToCopy.get(original);
-      }
-      if (original == uncapturedType) {
-        originalToCopy.put(original, capturedType);
-        int size = uncapturedType.getTypeArguments().size();
+      IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy =
+          new IdentityHashMap<>();
+      AnnotatedDeclaredType original = uncapturedType;
+      originalToCopy.put(original, capturedType);
+      int size = uncapturedType.getTypeArguments().size();
 
-        AnnotatedTypeMirror[] newTypeArgs = new AnnotatedTypeMirror[size];
-        Map<TypeVariable, AnnotatedTypeMirror> typeVarMap = new HashMap<>(size);
-        for (int i = 0; i < size; i++) {
-          AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
-          if (uncapturedArg.getKind() != TypeKind.WILDCARD) {
-            AnnotatedTypeMirror copyArg = visit(uncapturedArg, originalToCopy);
-            if (copyArg.getKind() == TypeKind.TYPEVAR) {
-              typeVarMap.put(((AnnotatedTypeVariable) copyArg).getUnderlyingType(), copyArg);
-            }
-            newTypeArgs[i] = copyArg;
+      AnnotatedTypeMirror[] newTypeArgs = new AnnotatedTypeMirror[size];
+      Map<TypeVariable, AnnotatedTypeMirror> typeVarMap = new HashMap<>(size);
+      // Copy the non-wildcard type args from uncapturedType to newTypeArgs.
+      // If the non-wildcard type arg is type var add it to typeVarMap.
+      for (int i = 0; i < size; i++) {
+        AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
+        if (uncapturedArg.getKind() != TypeKind.WILDCARD) {
+          AnnotatedTypeMirror copyArg = visit(uncapturedArg, originalToCopy);
+          if (copyArg.getKind() == TypeKind.TYPEVAR) {
+            typeVarMap.put(((AnnotatedTypeVariable) copyArg).getUnderlyingType(), copyArg);
           }
+          newTypeArgs[i] = copyArg;
         }
-        for (int i = 0; i < size; i++) {
-          AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
-          AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
-          if (uncapturedArg.getKind() == TypeKind.WILDCARD) {
-            AnnotatedTypeMirror newCapARg =
-                typeVarSubstitutor.substituteWithoutCopyingTypeArguments(typeVarMap, capturedArg);
-            newTypeArgs[i] = newCapARg;
-          }
-        }
-        capturedType.setTypeArguments(Arrays.asList(newTypeArgs));
-        if (uncapturedType.getEnclosingType() != null) {
-          capturedType.setEnclosingType(
-              (AnnotatedDeclaredType) visit(uncapturedType.getEnclosingType(), originalToCopy));
-        }
-        return capturedType;
       }
-      return super.visitDeclared(original, originalToCopy);
+
+      // Substitute the type variables in each captured type arg using typeVarMap created above.
+      // This makes type variables in capturedType the same object when they are the same object.
+      for (int i = 0; i < size; i++) {
+        AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
+        AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
+        if (uncapturedArg.getKind() == TypeKind.WILDCARD) {
+          // Note: this if statement can't be replaced with if (TypesUtils.isCaptured(capturedArg))
+          // because if the bounds of the captured wildcard are equal, then instead of a captured
+          // wildcard, the type of the bound is used.
+          AnnotatedTypeMirror newCapArg =
+              typeVarSubstitutor.substituteWithoutCopyingTypeArguments(typeVarMap, capturedArg);
+          newTypeArgs[i] = newCapArg;
+        }
+      }
+      // Set captureType type args to newTypeArgs.
+      capturedType.setTypeArguments(Arrays.asList(newTypeArgs));
+
+      // Visit the enclosing type.
+      if (uncapturedType.getEnclosingType() != null) {
+        capturedType.setEnclosingType(
+            (AnnotatedDeclaredType) visit(uncapturedType.getEnclosingType(), originalToCopy));
+      }
     }
   }
 
