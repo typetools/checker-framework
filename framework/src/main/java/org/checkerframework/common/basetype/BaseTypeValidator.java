@@ -364,6 +364,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     return null;
   }
 
+  /**
+   * Visits the type parameters of a class tree.
+   *
+   * @param type type of {@code tree}
+   * @param tree a class tree
+   */
   protected void visitClassTypeParameters(AnnotatedDeclaredType type, ClassTree tree) {
     for (int i = 0, size = type.getTypeArguments().size(); i < size; i++) {
       AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) type.getTypeArguments().get(i);
