@@ -4967,47 +4967,83 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     p.retainAll(capturedArg.getLowerBound().getAnnotations());
     capturedArg.replaceAnnotations(p);
 
-    AnnotatedTypeCopier scanner =
-        new AnnotatedTypeCopier() {
-          @Override
-          public AnnotatedTypeMirror visitTypeVariable(
-              AnnotatedTypeVariable original,
-              IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-            AnnotatedTypeMirror cap = capturedTypeMapping.get(original.getUnderlyingType());
-            if (cap != null) {
-              return cap;
-            }
-            return super.visitTypeVariable(original, originalToCopy);
-          }
+    capturedTypeSubstitutor.substitute(capturedArg, capturedTypeMapping);
+  }
 
-          @Override
-          protected <T extends AnnotatedTypeMirror> T makeOrReturnCopy(
-              T original,
-              IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-            @SuppressWarnings("unchecked") //
-            T result =
-                (T)
-                    originalToCopy.computeIfAbsent(
-                        original,
-                        type -> {
-                          if (type.getKind() == TypeKind.TYPEVAR) {
-                            AnnotatedTypeMirror cap =
-                                capturedTypeMapping.get(
-                                    ((AnnotatedTypeVariable) type).getUnderlyingType());
-                            if (cap != null) {
-                              @SuppressWarnings("unchecked")
-                              T capTypeVar = (T) cap;
-                              return capTypeVar;
-                            }
-                          }
-                          return type;
-                        });
-            return result;
-          }
-        };
-    IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new IdentityHashMap<>();
-    scanner.visit(capturedArg.getLowerBound(), mapping);
-    scanner.visit(capturedArg.getUpperBound(), mapping);
+  /**
+   * Substitutes references to captured types in {@code type} using {@code capturedTypeMapping}.
+   *
+   * <p>Unlike {@link #typeVarSubstitutor}, this class does not copy the type. Call {@code
+   * substitute} to use.
+   */
+  private final CapturedTypeSubstitutor capturedTypeSubstitutor = new CapturedTypeSubstitutor();
+
+  /**
+   * Substitutes references to captured types in {@code type} using {@code capturedTypeMapping}.
+   *
+   * <p>Unlike {@link #typeVarSubstitutor}, this class does not copy the type. Call {@code
+   * substitute} to use.
+   */
+  private static class CapturedTypeSubstitutor extends AnnotatedTypeCopier {
+
+    /** A mapping from a TypeVariable, that is a captured type, to an AnnotatedTypeVariable */
+    private Map<TypeVariable, AnnotatedTypeVariable> capturedTypeMapping;
+
+    /**
+     * Substitutes references to captured types in {@code type} using {@code capturedTypeMapping}.
+     *
+     * <p>Unlike {@link #typeVarSubstitutor}, this method does not copy the type.
+     *
+     * @param type AnnotatedTypeMirror whose captured types are substituted
+     * @param capturedTypeMapping mapping from TypeVariable, that is a captured type, to an
+     *     AnnotatedTypeVariable
+     */
+    private void substitute(
+        AnnotatedTypeVariable type, Map<TypeVariable, AnnotatedTypeVariable> capturedTypeMapping) {
+      this.capturedTypeMapping = capturedTypeMapping;
+      IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new IdentityHashMap<>();
+      visit(type.getLowerBound(), mapping);
+      visit(type.getUpperBound(), mapping);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitTypeVariable(
+        AnnotatedTypeVariable original,
+        IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
+      AnnotatedTypeMirror cap = capturedTypeMapping.get(original.getUnderlyingType());
+      if (cap != null) {
+        return cap;
+      }
+      return super.visitTypeVariable(original, originalToCopy);
+    }
+
+    @Override
+    protected <T extends AnnotatedTypeMirror> T makeOrReturnCopy(
+        T original, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
+      AnnotatedTypeMirror copy = originalToCopy.get(original);
+      if (copy != null) {
+        @SuppressWarnings(
+            "unchecked") // the key-value pairs in originalToCopy are always the same kind of
+        // AnnotatedTypeMirror.
+        T copyCasted = (T) copy;
+        return copyCasted;
+      }
+
+      if (original.getKind() == TypeKind.TYPEVAR) {
+        AnnotatedTypeMirror captureType =
+            capturedTypeMapping.get(((AnnotatedTypeVariable) original).getUnderlyingType());
+        if (captureType != null) {
+          originalToCopy.put(original, captureType);
+          @SuppressWarnings(
+              "unchecked") // the key-value pairs in originalToCopy are always the same kind of
+          // AnnotatedTypeMirror.
+          T captureTypeCasted = (T) captureType;
+          return captureTypeCasted;
+        }
+      }
+      originalToCopy.put(original, original);
+      return original;
+    }
   }
 
   /**
