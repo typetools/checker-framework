@@ -26,7 +26,6 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -337,14 +336,10 @@ public class ForwardAnalysisImpl<
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
     List<LocalVariableNode> parameters = getParameters(underlyingAST);
     assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
-    try {
-      S initialStore = transferFunction.initialStore(underlyingAST, parameters);
-      thenStores.put(entry, initialStore);
-      elseStores.put(entry, initialStore);
-      inputs.put(entry, new TransferInput<>(null, this, initialStore));
-    } catch (RuntimeException ex) {
-      throw new BugInCF("Crash in " + TreeUtils.toStringOneLine(underlyingAST.getCode()));
-    }
+    S initialStore = transferFunction.initialStore(underlyingAST, parameters);
+    thenStores.put(entry, initialStore);
+    elseStores.put(entry, initialStore);
+    inputs.put(entry, new TransferInput<>(null, this, initialStore));
   }
 
   /**

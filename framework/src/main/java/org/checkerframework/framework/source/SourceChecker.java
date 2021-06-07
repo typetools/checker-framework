@@ -399,7 +399,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // for all the methods for which it's safe to override.
 
   /** The line separator. */
-  //  private static final String LINE_SEPARATOR = System.lineSeparator().intern();
+  private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
   /** The message key that will suppress all warnings (it matches any message key). */
   public static final String SUPPRESS_ALL_MESSAGE_KEY = "all";
@@ -2498,12 +2498,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param ce the internal error to output
    */
   private void logBugInCF(BugInCF ce) {
-    message(
-        Kind.ERROR,
-        "%s is type-checking %s and it crashed.",
-        (Object) this.getClass().getSimpleName(),
-        currentRoot.getSourceFile().getName());
-    StringJoiner msg = new StringJoiner("\t");
+    StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
           String.format(
@@ -2556,7 +2551,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         msg.add(uri.toString());
       }
     }
-    message(Kind.ERROR, msg.toString(), currentRoot.getSourceFile().getName());
+
     printMessage(msg.toString());
   }
 
