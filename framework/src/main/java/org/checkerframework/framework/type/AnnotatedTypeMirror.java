@@ -921,6 +921,9 @@ public abstract class AnnotatedTypeMirror {
       }
       AnnotatedDeclaredType result = this.shallowCopy(true);
       result.declaration = false;
+      if (this.enclosingType != null) {
+        result.enclosingType = this.enclosingType.asUse();
+      }
       // setTypeArguments calls asUse on all the new type arguments.
       result.setTypeArguments(typeArgs);
 
