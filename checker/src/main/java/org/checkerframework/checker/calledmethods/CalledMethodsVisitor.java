@@ -46,7 +46,6 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
       // We can't verify these yet.  Emit an error (which will have to be suppressed) for now.
       checker.report(node, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.unverified"));
-      return null;
     }
     return super.visitAnnotation(node, p);
   }
@@ -58,7 +57,6 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
     if (ecmva != null) {
       if (!elt.isVarArgs()) {
         checker.report(node, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
-        return null;
       }
     }
     return super.visitMethod(node, p);

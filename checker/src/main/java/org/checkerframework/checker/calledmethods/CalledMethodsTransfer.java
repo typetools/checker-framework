@@ -6,8 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -30,6 +28,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** A transfer function that accumulates the names of methods called. */
 public class CalledMethodsTransfer extends AccumulationTransfer {
@@ -47,12 +46,20 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
 
   /**
+   * The element for the CalledMethods annotation's value element. Stored in a field in this class
+   * to prevent the need to cast to CalledMethods ATF every time it's used.
+   */
+  private final ExecutableElement calledMethodsValueElement;
+
+  /**
    * Create a new CalledMethodsTransfer.
    *
    * @param analysis the analysis
    */
   public CalledMethodsTransfer(final CFAnalysis analysis) {
     super(analysis);
+    calledMethodsValueElement =
+        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
   }
 
   @Override
@@ -98,10 +105,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         for (AnnotationMirror anno : flowAnnos) {
           if (atypeFactory.isAccumulatorAnnotation(anno)) {
             List<String> oldFlowValues =
-                AnnotationUtils.getElementValueArray(
-                    anno,
-                    ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement,
-                    String.class);
+                AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
             // valuesAsList cannot have its length changed -- it is backed by an
             // array.  getElementValueArray returns a new, modifiable list.
             oldFlowValues.addAll(valuesAsList);
@@ -155,13 +159,12 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     if (annot == null) {
       return;
     }
-    String[] ensuredMethodNames =
+    List<String> ensuredMethodNames =
         AnnotationUtils.getElementValueArray(
-                annot,
-                ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
-                    .ensuresCalledMethodsVarArgsValueElement,
-                String.class)
-            .toArray(new String[0]);
+            annot,
+            ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
+                .ensuresCalledMethodsVarArgsValueElement,
+            String.class);
     List<? extends VariableElement> parameters = elt.getParameters();
     int varArgsPos = parameters.size() - 1;
     Node varArgActual = node.getArguments().get(varArgsPos);
@@ -193,10 +196,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    *
    * @param currentType the current type in the called-methods hierarchy
    * @param methodNames the names of the new methods to add to the type
-   * @return the new annotation, to be added to the type
+   * @return the new annotation to be added to the type, or null if the current type cannot be
+   *     converted to an accumulator annotation
    */
-  private AnnotationMirror getUpdatedCalledMethodsType(
-      AnnotatedTypeMirror currentType, String... methodNames) {
+  private @Nullable AnnotationMirror getUpdatedCalledMethodsType(
+      AnnotatedTypeMirror currentType, List<String> methodNames) {
     AnnotationMirror type;
     if (currentType == null || !currentType.isAnnotatedInHierarchy(atypeFactory.top)) {
       type = atypeFactory.top;
@@ -215,14 +219,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       return null;
     }
 
-    CalledMethodsAnnotatedTypeFactory cmAtf = (CalledMethodsAnnotatedTypeFactory) atypeFactory;
-
     List<String> currentMethods =
-        AnnotationUtils.getElementValueArray(type, cmAtf.calledMethodsValueElement, String.class);
-    List<String> newList =
-        Stream.concat(Arrays.stream(methodNames), currentMethods.stream())
-            .collect(Collectors.toList());
+        AnnotationUtils.getElementValueArray(type, calledMethodsValueElement, String.class);
+    List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
 
-    return cmAtf.createAccumulatorAnnotation(newList);
+    return atypeFactory.createAccumulatorAnnotation(newList);
   }
 }
