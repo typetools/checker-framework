@@ -42,7 +42,7 @@ dependencies {
     // See the comment in ../build.gradle in the shadowJar block.
     implementation 'org.plumelib:plume-util:1.5.3'
     implementation 'org.plumelib:reflection-util:1.0.3'
-    implementation 'io.github.classgraph:classgraph:4.8.107'
+    implementation 'io.github.classgraph:classgraph:4.8.108'
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
     // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
