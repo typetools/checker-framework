@@ -4921,6 +4921,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
   }
 
+  @SuppressWarnings("interning:not.interned") // Captured type vars can be compared with ==.
   private final SimpleAnnotatedTypeScanner<Boolean, TypeVariable> captureScanner =
       new SimpleAnnotatedTypeScanner<>(
           (type, other) -> type.getUnderlyingType() == other, Boolean::logicalOr, false);
