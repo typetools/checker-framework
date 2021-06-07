@@ -4726,57 +4726,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
     final AnnotatedDeclaredType capturedType =
         (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(capturedTypeMirror, this, false);
-    AnnotatedTypeCopier copier =
-        new AnnotatedTypeCopier() {
-          @Override
-          public AnnotatedTypeMirror visitDeclared(
-              AnnotatedDeclaredType original,
-              IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
-            if (originalToCopy.containsKey(original)) {
-              return originalToCopy.get(original);
-            }
-            if (original == uncapturedType) {
-              originalToCopy.put(original, capturedType);
-              int size = uncapturedType.getTypeArguments().size();
 
-              AnnotatedTypeMirror[] newTypeArgs = new AnnotatedTypeMirror[size];
-              Map<TypeVariable, AnnotatedTypeMirror> typeVarMap = new HashMap<>(size);
-              for (int i = 0; i < size; i++) {
-                AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
-                if (uncapturedArg.getKind() != TypeKind.WILDCARD) {
-                  AnnotatedTypeMirror copyArg = visit(uncapturedArg, originalToCopy);
-                  if (copyArg.getKind() == TypeKind.TYPEVAR) {
-                    typeVarMap.put(((AnnotatedTypeVariable) copyArg).getUnderlyingType(), copyArg);
-                  }
-                  newTypeArgs[i] = copyArg;
-                }
-              }
-              for (int i = 0; i < size; i++) {
-                AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
-                AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
-                if (uncapturedArg.getKind() == TypeKind.WILDCARD) {
-                  AnnotatedTypeMirror newCapARg =
-                      typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
-                          typeVarMap, capturedArg);
-                  newTypeArgs[i] = newCapARg;
-                }
-              }
-              capturedType.setTypeArguments(Arrays.asList(newTypeArgs));
-              if (uncapturedType.getEnclosingType() != null) {
-                capturedType.setEnclosingType(
-                    (AnnotatedDeclaredType)
-                        visit(uncapturedType.getEnclosingType(), originalToCopy));
-              }
-              return capturedType;
-            }
-            return super.visitDeclared(original, originalToCopy);
-          }
-        };
-
-    AnnotatedTypeMirror copy = copier.visit(uncapturedType, new IdentityHashMap<>());
-    if (copy != capturedType) {
-      throw new BugInCF("");
-    }
+    copier.copy(uncapturedType, capturedType);
 
     AnnotatedDeclaredType typeDeclaration =
         (AnnotatedDeclaredType) getAnnotatedType(uncapturedType.getUnderlyingType().asElement());
@@ -4846,6 +4797,64 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     capturedType.addAnnotations(uncapturedType.getAnnotations());
     return capturedType;
+  }
+
+  Copier copier = new Copier();
+
+  class Copier extends AnnotatedTypeCopier {
+    AnnotatedDeclaredType capturedType;
+    AnnotatedDeclaredType uncapturedType;
+
+    public void copy(AnnotatedDeclaredType uncapturedType, AnnotatedDeclaredType capturedType) {
+      this.uncapturedType = uncapturedType;
+      this.capturedType = capturedType;
+      AnnotatedTypeMirror copy = visit(uncapturedType, new IdentityHashMap<>());
+      if (copy != capturedType) {
+        throw new BugInCF("");
+      }
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitDeclared(
+        AnnotatedDeclaredType original,
+        IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
+      if (originalToCopy.containsKey(original)) {
+        return originalToCopy.get(original);
+      }
+      if (original == uncapturedType) {
+        originalToCopy.put(original, capturedType);
+        int size = uncapturedType.getTypeArguments().size();
+
+        AnnotatedTypeMirror[] newTypeArgs = new AnnotatedTypeMirror[size];
+        Map<TypeVariable, AnnotatedTypeMirror> typeVarMap = new HashMap<>(size);
+        for (int i = 0; i < size; i++) {
+          AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
+          if (uncapturedArg.getKind() != TypeKind.WILDCARD) {
+            AnnotatedTypeMirror copyArg = visit(uncapturedArg, originalToCopy);
+            if (copyArg.getKind() == TypeKind.TYPEVAR) {
+              typeVarMap.put(((AnnotatedTypeVariable) copyArg).getUnderlyingType(), copyArg);
+            }
+            newTypeArgs[i] = copyArg;
+          }
+        }
+        for (int i = 0; i < size; i++) {
+          AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
+          AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
+          if (uncapturedArg.getKind() == TypeKind.WILDCARD) {
+            AnnotatedTypeMirror newCapARg =
+                typeVarSubstitutor.substituteWithoutCopyingTypeArguments(typeVarMap, capturedArg);
+            newTypeArgs[i] = newCapARg;
+          }
+        }
+        capturedType.setTypeArguments(Arrays.asList(newTypeArgs));
+        if (uncapturedType.getEnclosingType() != null) {
+          capturedType.setEnclosingType(
+              (AnnotatedDeclaredType) visit(uncapturedType.getEnclosingType(), originalToCopy));
+        }
+        return capturedType;
+      }
+      return super.visitDeclared(original, originalToCopy);
+    }
   }
 
   /**
