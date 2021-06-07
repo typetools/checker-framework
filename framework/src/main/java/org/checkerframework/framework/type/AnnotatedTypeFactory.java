@@ -4921,6 +4921,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
   }
 
+  /**
+   * Scanner that returns true if the underlying type of any part of an {@link AnnotatedTypeMirror}
+   * is the passed captured type.
+   *
+   * <p>The second argument to visit should be a captured type.
+   */
   @SuppressWarnings("interning:not.interned") // Captured type vars can be compared with ==.
   private final SimpleAnnotatedTypeScanner<Boolean, TypeVariable> captureScanner =
       new SimpleAnnotatedTypeScanner<>(
