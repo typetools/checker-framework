@@ -170,7 +170,8 @@ class SupertypeFinder {
       if (type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
         if (!type.wasRaw()) {
           throw new BugInCF(
-              "AnnotatedDeclaredType's element has a different number of type parameters than type.%ntype=%s%nelement=%s",
+              "AnnotatedDeclaredType's element has a different number of type parameters than"
+                  + " type.%ntype=%s%nelement=%s",
               type, typeElement);
         }
       }

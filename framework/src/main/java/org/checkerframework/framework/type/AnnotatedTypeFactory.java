@@ -367,13 +367,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       if (copyElements) {
         if (!(canonical == null && canonicalName != null && ignorableElements != null)) {
           throw new BugInCF(
-              "Bad Alias for %s: [canonical=%s] copyElements=%s canonicalName=%s ignorableElements=%s",
+              "Bad Alias for %s: [canonical=%s] copyElements=%s canonicalName=%s"
+                  + " ignorableElements=%s",
               aliasName, canonical, copyElements, canonicalName, ignorableElements);
         }
       } else {
         if (!(canonical != null && canonicalName == null && ignorableElements == null)) {
           throw new BugInCF(
-              "Bad Alias for %s: canonical=%s copyElements=%s [canonicalName=%s ignorableElements=%s]",
+              "Bad Alias for %s: canonical=%s copyElements=%s [canonicalName=%s"
+                  + " ignorableElements=%s]",
               aliasName, canonical, copyElements, canonicalName, ignorableElements);
         }
       }
@@ -759,7 +761,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       MethodValChecker methodValChecker = checker.getSubchecker(MethodValChecker.class);
       assert methodValChecker != null
-          : "AnnotatedTypeFactory: reflection resolution was requested, but MethodValChecker isn't a subchecker.";
+          : "AnnotatedTypeFactory: reflection resolution was requested, but MethodValChecker isn't"
+              + " a subchecker.";
       MethodValAnnotatedTypeFactory methodValATF =
           (MethodValAnnotatedTypeFactory) methodValChecker.getAnnotationProvider();
 
@@ -903,7 +906,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
       org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
     throw new TypeSystemError(
-        "Checker must override AnnotatedTypeFactory#createQualifierHierarchyWithMultiGraphFactory when using AnnotatedTypeFactory#createMultiGraphQualifierHierarchy.");
+        "Checker must override AnnotatedTypeFactory#createQualifierHierarchyWithMultiGraphFactory"
+            + " when using AnnotatedTypeFactory#createMultiGraphQualifierHierarchy.");
   }
 
   /**
@@ -2192,9 +2196,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
         if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
           throw new BugInCF(
-              "AnnotatedTypeFactory.methodFromUse:"
-                  + "mismatch between declared method type variables and the inferred method type arguments. "
-                  + "Method type variables: "
+              "AnnotatedTypeFactory.methodFromUse:mismatch between declared method type variables"
+                  + " and the inferred method type arguments. Method type variables: "
                   + methodType.getTypeVariables()
                   + "; "
                   + "Inferred method type arguments: "
@@ -4406,8 +4409,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // We should never reach here: isFunctionalInterface performs the same check
           // and would have raised an error already.
           throw new BugInCF(
-              "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "
-                  + "Found type: %s for tree: %s in lambda tree: %s",
+              "Expected the type of a cast tree in an assignment context to contain a functional"
+                  + " interface bound. Found type: %s for tree: %s in lambda tree: %s",
               castATM, cast, tree);
         }
         return castATM;
