@@ -18,6 +18,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -378,6 +379,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
   }
 
+  /**
+   * Visits type parameters .bounds
+   *
+   * @param typeParameter type of {@code typeParameterTree}
+   * @param typeParameterTree a type parameter tree
+   */
   protected void visitTypeParameterBounds(
       AnnotatedTypeVariable typeParameter, TypeParameterTree typeParameterTree) {
     List<? extends Tree> boundTrees = typeParameterTree.getBounds();
@@ -395,7 +402,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
   }
 
-  private Pair<ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
+  /**
+   * If {@code tree} has a type parameter tree, then the tree and its type is returned. Otherwise
+   * null and {@code type} are returned.
+   *
+   * @param tree tree to search
+   * @param type type to return if no parameter type tree is found
+   * @return If {@code tree} has a type parameter tree, then the tree and its type is returned.
+   *     Otherwise null and {@code type} are returned
+   */
+  private Pair<@Nullable ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
       Tree tree, AnnotatedDeclaredType type) {
     ParameterizedTypeTree typeargtree = null;
 
