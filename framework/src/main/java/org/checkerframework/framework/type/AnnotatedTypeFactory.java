@@ -4817,7 +4817,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * ensure that type variables in {@code capturedType} are the same object when they are refer to
    * the same type variable.
    *
-   * <p>To use, Call {@link #copy(AnnotatedDeclaredType, AnnotatedDeclaredType)} rather than a visit
+   * <p>To use, Call {@code #copy(AnnotatedDeclaredType, AnnotatedDeclaredType)} rather than a visit
    * method.
    */
   private class CaptureTypeArgCopier extends AnnotatedTypeCopier {

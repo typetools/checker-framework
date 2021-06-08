@@ -306,7 +306,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       return true;
     }
     if (outside.getKind() == TypeKind.WILDCARD
-        // TODO: tests fail with out this, but I don't understand why.
+        // TODO: the below should be removed after #979 is fixed.
         || (TypesUtils.isCaptured(outside.getUnderlyingType())
             && !TypesUtils.isCaptured(inside.getUnderlyingType()))) {
 
