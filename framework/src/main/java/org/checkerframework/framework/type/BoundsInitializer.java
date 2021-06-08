@@ -414,6 +414,9 @@ public class BoundsInitializer {
       typeVarToStructure.put(type.getUnderlyingType(), typeVarStruct);
       RecursiveTypeStructure parentStructure = this.currentStructure;
 
+      // If type is a captured type variable, then its type variables should be created new, rather
+      // than using one from the rest of the type.  So, clear the typevars map of all but the
+      // mapping with key type.
       Map<TypeVariable, AnnotatedTypeMirror> hold = new HashMap<>();
       if (TypesUtils.isCaptured(type.getUnderlyingType())) {
         for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
