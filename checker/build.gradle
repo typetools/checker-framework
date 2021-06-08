@@ -34,7 +34,7 @@ dependencies {
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
     implementation 'org.plumelib:reflection-util:1.0.3'
-    implementation 'org.plumelib:plume-util:1.5.3'
+    implementation 'org.plumelib:plume-util:1.5.4'
 
     // Dependencies added to "shadow" appear as dependencies in Maven Central.
     shadow project(':checker-qual')
