@@ -1955,7 +1955,7 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns the type variable to which this wildcard is an argument. Used to initialize the upper
-     * bound of unbounded wildcards and wildcards in raw types.
+     * bound of wildcards in raw types.
      *
      * @return the type variable to which this wildcard is an argument
      */
