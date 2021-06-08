@@ -36,7 +36,7 @@ jobs:
     displayName: test-cftests-junit.sh
 - job: junit_tests_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - nonjunit_tests_jdk11
@@ -76,7 +76,7 @@ jobs:
     displayName: test-cftests-nonjunit.sh
 - job: nonjunit_tests_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - nonjunit_tests_jdk11
@@ -115,7 +115,7 @@ jobs:
     displayName: test-cftests-inference.sh
 - job: inference_tests_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - inference_tests_jdk11
@@ -155,7 +155,7 @@ jobs:
     displayName: test-misc.sh
 - job: misc_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - nonjunit_tests_jdk11
@@ -194,7 +194,7 @@ jobs:
     displayName: test-typecheck.sh
 - job: typecheck_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - nonjunit_tests_jdk11
@@ -237,7 +237,7 @@ jobs:
     displayName: test-daikon.sh
 - job: daikon_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - nonjunit_tests_jdk11
@@ -280,7 +280,7 @@ jobs:
     displayName: test-guava.sh
 - job: guava_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - nonjunit_tests_jdk11
@@ -321,7 +321,7 @@ jobs:
     displayName: test-plume-lib.sh
 - job: plume_lib_jdk16
   ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Undo when JDK 11 tests pass, before merging.
+  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
   # dependsOn:
   #  - junit_tests_jdk11
   #  - nonjunit_tests_jdk11
