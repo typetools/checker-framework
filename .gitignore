@@ -42,6 +42,7 @@ checker/jdk/**/*.class
 *.pyc
 checker/build-temp
 checker/bin/.do-like-javac
+checker/bin/.scc/
 checker/bin-devel/.html-tools
 checker/bin-devel/.plume-scripts
 checker/bin-devel/.run-google-java-format
