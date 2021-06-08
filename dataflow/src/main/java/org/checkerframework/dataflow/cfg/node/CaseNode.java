@@ -2,11 +2,14 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.StringsPlume;
 
 /**
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
@@ -48,6 +51,8 @@ public class CaseNode extends Node {
   /**
    * Gets the nodes corresponding to the case expressions. There can be multiple expressions since
    * Java 12.
+   *
+   * @return The nodes corresponding to the (potentially multiple) case expressions.
    */
   public List<Node> getCaseOperands() {
     return caseExprs;
@@ -65,9 +70,7 @@ public class CaseNode extends Node {
 
   @Override
   public String toString() {
-    return "case "
-        + getCaseOperands().stream().map(Object::toString).collect(Collectors.joining(", "))
-        + ":";
+    return "case " + StringsPlume.join(", ", getCaseOperands()) + ":";
   }
 
   @Override
