@@ -45,7 +45,6 @@ ext {
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.1.jar"
 
     jtregHome = "${parentDir}/jtreg"
-    gjfVersion = '1.7'
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -658,7 +657,7 @@ subprojects {
         // checker-qual-android project has no source, so skip
         onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
-        environment('GJF_VERSION', gjfVersion)
+
         doFirst {
             args += "${formatScriptsHome}/check-google-java-format.py"
             args += getJavaFilesToFormat(project.name)
@@ -675,7 +674,6 @@ subprojects {
         description 'Format the Java source code'
         // checker-qual-android project has no source, so skip
         onlyIf {!project.name.startsWith('checker-qual-android') }
-        environment('GJF_VERSION', gjfVersion)
         executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
