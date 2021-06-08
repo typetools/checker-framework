@@ -1,21 +1,27 @@
-# Create a Docker image that is ready to run the full Checker Framework tests,
-# including building the manual and Javadoc, using JDK 11.
+# Create a Docker image that is ready to run the main Checker Framework tests,
+# using JDK 16.
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
-
-## Keep this file in sync with ../../docs/manual/troubleshooting.tex
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
+# Instructions for installing Java 16 on Ubuntu:
+# https://www.linuxuprising.com/2021/03/how-to-install-oracle-java-16-on-debian.html
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
+&& apt-get -qqy install software-properties-common \
+&& add-apt-repository ppa:linuxuprising/java
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& echo oracle-java16-installer shared/accepted-oracle-license-v1-2 select true | /usr/bin/debconf-set-selections \
 && apt-get -qqy install \
-  openjdk-11-jdk
+  oracle-java16-installer --install-recommends
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
@@ -33,26 +39,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   python3-requests \
   unzip \
   wget
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& apt-get -qqy install \
-  devscripts \
-  dia \
-  hevea \
-  imagemagick \
-  latexmk \
-  librsvg2-bin \
-  pdf2svg \
-  rsync \
-  shellcheck \
-  texlive-font-utils \
-  texlive-fonts-recommended \
-  texlive-latex-base \
-  texlive-latex-extra \
-  texlive-latex-recommended
-
-RUN pip3 install black flake8 html5validator
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get clean \
