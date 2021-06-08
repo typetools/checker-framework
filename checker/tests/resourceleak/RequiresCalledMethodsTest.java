@@ -16,18 +16,18 @@ public class RequiresCalledMethodsTest {
     @RequiresCalledMethods(
         value = {"this.foo"},
         methods = {"a"})
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void overwriteFooCorrect() {
       this.foo = new Foo();
     }
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void overwriteFooWrong() {
       // :: error: required.method.not.called
       this.foo = new Foo();
     }
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void overwriteFooWithoutReleasing() {
       // :: error: contracts.precondition
       overwriteFooCorrect();

@@ -3,7 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
-import org.checkerframework.checker.mustcall.CreatesObligationElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -53,7 +53,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
 
-    handleCreatesObligation(node, result);
+    handleCreatesMustCallFor(node, result);
     updateStoreWithTempVar(result, node);
 
     Node receiver = node.getTarget().getReceiver();
@@ -72,20 +72,20 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Clears the called-methods store of all information about the target if an @CreatesObligation
+   * Clears the called-methods store of all information about the target if an @CreatesMustCallFor
    * method is invoked and the type factory can create obligations. Othewise, does nothing.
    *
    * @param n a method invocation
    * @param result the transfer result whose stores should be cleared of information
    */
-  private void handleCreatesObligation(
+  private void handleCreatesMustCallFor(
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
     if (!rlTypeFactory.canCreateObligations()) {
       return;
     }
 
     List<JavaExpression> targetExprs =
-        CreatesObligationElementSupplier.getCreatesObligationExpressions(
+        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             n, rlTypeFactory, rlTypeFactory);
     for (JavaExpression targetExpr : targetExprs) {
       AnnotationMirror defaultType = rlTypeFactory.top;

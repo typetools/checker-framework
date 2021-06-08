@@ -5,7 +5,7 @@ import org.checkerframework.checker.mustcall.qual.*;
 class COAnonymousClass {
   static class Foo {
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void resetFoo() {}
 
     void other() {
@@ -13,8 +13,8 @@ class COAnonymousClass {
       Runnable r =
           new Runnable() {
             @Override
-            @CreatesObligation("Foo.this")
-            // :: error: creates.obligation.override.invalid
+            @CreatesMustCallFor("Foo.this")
+            // :: error: creates.mustcall.for.override.invalid
             public void run() {
               // Ideally, we would not issue the following error. However, the Checker Framework's
               // JavaExpression support
@@ -34,8 +34,8 @@ class COAnonymousClass {
       Runnable r =
           new Runnable() {
             @Override
-            @CreatesObligation("this")
-            // :: error: creates.obligation.override.invalid
+            @CreatesMustCallFor("this")
+            // :: error: creates.mustcall.for.override.invalid
             public void run() {
               // This error definitely must be issued, since Foo.this != this.
               // :: error: reset.not.owning

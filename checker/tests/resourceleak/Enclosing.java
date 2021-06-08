@@ -11,7 +11,7 @@ class Enclosing {
     // :: error: required.method.not.called
     @Owning Foo foo;
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();

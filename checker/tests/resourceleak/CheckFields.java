@@ -30,20 +30,20 @@ class CheckFields {
       this.finalNotOwningFoo = new Foo();
     }
 
-    @CreatesObligation
+    @CreatesMustCallFor
     void assingToOwningFieldWrong() {
       Foo f = new Foo();
       // :: error: required.method.not.called
       this.owningFoo = f;
     }
 
-    @CreatesObligation
+    @CreatesMustCallFor
     void assignToOwningFieldWrong2() {
       // :: error: required.method.not.called
       this.owningFoo = new Foo();
     }
 
-    @CreatesObligation
+    @CreatesMustCallFor
     void assingToOwningField() {
       // this is a safe re-assignment.
       if (this.owningFoo == null) {
@@ -101,14 +101,14 @@ class CheckFields {
     fooField.notOwningFoo = new Foo();
   }
 
-  @CreatesObligation("#1")
+  @CreatesMustCallFor("#1")
   void testAccessField_param(FooField fooField) {
     // :: error: required.method.not.called
     fooField.owningFoo = new Foo();
     fooField.b();
   }
 
-  // :: error: missing.creates.obligation
+  // :: error: missing.creates.mustcall.for
   void testAccessField_param_no_co(FooField fooField) {
     // :: error: required.method.not.called
     fooField.owningFoo = new Foo();
@@ -122,7 +122,7 @@ class CheckFields {
     // :: error: required.method.not.called
     @Owning Foo foo;
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();
@@ -136,7 +136,7 @@ class CheckFields {
     // :: error: required.method.not.called
     @Owning Foo foo;
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();
@@ -151,7 +151,7 @@ class CheckFields {
     // annotation.
     @Owning Foo foo;
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();

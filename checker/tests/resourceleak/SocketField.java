@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.qual.Pure;
 @MustCall("closeSocket") class SocketField {
   protected @Owning Socket socket = null;
 
-  @CreatesObligation("this")
+  @CreatesMustCallFor("this")
   protected void setupConnection(javax.net.SocketFactory socketFactory) throws IOException {
     // This is the original test case. Before this issue was fixed, an error was issued on the
     // second line.
@@ -17,7 +17,7 @@ import org.checkerframework.dataflow.qual.Pure;
     this.socket = socketFactory.createSocket();
   }
 
-  @CreatesObligation("this")
+  @CreatesMustCallFor("this")
   protected void setupConnectionWithLocal(javax.net.SocketFactory socketFactory)
       throws IOException {
     // This is the original test case, modified to include an assignment to a local that
@@ -28,7 +28,7 @@ import org.checkerframework.dataflow.qual.Pure;
     this.socket = socketFactory.createSocket();
   }
 
-  @CreatesObligation("this")
+  @CreatesMustCallFor("this")
   protected void setupConnectionWithConstructor(javax.net.SocketFactory socketFactory)
       throws IOException {
     // This is the original test case, modified to replace the call to createSocket() with a new
@@ -38,14 +38,14 @@ import org.checkerframework.dataflow.qual.Pure;
     this.socket = new Socket();
   }
 
-  @CreatesObligation("this")
+  @CreatesMustCallFor("this")
   protected void setupConnection2(javax.net.SocketFactory socketFactory) throws IOException {
     this.socket.close();
     // This version succeeds, because getSocket is @Pure, so no side-effects can occur.
     this.socket = getSocket(socketFactory);
   }
 
-  @CreatesObligation("this")
+  @CreatesMustCallFor("this")
   protected void setupConnection3(javax.net.SocketFactory socketFactory) throws IOException {
     // This version demonstrates a work-around.
     Socket s = socketFactory.createSocket();

@@ -7,14 +7,14 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /** Tests for the Resource Leak Checker. */
-public class ResourceLeakNoCreatesObligationTest extends CheckerFrameworkPerDirectoryTest {
-  public ResourceLeakNoCreatesObligationTest(List<File> testFiles) {
+public class ResourceLeakNoCreatesMustCallForTest extends CheckerFrameworkPerDirectoryTest {
+  public ResourceLeakNoCreatesMustCallForTest(List<File> testFiles) {
     super(
         testFiles,
         ResourceLeakChecker.class,
-        "resourceleak-nocreatesobligation",
+        "resourceleak-nocreatesmustcallfor",
         "-Anomsgtext",
-        "-AnoCreatesObligation",
+        "-AnoCreatesMustCallFor",
         "-nowarn",
         "-encoding",
         "UTF-8");
@@ -22,6 +22,6 @@ public class ResourceLeakNoCreatesObligationTest extends CheckerFrameworkPerDire
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"resourceleak-nocreatesobligation"};
+    return new String[] {"resourceleak-nocreatesmustcallfor"};
   }
 }

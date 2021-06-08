@@ -30,7 +30,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.mustcall.CreatesObligationElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -164,11 +164,11 @@ class MustCallConsistencyAnalyzer {
    */
   private void handleInvocation(Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     doOwnershipTransferToParameters(facts, node);
-    // Count calls to @CreatesObligation methods as creating new resources, for now.
+    // Count calls to @CreatesMustCallFor methods as creating new resources, for now.
     if (node instanceof MethodInvocationNode
         && typeFactory.canCreateObligations()
-        && typeFactory.hasCreatesObligation((MethodInvocationNode) node)) {
-      checkCreatesObligationInvocation(facts, (MethodInvocationNode) node);
+        && typeFactory.hasCreatesMustCallFor((MethodInvocationNode) node)) {
+      checkCreatesMustCallForInvocation(facts, (MethodInvocationNode) node);
       incrementNumMustCall(node);
     }
 
@@ -202,9 +202,9 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks that an invocation of a CreatesObligation method is valid. Such an invocation is valid
+   * Checks that an invocation of a CreatesMustCallFor method is valid. Such an invocation is valid
    * if one of the following conditions is true: 1) the target is an owning pointer 2) the target is
-   * tracked in newdefs 3) the method in which the invocation occurs also has an @CreatesObligation
+   * tracked in newdefs 3) the method in which the invocation occurs also has an @CreatesMustCallFor
    * annotation, with the same target
    *
    * <p>If none of the above are true, this method issues a reset.not.owning error.
@@ -217,14 +217,14 @@ class MustCallConsistencyAnalyzer {
    * @param newDefs the local variables that have been defined in the current compilation unit (and
    *     are therefore going to be checked later). This value is side-effected if it contains the
    *     target of the reset method.
-   * @param node a method invocation node, invoking a method with a CreatesObligation annotation
+   * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
    */
-  private void checkCreatesObligationInvocation(
+  private void checkCreatesMustCallForInvocation(
       Set<ImmutableSet<LocalVarWithTree>> newDefs, MethodInvocationNode node) {
 
     TreePath currentPath = typeFactory.getPath(node.getTree());
     List<JavaExpression> targetExprs =
-        CreatesObligationElementSupplier.getCreatesObligationExpressions(
+        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             node, typeFactory, typeFactory);
     Set<String> missing = new HashSet<>();
     for (JavaExpression target : targetExprs) {
@@ -271,7 +271,7 @@ class MustCallConsistencyAnalyzer {
       }
 
       if (!validTarget) {
-        // TODO: getting this every time is inefficient if a method has many @CreatesObligation
+        // TODO: getting this every time is inefficient if a method has many @CreatesMustCallFor
         // annotations,
         //  but that should be a rare path
         MethodTree enclosingMethod = TreePathUtil.enclosingMethod(currentPath);
@@ -280,7 +280,7 @@ class MustCallConsistencyAnalyzer {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
           List<String> enclosingCoValues =
-              ResourceLeakVisitor.getLiteralCreatesObligationValues(
+              ResourceLeakVisitor.getLiteralCreatesMustCallForValues(
                   enclosingElt, mcAtf, typeFactory);
           if (!enclosingCoValues.isEmpty()) {
             for (String enclosingCoValue : enclosingCoValues) {
@@ -747,7 +747,7 @@ class MustCallConsistencyAnalyzer {
     Node receiver = lhs.getReceiver();
 
     // TODO: it would be better to defer getting the path until after we check
-    // for a CreatesObligation annotation, because getting the path can be expensive.
+    // for a CreatesMustCallFor annotation, because getting the path can be expensive.
     // It might be possible to exploit the CFG structure to find the containing
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
@@ -760,12 +760,12 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    // Check that there is a corresponding createsObligation annotation, unless this is
+    // Check that there is a corresponding CreatesMustCallFor annotation, unless this is
     // 1) an assignment to a field of a newly-declared local variable that can't be in scope
     // for the containing method, or 2) the rhs is a null literal (so there's nothing to reset).
     if (!(receiver instanceof LocalVariableNode && varInFacts(facts, (LocalVariableNode) receiver))
         && !(node.getExpression() instanceof NullLiteralNode)) {
-      checkEnclosingMethodIsCreatesObligation(node, enclosingMethod);
+      checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethod);
     }
 
     MustCallAnnotatedTypeFactory mcTypeFactory =
@@ -814,13 +814,13 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks that the method that encloses an assignment is marked with @CreatesObligation annotation
-   * whose target is the object whose field is being re-assigned.
+   * Checks that the method that encloses an assignment is marked with @CreatesMustCallFor
+   * annotation whose target is the object whose field is being re-assigned.
    *
    * @param node an assignment node whose lhs is a non-final, owning field
    * @param enclosingMethod the MethodTree in which the re-assignment takes place
    */
-  private void checkEnclosingMethodIsCreatesObligation(
+  private void checkEnclosingMethodIsCreatesMustCallFor(
       AssignmentNode node, MethodTree enclosingMethod) {
     Node lhs = node.getTarget();
     if (!(lhs instanceof FieldAccessNode)) {
@@ -837,12 +837,12 @@ class MustCallConsistencyAnalyzer {
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
     List<String> coValues =
-        ResourceLeakVisitor.getLiteralCreatesObligationValues(enclosingElt, mcAtf, typeFactory);
+        ResourceLeakVisitor.getLiteralCreatesMustCallForValues(enclosingElt, mcAtf, typeFactory);
 
     if (coValues.isEmpty()) {
       checker.reportError(
           enclosingMethod,
-          "missing.creates.obligation",
+          "missing.creates.mustcall.for",
           receiverString,
           ((FieldAccessNode) lhs).getFieldName());
       return;
@@ -871,7 +871,7 @@ class MustCallConsistencyAnalyzer {
     }
     checker.reportError(
         enclosingMethod,
-        "incompatible.creates.obligation",
+        "incompatible.creates.mustcall.for",
         receiverString,
         ((FieldAccessNode) lhs).getFieldName(),
         checked);
@@ -1139,10 +1139,10 @@ class MustCallConsistencyAnalyzer {
             Node last = curBlockNodes.get(curBlockNodes.size() - 1);
             CFStore cmStoreAfter = typeFactory.getStoreAfter(last);
             // If this is an exceptional block, check the MC store beforehand to avoid
-            // issuing an error about a call to a CreatesObligation method that might throw
+            // issuing an error about a call to a CreatesMustCallFor method that might throw
             // an exception. Otherwise, use the store after.
             CFStore mcStore;
-            if (exceptionType != null && isInvocationOfCreatesObligationMethod(last)) {
+            if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
               mcStore = mcAtf.getStoreBefore(last);
             } else {
               mcStore = mcAtf.getStoreAfter(last);
@@ -1228,17 +1228,18 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if node is a MethodInvocationNode of a method with a CreatesObligation annotation.
+   * Returns true if node is a MethodInvocationNode of a method with a CreatesMustCallFor
+   * annotation.
    *
    * @param node a node
-   * @return true if node is a MethodInvocationNode of a method with a CreatesObligation annotation
+   * @return true if node is a MethodInvocationNode of a method with a CreatesMustCallFor annotation
    */
-  private boolean isInvocationOfCreatesObligationMethod(Node node) {
+  private boolean isInvocationOfCreatesMustCallForMethod(Node node) {
     if (!(node instanceof MethodInvocationNode)) {
       return false;
     }
     MethodInvocationNode miNode = (MethodInvocationNode) node;
-    return typeFactory.hasCreatesObligation(miNode);
+    return typeFactory.hasCreatesMustCallFor(miNode);
   }
 
   /**

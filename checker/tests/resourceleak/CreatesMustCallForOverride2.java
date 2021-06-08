@@ -4,12 +4,12 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-class CreatesObligationOverride2 {
+class CreatesMustCallForOverride2 {
 
   @InheritableMustCall("a")
   static class Foo {
 
-    @CreatesObligation
+    @CreatesMustCallFor
     public void b() {}
 
     public void a() {}
@@ -18,7 +18,7 @@ class CreatesObligationOverride2 {
   static class Bar extends Foo {
 
     @Override
-    @CreatesObligation
+    @CreatesMustCallFor
     public void b() {}
   }
 
@@ -42,8 +42,8 @@ class CreatesObligationOverride2 {
 
     // this version isn't permitted, since it adds a new obligation
     @Override
-    @CreatesObligation("this.myFoo")
-    // :: error: creates.obligation.override.invalid
+    @CreatesMustCallFor("this.myFoo")
+    // :: error: creates.mustcall.for.override.invalid
     public void b() {}
   }
 
@@ -60,19 +60,19 @@ class CreatesObligationOverride2 {
 
     // this method isn't permitted, since it's also adding a new obligation
     @Override
-    @CreatesObligation("this.myFoo")
-    @CreatesObligation("this")
-    // :: error: creates.obligation.override.invalid
+    @CreatesMustCallFor("this.myFoo")
+    @CreatesMustCallFor("this")
+    // :: error: creates.mustcall.for.override.invalid
     public void b() {}
   }
 
   static class Thudless extends Thud {
-    // this method override is also NOT permitted, because the @CreatesObligation("this.myFoo")
+    // this method override is also NOT permitted, because the @CreatesMustCallFor("this.myFoo")
     // annotation
     // from Thud is inherited!
     @Override
-    @CreatesObligation("this")
-    // :: error: creates.obligation.override.invalid
+    @CreatesMustCallFor("this")
+    // :: error: creates.mustcall.for.override.invalid
     public void b() {}
   }
 
@@ -133,8 +133,8 @@ class CreatesObligationOverride2 {
   }
 
   static void test9() {
-    // No error is issued here, because Razz#b is *only* @CreatesObligation("this.myFoo"), not
-    // @CreatesObligation("this"). An error is issued at the declaration of Razz#b instead.
+    // No error is issued here, because Razz#b is *only* @CreatesMustCallFor("this.myFoo"), not
+    // @CreatesMustCallFor("this"). An error is issued at the declaration of Razz#b instead.
     Razz foo = new Razz();
     foo.a();
     foo.b();

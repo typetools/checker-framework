@@ -2,15 +2,15 @@
 
 import org.checkerframework.checker.mustcall.qual.*;
 
-class CreatesObligationInnerClass {
+class CreatesMustCallForInnerClass {
   static class Foo {
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void resetFoo() {}
 
     /** non-static inner class */
     class Bar {
-      @CreatesObligation
+      @CreatesMustCallFor
       void bar() {
         // :: error: reset.not.owning
         resetFoo();

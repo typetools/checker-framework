@@ -7,7 +7,7 @@ import org.checkerframework.checker.mustcall.qual.*;
 class COInSubtype {
   static class Foo {
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void resetFoo() {}
   }
 

@@ -5,7 +5,7 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.MustCallNoCreatesObligationChecker;
+import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -47,7 +47,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
         super.getImmediateSubcheckerClasses();
 
     if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_OBLIGATION)) {
-      checkers.add(MustCallNoCreatesObligationChecker.class);
+      checkers.add(MustCallNoCreatesMustCallForChecker.class);
     } else {
       checkers.add(MustCallChecker.class);
     }

@@ -2,7 +2,7 @@
 // places when ServerSockets are connected
 
 // This version of the test expects that the obligation creation support (i.e. the
-// @CreatesObligation annotation
+// @CreatesMustCallFor annotation
 // and its accompanying logic) has been disabled.
 
 import java.net.*;

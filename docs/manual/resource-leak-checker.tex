@@ -50,7 +50,7 @@ the Called Methods Checker:
 \item The \<-AnoResourceAliasing> option disables resource alias support,
   treating \<@MustCallAlias> identically to \<@PolyMustCall>.
   See Section~\ref{resource-leak-resource-alias}.
-\item The \<-AnoCreatesObligation> option disables obligation creation,
+\item The \<-AnoCreatesMustCallFor> option disables obligation creation,
   instead issuing errors whenever a new obligation might be created.
   See Section~\ref{resource-leak-creates-obligation}.
 \item The \<-AcountMustCall> option prints an estimate of the number of
@@ -106,9 +106,9 @@ fields or re-opening resources:
 
 \begin{description}
 
-\item[\refqualclasswithparams{checker/mustcall/qual}{CreatesObligation}{String value}]
+\item[\refqualclasswithparams{checker/mustcall/qual}{CreatesMustCallFor}{String value}]
   is a declaration annotation that indicates that the annotated method ``resets'' the must-call
-  obligations of some expression.  Multiple \<@CreatesObligation>
+  obligations of some expression.  Multiple \<@CreatesMustCallFor>
   annotations can be written on the same method.  For more details
   on obligation creation, see Section~\ref{resource-leak-creates-obligation}.
 
@@ -181,7 +181,7 @@ initialization (RAII)'' programming idiom.  Some
 and the enclosing class must have a \<@MustCall("d")> obligation to
 ensure the destructor is called.
 
-Non-final, non-static owning fields usually require one or more \<@CreatesObligation> annotations
+Non-final, non-static owning fields usually require one or more \<@CreatesMustCallFor> annotations
 when they might be re-assigned. See Section~\ref{resource-leak-non-final-fields} for
 more details on how to annotate a non-final, non-static owning field.
 
@@ -230,19 +230,19 @@ when re-assigning non-final, owning fields or allocating
 new system-level resources.
 
 A post-condition annotation,
-\<@CreatesObligation>,
+\<@CreatesMustCallFor>,
 indicates for which expression an obligation is created.
-If you write \<@CreatesObligation(>\emph{T}\<)> on a method \emph{M} that
+If you write \<@CreatesMustCallFor(>\emph{T}\<)> on a method \emph{M} that
 overrides a method \emph{N}, then \emph{N} must also be annotated as
-\<@CreatesObligation(>\emph{T}\<)>.  (\emph{N} may also have other
-\<@CreatesObligation> annotations that \emph{M} does not.)
-If you write \<@CreatesObligation> on a method that does not actually
+\<@CreatesMustCallFor(>\emph{T}\<)>.  (\emph{N} may also have other
+\<@CreatesMustCallFor> annotations that \emph{M} does not.)
+If you write \<@CreatesMustCallFor> on a method that does not actually
 create an obligation, the checker may issue false positive warnings at calls to
 that method, but it never causes
 missed warnings (i.e., the checker is sound).
 
 At a call site to a method annotated as
-\<@CreatesObligation(>\emph{expr}<)>, the Resource Leak Checker
+\<@CreatesMustCallFor(>\emph{expr}<)>, the Resource Leak Checker
 \begin{enumerate}
 \item
   treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied},
@@ -258,27 +258,27 @@ At a call site to a method annotated as
 \end{enumerate}
 
 Treating the obligation before the call as satisfied is sound: the
-checker creates a new obligation for calls to \<@CreatesObligation> methods,
+checker creates a new obligation for calls to \<@CreatesMustCallFor> methods,
 and the Must Call Checker (\chapterpageref{must-call-checker}) ensures the
 \<@MustCall> type for the target will have a \emph{superset} of any methods
-present before the call. Intuitively, calling an \<@CreatesObligation> method
+present before the call. Intuitively, calling an \<@CreatesMustCallFor> method
 "resets" the obligations of the target, so whether they were satisfied before
 the call or not is irrelevant.
 
-If an \<@CreatesObligation>
-method is invoked within a method that has an \<@CreatesObligation> annotation
+If an \<@CreatesMustCallFor>
+method is invoked within a method that has an \<@CreatesMustCallFor> annotation
 with the same target---imposing the obligation on its caller---then
 the newly-created obligation is treated as satisfied immediately (because it is instead imposed
 on the callee of the method being checked).
 
-Support for \<@CreatesObligation> can be disabled by passing the \<-AnoCreatesObligation> command-line
-argument to the checker. In this mode, \<@CreatesObligation> annotations on methods are ignored at call-sites,
+Support for \<@CreatesMustCallFor> can be disabled by passing the \<-AnoCreatesMustCallFor> command-line
+argument to the checker. In this mode, \<@CreatesMustCallFor> annotations on methods are ignored at call-sites,
 and re-assigning a non-final, owning field is always an error.
 
 
 \subsectionAndLabel{Re-assigning to non-final, owning fields}{resource-leak-non-final-fields}
 
-\<@CreatesObligation> allows the Resource Leak Checker to verify uses of non-final fields
+\<@CreatesMustCallFor> allows the Resource Leak Checker to verify uses of non-final fields
 that contain a resource, even if they are re-assigned. Consider
 the following example:
 
@@ -291,7 +291,7 @@ the following example:
 
     void close() { sock.close() };
 
-    @CreatesObligation("this")
+    @CreatesMustCallFor("this")
     void reconnect() {
       if (!sock.isClosed()) {
         sock.close();
@@ -311,7 +311,7 @@ re-assignments to non-final, owning fields like \<sock> in the example
 above are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
-  must be annotated with a \<@CreatesObligation> annotation
+  must be annotated with a \<@CreatesMustCallFor> annotation
   that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$,
   its inferred \<@MustCall> obligation must be contained in its \<@CalledMethods>
@@ -321,9 +321,9 @@ above are sound:
 The first rule ensures that \<close()> is called after the last call
 to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because the Called Methods Checker
-treats calls to an \<@CreatesObligation> method like \<reconnect()> as if the call might
+treats calls to an \<@CreatesMustCallFor> method like \<reconnect()> as if the call might
 cause arbitrary side-effects, after such a call the only method known to have been
-definitely called is the \<@CreatesObligation> method: previous calls
+definitely called is the \<@CreatesMustCallFor> method: previous calls
 (including e.g. to \<close()>) are discarded.
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?

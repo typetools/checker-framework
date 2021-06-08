@@ -10,10 +10,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
-import org.checkerframework.checker.mustcall.CreatesObligationElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.qual.CreatesObligation;
+import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The visitor for the Resource Leak Checker. Responsible for some {@link
- * org.checkerframework.checker.mustcall.qual.CreatesObligation} checking.
+ * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} checking.
  */
 public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
@@ -55,7 +55,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    List<String> coValues = getLiteralCreatesObligationValues(elt, mcAtf, rlTypeFactory);
+    List<String> coValues = getLiteralCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
     if (!coValues.isEmpty()) {
       // Check the validity of the annotation, by ensuring that if this method is overriding another
       // method
@@ -64,7 +64,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       // be overwritten by a CO method, but the CO effect wouldn't occur.
       for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
         List<String> overriddenCoValues =
-            getLiteralCreatesObligationValues(overridden, mcAtf, rlTypeFactory);
+            getLiteralCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
         if (!overriddenCoValues.containsAll(coValues)) {
           String foundCoValueString = String.join(", ", coValues);
           String neededCoValueString = String.join(", ", overriddenCoValues);
@@ -72,7 +72,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           String overriddenClassname = ElementUtils.getEnclosingClassName(overridden);
           checker.reportError(
               node,
-              "creates.obligation.override.invalid",
+              "creates.mustcall.for.override.invalid",
               actualClassname + "#" + elt,
               overriddenClassname + "#" + overridden,
               foundCoValueString,
@@ -84,57 +84,57 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Returns the literal string present in the given @CreatesObligation annotation, or "this" if
+   * Returns the literal string present in the given @CreatesMustCallFor annotation, or "this" if
    * there is none.
    *
-   * @param createsObligation an @CreatesObligation annotation
+   * @param createsMustCallFor an @CreatesMustCallFor annotation
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
    * @return the string value
    */
-  private static String getLiteralCreatesObligationValue(
-      AnnotationMirror createsObligation, MustCallAnnotatedTypeFactory mcAtf) {
+  private static String getLiteralCreatesMustCallForValue(
+      AnnotationMirror createsMustCallFor, MustCallAnnotatedTypeFactory mcAtf) {
     return AnnotationUtils.getElementValue(
-        createsObligation, mcAtf.getCreatesObligationValueElement(), String.class, "this");
+        createsMustCallFor, mcAtf.getCreatesMustCallForValueElement(), String.class, "this");
   }
 
   /**
-   * Returns all the literal strings present in the @CreatesObligation annotations on the given
-   * element. This version correctly handles multiple CreatesObligation annotations on the same
+   * Returns all the literal strings present in the @CreatesMustCallFor annotations on the given
+   * element. This version correctly handles multiple CreatesMustCallFor annotations on the same
    * element. This differs from {@link
-   * org.checkerframework.checker.mustcall.CreatesObligationElementSupplier#getCreatesObligationExpressions(MethodInvocationNode,
-   * GenericAnnotatedTypeFactory, CreatesObligationElementSupplier)} in that this version does not
+   * org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier#getCreatesMustCallForExpressions(MethodInvocationNode,
+   * GenericAnnotatedTypeFactory, CreatesMustCallForElementSupplier)} in that this version does not
    * take into account the calling context when parsing the strings; instead, the literal values
    * written by the programmer are returned.
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
    * @param atypeFactory a ResourceLeakAnnotatedTypeFactory
-   * @return the literal strings present in the @CreatesObligation annotation(s) of that element,
+   * @return the literal strings present in the @CreatesMustCallFor annotation(s) of that element,
    *     substituting the default "this" for empty annotations. This method returns the empty list
-   *     iff there are no @CreatesObligation annotations on elt. The returned list is always
+   *     iff there are no @CreatesMustCallFor annotations on elt. The returned list is always
    *     modifiable if it is non-empty.
    */
-  /*package-private*/ static List<String> getLiteralCreatesObligationValues(
+  /*package-private*/ static List<String> getLiteralCreatesMustCallForValues(
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
       ResourceLeakAnnotatedTypeFactory atypeFactory) {
-    AnnotationMirror createsObligationList =
-        atypeFactory.getDeclAnnotation(elt, CreatesObligation.List.class);
+    AnnotationMirror createsMustCallForList =
+        atypeFactory.getDeclAnnotation(elt, CreatesMustCallFor.List.class);
     List<String> result = new ArrayList<>(4);
-    if (createsObligationList != null) {
+    if (createsMustCallForList != null) {
       List<AnnotationMirror> createObligations =
           AnnotationUtils.getElementValueArray(
-              createsObligationList,
-              mcAtf.getCreatesObligationListValueElement(),
+              createsMustCallForList,
+              mcAtf.getCreatesMustCallForListValueElement(),
               AnnotationMirror.class);
       for (AnnotationMirror co : createObligations) {
-        result.add(getLiteralCreatesObligationValue(co, mcAtf));
+        result.add(getLiteralCreatesMustCallForValue(co, mcAtf));
       }
     }
-    AnnotationMirror createsObligation =
-        atypeFactory.getDeclAnnotation(elt, CreatesObligation.class);
-    if (createsObligation != null) {
-      result.add(getLiteralCreatesObligationValue(createsObligation, mcAtf));
+    AnnotationMirror createsMustCallFor =
+        atypeFactory.getDeclAnnotation(elt, CreatesMustCallFor.class);
+    if (createsMustCallFor != null) {
+      result.add(getLiteralCreatesMustCallForValue(createsMustCallFor, mcAtf));
     }
     return result;
   }

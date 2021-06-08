@@ -19,11 +19,11 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
-import org.checkerframework.checker.mustcall.CreatesObligationElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
-import org.checkerframework.checker.mustcall.MustCallNoCreatesObligationChecker;
-import org.checkerframework.checker.mustcall.qual.CreatesObligation;
+import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -48,7 +48,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * #postAnalyze(ControlFlowGraph)} method checks that must-call obligations are fulfilled.
  */
 public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
-    implements CreatesObligationElementSupplier {
+    implements CreatesMustCallForElementSupplier {
 
   /** The MustCall.value field/element */
   final ExecutableElement mustCallValueElement =
@@ -62,13 +62,13 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   final ExecutableElement ensuresCalledMethodsMethodsElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "methods", 0, processingEnv);
 
-  /** The CreatesObligation.List.value field/element. */
-  private final ExecutableElement createsObligationListValueElement =
-      TreeUtils.getMethod(CreatesObligation.List.class, "value", 0, processingEnv);
+  /** The CreatesMustCallFor.List.value field/element. */
+  private final ExecutableElement createsMustCallForListValueElement =
+      TreeUtils.getMethod(CreatesMustCallFor.List.class, "value", 0, processingEnv);
 
-  /** The CreatesObligation.value field/element. */
-  private final ExecutableElement createsObligationValueElement =
-      TreeUtils.getMethod(CreatesObligation.class, "value", 0, processingEnv);
+  /** The CreatesMustCallFor.value field/element. */
+  private final ExecutableElement createsMustCallForValueElement =
+      TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
   /**
    * Bidirectional map to preserve temporary variables created for nodes with non-empty @MustCall
@@ -126,7 +126,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-    // Need to get the LUB of the MC values, because if a CreatesObligation method was
+    // Need to get the LUB of the MC values, because if a CreatesMustCallFor method was
     // called on just one of the locals then they all need to be treated as if
     // they need to call the relevant methods.
     AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
@@ -305,22 +305,22 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   /**
    * Returns true if the declaration of the method being invoked has one or more {@link
-   * CreatesObligation} annotations.
+   * CreatesMustCallFor} annotations.
    *
    * @param node a method invocation node
    * @return true iff there is one or more create obligation annotations on the declaration of the
    *     invoked method
    */
-  public boolean hasCreatesObligation(MethodInvocationNode node) {
+  public boolean hasCreatesMustCallFor(MethodInvocationNode node) {
     ExecutableElement decl = TreeUtils.elementFromUse(node.getTree());
-    return getDeclAnnotation(decl, CreatesObligation.class) != null
-        || getDeclAnnotation(decl, CreatesObligation.List.class) != null;
+    return getDeclAnnotation(decl, CreatesMustCallFor.class) != null
+        || getDeclAnnotation(decl, CreatesMustCallFor.List.class) != null;
   }
 
   /**
-   * Does this type factory support {@link CreatesObligation}?
+   * Does this type factory support {@link CreatesMustCallFor}?
    *
-   * @return true iff the -AnoCreatesObligation was not supplied to the checker
+   * @return true iff the -AnoCreatesMustCallFor was not supplied to the checker
    */
   public boolean canCreateObligations() {
     return !checker.hasOption(MustCallChecker.NO_CREATES_OBLIGATION);
@@ -332,29 +332,29 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
     if (checkerClass == MustCallChecker.class) {
       if (!canCreateObligations()) {
-        return super.getTypeFactoryOfSubchecker(MustCallNoCreatesObligationChecker.class);
+        return super.getTypeFactoryOfSubchecker(MustCallNoCreatesMustCallForChecker.class);
       }
     }
     return super.getTypeFactoryOfSubchecker(checkerClass);
   }
 
   /**
-   * Returns the CreatesObligation.value field.
+   * Returns the CreatesMustCallFor.value field.
    *
-   * @return the CreatesObligation.value field
+   * @return the CreatesMustCallFor.value field
    */
   @Override
-  public ExecutableElement getCreatesObligationValueElement() {
-    return createsObligationValueElement;
+  public ExecutableElement getCreatesMustCallForValueElement() {
+    return createsMustCallForValueElement;
   }
 
   /**
-   * Returns the CreatesObligation.List.value field.
+   * Returns the CreatesMustCallFor.List.value field.
    *
-   * @return the CreatesObligation.List.value field
+   * @return the CreatesMustCallFor.List.value field
    */
   @Override
-  public ExecutableElement getCreatesObligationListValueElement() {
-    return createsObligationListValueElement;
+  public ExecutableElement getCreatesMustCallForListValueElement() {
+    return createsMustCallForListValueElement;
   }
 }

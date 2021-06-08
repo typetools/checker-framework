@@ -16,17 +16,17 @@ import org.checkerframework.framework.qual.JavaExpression;
  * argument/element. More precisely, the method resets the target's must-call type to the least
  * upper bound of its current must-call type and its declared must-call type.
  *
- * <p>When calling a method annotated as {@code @CreatesObligation("}<em>target</em>{@code ")}, the
+ * <p>When calling a method annotated as {@code @CreatesMustCallFor("}<em>target</em>{@code ")}, the
  * expression {@code target} must not have type {@code @}{@link CalledMethods}{@code ({})}. That is,
  * {@code target}'s CalledMethods type must be non-empty.
  *
- * <p>{@code @CreatesObligation("this")} must be written on any method that assigns a non-final,
+ * <p>{@code @CreatesMustCallFor("this")} must be written on any method that assigns a non-final,
  * owning field whose declared type has a must-call obligation.
  *
  * <p>This annotation is trusted, not checked. (Because this annotation can only add obligations,
  * the analysis remains sound.)
  *
- * <p>For example, consider the following code, which uses a {@code @CreatesObligation} annotation
+ * <p>For example, consider the following code, which uses a {@code @CreatesMustCallFor} annotation
  * to indicate that the {@code reset()} method re-assigns the {@code socket} field:
  *
  * <pre>
@@ -42,7 +42,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  *       socket.close();
  *     }
  *
- *    &#64;CreatesObligation("this")
+ *    &#64;CreatesMustCallFor("this")
  *    public void reset() {
  *      if (socket.isClosed()) {
  *        socket = new Socket(...);
@@ -54,13 +54,13 @@ import org.checkerframework.framework.qual.JavaExpression;
  * A client of {@code SocketContainer} is permitted to call {@code reset()} arbitrarily many times.
  * Each time it does so, a new {@code Socket} might be created. A {@code SocketContainer}'s
  * must-call obligation of "stop" is fulfilled only if {@code stop()} is called after the last call
- * to {@code reset()}. The {@code @CreatesObligation} annotation on {@code reset()}'s declaration
+ * to {@code reset()}. The {@code @CreatesMustCallFor} annotation on {@code reset()}'s declaration
  * enforces this requirement: at any call to {@code reset()}, all called-methods information about
  * the receiver is removed from the store of the Must Call Checker and the store of the Called
  * Methods Checker, so the client has to "start over" as if a fresh {@code SocketContainer} object
  * had been created.
  *
- * <p>When the {@code -AnoCreatesObligation} command-line argument is passed to the checker, this
+ * <p>When the {@code -AnoCreatesMustCallFor} command-line argument is passed to the checker, this
  * annotation is ignored and all fields are treated as non-owning.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
@@ -68,8 +68,8 @@ import org.checkerframework.framework.qual.JavaExpression;
 @Target({ElementType.METHOD})
 @InheritedAnnotation
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(CreatesObligation.List.class)
-public @interface CreatesObligation {
+@Repeatable(CreatesMustCallFor.List.class)
+public @interface CreatesMustCallFor {
 
   /**
    * The target of this annotation is stored in this field. The target must be an expression which
@@ -82,10 +82,10 @@ public @interface CreatesObligation {
   String value() default "this";
 
   /**
-   * A wrapper annotation that makes the {@link CreatesObligation} annotation repeatable.
+   * A wrapper annotation that makes the {@link CreatesMustCallFor} annotation repeatable.
    *
    * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-   * writes more than one {@link CreatesObligation} annotation at the same location.
+   * writes more than one {@link CreatesMustCallFor} annotation at the same location.
    *
    * @checker_framework.manual #must-call-checker Must Call Checker
    */
@@ -99,6 +99,6 @@ public @interface CreatesObligation {
      *
      * @return the repeatable annotations
      */
-    CreatesObligation[] value();
+    CreatesMustCallFor[] value();
   }
 }
