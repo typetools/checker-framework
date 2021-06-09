@@ -13,13 +13,13 @@ import org.checkerframework.framework.qual.JavaExpression;
 /**
  * Indicates that the method resets the target's must-call type to its declared type. This
  * effectively undoes flow-sensitive type refinement. The target is the {@code value}
- * argument/element. More precisely, a call to a method annotated by this annotation
- * changes the target's must-call type to the least
- * upper bound of its current must-call type and its declared must-call type.
+ * argument/element. More precisely, a call to a method annotated by this annotation changes the
+ * target's must-call type to the least upper bound of its current must-call type and its declared
+ * must-call type.
  *
  * <p>When calling a method annotated as {@code @CreatesMustCallFor("}<em>target</em>{@code ")}, the
- * expression {@code target}'s static type in the Called Methods type system must be
- * {@code @}{@link CalledMethods}{@code ({})}. That is, {@code target}'s CalledMethods type must be empty.
+ * expression {@code target}'s static type in the Called Methods type system must be {@code @}{@link
+ * CalledMethods}{@code ({})}. That is, {@code target}'s CalledMethods type must be empty.
  *
  * <p>{@code @CreatesMustCallFor("this")} must be written on any method that assigns a non-final,
  * owning field whose declared type has a must-call obligation.

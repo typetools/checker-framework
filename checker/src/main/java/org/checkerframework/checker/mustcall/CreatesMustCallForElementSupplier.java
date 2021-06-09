@@ -69,7 +69,8 @@ public interface CreatesMustCallForElementSupplier {
               supplier.getCreatesMustCallForListValueElement(),
               AnnotationMirror.class);
       for (AnnotationMirror createsMustCallFor : createMustCallForAnnos) {
-        JavaExpression expr = getCreatesMustCallForExpression(createsMustCallFor, n, atypeFactory, supplier);
+        JavaExpression expr =
+            getCreatesMustCallForExpression(createsMustCallFor, n, atypeFactory, supplier);
         if (expr != null && !results.contains(expr)) {
           results.add(expr);
         }
@@ -90,8 +91,8 @@ public interface CreatesMustCallForElementSupplier {
   /**
    * Parses a single CreatesMustCallFor annotation. Clients should use {@link
    * #getCreatesMustCallForExpressions(MethodInvocationNode, GenericAnnotatedTypeFactory,
-   * CreatesMustCallForElementSupplier)}, which handles the possibility of multiple such annotations,
-   * instead.
+   * CreatesMustCallForElementSupplier)}, which handles the possibility of multiple such
+   * annotations, instead.
    *
    * @param createsMustCallFor a @CreatesMustCallFor annotation
    * @param n the invocation of a reset method
