@@ -50,7 +50,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
     for (CaseTree caseExpr : node.getCases()) {
-      List<? extends ExpressionTree> realCaseExprs = caseExpr.getExpressions();
+      List<? extends ExpressionTree> realCaseExprs = TreeUtils.caseTreeGetExpressions(caseExpr);
       // Check all the case options against the switch expression type:
       for (ExpressionTree realCaseExpr : realCaseExprs) {
         AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);

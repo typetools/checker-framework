@@ -88,7 +88,6 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -392,7 +391,8 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     processCase(javacTree, node);
     // Java 12 introduced multiple label cases:
     List<Expression> labels = node.getLabels();
-    List<? extends ExpressionTree> treeExpressions = javacTree.getExpressions();
+    List<? extends ExpressionTree> treeExpressions =
+        org.checkerframework.javacutil.TreeUtils.caseTreeGetExpressions(javacTree);
     assert node.getLabels().size() == treeExpressions.size();
     for (int i = 0; i < treeExpressions.size(); i++) {
       treeExpressions.get(i).accept(this, labels.get(i));
