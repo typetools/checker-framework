@@ -284,6 +284,18 @@ Ernst's advice about creating GitHub pull requests</a>.
 </p>
 
 <p>
+  You may need to make changes to multiple repositories.  For example, you
+  might change
+  both <a href="https://github.com/typetools/checker-framework"><code>checker-framework</code></a>
+  and <a href="https://github.com/typetools/annotation-tools"><code>annotation-tools</code></a>
+  or <a href="https://github.com/typetools/jdk"><code>jdk</code></a>.  Make
+  a branch in your fork of each repository, using the same branch name.
+  Then, pull requests will use the appropriate branch, thanks to
+  the <a href="https://github.com/plume-lib/plume-scripts/blob/master/git-clone-related"><code>git-clone-related</code></a>
+  script.
+</p>
+
+<p>
 Azure Pipelines has a bug:  whenever two CI jobs would run code with the same
 commit hash, it re-uses a previous execution result.  This is a bug because the
 CI job's behavior may depend on the branch name and other factors that are
