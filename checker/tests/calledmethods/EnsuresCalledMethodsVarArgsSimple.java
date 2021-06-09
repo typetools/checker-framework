@@ -18,6 +18,7 @@ class EnsuresCalledMethodsVarArgsSimple {
     }
   }
 
+  // :: error: ensuresvarargs.unverified
   @EnsuresCalledMethodsVarArgs("close")
   // :: error: ensuresvarargs.invalid
   void closeAllNotVA(List<Socket> sockets) {
