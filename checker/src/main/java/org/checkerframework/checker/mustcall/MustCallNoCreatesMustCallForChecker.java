@@ -5,7 +5,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 
 /**
  * This copy of the Must Call Checker is identical, except that it does not load the stub files that
- * treat unconnected sockets as {@code @MustCall({})}. See SocketCreatesObligation.astub.
+ * treat unconnected sockets as {@code @MustCall({})}. See SocketCreatesMustCallFor.astub.
  *
  * <p>The only difference is the contents of the @StubFiles annotation.
  */
@@ -14,4 +14,4 @@ import org.checkerframework.framework.source.SupportedOptions;
   "Reflection.astub",
 })
 @SupportedOptions({MustCallChecker.NO_CREATES_OBLIGATION})
-public class MustCallNoCreatesObligationChecker extends MustCallChecker {}
+public class MustCallNoCreatesMustCallForChecker extends MustCallChecker {}
