@@ -2300,10 +2300,12 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   // TODO: Cache results to avoid recomputation.
   public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
-    AnnotatedTypeMirror defaultValue = AnnotatedTypeMirror.createType(typeMirror, this, false);
-    addComputedTypeAnnotations(
-        TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
-    return defaultValue;
+    Tree defaultValueTree = TreeUtils.getDefaultValueTree(typeMirror, processingEnv);
+    TypeMirror defaultValueTM = TreeUtils.typeOf(defaultValueTree);
+    AnnotatedTypeMirror defaultValueATM =
+        AnnotatedTypeMirror.createType(defaultValueTM, this, false);
+    addComputedTypeAnnotations(defaultValueTree, defaultValueATM, false);
+    return defaultValueATM;
   }
 
   /**

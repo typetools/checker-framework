@@ -7,7 +7,7 @@ dependencies {
     api project(':checker-qual')
 
     // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
-    api 'org.plumelib:plume-util:1.5.3'
+    api 'org.plumelib:plume-util:1.5.5'
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
