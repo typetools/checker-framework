@@ -73,23 +73,46 @@ public class Resolver {
       FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
       FIND_VAR.setAccessible(true);
 
-      FIND_IDENT =
-          Resolve.class.getDeclaredMethod(
-              "findIdentInternal", Env.class, Name.class, KindSelector.class);
+      Method findIdentMethod;
+      try {
+        findIdentMethod =
+            Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, KindSelector.class);
+      } catch (NoSuchMethodException e) {
+        findIdentMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInternal", Env.class, Name.class, KindSelector.class);
+      }
+      FIND_IDENT = findIdentMethod;
       FIND_IDENT.setAccessible(true);
 
-      FIND_IDENT_IN_TYPE =
-          Resolve.class.getDeclaredMethod(
-              "findIdentInTypeInternal", Env.class, Type.class, Name.class, KindSelector.class);
+      Method findIdentInTypeMethod;
+      try {
+        findIdentInTypeMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInType", Env.class, Type.class, Name.class, KindSelector.class);
+      } catch (NoSuchMethodException e) {
+        findIdentInTypeMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInTypeInternal", Env.class, Type.class, Name.class, KindSelector.class);
+      }
+      FIND_IDENT_IN_TYPE = findIdentInTypeMethod;
       FIND_IDENT_IN_TYPE.setAccessible(true);
 
-      FIND_IDENT_IN_PACKAGE =
-          Resolve.class.getDeclaredMethod(
-              "findIdentInPackageInternal",
-              Env.class,
-              TypeSymbol.class,
-              Name.class,
-              KindSelector.class);
+      Method findIdentInPackageMethod;
+      try {
+        findIdentInPackageMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInPackage", Env.class, TypeSymbol.class, Name.class, KindSelector.class);
+      } catch (NoSuchMethodException e) {
+        findIdentInPackageMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInPackageInternal",
+                Env.class,
+                TypeSymbol.class,
+                Name.class,
+                KindSelector.class);
+      }
+      FIND_IDENT_IN_PACKAGE = findIdentInPackageMethod;
       FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
       FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
