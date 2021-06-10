@@ -12,7 +12,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 @StubFiles({
   "JavaEE.astub",
   "Reflection.astub",
-  "SocketCreatesObligation.astub",
+  "SocketCreatesMustCallFor.astub",
 })
 @SupportedOptions({
   MustCallChecker.NO_CREATES_OBLIGATION,
@@ -21,8 +21,8 @@ import org.checkerframework.framework.source.SupportedOptions;
 })
 public class MustCallChecker extends BaseTypeChecker {
 
-  /** Disables @CreatesObligation support. */
-  public static final String NO_CREATES_OBLIGATION = "noCreatesObligation";
+  /** Disables @CreatesMustCallFor support. */
+  public static final String NO_CREATES_OBLIGATION = "noCreatesMustCallFor";
 
   /** Disables @Owning/@NotOwning support. */
   public static final String NO_LIGHTWEIGHT_OWNERSHIP = "noLightweightOwnership";
