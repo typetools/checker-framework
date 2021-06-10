@@ -63,12 +63,12 @@ public interface CreatesMustCallForElementSupplier {
     List<JavaExpression> results = new ArrayList<>(1);
     if (createsMustCallForList != null) {
       // Handle a set of CreatesMustCallFor annotations.
-      List<AnnotationMirror> createMustCallForAnnos =
+      List<AnnotationMirror> createsMustCallForAnnos =
           AnnotationUtils.getElementValueArray(
               createsMustCallForList,
               supplier.getCreatesMustCallForListValueElement(),
               AnnotationMirror.class);
-      for (AnnotationMirror createsMustCallFor : createMustCallForAnnos) {
+      for (AnnotationMirror createsMustCallFor : createsMustCallForAnnos) {
         JavaExpression expr =
             getCreatesMustCallForExpression(createsMustCallFor, n, atypeFactory, supplier);
         if (expr != null && !results.contains(expr)) {
