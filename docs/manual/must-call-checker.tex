@@ -10,7 +10,7 @@ enforce any rules other than subtyping. Instead, the types that the Must Call Ch
 computes can be used by later checkers that require an over-approximation
 of the methods that each object in the program should call. The primary client
 of the Must Call Checker is the Resource Leak Checker (Section~\ref{resource-leak-checker}),
-which enforces that every method in a must-call obligation for each expression is actually called
+which enforces that every method in a must-call obligation for an expression is called
 before that expression is de-allocated.
 
 For example, consider a \<java.io.OutputStream>.  This \<OutputStream>

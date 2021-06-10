@@ -3,10 +3,9 @@ Version 3.14.0 (June 1, 2021)
 
 **User-visible changes:**
 
-The Resource Leak Checker ensures that all elements of a set of required
-methods are called on an object before it is de-allocated. By default, it
-enforces that `close()` is called on any expressions whose type might be
-`java.io.Closeable`.
+The Resource Leak Checker ensures that certain methods are called on an
+object before it is de-allocated. By default, it enforces that `close()` is
+called on any expression whose type might be `java.io.Closeable`.
 
 The Units Checker supports new qualifiers (thanks to Rene Kraneis):
  * `@Volume`, `@m3`, `@mm3`, `@km3`

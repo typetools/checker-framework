@@ -249,10 +249,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Get the element corresponding to the {@link MustCall} value argument, for use with {@link
+   * Returns the {@link MustCall#value} element. For use with {@link
    * AnnotationUtils#getElementValueArray}.
    *
-   * @return the element
+   * @return the {@link MustCall#value} element
    */
   public ExecutableElement getMustCallValueElement() {
     return mustCallValueElement;
