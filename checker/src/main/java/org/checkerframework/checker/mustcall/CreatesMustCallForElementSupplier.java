@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * CreatesMustCallForElementSupplier)} is called. This interface is needed so any type factory with
  * these elements can be used to call that method, not just the MustCallAnnotatedTypeFactory (in
  * particular, the consistency checker needs to be able to call that method with both the
- * ResourceLeak type factory and the MustCall type factory).
+ * CalledMethods type factory and the MustCall type factory).
  */
 public interface CreatesMustCallForElementSupplier {
 
@@ -63,13 +63,14 @@ public interface CreatesMustCallForElementSupplier {
     List<JavaExpression> results = new ArrayList<>(1);
     if (createsMustCallForList != null) {
       // Handle a set of CreatesMustCallFor annotations.
-      List<AnnotationMirror> createsMustCallFors =
+      List<AnnotationMirror> createsMustCallForAnnos =
           AnnotationUtils.getElementValueArray(
               createsMustCallForList,
               supplier.getCreatesMustCallForListValueElement(),
               AnnotationMirror.class);
-      for (AnnotationMirror co : createsMustCallFors) {
-        JavaExpression expr = getCreatesMustCallForExpression(co, n, atypeFactory, supplier);
+      for (AnnotationMirror createsMustCallFor : createsMustCallForAnnos) {
+        JavaExpression expr =
+            getCreatesMustCallForExpression(createsMustCallFor, n, atypeFactory, supplier);
         if (expr != null && !results.contains(expr)) {
           results.add(expr);
         }

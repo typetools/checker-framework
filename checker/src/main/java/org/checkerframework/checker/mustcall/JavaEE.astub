@@ -1,6 +1,6 @@
-// DO NOT INCLUDE ANNOTATIONS THAT RELY ON OBLIGATION CREATION IN THIS FILE.
+// DO NOT INCLUDE ANNOTATIONS THAT RELY ON MUSTCALL CREATION IN THIS FILE.
 // This file is loaded regardless of the -AnoCreatesMustCallFor option. All
-// assumptions that rely on the presence of obligation creation (such as @MustCall({})
+// assumptions that rely on the presence of mustcall creation (such as @MustCall({})
 // on unconnected sockets) MUST go in SocketCreatesMustCallFor.astub.
 
 import org.checkerframework.checker.mustcall.qual.*;

@@ -28,10 +28,12 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
     Kind kind = node.getKind();
 
     if ((kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT)) {
-      if (!atypeFactory.getTypeHierarchy().isSubtype(exprType, varType)) {
+      if (!atypeFactory
+          .getQualifierHierarchy()
+          .isSubtype(exprType.getEffectiveAnnotations(), varType.getEffectiveAnnotations())) {
         checker.reportError(node, "compound.assignment", varType, exprType);
       }
-    } else if (exprType.getAnnotation(UnknownUnits.class) == null) {
+    } else if (!exprType.hasAnnotation(UnknownUnits.class)) {
       // Only allow mul/div with unqualified units
       checker.reportError(node, "compound.assignment", varType, exprType);
     }
