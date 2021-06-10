@@ -270,7 +270,8 @@ Support for \<@CreatesMustCallFor> can be disabled by passing the \<-AnoCreatesM
 argument to the checker. In this mode, \<@CreatesMustCallFor> annotations on methods are ignored at call-sites,
 and re-assigning a non-final, owning field is always an error.
 
-Sections~\cref{resource-leak-createsmustcallfor-callsite,resource-leak-createsmustcallfor-decallsite}
+Sections~\ref{resource-leak-createsmustcallfor-callsite}
+and~\ref{resource-leak-createsmustcallfor-decallsite}
 explain how the Resource Leak Checker verifies uses and declarations of
 methods annotated with \<@CreatesMustCallFor>.
 
