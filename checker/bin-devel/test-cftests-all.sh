@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# This script test-cftests-all.sh = tests-cftests-junit.sh + tests-cftests-nonjunit.sh + tests-cftests-inference.sh .
+# This script test-cftests-all.sh = tests-cftests-junit.sh + tests-cftests-nonjunit.sh + tests-cftests-inference.sh + tests-typecheck.sh .
+# Per comments in ../../build.gradle, allTests = test + nonJunitTests + inferenceTests + typecheck .
 
 set -e
 set -o verbose

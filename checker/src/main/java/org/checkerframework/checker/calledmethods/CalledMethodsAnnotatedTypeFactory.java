@@ -18,6 +18,7 @@ import org.checkerframework.checker.calledmethods.builder.LombokSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -56,6 +57,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    */
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
+
+  /** The {@link CalledMethods#value} element/argument. */
+  /* package-private */ final ExecutableElement calledMethodsValueElement =
+      TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
+
+  /** The {@link EnsuresCalledMethodsVarArgs#value} element/argument. */
+  /* package-private */ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
 
   /**
    * Create a new CalledMethodsAnnotatedTypeFactory.

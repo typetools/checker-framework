@@ -1,5 +1,5 @@
 # Create a Docker image that is ready to run the main Checker Framework tests,
-# using JDK 8.
+# using JDK 16.
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 FROM ubuntu
@@ -10,11 +10,18 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
+# Instructions for installing Java 16 on Ubuntu:
+# https://www.linuxuprising.com/2021/03/how-to-install-oracle-java-16-on-debian.html
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
+&& apt-get -qqy install software-properties-common \
+&& add-apt-repository ppa:linuxuprising/java
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& echo oracle-java16-installer shared/accepted-oracle-license-v1-2 select true | /usr/bin/debconf-set-selections \
 && apt-get -qqy install \
-  openjdk-8-jdk \
-&& update-java-alternatives --set java-1.8.0-openjdk-amd64
+  oracle-java16-installer --install-recommends
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
