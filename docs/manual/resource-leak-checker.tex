@@ -217,7 +217,7 @@ argument to the checker. In this mode, resource-alias sets are not tracked by th
 and \<@MustCallAlias> is treated identically to \<@PolyMustCall>.
 
 
-\sectionAndLabel{Creating obligations}{resource-leak-createsmustcallfor}
+\sectionAndLabel{Creating obligations (how to re-assign a non-final owning field)}{resource-leak-createsmustcallfor}
 
 Consider a class that has must-call obligations; that is, the class
 declaration is annotated with \<@MustCall(...)>.
@@ -271,12 +271,12 @@ argument to the checker. In this mode, \<@CreatesMustCallFor> annotations on met
 and re-assigning a non-final, owning field is always an error.
 
 Sections~\ref{resource-leak-createsmustcallfor-callsite}
-and~\ref{resource-leak-createsmustcallfor-decallsite}
+and~\ref{resource-leak-createsmustcallfor-declaration}
 explain how the Resource Leak Checker verifies uses and declarations of
 methods annotated with \<@CreatesMustCallFor>.
 
 
-\subsectionAndLabel{Requirements at a call site}{resource-leak-createsmustcallfor-callsite}
+\subsectionAndLabel{Requirements at a call site of a \<@CreatesMustCallFor> method}{resource-leak-createsmustcallfor-callsite}
 
 At a call site to a method annotated as
 \<@CreatesMustCallFor(>\emph{expr}\<)>, the Resource Leak Checker:
@@ -310,7 +310,7 @@ the newly-created obligation is treated as satisfied immediately (because it is 
 on the callee of the method being checked).
 
 
-\subsectionAndLabel{Requirements at a declaration (how to re-assign non-final owning fields}{resource-leak-createsmustcallfor-declaration}
+\subsectionAndLabel{Requirements at a declaration of a \<@CreatesMustCallFor> method}{resource-leak-createsmustcallfor-declaration}
 
 The Resource Leak Checker enforces two rules to ensure that
 re-assignments to non-final, owning fields like \<sock> in the example
