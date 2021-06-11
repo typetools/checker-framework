@@ -84,10 +84,10 @@ to call some other method.
 
 As explained in Section~\ref{upper-bound-for-use}, a type
 annotation on a type declaration means that every use of the type has that
-annotation by default. \<@MustCall> annotations on a class declaration should
-usually also be shared by subclasses. To do so, a programmer can either write
+annotation by default.  If a class \<A>'s declaration has a \<@MustCall>
+annotation, then \<A>'s subclasses usually should too.  To do so, a programmer can either write
 a \<@MustCall> annotation on every subclass, or can write \<@InheritableMustCall>
-on only the class, which will cause the checker to treat every subclass as if
+on only \<A>, which will cause the checker to treat every subclass as if
 it has an identical \<@MustCall> annotation.  The latter is the preferred style.
 
 For example, given the following class annotation:
@@ -153,7 +153,7 @@ with an \<extends> clause and implicit upper bounds without an \<extends>
 clause.
 
 For example, consider the following example (from
-\href{https://github.com/plume-lib/plume-util}{plume-lib/plume-util}) of an
+\href{https://github.com/plume-lib/plume-util}{plume-util}) of an
 interface with explicit upper bounds and a client with implicit upper
 bounds:
 \begin{Verbatim}
@@ -193,9 +193,9 @@ warning without writing any \<@MustCall> annotations.
 You can either:
 \begin{itemize}
 \item
-  adding an explicit bound to \<MultiRandSelector>, changing its declaration to
+  add an explicit bound to \<MultiRandSelector>, changing its declaration to
   \code{class MultiRandSelector<T extends Object>}, or
-\item removing the explicit bound from \<Partition>, changing its declaration to
+\item remove the explicit bound from \<Partition>, changing its declaration to
   \code{interface Partition<ELEMENT, CLASS>}.
 \end{itemize}
 
