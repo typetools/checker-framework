@@ -388,10 +388,11 @@ option, or use auto-discovery as described in
 Section~\ref{checker-auto-discovery}.
 (If your project already uses auto-discovery for some annotation processor,
 such as AutoValue, then you should use auto-discovery.)
-A concrete example of using \code{-processor} to run the Nullness Checker is:
+Two concretes example of using \code{-processor} to run the Nullness Checker are
 
 \begin{Verbatim}
   javac -processor nullness MyFile.java
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
 \end{Verbatim}
 
 \noindent
