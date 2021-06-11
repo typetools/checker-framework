@@ -40,9 +40,14 @@ The Resource Leak Checker works in three stages:
 javac -processor ResourceLeak MyFile.java ...
 \end{Verbatim}
 
-The Resource Leak Checker supports the following optional command-line arguments,
+The Resource Leak Checker supports extra, checker-specific command-line arguments,
 in addition to those listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker:
+the Called Methods Checker,
+that may be useful for debugging or running experiments with the checker. Most
+users should avoid these arguments.
+The following three optional command-line arguments each disable one of the checker's
+features, which will increase the number of false positives the checker produces
+on most programs:
 \begin{itemize}
 \item The \<-AnoLightweightOwnership> option disables ownership annotations,
   ignoring them in favor of the default ownership assumptions.
@@ -53,10 +58,14 @@ the Called Methods Checker:
 \item The \<-AnoCreatesMustCallFor> option disables obligation creation,
   instead issuing errors whenever a new obligation might be created.
   See Section~\ref{resource-leak-createsmustcallfor}.
+\end{itemize}
+
+The following command-line argument is also supported, for computing facts about the
+program being analyzed.
+\begin{itemize}
 \item The \<-AcountMustCall> option prints an estimate of the number of
   must-call obligations in the analyzed program.
 \end{itemize}
-
 
 \sectionAndLabel{Resource Leak Checker annotations}{resource-leak-annotations}
 
