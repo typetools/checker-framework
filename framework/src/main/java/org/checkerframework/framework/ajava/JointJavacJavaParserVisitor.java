@@ -130,13 +130,11 @@ import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -146,7 +144,7 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
-import com.sun.source.tree.YieldTree;
+import com.sun.source.util.SimpleTreeVisitor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -171,7 +169,7 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>The {@code process} methods are called in pre-order. That is, process methods for a parent are
  * called before its children.
  */
-public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
+public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void, Node> {
   @Override
   public Void visitAnnotation(AnnotationTree javacTree, Node javaParserNode) {
     // javac stores annotation arguments as assignments, so @MyAnno("myArg") is stored the same
@@ -261,8 +259,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     return null;
   }
 
-  @Override
-  public Void visitBindingPattern(BindingPatternTree tree, Node node) {
+  /**
+   * Visit a BindingPatternTree
+   *
+   * @param tree A BindingPatternTree, typed as Tree to be backward-compatible
+   * @param node A PatternExpr, typed as Node to be backward-compatible
+   * @return The visitor return
+   */
+  public Void visitBindingPattern17(Tree tree, Node node) {
     return null;
   }
 
@@ -1178,8 +1182,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     return null;
   }
 
-  @Override
-  public Void visitSwitchExpression(SwitchExpressionTree tree, Node node) {
+  /**
+   * Visit a SwitchExpressionTree
+   *
+   * @param tree A SwitchExpressionTree, typed as Tree to be backward-compatible
+   * @param node A SwitchExpr, typed as Node to be backward-compatible
+   * @return The visitor return
+   */
+  public Void visitSwitchExpression17(Tree tree, Node node) {
     return null;
   }
 
@@ -1387,8 +1397,14 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     return null;
   }
 
-  @Override
-  public Void visitYield(YieldTree tree, Node node) {
+  /**
+   * Visit a YieldTree
+   *
+   * @param tree A YieldTree, typed as Tree to be backward-compatible
+   * @param node A YieldStmt, typed as Node to be backward-compatible
+   * @return The visitor return
+   */
+  public Void visitYield17(Tree tree, Node node) {
     return null;
   }
 
@@ -2164,5 +2180,30 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     throw new BugInCF(
         "desynced trees: %s [%s], %s [%s (expected %s)]",
         javacTree, javacTree.getClass(), javaParserNode, javaParserNode.getClass(), expectedType);
+  }
+
+  /**
+   * The default action for this visitor. This is inherited from SimpleTreeVisitor, but is only
+   * called for those methods which do not have an override of the visitXXX method in this class.
+   * Ultimately, those are the methods added post Java 11, such as for switch-expressions.
+   *
+   * @param tree The Javac tree
+   * @param node The Javaparser node
+   * @return The result of the action.
+   */
+  @Override
+  protected Void defaultAction(Tree tree, Node node) {
+    // Features added between JDK 12 and JDK 17 inclusive.
+    // Must use String comparison to support compiling on JDK 11 and earlier:
+    switch (tree.getKind().name()) {
+      case "BINDING_PATTERN":
+        return visitBindingPattern17(tree, node);
+      case "SWITCH_EXPRESSION":
+        return visitSwitchExpression17(tree, node);
+      case "YIELD":
+        return visitYield17(tree, node);
+    }
+
+    return super.defaultAction(tree, node);
   }
 }
