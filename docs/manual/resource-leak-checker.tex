@@ -293,15 +293,16 @@ At a call site to a method annotated as
 \item
   Treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied},
 \item
-  Creates a fresh obligation to check, as if \emph{expr} was a newly-allocated local
-  variable.
+  Creates a fresh obligation to check, as if \emph{expr} was assigned to a newly-allocated
+  object (i.e. as if \emph{expr} were a constructor result).
 \item
   Requires that the expression corresponding to \emph{expr} (that is, \emph{expr}
   viewpoint-adapted to the method call site) is owned; that is, it is
   annotated or defaulted as \<@Owning>.  Otherwise, the checker
   will issue a \<reset.not.owning> error at the call-site. You can avoid this
-  error by extracting the relevant expression into a new local variable (because
-  locals are \<@Owning> by default).
+  error by extracting \emph{expr} into a new local variable (because
+  locals are \<@Owning> by default) and replacing all instances of \emph{expr}
+  in the call with references to the new local variable.
 \end{enumerate}
 
 Treating the obligation before the call as satisfied is sound: the
@@ -313,10 +314,12 @@ present before the call. Intuitively, calling an \<@CreatesMustCallFor> method
 the call or not is irrelevant.
 
 If an \<@CreatesMustCallFor>
-method is invoked within a method that has an \<@CreatesMustCallFor> annotation
-with the same target---imposing the obligation on its caller---then
-the newly-created obligation is treated as satisfied immediately (because it is instead imposed
-on the callee of the method being checked).
+method \emph{m} is invoked within a method \emph{n} that has an \<@CreatesMustCallFor> annotation,
+and the \<@CreatesMustCallFor> annotations on \emph{m} and \emph{n} have
+the same target---imposing the obligation produced by calling \emph{m} on the caller of \emph{n}---then
+the newly-created obligation is treated as satisfied immediately
+at the call-site of \emph{m} in the body of \emph{n} (because it is imposed at call-sites of \emph{n}
+instead).
 
 
 \subsectionAndLabel{Requirements at a declaration of a \<@CreatesMustCallFor> method}{resource-leak-createsmustcallfor-declaration}
@@ -329,8 +332,7 @@ above are sound:
   must be annotated with a \<@CreatesMustCallFor> annotation
   that targets that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$,
-  its inferred \<@MustCall> obligation must be contained in its \<@CalledMethods>
-  type at the program point before $s$.
+  at the program point before $s$, $f$'s must-call obligations must have been satisfied.
 \end{itemize}
 \noindent
 The first rule ensures that \<close()> is called after the last call
