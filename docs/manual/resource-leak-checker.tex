@@ -281,7 +281,7 @@ and re-assigning a non-final, owning field is always an error.
 
 Sections~\ref{resource-leak-createsmustcallfor-callsite}
 and~\ref{resource-leak-createsmustcallfor-declaration}
-explain how the Resource Leak Checker verifies uses and declarations of
+explain how the Resource Leak Checker verifies uses and declarations, respectively, of
 methods annotated with \<@CreatesMustCallFor>.
 
 
@@ -295,6 +295,9 @@ At a call site to a method annotated as
 \item
   Creates a fresh obligation to check, as if \emph{expr} was assigned to a newly-allocated
   object (i.e. as if \emph{expr} were a constructor result).
+\item
+  Un-refines the type in the Called Methods Checker's type hierarchy for \emph{expr} to
+  \<@CalledMethods(\{\})>, if it had any other Called Methods type.
 \item
   Requires that the expression corresponding to \emph{expr} (that is, \emph{expr}
   viewpoint-adapted to the method call site) is owned; that is, it is
@@ -324,9 +327,14 @@ instead).
 
 \subsectionAndLabel{Requirements at a declaration of a \<@CreatesMustCallFor> method}{resource-leak-createsmustcallfor-declaration}
 
+Any method can be declared as an \<@CreatesMustCallFor> method. Any method that re-assigns a non-final,
+owning field of some object \<obj>, however, must be declared \<@CreatesMustCallFor("obj")> (usually,
+an instance method re-assigns a non-final, owning field of the \<this> object, such as in the \<SocketContainer>
+example in Section~\ref{resource-leak-createsmustcallfor}).
+
 The Resource Leak Checker enforces two rules to ensure that
 re-assignments to non-final, owning fields like \<sock> in the example
-above are sound:
+are sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with a \<@CreatesMustCallFor> annotation
