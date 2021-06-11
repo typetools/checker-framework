@@ -12,7 +12,7 @@ example, the program must call \<close()> on every object that implements the
 interface \<java.io.Closeable>.
 
 The Resource Leak Checker can check any property of the form ``the programmer
-must call all methods \emph{M} on object \emph{O} before \emph{O} is
+must call methods \emph{M} on object \emph{O} before \emph{O} is
 de-allocated''.  For resource leaks, by default \emph{M} is the set containing
 \<close()> and \emph{O} is any object that implements the interface
 \<java.io.Closeable>.  You can extend this guarantee to other types and methods
@@ -36,7 +36,10 @@ The Resource Leak Checker works in three stages:
 
 \sectionAndLabel{How to run the Resource Leak Checker}{resource-leak-run-checker}
 
+Run one of these lines:
+
 \begin{Verbatim}
+javac -processor resourceleak MyFile.java ...
 javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker MyFile.java ...
 \end{Verbatim}
 
@@ -81,7 +84,7 @@ aliasing patterns related to resource leaks:
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
   represents a ``resource-aliasing'' relationship.  Resource aliases are
-  distinct Java objects that nevertheless control the same resource(s):
+  distinct Java objects that control the same resource(s):
   fulfilling the must-call obligations of one object also
   fulfills the obligations of the other object.  For details,
   see Section~\ref{resource-leak-resource-alias}.
@@ -104,9 +107,12 @@ fields or re-opening resources:
 
 \sectionAndLabel{Aliased references and ownership transfer}{resource-leak-ownership}
 
-Resource leak checking is complicated by aliasing: two or more Java
-objects may refer to the same underlying resource, but each resource
-actually only needs to be closed once.
+Resource leak checking is complicated by aliasing.  Multiple expressions
+may evaluate to the same Java object, but each object only needs to be
+closed once.  (Section~\ref{resource-leak-resource-alias} describes a
+related situation called ``resource aliasing'', when multiple Java objects
+refer to the same underlying resource.)
+
 For example, consider the following code that safely closes a \<Socket>:
 
 \begin{verbatim}
@@ -122,7 +128,7 @@ For example, consider the following code that safely closes a \<Socket>:
 There are two aliases for a socket object: \<s> in \<example()> and \<t> in
 \<closeSocket()>.  Ordinarily, the Resource Leak Checker requires that
 \<close()> is called on every expression of type \<Socket>, but that is not
-necessary here.  In particular, the Resource Leak Checker should not warn when
+necessary here.  The Resource Leak Checker should not warn when
 \<s> goes out of scope in \<example()>, because \<closeSocket()> takes ownership
 of the socket --- that is, \<closeSocket()> takes responsibility for closing
 it. The \<@Owning> annotation on \<t>'s declaration expresses this fact; it
@@ -142,11 +148,6 @@ Writing \<@Owning> or \<@NotOwning> can never make the checker
 unsound:  a real warning can never be hidden by them.
 As with any annotation, incorrect or missing annotations can lead to false positive warnings.
 
-The features described in this section can be disabled by passing the \<-AnoLightweightOwnership>
-command-line parameter to the Resource Leak Checker.
-In this mode, the defaults described in the previous paragraph are always used, and explicit \<@Owning>
-and \<@NotOwning> annotations are ignored.
-
 
 \subsectionAndLabel{Owning fields}{resource-leak-owning-fields}
 
@@ -158,13 +159,13 @@ can satisfy a must-call obligation.
 For \textbf{final, non-static owning fields},
 the Resource Leak Checker enforces the ``resource acquisition is
 initialization (RAII)'' programming idiom.  Some
-``destructor''-like method \<d()> must satisfy the field's must-call obligation
+destructor-like method \<d()> must satisfy the field's must-call obligation
 (and this fact must be expressed via a \<@EnsuresCalledMethods> annotation on \<d()>),
 and the enclosing class must have a \<@MustCall("d")> obligation to
 ensure the destructor is called.
 
 \textbf{Non-final, non-static owning fields} usually require one or more \<@CreatesMustCallFor> annotations
-when they might be re-assigned. See Section~\ref{resource-leak-non-final-fields} for
+when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
 more details on how to annotate a non-final, non-static owning field.
 
 
@@ -184,8 +185,7 @@ The wrapper's \<close()> method invokes \<close()> on the delegate.  Calling
 
 A resource aliasing relationship is expressed in source code via a pair of \<@MustCallAlias> annotations:
 one on a parameter of a method or constructor, and another on its return type.
-For example, one constructor of \<BufferedOutputStream> has these annotations in
-the annotated JDK:
+For example, the annotated JDK contains this constructor of \<BufferedOutputStream>:
 \begin{Verbatim}
 @MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream out);
 \end{Verbatim}
@@ -197,10 +197,6 @@ and its parameter \<p>, the Resource Leak Checker requires one of the following:
   \<@MustCallAlias> position, and \<m> returns that method's result, or
 \item \<p> is stored in an \<@Owning> field of the enclosing class.
 \end{enumerate}
-
-Support for \<@MustCallAlias> can be disabled by passing the \<-AnoResourceAliases> command-line
-argument to the checker. In this mode, resource-alias sets are not tracked by the checker,
-and \<@MustCallAlias> is treated identically to \<@PolyMustCall>.
 
 
 \sectionAndLabel{Creating obligations (how to re-assign a non-final owning field)}{resource-leak-createsmustcallfor}
@@ -215,14 +211,10 @@ new system-level resources.
 A post-condition annotation,
 \<@CreatesMustCallFor>,
 indicates for which expression an obligation is created.
-If you write \<@CreatesMustCallFor(>\emph{T}\<)> on a method \emph{M} that
-overrides a method \emph{N}, then \emph{N} must also be annotated as
-\<@CreatesMustCallFor(>\emph{T}\<)>.  (\emph{N} may also have other
-\<@CreatesMustCallFor> annotations that \emph{M} does not.)
-If you write \<@CreatesMustCallFor> on a method that does not actually
-create an obligation, the checker may issue false positive warnings at calls to
-that method, but it never causes
-missed warnings (i.e., the checker is sound).
+If you write \<@CreatesMustCallFor(>\emph{T}\<)> on a method \emph{N} that
+overrides a method \emph{M}, then \emph{M} must also be annotated as
+\<@CreatesMustCallFor(>\emph{T}\<)>.  (\emph{M} may also have other
+\<@CreatesMustCallFor> annotations that \emph{N} does not.)
 
 \<@CreatesMustCallFor> allows the Resource Leak Checker to verify uses of non-final fields
 that contain a resource, even if they are re-assigned. Consider
@@ -252,13 +244,9 @@ might be re-assigned arbitrarily many times: once at each
 call to \<reconnect()>. This code is safe, however: \<reconnect()>
 ensures that \<sock> is closed before re-assigning it.
 
-Support for \<@CreatesMustCallFor> can be disabled by passing the \<-AnoCreatesMustCallFor> command-line
-argument to the checker. In this mode, \<@CreatesMustCallFor> annotations on methods are ignored at call-sites,
-and re-assigning a non-final, owning field is always an error.
-
 Sections~\ref{resource-leak-createsmustcallfor-callsite}
 and~\ref{resource-leak-createsmustcallfor-declaration}
-explain how the Resource Leak Checker verifies uses and declarations, respectively, of
+explain how the Resource Leak Checker verifies uses and declarations of
 methods annotated with \<@CreatesMustCallFor>.
 
 
@@ -294,24 +282,23 @@ present before the call. Intuitively, calling an \<@CreatesMustCallFor> method
 the call or not is irrelevant.
 
 If an \<@CreatesMustCallFor>
-method \emph{m} is invoked within a method \emph{n} that has an \<@CreatesMustCallFor> annotation,
-and the \<@CreatesMustCallFor> annotations on \emph{m} and \emph{n} have
-the same target---imposing the obligation produced by calling \emph{m} on the caller of \emph{n}---then
+method \emph{n} is invoked within a method \emph{m} that has an \<@CreatesMustCallFor> annotation,
+and the \<@CreatesMustCallFor> annotations on \emph{n} and \emph{m} have
+the same target---imposing the obligation produced by calling \emph{n} on the caller of \emph{m}---then
 the newly-created obligation is treated as satisfied immediately
-at the call-site of \emph{m} in the body of \emph{n} (because it is imposed at call-sites of \emph{n}
+at the call-site of \emph{n} in the body of \emph{m} (because it is imposed at call-sites of \emph{m}
 instead).
 
 
 \subsectionAndLabel{Requirements at a declaration of a \<@CreatesMustCallFor> method}{resource-leak-createsmustcallfor-declaration}
 
-Any method can be declared as an \<@CreatesMustCallFor> method. Any method that re-assigns a non-final,
-owning field of some object \<obj>, however, must be declared \<@CreatesMustCallFor("obj")> (usually,
-an instance method re-assigns a non-final, owning field of the \<this> object, such as in the \<SocketContainer>
-example in Section~\ref{resource-leak-createsmustcallfor}).
+Any method that re-assigns a non-final, owning field of some object \<obj>
+must be annotated \<@CreatesMustCallFor("obj")>.
+Other methods may also be annotated with \<@CreatesMustCallFor>.
 
-The Resource Leak Checker enforces two rules to ensure that
-re-assignments to non-final, owning fields like \<sock> in the example
-are sound:
+The Resource Leak Checker enforces two rules to ensure that re-assignments
+to non-final, owning fields (like \<sock> in method \<reconnect> above) are
+sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with a \<@CreatesMustCallFor> annotation
@@ -325,8 +312,8 @@ to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because the Called Methods Checker
 treats calls to an \<@CreatesMustCallFor> method like \<reconnect()> as if the call might
 cause arbitrary side-effects, after such a call the only method known to have been
-definitely called is the \<@CreatesMustCallFor> method: previous calls
-(including e.g. to \<close()>) are discarded.
+definitely called is the \<@CreatesMustCallFor> method: previous called
+methods (including \<close()>) do not appear in the \<@CalledMethods> type qualifier.
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
 
