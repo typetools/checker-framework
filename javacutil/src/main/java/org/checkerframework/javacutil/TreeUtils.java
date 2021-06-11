@@ -1543,7 +1543,8 @@ public final class TreeUtils {
       case BOOLEAN:
         return TreeUtils.createLiteral(TypeTag.BOOLEAN, false, typeMirror, processingEnv);
       default:
-        return TreeUtils.createLiteral(TypeTag.BOT, null, typeMirror, processingEnv);
+        return TreeUtils.createLiteral(
+            TypeTag.BOT, null, processingEnv.getTypeUtils().getNullType(), processingEnv);
     }
   }
 
