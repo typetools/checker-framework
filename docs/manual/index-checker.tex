@@ -52,10 +52,11 @@ changed after creation.  A fixed-size data structure has no \<add> or
 support for other fixed-size data structures (see
 Section~\ref{index-annotating-fixed-size}).
 
-To run the Index Checker, run the command
+To run the Index Checker, run either of these commands:
 
 \begin{alltt}
   javac -processor index \emph{MyJavaFile}.java
+  javac -processor org.checkerframework.checker.index.IndexChecker \emph{MyJavaFile}.java
 \end{alltt}
 
 Recall that in Java, type annotations are written before the type;
