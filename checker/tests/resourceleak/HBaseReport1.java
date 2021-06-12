@@ -4,34 +4,33 @@
 // @skip-test
 
 import java.io.*;
-import java.io.FilterInputStream;
 import java.util.*;
 
-class HBaseReport1{
+class HBaseReport1 {
 
-    public static void test(String fileName) {
-        FileWriter fstream;
-        try {
-            // :: error: required.method.not.called
-            fstream = new FileWriter(fileName);
-        } catch (IOException e) {
-            return;
-        }
-
-        BufferedWriter out = new BufferedWriter(fstream);
-
-        try {
-            try {
-                out.write(fileName + "\n");
-            } finally {
-                try {
-                    out.close();
-                } finally {
-                    fstream.close();
-                }
-            }
-        } catch (IOException e) {
-
-        }
+  public static void test(String fileName) {
+    FileWriter fstream;
+    try {
+      // :: error: required.method.not.called
+      fstream = new FileWriter(fileName);
+    } catch (IOException e) {
+      return;
     }
+
+    BufferedWriter out = new BufferedWriter(fstream);
+
+    try {
+      try {
+        out.write(fileName + "\n");
+      } finally {
+        try {
+          out.close();
+        } finally {
+          fstream.close();
+        }
+      }
+    } catch (IOException e) {
+
+    }
+  }
 }
