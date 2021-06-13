@@ -14,9 +14,11 @@ import java.util.Map;
 import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
+import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -300,7 +302,7 @@ public class I18nFormatUtil {
       argumentIndices.add(argumentNumber);
 
       // now get the format
-      I18nConversionCategory category = null;
+      final @Initialized @NonNull I18nConversionCategory category;
       if (segments[SEG_TYPE].length() != 0) {
         int type = findKeyword(segments[SEG_TYPE], TYPE_KEYWORDS);
         switch (type) {
