@@ -214,7 +214,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
           lubWildcard.getSuperBound(),
           lubWildcard.getExtendsBound());
     } else if (lub.getKind() == TypeKind.TYPEVAR
-        && TypesUtils.isCaptured((TypeVariable) lub.getUnderlyingType())) {
+        && TypesUtils.isCapturedTypeVariable((TypeVariable) lub.getUnderlyingType())) {
       if (visited(lub)) {
         return;
       }

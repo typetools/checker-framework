@@ -776,6 +776,7 @@ public final class TypesUtils {
   }
 
   /** Returns whether a TypeVariable represents a captured type. */
+  @Deprecated
   public static boolean isCaptured(TypeMirror typeVar) {
     if (typeVar.getKind() != TypeKind.TYPEVAR) {
       return false;
@@ -783,9 +784,22 @@ public final class TypesUtils {
     return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
   }
 
+  /**
+   * Returns true if {@code type} is a type variable created during capture conversion.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a type variable created during capture conversion
+   */
+  public static boolean isCapturedTypeVariable(TypeMirror type) {
+    if (type.getKind() != TypeKind.TYPEVAR) {
+      return false;
+    }
+    return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
+  }
+
   /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns {@code null}. */
   public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
-    if (isCaptured(typeVar)) {
+    if (isCapturedTypeVariable(typeVar)) {
       return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
     }
     return null;

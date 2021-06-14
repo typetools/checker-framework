@@ -99,7 +99,7 @@ public class DefaultInferredTypesApplier {
     if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
       throw new BugInCF("Inferred value should not be missing annotations: " + inferredTypeMirror);
     }
-    if (TypesUtils.isCaptured(inferredTypeMirror)) {
+    if (TypesUtils.isCapturedTypeVariable(inferredTypeMirror)) {
       return;
     }
 

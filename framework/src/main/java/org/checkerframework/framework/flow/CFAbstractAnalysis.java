@@ -152,7 +152,7 @@ public abstract class CFAbstractAnalysis<
     Set<AnnotationMirror> annos;
     if (type.getKind() == TypeKind.WILDCARD) {
       annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
-    } else if (TypesUtils.isCaptured(type.getUnderlyingType())) {
+    } else if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
       annos = ((AnnotatedTypeVariable) type).getUpperBound().getAnnotations();
     } else {
       annos = type.getAnnotations();

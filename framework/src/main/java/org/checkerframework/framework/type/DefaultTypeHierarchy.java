@@ -307,8 +307,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
     if (outside.getKind() == TypeKind.WILDCARD
         // TODO: the below should be removed after #979 is fixed.
-        || (TypesUtils.isCaptured(outside.getUnderlyingType())
-            && !TypesUtils.isCaptured(inside.getUnderlyingType()))) {
+        || (TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
+            && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
 
       Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
       if (previousResult != null) {
@@ -898,8 +898,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       }
     }
 
-    if (TypesUtils.isCaptured(subtype.getUnderlyingType())
-        && TypesUtils.isCaptured(supertype.getUnderlyingType())) {
+    if (TypesUtils.isCapturedTypeVariable(subtype.getUnderlyingType())
+        && TypesUtils.isCapturedTypeVariable(supertype.getUnderlyingType())) {
       // TODO: Can this be removed?
       return isContainedByBoundType(
           subtype, supertype.getLowerBound(), supertype.getUpperBound(), false);

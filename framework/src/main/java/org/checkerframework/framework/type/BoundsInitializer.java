@@ -418,7 +418,7 @@ public class BoundsInitializer {
       // than using one from the rest of the type.  So, clear the typevars map of all but the
       // mapping with key type.
       Map<TypeVariable, AnnotatedTypeMirror> hold = new HashMap<>();
-      if (TypesUtils.isCaptured(type.getUnderlyingType())) {
+      if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
         for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
             new ArrayList<>(typevars.entrySet())) {
           if (!type.atypeFactory.types.isSameType(

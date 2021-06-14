@@ -2263,7 +2263,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     for (TypeVariable typeVariable : order) {
       AnnotatedTypeMirror originalTypeArg = typeVarMapping.get(typeVariable);
       AnnotatedTypeMirror newTypeArg = newTypeVarMapping.get(typeVariable);
-      if (TypesUtils.isCaptured(newTypeArg.getUnderlyingType())
+      if (TypesUtils.isCapturedTypeVariable(newTypeArg.getUnderlyingType())
           && originalTypeArg.getKind() == TypeKind.WILDCARD) {
         captureWildcard(
             newTypeVarMapping,
@@ -4662,7 +4662,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       if (uncapturedTypeArg.getKind() != TypeKind.WILDCARD) {
         continue;
       }
-      if (TypesUtils.isCaptured(capturedTypeArgTM)
+      if (TypesUtils.isCapturedTypeVariable(capturedTypeArgTM)
           || capturedTypeArgTM.getKind() != TypeKind.WILDCARD) {
         return true;
       }
@@ -4721,7 +4721,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           if (uncapturedTypeArg.getKind() != TypeKind.WILDCARD) {
             continue;
           }
-          if (TypesUtils.isCaptured(capturedTypeArgTM)
+          if (TypesUtils.isCapturedTypeVariable(capturedTypeArgTM)
               || capturedTypeArgTM.getKind() != TypeKind.WILDCARD) {
             ((AnnotatedWildcardType) uncapturedTypeArg).setUninferredTypeArgument();
           }
@@ -4752,7 +4752,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror uncapturedTypeArg = uncapturedType.getTypeArguments().get(i);
       AnnotatedTypeMirror capturedTypeArg = capturedType.getTypeArguments().get(i);
       if (uncapturedTypeArg.getKind() == TypeKind.WILDCARD) {
-        if (TypesUtils.isCaptured(capturedTypeArg.getUnderlyingType())) {
+        if (TypesUtils.isCapturedTypeVariable(capturedTypeArg.getUnderlyingType())) {
           // The type argument is a captured type variable. Use the type argument from the newly
           // created and yet-to-be annotated capturedType. (The annotations are added as
           // part of capturing the wildcard.)
@@ -4867,7 +4867,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
         AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
         if (uncapturedArg.getKind() == TypeKind.WILDCARD) {
-          // Note: this if statement can't be replaced with if (TypesUtils.isCaptured(capturedArg))
+          // Note: this if statement can't be replaced with if
+          // (TypesUtils.isCapturedTypeVariable(capturedArg))
           // because if the bounds of the captured wildcard are equal, then instead of a captured
           // wildcard, the type of the bound is used.
           AnnotatedTypeMirror newCapArg =

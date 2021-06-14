@@ -547,9 +547,10 @@ public class TypeArgInferenceUtil {
    * @return true if actual and inferred are captures of the same wildcard or declared type
    */
   private static boolean areSameCapture(TypeMirror actual, TypeMirror inferred, Types types) {
-    if (TypesUtils.isCaptured(actual) && TypesUtils.isCaptured(inferred)) {
+    if (TypesUtils.isCapturedTypeVariable(actual) && TypesUtils.isCapturedTypeVariable(inferred)) {
       return true;
-    } else if (TypesUtils.isCaptured(actual) && inferred.getKind() == TypeKind.WILDCARD) {
+    } else if (TypesUtils.isCapturedTypeVariable(actual)
+        && inferred.getKind() == TypeKind.WILDCARD) {
       return true;
     } else if (actual.getKind() == TypeKind.DECLARED && inferred.getKind() == TypeKind.DECLARED) {
       DeclaredType actualDT = (DeclaredType) actual;
