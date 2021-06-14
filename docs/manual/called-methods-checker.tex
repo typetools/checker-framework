@@ -4,7 +4,8 @@
 The Called Methods Checker tracks the names of methods that have definitely
 been called on an object. This checker is useful for checking any property
 of the form ``call method A before method B''. For the purpose of this
-section, a method has ``definitely been called'' if it is \emph{invoked}:
+checker, a method has ``definitely been called'' if it is \emph{invoked}:
+a method that might never return or that might throw an exception has
 a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
 
@@ -23,7 +24,7 @@ Section~\ref{called-methods-lombok}) and
 \href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}.
 
 You can verify other builders, or verify other properties of the form
-``foo() must be called before bar()'', by writing method specifications.
+``\<foo()> must be called before \<bar()>'', by writing method specifications.
 Section~\ref{called-methods-other} describes another example related to a
 security property.
 
