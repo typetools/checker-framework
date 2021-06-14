@@ -775,13 +775,19 @@ public final class TypesUtils {
     return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
   }
 
-  /** Returns whether a TypeVariable represents a captured type. */
+  /**
+   * Returns true if {@code type} is a type variable created during capture conversion.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a type variable created during capture conversion
+   * @deprecated use {@link #isCapturedTypeVariable(TypeMirror)} instead
+   */
   @Deprecated
-  public static boolean isCaptured(TypeMirror typeVar) {
-    if (typeVar.getKind() != TypeKind.TYPEVAR) {
+  public static boolean isCaptured(TypeMirror type) {
+    if (type.getKind() != TypeKind.TYPEVAR) {
       return false;
     }
-    return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
+    return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
   }
 
   /**
@@ -1081,8 +1087,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns a fresh type variable, a captured type, for {@code typeMirror}, if {@code typeMirror}
-   * is a wildcard. If it is not a wildcard, {@code typeMirror} is returned.
+   * Returns a fresh type variable, a captured type variable, for {@code typeMirror}, if {@code
+   * typeMirror} is a wildcard. If it is not a wildcard, {@code typeMirror} is returned.
    *
    * @param typeMirror a type
    * @param env processing environment

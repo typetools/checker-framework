@@ -290,7 +290,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       result.setDeclaration(false);
       return result;
     } else if (TypesUtils.isCapturedTypeVariable(typeVar)) {
-      // Captured types can have a generic element (owner) that is
+      // Captured type variables can have a generic element (owner) that is
       // not an element at all, namely Symtab.noSymbol.
       return type.asUse();
     } else {

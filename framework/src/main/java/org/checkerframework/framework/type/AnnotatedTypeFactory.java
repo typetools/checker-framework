@@ -4628,7 +4628,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *   <li>{@code type} and {@code typeMirror} are both declared types.
    *   <li>{@code type} does not have an uninferred type argument, has a wildcard as a type argument
    *       and was not a raw type.
-   *   <li>{@code typeMirror} has a captured type as a type argument.
+   *   <li>{@code typeMirror} has a captured type variable as a type argument.
    * </ul>
    *
    * @param type annotated type that might need to be captured
@@ -4671,7 +4671,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Apply capture conversion.
+   * Apply capture conversion to {@code typeToCapture}.
    *
    * <p>Capture conversion is the process of converting wildcards in a parameterized type to fresh
    * type variables. See <a
@@ -4682,7 +4682,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * this method returns {@code type}.
    *
    * @param typeToCapture type to capture
-   * @return the captured type
+   * @return the result of applying capture conversion to {@code typeToCapture}
    */
   public AnnotatedTypeMirror applyCaptureConversion(AnnotatedTypeMirror typeToCapture) {
     TypeMirror capturedTypeMirror = types.capture(typeToCapture.getUnderlyingType());
@@ -4690,7 +4690,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Apply capture conversion.
+   * Apply capture conversion to {@code type}.
    *
    * <p>Capture conversion is the process of converting wildcards in a parameterized type to fresh
    * type variables. See <a
@@ -4703,7 +4703,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param type type to capture
    * @param typeMirror type from the Java compiler that has captured wildcards, which are used as
    *     the underlying type of the captured wildcards
-   * @return the captured type
+   * @return the result of applying capture conversion to {@code type}
    */
   public AnnotatedTypeMirror applyCaptureConversion(
       AnnotatedTypeMirror type, TypeMirror typeMirror) {
@@ -4758,8 +4758,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // part of capturing the wildcard.)
           typeVariableMapping.put(typeVarTypeMirror, capturedTypeArg);
           // Also, add a mapping from the captured type variable to the annotated captured
-          // type variable, so that if one captured type refers to another, the correct annotated
-          // type is used.
+          // type variable, so that if one captured type variable refers to another, the same
+          // AnnotatedTypeVariable object is used.
           capturedTypeVarMapping.put(
               ((AnnotatedTypeVariable) capturedTypeArg).getUnderlyingType(),
               (AnnotatedTypeVariable) capturedTypeArg);
@@ -4861,8 +4861,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
       }
 
-      // Substitute the type variables in each captured type arg using typeVarMap created above.
-      // This makes type variables in capturedType the same object when they are the same object.
+      // Substitute the type variables in each type argument of capturedType using typeVarMap
+      // created above.
+      // This makes type variables in capturedType the same object when they are the same type
+      // variable.
       for (int i = 0; i < size; i++) {
         AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
         AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
@@ -4934,9 +4936,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Scanner that returns true if the underlying type of any part of an {@link AnnotatedTypeMirror}
-   * is the passed captured type.
+   * is the passed captured type variable.
    *
-   * <p>The second argument to visit should be a captured type.
+   * <p>The second argument to visit must be a captured type variable.
    */
   @SuppressWarnings("interning:not.interned") // Captured type vars can be compared with ==.
   private final SimpleAnnotatedTypeScanner<Boolean, TypeVariable> captureScanner =
