@@ -1,5 +1,5 @@
 \htmlhr
-\chapterAndLabel{Called Methods Checker}{called-methods-checker}
+\chapterAndLabel{Called Methods Checker for the builder pattern and more}{called-methods-checker}
 
 The Called Methods Checker tracks the names of methods that have definitely
 been called on an object. This checker is useful for checking any property
@@ -38,7 +38,8 @@ discover this.
 \sectionAndLabel{How to run the Called Methods Checker}{called-methods-run-checker}
 
 \begin{Verbatim}
-javac -processor CalledMethods MyFile.java ...
+javac -processor calledmethods MyFile.java ...
+javac -processor org.checkerframework.checker.calledmethods.CalledMethods MyFile.java ...
 \end{Verbatim}
 
 The Called Methods Checker supports the following optional command-line arguments:
