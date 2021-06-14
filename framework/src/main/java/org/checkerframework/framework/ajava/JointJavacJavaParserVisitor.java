@@ -397,7 +397,9 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     List<Expression> labels = node.getLabels();
     List<? extends ExpressionTree> treeExpressions =
         org.checkerframework.javacutil.TreeUtils.caseTreeGetExpressions(javacTree);
-    assert node.getLabels().size() == treeExpressions.size();
+    assert node.getLabels().size() == treeExpressions.size()
+        : String.format(
+            "node.getLabels() = %s, treeExpressions = %s", node.getLabels(), treeExpressions);
     for (int i = 0; i < treeExpressions.size(); i++) {
       treeExpressions.get(i).accept(this, labels.get(i));
     }
