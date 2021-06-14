@@ -2323,7 +2323,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param getClassType this must be a type representing a call to Object.getClass otherwise a
    *     runtime exception will be thrown. It is modified by side effect.
-   * @param receiverType the receiver type of the method invocation (not the declared receiver
+   * @param receiverType the receiver type of the method invocation (not the declared receiver type)
    * @param tree getClass method invocation tree
    */
   protected void adaptGetClassReturnTypeToReceiver(
