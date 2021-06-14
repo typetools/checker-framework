@@ -54,7 +54,7 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task liveVariableTest(dependsOn: ':checker:assemble', group: 'Verification') {
+task liveVariableTest(dependsOn: [':checker:assemble', compileTestJava], group: 'Verification') {
     description 'Test the live variable analysis test for dataflow framework.'
     inputs.file('tests/live-variable/Expected.txt')
     inputs.file('tests/live-variable/Test.java')
@@ -82,7 +82,7 @@ task liveVariableTest(dependsOn: ':checker:assemble', group: 'Verification') {
     }
 }
 
-task issue3447Test(dependsOn: ':checker:assemble', group: 'Verification') {
+task issue3447Test(dependsOn: [':checker:assemble', compileTestJava], group: 'Verification') {
     description 'Test issue 3447 test case for backward analysis.'
     inputs.file('tests/issue3447/Test.java')
     delete('tests/issue3447/Out.txt')
