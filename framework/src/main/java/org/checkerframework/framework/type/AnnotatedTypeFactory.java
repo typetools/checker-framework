@@ -2221,9 +2221,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Apply capture conversion to the type arguments of a method invocation.
    *
-   * @param typeVarMapping mapping from type variable to its argument
+   * @param typeVarMapping mapping from type variable in the method declaration to the corresponding
+   *     type argument at the method invocation
    * @param declTypeVar list of type variable declarations
-   * @return a mapping form type variable to its captured type argument
+   * @return a mapping from type variable in the method declaration to its captured type argument.
+   *     For a non-wildcard, Capture conversion is the identity. Its keys are the same as in {@code
+   *     typeVarMapping}, and the values are their captures (capture conversion may be the
+   *     identity).
    */
   private Map<TypeVariable, AnnotatedTypeMirror> captureMethodTypeArgs(
       Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping,
@@ -2234,6 +2238,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     for (AnnotatedTypeVariable t : declTypeVar) {
       typeParameter.put(t.getUnderlyingType(), t);
     }
+    // `newTypeVarMapping` is the result of this method.
     Map<TypeVariable, AnnotatedTypeMirror> newTypeVarMapping = new HashMap<>();
     Map<TypeVariable, AnnotatedTypeVariable> capturedTypeMapping = new HashMap<>();
     for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry : typeVarMapping.entrySet()) {
@@ -4623,7 +4628,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *   <li>{@code typeMirror} must have a captured type as a type argument.
    * </ul>
    *
-   * @param type annotated type to capture
+   * @param type annotated type that might need to be captured
    * @param typeMirror underlying Java type
    * @return true if {@code type} should be captured
    */
@@ -4671,7 +4676,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Capture conversion is the process of converting wildcards in a generic type to fresh type
    * variables. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
-   * for all the details.
+   * for details.
    *
    * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
    * this method returns {@code type}.
@@ -4690,7 +4695,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Capture conversion is the process of converting wildcards in a generic type to fresh type
    * variables. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
-   * for all the details.
+   * for details.
    *
    * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
    * this method returns {@code type}.
@@ -4739,6 +4744,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Map<TypeVariable, AnnotatedTypeMirror> typeVariableMapping = new HashMap<>();
     // A mapping from the captured type to the annotated captured type.
     Map<TypeVariable, AnnotatedTypeVariable> capturedTypeMapping = new HashMap<>();
+    // `newTypeArgs` will be the type arguments of the result of this method.
     List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
     for (int i = 0; i < typeDeclaration.getTypeArguments().size(); i++) {
       TypeVariable typeVarTypeMirror =
@@ -4814,8 +4820,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Copy the non-wildcard type args from {@code uncapturedType} to {@code captureType}. Also,
-   * ensure that type variables in {@code capturedType} are the same object when they are refer to
-   * the same type variable.
+   * ensure that type variables in {@code capturedType} are the same object when they refer to the
+   * same type variable.
    *
    * <p>To use, Call {@code #copy(AnnotatedDeclaredType, AnnotatedDeclaredType)} rather than a visit
    * method.

@@ -1032,7 +1032,7 @@ The second argument sets the default value that should be returned.
 To pass a flag on the command line, call javac as follows:
 
 \begin{Verbatim}
-  javac -processor MyChecker -Alint=myflag
+  javac -processor mypackage.MyChecker -Alint=myflag
 \end{Verbatim}
 
 
@@ -1054,7 +1054,7 @@ The value of the option can be queried using
 To pass an option on the command line, call javac as follows:
 
 \begin{Verbatim}
-  javac -processor MyChecker -Amyoption=p1,p2
+  javac -processor mypackage.MyChecker -Amyoption=p1,p2
 \end{Verbatim}
 
 The value is returned as a single string and you have to perform the
@@ -1947,7 +1947,7 @@ refinement, you can create a graphical representation of the CFG.
 Typical use is:
 
 \begin{Verbatim}
-javac -processor myProcessor -Aflowdotdir=. MyClass.java
+javac -processor mypackage.MyProcessor -Aflowdotdir=. MyClass.java
 for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
 \end{Verbatim}
 
