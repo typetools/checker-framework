@@ -85,26 +85,4 @@ Process order: 7
 AnalysisResult#13
 Before:   live variables = none
 ~~~~~~~~~
-a   [ LocalVariable ]
-return a   [ Return ]
-~~~~~~~~~
-TransferInput#1
-After:   live variables = none
-
-0:
-Process order: 7
-AnalysisResult#13
-Before:   live variables = none
-~~~~~~~~~
-a   [ LocalVariable ]
-return a   [ Return ]
-~~~~~~~~~
-TransferInput#1
-After:   live variables = none
-
-0:
-Process order: 7
-AnalysisResult#13
-Before:   live variables = none
-~~~~~~~~~
 <exit>
