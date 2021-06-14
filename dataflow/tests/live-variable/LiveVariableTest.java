@@ -1,10 +1,11 @@
-public class Test {
-  public void test() {
+public class LiveVariableTest {
+  public int test() {
     int a = 1, b = 2, c = 3;
     if (a > 0) {
       int d = a + c;
     } else {
       int e = a + b;
     }
+    return a;
   }
 }
