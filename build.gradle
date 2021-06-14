@@ -10,8 +10,6 @@ plugins {
     id "net.ltgt.errorprone" version "2.0.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
-    // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 apply plugin: "de.undercouch.download"
 
@@ -20,11 +18,6 @@ import org.ajoberstar.grgit.Grgit
 repositories {
     jcenter()
     mavenCentral()
-}
-
-gitProperties {
-    // logically belongs in framework, but only checker resources are copied to .jar file
-    gitPropertiesResourceDir = file("${project.rootDir}/checker/src/main/resources")
 }
 
 ext {
