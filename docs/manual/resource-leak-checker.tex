@@ -111,12 +111,13 @@ fields or re-opening resources:
 
 \sectionAndLabel{Example of how safe resource usage is verified}{resource-leak-example}
 
-Consider the following example of a safe (but trivial) use of a \<Socket>:
+Consider the following example of a safe use of a \<Socket>:
 \begin{verbatim}
 Socket s = null;
 try {
   s = new Socket(myHost, myPort);
-} catch (Exception e) { // do nothing
+} catch (Exception e) {
+  // do nothing
 } finally {
   if (s != null) {
     s.close();
