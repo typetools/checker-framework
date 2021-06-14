@@ -103,6 +103,22 @@ dataflow/manual/dataflow.log
 dataflow/manual/dataflow.out
 dataflow/manual/dataflow.pdf
 
+docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
+docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
+docs/tutorial/sourcefiles.zip
+
+# release tmps
+tmp
+
+# Maven files
+target/
+*.ipr
+*.iws
+*.iml
+/.gradle/
+
+## Tests
+
 checker/tests/command-line/issue618/TwoCheckers.class
 checker/tests/command-line/issue618/out.txt
 checker/tests/nullness-extra/*.class
@@ -125,6 +141,9 @@ checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.java
 checker/tests/nullness-temp/*.class
 
+dataflow/tests/live-variable/Out.txt
+dataflow/tests/live-variable/*.class
+
 checker/jtreg/multipleexecutions/Main.class
 
 # Source is copied from elsewhere.
@@ -136,17 +155,3 @@ checker/tests/wpi-testchecker/inference-output/
 checker/tests/wpi-nullness/annotated/
 checker/tests/wpi-nullness/inference-output/
 framework/tests/returnsreceiverdelomboked/
-
-docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
-docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
-docs/tutorial/sourcefiles.zip
-
-# release tmps
-tmp
-
-# Maven files
-target/
-*.ipr
-*.iws
-*.iml
-/.gradle/
