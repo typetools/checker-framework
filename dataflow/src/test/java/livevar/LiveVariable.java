@@ -20,9 +20,9 @@ public class LiveVariable {
    */
   public static void main(String[] args) {
 
-    String inputFile = "LiveVariableTest.java";
+    String inputFile = "Test.java";
     String method = "test";
-    String clazz = "LiveVariableTest";
+    String clazz = "Test";
     String outputFile = "Out.txt";
 
     LiveVarTransfer transfer = new LiveVarTransfer();
