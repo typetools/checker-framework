@@ -128,18 +128,18 @@ On the first line, \<s> is assigned to \<null>. At this point, it has a type fro
 each of the Must Call Checker and the Called Methods Checker: \<@MustCall(\{\})> and
 \<@CalledMethodsBottom>, respectively (because \<null> has no must-call obligations
 and methods cannot be called on it).
-%
+
 Inside the \<try> block, \<s> is assigned to a new \<Socket> object. New \<Socket> objects
 do have a must-call obligation and methods can be called on them, so \<s>'s types at the end of the \<try>
 are \<@MustCall("close")> and \<@CalledMethods(\{\})>.
-%
+
 At the beginning of the \<finally> block (assuming that the \<Socket> constructor can throw
 an exception), the types are the least upper bounds of the types before and after the \<try>
 block: \<@MustCall("close")> and \<@CalledMethods(\{\})>. If \<s> is in-fact non-null, then
 its type in the Called Methods type system at the end of the \<if> is \<@CalledMethods("close")>;
 if it was \<null>, then its type is \<@CalledMethodsBottom>. Their least upper bound is
 \<@CalledMethods("close")>, so this is the type of \<s> at the end of the \<finally> block.
-%
+
 The Resource Leak Checker determines that \<s> goes out of scope at the end of this block
 and then compares the types in the Must Call and Called Methods type system. In this
 case, those types are \<@MustCall("close")> and \<@CalledMethods("close")>, respectively.
