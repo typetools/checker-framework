@@ -2233,7 +2233,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping,
       List<AnnotatedTypeVariable> declTypeVar) {
     // TODO: This should happen as part of Java 8 inference and this method should be removed when
-    // #979 is fixed..
+    // #979 is fixed.
     Map<TypeVariable, AnnotatedTypeVariable> typeParameter = new HashMap<>();
     for (AnnotatedTypeVariable t : declTypeVar) {
       typeParameter.put(t.getUnderlyingType(), t);
@@ -4701,8 +4701,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * this method returns {@code type}.
    *
    * @param type type to capture
-   * @param typeMirror type from the Java compiler that has captured wildcards, which are used as
-   *     the underlying type of the captured wildcards
+   * @param typeMirror the result of applying capture conversion to the underlying type of {@code
+   *     type}; it is used as the underlying type of the returned type
    * @return the result of applying capture conversion to {@code type}
    */
   public AnnotatedTypeMirror applyCaptureConversion(
