@@ -12,8 +12,9 @@ example, the program must call \<close()> on every object that implements the
 interface \<java.io.Closeable>.
 
 The Resource Leak Checker can check any property of the form ``the programmer
-must call methods \emph{M} on object \emph{O} before \emph{O} is
-de-allocated''.  For resource leaks, by default \emph{M} is the set containing
+must call each method in a set of methods \emph{M} at least once
+on object \emph{O} before \emph{O} is de-allocated''.  For resource leaks,
+by default \emph{M} is the set containing
 \<close()> and \emph{O} is any object that implements the interface
 \<java.io.Closeable>.  You can extend this guarantee to other types and methods
 by writing \<@MustCall> or \<@InheritableMustCall> annotations, as described in
@@ -97,13 +98,54 @@ fields or re-opening resources:
 \begin{description}
 
 \item[\refqualclasswithparams{checker/mustcall/qual}{CreatesMustCallFor}{String value}]
-  is a declaration annotation that indicates that the annotated method ``resets'' the must-call
-  obligations of some expression.  Multiple \<@CreatesMustCallFor>
+  is a declaration annotation that indicates that after a call to a method
+  with this annotation none of the must-call obligations of the in-scope, owning expression
+  listed in \<value> have been met.
+  In other words, the annotated method ``resets'' the must-call obligations of the expression.
+  Multiple \<@CreatesMustCallFor>
   annotations can be written on the same method.  For more details
-  on obligation creation, see Section~\ref{resource-leak-createsmustcallfor}.
+  on how to use this annotation to permit re-assignment of owning
+  fields or the re-opening of resources, see Section~\ref{resource-leak-createsmustcallfor}.
 
 \end{description}
 
+\sectionAndLabel{Example of how safe resource usage is verified}{resource-leak-example}
+
+Consider the following example of a safe (but trivial) use of a \<Socket>:
+\begin{verbatim}
+Socket s = null;
+try {
+  s = new Socket(myHost, myPort);
+} catch (Exception e) { // do nothing
+} finally {
+  if (s != null) {
+    s.close();
+  }
+}
+\end{verbatim}
+
+On the first line, \<s> is assigned to \<null>. At this point, it has a type from
+each of the Must Call Checker and the Called Methods Checker: \<@MustCall(\{\})> and
+\<@CalledMethodsBottom>, respectively (because \<null> has no must-call obligations
+and methods cannot be called on it).
+%
+Inside the \<try> block, \<s> is assigned to a new \<Socket> object. New \<Socket> objects
+do have a must-call obligation and methods can be called on them, so \<s>'s types at the end of the \<try>
+are \<@MustCall("close")> and \<@CalledMethods(\{\})>.
+%
+At the beginning of the \<finally> block (assuming that the \<Socket> constructor can throw
+an exception), the types are the least upper bounds of the types before and after the \<try>
+block: \<@MustCall("close")> and \<@CalledMethods(\{\})>. If \<s> is in-fact non-null, then
+its type in the Called Methods type system at the end of the \<if> is \<@CalledMethods("close")>;
+if it was \<null>, then its type is \<@CalledMethodsBottom>. Their least upper bound is
+\<@CalledMethods("close")>, so this is the type of \<s> at the end of the \<finally> block.
+%
+The Resource Leak Checker determines that \<s> goes out of scope at the end of this block
+and then compares the types in the Must Call and Called Methods type system. In this
+case, those types are \<@MustCall("close")> and \<@CalledMethods("close")>, respectively.
+To do the comparison, the checker first converts the Must Call type into a Called Methods
+type with the same arguments, then tests whether that type is a supertype of the actual
+Called Methods type (and reports a \<required.method.not.called> error otherwise).
 
 \sectionAndLabel{Aliased references and ownership transfer}{resource-leak-ownership}
 
