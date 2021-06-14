@@ -31,20 +31,20 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
-  (see \chapterpageref{lock-checker})
-\item
-  \ahrefloc{index-checker}{Index Checker} for array accesses
-  (see \chapterpageref{index-checker})
-\item
-  \ahrefloc{called-methods-checker}{Called Methods Checker} for
-  the builder pattern (see \chapterpageref{called-methods-checker})
-\item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
   patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
+\item
+  \ahrefloc{called-methods-checker}{Called Methods Checker} for
+  the builder pattern (see \chapterpageref{called-methods-checker})
+\item
+  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  (see \chapterpageref{lock-checker})
+\item
+  \ahrefloc{index-checker}{Index Checker} for array accesses
+  (see \chapterpageref{index-checker})
 \item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
@@ -388,10 +388,11 @@ option, or use auto-discovery as described in
 Section~\ref{checker-auto-discovery}.
 (If your project already uses auto-discovery for some annotation processor,
 such as AutoValue, then you should use auto-discovery.)
-A concrete example of using \code{-processor} to run the Nullness Checker is:
+Two concretes example of using \code{-processor} to run the Nullness Checker are
 
 \begin{Verbatim}
   javac -processor nullness MyFile.java
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
 \end{Verbatim}
 
 \noindent
