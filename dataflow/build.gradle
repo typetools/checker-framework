@@ -57,13 +57,13 @@ createDataflowShaded('errorprone')
 task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
     description 'Test the live variable analysis test for dataflow framework.'
     inputs.file('tests/live-variable/Expected.txt')
-    inputs.file('tests/live-variable/LiveVariableTest.java')
+    inputs.file('tests/live-variable/Test.java')
 
     outputs.file('tests/live-variable/Out.txt')
-    outputs.file('tests/live-variable/LiveVariableTest.class')
+    outputs.file('tests/live-variable/Test.class')
 
     delete('tests/live-variable/Out.txt')
-    delete('tests/live-variable/LiveVariableTest.class')
+    delete('tests/live-variable/Test.class')
     doLast {
         javaexec {
             workingDir = 'tests/live-variable'
