@@ -2,8 +2,9 @@
 3 -> 4 EACH_TO_EACH
 4 -> 8 THEN_TO_BOTH
 4 -> 10 ELSE_TO_BOTH
-8 -> 0 EACH_TO_EACH
-10 -> 0 EACH_TO_EACH
+8 -> 11 EACH_TO_EACH
+10 -> 11 EACH_TO_EACH
+11 -> 0 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -30,7 +31,7 @@ a   [ LocalVariable ]
 0   [ IntegerLiteral ]
 (a > 0)   [ GreaterThan ]
 ~~~~~~~~~
-TransferInput#18
+TransferInput#22
 After:   live variables = a, b, c
 
 4:
@@ -51,7 +52,7 @@ c   [ LocalVariable ]
 (a + c)   [ NumericalAddition ]
 d = (a + c)   [ Assignment ]
 ~~~~~~~~~
-TransferInput#2
+TransferInput#6
 After:   live variables = none
 
 10:
@@ -65,12 +66,23 @@ b   [ LocalVariable ]
 (a + b)   [ NumericalAddition ]
 e = (a + b)   [ Assignment ]
 ~~~~~~~~~
+TransferInput#5
+After:   live variables = none
+
+11:
+Process order: 6
+AnalysisResult#11
+Before:   live variables = none
+~~~~~~~~~
+a   [ LocalVariable ]
+return a   [ Return ]
+~~~~~~~~~
 TransferInput#1
 After:   live variables = none
 
 0:
-Process order: 6
-AnalysisResult#11
+Process order: 7
+AnalysisResult#13
 Before:   live variables = none
 ~~~~~~~~~
 <exit>
