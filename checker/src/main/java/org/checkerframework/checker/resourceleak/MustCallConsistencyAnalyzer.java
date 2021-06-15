@@ -860,7 +860,7 @@ class MustCallConsistencyAnalyzer {
         targetStr = targetStrWithoutAdaptation;
       }
       if (targetStr.equals(receiverString)) {
-        // This create obligation annotation matches.
+        // This @CreatesMustCallFor annotation matches.
         return;
       }
       if ("".equals(checked)) {

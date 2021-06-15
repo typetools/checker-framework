@@ -77,7 +77,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   private BiMap<LocalVariableNode, Tree> tempVarToNode = HashBiMap.create();
 
   /**
-   * Default constructor matching super. Should be called automatically.
+   * Creates a new ResourceLeakAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
    */
@@ -143,13 +143,13 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
           }
         }
       }
-      // If it wasn't in the store, fall back to the default must-call type for the class.
-      // TODO: we currently end up in this case when checking a call to the return type
-      // of a returns-receiver method on something with a MustCall type; for example,
-      // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we
-      // can; that would probably require us to change the Must Call Checker to also
-      // track temporaries.
       if (mcAnno == null) {
+        //  It wasn't in the store, so fall back to the default must-call type for the class.
+        // TODO: we currently end up in this case when checking a call to the return type
+        // of a returns-receiver method on something with a MustCall type; for example,
+        // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we
+        // can; that would probably require us to change the Must Call Checker to also
+        // track temporaries.
         TypeElement typeElt = TypesUtils.getTypeElement(local.getType());
         if (typeElt == null) {
           mcAnno = mustCallAnnotatedTypeFactory.TOP;
@@ -175,12 +175,13 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Returns the String value of @MustCall annotation of the type of {@code tree}.
+   * Returns the {@link MustCall#value} element/argument of the @MustCall annotation on the type of
+   * {@code tree}.
    *
-   * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which will account for flow-sensitive
+   * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which accounts for flow-sensitive
    * refinement.
    *
-   * @param tree the tree
+   * @param tree a tree
    * @return the strings in its must-call type
    */
   /* package-private */ List<String> getMustCallValue(Tree tree) {
@@ -189,19 +190,20 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     if (mustCallAnnotatedTypeFactory == null) {
       return Collections.emptyList();
     }
-    AnnotationMirror mustCallAnnotation =
-        mustCallAnnotatedTypeFactory.getAnnotatedType(tree).getAnnotation(MustCall.class);
+    AnnotatedTypeMirror mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType(tree);
+    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
 
     return getMustCallValues(mustCallAnnotation);
   }
 
   /**
-   * Returns the String value of @MustCall annotation declared on the class type of {@code element}.
+   * Returns the {@link MustCall#value} element/argument of the @MustCall annotation on the class
+   * type of {@code element}.
    *
-   * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which will account for flow-sensitive
+   * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which accounts for flow-sensitive
    * refinement.
    *
-   * @param element the element
+   * @param element an element
    * @return the strings in its must-call type
    */
   /* package-private */ List<String> getMustCallValue(Element element) {
@@ -218,16 +220,15 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * Helper method for getting the must-call values from a must-call annotation.
    *
    * @param mustCallAnnotation a {@link MustCall} annotation, or null
-   * @return the list of strings in mustCallAnnotation's value element, or the empty list if it was
-   *     null
+   * @return the strings in mustCallAnnotation's value element, or the empty list if
+   *     mustCallAnnotation is null
    */
   private List<String> getMustCallValues(@Nullable AnnotationMirror mustCallAnnotation) {
-    List<String> mustCallValues =
-        (mustCallAnnotation != null)
-            ? AnnotationUtils.getElementValueArray(
-                mustCallAnnotation, mustCallValueElement, String.class)
-            : Collections.emptyList();
-    return mustCallValues;
+    if (mustCallAnnotation == null) {
+      return Collections.emptyList();
+    }
+    return AnnotationUtils.getElementValueArray(
+        mustCallAnnotation, mustCallValueElement, String.class);
   }
 
   /**
@@ -252,7 +253,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Registers a temporary variables by adding it to this type factory's tempvar map.
+   * Registers a temporary variable by adding it to this type factory's tempvar map.
    *
    * @param tmpVar a temporary variable
    * @param tree the tree of the expression the tempvar represents
@@ -308,7 +309,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * CreatesMustCallFor} annotations.
    *
    * @param node a method invocation node
-   * @return true iff there is one or more create obligation annotations on the declaration of the
+   * @return true iff there is one or more @CreatesMustCallFor annotations on the declaration of the
    *     invoked method
    */
   public boolean hasCreatesMustCallFor(MethodInvocationNode node) {
@@ -320,7 +321,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /**
    * Does this type factory support {@link CreatesMustCallFor}?
    *
-   * @return true iff the -AnoCreatesMustCallFor was not supplied to the checker
+   * @return true iff the -AnoCreatesMustCallFor command-line argument was not supplied to the
+   *     checker
    */
   public boolean canCreateObligations() {
     return !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
@@ -339,9 +341,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Returns the CreatesMustCallFor.value field.
+   * Returns the {@link CreatesMustCallFor#value} element.
    *
-   * @return the CreatesMustCallFor.value field
+   * @return the {@link CreatesMustCallFor#value} element
    */
   @Override
   public ExecutableElement getCreatesMustCallForValueElement() {
@@ -349,9 +351,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Returns the CreatesMustCallFor.List.value field.
+   * Returns the {@link CreatesMustCallFor.List#value} element.
    *
-   * @return the CreatesMustCallFor.List.value field
+   * @return the {@link CreatesMustCallFor.List#value} element
    */
   @Override
   public ExecutableElement getCreatesMustCallForListValueElement() {
