@@ -149,11 +149,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Checks validity of a final field {@code field} with an {@code @}{@link Owning} annotation. Say
-   * the type of {@code field} is {@code @MustCall("m"}}. This method checks that the enclosing
-   * class of {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that
-   * {@code m2} has an annotation {@code @EnsuresCalledMethods(value = "this.field", methods =
-   * "m")}, guaranteeing that the {@code @MustCall} obligation of the field will be satisfied.
+   * Checks validity of a field {@code field} with an {@code @}{@link Owning} annotation. Say the
+   * type of {@code field} is {@code @MustCall("m"}}. This method checks that the enclosing class of
+   * {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that {@code
+   * m2} has an annotation {@code @EnsuresCalledMethods(value = "this.field", methods = "m")},
+   * guaranteeing that the {@code @MustCall} obligation of the field will be satisfied.
    *
    * @param field the declaration of the field to check
    */
@@ -164,25 +164,29 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     }
 
     // This value is side-effected.
-    List<String> fieldMCAnno = rlTypeFactory.getMustCallValue(field);
+    List<String> unsatisfiedMustCallObligationsOfOwningField =
+        rlTypeFactory.getMustCallValue(field);
 
-    if (fieldMCAnno.isEmpty()) {
+    if (unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
       return;
     }
 
     String error = "";
     Element enclosingElement = field.getEnclosingElement();
-    List<String> enclosingMCAnno = rlTypeFactory.getMustCallValue(enclosingElement);
+    List<String> enclosingMustCallValues = rlTypeFactory.getMustCallValue(enclosingElement);
 
-    if (enclosingMCAnno == null) {
-      error = " The enclosing element doesn't have a @MustCall annotation";
+    if (enclosingMustCallValues == null) {
+      error =
+          " The enclosing element "
+              + ElementUtils.getQualifiedName(enclosingElement)
+              + " doesn't have a @MustCall annotation";
     } else {
-      List<? extends Element> classElements = enclosingElement.getEnclosedElements();
-      for (Element element : classElements) {
-        if (element.getKind() == ElementKind.METHOD
-            && enclosingMCAnno.contains(element.getSimpleName().toString())) {
+      List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
+      for (Element siblingElement : siblingsOfOwningField) {
+        if (siblingElement.getKind() == ElementKind.METHOD
+            && enclosingMustCallValues.contains(siblingElement.getSimpleName().toString())) {
           AnnotationMirror ensuresCalledMethodsAnno =
-              rlTypeFactory.getDeclAnnotation(element, EnsuresCalledMethods.class);
+              rlTypeFactory.getDeclAnnotation(siblingElement, EnsuresCalledMethods.class);
 
           if (ensuresCalledMethodsAnno != null) {
             List<String> values =
@@ -197,28 +201,30 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
                         ensuresCalledMethodsAnno,
                         rlTypeFactory.ensuresCalledMethodsMethodsElement,
                         String.class);
-                fieldMCAnno.removeAll(methods);
+                unsatisfiedMustCallObligationsOfOwningField.removeAll(methods);
               }
             }
-            if (fieldMCAnno.isEmpty()) {
+            if (unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
               return;
             }
           }
 
-          if (!fieldMCAnno.isEmpty()) {
+          if (!unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
             error =
                 " @EnsuresCalledMethods written on MustCall methods doesn't contain "
-                    + MustCallConsistencyAnalyzer.formatMissingMustCallMethods(fieldMCAnno);
+                    + MustCallConsistencyAnalyzer.formatMissingMustCallMethods(
+                        unsatisfiedMustCallObligationsOfOwningField);
           }
         }
       }
     }
 
-    if (!fieldMCAnno.isEmpty()) {
+    if (!unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
       checker.reportError(
           field,
           "required.method.not.called",
-          MustCallConsistencyAnalyzer.formatMissingMustCallMethods(fieldMCAnno),
+          MustCallConsistencyAnalyzer.formatMissingMustCallMethods(
+              unsatisfiedMustCallObligationsOfOwningField),
           field.asType().toString(),
           error);
     }
