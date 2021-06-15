@@ -447,18 +447,18 @@ public class ChapterExamples {
       d = b.intValue(); // The de-sugared version does not issue an error.
     }
 
-    c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
+    c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()).
 
     // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
     // :: error: (method.invocation)
-    c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+    c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
 
     synchronized (lock) {
-      c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
+      c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()).
 
       // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
       // :: error: (method.invocation)
-      c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+      c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
     }
 
     a = b;
@@ -482,13 +482,13 @@ public class ChapterExamples {
     }
 
     // TODO re-enable this error (lock.not.held)
-    c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()), hence 'lock' must be held.
+    c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()), hence 'lock' must be held.
     // TODO re-enable this error (lock.not.held)
-    c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+    c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
 
     synchronized(lock) {
-      c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()), hence 'lock' must be held.
-      c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+      c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()), hence 'lock' must be held.
+      c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
     }
 
     // TODO re-enable this error (lock.not.held)
