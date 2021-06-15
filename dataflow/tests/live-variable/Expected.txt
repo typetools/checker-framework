@@ -53,7 +53,7 @@ c   [ LocalVariable ]
 d = (a + c)   [ Assignment ]
 ~~~~~~~~~
 TransferInput#6
-After:   live variables = none
+After:   live variables = a
 
 10:
 Process order: 5
@@ -67,12 +67,12 @@ b   [ LocalVariable ]
 e = (a + b)   [ Assignment ]
 ~~~~~~~~~
 TransferInput#5
-After:   live variables = none
+After:   live variables = a
 
 11:
 Process order: 6
 AnalysisResult#11
-Before:   live variables = none
+Before:   live variables = a
 ~~~~~~~~~
 a   [ LocalVariable ]
 return a   [ Return ]
