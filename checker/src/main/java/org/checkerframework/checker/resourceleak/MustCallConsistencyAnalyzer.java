@@ -279,15 +279,16 @@ class MustCallConsistencyAnalyzer {
           ExecutableElement enclosingElt = TreeUtils.elementFromDeclaration(enclosingMethod);
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-          List<String> enclosingCoValues =
+          List<String> enclosingCmcfValues =
               ResourceLeakVisitor.getLiteralCreatesMustCallForValues(
                   enclosingElt, mcAtf, typeFactory);
-          if (!enclosingCoValues.isEmpty()) {
-            for (String enclosingCoValue : enclosingCoValues) {
+          if (!enclosingCmcfValues.isEmpty()) {
+            for (String enclosingCmcfValue : enclosingCmcfValues) {
               JavaExpression enclosingTarget;
               try {
                 enclosingTarget =
-                    StringToJavaExpression.atMethodBody(enclosingCoValue, enclosingMethod, checker);
+                    StringToJavaExpression.atMethodBody(
+                        enclosingCmcfValue, enclosingMethod, checker);
               } catch (JavaExpressionParseException e) {
                 // TODO: or issue an unparseable error?
                 enclosingTarget = null;

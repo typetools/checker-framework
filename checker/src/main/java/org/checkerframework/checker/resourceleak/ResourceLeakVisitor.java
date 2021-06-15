@@ -62,11 +62,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       // might allow e.g. a field to be overwritten by a CMCF method, but the CMCF effect wouldn't
       // occur.
       for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
-        List<String> overriddenCoValues =
+        List<String> overriddenCmcfValues =
             getLiteralCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
-        if (!overriddenCoValues.containsAll(cmcfValues)) {
-          String foundCoValueString = String.join(", ", cmcfValues);
-          String neededCoValueString = String.join(", ", overriddenCoValues);
+        if (!overriddenCmcfValues.containsAll(cmcfValues)) {
+          String foundCmcfValueString = String.join(", ", cmcfValues);
+          String neededCmcfValueString = String.join(", ", overriddenCmcfValues);
           String actualClassname = ElementUtils.getEnclosingClassName(elt);
           String overriddenClassname = ElementUtils.getEnclosingClassName(overridden);
           checker.reportError(
@@ -74,8 +74,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
               "creates.mustcall.for.override.invalid",
               actualClassname + "#" + elt,
               overriddenClassname + "#" + overridden,
-              foundCoValueString,
-              neededCoValueString);
+              foundCmcfValueString,
+              neededCmcfValueString);
         }
       }
     }
