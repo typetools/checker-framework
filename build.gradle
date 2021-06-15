@@ -664,6 +664,9 @@ subprojects {
             }
             args += "${formatScriptsHome}/check-google-java-format.py"
             args += getJavaFilesToFormat(project.name)
+            // Since the scripts are downloaded from third-party Github, the environment variable
+            // is the only way to add the necessary open:
+            environment('JDK_JAVA_OPTIONS', '--add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED')
         }
         ignoreExitValue = true
         doLast {
