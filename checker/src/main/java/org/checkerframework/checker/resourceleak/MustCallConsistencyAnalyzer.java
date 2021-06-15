@@ -348,7 +348,7 @@ class MustCallConsistencyAnalyzer {
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     Tree tree = node.getTree();
     // we need to track the result of the call iff there is a temporary variable for the node
-    LocalVariableNode tmpVar = typeFactory.getTempVarForTree(node);
+    LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
     if (tmpVar == null) {
       return;
     }
@@ -521,7 +521,7 @@ class MustCallConsistencyAnalyzer {
       ReturnNode node, ControlFlowGraph cfg, Set<ImmutableSet<LocalVarWithTree>> facts) {
     if (isTransferOwnershipAtReturn(cfg)) {
       Node result = node.getResult();
-      Node temp = typeFactory.getTempVarForTree(result);
+      Node temp = typeFactory.getTempVarForNode(result);
       if (temp != null) {
         result = temp;
       }
@@ -566,8 +566,8 @@ class MustCallConsistencyAnalyzer {
   private void handleAssignment(AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> facts) {
     // use the temporary variable for the rhs if it exists
     Node rhs = removeCasts(node.getExpression());
-    if (typeFactory.getTempVarForTree(rhs) != null) {
-      rhs = typeFactory.getTempVarForTree(rhs);
+    if (typeFactory.getTempVarForNode(rhs) != null) {
+      rhs = typeFactory.getTempVarForNode(rhs);
     }
     Node lhs = node.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
@@ -942,7 +942,7 @@ class MustCallConsistencyAnalyzer {
     // TODO create temp vars for TypeCastNodes as well, so we don't need to explicitly remove casts
     // here
     node = removeCasts(node);
-    LocalVariableNode tmpVar = typeFactory.getTempVarForTree(node);
+    LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
     return tmpVar != null ? tmpVar : node;
   }
 
@@ -1101,7 +1101,7 @@ class MustCallConsistencyAnalyzer {
           // the temporary variable for curBlock's node
           if (exceptionType != null) {
             Node exceptionalNode = removeCasts(((ExceptionBlock) curBlock).getNode());
-            LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForTree(exceptionalNode);
+            LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
             if (tmpVarForExcNode != null
                 && fact.size() == 1
                 && Iterables.getOnlyElement(fact)
@@ -1209,7 +1209,7 @@ class MustCallConsistencyAnalyzer {
       return facts;
     }
     TernaryExpressionNode ternaryNode = (TernaryExpressionNode) succNodes.get(0);
-    LocalVariableNode ternaryTempVar = typeFactory.getTempVarForTree(ternaryNode);
+    LocalVariableNode ternaryTempVar = typeFactory.getTempVarForNode(ternaryNode);
     if (ternaryTempVar == null) {
       return facts;
     }
@@ -1217,7 +1217,7 @@ class MustCallConsistencyAnalyzer {
     // right-hand side of the pseudo-assignment to the ternary expression temporary variable
     Node rhs = removeCasts(predNodes.get(predNodes.size() - 1));
     if (!(rhs instanceof LocalVariableNode)) {
-      rhs = typeFactory.getTempVarForTree(rhs);
+      rhs = typeFactory.getTempVarForNode(rhs);
       if (rhs == null) {
         return facts;
       }

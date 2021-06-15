@@ -71,10 +71,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
   /**
-   * Bidirectional map to preserve temporary variables created for nodes with non-empty @MustCall
-   * annotation and the corresponding nodes.
+   * Bidirectional map to store temporary variables created for expressions with non-empty @MustCall
+   * obligations and the corresponding trees. Keys are the artificial local variable nodes created
+   * as temporary variables; values are the corresponding trees.
    */
-  private BiMap<LocalVariableNode, Tree> tempVarToNode = HashBiMap.create();
+  private BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
    * Creates a new ResourceLeakAnnotatedTypeFactory.
@@ -108,7 +109,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         new MustCallConsistencyAnalyzer(this, this.analysis);
     mustCallConsistencyAnalyzer.analyze(cfg);
     super.postAnalyze(cfg);
-    tempVarToNode.clear();
+    tempVarToTree.clear();
   }
 
   /**
@@ -119,7 +120,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *     represent the same resource
    * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is null,
    *     then the default MustCall type of each variable's class will be used.
-   * @return the list of must-call method names
+   * @return the list of must-call method names, or null if the resource's must-call obligations are
+   *     unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
    */
   public @Nullable List<String> getMustCallValue(
       ImmutableSet<LocalVarWithTree> localVarWithTreeSet, @Nullable CFStore mcStore) {
@@ -152,6 +154,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         // track temporaries.
         TypeElement typeElt = TypesUtils.getTypeElement(local.getType());
         if (typeElt == null) {
+          // typeElt is null if local.getType() was not a class, interface, annotation type, or
+          // enum---that is, was not an annotatable type.
+          // That shouldn't happen, but if it does fall back to a safe default (i.e. top).
           mcAnno = mustCallAnnotatedTypeFactory.TOP;
         } else {
           // Why does this happen sometimes?
@@ -238,8 +243,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return the tempvar for node's expression, or null if one does not exist
    */
   /* package-private */
-  @Nullable LocalVariableNode getTempVarForTree(Node node) {
-    return tempVarToNode.inverse().get(node.getTree());
+  @Nullable LocalVariableNode getTempVarForNode(Node node) {
+    return tempVarToTree.inverse().get(node.getTree());
   }
 
   /**
@@ -249,7 +254,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return true iff the given node is a temporary variable
    */
   /* package-private */ boolean isTempVar(Node node) {
-    return tempVarToNode.containsKey(node);
+    return tempVarToTree.containsKey(node);
   }
 
   /**
@@ -259,7 +264,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param tree the tree of the expression the tempvar represents
    */
   /* package-private */ void addTempVar(LocalVariableNode tmpVar, Tree tree) {
-    tempVarToNode.put(tmpVar, tree);
+    tempVarToTree.put(tmpVar, tree);
   }
 
   /**
