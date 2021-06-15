@@ -23,16 +23,16 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
   /**
-   * Shadowed because we MUST dispatch to the RLC's version of getTypefactoryOfSubchecker to get the
-   * correct MCATF.
+   * Shadowed because we must dispatch to the Resource Leak Checker's version of
+   * getTypefactoryOfSubchecker to get the correct Mustcallannotatedtypefactory.
    */
   private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
 
   /**
-   * Create a new RL transfer function.
+   * Create a new resource leak transfer function.
    *
-   * @param analysis the analysis. Note that the associated type factory must be a Resource Leak
-   *     type factory.
+   * @param analysis the analysis. Its type factory must be a {@link
+   *     ResourceLeakAnnotatedTypeFactory}.
    */
   public ResourceLeakTransfer(final CFAnalysis analysis) {
     super(analysis);
@@ -56,12 +56,11 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     handleCreatesMustCallFor(node, result);
     updateStoreWithTempVar(result, node);
 
-    Node receiver = node.getTarget().getReceiver();
     // If there is a temporary variable for the receiver, update its type.
+    Node receiver = node.getTarget().getReceiver();
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     Node accumulationTarget = mcAtf.getTempVar(receiver);
-
     if (accumulationTarget != null) {
       String methodName = node.getTarget().getMethod().getSimpleName().toString();
       methodName = rlTypeFactory.adjustMethodNameUsingValueChecker(methodName, node.getTree());
@@ -73,7 +72,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
   /**
    * Clears the called-methods store of all information about the target if an @CreatesMustCallFor
-   * method is invoked and the type factory can create obligations. Othewise, does nothing.
+   * method is invoked and the type factory can create obligations. Otherwise, does nothing.
    *
    * @param n a method invocation
    * @param result the transfer result whose stores should be cleared of information
@@ -87,8 +86,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     List<JavaExpression> targetExprs =
         CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             n, rlTypeFactory, rlTypeFactory);
+    AnnotationMirror defaultType = rlTypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {
-      AnnotationMirror defaultType = rlTypeFactory.top;
       if (result.containsTwoStores()) {
         CFStore thenStore = result.getThenStore();
         thenStore.clearValue(targetExpr);
@@ -116,7 +115,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    * This method either creates or looks up the temp var t for node, and then updates the store to
    * give t the same type as node
    *
-   * @param node the node to be assigned to a temporal variable
+   * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
    */
   public void updateStoreWithTempVar(TransferResult<CFValue, CFStore> result, Node node) {

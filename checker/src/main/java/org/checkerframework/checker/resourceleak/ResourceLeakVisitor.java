@@ -23,8 +23,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The visitor for the Resource Leak Checker. Responsible for some {@link
- * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} checking.
+ * The visitor for the Resource Leak Checker. Responsible for some {@link CreatesMustCallFor}
+ * checking.
  */
 public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
@@ -55,18 +55,17 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    List<String> coValues = getLiteralCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
-    if (!coValues.isEmpty()) {
+    List<String> cmcfValues = getLiteralCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
+    if (!cmcfValues.isEmpty()) {
       // Check the validity of the annotation, by ensuring that if this method is overriding another
-      // method
-      // it also creates at least as many obligations. Without this check, dynamic dispatch might
-      // allow e.g. a field to
-      // be overwritten by a CO method, but the CO effect wouldn't occur.
+      // method it also creates at least as many obligations. Without this check, dynamic dispatch
+      // might allow e.g. a field to be overwritten by a CMCF method, but the CMCF effect wouldn't
+      // occur.
       for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
         List<String> overriddenCoValues =
             getLiteralCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
-        if (!overriddenCoValues.containsAll(coValues)) {
-          String foundCoValueString = String.join(", ", coValues);
+        if (!overriddenCoValues.containsAll(cmcfValues)) {
+          String foundCoValueString = String.join(", ", cmcfValues);
           String neededCoValueString = String.join(", ", overriddenCoValues);
           String actualClassname = ElementUtils.getEnclosingClassName(elt);
           String overriddenClassname = ElementUtils.getEnclosingClassName(overridden);
@@ -122,13 +121,13 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
         atypeFactory.getDeclAnnotation(elt, CreatesMustCallFor.List.class);
     List<String> result = new ArrayList<>(4);
     if (createsMustCallForList != null) {
-      List<AnnotationMirror> createObligations =
+      List<AnnotationMirror> createsMustCallFors =
           AnnotationUtils.getElementValueArray(
               createsMustCallForList,
               mcAtf.getCreatesMustCallForListValueElement(),
               AnnotationMirror.class);
-      for (AnnotationMirror co : createObligations) {
-        result.add(getLiteralCreatesMustCallForValue(co, mcAtf));
+      for (AnnotationMirror cmcf : createsMustCallFors) {
+        result.add(getLiteralCreatesMustCallForValue(cmcf, mcAtf));
       }
     }
     AnnotationMirror createsMustCallFor =

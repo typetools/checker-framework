@@ -323,7 +323,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return true iff the -AnoCreatesMustCallFor was not supplied to the checker
    */
   public boolean canCreateObligations() {
-    return !checker.hasOption(MustCallChecker.NO_CREATES_OBLIGATION);
+    return !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
   }
 
   @Override
