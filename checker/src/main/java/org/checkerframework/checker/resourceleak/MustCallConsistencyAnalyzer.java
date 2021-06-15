@@ -280,8 +280,7 @@ class MustCallConsistencyAnalyzer {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
           List<String> enclosingCmcfValues =
-              ResourceLeakVisitor.getLiteralCreatesMustCallForValues(
-                  enclosingElt, mcAtf, typeFactory);
+              ResourceLeakVisitor.getCreatesMustCallForValues(enclosingElt, mcAtf, typeFactory);
           if (!enclosingCmcfValues.isEmpty()) {
             for (String enclosingCmcfValue : enclosingCmcfValues) {
               JavaExpression enclosingTarget;
@@ -838,7 +837,7 @@ class MustCallConsistencyAnalyzer {
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
     List<String> cmcfValues =
-        ResourceLeakVisitor.getLiteralCreatesMustCallForValues(enclosingElt, mcAtf, typeFactory);
+        ResourceLeakVisitor.getCreatesMustCallForValues(enclosingElt, mcAtf, typeFactory);
 
     if (cmcfValues.isEmpty()) {
       checker.reportError(

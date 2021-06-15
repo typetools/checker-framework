@@ -16,8 +16,6 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -55,15 +53,14 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    List<String> cmcfValues = getLiteralCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
+    List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
     if (!cmcfValues.isEmpty()) {
-      // Check the validity of the annotation, by ensuring that if this method is overriding another
-      // method it also creates at least as many obligations. Without this check, dynamic dispatch
-      // might allow e.g. a field to be overwritten by a CMCF method, but the CMCF effect wouldn't
-      // occur.
+      // If this method overrides another method, it must create at least as many
+      // obligations. Without this check, dynamic dispatch might allow e.g. a field to be
+      // overwritten by a CMCF method, but the CMCF effect wouldn't occur.
       for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
         List<String> overriddenCmcfValues =
-            getLiteralCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
+            getCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
         if (!overriddenCmcfValues.containsAll(cmcfValues)) {
           String foundCmcfValueString = String.join(", ", cmcfValues);
           String neededCmcfValueString = String.join(", ", overriddenCmcfValues);
@@ -83,27 +80,27 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Returns the literal string present in the given @CreatesMustCallFor annotation, or "this" if
-   * there is none.
+   * Returns the {@link CreatesMustCallFor#value} element/argument of the given @CreatesMustCallFor
+   * annotation, or "this" if there is none.
+   *
+   * <p>Does not vipewpoint-adaptation.
    *
    * @param createsMustCallFor an @CreatesMustCallFor annotation
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
    * @return the string value
    */
-  private static String getLiteralCreatesMustCallForValue(
+  private static String getCreatesMustCallForValue(
       AnnotationMirror createsMustCallFor, MustCallAnnotatedTypeFactory mcAtf) {
     return AnnotationUtils.getElementValue(
         createsMustCallFor, mcAtf.getCreatesMustCallForValueElement(), String.class, "this");
   }
 
   /**
-   * Returns all the literal strings present in the @CreatesMustCallFor annotations on the given
-   * element. This version correctly handles multiple CreatesMustCallFor annotations on the same
-   * element. This differs from {@link
-   * org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier#getCreatesMustCallForExpressions(MethodInvocationNode,
-   * GenericAnnotatedTypeFactory, CreatesMustCallForElementSupplier)} in that this version does not
-   * take into account the calling context when parsing the strings; instead, the literal values
-   * written by the programmer are returned.
+   * Returns all the {@link CreatesMustCallFor#value} elements/arguments of all @CreatesMustCallFor
+   * annotations on the given element.
+   *
+   * <p>Does no viewpoint-adaptation, unlike {@link
+   * CreatesMustCallForElementSupplier#getCreatesMustCallForExpressions} which does.
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
@@ -113,7 +110,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *     iff there are no @CreatesMustCallFor annotations on elt. The returned list is always
    *     modifiable if it is non-empty.
    */
-  /*package-private*/ static List<String> getLiteralCreatesMustCallForValues(
+  /*package-private*/ static List<String> getCreatesMustCallForValues(
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
       ResourceLeakAnnotatedTypeFactory atypeFactory) {
@@ -127,13 +124,13 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
               mcAtf.getCreatesMustCallForListValueElement(),
               AnnotationMirror.class);
       for (AnnotationMirror cmcf : createsMustCallFors) {
-        result.add(getLiteralCreatesMustCallForValue(cmcf, mcAtf));
+        result.add(getCreatesMustCallForValue(cmcf, mcAtf));
       }
     }
     AnnotationMirror createsMustCallFor =
         atypeFactory.getDeclAnnotation(elt, CreatesMustCallFor.class);
     if (createsMustCallFor != null) {
-      result.add(getLiteralCreatesMustCallForValue(createsMustCallFor, mcAtf));
+      result.add(getCreatesMustCallForValue(createsMustCallFor, mcAtf));
     }
     return result;
   }
@@ -152,11 +149,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Checks validity of a final field {@code field} with an {@code @Owning} annotation. Say the type
-   * of {@code field} is {@code @MustCall("m"}}. This method checks that the enclosing class of
-   * {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that {@code
-   * m2} has an annotation {@code @EnsuresCalledMethods(value = "this.field", methods = "m")},
-   * guaranteeing that the {@code @MustCall} obligation of the field will be satisfied.
+   * Checks validity of a final field {@code field} with an {@code @}{@link Owning} annotation. Say
+   * the type of {@code field} is {@code @MustCall("m"}}. This method checks that the enclosing
+   * class of {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that
+   * {@code m2} has an annotation {@code @EnsuresCalledMethods(value = "this.field", methods =
+   * "m")}, guaranteeing that the {@code @MustCall} obligation of the field will be satisfied.
    *
    * @param field the declaration of the field to check
    */
@@ -166,51 +163,54 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       return;
     }
 
+    // This value is side-effected.
     List<String> fieldMCAnno = rlTypeFactory.getMustCallValue(field);
+
+    if (fieldMCAnno.isEmpty()) {
+      return;
+    }
+
     String error = "";
+    Element enclosingElement = field.getEnclosingElement();
+    List<String> enclosingMCAnno = rlTypeFactory.getMustCallValue(enclosingElement);
 
-    if (!fieldMCAnno.isEmpty()) {
-      Element enclosingElement = field.getEnclosingElement();
-      List<String> enclosingMCAnno = rlTypeFactory.getMustCallValue(enclosingElement);
+    if (enclosingMCAnno == null) {
+      error = " The enclosing element doesn't have a @MustCall annotation";
+    } else {
+      List<? extends Element> classElements = enclosingElement.getEnclosedElements();
+      for (Element element : classElements) {
+        if (element.getKind() == ElementKind.METHOD
+            && enclosingMCAnno.contains(element.getSimpleName().toString())) {
+          AnnotationMirror ensuresCalledMethodsAnno =
+              rlTypeFactory.getDeclAnnotation(element, EnsuresCalledMethods.class);
 
-      if (enclosingMCAnno != null) {
-        List<? extends Element> classElements = enclosingElement.getEnclosedElements();
-        for (Element element : classElements) {
-          if (fieldMCAnno.isEmpty()) {
-            return;
-          }
-          if (element.getKind() == ElementKind.METHOD
-              && enclosingMCAnno.contains(element.getSimpleName().toString())) {
-            AnnotationMirror ensuresCalledMethodsAnno =
-                rlTypeFactory.getDeclAnnotation(element, EnsuresCalledMethods.class);
-
-            if (ensuresCalledMethodsAnno != null) {
-              List<String> values =
-                  AnnotationUtils.getElementValueArray(
-                      ensuresCalledMethodsAnno,
-                      rlTypeFactory.ensuresCalledMethodsValueElement,
-                      String.class);
-              for (String value : values) {
-                if (value.contains(field.getSimpleName().toString())) {
-                  List<String> methods =
-                      AnnotationUtils.getElementValueArray(
-                          ensuresCalledMethodsAnno,
-                          rlTypeFactory.ensuresCalledMethodsMethodsElement,
-                          String.class);
-                  fieldMCAnno.removeAll(methods);
-                }
+          if (ensuresCalledMethodsAnno != null) {
+            List<String> values =
+                AnnotationUtils.getElementValueArray(
+                    ensuresCalledMethodsAnno,
+                    rlTypeFactory.ensuresCalledMethodsValueElement,
+                    String.class);
+            for (String value : values) {
+              if (value.contains(field.getSimpleName().toString())) {
+                List<String> methods =
+                    AnnotationUtils.getElementValueArray(
+                        ensuresCalledMethodsAnno,
+                        rlTypeFactory.ensuresCalledMethodsMethodsElement,
+                        String.class);
+                fieldMCAnno.removeAll(methods);
               }
             }
-
-            if (!fieldMCAnno.isEmpty()) {
-              error =
-                  " @EnsuresCalledMethods written on MustCall methods doesn't contain "
-                      + MustCallConsistencyAnalyzer.formatMissingMustCallMethods(fieldMCAnno);
+            if (fieldMCAnno.isEmpty()) {
+              return;
             }
           }
+
+          if (!fieldMCAnno.isEmpty()) {
+            error =
+                " @EnsuresCalledMethods written on MustCall methods doesn't contain "
+                    + MustCallConsistencyAnalyzer.formatMissingMustCallMethods(fieldMCAnno);
+          }
         }
-      } else {
-        error = " The enclosing element doesn't have a @MustCall annotation";
       }
     }
 
