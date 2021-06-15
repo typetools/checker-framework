@@ -6,7 +6,6 @@ been called on an object. This checker is useful for checking any property
 of the form ``call method A before method B''. For the purpose of this
 checker, a method has ``definitely been called'' if it is \emph{invoked}:
 a method that might never return or that might throw an exception has
-a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
 
 The Called Methods Checker provides built-in support for one such property:
@@ -156,6 +155,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
 There are also method annotations:
 
 \begin{description}
+\label{called-methods-ensurescalledmethods}
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
   guarantees to be called.
@@ -169,6 +169,32 @@ There are also method annotations:
 
   guarantees that \<p.x()> and \<p.y()> will always be called before \<m> returns.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+  Sometimes, you need to provide information to enable the Called Methods
+  Checker to verify the property.
+  Consider this example:
+  \begin{Verbatim}
+  @EnsuresCalledMethods(value="#1", methods="close")
+  public void closeSocket(Socket sock) throws IOException {
+      sock.close();
+      m();
+  }
+  \end{Verbatim}
+
+  If \<m()> might have side-effects (i.e., it is not annotated as
+  \refqualclass{dataflow/qual}{SideEffectFree} or \refqualclass{dataflow/qual}{Pure}),
+  then the Called Methods Checker issues an error because
+  it cannot make any assumptions about the call to \<m()>, and therefore assumes
+  the worst: that all information it knows about in-scope variables (including
+  that \<close()> was called on \<sock>) is stale and must be discarded.
+  There are two possible fixes:
+
+  \begin{itemize}
+  \item add a \<@SideEffectFree> or \<@Pure> annotation to \<m()>, if \<m()> is
+    in fact side-effect free or pure; or
+  \item re-order the calls to \<sock.close()> and \<m()> so that the call
+    to \<sock.close()> appears last in \<closeSocket()>.
+  \end{itemize}
 
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsIf}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
