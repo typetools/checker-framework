@@ -100,7 +100,7 @@ public class MustCallTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
 
     updateStoreWithTempVar(result, n);
-    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_OBLIGATION)) {
+    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
       List<JavaExpression> targetExprs =
           CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
               n, atypeFactory, atypeFactory);
