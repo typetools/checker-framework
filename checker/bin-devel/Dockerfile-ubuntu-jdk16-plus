@@ -43,6 +43,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   wget
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz \
+&& tar xzvf apache-maven-3.8.1-bin.tar.gz
+ENV PATH="/apache-maven-3.8.1/bin:$PATH"
+
+RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
   devscripts \
