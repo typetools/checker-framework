@@ -973,8 +973,9 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns true if the underlying type is raw. If the underlying type is raw, then its annotated
-     * type arguments were inferred, so this is no longer raw.
+     * Returns true if the underlying type is raw -- that is, the programmer wrote a raw type in
+     * source code. The receiver of this method is not raw, however; its annotated type arguments
+     * have been inferred.
      *
      * @return true iff the type was raw
      */
