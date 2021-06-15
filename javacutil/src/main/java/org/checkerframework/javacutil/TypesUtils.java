@@ -803,7 +803,14 @@ public final class TypesUtils {
     return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
   }
 
-  /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns {@code null}. */
+  /**
+   * If {@code typeVar} is a captured type variable, then returns its underlying wildcard; otherwise
+   * returns {@code null}.
+   *
+   * @param typeVar a type variable that might be a captured type variable
+   * @return {@code typeVar} is a captured type variable, then returns its underlying wildcard;
+   *     otherwise returns {@code null}.
+   */
   public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
     if (isCapturedTypeVariable(typeVar)) {
       return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
