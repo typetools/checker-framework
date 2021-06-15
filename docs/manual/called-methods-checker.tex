@@ -1,10 +1,11 @@
 \htmlhr
-\chapterAndLabel{Called Methods Checker for the builder pattern, etc.}{called-methods-checker}
+\chapterAndLabel{Called Methods Checker for the builder pattern and more}{called-methods-checker}
 
 The Called Methods Checker tracks the names of methods that have definitely
 been called on an object. This checker is useful for checking any property
 of the form ``call method A before method B''. For the purpose of this
 checker, a method has ``definitely been called'' if it is \emph{invoked}:
+a method that might never return or that might throw an exception has
 a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
 

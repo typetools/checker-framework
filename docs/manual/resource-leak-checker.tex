@@ -109,44 +109,55 @@ fields or re-opening resources:
 
 \end{description}
 
+
 \sectionAndLabel{Example of how safe resource usage is verified}{resource-leak-example}
 
-Consider the following example of a safe use of a \<Socket>:
+Consider the following example of safe use of a \<Socket>, in which the comments indicate the
+inferred Must Call and Called Methods type qualifiers for \<s>:
 \begin{verbatim}
-Socket s = null;
-try {
-  s = new Socket(myHost, myPort);
-} catch (Exception e) {
-  // do nothing
-} finally {
-  if (s != null) {
-    s.close();
+{
+  Socket s = null;
+  // 1. @MustCall({}) @CalledMethodsBottom
+  try {
+    s = new Socket(myHost, myPort);
+    // 2. @MustCall("close") @CalledMethods({})
+  } catch (Exception e) {
+    // do nothing
+  } finally {
+    if (s != null) {
+      s.close();
+      // 3. @MustCall("close") @CalledMethods("close")
+    } else {
+      // do nothing
+      // 4. @MustCall("close") @CalledMethodsBottom
+    }
+    // 5. @MustCall("close") @CalledMethods("close")
   }
+  // 6. @MustCall("close") @CalledMethods("close")
 }
 \end{verbatim}
 
-On the first line, \<s> is assigned to \<null>. At this point, it has a type from
-each of the Must Call Checker and the Called Methods Checker: \<@MustCall(\{\})> and
-\<@CalledMethodsBottom>, respectively (because \<null> has no must-call obligations
-and methods cannot be called on it).
+At point 1, \<s>'s type qualifiers are the type qualifiers of \<null>:
+\<null> has no must-call obligations (\<@MustCall(\{\})>),
+and methods cannot be called on it (\<@CalledMethodsBottom>).
 
-Inside the \<try> block, \<s> is assigned to a new \<Socket> object. New \<Socket> objects
-do have a must-call obligation and methods can be called on them, so \<s>'s types at the end of the \<try>
-are \<@MustCall("close")> and \<@CalledMethods(\{\})>.
+At point 2, \<s> is a new \<Socket> object, which
+has a must-call obligation (\<@MustCall("close")>)
+and has had no methods called on it (\<@CalledMethods(\{\})>).
 
-At the beginning of the \<finally> block (assuming that the \<Socket> constructor can throw
-an exception), the types are the least upper bounds of the types before and after the \<try>
-block: \<@MustCall("close")> and \<@CalledMethods(\{\})>. If \<s> is in-fact non-null, then
-its type in the Called Methods type system at the end of the \<if> is \<@CalledMethods("close")>;
-if it was \<null>, then its type is \<@CalledMethodsBottom>. Their least upper bound is
-\<@CalledMethods("close")>, so this is the type of \<s> at the end of the \<finally> block.
+At point 3, \<close()> has definitely been called on \<s>, so
+\<s>'s Called Methods type is updated. Note that the Must Call type
+does not change.
 
-The Resource Leak Checker determines that \<s> goes out of scope at the end of this block
-and then compares the types in the Must Call and Called Methods type system. In this
-case, those types are \<@MustCall("close")> and \<@CalledMethods("close")>, respectively.
-To do the comparison, the checker first converts the Must Call type into a Called Methods
-type with the same arguments, then tests whether that type is a supertype of the actual
-Called Methods type (and reports a \<required.method.not.called> error otherwise).
+At point 4, \<s> is definitely \<null> and its type is adjusted accordingly.
+
+At point 5, \<s>'s type is the least upper bound of the types at points 3
+and 4.
+
+At point 6, \<s> goes out of scope.  The Resource Leak Checker reports a
+\<required.method.not.called> error if the Must Call set contains any
+element that the Called Methods set does not.
+
 
 \sectionAndLabel{Aliased references and ownership transfer}{resource-leak-ownership}
 
@@ -367,3 +378,4 @@ methods (including \<close()>) do not appear in the \<@CalledMethods> type quali
 % LocalWords:  AcountMustCall EnsuresCalledMethods CreatesMustCallFor expr
 % LocalWords:  closeSocket destructor'' destructor BufferedOutputStream
 % LocalWords:  AnoResourceAliases createsmustcallfor SocketContainer
+% LocalWords:  CalledMethodsBottom
