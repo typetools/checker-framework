@@ -666,7 +666,7 @@ subprojects {
             args += getJavaFilesToFormat(project.name)
             // Since the scripts are downloaded from third-party Github, the environment variable
             // is the only way to add the necessary open:
-            environment('JDK_JAVA_OPTIONS', '--add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED')
+            environment('JDK_JAVA_OPTIONS', '--add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED')
         }
         ignoreExitValue = true
         doLast {
