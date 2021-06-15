@@ -836,10 +836,10 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-    List<String> coValues =
+    List<String> cmcfValues =
         ResourceLeakVisitor.getLiteralCreatesMustCallForValues(enclosingElt, mcAtf, typeFactory);
 
-    if (coValues.isEmpty()) {
+    if (cmcfValues.isEmpty()) {
       checker.reportError(
           enclosingMethod,
           "missing.creates.mustcall.for",
@@ -849,7 +849,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     String checked = "";
-    for (String targetStrWithoutAdaptation : coValues) {
+    for (String targetStrWithoutAdaptation : cmcfValues) {
       String targetStr = null;
       try {
         targetStr =
