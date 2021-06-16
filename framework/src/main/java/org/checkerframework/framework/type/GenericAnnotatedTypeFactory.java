@@ -2021,17 +2021,27 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to the
-   * sub-factory so that the types are computed properly. Because the visitor state is copied, call
-   * this method each time a subfactory is needed rather than store the returned subfactory in a
-   * field.
+   * Returns the type factory used by a subchecker. Returns null if no matching subchecker was found
+   * or if the type factory is null. The caller must know the exact checker class to request.
    *
-   * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
+   * <p>Because the visitor state is copied, call this method each time a subfactory is needed
+   * rather than store the returned subfactory in a field.
+   *
+   * @param subCheckerClass the exact class of the subchecker
+   * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
+   * @return the AnnotatedTypeFactory of the subchecker or null if no subchecker exists
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
-      T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
-    T subFactory = checker.getTypeFactoryOfSubchecker(checkerClass);
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubchecker(
+      Class<? extends BaseTypeChecker> subCheckerClass) {
+    BaseTypeChecker subchecker = checker.getSubchecker(subCheckerClass);
+    if (subchecker == null) {
+      return null;
+    }
+
+    @SuppressWarnings(
+        "unchecked") // This might not be safe, but the caller of the method use the correct type.
+    T subFactory = (T) subchecker.getTypeFactory();
     if (subFactory != null && subFactory.getVisitorState() != null) {
       // Copy the visitor state so that the types are computed properly.
       VisitorState subFactoryVisitorState = subFactory.getVisitorState();
