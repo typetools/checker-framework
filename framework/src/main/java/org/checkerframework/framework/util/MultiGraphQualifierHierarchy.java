@@ -70,19 +70,17 @@ import org.checkerframework.javacutil.TypeSystemError;
  *     <pre>
  * {@code @Override}
  * {@code @SuppressWarnings("deprecation")}
- * <code> public QualifierHierarchy createQualifierHierarchy() {
- *      return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
- *              .createMultiGraphQualifierHierarchy(this);
- *   }
- * </code>
+ * {@code public QualifierHierarchy createQualifierHierarchy() {
+ *     return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
+ *             .createMultiGraphQualifierHierarchy(this);
+ *  }}
  * {@code @Override}
  * {@code @SuppressWarnings("deprecation")}
- * <code> public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
- *          org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
- *                  factory) {
- *      return new YourSubclassQualifierHierarchy(factory);
- *  }
- * </code></pre>
+ * {@code public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+ *         org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+ *                 factory) {
+ *     return new YourSubclassQualifierHierarchy(factory);
+ *  }}</pre>
  */
 @SuppressWarnings("interning") // Class is deprecated.
 @Deprecated // 2020-09-10
