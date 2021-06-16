@@ -1625,8 +1625,8 @@ public final class TreeUtils {
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
     try {
       Method method = CaseTree.class.getDeclaredMethod("getExpressions");
-      @SuppressWarnings("unchecked")
-      List<? extends ExpressionTree> result =
+      @SuppressWarnings({"unchecked", "nullness"})
+      @NonNull List<? extends ExpressionTree> result =
           (List<? extends ExpressionTree>) method.invoke(caseTree);
       return result;
     } catch (NoSuchMethodException e) {
