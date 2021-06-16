@@ -457,7 +457,9 @@ class MustCallConsistencyAnalyzer {
    * Checks if {@code node} is either directly enclosed by a {@link TypeCastNode} or is the then or
    * else operand of a {@link TernaryExpressionNode}, by looking at the successor block in the CFG.
    * This method is only used within {@link #handleSuccessorBlocks(Set, Deque, Set, Block)} to
-   * ensure facts are propagated to cast / ternary nodes properly.
+   * ensure facts are propagated to cast / ternary nodes properly. It relies on the assumption that
+   * a {@link TypeCastNode} or {@link TernaryExpressionNode} will only appear in a CFG as the first
+   * node in a block.
    *
    * @param node the CFG node
    * @return {@code true} if {@code node} is in a {@link SingleSuccessorBlock} {@code b}, the first
