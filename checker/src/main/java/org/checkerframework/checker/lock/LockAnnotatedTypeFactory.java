@@ -738,6 +738,8 @@ public class LockAnnotatedTypeFactory
   }
 
   /**
+   * Returns an AnnotationMirror corresponding to @GuardedBy(values).
+   *
    * @param values a list of lock expressions
    * @return an AnnotationMirror corresponding to @GuardedBy(values)
    */

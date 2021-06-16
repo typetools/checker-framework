@@ -22,6 +22,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface EnsuresCalledMethodsVarArgs {
 
-  /** @return the methods guaranteed to be invoked on the varargs parameters */
+  /**
+   * Returns the methods guaranteed to be invoked on the varargs parameters.
+   *
+   * @return the methods guaranteed to be invoked on the varargs parameters
+   */
   String[] value();
 }
