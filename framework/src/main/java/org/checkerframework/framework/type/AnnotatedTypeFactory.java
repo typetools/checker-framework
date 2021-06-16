@@ -4808,8 +4808,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * type variables in capturedType are the same object when they are refer to the same type
    * variable.
    *
-   * <p>To use, call {@code #copy(AnnotatedDeclaredType, AnnotatedDeclaredType)} rather than a visit
-   * method.
+   * <p>To use, call {@link NonWildcardTypeArgCopier#copy(AnnotatedDeclaredType,
+   * AnnotatedDeclaredType)} rather than a visit method.
    */
   private final NonWildcardTypeArgCopier nonWildcardTypeArgCopier = new NonWildcardTypeArgCopier();
 
@@ -4818,8 +4818,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * ensure that type variables in {@code capturedType} are the same object when they refer to the
    * same type variable.
    *
-   * <p>To use, call {@code #copy(AnnotatedDeclaredType, AnnotatedDeclaredType)} rather than a visit
-   * method.
+   * <p>To use, call {@link NonWildcardTypeArgCopier#copy(AnnotatedDeclaredType,
+   * AnnotatedDeclaredType)} rather than a visit method.
    */
   private class NonWildcardTypeArgCopier extends AnnotatedTypeCopier {
 
@@ -4863,11 +4863,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       for (int i = 0; i < numTypeArgs; i++) {
         AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
         AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
+        // Note: this if statement can't be replaced with
+        //   if (TypesUtils.isCapturedTypeVariable(capturedArg))
+        // because if the bounds of the captured wildcard are equal, then instead of a captured
+        // wildcard, the type of the bound is used.
         if (uncapturedArg.getKind() == TypeKind.WILDCARD) {
-          // Note: this if statement can't be replaced with
-          //   if (TypesUtils.isCapturedTypeVariable(capturedArg))
-          // because if the bounds of the captured wildcard are equal, then instead of a captured
-          // wildcard, the type of the bound is used.
           AnnotatedTypeMirror newCapArg =
               typeVarSubstitutor.substituteWithoutCopyingTypeArguments(typeVarMap, capturedArg);
           newTypeArgs[i] = newCapArg;
