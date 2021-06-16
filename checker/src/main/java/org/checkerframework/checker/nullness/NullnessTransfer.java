@@ -100,7 +100,9 @@ public class NullnessTransfer
     } else {
       // It is error-prone to put a type factory in a field.  It is OK here because
       // keyForTypeFactory is used only to call methods isMapGet() and isKeyForMap().
-      this.keyForTypeFactory = checker.getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+      this.keyForTypeFactory =
+          (KeyForAnnotatedTypeFactory)
+              checker.getSubchecker(KeyForSubchecker.class).getTypeFactory();
     }
 
     NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
