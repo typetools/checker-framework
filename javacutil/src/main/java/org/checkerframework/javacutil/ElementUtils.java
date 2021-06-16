@@ -460,7 +460,7 @@ public class ElementUtils {
    *
    * @param type TypeElement to search
    * @param name name of a field
-   * @return The VariableElement for the field if it was found, null otherwise
+   * @return the VariableElement for the field if it was found, null otherwise
    */
   public static @Nullable VariableElement findFieldInType(TypeElement type, String name) {
     for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
