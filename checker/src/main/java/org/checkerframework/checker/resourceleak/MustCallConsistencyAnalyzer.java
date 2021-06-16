@@ -73,17 +73,17 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types within
- * a method, thereby detecting resource leaks. For any expression <em>e</em> in the method, the
- * analyzer ensures that at method exit, there exists a resource alias <em>r</em> of <em>e</em> such
- * that MustCall(r) is contained in CalledMethods(r). For any <em>e</em> for which this property
- * does not hold, the analyzer reports a {@code "required.method.not.called"} error, indicating a
- * possible resource leak.
+ * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types,
+ * thereby detecting resource leaks. For any expression <em>e</em> in the method, the analyzer
+ * ensures that at method exit, there exists a resource alias <em>r</em> of <em>e</em> such that
+ * MustCall(r) is contained in CalledMethods(r). For any <em>e</em> for which this property does not
+ * hold, the analyzer reports a {@code "required.method.not.called"} error, indicating a possible
+ * resource leak.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
 
-  /** {@code @MustCall} errors reported thus far, to avoid duplicates */
+  /** {@code @MustCall} errors reported thus far, to avoid duplicate reports. */
   private final Set<LocalVarWithTree> reportedMustCallErrors = new HashSet<>();
 
   /**
