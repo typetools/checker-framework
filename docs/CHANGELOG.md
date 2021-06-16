@@ -5,6 +5,10 @@ Version 3.X.X (? ?, 2021)
 
 **Implementation details:**
 
+Renamed AnnotatedDeclaredType#wasRaw => #isUnderlyingTypeRaw and
+AnnotatedDeclaredType#setWasRaw => setIsUnderlyingTypeRaw. The old method
+remain but are deprecated.
+
 **Closed issues:**
 
 Version 3.14.0 (June 1, 2021)
