@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.*;
 
 /** Test subtyping, LUB and annotation replacement in special cases. */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "removal"})
 public class Basics {
 
   public void boolTest() {
@@ -86,7 +86,7 @@ public class Basics {
     Integer a;
 
     /* IntVal + IntVal */
-    a = Integer.valueOf(0);
+    a = new Integer(0);
     if (true) {
       a = 2;
     }
@@ -106,14 +106,14 @@ public class Basics {
     @IntRange(from = 3, to = 30) Integer test5 = a;
 
     /* IntRange + IntVal */
-    a = Integer.valueOf(0);
+    a = new Integer(0);
     if (true) {
       a = x;
     }
     @IntRange(from = 0, to = 4) Integer test7 = a;
 
     /* IntRange (Wider than 10) + IntVal */
-    a = Integer.valueOf(0);
+    a = new Integer(0);
     if (true) {
       a = y;
     }

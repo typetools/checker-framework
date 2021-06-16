@@ -2,9 +2,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 public class InferTypeArgs3 {
-  @SuppressWarnings({"deprecation", "cast.unsafe.constructor.invocation"})
+  @SuppressWarnings({"deprecation", "removal", "cast.unsafe.constructor.invocation"})
   void test() {
-    java.util.Arrays.asList(Integer.valueOf(1), "");
+    java.util.Arrays.asList(new Integer(1), "");
   }
 
   void foo() {
