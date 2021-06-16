@@ -70,10 +70,10 @@ countedreasons=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d-%H%M%S)"-XXX)
 #    include "@SuppressWarnings" because it might appear on the previous line.
 #  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
-# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", and "true positive".
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "// TP" (as an alias for "true positive"), and "count-suppressions-ignore"
 ${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" \
     | grep -v "@AnnotatedFor" | grep -v "/tests/" \
-    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" > "${greplines}"
+    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" | grep -v "// TP" | grep -v "count-suppressions-ignore" > "${greplines}"
 
 total=$(wc -l < "${greplines}")
 ## Don't output a total, to avoid people using this approximate count.
