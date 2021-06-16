@@ -719,9 +719,9 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks that the given re-assignment to a non-final, owning field is valid. Issues an error if
-   * not. A re-assignment is valid if the called methods type of the lhs before the assignment
-   * satisfies the must-call obligations.
+   * Issues an error if the given re-assignment to a non-final, owning field is not valid. A
+   * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
+   * the must-call obligations.
    *
    * @param node an assignment to a non-final, owning field
    * @param facts currently in-scope variables that are being tracked
@@ -748,7 +748,7 @@ class MustCallConsistencyAnalyzer {
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
     TreePath currentPath = typeFactory.getPath(node.getTree());
-    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethodTree(currentPath);
+    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
 
     if (enclosingMethodTree == null) {
       // Assignments outside of methods must be field initializers, which
@@ -1446,7 +1446,7 @@ class MustCallConsistencyAnalyzer {
    * Is {@code exceptionClassName} an exception type we are ignoring, to avoid excessive false
    * positives? For now we ignore {@code java.lang.Throwable}, {@code NullPointerException}, and the
    * runtime exceptions that can occur at any point during the program due to something going wrong
-   * in the JVM, like OutOfMemoryErrors or ClassCircularityErrors.
+   * in the JVM, like OutOfMemoryError and ClassCircularityError.
    *
    * @param exceptionClassName the fully-qualified name of the exception
    * @return true if the given exception class should be ignored
@@ -1479,8 +1479,8 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Updates {@code visited} and {@code worklist} if the input {@code state} has not been visited
-   * yet.
+   * If the input {@code state} has not been visited yet, add it to {@code visited} and {@code
+   * worklist}.
    *
    * @param state the current state
    * @param visited the previously-analyzed states
@@ -1502,7 +1502,10 @@ class MustCallConsistencyAnalyzer {
    */
   /* package-private */
   static String formatMissingMustCallMethods(List<String> mustCallVal) {
-    if (mustCallVal.size() == 1) {
+    int size = mustCallVal.size();
+    if (size == 0) {
+      throw new BugInCF("empty mustCallVal " + mustCallVal);
+    } else if (size == 1) {
       return "method " + mustCallVal.get(0);
     } else {
       return "methods " + String.join(", ", mustCallVal);
@@ -1510,17 +1513,17 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * A pair of a {@link Block} and a set of dataflow facts for our analysis. Each fact is an {@code
-   * ImmutableSet<LocalVarWithTree>}, representing a set of resource aliases for some tracked
+   * A pair of a {@link Block} and a set of dataflow facts on entry to the block. Each fact is an
+   * {@code ImmutableSet<LocalVarWithTree>}, representing a set of resource aliases for some tracked
    * resource. The analyzer's worklist consists of BlockWithFacts objects, each representing the
    * need to handle the set of facts reaching the block during analysis.
    */
   private static class BlockWithFacts {
 
-    /** the block */
+    /** The block. */
     public final Block block;
 
-    /** the facts */
+    /** The facts. */
     public final ImmutableSet<ImmutableSet<LocalVarWithTree>> facts;
 
     /**
@@ -1560,26 +1563,26 @@ class MustCallConsistencyAnalyzer {
    */
   /* package-private */ static class LocalVarWithTree {
 
-    /** the variable */
+    /** The variable. */
     public final LocalVariable localVar;
 
-    /** the tree at which it was assigned, for error reporting */
+    /** The tree at which it was assigned, for error reporting. */
     public final Tree tree;
 
     /**
-     * Create a new LVT.
+     * Create a new LocalVarWithTree.
      *
-     * @param localVarNode the local variable
+     * @param localVar the local variable
      * @param tree the tree
      */
-    public LocalVarWithTree(LocalVariable localVarNode, Tree tree) {
-      this.localVar = localVarNode;
+    public LocalVarWithTree(LocalVariable localVar, Tree tree) {
+      this.localVar = localVar;
       this.tree = tree;
     }
 
     @Override
     public String toString() {
-      return "(LocalVarWithAssignTree: localVar: " + localVar + " |||| tree: " + tree + ")";
+      return "(LocalVarWithTree: localVar: " + localVar + " |||| tree: " + tree + ")";
     }
 
     @Override
