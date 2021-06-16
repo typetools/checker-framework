@@ -4808,8 +4808,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * type variables in capturedType are the same object when they are refer to the same type
    * variable.
    *
-   * <p>To use, call {@link NonWildcardTypeArgCopier#copy(AnnotatedDeclaredType,
-   * AnnotatedDeclaredType)} rather than a visit method.
+   * <p>To use, call {@link NonWildcardTypeArgCopier#copy} rather than a visit method.
    */
   private final NonWildcardTypeArgCopier nonWildcardTypeArgCopier = new NonWildcardTypeArgCopier();
 
@@ -4818,8 +4817,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * ensure that type variables in {@code capturedType} are the same object when they refer to the
    * same type variable.
    *
-   * <p>To use, call {@link NonWildcardTypeArgCopier#copy(AnnotatedDeclaredType,
-   * AnnotatedDeclaredType)} rather than a visit method.
+   * <p>To use, call {@link NonWildcardTypeArgCopier#copy} rather than a visit method.
    */
   private class NonWildcardTypeArgCopier extends AnnotatedTypeCopier {
 
