@@ -270,23 +270,24 @@ class MustCallConsistencyAnalyzer {
       }
 
       if (!validInvocation) {
-        // TODO: getting this every time is inefficient if a method has many @CreatesMustCallFor
-        // annotations,
-        //  but that should be a rare path
-        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(currentPath);
-        if (enclosingMethod != null) {
-          ExecutableElement enclosingElt = TreeUtils.elementFromDeclaration(enclosingMethod);
+        // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
+        // annotations, but that should be a rare path.
+        MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+        if (enclosingMethodTree != null) {
+          ExecutableElement enclosingMethodElt =
+              TreeUtils.elementFromDeclaration(enclosingMethodTree);
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
           List<String> enclosingCmcfValues =
-              ResourceLeakVisitor.getCreatesMustCallForValues(enclosingElt, mcAtf, typeFactory);
+              ResourceLeakVisitor.getCreatesMustCallForValues(
+                  enclosingMethodElt, mcAtf, typeFactory);
           if (!enclosingCmcfValues.isEmpty()) {
             for (String enclosingCmcfValue : enclosingCmcfValues) {
               JavaExpression enclosingTarget;
               try {
                 enclosingTarget =
                     StringToJavaExpression.atMethodBody(
-                        enclosingCmcfValue, enclosingMethod, checker);
+                        enclosingCmcfValue, enclosingMethodTree, checker);
               } catch (JavaExpressionParseException e) {
                 // TODO: or issue an unparseable error?
                 enclosingTarget = null;
@@ -317,8 +318,8 @@ class MustCallConsistencyAnalyzer {
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
    * one of them, with two exceptions: the second expression can be null, and this references are
-   * compared using their underlying type (ThisReference#equals always returns true, which isn't
-   * accurate in the case of nested classes).
+   * compared using their underlying type. (ThisReference#equals always returns true, which isn't
+   * accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression
@@ -338,7 +339,7 @@ class MustCallConsistencyAnalyzer {
   /**
    * Given a node representing a method or constructor call, checks that if the call has a non-empty
    * {@code @MustCall} type, then its result is pseudo-assigned to some location that can take
-   * ownership of the result. Searches for the set of same resources in {@code facts} and add the
+   * ownership of the result. Searches for the set of same resources in {@code facts} and adds the
    * new LocalVarWithTree to it if one exists. Otherwise creates a new set.
    *
    * @param facts the current facts
@@ -346,7 +347,7 @@ class MustCallConsistencyAnalyzer {
    */
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     Tree tree = node.getTree();
-    // we need to track the result of the call iff there is a temporary variable for the node
+    // We need to track the result of the call iff there is a temporary variable for the call node.
     LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
     if (tmpVar == null) {
       return;
@@ -751,9 +752,9 @@ class MustCallConsistencyAnalyzer {
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
     TreePath currentPath = typeFactory.getPath(node.getTree());
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(currentPath);
+    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethodTree(currentPath);
 
-    if (enclosingMethod == null) {
+    if (enclosingMethodTree == null) {
       // Assignments outside of methods must be field initializers, which
       // are always safe.
       return;
@@ -764,7 +765,7 @@ class MustCallConsistencyAnalyzer {
     // for the containing method, or 2) the rhs is a null literal (so there's nothing to reset).
     if (!(receiver instanceof LocalVariableNode && varInFacts(facts, (LocalVariableNode) receiver))
         && !(node.getExpression() instanceof NullLiteralNode)) {
-      checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethod);
+      checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
 
     MustCallAnnotatedTypeFactory mcTypeFactory =
@@ -831,12 +832,12 @@ class MustCallConsistencyAnalyzer {
       // Resetting a constructor doesn't make sense.
       return;
     }
-    ExecutableElement enclosingElt = TreeUtils.elementFromDeclaration(enclosingMethod);
+    ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
     List<String> cmcfValues =
-        ResourceLeakVisitor.getCreatesMustCallForValues(enclosingElt, mcAtf, typeFactory);
+        ResourceLeakVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, typeFactory);
 
     if (cmcfValues.isEmpty()) {
       checker.reportError(
