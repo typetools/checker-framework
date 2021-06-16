@@ -2040,8 +2040,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @SuppressWarnings(
-        "unchecked") // This might not be safe, but the caller of the method should use the correct
+        "unchecked" // This might not be safe, but the caller of the method should use the correct
     // type.
+    )
     T subFactory = (T) subchecker.getTypeFactory();
     if (subFactory != null && subFactory.getVisitorState() != null) {
       // Copy the visitor state so that the types are computed properly.
