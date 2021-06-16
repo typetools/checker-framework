@@ -61,6 +61,14 @@ else
   has_java11="yes"
 fi
 
+# testing for JAVA16_HOME, not an unintentional reference to JAVA_HOME
+# shellcheck disable=SC2153
+if [ "x${JAVA16_HOME}" = "x" ]; then
+  has_java16="no"
+else
+  has_java16="yes"
+fi
+
 if [ "${has_java_home}" = "yes" ]; then
     java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
@@ -70,6 +78,10 @@ if [ "${has_java_home}" = "yes" ]; then
     if [ "${has_java11}" = "no" ] && [ "${java_version}" = 11 ]; then
       export JAVA11_HOME="${JAVA_HOME}"
       has_java11="yes"
+    fi
+    if [ "${has_java16}" = "no" ] && [ "${java_version}" = 16 ]; then
+      export JAVA16_HOME="${JAVA_HOME}"
+      has_java16="yes"
     fi
 fi
 
@@ -83,8 +95,13 @@ if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
     exit 7
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ]; then
-    echo "No Java 8 or 11 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, or JAVA11_HOME must be set."
+if [ "${has_java16}" = "yes" ] && [ ! -d "${JAVA16_HOME}" ]; then
+    echo "JAVA16_HOME is set to a non-existent directory ${JAVA16_HOME}"
+    exit 7
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java16}" = "no" ]; then
+    echo "No Java 8, 11 or 16 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME or JAVA16_HOME must be set."
     exit 8
 fi
 
@@ -159,8 +176,10 @@ function configure_and_exec_dljc {
 
   if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
     JDK_VERSION_ARG="--jdkVersion 8"
-  else
+  elif [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
     JDK_VERSION_ARG="--jdkVersion 11"
+  else
+    JDK_VERSION_ARG="--jdkVersion 16"
   fi
 
   # In bash 4.4, ${QUOTED_ARGS} below can be replaced by ${*@Q} .
@@ -263,7 +282,10 @@ rm -f -- "${DIR}/.cannot-run-wpi"
 cd "${DIR}" || exit 5
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
-if [ "${has_java11}" = "yes" ]; then
+if [ "${has_java16}" = "yes" ]; then
+  export JAVA_HOME="${JAVA16_HOME}"
+  configure_and_exec_dljc "$@"
+elif [ "${has_java11}" = "yes" ]; then
   export JAVA_HOME="${JAVA11_HOME}"
   configure_and_exec_dljc "$@"
 elif [ "${has_java8}" = "yes" ]; then
