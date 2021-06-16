@@ -990,7 +990,7 @@ public abstract class AnnotatedTypeMirror {
      * @return true iff the type was raw
      * @deprecated Use {@link #isUnderlyingTypeRaw()} instead
      */
-    @Deprecated
+    @Deprecated // 2021-06-16
     public boolean wasRaw() {
       return isUnderlyingTypeRaw();
     }
@@ -1009,7 +1009,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @deprecated Use {@link #setIsUnderlyingTypeRaw()} instead
      */
-    @Deprecated
+    @Deprecated // 2021-06-16
     protected void setWasRaw() {
       setIsUnderlyingTypeRaw();
     }
