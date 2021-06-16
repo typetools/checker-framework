@@ -354,10 +354,10 @@ class MustCallConsistencyAnalyzer {
     }
     LocalVarWithTree tmpVarWithTree = new LocalVarWithTree(new LocalVariable(tmpVar), tree);
 
-    // Set mustCallAlias to the MCA parameter if any exists, otherwise it remains null
+    // `mustCallAlias` is the MCA parameter if any exists, otherwise null.
     Node mustCallAlias = getMustCallAliasParamVar(node);
 
-    // If mustCallAlias is still null and call returns @This, set mustCallAlias to the receiver
+    // If mustCallAlias is null and call returns @This, set mustCallAlias to the receiver.
     if (mustCallAlias == null
         && node instanceof MethodInvocationNode
         && typeFactory.returnsThis((MethodInvocationTree) tree)) {
@@ -365,8 +365,8 @@ class MustCallConsistencyAnalyzer {
           removeCastsAndGetTmpVarIfPresent(((MethodInvocationNode) node).getTarget().getReceiver());
     }
 
-    // If mustCallAlias is local variable already tracked by some fact, add tmpVarWithTree
-    // to the set containing mustCallAlias. Otherwise, add it to a new set
+    // If mustCallAlias is a local variable already tracked by some fact, add tmpVarWithTree
+    // to the set containing mustCallAlias. Otherwise, add it to a new set.
     if (mustCallAlias instanceof LocalVariableNode
         && varInFacts(facts, (LocalVariableNode) mustCallAlias)) {
       ImmutableSet<LocalVarWithTree> factContainingMustCallAlias =
@@ -377,10 +377,10 @@ class MustCallConsistencyAnalyzer {
       facts.add(newFact);
     } else if (mustCallAlias instanceof LocalVariableNode
         || mustCallAlias instanceof FieldAccessNode) {
-      // we do not track the call result if the MustCallAlias parameter is a local (that
+      // We do not track the call result if the MustCallAlias parameter is a local (that
       // case is handled above; the local must already be in the facts) or a field (handling of
       // @Owning fields is a completely separate check, and we never need to track an alias of
-      // non-@Owning fields)
+      // non-@Owning fields).
       return;
     } else {
       facts.add(ImmutableSet.of(tmpVarWithTree));
@@ -389,15 +389,14 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks for cases where we do not need to track the result of a method call. We can skip the
-   * check when the method invocation is a call to "this" or a super constructor call, when the
+   * check when the method invocation is a call to a constructor `this()` or `super()`, when the
    * method's return type is annotated with MustCallAlias and the argument in the corresponding
    * position is an owning field, or when the method's return type is non-owning, which can either
    * be because the method has no return type or because it is annotated with {@link NotOwning}.
    *
    * @param facts the current set of facts
-   * @param node the invocation (of a method or of a constructor) node to check
-   * @return true iff the result of node should not be tracked in facts, based on the criteria
-   *     described above
+   * @param node the invocation node to check
+   * @return true iff the result of node should not be tracked in facts
    */
   private boolean skipTrackingInvocationResult(
       Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
@@ -417,13 +416,13 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if this node represents a method invocation of a must-call alias method, where the
+   * Returns true if this node represents a method invocation of a must-call-alias method, where the
    * other must call alias is some ignorable pointer, such as an owning field or a pointer that is
-   * guaranteed to be non-owning, such as this or a non-owning field.
+   * guaranteed to be non-owning, such as "`this`" or a non-owning field.
    *
    * @param node a method invocation node
-   * @return if this is the invocation of a method whose return type is MCA with an owning field or
-   *     a non-owning pointer
+   * @return true if this is the invocation of a method whose return type is MCA with an owning
+   *     field or a non-owning pointer
    */
   private boolean returnTypeIsMustCallAliasWithIgnorable(MethodInvocationNode node) {
     Node mcaParam = getMustCallAliasParamVar(node);
