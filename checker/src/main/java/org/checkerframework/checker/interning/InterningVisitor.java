@@ -89,8 +89,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * @return true if interning should be verified for the input expression. By default, all classes
-   *     are checked for interning unless {@code -Acheckclass} is specified.
+   * Returns true if interning should be verified for the input expression. By default, all classes
+   * are checked for interning unless {@code -Acheckclass} is specified.
+   *
+   * @return true if interning should be verified for the input expression
    * @see <a href="https://checkerframework.org/manual/#interning-checks">What the Interning Checker
    *     checks</a>
    */
