@@ -75,17 +75,16 @@ import org.plumelib.util.StringsPlume;
 
 /**
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types,
- * thereby detecting resource leaks. For any expression <em>e</em>, the analyzer
- * ensures that when <em>e</em> goes out of scope, there exists a resource alias
- * <em>r</em> of <em>e</em> (which might be <em>e</em> itself) such that
- * MustCall(r) is contained in CalledMethods(r). For any <em>e</em> for which this property does not
- * hold, the analyzer reports a {@code "required.method.not.called"} error, indicating a possible
- * resource leak.
+ * thereby detecting resource leaks. For any expression <em>e</em>, the analyzer ensures that when
+ * <em>e</em> goes out of scope, there exists a resource alias <em>r</em> of <em>e</em> (which might
+ * be <em>e</em> itself) such that MustCall(r) is contained in CalledMethods(r). For any <em>e</em>
+ * for which this property does not hold, the analyzer reports a {@code
+ * "required.method.not.called"} error, indicating a possible resource leak.
  *
- * Mechanically, the analysis tracks dataflow facts about which sets of resource-aliases
- * refer to the same resource, and checks their must-call and called-methods types when
- * the last reference to those sets goes out of scope. That is, this class implements a
- * lightweight alias analysis that tracks must-alias sets for resources.
+ * <p>Mechanically, the analysis tracks dataflow facts about which sets of resource-aliases refer to
+ * the same resource, and checks their must-call and called-methods types when the last reference to
+ * those sets goes out of scope. That is, this class implements a lightweight alias analysis that
+ * tracks must-alias sets for resources.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
@@ -235,8 +234,8 @@ class MustCallConsistencyAnalyzer {
    * one of these aliases was closed before the method was invoked). Aliases created after the
    * CreatesMustCallFor method is invoked are still permitted.
    *
-   * @param facts The currently-tracked dataflow facts. This value is side-effected if it contains the
-   *     target of the reset method.
+   * @param facts The currently-tracked dataflow facts. This value is side-effected if it contains
+   *     the target of the reset method.
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
    */
   private void checkCreatesMustCallForInvocation(
@@ -416,6 +415,9 @@ class MustCallConsistencyAnalyzer {
    * position is an owning field, or when the method's return type is non-owning, which can either
    * be because the method has no return type or because it is annotated with {@link NotOwning}.
    *
+   * <p>This method can also side-effect facts, if node is a super or this constructor call with
+   * MustCallAlias annotations.
+   *
    * @param facts the current set of facts
    * @param node the invocation node to check
    * @return true iff the result of node should be tracked in facts
@@ -439,8 +441,8 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Returns true if this node represents a method invocation of a must-call-alias method, where the
-   * other must call alias is some ignorable pointer, such as an owning field or a pointer that is
-   * guaranteed to be non-owning, such as "`this`" or a non-owning field.
+   * other must call alias is an owning field or a pointer that is guaranteed to be non-owning, such
+   * as "`this`" or a non-owning field.
    *
    * @param node a method invocation node
    * @return true if this is the invocation of a method whose return type is MCA with an owning
@@ -452,7 +454,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks if {@code node} is nested inside a {@link TypeCastNode} or a {@link
+   * Checks if {@code node} is directly enclosed by a {@link TypeCastNode} or a {@link
    * TernaryExpressionNode}, by looking at the successor block in the CFG.
    *
    * @param node the CFG node
@@ -461,7 +463,7 @@ class MustCallConsistencyAnalyzer {
    *     TernaryExpressionNode}, and {@code node} is an operand of the successor node; {@code false}
    *     otherwise
    */
-  private boolean nestedInCastOrTernary(Node node) {
+  private boolean inCastOrTernary(Node node) {
     if (!(node.getBlock() instanceof SingleSuccessorBlock)) {
       return false;
     }
@@ -1132,7 +1134,7 @@ class MustCallConsistencyAnalyzer {
 
           // always propagate fact to successor if current block represents code nested in a cast or
           // ternary expression.  TODO why???
-          if (curBlockNodes.size() == 1 && nestedInCastOrTernary(curBlockNodes.get(0))) {
+          if (curBlockNodes.size() == 1 && inCastOrTernary(curBlockNodes.get(0))) {
             factsForSucc.add(fact);
             break;
           }
