@@ -643,7 +643,12 @@ public class NullnessVisitor
     super.checkMethodInvocability(method, node);
   }
 
-  /** @return true if binary operation could cause an unboxing operation */
+  /**
+   * Returns true if the binary operation could cause an unboxing operation.
+   *
+   * @param tree a binary operation
+   * @return true if the binary operation could cause an unboxing operation
+   */
   private final boolean isUnboxingOperation(BinaryTree tree) {
     if (tree.getKind() == Tree.Kind.EQUAL_TO || tree.getKind() == Tree.Kind.NOT_EQUAL_TO) {
       // it is valid to check equality between two reference types, even
@@ -657,13 +662,23 @@ public class NullnessVisitor
     }
   }
 
-  /** @return true if the type of the tree is a super of String */
+  /**
+   * Returns true if the type of the tree is a super of String.
+   *
+   * @param tree a tree
+   * @return true if the type of the tree is a super of String
+   */
   private final boolean isString(ExpressionTree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
     return types.isAssignable(stringType, type);
   }
 
-  /** @return true if the type of the tree is a primitive */
+  /**
+   * Returns true if the type of the tree is a primitive.
+   *
+   * @param tree a tree
+   * @return true if the type of the tree is a primitive
+   */
   private static final boolean isPrimitive(ExpressionTree tree) {
     return TreeUtils.typeOf(tree).getKind().isPrimitive();
   }
