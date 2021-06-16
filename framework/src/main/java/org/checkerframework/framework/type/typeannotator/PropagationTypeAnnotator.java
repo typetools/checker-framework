@@ -76,7 +76,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     if (pause) {
       return null;
     }
-    if (declaredType.wasRaw()) {
+    if (declaredType.isUnderlyingTypeRaw()) {
       // Copy annotations from the declaration to the wildcards.
       AnnotatedDeclaredType declaration =
           (AnnotatedDeclaredType)

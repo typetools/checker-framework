@@ -857,9 +857,9 @@ public abstract class AnnotatedTypeMirror {
      * TODO: improve inference.
      *
      * <p>Ideally, the field would be final. However, when we determine the supertype of a raw type,
-     * we need to set wasRaw for the supertype.
+     * we need to set isUnderlyingTypeRaw for the supertype.
      */
-    private boolean wasRaw;
+    private boolean isUnderlyingTypeRaw;
 
     /** The enclosing type. May be null. */
     protected @Nullable AnnotatedDeclaredType enclosingType;
@@ -878,7 +878,8 @@ public abstract class AnnotatedTypeMirror {
       super(type, atypeFactory);
       TypeElement typeelem = (TypeElement) type.asElement();
       DeclaredType declty = (DeclaredType) typeelem.asType();
-      wasRaw = !declty.getTypeArguments().isEmpty() && type.getTypeArguments().isEmpty();
+      isUnderlyingTypeRaw =
+          !declty.getTypeArguments().isEmpty() && type.getTypeArguments().isEmpty();
 
       TypeMirror encl = type.getEnclosingType();
       if (encl.getKind() == TypeKind.DECLARED) {
@@ -958,7 +959,7 @@ public abstract class AnnotatedTypeMirror {
     public List<AnnotatedTypeMirror> getTypeArguments() {
       if (typeArgs != null) {
         return typeArgs;
-      } else if (wasRaw()) {
+      } else if (isUnderlyingTypeRaw()) {
         // Initialize the type arguments with uninferred wildcards.
         BoundsInitializer.initializeTypeArgs(this);
         return typeArgs;
@@ -973,21 +974,44 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns true if the type was raw, that is, type arguments were not provided but instead
-     * inferred.
+     * Returns true if the underlying type is raw. The receiver of this method is not raw, however;
+     * its annotated type arguments have been inferred.
      *
      * @return true iff the type was raw
      */
-    public boolean wasRaw() {
-      return wasRaw;
+    public boolean isUnderlyingTypeRaw() {
+      return isUnderlyingTypeRaw;
     }
 
     /**
-     * Set the wasRaw flag to true. This should only be necessary when determining the supertypes of
-     * a raw type.
+     * Returns true if the underlying type is raw. The receiver of this method is not raw, however;
+     * its annotated type arguments have been inferred.
+     *
+     * @return true iff the type was raw
+     * @deprecated Use {@link #isUnderlyingTypeRaw()} instead
      */
+    @Deprecated // 2021-06-16
+    public boolean wasRaw() {
+      return isUnderlyingTypeRaw();
+    }
+
+    /**
+     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
+     * supertypes of a raw type.
+     */
+    protected void setIsUnderlyingTypeRaw() {
+      this.isUnderlyingTypeRaw = true;
+    }
+
+    /**
+     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
+     * supertypes of a raw type.
+     *
+     * @deprecated Use {@link #setIsUnderlyingTypeRaw()} instead
+     */
+    @Deprecated // 2021-06-16
     protected void setWasRaw() {
-      this.wasRaw = true;
+      setIsUnderlyingTypeRaw();
     }
 
     @Override

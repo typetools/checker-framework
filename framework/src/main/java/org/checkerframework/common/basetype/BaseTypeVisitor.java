@@ -3490,7 +3490,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
 
     if (enclosingType.getKind() == TypeKind.DECLARED
-        && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
+        && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
       if (memRefKind == ReferenceKind.UNBOUND) {
         // The method reference is of the form: Type # instMethod and Type is a raw type.
         // If the first parameter of the function type, p1, is a subtype of type, then type should
@@ -3591,7 +3591,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Method type args
       requiresInference = true;
     } else if (memberReferenceTree.getMode() == ReferenceMode.NEW) {
-      if (type.getKind() == TypeKind.DECLARED && ((AnnotatedDeclaredType) type).wasRaw()) {
+      if (type.getKind() == TypeKind.DECLARED
+          && ((AnnotatedDeclaredType) type).isUnderlyingTypeRaw()) {
         // Class type args
         requiresInference = true;
       }

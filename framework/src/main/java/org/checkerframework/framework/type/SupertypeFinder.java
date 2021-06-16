@@ -164,7 +164,7 @@ class SupertypeFinder {
       Map<TypeParameterElement, AnnotatedTypeMirror> mapping = new HashMap<>();
 
       if (type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
-        if (!type.wasRaw()) {
+        if (!type.isUnderlyingTypeRaw()) {
           throw new BugInCF(
               "AnnotatedDeclaredType's element has a different number of type parameters than"
                   + " type.%ntype=%s%nelement=%s",
@@ -229,12 +229,12 @@ class SupertypeFinder {
       }
 
       for (TypeMirror st : typeElement.getInterfaces()) {
-        if (type.wasRaw()) {
+        if (type.isUnderlyingTypeRaw()) {
           st = types.erasure(st);
         }
         AnnotatedDeclaredType ast = (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(st, false);
         supertypes.add(ast);
-        if (type.wasRaw()) {
+        if (type.isUnderlyingTypeRaw()) {
           if (st.getKind() == TypeKind.DECLARED) {
             final List<? extends TypeMirror> typeArgs = ((DeclaredType) st).getTypeArguments();
             final List<AnnotatedTypeMirror> annotatedTypeArgs = ast.getTypeArguments();
@@ -247,9 +247,9 @@ class SupertypeFinder {
       }
       ElementAnnotationApplier.annotateSupers(supertypes, typeElement);
 
-      if (type.wasRaw()) {
+      if (type.isUnderlyingTypeRaw()) {
         for (AnnotatedDeclaredType adt : supertypes) {
-          adt.setWasRaw();
+          adt.setIsUnderlyingTypeRaw();
         }
       }
       return supertypes;
@@ -292,9 +292,9 @@ class SupertypeFinder {
       if (elem.getKind() == ElementKind.ENUM) {
         supertypes.add(createEnumSuperType(type, elem));
       }
-      if (type.wasRaw()) {
+      if (type.isUnderlyingTypeRaw()) {
         for (AnnotatedDeclaredType adt : supertypes) {
-          adt.setWasRaw();
+          adt.setIsUnderlyingTypeRaw();
         }
       }
       return supertypes;
