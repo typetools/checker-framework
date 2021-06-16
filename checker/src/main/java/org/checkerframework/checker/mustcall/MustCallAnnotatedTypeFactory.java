@@ -184,7 +184,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param elt an element; may be null, in which case this method always returns false
    * @return true iff the given element represents a resource variable
    */
-  private boolean isResourceVariable(@Nullable Element elt) {
+  /* package-private*/ boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
