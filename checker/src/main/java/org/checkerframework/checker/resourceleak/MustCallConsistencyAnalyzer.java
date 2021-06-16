@@ -603,11 +603,10 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Remove any facts from a fact set that contain a {@link LocalVarWithTree} with a particular
-   * variable.
+   * Remove any facts from a fact set that contain a {@link LocalVarWithTree} {@code var}.
    *
    * @param facts the set of facts
-   * @param var the variable
+   * @param var a variable
    */
   private void removeFactContainingVar(
       Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode var) {
@@ -636,7 +635,7 @@ class MustCallConsistencyAnalyzer {
    * process an "assignment" from {@code x} or {@code y} to the temporary variable representing the
    * ternary expression.
    *
-   * @param node the node performing the assignment.
+   * @param node the node performing the pseudo-assignment; it is not necessarily an assignment node
    * @param facts the tracked facts
    * @param lhsVar the left-hand side variable for the pseudo-assignment
    * @param rhs the right-hand side for the pseudo-assignment
@@ -644,7 +643,7 @@ class MustCallConsistencyAnalyzer {
   private void doGenKillForPseudoAssignment(
       Node node, Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in the facts.  We keep this map to avoid a
-    // ConcurrentModificationException in the loop below
+    // ConcurrentModificationException in the loop below.
     Map<ImmutableSet<LocalVarWithTree>, ImmutableSet<LocalVarWithTree>> replacements =
         new LinkedHashMap<>();
     // construct lhsVarWithTreeToGen once outside the loop for efficiency
@@ -661,7 +660,7 @@ class MustCallConsistencyAnalyzer {
         for (LocalVarWithTree lvwt : fact) {
           if (lvwt.localVar.getElement().equals(rhsVar.getElement())) {
             gen = lhsVarWithTreeToGen;
-            // we remove temp vars from tracking once they are assigned to another location
+            // We remove temp vars from tracking once they are assigned to another location.
             if (typeFactory.isTempVar(rhsVar)) {
               addLocalVarWithTreeToSetIfPresent(fact, rhsVar.getElement(), kill);
             }
@@ -669,7 +668,7 @@ class MustCallConsistencyAnalyzer {
           }
         }
       }
-      // check if there is something to do before creating a new fact, for efficiency
+      // Check if there is something to do before creating a new fact, for efficiency.
       if (kill.isEmpty() && gen == null) {
         continue;
       }
@@ -679,7 +678,7 @@ class MustCallConsistencyAnalyzer {
         newFact.add(gen);
       }
       if (newFact.size() == 0) {
-        // we have killed the last reference to the resource; check the must-call obligation
+        // We have killed the last reference to the resource; check the must-call obligation.
         MustCallAnnotatedTypeFactory mcAtf =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         checkMustCall(
@@ -690,7 +689,7 @@ class MustCallConsistencyAnalyzer {
       }
       replacements.put(fact, ImmutableSet.copyOf(newFact));
     }
-    // finally, update facts according to the replacements
+    // Finally, update facts according to the replacements.
     for (Map.Entry<ImmutableSet<LocalVarWithTree>, ImmutableSet<LocalVarWithTree>> entry :
         replacements.entrySet()) {
       facts.remove(entry.getKey());
