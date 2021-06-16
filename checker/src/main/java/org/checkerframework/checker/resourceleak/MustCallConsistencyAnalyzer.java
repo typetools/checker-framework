@@ -75,11 +75,17 @@ import org.plumelib.util.StringsPlume;
 
 /**
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types,
- * thereby detecting resource leaks. For any expression <em>e</em> in the method, the analyzer
- * ensures that at method exit, there exists a resource alias <em>r</em> of <em>e</em> such that
+ * thereby detecting resource leaks. For any expression <em>e</em>, the analyzer
+ * ensures that when <em>e</em> goes out of scope, there exists a resource alias
+ * <em>r</em> of <em>e</em> (which might be <em>e</em> itself) such that
  * MustCall(r) is contained in CalledMethods(r). For any <em>e</em> for which this property does not
  * hold, the analyzer reports a {@code "required.method.not.called"} error, indicating a possible
  * resource leak.
+ *
+ * Mechanically, the analysis tracks dataflow facts about which sets of resource-aliases
+ * refer to the same resource, and checks their must-call and called-methods types when
+ * the last reference to those sets goes out of scope. That is, this class implements a
+ * lightweight alias analysis that tracks must-alias sets for resources.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
@@ -118,7 +124,8 @@ class MustCallConsistencyAnalyzer {
   /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts of
    * type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of resource aliases for
-   * some value with a non-empty {@code @MustCall} obligation.
+   * some value with a non-empty {@code @MustCall} obligation. (It is not necessary to track
+   * expressions with empty {@code @MustCall} obligations, because they are trivially fulfilled.)
    *
    * @param cfg the control flow graph of the method to check
    */
@@ -136,11 +143,15 @@ class MustCallConsistencyAnalyzer {
     visited.add(entryBlockFacts);
 
     while (!worklist.isEmpty()) {
-      BlockWithFacts curBlockFacts = worklist.removeLast();
+      BlockWithFacts curBlockFacts = worklist.remove();
       List<Node> nodes = curBlockFacts.block.getNodes();
       // A *mutable* set that eventually holds the set of facts to be propagated to successor
       // blocks. The set is initialized to the current facts and updated by the methods invoked in
-      // the for loop below.
+      // the for loop below. Updates might include adding new facts (e.g. if a constructor that
+      // produces a value with must-call obligations is called), changing facts (e.g. if
+      // an assignment changes the set of must-aliases to a resource from a set of size one
+      // to a set of size two), or removing facts (e.g. if a resource is assigned into an owning
+      // field, and therefore no longer needs to be tracked locally).
       Set<ImmutableSet<LocalVarWithTree>> newFacts = new LinkedHashSet<>(curBlockFacts.facts);
 
       for (Node node : nodes) {
@@ -151,6 +162,8 @@ class MustCallConsistencyAnalyzer {
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           handleInvocation(newFacts, node);
         }
+        // All other types of nodes are ignored. This is safe, because other kinds of
+        // nodes cannot create or modify the resource-alias sets that the algorithm is tracking.
       }
 
       handleSuccessorBlocks(visited, worklist, newFacts, curBlockFacts.block);
@@ -165,19 +178,26 @@ class MustCallConsistencyAnalyzer {
    */
   private void handleInvocation(Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     doOwnershipTransferToParameters(facts, node);
-    // Count calls to @CreatesMustCallFor methods as creating new resources, for now.
     if (node instanceof MethodInvocationNode
         && typeFactory.canCreateObligations()
         && typeFactory.hasCreatesMustCallFor((MethodInvocationNode) node)) {
       checkCreatesMustCallForInvocation(facts, (MethodInvocationNode) node);
+      // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
+      // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that a
+      // new resource is created: it just means that a new resource might have been created.
       incrementNumMustCall(node);
     }
 
-    if (skipTrackingInvocationResult(facts, node)) {
+    if (!shouldTrackInvocationResult(facts, node)) {
       return;
     }
 
     if (typeFactory.hasMustCall(node.getTree())) {
+      // Note that it's okay if incrementNumMustCall is called twice in this method - here
+      // and because the invoked method is @CreatesMustCallFor - because the call above increments
+      // the count for the target of the @CreatesMustCallFor annotation, and this call increments
+      // the count for the return value of the method (which can't be the target of the annotation,
+      // because our syntax doesn't support that).
       incrementNumMustCall(node);
     }
     trackInvocationResult(facts, node);
@@ -205,23 +225,22 @@ class MustCallConsistencyAnalyzer {
   /**
    * Checks that an invocation of a CreatesMustCallFor method is valid. Such an invocation is valid
    * if one of the following conditions is true: 1) the target is an owning pointer, 2) the target
-   * is tracked in newdefs, or 3) the method in which the invocation occurs also has
+   * is tracked in facts, or 3) the method in which the invocation occurs also has
    * an @CreatesMustCallFor annotation, with the same target
    *
    * <p>If none of the above are true, this method issues a reset.not.owning error.
    *
-   * <p>For soundness, this method also guarantees that if the target is tracked in newdefs, any
+   * <p>For soundness, this method also guarantees that if the target is tracked in facts, any
    * tracked aliases will be removed (lest the analysis conclude that it is already closed because
-   * one of these aliases was closed before the reset method was invoked). Aliases created after the
-   * reset method is invoked are still permitted.
+   * one of these aliases was closed before the method was invoked). Aliases created after the
+   * CreatesMustCallFor method is invoked are still permitted.
    *
-   * @param newDefs the local variables that have been defined in the current compilation unit (and
-   *     are therefore going to be checked later). This value is side-effected if it contains the
+   * @param facts The currently-tracked dataflow facts. This value is side-effected if it contains the
    *     target of the reset method.
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
    */
   private void checkCreatesMustCallForInvocation(
-      Set<ImmutableSet<LocalVarWithTree>> newDefs, MethodInvocationNode node) {
+      Set<ImmutableSet<LocalVarWithTree>> facts, MethodInvocationNode node) {
 
     TreePath currentPath = typeFactory.getPath(node.getTree());
     List<JavaExpression> targetExprs =
@@ -246,7 +265,7 @@ class MustCallConsistencyAnalyzer {
         } else {
           ImmutableSet<LocalVarWithTree> toRemoveSet = null;
           ImmutableSet<LocalVarWithTree> toAddSet = null;
-          for (ImmutableSet<LocalVarWithTree> defAliasSet : newDefs) {
+          for (ImmutableSet<LocalVarWithTree> defAliasSet : facts) {
             for (LocalVarWithTree localVarWithTree : defAliasSet) {
               if (target.equals(localVarWithTree.localVar)) {
                 // satisfies case 2 above. Remove all its aliases, then return below.
@@ -261,8 +280,8 @@ class MustCallConsistencyAnalyzer {
           }
 
           if (toRemoveSet != null) {
-            newDefs.remove(toRemoveSet);
-            newDefs.add(toAddSet);
+            facts.remove(toRemoveSet);
+            facts.add(toAddSet);
             // satisfies case 2
             validInvocation = true;
           }
@@ -289,7 +308,9 @@ class MustCallConsistencyAnalyzer {
                     StringToJavaExpression.atMethodBody(
                         enclosingCmcfValue, enclosingMethodTree, checker);
               } catch (JavaExpressionParseException e) {
-                // TODO: or issue an unparseable error?
+                // Do not issue an error here, because it would be a duplicate.
+                // The error will be issued by the Transfer class of the checker,
+                // via the CreatesMustCallForElementSupplier interface.
                 enclosingTarget = null;
               }
 
@@ -347,7 +368,8 @@ class MustCallConsistencyAnalyzer {
    */
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     Tree tree = node.getTree();
-    // We need to track the result of the call iff there is a temporary variable for the call node.
+    // We need to track the result of the call iff there is a temporary variable for the call node
+    // (because we only create temporaries for expressions that actually have must-call values).
     LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
     if (tmpVar == null) {
       return;
@@ -365,24 +387,24 @@ class MustCallConsistencyAnalyzer {
           removeCastsAndGetTmpVarIfPresent(((MethodInvocationNode) node).getTarget().getReceiver());
     }
 
-    // If mustCallAlias is a local variable already tracked by some fact, add tmpVarWithTree
-    // to the set containing mustCallAlias. Otherwise, add it to a new set.
-    if (mustCallAlias instanceof LocalVariableNode
-        && varInFacts(facts, (LocalVariableNode) mustCallAlias)) {
-      ImmutableSet<LocalVarWithTree> factContainingMustCallAlias =
-          getFactContainingVar(facts, (LocalVariableNode) mustCallAlias);
-      ImmutableSet<LocalVarWithTree> newFact =
-          FluentIterable.from(factContainingMustCallAlias).append(tmpVarWithTree).toSet();
-      facts.remove(factContainingMustCallAlias);
-      facts.add(newFact);
-    } else if (mustCallAlias instanceof LocalVariableNode
-        || mustCallAlias instanceof FieldAccessNode) {
-      // We do not track the call result if the MustCallAlias parameter is a local (that
-      // case is handled above; the local must already be in the facts) or a field (handling of
+    if (mustCallAlias instanceof FieldAccessNode) {
+      // We do not track the call result if the MustCallAlias parameter is a field (handling of
       // @Owning fields is a completely separate check, and we never need to track an alias of
       // non-@Owning fields).
-      return;
+    } else if (mustCallAlias instanceof LocalVariableNode) {
+      ImmutableSet<LocalVarWithTree> factContainingMustCallAlias =
+          getFactContainingVar(facts, (LocalVariableNode) mustCallAlias);
+      // If mustCallAlias is a local variable already tracked by some fact, add tmpVarWithTree
+      // to the set containing mustCallAlias.
+      if (factContainingMustCallAlias != null) {
+        ImmutableSet<LocalVarWithTree> newFact =
+            FluentIterable.from(factContainingMustCallAlias).append(tmpVarWithTree).toSet();
+        facts.remove(factContainingMustCallAlias);
+        facts.add(newFact);
+      }
     } else {
+      // If mustCallAlias is neither a field nor a local already in the set of facts,
+      // add it to a new set.
       facts.add(ImmutableSet.of(tmpVarWithTree));
     }
   }
@@ -396,9 +418,9 @@ class MustCallConsistencyAnalyzer {
    *
    * @param facts the current set of facts
    * @param node the invocation node to check
-   * @return true iff the result of node should not be tracked in facts
+   * @return true iff the result of node should be tracked in facts
    */
-  private boolean skipTrackingInvocationResult(
+  private boolean shouldTrackInvocationResult(
       Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
     Tree callTree = node.getTree();
     if (callTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -407,12 +429,12 @@ class MustCallConsistencyAnalyzer {
       if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
           || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
         handleThisOrSuperConstructorMustCallAlias(facts, node);
-        return true;
+        return false;
       }
-      return returnTypeIsMustCallAliasWithIgnorable((MethodInvocationNode) node)
-          || hasNotOwningReturnType((MethodInvocationNode) node);
+      return !returnTypeIsMustCallAliasWithIgnorable((MethodInvocationNode) node)
+          && !hasNotOwningReturnType((MethodInvocationNode) node);
     }
-    return false;
+    return true;
   }
 
   /**
