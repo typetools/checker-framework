@@ -461,8 +461,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Logic to transfer ownership of locals to {@code @Owning} parameters at a method or constructor
-   * call.
+   * Transfers ownership of locals to {@code @Owning} parameters at a method or constructor call.
    *
    * @param facts the current set of facts
    * @param node a method or constructor invocation node
@@ -471,7 +470,7 @@ class MustCallConsistencyAnalyzer {
       Set<ImmutableSet<LocalVarWithTree>> facts, Node node) {
 
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
-      // never transfer ownership to parameters, matching ECJ's default
+      // Never transfer ownership to parameters, matching ECJ's default.
       return;
     }
 
