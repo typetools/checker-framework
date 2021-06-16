@@ -512,7 +512,7 @@ class MustCallConsistencyAnalyzer {
    * value and stop tracking it in the facts.
    *
    * @param node a return node
-   * @param cfg the CFG of the relevant method
+   * @param cfg the CFG of the enclosing method
    * @param facts the current set of dataflow facts
    */
   private void handleReturn(
@@ -536,8 +536,8 @@ class MustCallConsistencyAnalyzer {
    * the return type.
    *
    * @param cfg the CFG of the method
-   * @return true iff the return type has an Owning annotation and the checker is not running in
-   *     no-lightweight-ownership mode.
+   * @return true iff we should transfer ownership to the return type of the method corresponding to
+   *     a CFG
    */
   private boolean isTransferOwnershipAtReturn(ControlFlowGraph cfg) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
@@ -556,19 +556,19 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Updates a set of facts to account for an assignment
+   * Updates a set of facts to account for an assignment.
    *
    * @param node the assignment
    * @param facts the set of facts to update
    */
   private void handleAssignment(AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> facts) {
+    Node lhs = node.getTarget();
+    Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // use the temporary variable for the rhs if it exists
     Node rhs = removeCasts(node.getExpression());
     if (typeFactory.getTempVarForNode(rhs) != null) {
       rhs = typeFactory.getTempVarForNode(rhs);
     }
-    Node lhs = node.getTarget();
-    Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
 
     // Ownership transfer to @Owning field
     if (lhsElement.getKind() == ElementKind.FIELD) {
