@@ -455,7 +455,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks if {@code node} is directly enclosed by a {@link TypeCastNode} or a {@link
-   * TernaryExpressionNode}, by looking at the successor block in the CFG.
+   * TernaryExpressionNode}, by looking at the successor block in the CFG. This method is only used
+   * within {@link #handleSuccessorBlocks(Set, Deque, Set, Block)} to ensure facts are propagated to
+   * cast / ternary nodes properly.
    *
    * @param node the CFG node
    * @return {@code true} if {@code node} is in a {@link SingleSuccessorBlock} {@code b}, the first
@@ -1091,7 +1093,6 @@ class MustCallConsistencyAnalyzer {
       // factsForSucc eventually contains the facts to propagate to succ.  It may be mutated in the
       // loop below.
       Set<ImmutableSet<LocalVarWithTree>> factsForSucc = new LinkedHashSet<>();
-      // Set<ImmutableSet<LocalVarWithTree>> toRemove = new LinkedHashSet<>();
       // a detailed reason to give in the case that a relevant variable goes out of scope with an
       // unsatisfied obligation along the current control-flow edge
       String reasonForSucc =
@@ -1117,8 +1118,9 @@ class MustCallConsistencyAnalyzer {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-          // Don't propagate the fact if the curBlock is an ExceptionBlock and the fact represents
-          // the temporary variable for curBlock's node
+          // If succ is an exceptional successor, and fact represents the temporary variable for
+          // curBlock's node, do not propagate, as in the exceptional case the "assignment" to
+          // the temporary variable does not succeed
           if (exceptionType != null) {
             Node exceptionalNode = removeCasts(((ExceptionBlock) curBlock).getNode());
             LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
@@ -1133,7 +1135,11 @@ class MustCallConsistencyAnalyzer {
           }
 
           // always propagate fact to successor if current block represents code nested in a cast or
-          // ternary expression.  TODO why???
+          // ternary expression.  without this logic, the analysis may report a false positive in
+          // when the fact represents a temporary variable for a nested expression, as the temporary
+          // may not appear in the successor store and hence seems to be going out of scope.  The
+          // temporary will be handled with special logic; casts are unwrapped at various points in
+          // the analysis, and ternary expressions are handled by handleTernarySuccIfNeeded.
           if (curBlockNodes.size() == 1 && inCastOrTernary(curBlockNodes.get(0))) {
             factsForSucc.add(fact);
             break;
