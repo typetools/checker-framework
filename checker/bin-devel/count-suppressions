@@ -54,6 +54,9 @@ fi
 if [ "$regex" = "index" ]; then
     regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
 fi
+if [ "$regex" = "resourceleak" ]; then
+  regex="\(mustcall\|objectconstruction\|resourceleak\)"
+fi
 
 # Diagnostics
 # echo "regex=${regex}"
