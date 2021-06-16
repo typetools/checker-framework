@@ -591,9 +591,8 @@ class MustCallConsistencyAnalyzer {
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       if (isTryWithResourcesVariable(lhsVar)) {
-        // don't track try-with-resources variables.  Also, we know that whatever value gets
-        // assigned to the variable will be closed.  So, if the RHS is a tracked variable, remove
-        // its set from the defs
+        // Whatever value gets assigned to a try-with-resources variable will be closed.  So, if the
+        // RHS is a tracked variable, remove its set from the defs.
         if (rhs instanceof LocalVariableNode) {
           removeFactContainingVar(facts, (LocalVariableNode) rhs);
         }
