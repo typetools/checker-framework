@@ -71,6 +71,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /**
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types,
@@ -99,9 +100,9 @@ class MustCallConsistencyAnalyzer {
   private final CFAnalysis analysis;
 
   /**
-   * The constructor for the consistency analyzer. Typically, a user would instantiate a new
-   * consistency analyzer using this constructor in the type factory's postAnalyze method, and then
-   * call {@link #analyze(ControlFlowGraph)}.
+   * Creates a consistency analyzer. Typically, the type factory's postAnalyze method would
+   * instantiate a new consistency analyzer using this constructor and then call {@link
+   * #analyze(ControlFlowGraph)}.
    *
    * @param typeFactory the type factory
    * @param analysis the analysis from the type factory. Usually this would have protected access,
@@ -122,7 +123,7 @@ class MustCallConsistencyAnalyzer {
    * @param cfg the control flow graph of the method to check
    */
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
-  // should be transitioned to use the Checker dataflow framework.
+  // should be rewritten to use the dataflow framework of the Checker Framework.
   /* package-private */
   void analyze(ControlFlowGraph cfg) {
     Set<BlockWithFacts> visited = new LinkedHashSet<>();
@@ -157,7 +158,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Update a set of facts to account for a method or constructor invocation
+   * Update a set of facts to account for a method or constructor invocation.
    *
    * @param facts the facts to update
    * @param node the method or constructor invocation
@@ -203,9 +204,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks that an invocation of a CreatesMustCallFor method is valid. Such an invocation is valid
-   * if one of the following conditions is true: 1) the target is an owning pointer 2) the target is
-   * tracked in newdefs 3) the method in which the invocation occurs also has an @CreatesMustCallFor
-   * annotation, with the same target
+   * if one of the following conditions is true: 1) the target is an owning pointer, 2) the target
+   * is tracked in newdefs, or 3) the method in which the invocation occurs also has
+   * an @CreatesMustCallFor annotation, with the same target
    *
    * <p>If none of the above are true, this method issues a reset.not.owning error.
    *
@@ -226,51 +227,49 @@ class MustCallConsistencyAnalyzer {
     List<JavaExpression> targetExprs =
         CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             node, typeFactory, typeFactory);
-    Set<String> missing = new HashSet<>();
+    Set<JavaExpression> missing = new HashSet<>();
     for (JavaExpression target : targetExprs) {
-      boolean validTarget = false;
-      if (target instanceof LocalVariable) {
-        ImmutableSet<LocalVarWithTree> toRemoveSet = null;
-        ImmutableSet<LocalVarWithTree> toAddSet = null;
-        for (ImmutableSet<LocalVarWithTree> defAliasSet : newDefs) {
-          for (LocalVarWithTree localVarWithTree : defAliasSet) {
-            if (target.equals(localVarWithTree.localVar)) {
-              // satisfies case 2 above. Remove all its aliases, then return below.
-              if (toRemoveSet != null) {
-                throw new BugInCF(
-                    "tried to remove multiple sets containing a reset target at once");
-              }
-              toRemoveSet = defAliasSet;
-              toAddSet = ImmutableSet.of(localVarWithTree);
-            }
-          }
-        }
-
-        if (toRemoveSet != null) {
-          newDefs.remove(toRemoveSet);
-          newDefs.add(toAddSet);
-          // satisfies case 2
-          validTarget = true;
-        }
-
-        Element elt = ((LocalVariable) target).getElement();
-        if (!validTarget
-            && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-            && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-          // if the target is an Owning param, this satisfies case 1
-          validTarget = true;
-        }
-      }
-      if (!validTarget && target instanceof FieldAccess) {
+      boolean validInvocation = false;
+      if (target instanceof FieldAccess) {
         Element elt = ((FieldAccess) target).getField();
         if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
             && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
           // if the target is an Owning field, this satisfies case 1
-          validTarget = true;
+          validInvocation = true;
+        }
+      } else if (target instanceof LocalVariable) {
+        Element elt = ((LocalVariable) target).getElement();
+        if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
+            && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
+          // if the target is an Owning param, this satisfies case 1
+          validInvocation = true;
+        } else {
+          ImmutableSet<LocalVarWithTree> toRemoveSet = null;
+          ImmutableSet<LocalVarWithTree> toAddSet = null;
+          for (ImmutableSet<LocalVarWithTree> defAliasSet : newDefs) {
+            for (LocalVarWithTree localVarWithTree : defAliasSet) {
+              if (target.equals(localVarWithTree.localVar)) {
+                // satisfies case 2 above. Remove all its aliases, then return below.
+                if (toRemoveSet != null) {
+                  throw new BugInCF(
+                      "tried to remove multiple sets containing a reset target at once");
+                }
+                toRemoveSet = defAliasSet;
+                toAddSet = ImmutableSet.of(localVarWithTree);
+              }
+            }
+          }
+
+          if (toRemoveSet != null) {
+            newDefs.remove(toRemoveSet);
+            newDefs.add(toAddSet);
+            // satisfies case 2
+            validInvocation = true;
+          }
         }
       }
 
-      if (!validTarget) {
+      if (!validInvocation) {
         // TODO: getting this every time is inefficient if a method has many @CreatesMustCallFor
         // annotations,
         //  but that should be a rare path
@@ -295,14 +294,14 @@ class MustCallConsistencyAnalyzer {
 
               if (representSame(target, enclosingTarget)) {
                 // this satisifies case 3
-                validTarget = true;
+                validInvocation = true;
               }
             }
           }
         }
       }
-      if (!validTarget) {
-        missing.add(target.toString());
+      if (!validInvocation) {
+        missing.add(target);
       }
     }
 
@@ -311,7 +310,7 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    String missingStrs = String.join(", ", missing);
+    String missingStrs = StringsPlume.join(", ", missing);
     checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
   }
 
@@ -480,9 +479,9 @@ class MustCallConsistencyAnalyzer {
     List<? extends VariableElement> formalParams = getFormalsOfMethodOrConstructor(node);
 
     if (actualParams.size() != formalParams.size()) {
-      // this could happen, e.g., with varargs, or with strange cases like generated Enum
-      // constructors
-      // for now, just skip this case
+      // This could happen, e.g., with varargs, or with strange cases like generated Enum
+      // constructors.
+      // For now, just skip this case.
       // TODO allow for ownership transfer here if needed in future
       return;
     }
