@@ -4757,8 +4757,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror capturedTypeArg = capturedType.getTypeArguments().get(i);
       if (uncapturedTypeArg.getKind() == TypeKind.WILDCARD) {
         // The type argument is a captured type variable. Use the type argument from the newly
-        // created and yet-to-be annotated capturedType. (The annotations are add by
-        // #annotateCapturedTypeVar.)
+        // created and yet-to-be annotated capturedType. (The annotations are added by
+        // #annotateCapturedTypeVar, which is called at the end of this method.)
         typeVarToAnnotatedTypeArg.put(typeVarTypeMirror, capturedTypeArg);
         newTypeArgs.add(capturedTypeArg);
         if (TypesUtils.isCapturedTypeVariable(capturedTypeArg.getUnderlyingType())) {
@@ -4837,8 +4837,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private void copy(AnnotatedDeclaredType uncapturedType, AnnotatedDeclaredType capturedType) {
 
-      // `originalToCopy` means a mapping from the original to the copy, not an original that needs
-      // to be copied.
+      // The name "originalToCopy" means a mapping from the original to the copy, not an original
+      // that needs to be copied.
       IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy =
           new IdentityHashMap<>();
       AnnotatedDeclaredType original = uncapturedType;
@@ -4853,10 +4853,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
         if (uncapturedArg.getKind() != TypeKind.WILDCARD) {
           AnnotatedTypeMirror copyOfArg = visit(uncapturedArg, originalToCopy);
+          newTypeArgs[i] = copyOfArg;
           if (copyOfArg.getKind() == TypeKind.TYPEVAR) {
             typeVarMap.put(((AnnotatedTypeVariable) copyOfArg).getUnderlyingType(), copyOfArg);
           }
-          newTypeArgs[i] = copyOfArg;
         }
       }
 
@@ -4866,7 +4866,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       for (int i = 0; i < numTypeArgs; i++) {
         AnnotatedTypeMirror uncapturedArg = uncapturedType.getTypeArguments().get(i);
         AnnotatedTypeMirror capturedArg = capturedType.getTypeArguments().get(i);
-        // Note: this if statement can't be replaced with
+        // Note: This `if` statement can't be replaced with
         //   if (TypesUtils.isCapturedTypeVariable(capturedArg))
         // because if the bounds of the captured wildcard are equal, then instead of a captured
         // wildcard, the type of the bound is used.
@@ -4907,8 +4907,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the first TypeVariable in {@code collection} that does not (lexically) contain any
-   * other type in the collection.
+   * Returns the first TypeVariable in {@code collection} that does not lexically contain any other
+   * type in the collection.
    *
    * @param collection a collection of type variables
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
@@ -4961,10 +4961,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedWildcardType wildcard,
       AnnotatedTypeVariable typeVariable,
       AnnotatedTypeVariable capturedTypeVar) {
+
     AnnotatedTypeMirror typeVarUpperBound =
         typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
             typeVarToAnnotatedTypeArg, typeVariable.getUpperBound());
-
     AnnotatedTypeMirror upperBound =
         AnnotatedTypes.greatestLowerBound(this, typeVarUpperBound, wildcard.getExtendsBound());
     capturedTypeVar.setUpperBound(upperBound);
@@ -5001,9 +5001,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private static class CapturedTypeVarSubstitutor extends AnnotatedTypeCopier {
 
-    /**
-     * A mapping from a TypeVariable, that is a captured type variable, to an AnnotatedTypeVariable
-     */
+    /** A mapping from a captured type variable to an AnnotatedTypeVariable. */
     private Map<TypeVariable, AnnotatedTypeVariable> capturedTypeVarToAnnotatedTypeVar;
 
     /**
