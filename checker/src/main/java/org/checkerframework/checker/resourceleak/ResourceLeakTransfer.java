@@ -24,7 +24,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
   /**
    * Shadowed because we must dispatch to the Resource Leak Checker's version of
-   * getTypefactoryOfSubchecker to get the correct Mustcallannotatedtypefactory.
+   * getTypefactoryOfSubchecker to get the correct MustCallAnnotatedTypeFactory.
    */
   private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
 
@@ -88,7 +88,14 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
             n, rlTypeFactory, rlTypeFactory);
     AnnotationMirror defaultType = rlTypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {
-      insertIntoStores(result, targetExpr, defaultType);
+      CFValue defaultTypeValue =
+          analysis.createSingleAnnotationValue(defaultType, targetExpr.getType());
+      if (result.containsTwoStores()) {
+        result.getThenStore().replaceValue(targetExpr, defaultTypeValue);
+        result.getElseStore().replaceValue(targetExpr, defaultTypeValue);
+      } else {
+        result.getRegularStore().replaceValue(targetExpr, defaultTypeValue);
+      }
     }
   }
 
