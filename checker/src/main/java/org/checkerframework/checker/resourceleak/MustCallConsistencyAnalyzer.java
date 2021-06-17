@@ -110,6 +110,10 @@ import org.plumelib.util.StringsPlume;
  * <p>Throughout, this class uses the temporary-variable facilities provided by the Must Call and
  * Resource Leak type factories to permit expressions to have their types refined in their
  * respective checkers' stores. These temporary variables can be members of resource-alias sets.
+ * Without temporary variables, the checker wouldn't be able to verify code such as {@code new
+ * Socket(host, port).close()}, which would cause false positives. Temporaries are created for
+ * {@code new} expressions, method calls (for the return value), and ternary expressions. Other
+ * types of expressions may also be supported in the future.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
@@ -380,10 +384,11 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Given a node representing a method or constructor call, checks that if the call has a non-empty
-   * {@code @MustCall} type, then its result is pseudo-assigned to some location that can take
-   * ownership of the result. Searches for the set of same resources in {@code obligations} and adds
-   * the new LocalVarWithTree to it if one exists. Otherwise creates a new set.
+   * Given a node representing a method or constructor call, checks that if the result of the call
+   * has a non-empty {@code @MustCall} type, then the result is pseudo-assigned to some location
+   * that can take ownership of the result. Searches for the set of same resources in {@code
+   * obligations} and adds the new LocalVarWithTree to it if one exists. Otherwise creates a new
+   * set.
    *
    * @param obligations the currently-tracked obligations. This is always side-effected: an
    *     obligation is either modified to include a new resource alias (the result of the invocation
@@ -393,7 +398,8 @@ class MustCallConsistencyAnalyzer {
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
     Tree tree = node.getTree();
     // We need to track the result of the call iff there is a temporary variable for the call node
-    // (because we only create temporaries for expressions that actually have must-call values).
+    // (because we only create temporaries for expressions that could actually have must-call
+    // values).
     LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
     if (tmpVar == null) {
       return;
@@ -435,12 +441,14 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks for cases where we do not need to track the result of a method call. An invocation
-   * result does not need to be checked if the method invocation is a call to a constructor `this()`
-   * or `super()`, if the method's return type is annotated with MustCallAlias and the argument in
-   * the corresponding position is an owning field, or if the method's return type is non-owning,
-   * which can either be because the method has no return type or because it is annotated with
-   * {@link NotOwning}.
+   * Checks for cases where we do not need to track the result of a method call (that is, cases
+   * where the obligations are already satisfied in some other way or where there cannot possibly be
+   * obligations because of the structure of the code). Specifically, an invocation result does not
+   * need to be tracked if the method invocation is a call to a constructor `this()` or `super()`,
+   * if the method's return type is annotated with MustCallAlias and the argument in the
+   * corresponding position is an owning field, or if the method's return type is non-owning, which
+   * can either be because the method has no return type or because it is annotated with {@link
+   * NotOwning}.
    *
    * <p>This method can also side-effect obligations, if node is a super or this constructor call
    * with MustCallAlias annotations, by removing that obligation.

@@ -91,7 +91,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     // therefore treat it as top.
     addAliasedTypeAnnotation(
         "org.checkerframework.checker.builder.qual.NotCalledMethods", this.top);
-    this.postInit();
+
+    // Don't call postInit() for subclasses.
+    if (this.getClass() == CalledMethodsAnnotatedTypeFactory.class) {
+      this.postInit();
+    }
   }
 
   /**

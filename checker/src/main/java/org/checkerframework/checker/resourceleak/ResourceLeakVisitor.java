@@ -211,6 +211,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           }
 
           if (!unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
+            // This variable could be set immediately before reporting the error, but IMO
+            // it is more clear to set it here.
             error =
                 " @EnsuresCalledMethods written on MustCall methods doesn't contain "
                     + MustCallConsistencyAnalyzer.formatMissingMustCallMethods(

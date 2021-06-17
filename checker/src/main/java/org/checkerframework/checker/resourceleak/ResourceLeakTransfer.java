@@ -110,11 +110,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to
    * give t the same type as node. Temporary variables are supported for expressions throughout this
-   * checker (and the Must Call Checker) to enable refinement of their types. Without temporary
-   * variables, the checker wouldn't be able to verify code such as {@code new Socket(host,
-   * port).close()}, which would cause false positives. Temporaries are created for {@code new}
-   * expressions, method calls (for the return value), and ternary expressions. Other types of
-   * expressions may also be supported in the future.
+   * checker (and the Must Call Checker) to enable refinement of their types. See the documentation
+   * of {@link MustCallConsistencyAnalyzer} for more details.
    *
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
