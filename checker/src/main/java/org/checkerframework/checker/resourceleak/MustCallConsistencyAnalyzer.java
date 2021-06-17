@@ -415,12 +415,12 @@ class MustCallConsistencyAnalyzer {
           removeCastsAndGetTmpVarIfPresent(((MethodInvocationNode) node).getTarget().getReceiver());
     }
 
+    LocalVarWithTree tmpVarWithTree = new LocalVarWithTree(new LocalVariable(tmpVar), tree);
     if (mustCallAlias instanceof FieldAccessNode) {
       // We do not track the call result if the MustCallAlias parameter is a field.  Handling of
       // @Owning fields is a completely separate check, and we never need to track an alias of
       // non-@Owning fields.
     } else if (mustCallAlias instanceof LocalVariableNode) {
-      LocalVarWithTree tmpVarWithTree = new LocalVarWithTree(new LocalVariable(tmpVar), tree);
       ImmutableSet<LocalVarWithTree> resourceAliasSetContainingMustCallAlias =
           getResourceAliasSetForVar(obligations, (LocalVariableNode) mustCallAlias);
       // If mustCallAlias is a local variable already being tracked, add tmpVarWithTree
