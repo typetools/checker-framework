@@ -351,6 +351,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
         } else {
             options.fork = true
             options.forkOptions.jvmArgs += [
+                "--add-opens", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
                 "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
                 "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
                 "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
