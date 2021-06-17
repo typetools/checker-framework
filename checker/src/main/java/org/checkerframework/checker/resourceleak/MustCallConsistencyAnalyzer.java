@@ -94,13 +94,18 @@ import org.plumelib.util.StringsPlume;
  * out of scope.
  *
  * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
- * certain code patterns are encountered. For example, a new obligation is added to the tracked set
- * when a constructor or a method with an owning return is invoked; an obligation is modified when
- * an expression with a tracked obligation is assigned to a local variable or a resource-alias
- * method or constructor is called (the new local or the result of the resource-alias
- * method/constructor is added to the existing resource alias set); an obligation can be removed
- * when a member of a resource-alias set is passed to a method in a parameter location that is
- * annotated as {@code @Owning} or assigned to an owning field. (The above list is not exhaustive.)
+ * certain code patterns are encountered. Here are non-exhaustive examples:
+ *
+ * <ul>
+ *   <li>A new obligation is added to the tracked set when a constructor or a method with an owning
+ *       return is invoked.
+ *   <li>An obligation is modified when an expression with a tracked obligation is assigned to a
+ *       local variable or a resource-alias method or constructor is called (the new local or the
+ *       result of the resource-alias method/constructor is added to the existing resource alias
+ *       set).
+ *   <li>An obligation can be removed when a member of a resource-alias set is assigned to an owning
+ *       field or passed to a method in a parameter location that is annotated as {@code @Owning}.
+ * </ul>
  *
  * <p>Throughout, this class uses the temporary-variable facilities provided by the Must Call and
  * Resource Leak type factories to permit expressions to have their types refined in their
@@ -153,10 +158,12 @@ class MustCallConsistencyAnalyzer {
   // should be rewritten to use the dataflow framework of the Checker Framework.
   /* package-private */
   void analyze(ControlFlowGraph cfg) {
+    // The `visited` set contains everything that has been added to the worklist, even if it has not
+    // yet been removed and analyzed.
     Set<BlockWithObligations> visited = new LinkedHashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
-    // add any owning parameters to initial set of variables to track
+    // Add any owning parameters to the initial set of variables to track.
     BlockWithObligations entry =
         new BlockWithObligations(cfg.getEntryBlock(), computeOwningParameters(cfg));
     worklist.add(entry);
@@ -167,14 +174,7 @@ class MustCallConsistencyAnalyzer {
       List<Node> nodes = current.block.getNodes();
       // A *mutable* set that eventually holds the set of obligations to be propagated to successor
       // blocks. The set is initialized to the current obligations and updated by the methods
-      // invoked in
-      // the for loop below. Updates might include adding new obligations (e.g. if a constructor
-      // that
-      // produces a value with must-call obligations is called), modifying obligations (e.g. if
-      // an assignment changes the set of must-aliases to a resource from a set of size one
-      // to a set of size two), or removing obligations (e.g. if a resource is assigned into an
-      // owning
-      // field, and therefore no longer needs to be tracked as an obligation).
+      // invoked in the for loop below.
       Set<ImmutableSet<LocalVarWithTree>> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : nodes) {
@@ -216,11 +216,10 @@ class MustCallConsistencyAnalyzer {
     }
 
     if (typeFactory.hasDeclaredMustCall(node.getTree())) {
-      // Note that it's okay if incrementNumMustCall is called twice in this method - here
-      // and because the invoked method is @CreatesMustCallFor - because the call above increments
-      // the count for the target of the @CreatesMustCallFor annotation, and this call increments
-      // the count for the return value of the method (which can't be the target of the annotation,
-      // because our syntax doesn't support that).
+      // The incrementNumMustCall call above increments the count for the target of the
+      // @CreatesMustCallFor annotation.  By contrast, this call increments the count for the return
+      // value of the method (which can't be the target of the annotation, because our syntax
+      // doesn't support that).
       incrementNumMustCall(node);
     }
     trackInvocationResult(obligations, node);
@@ -237,10 +236,9 @@ class MustCallConsistencyAnalyzer {
   private void handleThisOrSuperConstructorMustCallAlias(
       Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
     Node mcaParam = getMustCallAliasParamVar(node);
-    // If the MustCallAlias param is also in the set of obligations, then remove it -
-    // its obligation has been fulfilled by being passed on to the MustCallAlias constructor
-    // (because we must
-    // be in a constructor body if we've encountered a this/super constructor call).
+    // If the MustCallAlias param is also in the set of obligations, then remove it -- its
+    // obligation has been fulfilled by being passed on to the MustCallAlias constructor (because we
+    // must be in a constructor body if we've encountered a this/super constructor call).
     if (mcaParam instanceof LocalVariableNode) {
       removeObligationContainingVar(obligations, (LocalVariableNode) mcaParam);
     }
@@ -250,7 +248,7 @@ class MustCallConsistencyAnalyzer {
    * Checks that an invocation of a CreatesMustCallFor method is valid. Such an invocation is valid
    * if one of the following conditions is true: 1) the target is an owning pointer, 2) the target
    * already has a tracked obligation, or 3) the method in which the invocation occurs also has
-   * an @CreatesMustCallFor annotation, with the same target
+   * an @CreatesMustCallFor annotation, with the same target.
    *
    * <p>If none of the above are true, this method issues a reset.not.owning error.
    *
@@ -259,7 +257,7 @@ class MustCallConsistencyAnalyzer {
    * one of these aliases was closed before the method was invoked). Aliases created after the
    * CreatesMustCallFor method is invoked are still permitted.
    *
-   * @param obligations The currently-tracked obligations. This value is side-effected if it
+   * @param obligations the currently-tracked obligations. This value is side-effected if it
    *     contains the target of the reset method.
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
    */
@@ -277,14 +275,14 @@ class MustCallConsistencyAnalyzer {
         Element elt = ((FieldAccess) target).getField();
         if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
             && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-          // if the target is an Owning field, this satisfies case 1
+          // The target is an Owning field.  This satisfies case 1.
           validInvocation = true;
         }
       } else if (target instanceof LocalVariable) {
         Element elt = ((LocalVariable) target).getElement();
         if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
             && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-          // if the target is an Owning param, this satisfies case 1
+          // The target is an Owning param.  This satisfies case 1.
           validInvocation = true;
         } else {
           ImmutableSet<LocalVarWithTree> toRemoveSet = null;
@@ -292,7 +290,7 @@ class MustCallConsistencyAnalyzer {
           for (ImmutableSet<LocalVarWithTree> resourceAliasSet : obligations) {
             for (LocalVarWithTree alias : resourceAliasSet) {
               if (target.equals(alias.localVar)) {
-                // satisfies case 2 above. Remove all its aliases, then return below.
+                // This satisfies case 2 above. Remove all its aliases, then return below.
                 if (toRemoveSet != null) {
                   throw new BugInCF(
                       "tried to remove multiple sets containing a reset target at once");
@@ -306,7 +304,7 @@ class MustCallConsistencyAnalyzer {
           if (toRemoveSet != null) {
             obligations.remove(toRemoveSet);
             obligations.add(toAddSet);
-            // satisfies case 2
+            // This satisfies case 2.
             validInvocation = true;
           }
         }
@@ -339,7 +337,7 @@ class MustCallConsistencyAnalyzer {
               }
 
               if (representSame(target, enclosingTarget)) {
-                // this satisifies case 3
+                // This satisifies case 3.
                 validInvocation = true;
               }
             }
@@ -363,8 +361,8 @@ class MustCallConsistencyAnalyzer {
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
    * one of them, with two exceptions: the second expression can be null, and "this" references are
-   * compared using their underlying type. (ThisReference#equals always returns true, which isn't
-   * accurate in the case of nested classes.)
+   * compared using their underlying type. (ThisReference#equals always returns true, which is
+   * probably a bug and isn't accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression
@@ -387,7 +385,7 @@ class MustCallConsistencyAnalyzer {
    * ownership of the result. Searches for the set of same resources in {@code obligations} and adds
    * the new LocalVarWithTree to it if one exists. Otherwise creates a new set.
    *
-   * @param obligations The currently-tracked obligations. This is always side-effected: an
+   * @param obligations the currently-tracked obligations. This is always side-effected: an
    *     obligation is either modified to include a new resource alias (the result of the invocation
    *     being tracked) or a new resource alias set (i.e. obligation) is created and added.
    * @param node the node whose result is to be tracked
