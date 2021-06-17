@@ -215,7 +215,7 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    if (typeFactory.hasMustCall(node.getTree())) {
+    if (typeFactory.hasDeclaredMustCall(node.getTree())) {
       // Note that it's okay if incrementNumMustCall is called twice in this method - here
       // and because the invoked method is @CreatesMustCallFor - because the call above increments
       // the count for the target of the @CreatesMustCallFor annotation, and this call increments
@@ -1332,7 +1332,7 @@ class MustCallConsistencyAnalyzer {
         Element paramElement = TreeUtils.elementFromDeclaration(param);
         boolean isMustCallAlias = typeFactory.hasMustCallAlias(paramElement);
         if (isMustCallAlias
-            || (typeFactory.hasMustCall(param)
+            || (typeFactory.hasDeclaredMustCall(param)
                 && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
                 && paramElement.getAnnotation(Owning.class) != null)) {
           result.add(ImmutableSet.of(new LocalVarWithTree(new LocalVariable(paramElement), param)));

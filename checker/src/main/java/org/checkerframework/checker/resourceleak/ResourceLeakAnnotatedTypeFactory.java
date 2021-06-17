@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -258,15 +259,20 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   /**
    * Returns true if the type of the tree includes a must-call annotation. Note that this method may
-   * not consider dataflow, and is only safe to use on declarations, such as method trees or
-   * parameter trees. Use {@link #getMustCallValue(ImmutableSet, CFStore)} (and check for emptiness)
-   * if you are trying to determine whether a local variable has must-call obligations.
+   * not consider dataflow, and is only safe to use when you need the declared, rather than
+   * inferred, type of the tree. Use {@link #getMustCallValue(ImmutableSet, CFStore)} (and check for
+   * emptiness) if you are trying to determine whether a local variable has must-call obligations.
    *
-   * @param declTree a tree representing a declaration
-   * @return whether that declaration has must-call obligations
+   * @param tree a tree
+   * @return whether the tree has declared must-call obligations
    */
-  /* package-private */ boolean hasMustCall(Tree declTree) {
-    return !getMustCallValue(declTree).isEmpty();
+  /* package-private */ boolean hasDeclaredMustCall(Tree tree) {
+    assert tree.getKind() == Kind.METHOD
+            || tree.getKind() == Kind.VARIABLE
+            || tree.getKind() == Kind.NEW_CLASS
+            || tree.getKind() == Kind.METHOD_INVOCATION
+        : "unexpected declaration tree kind: " + tree.getKind();
+    return !getMustCallValue(tree).isEmpty();
   }
 
   /**
