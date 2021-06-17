@@ -75,7 +75,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * obligations and the corresponding trees. Keys are the artificial local variable nodes created
    * as temporary variables; values are the corresponding trees.
    */
-  private BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
+  private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
    * Creates a new ResourceLeakAnnotatedTypeFactory.
@@ -137,13 +137,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       LocalVariable local = lvt.localVar;
       CFValue value = mcStore == null ? null : mcStore.getValue(local);
       if (value != null) {
-        for (AnnotationMirror anno : value.getAnnotations()) {
-          if (AnnotationUtils.areSameByName(
-              anno, "org.checkerframework.checker.mustcall.qual.MustCall")) {
-            mcAnno = anno;
-            break;
-          }
-        }
+        mcAnno = getAnnotationByClass(value.getAnnotations(), MustCall.class);
       }
       if (mcAnno == null) {
         // It wasn't in the store, so fall back to the default must-call type for the class.
