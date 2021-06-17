@@ -156,7 +156,7 @@ public class Resolver {
     while (scope == null && iter != null) {
       try {
         scope = (JavacScope) trees.getScope(iter);
-      } catch (Throwable t) {
+      } catch (NullPointerException t) {
         // Work around Issue #1059 by skipping through the TreePath until something
         // doesn't crash. This probably returns the class scope, so users might not
         // get the variables they expect. But that is better than crashing.
