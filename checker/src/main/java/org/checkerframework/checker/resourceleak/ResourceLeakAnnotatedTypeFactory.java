@@ -186,12 +186,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /* package-private */ List<String> getMustCallValue(Tree tree) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
-    if (mustCallAnnotatedTypeFactory == null) {
-      return Collections.emptyList();
-    }
     AnnotatedTypeMirror mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType(tree);
     AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
-
     return getMustCallValues(mustCallAnnotation);
   }
 
@@ -211,7 +207,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     AnnotatedTypeMirror mustCallAnnotatedType =
         mustCallAnnotatedTypeFactory.getAnnotatedType(element);
     AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
-
     return getMustCallValues(mustCallAnnotation);
   }
 
