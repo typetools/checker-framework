@@ -88,18 +88,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
             n, rlTypeFactory, rlTypeFactory);
     AnnotationMirror defaultType = rlTypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {
-      if (result.containsTwoStores()) {
-        CFStore thenStore = result.getThenStore();
-        thenStore.clearValue(targetExpr);
-        thenStore.insertValue(targetExpr, defaultType);
-        CFStore elseStore = result.getElseStore();
-        elseStore.clearValue(targetExpr);
-        elseStore.insertValue(targetExpr, defaultType);
-      } else {
-        CFStore store = result.getRegularStore();
-        store.clearValue(targetExpr);
-        store.insertValue(targetExpr, defaultType);
-      }
+      insertIntoStores(result, targetExpr, defaultType);
     }
   }
 
