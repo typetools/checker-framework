@@ -200,7 +200,7 @@ class MustCallConsistencyAnalyzer {
    * @param node the method or constructor invocation
    */
   private void handleInvocation(Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
-    doOwnershipTransferToParameters(obligations, node);
+    transferOwnershipToParameters(obligations, node);
     if (node instanceof MethodInvocationNode
         && typeFactory.canCreateObligations()
         && typeFactory.hasCreatesMustCallFor((MethodInvocationNode) node)) {
@@ -398,11 +398,9 @@ class MustCallConsistencyAnalyzer {
     if (tmpVar == null) {
       return;
     }
-    LocalVarWithTree tmpVarWithTree = new LocalVarWithTree(new LocalVariable(tmpVar), tree);
 
     // `mustCallAlias` is the MCA parameter if any exists, otherwise null.
     Node mustCallAlias = getMustCallAliasParamVar(node);
-
     // If mustCallAlias is null and call returns @This, set mustCallAlias to the receiver.
     if (mustCallAlias == null
         && node instanceof MethodInvocationNode
@@ -412,10 +410,11 @@ class MustCallConsistencyAnalyzer {
     }
 
     if (mustCallAlias instanceof FieldAccessNode) {
-      // We do not track the call result if the MustCallAlias parameter is a field (handling of
+      // We do not track the call result if the MustCallAlias parameter is a field.  Handling of
       // @Owning fields is a completely separate check, and we never need to track an alias of
-      // non-@Owning fields).
+      // non-@Owning fields.
     } else if (mustCallAlias instanceof LocalVariableNode) {
+      LocalVarWithTree tmpVarWithTree = new LocalVarWithTree(new LocalVariable(tmpVar), tree);
       ImmutableSet<LocalVarWithTree> resourceAliasSetContainingMustCallAlias =
           getResourceAliasSetForVar(obligations, (LocalVariableNode) mustCallAlias);
       // If mustCallAlias is a local variable already being tracked, add tmpVarWithTree
@@ -525,7 +524,7 @@ class MustCallConsistencyAnalyzer {
    *     for locals that are passed as owning parameters to the method or constructor
    * @param node a method or constructor invocation node
    */
-  private void doOwnershipTransferToParameters(
+  private void transferOwnershipToParameters(
       Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
 
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
@@ -571,23 +570,23 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * If the return type of the enclosing method is {@code @Owning}, transfer ownership of the return
-   * value and treat its obligations as satisfied by removing it from obligations.
+   * value and treat its obligations as satisfied by removing it from {@code obligations}.
    *
    * @param node a return node
    * @param cfg the CFG of the enclosing method
-   * @param obligations the current set of tracked obligations, side-effected to remove the
-   *     obligations of the returned value if ownership is transferred
+   * @param obligations the current set of tracked obligations. If ownership is transferred, it is
+   *     side-effected to remove the obligations of the returned value.
    */
   private void handleReturn(
       ReturnNode node, ControlFlowGraph cfg, Set<ImmutableSet<LocalVarWithTree>> obligations) {
     if (isTransferOwnershipAtReturn(cfg)) {
-      Node result = node.getResult();
-      Node temp = typeFactory.getTempVarForNode(result);
+      Node returnExpr = node.getResult();
+      Node temp = typeFactory.getTempVarForNode(returnExpr);
       if (temp != null) {
-        result = temp;
+        returnExpr = temp;
       }
-      if (result instanceof LocalVariableNode) {
-        removeObligationContainingVar(obligations, (LocalVariableNode) result);
+      if (returnExpr instanceof LocalVariableNode) {
+        removeObligationContainingVar(obligations, (LocalVariableNode) returnExpr);
       }
     }
   }
