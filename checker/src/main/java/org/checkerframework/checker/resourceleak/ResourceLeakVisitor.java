@@ -21,8 +21,9 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The visitor for the Resource Leak Checker. Responsible for some {@link CreatesMustCallFor}
- * checking.
+ * The visitor for the Resource Leak Checker. Responsible for checking that the rules for {@link
+ * Owning} fields are satisfied, and for checking that {@link CreatesMustCallFor} overrides are
+ * valid.
  */
 public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
