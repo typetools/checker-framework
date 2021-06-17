@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,7 +76,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * obligations and the corresponding trees. Keys are the artificial local variable nodes created
    * as temporary variables; values are the corresponding trees.
    */
-  private BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
+  private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
    * Creates a new ResourceLeakAnnotatedTypeFactory.
@@ -137,13 +138,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       LocalVariable local = lvt.localVar;
       CFValue value = mcStore == null ? null : mcStore.getValue(local);
       if (value != null) {
-        for (AnnotationMirror anno : value.getAnnotations()) {
-          if (AnnotationUtils.areSameByName(
-              anno, "org.checkerframework.checker.mustcall.qual.MustCall")) {
-            mcAnno = anno;
-            break;
-          }
-        }
+        mcAnno = getAnnotationByClass(value.getAnnotations(), MustCall.class);
       }
       if (mcAnno == null) {
         // It wasn't in the store, so fall back to the default must-call type for the class.
@@ -192,12 +187,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /* package-private */ List<String> getMustCallValue(Tree tree) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
-    if (mustCallAnnotatedTypeFactory == null) {
-      return Collections.emptyList();
-    }
     AnnotatedTypeMirror mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType(tree);
     AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
-
     return getMustCallValues(mustCallAnnotation);
   }
 
@@ -217,7 +208,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     AnnotatedTypeMirror mustCallAnnotatedType =
         mustCallAnnotatedTypeFactory.getAnnotatedType(element);
     AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
-
     return getMustCallValues(mustCallAnnotation);
   }
 
@@ -269,15 +259,20 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   /**
    * Returns true if the type of the tree includes a must-call annotation. Note that this method may
-   * not consider dataflow, and is only safe to use on declarations, such as method trees or
-   * parameter trees. Use {@link #getMustCallValue(ImmutableSet, CFStore)} (and check for emptiness)
-   * if you are trying to determine whether a local variable has must-call obligations.
+   * not consider dataflow, and is only safe to use when you need the declared, rather than
+   * inferred, type of the tree. Use {@link #getMustCallValue(ImmutableSet, CFStore)} (and check for
+   * emptiness) if you are trying to determine whether a local variable has must-call obligations.
    *
-   * @param declTree a tree representing a declaration
-   * @return whether that declaration has must-call obligations
+   * @param tree a tree
+   * @return whether the tree has declared must-call obligations
    */
-  /* package-private */ boolean hasMustCall(Tree declTree) {
-    return !getMustCallValue(declTree).isEmpty();
+  /* package-private */ boolean hasDeclaredMustCall(Tree tree) {
+    assert tree.getKind() == Kind.METHOD
+            || tree.getKind() == Kind.VARIABLE
+            || tree.getKind() == Kind.NEW_CLASS
+            || tree.getKind() == Kind.METHOD_INVOCATION
+        : "unexpected declaration tree kind: " + tree.getKind();
+    return !getMustCallValue(tree).isEmpty();
   }
 
   /**
