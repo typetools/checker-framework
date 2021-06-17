@@ -10,7 +10,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import jdk.vm.ci.meta.Local;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -98,17 +97,20 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitAssignment(AssignmentNode n,
-      TransferInput<CFValue, CFStore> in) {
+  public TransferResult<CFValue, CFStore> visitAssignment(
+      AssignmentNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitAssignment(n, in);
     // Remove "close" from the type in the store for resource variables.
+    // The Resource Leak Checker relies on this code to avoid checking that
+    // resource variables are closed.
     if (atypeFactory.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
       CFStore store = result.getRegularStore();
       JavaExpression expr = JavaExpression.fromNode(n.getTarget());
       CFValue value = store.getValue(expr);
       AnnotationMirror withClose = null;
       for (AnnotationMirror anm : value.getAnnotations()) {
-        if (AnnotationUtils.areSameByName(anm, "org.checkerframework.checker.mustcall.qual.MustCall")) {
+        if (AnnotationUtils.areSameByName(
+            anm, "org.checkerframework.checker.mustcall.qual.MustCall")) {
           withClose = anm;
         }
       }

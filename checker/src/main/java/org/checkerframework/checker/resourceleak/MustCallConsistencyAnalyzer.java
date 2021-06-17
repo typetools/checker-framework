@@ -81,27 +81,26 @@ import org.plumelib.util.StringsPlume;
  * for which this property does not hold, the analyzer reports a {@code
  * "required.method.not.called"} error, indicating a possible resource leak.
  *
- * <p>Mechanically, the analysis tracks dataflow facts about the obligations of sets of resource-aliases that refer to
- * the same resource, and checks their must-call and called-methods types when the last reference to
- * those sets goes out of scope. That is, this class implements a lightweight alias analysis that
- * tracks must-alias sets for resources.
+ * <p>Mechanically, the analysis tracks dataflow facts about the obligations of sets of
+ * resource-aliases that refer to the same resource, and checks their must-call and called-methods
+ * types when the last reference to those sets goes out of scope. That is, this class implements a
+ * lightweight alias analysis that tracks must-alias sets for resources.
  *
- * Throughout this class, variables named "obligation" or "obligations" are dataflow facts of
- * type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of resource aliases for
- * some value with a non-empty {@code @MustCall} obligation. These obligations can be resolved
- * either via ownership transfer (e.g. by being assigned into an owning field) or via their must-call
+ * <p>Throughout this class, variables named "obligation" or "obligations" are dataflow facts of
+ * type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of resource aliases for some
+ * value with a non-empty {@code @MustCall} obligation. These obligations can be resolved either via
+ * ownership transfer (e.g. by being assigned into an owning field) or via their must-call
  * obligations being contained in their called-methods type when the last reference in a set goes
  * out of scope.
  *
- * The algorithm here adds, modifies, or removes obligations from those it is tracking
- * when certain code patterns are encountered. For example, a new obligation is added to
- * the tracked set when a constructor or a method with an owning return is invoked; an
- * obligation is modified when an expression with a tracked obligation is assigned to a
- * local variable or a resource-alias method or constructor is called (the new local or
- * the result of the resource-alias method/constructor is added to the existing resource
- * alias set); an obligation can be removed when a member of a resource-alias set is passed
- * to a method in a parameter location that is annotated as {@code @Owning} or assigned to
- * an owning field. (The above list is not exhaustive.)
+ * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
+ * certain code patterns are encountered. For example, a new obligation is added to the tracked set
+ * when a constructor or a method with an owning return is invoked; an obligation is modified when
+ * an expression with a tracked obligation is assigned to a local variable or a resource-alias
+ * method or constructor is called (the new local or the result of the resource-alias
+ * method/constructor is added to the existing resource alias set); an obligation can be removed
+ * when a member of a resource-alias set is passed to a method in a parameter location that is
+ * annotated as {@code @Owning} or assigned to an owning field. (The above list is not exhaustive.)
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
@@ -138,10 +137,11 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts ("obligations") of
-   * type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of resource aliases for
-   * some value with a non-empty {@code @MustCall} obligation. (It is not necessary to track
-   * expressions with empty {@code @MustCall} obligations, because they are trivially fulfilled.)
+   * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts
+   * ("obligations") of type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of
+   * resource aliases for some value with a non-empty {@code @MustCall} obligation. (It is not
+   * necessary to track expressions with empty {@code @MustCall} obligations, because they are
+   * trivially fulfilled.)
    *
    * @param cfg the control flow graph of the method to check
    */
@@ -162,11 +162,14 @@ class MustCallConsistencyAnalyzer {
       BlockWithObligations current = worklist.remove();
       List<Node> nodes = current.block.getNodes();
       // A *mutable* set that eventually holds the set of obligations to be propagated to successor
-      // blocks. The set is initialized to the current obligations and updated by the methods invoked in
-      // the for loop below. Updates might include adding new obligations (e.g. if a constructor that
+      // blocks. The set is initialized to the current obligations and updated by the methods
+      // invoked in
+      // the for loop below. Updates might include adding new obligations (e.g. if a constructor
+      // that
       // produces a value with must-call obligations is called), modifying obligations (e.g. if
       // an assignment changes the set of must-aliases to a resource from a set of size one
-      // to a set of size two), or removing obligations (e.g. if a resource is assigned into an owning
+      // to a set of size two), or removing obligations (e.g. if a resource is assigned into an
+      // owning
       // field, and therefore no longer needs to be tracked as an obligation).
       Set<ImmutableSet<LocalVarWithTree>> obligations = new LinkedHashSet<>(current.obligations);
 
@@ -220,9 +223,9 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * If node is an invocation of a this or super constructor that has a MustCallAlias return type and a MustCallAlias
-   * parameter, check if any variable in the current set of obligations is being passed to the other constructor. If so,
-   * remove it from the obligations.
+   * If node is an invocation of a this or super constructor that has a MustCallAlias return type
+   * and a MustCallAlias parameter, check if any variable in the current set of obligations is being
+   * passed to the other constructor. If so, remove it from the obligations.
    *
    * @param obligations current obligations
    * @param node a super or this constructor invocation
@@ -231,7 +234,8 @@ class MustCallConsistencyAnalyzer {
       Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
     Node mcaParam = getMustCallAliasParamVar(node);
     // If the MustCallAlias param is also in the set of obligations, then remove it -
-    // its obligation has been fulfilled by being passed on to the MustCallAlias constructor (because we must
+    // its obligation has been fulfilled by being passed on to the MustCallAlias constructor
+    // (because we must
     // be in a constructor body if we've encountered a this/super constructor call).
     if (mcaParam instanceof LocalVariableNode) {
       removeObligationContainingVar(obligations, (LocalVariableNode) mcaParam);
@@ -251,8 +255,8 @@ class MustCallConsistencyAnalyzer {
    * one of these aliases was closed before the method was invoked). Aliases created after the
    * CreatesMustCallFor method is invoked are still permitted.
    *
-   * @param obligations The currently-tracked obligations. This value is side-effected if it contains
-   *     the target of the reset method.
+   * @param obligations The currently-tracked obligations. This value is side-effected if it
+   *     contains the target of the reset method.
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
    */
   private void checkCreatesMustCallForInvocation(
@@ -376,12 +380,12 @@ class MustCallConsistencyAnalyzer {
   /**
    * Given a node representing a method or constructor call, checks that if the call has a non-empty
    * {@code @MustCall} type, then its result is pseudo-assigned to some location that can take
-   * ownership of the result. Searches for the set of same resources in {@code obligations} and adds the
-   * new LocalVarWithTree to it if one exists. Otherwise creates a new set.
+   * ownership of the result. Searches for the set of same resources in {@code obligations} and adds
+   * the new LocalVarWithTree to it if one exists. Otherwise creates a new set.
    *
-   * @param obligations The currently-tracked obligations. This is always side-effected: an obligation
-   *                    is either modified to include a new resource alias (the result of the invocation
-   *                    being tracked) or a new resource alias set (i.e. obligation) is created and added.
+   * @param obligations The currently-tracked obligations. This is always side-effected: an
+   *     obligation is either modified to include a new resource alias (the result of the invocation
+   *     being tracked) or a new resource alias set (i.e. obligation) is created and added.
    * @param node the node whose result is to be tracked
    */
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
@@ -416,7 +420,9 @@ class MustCallConsistencyAnalyzer {
       // to the set containing mustCallAlias.
       if (resourceAliasSetContainingMustCallAlias != null) {
         ImmutableSet<LocalVarWithTree> newResourceAliasSet =
-            FluentIterable.from(resourceAliasSetContainingMustCallAlias).append(tmpVarWithTree).toSet();
+            FluentIterable.from(resourceAliasSetContainingMustCallAlias)
+                .append(tmpVarWithTree)
+                .toSet();
         obligations.remove(resourceAliasSetContainingMustCallAlias);
         obligations.add(newResourceAliasSet);
       }
@@ -429,13 +435,14 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks for cases where we do not need to track the result of a method call. An invocation
-   * result does not need to be checked if the method invocation is a call to a constructor `this()` or `super()`, if the
-   * method's return type is annotated with MustCallAlias and the argument in the corresponding
-   * position is an owning field, or if the method's return type is non-owning, which can either
-   * be because the method has no return type or because it is annotated with {@link NotOwning}.
+   * result does not need to be checked if the method invocation is a call to a constructor `this()`
+   * or `super()`, if the method's return type is annotated with MustCallAlias and the argument in
+   * the corresponding position is an owning field, or if the method's return type is non-owning,
+   * which can either be because the method has no return type or because it is annotated with
+   * {@link NotOwning}.
    *
-   * <p>This method can also side-effect obligations, if node is a super or this constructor call with
-   * MustCallAlias annotations, by removing that obligation.
+   * <p>This method can also side-effect obligations, if node is a super or this constructor call
+   * with MustCallAlias annotations, by removing that obligation.
    *
    * @param obligations the current set of obligations
    * @param node the invocation node to check
@@ -460,10 +467,10 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Returns true if this node represents a method invocation of a must-call-alias method, where the
-   * other must call alias is untrackable: an owning field or a pointer that is guaranteed to be non-owning, such
-   * as "`this`" or a non-owning field. Owning fields are handled by the rest of the checker, not by
-   * this algorithm, so they are "untrackable". Non-owning fields and this nodes are guaranteed to
-   * be non-owning, and therefore do not need to be tracked, either.
+   * other must call alias is untrackable: an owning field or a pointer that is guaranteed to be
+   * non-owning, such as "`this`" or a non-owning field. Owning fields are handled by the rest of
+   * the checker, not by this algorithm, so they are "untrackable". Non-owning fields and this nodes
+   * are guaranteed to be non-owning, and therefore do not need to be tracked, either.
    *
    * @param node a method invocation node
    * @return true if this is the invocation of a method whose return type is MCA with an owning
@@ -511,7 +518,7 @@ class MustCallConsistencyAnalyzer {
    * Transfers ownership of locals to {@code @Owning} parameters at a method or constructor call.
    *
    * @param obligations the current set of obligations, which is side-effected to remove obligations
-   *                    for locals that are passed as owning parameters to the method or constructor
+   *     for locals that are passed as owning parameters to the method or constructor
    * @param node a method or constructor invocation node
    */
   private void doOwnershipTransferToParameters(
@@ -564,8 +571,8 @@ class MustCallConsistencyAnalyzer {
    *
    * @param node a return node
    * @param cfg the CFG of the enclosing method
-   * @param obligations the current set of tracked obligations, side-effected to remove the obligations of the returned value
-   *                    if ownership is transferred
+   * @param obligations the current set of tracked obligations, side-effected to remove the
+   *     obligations of the returned value if ownership is transferred
    */
   private void handleReturn(
       ReturnNode node, ControlFlowGraph cfg, Set<ImmutableSet<LocalVarWithTree>> obligations) {
@@ -611,12 +618,13 @@ class MustCallConsistencyAnalyzer {
    * Updates a set of obligations to account for an assignment.
    *
    * @param node the assignment
-   * @param obligations the set of obligations to update, which may be side-effected depending
-   *                    on the assignment: assigning to an owning field might remove obligations,
-   *                    assigning to a new local variable might modify an obligation (by increasing
-   *                    the size of its resource alias set), etc.
+   * @param obligations the set of obligations to update, which may be side-effected depending on
+   *     the assignment: assigning to an owning field might remove obligations, assigning to a new
+   *     local variable might modify an obligation (by increasing the size of its resource alias
+   *     set), etc.
    */
-  private void handleAssignment(AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> obligations) {
+  private void handleAssignment(
+      AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> obligations) {
     Node lhs = node.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // use the temporary variable for the rhs if it exists
@@ -650,15 +658,16 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Remove any facts from a fact set that contain a {@link LocalVarWithTree} {@code var}.
+   * Remove any obligations that contain {@link LocalVarWithTree} {@code var} in their
+   * resource-alias set.
    *
-   * @param facts the set of facts
+   * @param obligations the set of obligations
    * @param var a variable
    */
   private void removeObligationContainingVar(
-      Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode var) {
-    Set<LocalVarWithTree> setContainingRhs = getResourceAliasSetForVar(facts, var);
-    facts.remove(setContainingRhs);
+      Set<ImmutableSet<LocalVarWithTree>> obligations, LocalVariableNode var) {
+    Set<LocalVarWithTree> setContainingRhs = getResourceAliasSetForVar(obligations, var);
+    obligations.remove(setContainingRhs);
   }
 
   /**
@@ -676,89 +685,92 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Update a set of tracked definitions to account for a (pseudo-)assignment to some variable, as
+   * Update a set of tracked obligations to account for a (pseudo-)assignment to some variable, as
    * in a gen-kill dataflow analysis problem. Pseudo-assignments may include operations that
    * "assign" to a temporary variable. E.g., for an expression {@code b ? x : y}, this method may
    * process an "assignment" from {@code x} or {@code y} to the temporary variable representing the
    * ternary expression.
    *
    * @param node the node performing the pseudo-assignment; it is not necessarily an assignment node
-   * @param facts the tracked facts
+   * @param obligations the tracked obligations, which will be side-effected
    * @param lhsVar the left-hand side variable for the pseudo-assignment
    * @param rhs the right-hand side for the pseudo-assignment
    */
   private void doGenKillForPseudoAssignment(
-      Node node, Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode lhsVar, Node rhs) {
-    // Replacements to eventually perform in the facts.  We keep this map to avoid a
+      Node node,
+      Set<ImmutableSet<LocalVarWithTree>> obligations,
+      LocalVariableNode lhsVar,
+      Node rhs) {
+    // Replacements to eventually perform in obligations.  We keep this map to avoid a
     // ConcurrentModificationException in the loop below.
     Map<ImmutableSet<LocalVarWithTree>, ImmutableSet<LocalVarWithTree>> replacements =
         new LinkedHashMap<>();
     // construct lhsVarWithTreeToGen once outside the loop for efficiency
     LocalVarWithTree lhsVarWithTreeToGen =
         new LocalVarWithTree(new LocalVariable(lhsVar), node.getTree());
-    for (ImmutableSet<LocalVarWithTree> fact : facts) {
+    for (ImmutableSet<LocalVarWithTree> obligation : obligations) {
       Set<LocalVarWithTree> kill = new LinkedHashSet<>();
       // always kill the lhs var if present
-      addLocalVarWithTreeToSetIfPresent(fact, lhsVar.getElement(), kill);
+      addLocalVarWithTreeToSetIfPresent(obligation, lhsVar.getElement(), kill);
       LocalVarWithTree gen = null;
-      // if rhs is a variable tracked in the fact, gen the lhs
+      // if rhs is a variable tracked in the obligation's resource alias set, gen the lhs
       if (rhs instanceof LocalVariableNode) {
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-        for (LocalVarWithTree lvwt : fact) {
+        for (LocalVarWithTree lvwt : obligation) {
           if (lvwt.localVar.getElement().equals(rhsVar.getElement())) {
             gen = lhsVarWithTreeToGen;
             // We remove temp vars from tracking once they are assigned to another location.
             if (typeFactory.isTempVar(rhsVar)) {
-              addLocalVarWithTreeToSetIfPresent(fact, rhsVar.getElement(), kill);
+              addLocalVarWithTreeToSetIfPresent(obligation, rhsVar.getElement(), kill);
             }
             break;
           }
         }
       }
-      // Check if there is something to do before creating a new fact, for efficiency.
+      // Check if there is something to do before creating a new obligation, for efficiency.
       if (kill.isEmpty() && gen == null) {
         continue;
       }
-      Set<LocalVarWithTree> newFact = new LinkedHashSet<>(fact);
-      newFact.removeAll(kill);
+      Set<LocalVarWithTree> newObligation = new LinkedHashSet<>(obligation);
+      newObligation.removeAll(kill);
       if (gen != null) {
-        newFact.add(gen);
+        newObligation.add(gen);
       }
-      if (newFact.size() == 0) {
+      if (newObligation.size() == 0) {
         // We have killed the last reference to the resource; check the must-call obligation.
         MustCallAnnotatedTypeFactory mcAtf =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         checkMustCall(
-            fact,
+            obligation,
             typeFactory.getStoreBefore(node),
             mcAtf.getStoreBefore(node),
             "variable overwritten by assignment " + node.getTree());
       }
-      replacements.put(fact, ImmutableSet.copyOf(newFact));
+      replacements.put(obligation, ImmutableSet.copyOf(newObligation));
     }
-    // Finally, update facts according to the replacements.
+    // Finally, update obligations according to the replacements.
     for (Map.Entry<ImmutableSet<LocalVarWithTree>, ImmutableSet<LocalVarWithTree>> entry :
         replacements.entrySet()) {
-      facts.remove(entry.getKey());
+      obligations.remove(entry.getKey());
       if (!entry.getValue().isEmpty()) {
-        facts.add(entry.getValue());
+        obligations.add(entry.getValue());
       }
     }
   }
 
   /**
-   * If a {@link LocalVarWithTree} is present in {@code varWithTreeSet} whose variable element is
+   * If a {@link LocalVarWithTree} is present in {@code resourceAliasSet} whose variable element is
    * {@code element}, add it to {@code lvwtSet}.
    *
-   * @param varWithTreeSet a fact
-   * @param element the element to search for in the fact
+   * @param resourceAliasSet the resource-alias set of an obligation
+   * @param element the element to search for
    * @param lvwtSet the set to add to
    */
   private void addLocalVarWithTreeToSetIfPresent(
-      ImmutableSet<LocalVarWithTree> varWithTreeSet,
+      ImmutableSet<LocalVarWithTree> resourceAliasSet,
       Element element,
       Set<LocalVarWithTree> lvwtSet) {
-    for (LocalVarWithTree lvwt : varWithTreeSet) {
+    for (LocalVarWithTree lvwt : resourceAliasSet) {
       if (lvwt.localVar.getElement().equals(element)) {
         lvwtSet.add(lvwt);
       }
@@ -768,13 +780,13 @@ class MustCallConsistencyAnalyzer {
   /**
    * Issues an error if the given re-assignment to a non-final, owning field is not valid. A
    * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
-   * the must-call obligations.
+   * the must-call obligations of the field.
    *
    * @param node an assignment to a non-final, owning field
-   * @param facts currently in-scope variables that are being tracked
+   * @param obligations current tracked obligations
    */
   private void checkReassignmentToField(
-      AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> facts) {
+      AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> obligations) {
 
     Node lhsNode = node.getTarget();
 
@@ -806,7 +818,8 @@ class MustCallConsistencyAnalyzer {
     // Check that there is a corresponding CreatesMustCallFor annotation, unless this is
     // 1) an assignment to a field of a newly-declared local variable that can't be in scope
     // for the containing method, or 2) the rhs is a null literal (so there's nothing to reset).
-    if (!(receiver instanceof LocalVariableNode && varTrackedInObligations((LocalVariableNode) receiver, facts))
+    if (!(receiver instanceof LocalVariableNode
+            && varTrackedInObligations((LocalVariableNode) receiver, obligations))
         && !(node.getExpression() instanceof NullLiteralNode)) {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
@@ -872,7 +885,8 @@ class MustCallConsistencyAnalyzer {
 
     String receiverString = receiverAsString((FieldAccessNode) lhs);
     if (TreeUtils.isConstructor(enclosingMethod)) {
-      // Resetting a constructor doesn't make sense.
+      // Constructors always create must-call obligations, so there is no need for them to
+      // be annotated.
       return;
     }
     ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
@@ -942,22 +956,22 @@ class MustCallConsistencyAnalyzer {
   /**
    * Finds the actual parameter passed in the {@code @MustCallAlias} position for a call.
    *
-   * @param node node representing the call
-   * @return if {@code node} invokes a method with a {@code @MustCallAlias} annotation on some
-   *     formal parameter, returns the result of calling {@link
+   * @param callNode callNode representing the call
+   * @return if {@code callNode} invokes a method with a {@code @MustCallAlias} annotation on some
+   *     formal parameter (or the receiver), returns the result of calling {@link
    *     #removeCastsAndGetTmpVarIfPresent(Node)} on the actual parameter passed in that position.
    *     Otherwise, returns {@code null}.
    */
-  private @Nullable Node getMustCallAliasParamVar(Node node) {
+  private @Nullable Node getMustCallAliasParamVar(Node callNode) {
     Preconditions.checkArgument(
-        node instanceof MethodInvocationNode || node instanceof ObjectCreationNode);
-    if (!typeFactory.hasMustCallAlias(node.getTree())) {
+        callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
+    if (!typeFactory.hasMustCallAlias(callNode.getTree())) {
       return null;
     }
 
     Node result = null;
-    List<Node> actualParams = getArgumentsOfMethodOrConstructor(node);
-    List<? extends VariableElement> formalParams = getFormalsOfMethodOrConstructor(node);
+    List<Node> actualParams = getArgumentsOfMethodOrConstructor(callNode);
+    List<? extends VariableElement> formalParams = getFormalsOfMethodOrConstructor(callNode);
     for (int i = 0; i < actualParams.size(); i++) {
       if (typeFactory.hasMustCallAlias(formalParams.get(i))) {
         result = actualParams.get(i);
@@ -966,8 +980,8 @@ class MustCallConsistencyAnalyzer {
     }
 
     // If none of the parameters were @MustCallAlias, it must be the receiver
-    if (result == null && node instanceof MethodInvocationNode) {
-      result = ((MethodInvocationNode) node).getTarget().getReceiver();
+    if (result == null && callNode instanceof MethodInvocationNode) {
+      result = ((MethodInvocationNode) callNode).getTarget().getReceiver();
     }
 
     result = removeCastsAndGetTmpVarIfPresent(result);
@@ -990,7 +1004,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Get the nodes representign the arguments of a method or constructor invocation from the
+   * Get the nodes representing the arguments of a method or constructor invocation from the
    * invocation node.
    *
    * @param node a MethodInvocation or ObjectCreation node
@@ -1092,45 +1106,46 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Propagates a set of facts to relevant successors, and performs consistency checks when
+   * Propagates a set of obligations to relevant successors, and performs consistency checks when
    * variables are going out of scope.
    *
-   * @param visited block-facts pairs already handled
+   * @param visited block-obligations pairs already handled
    * @param worklist current worklist
-   * @param facts facts to propagate to successors
+   * @param obligations obligations to propagate to successors
    * @param curBlock the current block
    */
   private void handleSuccessorBlocks(
       Set<BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist,
-      Set<ImmutableSet<LocalVarWithTree>> facts,
+      Set<ImmutableSet<LocalVarWithTree>> obligations,
       Block curBlock) {
     List<Node> curBlockNodes = curBlock.getNodes();
     for (Pair<Block, @Nullable TypeMirror> succAndExcType : getRelevantSuccessors(curBlock)) {
       Block succ = succAndExcType.first;
       TypeMirror exceptionType = succAndExcType.second;
-      Set<ImmutableSet<LocalVarWithTree>> curFacts =
-          handleTernarySuccIfNeeded(curBlock, succ, facts);
-      // factsForSucc eventually contains the facts to propagate to succ.  It may be mutated in the
+      Set<ImmutableSet<LocalVarWithTree>> curObligations =
+          handleTernarySuccIfNeeded(curBlock, succ, obligations);
+      // obligationsForSucc eventually contains the obligations to propagate to succ.  It may be
+      // mutated in the
       // loop below.
-      Set<ImmutableSet<LocalVarWithTree>> factsForSucc = new LinkedHashSet<>();
-      // a detailed reason to give in the case that a relevant variable goes out of scope with an
-      // unsatisfied obligation along the current control-flow edge
+      Set<ImmutableSet<LocalVarWithTree>> obligationsForSucc = new LinkedHashSet<>();
+      // A detailed reason to give in the case that a relevant variable goes out of scope with an
+      // unsatisfied obligation along the current control-flow edge.
       String reasonForSucc =
           exceptionType == null
               ?
-              // technically the variable may be going out of scope before the method exit, but that
-              // doesn't seem to provide additional helpful information
+              // Technically the variable may be going out of scope before the method exit, but that
+              // doesn't seem to provide additional helpful information.
               "regular method exit"
               : "possible exceptional exit due to "
                   + ((ExceptionBlock) curBlock).getNode().getTree()
                   + " with exception type "
                   + exceptionType;
       CFStore succRegularStore = analysis.getInput(succ).getRegularStore();
-      for (ImmutableSet<LocalVarWithTree> fact : curFacts) {
+      for (ImmutableSet<LocalVarWithTree> resourceAliasSet : curObligations) {
         boolean noInfoInSuccStoreForVars = true;
-        for (LocalVarWithTree lvwt : fact) {
-          if (!varNotPresentInStoreAndNotForTernary(succRegularStore, lvwt)) {
+        for (LocalVarWithTree resourceAlias : resourceAliasSet) {
+          if (!varNotPresentInStoreAndNotForTernary(succRegularStore, resourceAlias)) {
             noInfoInSuccStoreForVars = false;
             break;
           }
@@ -1139,15 +1154,16 @@ class MustCallConsistencyAnalyzer {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-          // If succ is an exceptional successor, and fact represents the temporary variable for
+          // If succ is an exceptional successor, and resourceAliasSet represents the temporary
+          // variable for
           // curBlock's node, do not propagate, as in the exceptional case the "assignment" to
-          // the temporary variable does not succeed
+          // the temporary variable does not succeed.
           if (exceptionType != null) {
             Node exceptionalNode = removeCasts(((ExceptionBlock) curBlock).getNode());
             LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
             if (tmpVarForExcNode != null
-                && fact.size() == 1
-                && Iterables.getOnlyElement(fact)
+                && resourceAliasSet.size() == 1
+                && Iterables.getOnlyElement(resourceAliasSet)
                     .localVar
                     .getElement()
                     .equals(tmpVarForExcNode.getElement())) {
@@ -1155,34 +1171,36 @@ class MustCallConsistencyAnalyzer {
             }
           }
 
-          // always propagate fact to successor if current block represents code nested in a cast or
-          // ternary expression.  without this logic, the analysis may report a false positive in
-          // when the fact represents a temporary variable for a nested expression, as the temporary
+          // Always propagate resourceAliasSet to successor if current block represents code nested
+          // in a cast or
+          // ternary expression.  Without this logic, the analysis may report a false positive in
+          // when the resourceAliasSet represents a temporary variable for a nested expression, as
+          // the temporary
           // may not appear in the successor store and hence seems to be going out of scope.  The
           // temporary will be handled with special logic; casts are unwrapped at various points in
           // the analysis, and ternary expressions are handled by handleTernarySuccIfNeeded.
           if (curBlockNodes.size() == 1 && inCastOrTernary(curBlockNodes.get(0))) {
-            factsForSucc.add(fact);
+            obligationsForSucc.add(resourceAliasSet);
             break;
           }
 
           if (curBlockNodes.size() == 0 /* curBlock is special or conditional */) {
             // Use the store from the block actually being analyzed, rather than succRegularStore,
             // if succRegularStore contains no information about the variables of interest.
-            // In the case where none of the local variables in fact appear in
-            // succRegularStore, the variable is going out of scope, and it doesn't make
+            // In the case where none of the aliases in resourceAliasSet appear in
+            // succRegularStore, the resource is going out of scope, and it doesn't make
             // sense to pass succRegularStore to checkMustCall - the successor store will
             // not have any information about it, by construction, and
-            // any information in the previous store remains true. If any locals do appear
-            // in succRegularStore, we will always use that store.
+            // any information in the previous store remains true. If any locals from the resource
+            // alias set do appear in succRegularStore, we will always use that store.
             CFStore cmStore =
                 noInfoInSuccStoreForVars
                     ? analysis.getInput(curBlock).getRegularStore()
                     : succRegularStore;
             CFStore mcStore = mcAtf.getStoreForBlock(noInfoInSuccStoreForVars, curBlock, succ);
-            checkMustCall(fact, cmStore, mcStore, reasonForSucc);
-          } else { // current block has at least one node
-            // use the called-methods store immediately after the last node in curBlock
+            checkMustCall(resourceAliasSet, cmStore, mcStore, reasonForSucc);
+          } else { // In this case, current block has at least one node.
+            // Use the called-methods store immediately after the last node in curBlock.
             Node last = curBlockNodes.get(curBlockNodes.size() - 1);
             CFStore cmStoreAfter = typeFactory.getStoreAfter(last);
             // If this is an exceptional block, check the MC store beforehand to avoid
@@ -1194,19 +1212,20 @@ class MustCallConsistencyAnalyzer {
             } else {
               mcStore = mcAtf.getStoreAfter(last);
             }
-            checkMustCall(fact, cmStoreAfter, mcStore, reasonForSucc);
+            checkMustCall(resourceAliasSet, cmStoreAfter, mcStore, reasonForSucc);
           }
 
-        } else { // info in successor store about some var in fact
-          // handling the possibility that some vars in the fact go out of scope
-          Set<LocalVarWithTree> factCopy = new LinkedHashSet<>(fact);
-          factCopy.removeIf(
+        } else { // In this case, there is info in the successor store about some alias in
+          // resourceAliasSet.
+          // Handles the possibility that some resource in the resourceAliasSet may go out of scope.
+          Set<LocalVarWithTree> obligationCopy = new LinkedHashSet<>(resourceAliasSet);
+          obligationCopy.removeIf(
               assign -> varNotPresentInStoreAndNotForTernary(succRegularStore, assign));
-          factsForSucc.add(ImmutableSet.copyOf(factCopy));
+          obligationsForSucc.add(ImmutableSet.copyOf(obligationCopy));
         }
       }
 
-      propagate(new BlockWithObligations(succ, factsForSucc), visited, worklist);
+      propagate(new BlockWithObligations(succ, obligationsForSucc), visited, worklist);
     }
   }
 
@@ -1237,39 +1256,39 @@ class MustCallConsistencyAnalyzer {
    * <p>To handle this representation, we treat the control-flow transition from a node for a
    * ternary expression case <em>c</em> to the successor {@link TernaryExpressionNode} <em>t</em> as
    * a pseudo-assignment from <em>c</em> to the temporary variable for <em>t</em>. With this
-   * handling, the facts reaching the successor node of <em>t</em> will properly account for the
-   * execution of case <em>c</em>.
+   * handling, the obligations reaching the successor node of <em>t</em> will properly account for
+   * the execution of case <em>c</em>.
    *
    * <p>If the successor block does not begin with a {@link TernaryExpressionNode} that needs to be
-   * handled, this method simply returns {@code facts}.
+   * handled, this method simply returns {@code obligations}.
    *
    * @param pred the predecessor block, potentially corresponding to the ternary expression case
    * @param succ the successor block, potentially starting with a {@link TernaryExpressionNode}
-   * @param facts the facts before the control-flow transition
-   * @return a new set of facts to account for the {@link TernaryExpressionNode}, or just {@code
-   *     facts} if no handling is required.
+   * @param obligations the obligations before the control-flow transition
+   * @return a new set of obligations to account for the {@link TernaryExpressionNode}, or just
+   *     {@code obligations} if no handling is required.
    */
   private Set<ImmutableSet<LocalVarWithTree>> handleTernarySuccIfNeeded(
-      Block pred, Block succ, Set<ImmutableSet<LocalVarWithTree>> facts) {
+      Block pred, Block succ, Set<ImmutableSet<LocalVarWithTree>> obligations) {
     List<Node> succNodes = succ.getNodes();
     if (succNodes.isEmpty() || !(succNodes.get(0) instanceof TernaryExpressionNode)) {
-      return facts;
+      return obligations;
     }
     TernaryExpressionNode ternaryNode = (TernaryExpressionNode) succNodes.get(0);
     LocalVariableNode ternaryTempVar = typeFactory.getTempVarForNode(ternaryNode);
     if (ternaryTempVar == null) {
-      return facts;
+      return obligations;
     }
     List<Node> predNodes = pred.getNodes();
-    // right-hand side of the pseudo-assignment to the ternary expression temporary variable
+    // Right-hand side of the pseudo-assignment to the ternary expression temporary variable.
     Node rhs = removeCasts(predNodes.get(predNodes.size() - 1));
     if (!(rhs instanceof LocalVariableNode)) {
       rhs = typeFactory.getTempVarForNode(rhs);
       if (rhs == null) {
-        return facts;
+        return obligations;
       }
     }
-    Set<ImmutableSet<LocalVarWithTree>> newDefs = new LinkedHashSet<>(facts);
+    Set<ImmutableSet<LocalVarWithTree>> newDefs = new LinkedHashSet<>(obligations);
     doGenKillForPseudoAssignment(ternaryNode, newDefs, ternaryTempVar, rhs);
     return newDefs;
   }
@@ -1290,7 +1309,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Finds {@link Owning} formal parameters for the method corresponding to a CFG
+   * Finds {@link Owning} formal parameters for the method corresponding to a CFG.
    *
    * @param cfg the CFG
    * @return the owning formal parameters of the method that corresponds to the given cfg
@@ -1309,7 +1328,7 @@ class MustCallConsistencyAnalyzer {
                 && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
                 && paramElement.getAnnotation(Owning.class) != null)) {
           result.add(ImmutableSet.of(new LocalVarWithTree(new LocalVariable(paramElement), param)));
-          // Increment numMustCall for each @Owning parameter tracked by the enclosing method
+          // Increment numMustCall for each @Owning parameter tracked by the enclosing method.
           incrementNumMustCall(paramElement);
         }
       }
@@ -1318,19 +1337,19 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks whether there is some fact {@code f} in {@code facts} such that {@code f} contains a
-   * {@link LocalVarWithTree} whose local variable is {@code node}.
+   * Checks whether there is some resource alias set <em>R</em> in {@code obligations} such that
+   * <em>R</em> contains a {@link LocalVarWithTree} whose local variable is {@code node}.
    *
    * @param var the local variable to look for
-   * @param obligations the set of facts to search
-   * @return true iff there is a fact in facts that represents node
+   * @param obligations the set of obligations to search
+   * @return true iff there is a resource alias set in obligations that contains node
    */
   private static boolean varTrackedInObligations(
       LocalVariableNode var, Set<ImmutableSet<LocalVarWithTree>> obligations) {
     Element nodeElement = var.getElement();
-    for (Set<LocalVarWithTree> fact : obligations) {
-      for (LocalVarWithTree lvwt : fact) {
-        if (lvwt.localVar.getElement().equals(nodeElement)) {
+    for (Set<LocalVarWithTree> resourceAliasSet : obligations) {
+      for (LocalVarWithTree alias : resourceAliasSet) {
+        if (alias.localVar.getElement().equals(nodeElement)) {
           return true;
         }
       }
@@ -1339,20 +1358,21 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Gets the single fact in a set of facts containing some variable.
+   * Gets the resource alias set that contains the given local variable, if one exists in
+   * obligations.
    *
-   * @param facts set of facts
+   * @param obligations set of obligations
    * @param node variable of interest
-   * @return the fact in {@code facts} containing {@code node}, or {@code null} if there is no such
-   *     fact
+   * @return the resource alias set in {@code obligations} containing {@code node}, or {@code null}
+   *     if there is no such set
    */
   private static @Nullable ImmutableSet<LocalVarWithTree> getResourceAliasSetForVar(
-      Set<ImmutableSet<LocalVarWithTree>> facts, LocalVariableNode node) {
+      Set<ImmutableSet<LocalVarWithTree>> obligations, LocalVariableNode node) {
     Element nodeElement = node.getElement();
-    for (ImmutableSet<LocalVarWithTree> fact : facts) {
-      for (LocalVarWithTree lvwt : fact) {
+    for (ImmutableSet<LocalVarWithTree> resourceAliasSet : obligations) {
+      for (LocalVarWithTree lvwt : resourceAliasSet) {
         if (lvwt.localVar.getElement().equals(nodeElement)) {
-          return fact;
+          return resourceAliasSet;
         }
       }
     }
@@ -1360,34 +1380,34 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * For the given fact, checks that at least one of its variables has its {@code @MustCall}
-   * obligation satisfied, based on {@code @CalledMethods} and {@code @MustCall} types in the given
-   * stores
+   * For the given resourceAliasSet, checks that at least one of its variables has its
+   * {@code @MustCall} obligation satisfied, based on {@code @CalledMethods} and {@code @MustCall}
+   * types in the given stores.
    *
-   * @param fact the fact
+   * @param resourceAliasSet the resourceAliasSet
    * @param cmStore the called-methods store
    * @param mcStore the must-call store
    * @param outOfScopeReason if the {@code @MustCall} obligation is not satisfied, a useful
    *     explanation to include in the error message
    */
   private void checkMustCall(
-      ImmutableSet<LocalVarWithTree> fact,
+      ImmutableSet<LocalVarWithTree> resourceAliasSet,
       CFStore cmStore,
       CFStore mcStore,
       String outOfScopeReason) {
 
-    List<String> mustCallValue = typeFactory.getMustCallValue(fact, mcStore);
+    List<String> mustCallValue = typeFactory.getMustCallValue(resourceAliasSet, mcStore);
     // optimization: if there are no must-call methods, we do not need to perform the check
     if (mustCallValue == null || mustCallValue.isEmpty()) {
       return;
     }
 
     boolean mustCallSatisfied = false;
-    for (LocalVarWithTree localVarWithTree : fact) {
+    for (LocalVarWithTree alias : resourceAliasSet) {
 
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
-      CFValue lhsCFValue = cmStore != null ? cmStore.getValue(localVarWithTree.localVar) : null;
+      CFValue lhsCFValue = cmStore != null ? cmStore.getValue(alias.localVar) : null;
       AnnotationMirror cmAnno = null;
 
       if (lhsCFValue != null) { // When store contains the lhs
@@ -1401,7 +1421,7 @@ class MustCallConsistencyAnalyzer {
       if (cmAnno == null) {
         cmAnno =
             typeFactory
-                .getAnnotatedType(localVarWithTree.localVar.getElement())
+                .getAnnotatedType(alias.localVar.getElement())
                 .getAnnotationInHierarchy(typeFactory.top);
       }
 
@@ -1412,15 +1432,16 @@ class MustCallConsistencyAnalyzer {
     }
 
     if (!mustCallSatisfied) {
-      LocalVarWithTree firstlocalVarWithTree = fact.iterator().next();
-      if (!reportedMustCallErrors.contains(firstlocalVarWithTree)) {
-        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstlocalVarWithTree.tree))) {
-          reportedMustCallErrors.add(firstlocalVarWithTree);
+      // Report the error at the first alias' definition. This choice is arbitrary but consistent.
+      LocalVarWithTree firstAlias = resourceAliasSet.iterator().next();
+      if (!reportedMustCallErrors.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedMustCallErrors.add(firstAlias);
           checker.reportError(
-              firstlocalVarWithTree.tree,
+              firstAlias.tree,
               "required.method.not.called",
               formatMissingMustCallMethods(mustCallValue),
-              firstlocalVarWithTree.localVar.getType().toString(),
+              firstAlias.localVar.getType().toString(),
               outOfScopeReason);
         }
       }
@@ -1526,7 +1547,9 @@ class MustCallConsistencyAnalyzer {
    * @param worklist the states that will be analyzed
    */
   private static void propagate(
-      BlockWithObligations state, Set<BlockWithObligations> visited, Deque<BlockWithObligations> worklist) {
+      BlockWithObligations state,
+      Set<BlockWithObligations> visited,
+      Deque<BlockWithObligations> worklist) {
 
     if (visited.add(state)) {
       worklist.add(state);
@@ -1553,9 +1576,10 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * A pair of a {@link Block} and a set of obligations (i.e. dataflow facts) on entry to the block.
-   * Each obligation is an {@code ImmutableSet<LocalVarWithTree>}, representing a set of resource aliases for some tracked
-   * resource. The analyzer's worklist consists of BlockWithObligations objects, each representing the
-   * need to handle the set of obligations reaching the block during analysis.
+   * Each obligation is an {@code ImmutableSet<LocalVarWithTree>}, representing a set of resource
+   * aliases for some tracked resource. The analyzer's worklist consists of BlockWithObligations
+   * objects, each representing the need to handle the set of obligations reaching the block during
+   * analysis.
    */
   private static class BlockWithObligations {
 
@@ -1569,7 +1593,8 @@ class MustCallConsistencyAnalyzer {
      * Create a new BlockWithObligations from a block and a set of obligations.
      *
      * @param b the block
-     * @param obligations the set of incoming obligations at the start of the block (may be the empty set)
+     * @param obligations the set of incoming obligations at the start of the block (may be the
+     *     empty set)
      */
     public BlockWithObligations(Block b, Set<ImmutableSet<LocalVarWithTree>> obligations) {
       this.block = b;
@@ -1599,6 +1624,8 @@ class MustCallConsistencyAnalyzer {
    * variable. Besides a normal assignment, the tree may be a {@link VariableTree} in the case of a
    * formal parameter. We keep the tree for error-reporting purposes (so we can report an error per
    * assignment to a local, pinpointing the expression whose MustCall may not be satisfied).
+   *
+   * <p>This class is used to represent a single resource alias in a resource alias set.
    */
   /* package-private */ static class LocalVarWithTree {
 
