@@ -10,8 +10,6 @@ plugins {
     id "net.ltgt.errorprone" version "2.0.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
-    // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 apply plugin: "de.undercouch.download"
 
@@ -20,11 +18,6 @@ import org.ajoberstar.grgit.Grgit
 repositories {
     jcenter()
     mavenCentral()
-}
-
-gitProperties {
-    // logically belongs in framework, but only checker resources are copied to .jar file
-    gitPropertiesResourceDir = file("${project.rootDir}/checker/src/main/resources")
 }
 
 ext {
@@ -100,7 +93,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.13.1-SNAPSHOT'
+    version '3.14.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -112,7 +105,7 @@ allprojects {
         // Holds the combined classpath of all subprojects including the subprojects themselves.
         allProjects
 
-        // Exclude checker-qual dependency added by ErrorProne to avoid a circular dependency.
+        // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
@@ -172,8 +165,10 @@ allprojects {
         // Add standard javac options
         tasks.withType(JavaCompile) { compilationTask ->
             dependsOn(':installGitHooks')
-            // Put source files in deterministic order, for debugging.
-            compilationTask.source = compilationTask.source.sort()
+            // Sorting is commented out because it disables incremental compilation.
+            // Uncomment when needed.
+            // // Put source files in deterministic order, for debugging.
+            // compilationTask.source = compilationTask.source.sort()
             sourceCompatibility = 8
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
@@ -213,7 +208,7 @@ allprojects {
                     '-Werror',
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-                    // are suppressible warns with a "// fall through" comment.
+                    // warnings are suppressible with a "// fall through" comment.
                     "-Xlint:-options,-fallthrough",
                     "-Xlint",
             ]
@@ -224,7 +219,7 @@ allprojects {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()]
             }
 
-            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
             // TODO: enable Error Prone on test classes.
             if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
@@ -247,6 +242,8 @@ allprojects {
                         '-Xep:AnnotateFormatMethod:OFF',
                         // Warns for every use of "@checker_framework.manual"
                         '-Xep:InvalidBlockTag:OFF',
+                        // Recommends writing @InlineMe which is an Error-Prone-specific annotation
+                        '-Xep:InlineMeSuggester:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -284,10 +281,12 @@ task maybeCloneAndBuildDependencies() {
             }
             exec {
                 workingDir stubparser
-                executable "${stubparser}/.travis-build-without-test.sh"
+                executable "${stubparser}/.build-without-test.sh"
             }
         } else {
-            executable 'checker/bin-devel/build.sh'
+            exec {
+                executable 'checker/bin-devel/build.sh'
+            }
         }
     }
     doLast {
@@ -412,6 +411,7 @@ task htmlValidate(type: Exec, group: 'Format') {
             "/api/",
             "/build/",
             "/docs/manual/manual.html",
+            "/docs/manual/plume-bib/docs/index.html",
             "/checker/jdk/nullness/src/java/lang/ref/package.html"
     ]
 }
@@ -468,7 +468,7 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
-    args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
+    args "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
 }
 
 
@@ -642,7 +642,7 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.6.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.7.1'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -652,6 +652,10 @@ subprojects {
         executable 'python3'
 
         doFirst {
+            if (isJava8) {
+                println 'The checkFormat task cannot be run on Java 8.  Please use Java 11+.'
+                return
+            }
             args += "${formatScriptsHome}/check-google-java-format.py"
             args += getJavaFilesToFormat(project.name)
         }
@@ -669,6 +673,10 @@ subprojects {
         onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
         doFirst {
+            if (isJava8) {
+                println 'The reformat task cannot be run on Java 8.  Please use Java 11+.'
+                return
+            }
             args += "${formatScriptsHome}/run-google-java-format.py"
             args += getJavaFilesToFormat(project.name)
         }

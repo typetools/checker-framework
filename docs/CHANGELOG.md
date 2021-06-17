@@ -1,3 +1,17 @@
+Version 3.X.X (? ?, 2021)
+----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Method renamings (the old methods remain but are deprecated):
+ * `AnnotatedDeclaredType#wasRaw` => `isUnderlyingTypeRaw`
+ * `AnnotatedDeclaredType#setWasRaw` => `setIsUnderlyingTypeRaw`
+
+**Closed issues:**
+
+
 Version 3.14.0 (June 1, 2021)
 ----------------------------
 
@@ -23,6 +37,7 @@ Method `TreeUtils.getMethodName()` returns a `String` rather than a `Name`.
 Removed CheckerDevelMain.
 
 **Closed issues:**
+#3993, #4116, #4586, #4598, #4612, #4614.
 
 
 Version 3.13.0 (May 3, 2021)

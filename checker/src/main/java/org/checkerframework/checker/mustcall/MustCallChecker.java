@@ -12,21 +12,21 @@ import org.checkerframework.framework.source.SupportedOptions;
 @StubFiles({
   "JavaEE.astub",
   "Reflection.astub",
-  "SocketAccumulationFrames.astub",
+  "SocketCreatesMustCallFor.astub",
 })
 @SupportedOptions({
-  MustCallChecker.NO_ACCUMULATION_FRAMES,
+  MustCallChecker.NO_CREATES_MUSTCALLFOR,
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
   MustCallChecker.NO_RESOURCE_ALIASES
 })
 public class MustCallChecker extends BaseTypeChecker {
 
-  /** Disables @CreatesObligation support. */
-  public static final String NO_ACCUMULATION_FRAMES = "noAccumulationFrames";
+  /** Disables @CreatesMustCallFor support. Not of interest to most users. */
+  public static final String NO_CREATES_MUSTCALLFOR = "noCreatesMustCallFor";
 
-  /** Disables @Owning/@NotOwning support. */
+  /** Disables @Owning/@NotOwning support. Not of interest to most users. */
   public static final String NO_LIGHTWEIGHT_OWNERSHIP = "noLightweightOwnership";
 
-  /** Disables @MustCallAlias support. */
+  /** Disables @MustCallAlias support. Not of interest to most users. */
   public static final String NO_RESOURCE_ALIASES = "noResourceAliases";
 }

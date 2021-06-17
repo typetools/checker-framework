@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  * Transfer function for the must-call type system. Its primary purposes are (1) to create temporary
  * variables for expressions (which allow those expressions to have refined information in the
  * store, which the consistency checker can use), and (2) to reset refined information when a method
- * annotated with @CreatesObligation is called.
+ * annotated with @CreatesMustCallFor is called.
  */
 public class MustCallTransfer extends CFTransfer {
 
@@ -100,9 +100,9 @@ public class MustCallTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
 
     updateStoreWithTempVar(result, n);
-    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_ACCUMULATION_FRAMES)) {
+    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
       List<JavaExpression> targetExprs =
-          CreatesObligationElementSupplier.getCreatesObligationExpressions(
+          CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
               n, atypeFactory, atypeFactory);
       for (JavaExpression targetExpr : targetExprs) {
         AnnotationMirror defaultType =

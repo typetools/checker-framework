@@ -411,35 +411,29 @@ public final class TreeUtils {
    * argument to the constructor that is the enclosing expression of the NewClassTree. Suppose a
    * programmer writes:
    *
-   * <pre><code>
-   *     class Outer {
-   *         class Inner { }
-   *         void method() {
-   *             this.new Inner(){};
-   *         }
+   * <pre>{@code class Outer {
+   *   class Inner { }
+   *     void method() {
+   *       this.new Inner(){};
    *     }
-   * </code></pre>
+   * }}</pre>
    *
    * Java 9 javac creates the following synthetic tree for {@code this.new Inner(){}}:
    *
-   * <pre><code>
-   *    new Inner(this) {
-   *         (.Outer x0) {
-   *             x0.super();
-   *         }
-   *    }
-   * </code></pre>
+   * <pre>{@code new Inner(this) {
+   *   (.Outer x0) {
+   *     x0.super();
+   *   }
+   * }}</pre>
    *
    * Java 11 javac creates a different tree without the synthetic argument for {@code this.new
-   * Inner(){}}:
+   * Inner(){}}; the first line in the below code differs:
    *
-   * <pre><code>
-   *    this.new Inner() {
-   *         (.Outer x0) {
-   *             x0.super();
-   *         }
-   *    }
-   * </code></pre>
+   * <pre>{@code this.new Inner() {
+   *   (.Outer x0) {
+   *     x0.super();
+   *   }
+   * }}</pre>
    *
    * @param tree a new class tree
    * @return true if {@code tree} has a synthetic argument
@@ -1543,7 +1537,8 @@ public final class TreeUtils {
       case BOOLEAN:
         return TreeUtils.createLiteral(TypeTag.BOOLEAN, false, typeMirror, processingEnv);
       default:
-        return TreeUtils.createLiteral(TypeTag.BOT, null, typeMirror, processingEnv);
+        return TreeUtils.createLiteral(
+            TypeTag.BOT, null, processingEnv.getTypeUtils().getNullType(), processingEnv);
     }
   }
 

@@ -193,14 +193,25 @@ function configure_and_exec_dljc {
   echo "JAVA_HOME: ${JAVA_HOME}" >> "$dljc_stdout"
   echo "PATH: ${PATH}" >> "$dljc_stdout"
   echo "DLJC_CMD: ${DLJC_CMD}" >> "$dljc_stdout"
-  eval "${DLJC_CMD}" < /dev/null >> "$dljc_stdout" 2>&1
-  DLJC_STATUS=$?
+  DLJC_STATUS=0
+  eval "${DLJC_CMD}" < /dev/null >> "$dljc_stdout" 2>&1 || DLJC_STATUS=$?
 
   export PATH="${PATH_BACKUP}"
 
-  echo "=== DLJC standard out/err follows: ==="
+  echo "=== DLJC standard out/err (${dljc_stdout}) follows: ==="
   cat "${dljc_stdout}"
   echo "=== End of DLJC standard out/err.  ==="
+
+  # the wpi.py script in do-like-javac outputs the following text if no build/whole-program-inference directory
+  # exists, which means that WPI produced no output. When that happens, the reason is usually that the Checker
+  # Framework crashed, so output the log file for easier debugging.
+  wpi_no_output_message="No WPI outputs were discovered; it is likely that WPI failed or the Checker Framework crashed"
+  if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
+    wpi_log_path="${DIR}"/dljc-out/wpi.log
+    echo "=== ${wpi_no_output_message}: printing ${wpi_log_path} ==="
+    cat "${wpi_log_path}"
+    echo "=== end of ${wpi_log_path} ==="
+  fi
 
   if [[ $DLJC_STATUS -eq 124 ]]; then
       echo "dljc timed out for ${DIR}"
