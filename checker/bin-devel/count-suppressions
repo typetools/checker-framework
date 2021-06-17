@@ -70,7 +70,7 @@ countedreasons=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d-%H%M%S)"-XXX)
 #    include "@SuppressWarnings" because it might appear on the previous line.
 #  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
-# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "// TP" (as an alias for "true positive"), and "count-suppressions-ignore"
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "// TP" (as an alias for "true positive"), and "count-suppressions-ignore".
 ${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" \
     | grep -v "@AnnotatedFor" | grep -v "/tests/" \
     | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" | grep -v "// TP" | grep -v "count-suppressions-ignore" > "${greplines}"

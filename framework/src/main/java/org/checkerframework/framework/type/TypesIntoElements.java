@@ -361,7 +361,7 @@ public class TypesIntoElements {
 
       // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there
       // are no corresponding type arguments and therefore no location to actually add them to
-      if (!type.wasRaw()) {
+      if (!type.isUnderlyingTypeRaw()) {
         int arg = 0;
         for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
           TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
