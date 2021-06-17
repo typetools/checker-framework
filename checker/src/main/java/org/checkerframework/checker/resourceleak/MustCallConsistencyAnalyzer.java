@@ -13,6 +13,7 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -802,10 +803,7 @@ class MustCallConsistencyAnalyzer {
 
     if (!(lhsNode instanceof FieldAccessNode)) {
       throw new BugInCF(
-          "tried to check reassignment to a field for a non-field node: "
-              + node
-              + " of type: "
-              + node.getClass());
+          "checkReassignmentToField: non-field node " + node + " of type " + node.getClass());
     }
 
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;
@@ -916,7 +914,7 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    String checked = "";
+    List<String> checked = new ArrayList<>();
     for (String targetStrWithoutAdaptation : cmcfValues) {
       String targetStr = null;
       try {
@@ -931,18 +929,14 @@ class MustCallConsistencyAnalyzer {
         // This @CreatesMustCallFor annotation matches.
         return;
       }
-      if ("".equals(checked)) {
-        checked += targetStr;
-      } else {
-        checked += ", " + targetStr;
-      }
+      checked.add(targetStr);
     }
     checker.reportError(
         enclosingMethod,
         "incompatible.creates.mustcall.for",
         receiverString,
         ((FieldAccessNode) lhs).getFieldName(),
-        checked);
+        String.join(", ", checked));
   }
 
   /**
@@ -965,12 +959,12 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Finds the actual parameter passed in the {@code @MustCallAlias} position for a call.
+   * Finds the argument passed in the {@code @MustCallAlias} position for a call.
    *
    * @param callNode callNode representing the call
    * @return if {@code callNode} invokes a method with a {@code @MustCallAlias} annotation on some
    *     formal parameter (or the receiver), returns the result of calling {@link
-   *     #removeCastsAndGetTmpVarIfPresent(Node)} on the actual parameter passed in that position.
+   *     #removeCastsAndGetTmpVarIfPresent(Node)} on the argument passed in that position.
    *     Otherwise, returns {@code null}.
    */
   private @Nullable Node getMustCallAliasParamVar(Node callNode) {
@@ -981,11 +975,11 @@ class MustCallConsistencyAnalyzer {
     }
 
     Node result = null;
-    List<Node> actualParams = getArgumentsOfInvocation(callNode);
+    List<Node> args = getArgumentsOfInvocation(callNode);
     List<? extends VariableElement> formalParams = getFormalsOfInvocation(callNode);
-    for (int i = 0; i < actualParams.size(); i++) {
+    for (int i = 0; i < args.size(); i++) {
       if (typeFactory.hasMustCallAlias(formalParams.get(i))) {
-        result = actualParams.get(i);
+        result = args.get(i);
         break;
       }
     }
@@ -1007,8 +1001,8 @@ class MustCallConsistencyAnalyzer {
    * @return either a tempvar for node's content sans typecasts, or node
    */
   private Node removeCastsAndGetTmpVarIfPresent(Node node) {
-    // TODO create temp vars for TypeCastNodes as well, so we don't need to explicitly remove casts
-    // here
+    // TODO: Create temp vars for TypeCastNodes as well, so we don't need to explicitly remove casts
+    // here.
     node = removeCasts(node);
     LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
     return tmpVar != null ? tmpVar : node;
@@ -1019,20 +1013,17 @@ class MustCallConsistencyAnalyzer {
    * invocation node.
    *
    * @param node a MethodInvocation or ObjectCreation node
-   * @return a list of the arguments, in order
+   * @return the arguments, in order
    */
   private List<Node> getArgumentsOfInvocation(Node node) {
-    List<Node> arguments;
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
-      arguments = invocationNode.getArguments();
+      return invocationNode.getArguments();
+    } else if (node instanceof ObjectCreationNode) {
+      return ((ObjectCreationNode) node).getArguments();
     } else {
-      if (!(node instanceof ObjectCreationNode)) {
-        throw new BugInCF("unexpected node type " + node.getClass());
-      }
-      arguments = ((ObjectCreationNode) node).getArguments();
+      throw new BugInCF("unexpected node type " + node.getClass());
     }
-    return arguments;
   }
 
   /**
@@ -1048,15 +1039,13 @@ class MustCallConsistencyAnalyzer {
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
       executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
-    } else {
-      if (!(node instanceof ObjectCreationNode)) {
-        throw new BugInCF("unexpected node type " + node.getClass());
-      }
+    } else if (node instanceof ObjectCreationNode) {
       executableElement = TreeUtils.elementFromUse(((ObjectCreationNode) node).getTree());
+    } else {
+      throw new BugInCF("unexpected node type " + node.getClass());
     }
 
-    List<? extends VariableElement> formals = executableElement.getParameters();
-    return formals;
+    return executableElement.getParameters();
   }
 
   /**
