@@ -5040,8 +5040,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror copy = originalToCopy.get(original);
       if (copy != null) {
         @SuppressWarnings(
-            "unchecked") // the key-value pairs in originalToCopy are always the same kind of
+            "unchecked" // the key-value pairs in originalToCopy are always the same kind of
         // AnnotatedTypeMirror.
+        )
         T copyCasted = (T) copy;
         return copyCasted;
       }
@@ -5053,8 +5054,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (captureType != null) {
           originalToCopy.put(original, captureType);
           @SuppressWarnings(
-              "unchecked") // the key-value pairs in originalToCopy are always the same kind of
+              "unchecked" // the key-value pairs in originalToCopy are always the same kind of
           // AnnotatedTypeMirror.
+          )
           T captureTypeCasted = (T) captureType;
           return captureTypeCasted;
         }
