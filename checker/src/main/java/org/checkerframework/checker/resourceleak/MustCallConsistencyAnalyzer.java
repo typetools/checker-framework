@@ -110,6 +110,10 @@ import org.plumelib.util.StringsPlume;
  * <p>Throughout, this class uses the temporary-variable facilities provided by the Must Call and
  * Resource Leak type factories to permit expressions to have their types refined in their
  * respective checkers' stores. These temporary variables can be members of resource-alias sets.
+ * Without temporary variables, the checker wouldn't be able to verify code such as {@code new
+ * Socket(host, port).close()}, which would cause false positives. Temporaries are created for
+ * {@code new} expressions, method calls (for the return value), and ternary expressions. Other
+ * types of expressions may also be supported in the future.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
@@ -393,7 +397,8 @@ class MustCallConsistencyAnalyzer {
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
     Tree tree = node.getTree();
     // We need to track the result of the call iff there is a temporary variable for the call node
-    // (because we only create temporaries for expressions that actually have must-call values).
+    // (because we only create temporaries for expressions that could actually have must-call
+    // values).
     LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
     if (tmpVar == null) {
       return;
