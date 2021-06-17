@@ -472,7 +472,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     final boolean result =
-        visitTypeArgs(subtypeAsSuper, supertype, subtype.wasRaw(), supertype.wasRaw());
+        visitTypeArgs(
+            subtypeAsSuper,
+            supertype,
+            subtype.isUnderlyingTypeRaw(),
+            supertype.isUnderlyingTypeRaw());
     isSubtypeVisitHistory.put(subtypeAsSuper, supertype, currentTop, result);
 
     return result;

@@ -133,7 +133,7 @@ public class FIsAReducer implements AFReducer {
         AnnotatedDeclaredType parameter,
         AnnotatedDeclaredType argument,
         Set<AFConstraint> constraints) {
-      if (argument.wasRaw() || parameter.wasRaw()) {
+      if (argument.isUnderlyingTypeRaw() || parameter.isUnderlyingTypeRaw()) {
         return null;
       }
 

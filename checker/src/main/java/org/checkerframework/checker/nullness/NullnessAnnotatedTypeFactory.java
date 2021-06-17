@@ -322,7 +322,11 @@ public class NullnessAnnotatedTypeFactory
     return new NullnessTransfer((NullnessAnalysis) analysis);
   }
 
-  /** @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals */
+  /**
+   * Returns an AnnotatedTypeFormatter that does not print the qualifiers on null literals.
+   *
+   * @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals
+   */
   @Override
   protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
     boolean printVerboseGenerics = checker.hasOption("printVerboseGenerics");
