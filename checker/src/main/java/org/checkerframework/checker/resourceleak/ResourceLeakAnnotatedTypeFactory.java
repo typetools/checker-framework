@@ -50,23 +50,23 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
 
-  /** The MustCall.value field/element */
+  /** The MustCall.value element/field. */
   final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
-  /** The EnsuresCalledMethods.value field/element */
+  /** The EnsuresCalledMethods.value element/field. */
   final ExecutableElement ensuresCalledMethodsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "value", 0, processingEnv);
 
-  /** The EnsuresCalledMethods.methods field/element */
+  /** The EnsuresCalledMethods.methods element/field. */
   final ExecutableElement ensuresCalledMethodsMethodsElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "methods", 0, processingEnv);
 
-  /** The CreatesMustCallFor.List.value field/element. */
+  /** The CreatesMustCallFor.List.value element/field. */
   private final ExecutableElement createsMustCallForListValueElement =
       TreeUtils.getMethod(CreatesMustCallFor.List.class, "value", 0, processingEnv);
 
-  /** The CreatesMustCallFor.value field/element. */
+  /** The CreatesMustCallFor.value element/field. */
   private final ExecutableElement createsMustCallForValueElement =
       TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
@@ -146,7 +146,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         }
       }
       if (mcAnno == null) {
-        //  It wasn't in the store, so fall back to the default must-call type for the class.
+        // It wasn't in the store, so fall back to the default must-call type for the class.
         // TODO: we currently end up in this case when checking a call to the return type
         // of a returns-receiver method on something with a MustCall type; for example,
         // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we
