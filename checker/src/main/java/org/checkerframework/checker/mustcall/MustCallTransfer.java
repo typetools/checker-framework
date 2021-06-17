@@ -10,6 +10,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -26,7 +27,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -107,13 +107,8 @@ public class MustCallTransfer extends CFTransfer {
       CFStore store = result.getRegularStore();
       JavaExpression expr = JavaExpression.fromNode(n.getTarget());
       CFValue value = store.getValue(expr);
-      AnnotationMirror withClose = null;
-      for (AnnotationMirror anm : value.getAnnotations()) {
-        if (AnnotationUtils.areSameByName(
-            anm, "org.checkerframework.checker.mustcall.qual.MustCall")) {
-          withClose = anm;
-        }
-      }
+      AnnotationMirror withClose =
+          atypeFactory.getAnnotationByClass(value.getAnnotations(), MustCall.class);
       if (withClose == null) {
         return result;
       }
