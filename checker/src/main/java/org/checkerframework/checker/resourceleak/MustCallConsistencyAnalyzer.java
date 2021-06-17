@@ -101,6 +101,10 @@ import org.plumelib.util.StringsPlume;
  * method/constructor is added to the existing resource alias set); an obligation can be removed
  * when a member of a resource-alias set is passed to a method in a parameter location that is
  * annotated as {@code @Owning} or assigned to an owning field. (The above list is not exhaustive.)
+ *
+ * <p>Throughout, this class uses the temporary-variable facilities provided by the Must Call and
+ * Resource Leak type factories to permit expressions to have their types refined in their
+ * respective checkers' stores. These temporary variables can be members of resource-alias sets.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
@@ -529,8 +533,8 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    List<Node> actualParams = getArgumentsOfMethodOrConstructor(node);
-    List<? extends VariableElement> formalParams = getFormalsOfMethodOrConstructor(node);
+    List<Node> actualParams = getArgumentsOfInvocation(node);
+    List<? extends VariableElement> formalParams = getFormalsOfInvocation(node);
 
     if (actualParams.size() != formalParams.size()) {
       // This could happen, e.g., with varargs, or with strange cases like generated Enum
@@ -590,9 +594,7 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Should we transfer ownership to the return type of the method corresponding to a CFG? Returns
-   * true when either (1) there is an explicit {@link Owning} annotation on the return type or (2)
-   * the policy is to transfer ownership by default, and there is no {@link NotOwning} annotation on
-   * the return type.
+   * true when there is no {@link NotOwning} annotation on the return type.
    *
    * @param cfg the CFG of the method
    * @return true iff we should transfer ownership to the return type of the method corresponding to
@@ -606,7 +608,7 @@ class MustCallConsistencyAnalyzer {
 
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
     if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
-      // TODO: lambdas?
+      // TODO: lambdas? I think in that case we'll return false, below.
       MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
       return typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null;
@@ -627,13 +629,14 @@ class MustCallConsistencyAnalyzer {
       AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> obligations) {
     Node lhs = node.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
-    // use the temporary variable for the rhs if it exists
+    // Use the temporary variable for the rhs if it exists.
     Node rhs = removeCasts(node.getExpression());
-    if (typeFactory.getTempVarForNode(rhs) != null) {
-      rhs = typeFactory.getTempVarForNode(rhs);
+    LocalVariableNode tempVarForRhs = typeFactory.getTempVarForNode(rhs);
+    if (tempVarForRhs != null) {
+      rhs = tempVarForRhs;
     }
 
-    // Ownership transfer to @Owning field
+    // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
       boolean isOwningField =
           !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
@@ -694,7 +697,9 @@ class MustCallConsistencyAnalyzer {
    * @param node the node performing the pseudo-assignment; it is not necessarily an assignment node
    * @param obligations the tracked obligations, which will be side-effected
    * @param lhsVar the left-hand side variable for the pseudo-assignment
-   * @param rhs the right-hand side for the pseudo-assignment
+   * @param rhs the right-hand side for the pseudo-assignment, which must have been converted to a
+   *     temporary variable (via a call to {@link
+   *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode(Node)})
    */
   private void doGenKillForPseudoAssignment(
       Node node,
@@ -811,7 +816,8 @@ class MustCallConsistencyAnalyzer {
 
     if (enclosingMethodTree == null) {
       // Assignments outside of methods must be field initializers, which
-      // are always safe.
+      // are always safe. (Note that we don't support static owning fields,
+      // so static initializers don't need to be considered here.)
       return;
     }
 
@@ -970,8 +976,8 @@ class MustCallConsistencyAnalyzer {
     }
 
     Node result = null;
-    List<Node> actualParams = getArgumentsOfMethodOrConstructor(callNode);
-    List<? extends VariableElement> formalParams = getFormalsOfMethodOrConstructor(callNode);
+    List<Node> actualParams = getArgumentsOfInvocation(callNode);
+    List<? extends VariableElement> formalParams = getFormalsOfInvocation(callNode);
     for (int i = 0; i < actualParams.size(); i++) {
       if (typeFactory.hasMustCallAlias(formalParams.get(i))) {
         result = actualParams.get(i);
@@ -1010,7 +1016,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a MethodInvocation or ObjectCreation node
    * @return a list of the arguments, in order
    */
-  private List<Node> getArgumentsOfMethodOrConstructor(Node node) {
+  private List<Node> getArgumentsOfInvocation(Node node) {
     List<Node> arguments;
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
@@ -1032,7 +1038,7 @@ class MustCallConsistencyAnalyzer {
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
-  private List<? extends VariableElement> getFormalsOfMethodOrConstructor(Node node) {
+  private List<? extends VariableElement> getFormalsOfInvocation(Node node) {
     ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
@@ -1479,11 +1485,22 @@ class MustCallConsistencyAnalyzer {
    */
   private void incrementMustCallImpl(TypeMirror type) {
     // only count uses of JDK classes, since that's what we report on in the paper
-    String qualifiedName = TypesUtils.getTypeElement(type).getQualifiedName().toString();
-    if (!qualifiedName.startsWith("java")) {
+    if (!isJdkClass(TypesUtils.getTypeElement(type).getQualifiedName().toString())) {
       return;
     }
     checker.numMustCall++;
+  }
+
+  /**
+   * Is the given class a java* class? This is a heuristic for whether the class was defined in the
+   * JDK.
+   *
+   * @param qualifiedName a fully qualified name of a class
+   * @return true iff the type's fully-qualified name starts with "java", indicating that it is from
+   *     a java.* or javax.* package (probably)
+   */
+  /* package-private */ static boolean isJdkClass(String qualifiedName) {
+    return qualifiedName.startsWith("java");
   }
 
   /**

@@ -67,7 +67,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
       // This is safe because of the message key.
       String qualifiedTypeName = (String) args[1];
       // Only count classes in the JDK, not user-defined classes.
-      if (qualifiedTypeName.startsWith("java")) {
+      if (MustCallConsistencyAnalyzer.isJdkClass(qualifiedTypeName)) {
         numMustCallFailed++;
       }
     }
