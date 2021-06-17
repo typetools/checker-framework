@@ -609,7 +609,7 @@ class MustCallConsistencyAnalyzer {
    */
   private boolean isTransferOwnershipAtReturn(ControlFlowGraph cfg) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
-      // Default to always transferring at return if not using LO, just like ECJ does.
+      // If not using LO, default to always transferring at return, just like ECJ does.
       return true;
     }
 
@@ -624,13 +624,12 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Updates a set of obligations to account for an assignment.
+   * Updates a set of obligations to account for an assignment. Assigning to an owning field might
+   * remove obligations, assigning to a new local variable might modify an obligation (by increasing
+   * the size of its resource alias set), etc.
    *
    * @param node the assignment
-   * @param obligations the set of obligations to update, which may be side-effected depending on
-   *     the assignment: assigning to an owning field might remove obligations, assigning to a new
-   *     local variable might modify an obligation (by increasing the size of its resource alias
-   *     set), etc.
+   * @param obligations the set of obligations to update
    */
   private void handleAssignment(
       AssignmentNode node, Set<ImmutableSet<LocalVarWithTree>> obligations) {
@@ -655,7 +654,7 @@ class MustCallConsistencyAnalyzer {
         checkReassignmentToField(node, obligations);
       }
       // Remove obligations from local variables, now that the owning field is responsible.
-      // (When obligation creation is turned off, non-final fields cannot take ownership).
+      // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (isOwningField
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
@@ -668,8 +667,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Remove any obligations that contain {@link LocalVarWithTree} {@code var} in their
-   * resource-alias set.
+   * Remove any obligations that contain {@code var} in their resource-alias set.
    *
    * @param obligations the set of obligations
    * @param var a variable
