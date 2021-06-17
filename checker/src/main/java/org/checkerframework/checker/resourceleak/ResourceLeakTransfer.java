@@ -24,7 +24,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
   /**
    * Shadowed because we must dispatch to the Resource Leak Checker's version of
-   * getTypefactoryOfSubchecker to get the correct Mustcallannotatedtypefactory.
+   * getTypefactoryOfSubchecker to get the correct MustCallAnnotatedTypeFactory.
    */
   private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
 
