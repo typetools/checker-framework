@@ -1115,7 +1115,7 @@ class MustCallConsistencyAnalyzer {
    * Propagates a set of obligations to relevant successors, and performs consistency checks when
    * variables are going out of scope.
    *
-   * @param visited block-obligations pairs already handled
+   * @param visited block-obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
    * @param obligations obligations to propagate to successors
    * @param curBlock the current block
@@ -1514,10 +1514,49 @@ class MustCallConsistencyAnalyzer {
    */
   private boolean calledMethodsSatisfyMustCall(
       List<String> mustCallValues, AnnotationMirror cmAnno) {
+    // Create this annotation and use a subtype test because there's no guarantee that
+    // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[0]));
     return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
   }
+
+  /**
+   * The exception types in this set are ignored in the CFG when determining if a resource leaks
+   * along an exceptional path. These kinds of errors fall into a few categories: runtime errors,
+   * errors that the JVM can issue on any statement, and errors that can be prevented by running
+   * some other CF checker.
+   */
+  private static Set<String> ignoredExceptionTypes =
+      new HashSet<String>() {
+        {
+          // Any method call has a CFG edge for Throwable/RuntimeException/Error to represent
+          // run-time
+          // misbehavior. Ignore it.
+          add(Throwable.class.getCanonicalName());
+          add(Error.class.getCanonicalName());
+          add(RuntimeException.class.getCanonicalName());
+          // Use the Nullness Checker to prove this won't happen.
+          add(NullPointerException.class.getCanonicalName());
+          // These errors can't be predicted statically, so we'll ignore them and assume they won't
+          // happen.
+          add(ClassCircularityError.class.getCanonicalName());
+          add(ClassFormatError.class.getCanonicalName());
+          add(NoClassDefFoundError.class.getCanonicalName());
+          add(OutOfMemoryError.class.getCanonicalName());
+          // It's not our problem if the Java type system is wrong.
+          add(ClassCastException.class.getCanonicalName());
+          // It's not our problem if the code is going to divide by zero.
+          add(ArithmeticException.class.getCanonicalName());
+          // Use the Index Checker to prevent these errors.
+          add(ArrayIndexOutOfBoundsException.class.getCanonicalName());
+          add(NegativeArraySizeException.class.getCanonicalName());
+          // Most of the time, this exception is infeasible, as the charset used
+          // is guaranteed to be present by the Java spec (e.g., "UTF-8"). Eventually,
+          // we could refine this exclusion by looking at the charset being requested.
+          add(UnsupportedEncodingException.class.getCanonicalName());
+        }
+      };
 
   /**
    * Is {@code exceptionClassName} an exception type we are ignoring, to avoid excessive false
@@ -1529,30 +1568,7 @@ class MustCallConsistencyAnalyzer {
    * @return true if the given exception class should be ignored
    */
   private static boolean isIgnoredExceptionType(@FullyQualifiedName Name exceptionClassName) {
-    // any method call has a CFG edge for Throwable/RuntimeException/Error to represent run-time
-    // misbehavior. Ignore it.
-    return exceptionClassName.contentEquals(Throwable.class.getCanonicalName())
-        || exceptionClassName.contentEquals(RuntimeException.class.getCanonicalName())
-        || exceptionClassName.contentEquals(Error.class.getCanonicalName())
-        // use the Nullness Checker to prove this won't happen
-        || exceptionClassName.contentEquals(NullPointerException.class.getCanonicalName())
-        // these errors can't be predicted statically, so we'll ignore them and assume they won't
-        // happen
-        || exceptionClassName.contentEquals(ClassCircularityError.class.getCanonicalName())
-        || exceptionClassName.contentEquals(ClassFormatError.class.getCanonicalName())
-        || exceptionClassName.contentEquals(NoClassDefFoundError.class.getCanonicalName())
-        || exceptionClassName.contentEquals(OutOfMemoryError.class.getCanonicalName())
-        // it's not our problem if the Java type system is wrong
-        || exceptionClassName.contentEquals(ClassCastException.class.getCanonicalName())
-        // it's not our problem if the code is going to divide by zero.
-        || exceptionClassName.contentEquals(ArithmeticException.class.getCanonicalName())
-        // use the Index Checker to catch the next two cases
-        || exceptionClassName.contentEquals(ArrayIndexOutOfBoundsException.class.getCanonicalName())
-        || exceptionClassName.contentEquals(NegativeArraySizeException.class.getCanonicalName())
-        // Most of the time, this exception is infeasible, as the charset used
-        // is guaranteed to be present by the Java spec (e.g., "UTF-8"). Eventually,
-        // we could refine this exclusion by looking at the charset being requested
-        || exceptionClassName.contentEquals(UnsupportedEncodingException.class.getCanonicalName());
+    return ignoredExceptionTypes.contains(exceptionClassName.toString());
   }
 
   /**
@@ -1560,7 +1576,7 @@ class MustCallConsistencyAnalyzer {
    * worklist}.
    *
    * @param state the current state
-   * @param visited the previously-analyzed states
+   * @param visited the states that have been analyzed or are already on the worklist
    * @param worklist the states that will be analyzed
    */
   private static void propagate(
