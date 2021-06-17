@@ -1530,35 +1530,34 @@ class MustCallConsistencyAnalyzer {
    * some other CF checker.
    */
   private static Set<String> ignoredExceptionTypes =
-      new HashSet<String>() {
-        {
-          // Any method call has a CFG edge for Throwable/RuntimeException/Error to represent
-          // run-time
-          // misbehavior. Ignore it.
-          add(Throwable.class.getCanonicalName());
-          add(Error.class.getCanonicalName());
-          add(RuntimeException.class.getCanonicalName());
-          // Use the Nullness Checker to prove this won't happen.
-          add(NullPointerException.class.getCanonicalName());
-          // These errors can't be predicted statically, so we'll ignore them and assume they won't
-          // happen.
-          add(ClassCircularityError.class.getCanonicalName());
-          add(ClassFormatError.class.getCanonicalName());
-          add(NoClassDefFoundError.class.getCanonicalName());
-          add(OutOfMemoryError.class.getCanonicalName());
-          // It's not our problem if the Java type system is wrong.
-          add(ClassCastException.class.getCanonicalName());
-          // It's not our problem if the code is going to divide by zero.
-          add(ArithmeticException.class.getCanonicalName());
-          // Use the Index Checker to prevent these errors.
-          add(ArrayIndexOutOfBoundsException.class.getCanonicalName());
-          add(NegativeArraySizeException.class.getCanonicalName());
-          // Most of the time, this exception is infeasible, as the charset used
-          // is guaranteed to be present by the Java spec (e.g., "UTF-8"). Eventually,
-          // we could refine this exclusion by looking at the charset being requested.
-          add(UnsupportedEncodingException.class.getCanonicalName());
-        }
-      };
+      new HashSet<>(
+          ImmutableSet.of(
+              // Any method call has a CFG edge for Throwable/RuntimeException/Error to represent
+              // run-time
+              // misbehavior. Ignore it.
+              Throwable.class.getCanonicalName(),
+              Error.class.getCanonicalName(),
+              RuntimeException.class.getCanonicalName(),
+              // Use the Nullness Checker to prove this won't happen.
+              NullPointerException.class.getCanonicalName(),
+              // These errors can't be predicted statically, so we'll ignore them and assume they
+              // won't
+              // happen.
+              ClassCircularityError.class.getCanonicalName(),
+              ClassFormatError.class.getCanonicalName(),
+              NoClassDefFoundError.class.getCanonicalName(),
+              OutOfMemoryError.class.getCanonicalName(),
+              // It's not our problem if the Java type system is wrong.
+              ClassCastException.class.getCanonicalName(),
+              // It's not our problem if the code is going to divide by zero.
+              ArithmeticException.class.getCanonicalName(),
+              // Use the Index Checker to prevent these errors.
+              ArrayIndexOutOfBoundsException.class.getCanonicalName(),
+              NegativeArraySizeException.class.getCanonicalName(),
+              // Most of the time, this exception is infeasible, as the charset used
+              // is guaranteed to be present by the Java spec (e.g., "UTF-8"). Eventually,
+              // we could refine this exclusion by looking at the charset being requested.
+              UnsupportedEncodingException.class.getCanonicalName()));
 
   /**
    * Is {@code exceptionClassName} an exception type we are ignoring, to avoid excessive false
