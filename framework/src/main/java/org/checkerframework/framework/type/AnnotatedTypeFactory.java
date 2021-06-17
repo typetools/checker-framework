@@ -4709,24 +4709,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public AnnotatedTypeMirror applyCaptureConversion(
       AnnotatedTypeMirror type, TypeMirror typeMirror) {
-    if (!shouldCapture(type, typeMirror)) {
-      if (type.containsUninferredTypeArguments()
-          && typeMirror.getKind() == TypeKind.DECLARED
-          && type.getKind() == TypeKind.DECLARED) {
-        // Capture conversion is not applied because the type contains uninferred
-        // type arguments.  Mark all wildcards in type as "uninferred" before it is returned.
-        AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
-        DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
-        for (int i = 0; i < capturedTypeMirror.getTypeArguments().size(); i++) {
-          AnnotatedTypeMirror uncapturedTypeArg = uncapturedType.getTypeArguments().get(i);
-          TypeMirror capturedTypeArgTM = capturedTypeMirror.getTypeArguments().get(i);
-          if (uncapturedTypeArg.getKind() == TypeKind.WILDCARD
-              && (TypesUtils.isCapturedTypeVariable(capturedTypeArgTM)
-                  || capturedTypeArgTM.getKind() != TypeKind.WILDCARD)) {
-            ((AnnotatedWildcardType) uncapturedTypeArg).setUninferredTypeArgument();
-          }
+
+    // If capture conversion the type contains uninferred type arguments, don't capture, but
+    // mark all wildcards in type as "uninferred" before it is returned.
+    if (type.containsUninferredTypeArguments()
+        && typeMirror.getKind() == TypeKind.DECLARED
+        && type.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
+      DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
+      for (int i = 0; i < capturedTypeMirror.getTypeArguments().size(); i++) {
+        AnnotatedTypeMirror uncapturedTypeArg = uncapturedType.getTypeArguments().get(i);
+        TypeMirror capturedTypeArgTM = capturedTypeMirror.getTypeArguments().get(i);
+        if (uncapturedTypeArg.getKind() == TypeKind.WILDCARD
+            && (TypesUtils.isCapturedTypeVariable(capturedTypeArgTM)
+                || capturedTypeArgTM.getKind() != TypeKind.WILDCARD)) {
+          ((AnnotatedWildcardType) uncapturedTypeArg).setUninferredTypeArgument();
         }
       }
+      return type;
+    }
+
+    if (!shouldCapture(type, typeMirror)) {
       return type;
     }
 
