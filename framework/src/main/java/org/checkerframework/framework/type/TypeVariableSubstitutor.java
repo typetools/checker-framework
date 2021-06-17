@@ -17,18 +17,20 @@ import org.checkerframework.javacutil.TypesUtils;
 public class TypeVariableSubstitutor {
 
   /**
-   * Given a mapping between type variable's to typeArgument, replace each instance of type variable
-   * with a copy of type argument.
+   * Given a mapping between type variable and its type argument, replace each instance of the type
+   * variable with a copy of type argument in a copy of {@code type}.
    *
    * @see #substituteTypeVariable(AnnotatedTypeMirror,
    *     org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable)
-   * @return a copy of typeMirror with its type variables substituted
+   * @param typeParamToTypeArg a mapping from type parameter to its type argument
+   * @param type a copy substituted using {@code typeParamToTypeArg}
+   * @return a copy of type with its type variables substituted
    */
   public AnnotatedTypeMirror substitute(
-      final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg,
-      final AnnotatedTypeMirror typeMirror) {
+      final Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg,
+      final AnnotatedTypeMirror type) {
 
-    return new Visitor(typeParamToArg).visit(typeMirror);
+    return new Visitor(typeParamToTypeArg).visit(type);
   }
 
   /**
