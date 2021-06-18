@@ -1072,11 +1072,10 @@ class MustCallConsistencyAnalyzer {
    * types.
    *
    * @param block input block
-   * @return set of pairs (b, t), where b is a relevant successor block, and t is the type of
-   *     exception for the CFG edge from block to b, or {@code null} if b is a non-exceptional
-   *     successor
+   * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
+   *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
    */
-  private Set<Pair<Block, @Nullable TypeMirror>> getRelevantSuccessors(Block block) {
+  private Set<Pair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(Block block) {
     if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
       ExceptionBlock excBlock = (ExceptionBlock) block;
       Set<Pair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
@@ -1085,7 +1084,7 @@ class MustCallConsistencyAnalyzer {
       if (regularSucc != null) {
         result.add(Pair.of(regularSucc, null));
       }
-      // relevant exception successors
+      // non-ignored exception successors
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
       for (Map.Entry<TypeMirror, Set<Block>> entry : exceptionalSuccessors.entrySet()) {
         TypeMirror exceptionType = entry.getKey();
@@ -1106,8 +1105,8 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Propagates a set of obligations to relevant successors, and performs consistency checks when
-   * variables are going out of scope.
+   * Propagates a set of obligations to successors, and performs consistency checks when variables
+   * are going out of scope.
    *
    * @param visited block-obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
@@ -1120,14 +1119,14 @@ class MustCallConsistencyAnalyzer {
       Set<ImmutableSet<LocalVarWithTree>> obligations,
       Block curBlock) {
     List<Node> curBlockNodes = curBlock.getNodes();
-    for (Pair<Block, @Nullable TypeMirror> succAndExcType : getRelevantSuccessors(curBlock)) {
+    for (Pair<Block, @Nullable TypeMirror> succAndExcType :
+        getSuccessorsExceptIgnoredExceptions(curBlock)) {
       Block succ = succAndExcType.first;
       TypeMirror exceptionType = succAndExcType.second;
       Set<ImmutableSet<LocalVarWithTree>> curObligations =
           handleTernarySuccIfNeeded(curBlock, succ, obligations);
-      // obligationsForSucc eventually contains the obligations to propagate to succ.  It may be
-      // mutated in the
-      // loop below.
+      // obligationsForSucc eventually contains the obligations to propagate to succ.  The loop
+      // below mutates it.
       Set<ImmutableSet<LocalVarWithTree>> obligationsForSucc = new LinkedHashSet<>();
       // A detailed reason to give in the case that a relevant variable goes out of scope with an
       // unsatisfied obligation along the current control-flow edge.
