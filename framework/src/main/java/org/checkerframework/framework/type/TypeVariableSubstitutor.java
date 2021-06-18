@@ -17,20 +17,19 @@ import org.checkerframework.javacutil.TypesUtils;
 public class TypeVariableSubstitutor {
 
   /**
-   * Given a mapping between type variable and its type argument, replace each instance of the type
-   * variable with a copy of type argument in a copy of {@code type}.
+   * Given a mapping from type variable to its type argument, replace each instance of a type
+   * variable with a copy of type argument.
    *
    * @see #substituteTypeVariable(AnnotatedTypeMirror,
    *     org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable)
-   * @param typeParamToTypeArg a mapping from type parameter to its type argument
-   * @param type a copy substituted using {@code typeParamToTypeArg}
+   * @param typeVarToTypeArgument a mapping from type variable to its type argument
+   * @param type the type to substitute
    * @return a copy of type with its type variables substituted
    */
   public AnnotatedTypeMirror substitute(
-      final Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg,
+      final Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArgument,
       final AnnotatedTypeMirror type) {
-
-    return new Visitor(typeParamToTypeArg).visit(type);
+    return new Visitor(typeVarToTypeArgument, true).visit(type);
   }
 
   /**
@@ -82,13 +81,18 @@ public class TypeVariableSubstitutor {
      */
     private final List<TypeMirror> typeMirrors;
 
+    /** Whether or not a copy of type argument should be substituted. */
+    private final boolean copyArgument;
+
     /**
      * Creates the Visitor.
      *
      * @param typeParamToArg mapping from TypeVariable to the AnnotatedTypeMirror that will replace
      *     it
+     * @param copyArgument whether or not a copy of type argument should be substituted
      */
-    public Visitor(final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg) {
+    public Visitor(
+        final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg, boolean copyArgument) {
       int size = typeParamToArg.size();
       elementToArgMap = new HashMap<>(size);
       typeVars = new ArrayList<>(size);
@@ -100,6 +104,7 @@ public class TypeVariableSubstitutor {
         typeVars.add(paramToArg.getKey());
         typeMirrors.add(paramToArg.getValue().getUnderlyingType());
       }
+      this.copyArgument = copyArgument;
     }
 
     @Override
@@ -142,7 +147,11 @@ public class TypeVariableSubstitutor {
         final Element typeVarElem = original.getUnderlyingType().asElement();
         if (elementToArgMap.containsKey(typeVarElem)) {
           final AnnotatedTypeMirror argument = elementToArgMap.get(typeVarElem);
-          return substituteTypeVariable(argument, original);
+          if (copyArgument) {
+            return substituteTypeVariable(argument, original);
+          } else {
+            return argument;
+          }
         }
       }
 
