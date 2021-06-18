@@ -240,12 +240,12 @@ class MustCallConsistencyAnalyzer {
    */
   private void handleThisOrSuperConstructorMustCallAlias(
       Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
-    Node mcaParam = getMustCallAliasParamVar(node);
-    // If the MustCallAlias param is also in the set of obligations, then remove it -- its
+    Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
+    // If the MustCallAlias argument is also in the set of obligations, then remove it -- its
     // obligation has been fulfilled by being passed on to the MustCallAlias constructor (because we
     // must be in a constructor body if we've encountered a this/super constructor call).
-    if (mcaParam instanceof LocalVariableNode) {
-      removeObligationContainingVar(obligations, (LocalVariableNode) mcaParam);
+    if (mustCallAliasArgument instanceof LocalVariableNode) {
+      removeObligationContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
     }
   }
 
@@ -406,8 +406,9 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    // `mustCallAlias` is the MCA parameter if any exists, otherwise null.
-    Node mustCallAlias = getMustCallAliasParamVar(node);
+    // `mustCallAlias` is the argument passed in the MustCallAlias position, if any exists,
+    // otherwise null.
+    Node mustCallAlias = getMustCallAliasArgumentNode(node);
     // If mustCallAlias is null and call returns @This, set mustCallAlias to the receiver.
     if (mustCallAlias == null
         && node instanceof MethodInvocationNode
@@ -418,7 +419,7 @@ class MustCallConsistencyAnalyzer {
 
     LocalVarWithTree tmpVarWithTree = new LocalVarWithTree(new LocalVariable(tmpVar), tree);
     if (mustCallAlias instanceof FieldAccessNode) {
-      // We do not track the call result if the MustCallAlias parameter is a field.  Handling of
+      // We do not track the call result if the MustCallAlias argument is a field.  Handling of
       // @Owning fields is a completely separate check, and we never need to track an alias of
       // non-@Owning fields.
     } else if (mustCallAlias instanceof LocalVariableNode) {
@@ -487,8 +488,9 @@ class MustCallConsistencyAnalyzer {
    *     field or a definitely non-owning pointer
    */
   private boolean returnTypeIsMustCallAliasWithUntrackable(MethodInvocationNode node) {
-    Node mcaParam = getMustCallAliasParamVar(node);
-    return mcaParam instanceof FieldAccessNode || mcaParam instanceof ThisNode;
+    Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
+    return mustCallAliasArgument instanceof FieldAccessNode
+        || mustCallAliasArgument instanceof ThisNode;
   }
 
   /**
@@ -543,10 +545,10 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    List<Node> actualParams = getArgumentsOfInvocation(node);
-    List<? extends VariableElement> formalParams = getFormalsOfInvocation(node);
+    List<Node> arguments = getArgumentsOfInvocation(node);
+    List<? extends VariableElement> parameters = getParametersOfInvocation(node);
 
-    if (actualParams.size() != formalParams.size()) {
+    if (arguments.size() != parameters.size()) {
       // This could happen, e.g., with varargs, or with strange cases like generated Enum
       // constructors. In the varargs case (i.e. if the varargs parameter is owning),
       // only the first of the varargs arguments will actually get transferred: the second
@@ -556,15 +558,15 @@ class MustCallConsistencyAnalyzer {
       // TODO allow for ownership transfer here if needed in future
       return;
     }
-    for (int i = 0; i < actualParams.size(); i++) {
-      Node n = removeCastsAndGetTmpVarIfPresent(actualParams.get(i));
+    for (int i = 0; i < arguments.size(); i++) {
+      Node n = removeCastsAndGetTmpVarIfPresent(arguments.get(i));
       if (n instanceof LocalVariableNode) {
         LocalVariableNode local = (LocalVariableNode) n;
         if (varTrackedInObligations(local, obligations)) {
 
-          // check if formal has an @Owning annotation
-          VariableElement formal = formalParams.get(i);
-          Set<AnnotationMirror> annotationMirrors = typeFactory.getDeclAnnotations(formal);
+          // check if parameter has an @Owning annotation
+          VariableElement parameter = parameters.get(i);
+          Set<AnnotationMirror> annotationMirrors = typeFactory.getDeclAnnotations(parameter);
 
           for (AnnotationMirror anno : annotationMirrors) {
             if (AnnotationUtils.areSameByName(
@@ -592,14 +594,26 @@ class MustCallConsistencyAnalyzer {
       ReturnNode node, ControlFlowGraph cfg, Set<ImmutableSet<LocalVarWithTree>> obligations) {
     if (isTransferOwnershipAtReturn(cfg)) {
       Node returnExpr = node.getResult();
-      Node temp = typeFactory.getTempVarForNode(returnExpr);
-      if (temp != null) {
-        returnExpr = temp;
-      }
+      returnExpr = getTempVarOrNode(returnExpr);
       if (returnExpr instanceof LocalVariableNode) {
         removeObligationContainingVar(obligations, (LocalVariableNode) returnExpr);
       }
     }
+  }
+
+  /**
+   * Helper method that gets the temporary node corresponding to {@code node}, if one exists. If
+   * not, this method just returns its input.
+   *
+   * @param node a node
+   * @return the temporary for node, or node if no temporary exists
+   */
+  private Node getTempVarOrNode(final Node node) {
+    Node temp = typeFactory.getTempVarForNode(node);
+    if (temp != null) {
+      return temp;
+    }
+    return node;
   }
 
   /**
@@ -640,10 +654,7 @@ class MustCallConsistencyAnalyzer {
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // Use the temporary variable for the rhs if it exists.
     Node rhs = removeCasts(node.getExpression());
-    LocalVariableNode tempVarForRhs = typeFactory.getTempVarForNode(rhs);
-    if (tempVarForRhs != null) {
-      rhs = tempVarForRhs;
-    }
+    rhs = getTempVarOrNode(rhs);
 
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
@@ -677,8 +688,10 @@ class MustCallConsistencyAnalyzer {
    */
   private void removeObligationContainingVar(
       Set<ImmutableSet<LocalVarWithTree>> obligations, LocalVariableNode var) {
-    Set<LocalVarWithTree> setContainingRhs = getResourceAliasSetForVar(obligations, var);
-    obligations.remove(setContainingRhs);
+    Set<LocalVarWithTree> obligationForVar = getResourceAliasSetForVar(obligations, var);
+    if (obligationForVar != null) {
+      obligations.remove(obligationForVar);
+    }
   }
 
   /**
@@ -772,8 +785,8 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * If a {@link LocalVarWithTree} is present in {@code resourceAliasSet} whose variable element is
-   * {@code element}, add it to {@code lvwtSet}.
+   * Add each {@link LocalVarWithTree} in {@code resourceAliasSet} whose variable element is {@code
+   * element} to {@code lvwtSet}.
    *
    * @param resourceAliasSet the resource-alias set of an obligation
    * @param element the element to search for
@@ -895,7 +908,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     String receiverString = receiverAsString((FieldAccessNode) lhs);
-    if (TreeUtils.isConstructor(enclosingMethod)) {
+    if ("this".equals(receiverString) && TreeUtils.isConstructor(enclosingMethod)) {
       // Constructors always create must-call obligations, so there is no need for them to
       // be annotated.
       return;
@@ -969,7 +982,7 @@ class MustCallConsistencyAnalyzer {
    *     #removeCastsAndGetTmpVarIfPresent(Node)} on the argument passed in that position.
    *     Otherwise, returns {@code null}.
    */
-  private @Nullable Node getMustCallAliasParamVar(Node callNode) {
+  private @Nullable Node getMustCallAliasArgumentNode(Node callNode) {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
     if (!typeFactory.hasMustCallAlias(callNode.getTree())) {
@@ -978,9 +991,9 @@ class MustCallConsistencyAnalyzer {
 
     Node result = null;
     List<Node> args = getArgumentsOfInvocation(callNode);
-    List<? extends VariableElement> formalParams = getFormalsOfInvocation(callNode);
+    List<? extends VariableElement> parameters = getParametersOfInvocation(callNode);
     for (int i = 0; i < args.size(); i++) {
-      if (typeFactory.hasMustCallAlias(formalParams.get(i))) {
+      if (typeFactory.hasMustCallAlias(parameters.get(i))) {
         result = args.get(i);
         break;
       }
@@ -1006,8 +1019,7 @@ class MustCallConsistencyAnalyzer {
     // TODO: Create temp vars for TypeCastNodes as well, so we don't need to explicitly remove casts
     // here.
     node = removeCasts(node);
-    LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
-    return tmpVar != null ? tmpVar : node;
+    return getTempVarOrNode(node);
   }
 
   /**
@@ -1036,7 +1048,7 @@ class MustCallConsistencyAnalyzer {
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
-  private List<? extends VariableElement> getFormalsOfInvocation(Node node) {
+  private List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
@@ -1054,8 +1066,8 @@ class MustCallConsistencyAnalyzer {
    * Does the method being invoked have a not-owning return type?
    *
    * @param node a method invocation
-   * @return true iff (1) the checker is not in no-lightweight-ownership mode, (2) the method has a
-   *     non-void return type, and (3) a NotOwning annotation is present on the method declaration
+   * @return true iff the checker is not in no-lightweight-ownership mode and (1) the method has a
+   *     void return type, or (2) a NotOwning annotation is present on the method declaration
    */
   private boolean hasNotOwningReturnType(MethodInvocationNode node) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
