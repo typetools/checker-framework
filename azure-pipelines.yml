@@ -227,23 +227,24 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
-- job: daikon_jdk16
-  dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-   - misc_jdk11
-   - typecheck_jdk11
-  #  ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk16" critical path.
-  #  # - daikon_jdk11
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16:latest
-  timeoutInMinutes: 70
-  steps:
-  - checkout: self
-    fetchDepth: 25
-  - bash: ./checker/bin-devel/test-daikon.sh
-    displayName: test-daikon.sh
+## Daikon does not yet support JDK 16.  TODO: Make Daikon run under JDK 16.
+# - job: daikon_jdk16
+#   dependsOn:
+#    - junit_tests_jdk11
+#    - nonjunit_tests_jdk11
+#    - misc_jdk11
+#    - typecheck_jdk11
+#   #  ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk16" critical path.
+#   #  # - daikon_jdk11
+#   pool:
+#     vmImage: 'ubuntu-latest'
+#   container: mdernst/cf-ubuntu-jdk16:latest
+#   timeoutInMinutes: 70
+#   steps:
+#   - checkout: self
+#     fetchDepth: 25
+#   - bash: ./checker/bin-devel/test-daikon.sh
+#     displayName: test-daikon.sh
 - job: guava_jdk8
   dependsOn:
    - junit_tests_jdk11
