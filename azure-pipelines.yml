@@ -35,13 +35,11 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_tests_jdk16
-  ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk16:latest
@@ -75,13 +73,11 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh
 - job: nonjunit_tests_jdk16
-  ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk16:latest
@@ -154,13 +150,11 @@ jobs:
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk16
-  ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk16-plus:latest
@@ -193,13 +187,11 @@ jobs:
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
 - job: typecheck_jdk16
-  ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk16-plus:latest
@@ -236,13 +228,11 @@ jobs:
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
 - job: daikon_jdk16
-  ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   #  ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk16" critical path.
   #  # - daikon_jdk11
   pool:
@@ -279,14 +269,12 @@ jobs:
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
 - job: guava_jdk16
-  ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
-  #  - guava_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
+   - guava_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk16:latest
@@ -320,14 +308,12 @@ jobs:
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
 - job: plume_lib_jdk16
-  ## Temporarily commented out so that JDK 16 tests run in the pull request
-  ## despite JDK 11 failures.  Uncomment when JDK 11 tests pass, before merging.
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
-  #  - plume_lib_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
+   - plume_lib_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk16:latest
