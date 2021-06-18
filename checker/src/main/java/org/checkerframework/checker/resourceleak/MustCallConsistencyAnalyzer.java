@@ -110,12 +110,13 @@ import org.plumelib.util.StringsPlume;
  * </ul>
  *
  * <p>Throughout, this class uses the temporary-variable facilities provided by the Must Call and
- * Resource Leak type factories to permit expressions to have their types refined in their
- * respective checkers' stores. These temporary variables can be members of resource-alias sets.
- * Without temporary variables, the checker wouldn't be able to verify code such as {@code new
- * Socket(host, port).close()}, which would cause false positives. Temporaries are created for
- * {@code new} expressions, method calls (for the return value), and ternary expressions. Other
- * types of expressions may also be supported in the future.
+ * Resource Leak type factories to both emulate a three-address-form IR, simplifying some analysis
+ * logic, and to permit expressions to have their types refined in their respective checkers'
+ * stores. These temporary variables can be members of resource-alias sets. Without temporary
+ * variables, the checker wouldn't be able to verify code such as {@code new Socket(host,
+ * port).close()}, which would cause false positives. Temporaries are created for {@code new}
+ * expressions, method calls (for the return value), and ternary expressions. Other types of
+ * expressions may also be supported in the future.
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
