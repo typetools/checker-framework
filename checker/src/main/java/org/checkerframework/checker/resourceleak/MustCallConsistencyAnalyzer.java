@@ -95,7 +95,8 @@ import org.plumelib.util.StringsPlume;
  * out of scope.
  *
  * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
- * certain code patterns are encountered. Here are non-exhaustive examples:
+ * certain code patterns are encountered. (Because they are immutable, obligations are modified by
+ * removing them and creating a new, related obligation.) Here are non-exhaustive examples:
  *
  * <ul>
  *   <li>A new obligation is added to the tracked set when a constructor or a method with an owning
@@ -392,8 +393,9 @@ class MustCallConsistencyAnalyzer {
    * set.
    *
    * @param obligations the currently-tracked obligations. This is always side-effected: an
-   *     obligation is either modified to include a new resource alias (the result of the invocation
-   *     being tracked) or a new resource alias set (i.e. obligation) is created and added.
+   *     obligation is either modified (by removing it from the obligation set and adding a new one)
+   *     to include a new resource alias (the result of the invocation being tracked) or a new
+   *     resource alias set (i.e. obligation) is created and added.
    * @param node the node whose result is to be tracked
    */
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
@@ -841,8 +843,9 @@ class MustCallConsistencyAnalyzer {
     }
 
     // Check that there is a corresponding CreatesMustCallFor annotation, unless this is
-    // 1) an assignment to a field of a newly-declared local variable that can't be in scope
-    // for the containing method, or 2) the rhs is a null literal (so there's nothing to reset).
+    // 1) an assignment to a field of a newly-declared local variable whose scope does not
+    // extend beyond the method's body (and which therefore could not be targeted by an annotation
+    // on the method declaration), or 2) the rhs is a null literal (so there's nothing to reset).
     if (!(receiver instanceof LocalVariableNode
             && varTrackedInObligations((LocalVariableNode) receiver, obligations))
         && !(node.getExpression() instanceof NullLiteralNode)) {
