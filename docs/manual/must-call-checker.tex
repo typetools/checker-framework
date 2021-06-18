@@ -7,6 +7,10 @@ The checker does not enforce any rules other than subtyping;
 in particular, it does not enforce that the methods are called before
 objects are de-allocated.
 The Must Call Checker is intended to be run as a subchecker of another checker.
+The primary client
+of the Must Call Checker is the Resource Leak Checker (Section~\ref{resource-leak-checker}),
+which enforces that every method in a must-call obligation for an expression is called
+before that expression is de-allocated.
 
 For example, consider a \<java.io.OutputStream>.  This \<OutputStream>
 might have an obligation to call the \<close()> method, to release an

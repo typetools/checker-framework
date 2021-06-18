@@ -5,12 +5,12 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class NoLightweightOwnershipTest extends CheckerFrameworkPerDirectoryTest {
-  public NoLightweightOwnershipTest(List<File> testFiles) {
+public class MustCallNoLightweightOwnershipTest extends CheckerFrameworkPerDirectoryTest {
+  public MustCallNoLightweightOwnershipTest(List<File> testFiles) {
     super(
         testFiles,
         org.checkerframework.checker.mustcall.MustCallChecker.class,
-        "nolightweightownership",
+        "mustcall-nolightweightownership",
         "-Anomsgtext",
         "-AnoLightweightOwnership",
         // "-AstubDebug");
@@ -19,6 +19,6 @@ public class NoLightweightOwnershipTest extends CheckerFrameworkPerDirectoryTest
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"nolightweightownership"};
+    return new String[] {"mustcall-nolightweightownership"};
   }
 }
