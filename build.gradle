@@ -282,7 +282,7 @@ task maybeCloneAndBuildDependencies() {
             }
             exec {
                 workingDir stubparser
-                executable "${stubparser}/.travis-build-without-test.sh"
+                executable "${stubparser}/.build-without-test.sh"
             }
         } else {
             exec {

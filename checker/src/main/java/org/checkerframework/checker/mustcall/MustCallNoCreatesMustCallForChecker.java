@@ -13,5 +13,5 @@ import org.checkerframework.framework.source.SupportedOptions;
   "JavaEE.astub",
   "Reflection.astub",
 })
-@SupportedOptions({MustCallChecker.NO_CREATES_OBLIGATION})
+@SupportedOptions({MustCallChecker.NO_CREATES_MUSTCALLFOR})
 public class MustCallNoCreatesMustCallForChecker extends MustCallChecker {}

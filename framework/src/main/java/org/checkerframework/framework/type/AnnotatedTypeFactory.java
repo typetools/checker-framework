@@ -2500,7 +2500,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             fromNewClassContextHelper(type, ctxtype);
           } else {
             // give up trying and set to raw.
-            type.setWasRaw();
+            type.setIsUnderlyingTypeRaw();
           }
         }
       }
