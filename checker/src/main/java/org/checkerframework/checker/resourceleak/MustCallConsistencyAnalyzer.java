@@ -711,9 +711,10 @@ class MustCallConsistencyAnalyzer {
   /**
    * Update a set of tracked obligations to account for a (pseudo-)assignment to some variable, as
    * in a gen-kill dataflow analysis problem. Pseudo-assignments may include operations that
-   * "assign" to a temporary variable. E.g., for an expression {@code b ? x : y}, this method may
-   * process an "assignment" from {@code x} or {@code y} to the temporary variable representing the
-   * ternary expression.
+   * "assign" to a temporary variable, exposing the possible value flow into the variable. E.g., for
+   * a ternary expression {@code b ? x : y} whose temporary variable is {@code t}, this method may
+   * process "assignments" {@code t = x} and {@code t = y}, thereby capturing the two possible
+   * values of {@code t}.
    *
    * @param node the node performing the pseudo-assignment; it is not necessarily an assignment node
    * @param obligations the tracked obligations, which will be side-effected
