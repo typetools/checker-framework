@@ -1,4 +1,4 @@
-Version 3.X.X (? ?, 2021)
+Version 3.15.0 (June 18, 2021)
 ----------------------------
 
 **User-visible changes:**
@@ -14,7 +14,7 @@ Method renamings (the old methods remain but are deprecated):
  * `AnnotatedDeclaredType#setWasRaw` => `setIsUnderlyingTypeRaw`
 
 **Closed issues:**
-
+#4549, #4646, #4684, and #4699.
 
 Version 3.14.0 (June 1, 2021)
 ----------------------------
