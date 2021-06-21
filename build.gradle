@@ -292,7 +292,7 @@ task maybeCloneAndBuildDependencies() {
     doLast {
         if (!file(stubparserJar).exists()) {
             exec {
-                workingDir ${stubparser}/javaparser-core/target
+                workingDir "${stubparser}/javaparser-core/target"
                 executable 'ls'
                 ignoreExitValue = true
             }
