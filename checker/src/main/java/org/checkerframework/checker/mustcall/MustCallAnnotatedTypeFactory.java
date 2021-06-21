@@ -184,7 +184,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param elt an element; may be null, in which case this method always returns false
    * @return true iff the given element represents a resource variable
    */
-  private boolean isResourceVariable(@Nullable Element elt) {
+  /* package-private*/ boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
@@ -246,6 +246,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
     return new MustCallDefaultQualifierForUseTypeAnnotator();
+  }
+
+  /**
+   * Returns the {@link MustCall#value} element. For use with {@link
+   * AnnotationUtils#getElementValueArray}.
+   *
+   * @return the {@link MustCall#value} element
+   */
+  public ExecutableElement getMustCallValueElement() {
+    return mustCallValueElement;
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
