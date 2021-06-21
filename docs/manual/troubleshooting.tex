@@ -1086,18 +1086,26 @@ Two different licenses apply to different parts of the Checker Framework.
 \item
 The Checker Framework itself is licensed under the GNU General Public License
 (GPL), version 2, with the classpath exception.
-The GPL is the same license that OpenJDK is licensed
+This is the same license that OpenJDK is licensed
 under.  Just as compiling your code with javac does not infect your code
 with the GPL, type-checking your code with the Checker Framework does not
 infect your code with the GPL\@.  Running the Checker Framework during
-development has no effect on your intellectual property or licensing.  If
-you want to ship the Checker Framework as part of your product, then your
-product must be licensed under the GPL\@.
+development has no effect on your intellectual property or licensing.
+
+If you want to ship the Checker Framework as part of your product, then
+your product may need to be licensed under the GPL\@.  Because of the
+classpath exception, you can include parts of the Checker Framework in your
+product, even if your product uses a different license.  For example,
+Google's \href{https://github.com/google/error-prone}{Error Prone} and
+Uber's \href{https://github.com/uber/NullAway}{NullAway} both use the
+Checker Framework internally, but neither one is licensed under the GPL\@.
+
 \item
 The more permissive MIT License applies
 to code that you might want to include in your own
 program, such as the annotations and run-time utility classes.
 \end{itemize}
+
 \noindent
 For details, see file
 \ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt}{\<LICENSE.txt>}.
