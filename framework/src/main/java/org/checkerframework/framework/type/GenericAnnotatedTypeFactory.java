@@ -1826,13 +1826,19 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tree == null) {
       throw new BugInCF("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
     }
+    if (stubTypes.isParsing()
+        || ajavaTypes.isParsing()
+        || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing())) {
+      // When parsing stub or ajava files, the analysis is not running (it has not yet started),
+      // and flowResult is null (no analysis has occurred). Instead of attempting to find a
+      // non-existent inferred type, return null.
+      return null;
+    }
     Value as = null;
     if (analysis.isRunning()) {
       as = analysis.getValue(tree);
     }
-    // flowResult is null if the analysis has not yet started running, such as when parsing stub
-    // or ajava files.
-    if (as == null && flowResult != null) {
+    if (as == null) {
       as = flowResult.getValue(tree);
     }
     return as;
