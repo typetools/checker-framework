@@ -1816,10 +1816,23 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
+   *
+   * @param tree the tree
+   * @return the value for the tree, if one has been computed by dataflow. If no value has been
+   *     computed, null is returned (this does not mean that no value will ever be computed for the
+   *     given tree).
    */
-  public Value getInferredValueFor(Tree tree) {
+  public @Nullable Value getInferredValueFor(Tree tree) {
     if (tree == null) {
       throw new BugInCF("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
+    }
+    if (stubTypes.isParsing()
+        || ajavaTypes.isParsing()
+        || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing())) {
+      // When parsing stub or ajava files, the analysis is not running (it has not yet started),
+      // and flowResult is null (no analysis has occurred). Instead of attempting to find a
+      // non-existent inferred type, return null.
+      return null;
     }
     Value as = null;
     if (analysis.isRunning()) {
