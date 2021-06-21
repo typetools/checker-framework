@@ -1,3 +1,12 @@
+Version 3.15.1 (July 1, 2021)
+----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
 Version 3.15.0 (June 18, 2021)
 ----------------------------
 
