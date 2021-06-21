@@ -143,7 +143,7 @@ target project. The results of type-checking with each candidate set of
 annotations will be concatenated into the file \<dljc-out/wpi.log>; the final
 results (i.e., those obtained using the most precise, consistent set of annotations)
 will appear at the end of this file.
-The inferred annotations appear in \<.stub> files in a
+The inferred annotations appear in \<.ajava> files in a
 temporary directory whose name appears in the \<dlcj-out/wpi.log> file.
 
 The full syntax for invoking \<wpi.sh> is
@@ -505,18 +505,18 @@ skip this section.
 
 Each script repeatedly runs the checker with an \<-Ainfer=> command-line option to infer
 types for fields and method signatures.  The output of this step
-is a \<.jaif> (for \<infer-and-annotate.sh>) or stub (for \<wpi.sh>) file that records the inferred types.
+is a \<.jaif> (for \<infer-and-annotate.sh>) or \<.ajava> (for \<wpi.sh>) file that records the inferred types.
 Each script adds the inferred annotation to the next run, so that the checker takes them into
 account (and checks them). \<wpi.sh> does this using the \<-AmergeStubsWithSource> command-line
 option to the Checker Framework; \<infer-and-annotate.sh> inserts the inferred annotations in the program using the
 \ahreforurl{https://checkerframework.org/annotation-file-utilities/}{Annotation File Utilities}.
 
 On each
-iteration through the process, there may be new annotations in the \<.jaif> or \<.astub>
+iteration through the process, there may be new annotations in the \<.jaif> or \<.ajava>
 files, and some type-checking errors may be eliminated (though others might
 be introduced).
 The process halts when there are no more changes to the inference results,
-that is, the \<.jaif> or \<.astub> files are unchanged between two runs.
+that is, the \<.jaif> or \<.ajava> files are unchanged between two runs.
 
 When the type-checker is run on the program with the final annotations
 inserted, there might still be errors.  This may be because the tool did

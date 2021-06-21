@@ -728,6 +728,9 @@ task wpiManyTests(group: "Verification") {
                   return;
                 }
                 if (!line.trim().equals("")) {
+                    println("======== printing contents of ${filename} ========")
+                    details.getFile().eachLine { l -> println(l) }
+                    println("======== end of contents of ${filename} ========")
                     throw new GradleException("Failure: WPI scripts produced an unexpected output in " + filename + ". " +
                             "Failing line is the following: " + line)
                 }
