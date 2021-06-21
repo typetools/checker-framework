@@ -1816,8 +1816,13 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
+   *
+   * @param tree the tree
+   * @return the value for the tree, if one has been computed by dataflow. If no value has been
+   *     computed, null is returned (this does not mean that no value will ever be computed for the
+   *     given tree).
    */
-  public Value getInferredValueFor(Tree tree) {
+  public @Nullable Value getInferredValueFor(Tree tree) {
     if (tree == null) {
       throw new BugInCF("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
     }
@@ -1825,7 +1830,9 @@ public abstract class GenericAnnotatedTypeFactory<
     if (analysis.isRunning()) {
       as = analysis.getValue(tree);
     }
-    if (as == null) {
+    // flowResult is null if the analysis has not yet started running, such as when parsing stub
+    // or ajava files.
+    if (as == null && flowResult != null) {
       as = flowResult.getValue(tree);
     }
     return as;
