@@ -9,9 +9,10 @@
 # needs the "Access public repositories" permission.
 #
 # $1 is the query file, which should contain the literal string to use
-# as the github search. REQUIRED, no default
+# as the github search. REQUIRED, no default.
 #
-# $2 is the number of pages to search. default 1
+# $2 is the number of GitHub search pages.  Default 1.  GitHub only returns
+# the first 1000 results, so 100 is the maximum useful number of search pages.
 
 # Set to 1 to enable debug output from this script.
 DEBUG=0
