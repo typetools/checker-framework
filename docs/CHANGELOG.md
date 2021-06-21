@@ -16,6 +16,7 @@ Method renamings (the old methods remain but are deprecated):
 **Closed issues:**
 #4549, #4646, #4684, and #4699.
 
+
 Version 3.14.0 (June 1, 2021)
 ----------------------------
 
