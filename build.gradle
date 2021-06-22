@@ -35,7 +35,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.1.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.22.1.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -292,7 +292,7 @@ task maybeCloneAndBuildDependencies() {
     doLast {
         if (!file(stubparserJar).exists()) {
             exec {
-                workingDir ${stubparser}/javaparser-core/target
+                workingDir "${stubparser}/javaparser-core/target"
                 executable 'ls'
                 ignoreExitValue = true
             }
