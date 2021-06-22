@@ -118,6 +118,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
@@ -2511,10 +2512,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       type.replaceAnnotations(fromTypeTree.getAnnotations());
       type.setEnclosingType(enclosingType);
       return type;
-    } else if (newClassTree.getClassBody() != null) {
+    } else if (newClassTree.getClassBody() != null && SystemUtil.getJreVersion() < 16) {
       AnnotatedDeclaredType type =
           (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-      // If newClassTree creates an anonymous class, then annotations in this location:
+      // If newClassTree creates an anonymous class (and this is a Java version less than 16), then
+      // annotations in this location:
       //   new @HERE Class() {}
       // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
       List<? extends AnnotationTree> annos =
@@ -2523,7 +2525,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       type.setEnclosingType(enclosingType);
       return type;
     } else {
-      // If newClassTree does not create anonymous class,
+      // If newClassTree does not create an anonymous class (or if this is Java 16+),
       // newClassTree.getIdentifier includes the explicit annotations in this location:
       //   new @HERE Class()
       AnnotatedDeclaredType type =
