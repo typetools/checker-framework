@@ -18,6 +18,13 @@ sourcesJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+configurations {
+  fatJar {
+    canBeConsumed = true
+    canBeResolved = false
+  }
+}
+
 dependencies {
     implementation project(':javacutil')
     implementation project(':dataflow')
@@ -71,6 +78,16 @@ dependencies {
 
     testannotationsImplementation project(':checker-qual')
 }
+
+// It's not clear why this dependencies exists, but Gradle issues the following warning:
+//   - Gradle detected a problem with the following location:
+//   '/Users/smillst/jsr308/checker-framework/.git'.
+//   Reason: Task ':checker:generateGitProperties' uses this output of task ':installGitHooks'
+//   without declaring an explicit or implicit dependency. This can lead to incorrect results being
+//   produced, depending on what order the tasks are executed. Please refer to
+//   https://docs.gradle.org/7.1/userguide/validation_problems.html#implicit_dependency for more
+//   details about this problem.
+generateGitProperties.dependsOn(':installGitHooks')
 
 jar {
     manifest {
@@ -178,6 +195,8 @@ artifacts {
     // archives allSourcesJar
     archives shadowJar
     archives checkerJar
+
+    fatJar(shadowJar)
 }
 
 clean {

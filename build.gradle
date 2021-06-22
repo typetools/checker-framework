@@ -16,7 +16,6 @@ apply plugin: "de.undercouch.download"
 import org.ajoberstar.grgit.Grgit
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -109,9 +108,6 @@ allprojects {
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
-    configurations {
-        checkerFatJar
-    }
     dependencies {
         if (isJava8) {
             javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
@@ -120,12 +116,20 @@ allprojects {
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
         allProjects subprojects
-        checkerFatJar project(path: ':checker', configuration: 'shadow')
     }
 
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
+      configurations {
+        checkerFatJar {
+          canBeConsumed = false
+          canBeResolved = true
+        }
+      }
+      dependencies {
+        checkerFatJar(project(path: ":checker", configuration: 'fatJar'))
+      }
         // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
         // any module to reference classes in any other module.
         // Also, build and use ManualTaglet as a taglet.
@@ -139,7 +143,7 @@ allprojects {
                 if (!name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
-                classpath += rootProject.configurations.getByName('checkerFatJar').asFileTree
+                classpath += configurations.getByName('checkerFatJar').asFileTree
                 if (isJava8) {
                     classpath += configurations.javacJar
                 }
@@ -325,7 +329,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
         outputs.upToDateWhen { false }
         source = project("${projectName}").sourceSets.main.java
         classpath = files(project("${projectName}").compileJava.classpath,project(':checker-qual').sourceSets.main.output)
-        destinationDir = file("${buildDir}")
+        destinationDirectory = file("${buildDir}")
 
         options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archivePath)
         options.compilerArgs += [
@@ -466,7 +470,7 @@ dependencies {
 }
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
-    main = "org.plumelib.javadoc.RequireJavadoc"
+    mainClass = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
     args "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
 }
