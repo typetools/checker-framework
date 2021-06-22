@@ -49,7 +49,7 @@ echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 
 
 ## Build stubparser
-"$PLUME_SCRIPTS/git-clone-related" --debug typetools stubparser
+"$PLUME_SCRIPTS/git-clone-related" typetools stubparser
 echo "Running:  (cd ../stubparser/ && ./.build-without-test.sh)"
 (cd ../stubparser/ && ./.build-without-test.sh)
 echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
