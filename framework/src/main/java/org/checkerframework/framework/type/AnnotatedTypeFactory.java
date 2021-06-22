@@ -1826,7 +1826,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     // System.err.printf("TVFU%n  type: %s%n  generic: %s%n", type, generic);
 
-    Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = new HashMap<>();
 
     AnnotatedDeclaredType enclosing = type;
     while (enclosing != null) {
@@ -1836,7 +1836,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       List<AnnotatedTypeMirror> enclosingTVars = declaredType.getTypeArguments();
       for (int i = 0; i < enclosingTArgs.size(); i++) {
         AnnotatedTypeVariable enclosingTVar = (AnnotatedTypeVariable) enclosingTVars.get(i);
-        mapping.put(enclosingTVar.getUnderlyingType(), enclosingTArgs.get(i));
+        typeParamToTypeArg.put(enclosingTVar.getUnderlyingType(), enclosingTArgs.get(i));
       }
       enclosing = enclosing.getEnclosingType();
     }
@@ -1845,8 +1845,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     for (AnnotatedTypeMirror atm : tvars) {
       AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
-      AnnotatedTypeMirror upper = typeVarSubstitutor.substitute(mapping, atv.getUpperBound());
-      AnnotatedTypeMirror lower = typeVarSubstitutor.substitute(mapping, atv.getLowerBound());
+      AnnotatedTypeMirror upper =
+          typeVarSubstitutor.substitute(typeParamToTypeArg, atv.getUpperBound());
+      AnnotatedTypeMirror lower =
+          typeVarSubstitutor.substitute(typeParamToTypeArg, atv.getLowerBound());
       res.add(new AnnotatedTypeParameterBounds(upper, lower));
     }
     return res;
@@ -2182,24 +2184,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberTypeWithOverrides);
     List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
 
-    Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
+    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
         AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
 
-    if (!typeVarMapping.isEmpty()) {
+    if (!typeParamToTypeArg.isEmpty()) {
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
-        if (typeVarMapping.get(tv.getUnderlyingType()) == null) {
+        if (typeParamToTypeArg.get(tv.getUnderlyingType()) == null) {
           throw new BugInCF(
               "AnnotatedTypeFactory.methodFromUse:mismatch between declared method type variables"
                   + " and the inferred method type arguments. Method type variables: "
                   + methodType.getTypeVariables()
                   + "; "
                   + "Inferred method type arguments: "
-                  + typeVarMapping);
+                  + typeParamToTypeArg);
         }
-        typeargs.add(typeVarMapping.get(tv.getUnderlyingType()));
+        typeargs.add(typeParamToTypeArg.get(tv.getUnderlyingType()));
       }
       methodType =
-          (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, methodType);
+          (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, methodType);
     }
 
     if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
@@ -2413,18 +2415,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
 
-    Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping =
+    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
         AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
 
-    List<AnnotatedTypeMirror> typeargs = new ArrayList<>(con.getTypeVariables().size());
-    if (typeVarMapping.isEmpty()) {
+    List<AnnotatedTypeMirror> typeargs;
+    if (typeParamToTypeArg.isEmpty()) {
       typeargs = Collections.emptyList();
     } else {
       typeargs =
           CollectionsPlume.mapList(
-              (AnnotatedTypeVariable tv) -> typeVarMapping.get(tv.getUnderlyingType()),
+              (AnnotatedTypeVariable tv) -> typeParamToTypeArg.get(tv.getUnderlyingType()),
               con.getTypeVariables());
-      con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeVarMapping, con);
+      con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
     }
 
     return new ParameterizedExecutableType(con, typeargs);
