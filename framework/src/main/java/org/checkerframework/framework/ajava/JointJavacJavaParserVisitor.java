@@ -1533,7 +1533,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public abstract void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode);
 
   /**
-   * Process a {@code ClassTree} representing an annotation declaration.
+   * Process a {@code ClassTree} representing a class or interface declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
