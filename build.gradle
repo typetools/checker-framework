@@ -665,7 +665,7 @@ subprojects {
         }
         ignoreExitValue = true
         doLast {
-            if (execResult.exitValue != 0) {
+            if (!executionResult.isPresent() || executionResult.get().getExitValue() != 0) {
                 throw new RuntimeException('Found improper formatting, try running:  ./gradlew reformat"')
             }
         }
