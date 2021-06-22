@@ -440,24 +440,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     originalAst.accept(visitor, modifiedAst);
     if (!visitor.getAnnotationsMatch()) {
       throw new BugInCF(
-          "Reinserting annotations produced different AST.\n"
-              + "Original node: "
-              + visitor.getMismatchedNode1()
-              + "\n"
-              + "Node with annotations re-inserted: "
-              + visitor.getMismatchedNode2()
-              + "\n"
-              + "Original annotations: "
-              + visitor.getMismatchedNode1().getAnnotations()
-              + "\n"
-              + "Re-inserted annotations: "
-              + visitor.getMismatchedNode2().getAnnotations()
-              + "\n"
-              + "Original AST:\n"
-              + originalAst
-              + "\n"
-              + "Ast with annotations re-inserted: "
-              + modifiedAst);
+          String.join(
+              System.lineSeparator(),
+              "Sanity check of erasing then reinserting annotations produced a different AST.",
+              "File: " + root.getSourceFile(),
+              "Original node: " + visitor.getMismatchedNode1(),
+              "Node with annotations re-inserted: " + visitor.getMismatchedNode2(),
+              "Original annotations: " + visitor.getMismatchedNode1().getAnnotations(),
+              "Re-inserted annotations: " + visitor.getMismatchedNode2().getAnnotations(),
+              "Original AST:",
+              originalAst.toString(),
+              "Ast with annotations re-inserted: " + modifiedAst));
     }
   }
 
