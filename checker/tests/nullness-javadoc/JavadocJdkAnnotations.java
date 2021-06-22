@@ -2,6 +2,7 @@ import com.sun.javadoc.Doc;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// @above-java11-skip-test
 public class JavadocJdkAnnotations {
 
   @Nullable Object f = null;

@@ -39,6 +39,7 @@ public class TestUtilities {
 
   public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
   public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
+  public static final boolean IS_AT_MOST_11_JVM = SystemUtil.getJreVersion() <= 11;
 
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -217,7 +218,8 @@ public class TestUtilities {
       String nextLine = in.nextLine();
       if (nextLine.contains("@skip-test")
           || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
-          || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))) {
+          || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
+          || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))) {
         in.close();
         return false;
       }
