@@ -2,16 +2,18 @@
 \chapterAndLabel{Third-party checkers\label{external-checkers}}{third-party-checkers}
 
 The Checker Framework has been used to build other checkers that are not
-distributed together with the framework.  This chapter mentions just a few
-of them.  They are listed in reverse chronological order; newer ones appear
-first and older ones appear last.
+distributed together with the framework.  This chapter gives an \emph{incomplete}
+list of them.  (If you know of others, or
+if you want this chapter to reference your checker,
+please send us a link and a short description.)
+The publications in Section~\ref{publications} give others.
 
-They are externally-maintained, so if you have problems or questions, you
+These tools are externally-maintained, so if you have problems or questions, you
 should contact their maintainers rather than the Checker Framework
 maintainers.
 
-If you want this chapter to reference your checker,
-please send us a link and a short description.
+This list is in reverse chronological order; newer tools appear
+first and older ones appear last.
 
 
 % Note to maintainers:
@@ -32,6 +34,14 @@ property of hash codes), default formatting (such as Java's
 \<Object.toString()>, which includes a memory address), \<random>,
 date-and-time functions, and accessing system properties such as the file
 system or environment variables.
+
+
+\sectionAndLabel{NullAway}{nullaway-checker}
+
+\ahref{https://github.com/uber/NullAway}{NullAway} is a fast type-checker
+for only nullness properties.  It is built on top of Error Prone and the
+Checker Framework's Dataflow Framework.  See Section~\ref{faq-nullaway} for
+a comparison between NullAway and the Nullness Checker.
 
 
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
@@ -134,6 +144,17 @@ useful.  However,
 % the type-checkers should be rewritten from scratch and
 we wanted
 to focus on distributing checkers that are currently being maintained.
+
+
+\sectionAndLabel{Error Prone}{error-prone-checker}
+
+% Has used the Dataflow Framework since summer 2014.
+
+\ahref{https://errorprone.info/}{Error Prone} is a linter or bug detector
+for Java.  It reports violations of style rules.  It is built on top of the
+Checker Framework's Dataflow Framework.  See
+Section~\ref{faq-type-checking-vs-bug-detectors} for a comparison between
+Error Prone and the Nullness Checker.
 
 
 \sectionAndLabel{SPARTA information flow type-checker for Android}{sparta-checker}
