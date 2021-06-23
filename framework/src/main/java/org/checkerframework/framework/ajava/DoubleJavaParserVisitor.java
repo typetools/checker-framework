@@ -17,6 +17,7 @@ import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.BlockComment;
 import com.github.javaparser.ast.comments.JavadocComment;
@@ -602,6 +603,21 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     UnionType node2 = (UnionType) other;
     defaultAction(node1, node2);
     visitLists(node1.getElements(), node2.getElements());
+  }
+
+  @Override
+  public void visit(RecordDeclaration node1, Node other) {
+    RecordDeclaration node2 = (RecordDeclaration) other;
+    defaultAction(node1, node2);
+    visitLists(node1.getImplementedTypes(), node2.getImplementedTypes());
+    visitLists(node1.getTypeParameters(), node2.getTypeParameters());
+    visitLists(node1.getParameters(), node2.getParameters());
+    visitLists(node1.getMembers(), node2.getMembers());
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getName().accept(this, node2.getName());
+    if (node1.getReceiverParameter().isPresent() && node2.getReceiverParameter().isPresent()) {
+      node1.getReceiverParameter().get().accept(this, node2.getReceiverParameter().get());
+    }
   }
 
   @Override
