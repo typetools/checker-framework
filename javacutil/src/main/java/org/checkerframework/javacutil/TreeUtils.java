@@ -1206,6 +1206,27 @@ public final class TreeUtils {
   }
 
   /**
+   * Determines whether or not the node referred to by the given {@link MethodTree} is a canonical
+   * constructor (the constructor for a record where the parameters are implicitly declared and
+   * implicitly assigned to the record's fields).
+   *
+   * @param method the {@link MethodTree} for a node that may be a canonical constructor.
+   * @return true if the given path points to a canonical constructor, false if it does not
+   */
+  public static boolean isCanonicalRecordConstructor(final MethodTree method) {
+    @Nullable Element e = elementFromTree(method);
+    if (!(e instanceof Symbol)) {
+      return false;
+    }
+
+    if ((((@NonNull Symbol) e).flags() & Flags.RECORD) != 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Converts the given AnnotationTrees to AnnotationMirrors.
    *
    * @param annoTrees list of annotation trees to convert to annotation mirrors
