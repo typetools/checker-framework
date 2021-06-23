@@ -70,6 +70,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -77,7 +78,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1198,15 +1198,11 @@ public final class TreeUtils {
    */
   public static boolean isAnonymousConstructor(final MethodTree method) {
     @Nullable Element e = elementFromTree(method);
-    if (!(e instanceof Symbol)) {
+    if (e == null || e.getKind() != ElementKind.CONSTRUCTOR) {
       return false;
     }
-
-    if ((((@NonNull Symbol) e).flags() & Flags.ANONCONSTR) != 0) {
-      return true;
-    }
-
-    return false;
+    TypeElement typeElement = (TypeElement) e.getEnclosingElement();
+    return typeElement.getNestingKind() == NestingKind.ANONYMOUS;
   }
 
   /**
