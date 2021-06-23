@@ -961,96 +961,77 @@ errors.
 \end{itemize}
 
 Here are some papers about type systems that were implemented and evaluated
-using the Checker Framework:
+using the Checker Framework.  Each paper gives details not available in
+this manual, such as case studies, implementation details, and theoretical
+foundations.
 
 \begin{description}
 \item[Nullness (Chapter~\ref{nullness-checker})]
 See the two papers about the Checker Framework, described above.
 
-\item[Rawness initialization (Section~\ref{initialization-rawness-checker})]
-``Inference of field initialization'' (ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
-describes inference for the Rawness Initialization Checker.
+\item[Map keys (Chapter~\ref{map-key-checker})]
+See the two papers about the Checker Framework, described above.
+
+% Optional Checker: no paper yet.
 
 \item[Interning (Chapter~\ref{interning-checker})]
 See the two papers about the Checker Framework, described above.
+
+\item[Called methods (Chapter~\ref{called-methods-checker})]
+``Verifying Object Construction'' (ICSE 2020,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/object-construction-icse2020-abstract.html})
+describes the Called Methods Checker.  (The paper uses an earlier name,
+``Object Construction Checker''.)
+
+\item[Resource leaks (Chapter~\ref{resource-leak-checker})]
+``Lightweight and Modular Resource Leak Verification'' (ESEC/FSE 2021,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-leak-esecfse2021-abstract.html})
+describes the Resource Leak Checker.
+
+\item[Fake enumerations, type aliases, and typedefs (Chapter~\ref{fenum-checker})]
+See the ICSE 2011 paper about the Checker Framework, described above.
+
+% Tainting Checker: no paper yet.
 
 \item[Locking (Chapter~\ref{lock-checker})]
 ``Locking discipline inference and checking'' (ICSE 2016,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
 describes the Lock Checker.
 
-\item[Fake enumerations, type aliases, and typedefs (Chapter~\ref{fenum-checker})]
-See the ICSE 2011 paper about the Checker Framework, described above.
+\item[Array indexing (Chapter~\ref{index-checker})]
+``Lightweight Verification of Array Indexing'' (ISSTA 2018,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html})
+describes the Index Checker.
+``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
+an earlier version.
 
 \item[Regular expressions (Chapter~\ref{regex-checker})]
 ``A type system for regular expressions''~\cite{SpishakDE2012} (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/regex-types-ftfjp2012-abstract.html})
-            describes the Regex Checker.
+describes the Regex Checker.
 
-\item[Format Strings (Chapter~\ref{formatter-checker})]
+\item[Format Strings (Chapters~\ref{formatter-checker} and~\ref{i18n-formatter-checker})]
 ``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
-            describes the Format String Checker.
+describes the Format String Checker and the Internationalization Format String Checker.
 
 \item[Signature strings (Chapter~\ref{signature-checker})]
 See the ICSE 2011 paper about the Checker Framework, described above.
 
 \item[GUI Effects (Chapter~\ref{guieffect-checker})]
 ``JavaUI: Effects for controlling UI object access''~\cite{GordonDEG2013} (ECOOP 2013, \myurl{https://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html})
-            describes the GUI Effect Checker.
+describes the GUI Effect Checker.
 
-\item
-``Verification games: Making verification fun'' (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
-            describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
+\item[Signedness (Chapter~\ref{signedness-checker})]
+``Preventing signedness errors in numerical computations in
+Java''~\cite{Mackie2016} (FSE 2016) describes the Signedness Checker.
 
-\item[Thread locality (Section~\ref{loci-thread-locality-checker})]
-``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
-\myurl{http://janvitek.org/pubs/ecoop09.pdf})
+\item[Returning the receiver (Chapter~\ref{returns-receiver-checker})]
+See the ICSE 2020 about the Called Methods Checker, described above.
 
-\item[Security (Section~\ref{sparta-checker})]
-``Static analysis of implicit control flow: Resolving Java reflection and
-  Android intents''~\cite{BarrosJMVDdAE2015} (ASE 2015,
-  \myurl{https://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
-  describes the SPARTA toolset and information flow type-checker.
+% \item[Reflection (Chapter~\ref{reflection-resolution})]
+% TODO: What paper describes this?
 
-``Boolean formulas for the static identification of injection attacks in
-  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{https://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
-
-\item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
-    Types} (Section~\ref{gut-checker})]
-``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
-            describes inference for the Generic Universe Types type system.
-
-Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
-``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
-
-\item[Approximate data (Section~\ref{enerj-checker})]
-``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
-
-\item[Information flow and tainting (Section~\ref{sparta-checker})]
-``Collaborative Verification of Information Flow
-for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
-
-\item[IGJ and OIGJ immutability (Section~\ref{igj-checker})]
-``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{https://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
-and
-``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
-            describe the IGJ and OIGJ immutability type systems.
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
-\item[Javari immutability (Section~\ref{javari-checker})]
-``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
-            describes the Javari type system.
-For inference, see
-``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
-and
-``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{https://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
-\item[ReIm immutability]
-% TODO:  (Section~\ref{reim-checker})
-``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
-            describes the ReIm immutability type system.
+\item[Third-party checkers]
+  For papers about these checkers, please see the relevant subsection of Chapter~\ref{external-checkers}.
 
 \end{description}
 

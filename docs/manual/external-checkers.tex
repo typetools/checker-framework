@@ -18,6 +18,23 @@ please send us a link and a short description.
 % Sections are added to this chapter in reverse chronological order, at the top.
 
 
+\sectionAndLabel{Error Prone}{error-prone-checker}
+
+\ahref{https://errorprone.info/}{Error Prone} is a linter or bug detector
+for Java.  It reports violations of style rules.  It is built on top of the
+Checker Framework's Dataflow Framework.  See
+Section~\ref{faq-type-checking-vs-bug-detectors} for a comparison between
+Error Prone and the Nullness Checker.
+
+
+\sectionAndLabel{NullAway}{nullaway-checker}
+
+\ahref{https://github.com/uber/NullAway}{NullAway} is a fast type-checker
+for only nullness properties.  It is built on top of Error Prone and the
+Checker Framework's Dataflow Framework.  See Section~\ref{faq-nullaway} for
+a comparison between NullAway and the Nullness Checker.
+
+
 \sectionAndLabel{Determinism checker}{deteriminism-checker}
 
 The
@@ -33,6 +50,10 @@ property of hash codes), default formatting (such as Java's
 date-and-time functions, and accessing system properties such as the file
 system or environment variables.
 
+The paper ``Verifying determinism in sequential programs'' (ICSE 2021,
+\url{https://homes.cs.washington.edu/~mernst/pubs/determinism-icse2021-abstract.html})
+describes the Determinism Checker.
+
 
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
 
@@ -40,6 +61,10 @@ The
 \href{https://github.com/awslabs/aws-crypto-policy-compliance-checker}{AWS
   crypto policy compliance checker} checks that no weak cipher algorithms
 are used with the Java crypto API\@.
+
+``Continuous Compliance''~\cite{KelloggSTE2020} (ASE 2020,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/continuous-compliance-ase2020-abstract.html})
+describes several custom Checker Framework checkers in the context of a compliance regime at Amazon Web Services.
 
 
 \sectionAndLabel{AWS KMS compliance checker}{kms-compliance-checker}
@@ -60,6 +85,10 @@ compile group: 'software.amazon.checkerframework', name: 'aws-kms-compliance-che
 \end{Verbatim}
 
 \ahref{https://mvnrepository.com/artifact/software.amazon.checkerframework/aws-kms-compliance-checker/1.0.2}{Other build systems} are similar.
+
+``Continuous Compliance''~\cite{KelloggSTE2020} (ASE 2020,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/continuous-compliance-ase2020-abstract.html})
+describes several custom Checker Framework checkers in the context of a compliance regime at Amazon Web Services.
 
 
 \sectionAndLabel{UI Thread Checker for ReactiveX}{rx-thread-checker}
@@ -112,9 +141,9 @@ It is available from
 
 \sectionAndLabel{Nullness Rawness Checker}{initialization-rawness-checker}
 
-The Nullness Rawness Checker is a nullness checker that uses a different type system for initialization.
+The Nullness Rawness Checker is a variant of the Nullness Checker that uses a different type system for initialization.
 It was distributed with the Checker Framework through release 2.9.0 (dated 3 July 2019). If you wish
-to use them, install \href{https://checkerframework.org/releases/2.9.0/}{Checker Framework version 2.9.0}.
+to use it, install \href{https://checkerframework.org/releases/2.9.0/}{Checker Framework version 2.9.0}.
 
 
 \sectionAndLabel{Immutability checkers:  IGJ, OIGJ, and Javari\label{javari-checker}}{igj-checker}
@@ -134,6 +163,18 @@ useful.  However,
 % the type-checkers should be rewritten from scratch and
 we wanted
 to focus on distributing checkers that are currently being maintained.
+
+IGJ and OIGJ are described in the papers
+``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{https://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
+and
+``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
+The Javari type system is described in
+``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html});
+for inference, see
+``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
+and
+``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{https://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
+For further case studies, also see~\cite{PapiACPE2008}.
 
 
 \sectionAndLabel{SPARTA information flow type-checker for Android}{sparta-checker}
@@ -158,10 +199,22 @@ CheckLT is available from \url{http://checklt.github.io/}.
 
 \sectionAndLabel{EnerJ checker}{enerj-checker}
 
-A checker for EnerJ~\cite{SampsonDFGCG2011}, an extension to Java that exposes hardware faults
+EnerJ is an extension to Java that exposes hardware faults
 in a safe, principled manner to save energy with only
 slight sacrifices to the quality of service, is available from
 \url{http://sampa.cs.washington.edu/research/approximation/enerj.html}.
+The paper
+``EnerJ: Approximate Data Types for Safe and General Low-Power
+Computation''~\cite{SampsonDFGCG2011} (PLDI 2011,
+\myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
+describes EnerJ\@.
+
+
+\sectionAndLabel{ReIm immutability}{reim-checker}
+
+A checker and inference tool for ReIm~\cite{HuangMDE2012}, an immutability
+type system, is available at
+\url{http://www.cs.rpi.edu/~huangw5/cf-inference/}.
 
 
 \sectionAndLabel{Generic Universe Types checker}{gut-checker}
@@ -201,19 +254,17 @@ Loci~\cite{WrigstadPMZV2009}, a checker for thread locality, is available at
 %% This URL is broken as of
 % Developer resources are available at the project page
 % \url{http://java.net/projects/loci/}.
+The paper ``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
+\myurl{http://janvitek.org/pubs/ecoop09.pdf}) describes the checker.
+
 
 % A paper was publishd in ECOOP 2009, release 0.1 was made in March 2011,
 % but as of October 2013 and June 2017 the manual is still listed as "forthcoming".
-
-
-% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28.03.2011:
-
+%
+% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28 March 2011:
 % The plugin name:
-% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in
-% Java''
-
+% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in Java''
 % Project homepage: http://www.it.uu.se/research/upmarc/loci
-
 % Project's developer's page: http://java.net/projects/loci
 
 

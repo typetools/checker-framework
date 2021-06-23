@@ -13,15 +13,6 @@ Cyrille Artho.
 \newblock Master's thesis, Swiss Federal Institute of Technology, March~15,
   2001.
 
-\bibitem[BJM{\etalchar{+}}15]{BarrosJMVDdAE2015}
-Paulo Barros, Ren\'e Just, Suzanne Millstein, Paul Vines, Werner Dietl, Marcelo
-  d'Amorim, and Michael~D. Ernst.
-\newblock Static analysis of implicit control flow: Resolving {Java} reflection
-  and {Android} intents.
-\newblock In {\em ASE 2015: Proceedings of the 30th Annual International
-  Conference on Automated Software Engineering}, pages 669--679, Lincoln, NE,
-  USA, November 2015.
-
 \bibitem[CNA{\etalchar{+}}17]{CoblenzNAMS2017}
 Michael Coblenz, Whitney Nelson, Jonathan Aldrich, Brad Myers, and Joshua
   Sunshine.
@@ -59,25 +50,6 @@ Werner Dietl, Michael~D. Ernst, and Peter M{\"u}ller.
 \newblock In {\em ECOOP 2011 --- Object-Oriented Programming, 25th European
   Conference}, pages 333--357, Lancaster, UK, July 2011.
 
-\bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
-Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
-  Pernsteiner, Franziska Roesner, Karl Koscher, Paulo Barros, Ravi Bhoraskar,
-  Seungyeop Han, Paul Vines, and Edward~X. Wu.
-\newblock Collaborative verification of information flow for a high-assurance
-  app store.
-\newblock In {\em CCS 2014: Proceedings of the 21st ACM Conference on Computer
-  and Communications Security}, pages 1092--1104, Scottsdale, AZ, USA, November
-  2014.
-
-\bibitem[ELM{\etalchar{+}}15]{ErnstLMSS2015}
-Michael~D. Ernst, Alberto Lovato, Damiano Macedonio, Ciprian Spiridon, and
-  Fausto Spoto.
-\newblock Boolean formulas for the static identification of injection attacks
-  in {Java}.
-\newblock In {\em LPAR 2015: Proceedings of the 20th International Conference
-  on Logic for Programming, Artificial Intelligence, and Reasoning}, pages
-  130--145, Suva, Fiji, November 2015.
-
 \bibitem[Ern08]{JSR308-2008-09-12}
 Michael~D. Ernst.
 \newblock {Type Annotations} specification ({JSR} 308).
@@ -101,12 +73,6 @@ Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
 \newblock {\em Java Concurrency in Practice}.
 \newblock Addison-Wesley, 2006.
 
-\bibitem[HDME12]{HuangDME2012}
-Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
-\newblock Inference and checking of object ownership.
-\newblock In {\em ECOOP 2012 --- Object-Oriented Programming, 26th European
-  Conference}, pages 181--206, Beijing, China, June 2012.
-
 \bibitem[HMDE12]{HuangMDE2012}
 Wei Huang, Ana Milanova, Werner Dietl, and Michael~D. Ernst.
 \newblock {ReIm} \& {ReImInfer}: Checking and inference of reference
@@ -127,6 +93,13 @@ David Hovemeyer, Jaime Spacco, and William Pugh.
 \newblock In {\em PASTE 2005: ACM SIGPLAN/SIGSOFT Workshop on Program Analysis
   for Software Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon,
   Portugal, September 2005.
+
+\bibitem[KSTE20]{KelloggSTE2020}
+Martin Kellogg, Martin Sch{\"a}f, Serdar Tasiran, and Michael~D. Ernst.
+\newblock Continuous compliance.
+\newblock In {\em ASE 2020: Proceedings of the 33rd Annual International
+  Conference on Automated Software Engineering}, Melbourne, Australia,
+  September 2020.
 
 \bibitem[LBR06]{LeavensBR2006:JML}
 Gary~T. Leavens, Albert~L. Baker, and Clyde Ruby.
