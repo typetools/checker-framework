@@ -18,6 +18,8 @@ task copySources(type: Copy) {
     dirMode(0777)
 }
 
+sourcesJar.dependsOn(copySources)
+
 /**
 * Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
 * Using the standard Checker Framework annotations can lead to main dex overflows;
