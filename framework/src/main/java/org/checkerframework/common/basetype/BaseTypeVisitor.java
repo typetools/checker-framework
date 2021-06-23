@@ -386,8 +386,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (Tree expected : expectedTreesVisitor.getTrees()) {
         if (!treePairs.containsKey(expected)) {
           throw new BugInCF(
-              "Javac tree not matched to JavaParser node: %s, in file: %s",
-              expected, root.getSourceFile().getName());
+              "Javac tree not matched to JavaParser node: %s [%s @ %d], in file: %s",
+              expected,
+              expected.getClass(),
+              positions.getStartPosition(root, expected),
+              root.getSourceFile().getName());
         }
       }
     } catch (IOException e) {
