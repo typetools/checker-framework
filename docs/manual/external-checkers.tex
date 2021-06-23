@@ -55,7 +55,7 @@ The
   crypto policy compliance checker} checks that no weak cipher algorithms
 are used with the Java crypto API\@.
 
-``Continuous Compliance''~\cite{KelloggSTE2020} (ASE 2020,
+The paper ``Continuous Compliance''~\cite{KelloggSTE2020} (ASE 2020,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/continuous-compliance-ase2020-abstract.html})
 describes several custom Checker Framework checkers in the context of a compliance regime at Amazon Web Services.
 
@@ -79,7 +79,7 @@ compile group: 'software.amazon.checkerframework', name: 'aws-kms-compliance-che
 
 \ahref{https://mvnrepository.com/artifact/software.amazon.checkerframework/aws-kms-compliance-checker/1.0.2}{Other build systems} are similar.
 
-``Continuous Compliance''~\cite{KelloggSTE2020} (ASE 2020,
+The paper ``Continuous Compliance''~\cite{KelloggSTE2020} (ASE 2020,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/continuous-compliance-ase2020-abstract.html})
 describes several custom Checker Framework checkers in the context of a compliance regime at Amazon Web Services.
 
@@ -138,6 +138,9 @@ The Nullness Rawness Checker is a variant of the Nullness Checker that uses a di
 It was distributed with the Checker Framework through release 2.9.0 (dated 3 July 2019). If you wish
 to use it, install \href{https://checkerframework.org/releases/2.9.0/}{Checker Framework version 2.9.0}.
 
+The paper ``Inference of field initialization'' (ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})~\cite{SpotoE2011}
+describes inference for the Rawness Initialization Checker.
+
 
 \sectionAndLabel{Immutability checkers:  IGJ, OIGJ, and Javari\label{javari-checker}}{igj-checker}
 
@@ -167,7 +170,12 @@ for inference, see
 ``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
 and
 ``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{https://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
-For further case studies, also see~\cite{PapiACPE2008}.
+The paper
+``Practical pluggable types for Java''~\cite{PapiACPE2008}
+(ISSTA 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
+describes case
+studies in which the Javari and IGJ Checkers found
+previously-unknown errors in real software.
 
 
 \sectionAndLabel{Error Prone}{error-prone-checker}
@@ -188,10 +196,10 @@ an app store.  SPARTA provides an information-flow type-checker that is
 customized to Android but can also be applied to other domains.
 The SPARTA toolset is available from
 \url{https://checkerframework.org/sparta/}.
-The paper
-\href{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}{``Collaborative
-    verification of information flow for a high-assurance app store''}
-  appeared in CCS 2014.
+The paper ``Collaborative verification of information flow for a
+high-assurance app store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf})
+describes the SPARTA toolset and information flow type-checker.
 
 
 \sectionAndLabel{CheckLT taint checker}{checklt-checker}
@@ -207,11 +215,9 @@ EnerJ is an extension to Java that exposes hardware faults
 in a safe, principled manner to save energy with only
 slight sacrifices to the quality of service, is available from
 \url{http://sampa.cs.washington.edu/research/approximation/enerj.html}.
-The paper
-``EnerJ: Approximate Data Types for Safe and General Low-Power
-Computation''~\cite{SampsonDFGCG2011} (PLDI 2011,
-\myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
-describes EnerJ\@.
+More details appear in the paper ``EnerJ: Approximate Data Types for Safe
+and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011,
+\myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf}).
 
 
 \sectionAndLabel{ReIm immutability}{reim-checker}
@@ -226,6 +232,11 @@ type system, is available at
 A checker for Generic Universe Types~\cite{DietlEM2011}, a lightweight ownership type
 system, is available from
 \url{https://ece.uwaterloo.ca/~wdietl/ownership/}.
+
+The paper ``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
+            describes inference for the Generic Universe Types type system.
+Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
+``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
 
 
 \sectionAndLabel{Safety-Critical Java checker}{safety-critical-java-checker}
