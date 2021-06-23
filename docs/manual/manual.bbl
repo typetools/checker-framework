@@ -13,6 +13,22 @@ Cyrille Artho.
 \newblock Master's thesis, Swiss Federal Institute of Technology, March~15,
   2001.
 
+\bibitem[BCS19]{BanerjeeCS2019}
+Subarno Banerjee, Lazaro Clapp, and Manu Sridharan.
+\newblock {NullAway}: Practical type-based null safety for {Java}.
+\newblock In {\em ESEC/FSE 2019: The ACM 27th joint European Software
+  Engineering Conference and Symposium on the Foundations of Software
+  Engineering (ESEC/FSE)}, page 740–750, Tallinn, Estonia, August 2019.
+
+\bibitem[BJM{\etalchar{+}}15]{BarrosJMVDdAE2015}
+Paulo Barros, Ren\'e Just, Suzanne Millstein, Paul Vines, Werner Dietl, Marcelo
+  d'Amorim, and Michael~D. Ernst.
+\newblock Static analysis of implicit control flow: Resolving {Java} reflection
+  and {Android} intents.
+\newblock In {\em ASE 2015: Proceedings of the 30th Annual International
+  Conference on Automated Software Engineering}, pages 669--679, Lincoln, NE,
+  USA, November 2015.
+
 \bibitem[CNA{\etalchar{+}}17]{CoblenzNAMS2017}
 Michael Coblenz, Whitney Nelson, Jonathan Aldrich, Brad Myers, and Joshua
   Sunshine.
@@ -44,13 +60,51 @@ Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
 \newblock In {\em ICSE 2011, Proceedings of the 33rd International Conference
   on Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May 2011.
 
+\bibitem[DDE{\etalchar{+}}12]{DietlDEMWCPP2012}
+Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, Nathaniel Mote, Brian
+  Walker, Seth Cooper, Timothy Pavlik, and Zoran Popovi{\'c}.
+\newblock Verification games: Making verification fun.
+\newblock In {\em FTfJP: 14th Workshop on Formal Techniques for Java-like
+  Programs}, pages 42--49, Beijing, China, June 2012.
+
 \bibitem[DEM11]{DietlEM2011}
 Werner Dietl, Michael~D. Ernst, and Peter M{\"u}ller.
 \newblock Tunable static inference for {Generic} {Universe} {Types}.
 \newblock In {\em ECOOP 2011 --- Object-Oriented Programming, 25th European
   Conference}, pages 333--357, Lancaster, UK, July 2011.
 
-\bibitem[Ern08]{JSR308-2008-09-12}
+\bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
+Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
+  Pernsteiner, Franziska Roesner, Karl Koscher, Paulo Barros, Ravi Bhoraskar,
+  Seungyeop Han, Paul Vines, and Edward~X. Wu.
+\newblock Collaborative verification of information flow for a high-assurance
+  app store.
+\newblock In {\em CCS 2014: Proceedings of the 21st ACM Conference on Computer
+  and Communications Security}, pages 1092--1104, Scottsdale, AZ, USA, November
+  2014.
+
+\bibitem[ELM{\etalchar{+}}16]{ErnstLMST2016}
+Michael~D. Ernst, Alberto Lovato, Damiano Macedonio, Fausto Spoto, and Javier
+  Thaine.
+\newblock Locking discipline inference and checking.
+\newblock In {\em ICSE 2016, Proceedings of the 38th International Conference
+  on Software Engineering}, pages 1133--1144, Austin, TX, USA, May 2016.
+
+\bibitem[EMMS16]{ErnstMMS2016}
+Michael~D. Ernst, Damiano Macedonio, Massimo Merro, and Fausto Spoto.
+\newblock Semantics for locking specifications.
+\newblock In {\em NFM 2016: 8th NASA Formal Methods Symposium}, pages 355--372,
+  Minneapolis, MN, USA, June 2016.
+
+\bibitem[Ern08a]{Ernst2008}
+Michael~D. Ernst.
+\newblock Building and using pluggable type systems with the {Checker
+  Framework}.
+\newblock In {\em ECOOP 2008 --- Object-Oriented Programming, 22nd European
+  Conference}, Paphos, Cyprus, July 2008.
+\newblock Tool demo.
+
+\bibitem[Ern08b]{JSR308-2008-09-12}
 Michael~D. Ernst.
 \newblock {Type Annotations} specification ({JSR} 308).
 \newblock \url{https://checkerframework.org/jsr308/}, September~12, 2008.
@@ -72,6 +126,12 @@ Brian Goetz, Tim Peierls, Joshua Bloch, Joseph Bowbeer, David Holmes, and Doug
   Lea.
 \newblock {\em Java Concurrency in Practice}.
 \newblock Addison-Wesley, 2006.
+
+\bibitem[HDME12]{HuangDME2012}
+Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
+\newblock Inference and checking of object ownership.
+\newblock In {\em ECOOP 2012 --- Object-Oriented Programming, 26th European
+  Conference}, pages 181--206, Beijing, China, June 2012.
 
 \bibitem[HMDE12]{HuangMDE2012}
 Wei Huang, Ana Milanova, Werner Dietl, and Michael~D. Ernst.
@@ -121,6 +181,13 @@ Jaime Quinonez, Matthew~S. Tschantz, and Michael~D. Ernst.
 \newblock In {\em ECOOP 2008 --- Object-Oriented Programming, 22nd European
   Conference}, pages 616--641, Paphos, Cyprus, July 2008.
 
+\bibitem[San16]{Santino2016}
+Joseph Santino.
+\newblock Enforcing correct array indexes with a type system.
+\newblock In {\em FSE 2016: Proceedings of the {ACM} {SIGSOFT} 24th Symposium
+  on the Foundations of Software Engineering}, pages 1142--1144, Seattle, WA,
+  USA, November 2016.
+
 \bibitem[SCSC18]{SteinCSC2018}
 Benno Stein, Lazaro Clapp, Manu Sridharan, and Bor{-}Yuh~Evan Chang.
 \newblock Safe stream-based programming with refinement types.
@@ -142,6 +209,18 @@ Adrian Sampson, Werner Dietl, Emily Fortuna, Danushen Gnanapragasam, Luis Ceze,
 \newblock In {\em PLDI 2011: Proceedings of the {ACM} {SIGPLAN} 2011 Conference
   on Programming Language Design and Implementation}, pages 164--174, San Jose,
   CA, USA, June 2011.
+
+\bibitem[SE10]{SchillerE2010}
+Todd~W. Schiller and Michael~D. Ernst.
+\newblock Rethinking the economics of software engineering.
+\newblock In {\em FoSER: Workshop on the Future of Software Engineering
+  Research}, pages 325--330, Santa Fe, NM, USA, November 2010.
+
+\bibitem[SE11]{SpotoE2011}
+Fausto Spoto and Michael~D. Ernst.
+\newblock Inference of field initialization.
+\newblock In {\em ICSE 2011, Proceedings of the 33rd International Conference
+  on Software Engineering}, pages 231--240, Waikiki, Hawaii, USA, May 2011.
 
 \bibitem[SM11]{SummersM2011}
 Alexander~J. Summers and Peter M{\"u}ller.
@@ -168,6 +247,13 @@ Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
 \newblock Cascade: A universal type qualifier inference tool.
 \newblock Technical report, University of Illinois at Urbana-Champaign, Urbana,
   IL, USA, September 2014.
+
+\bibitem[VPEJ15]{VakilianPEJ2015}
+Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
+\newblock Cascade: A universal programmer-assisted type qualifier inference
+  tool.
+\newblock In {\em ICSE 2015, Proceedings of the 37th International Conference
+  on Software Engineering}, pages 234--245, Florence, Italy, May 2015.
 
 \bibitem[WKSE14]{WeitzKSE2014}
 Konstantin Weitz, Gene Kim, Siwakorn Srisakaokul, and Michael~D. Ernst.
