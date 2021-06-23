@@ -398,7 +398,14 @@ public class AnnotationFileElementTypes {
 
     ExecutableElement method = (ExecutableElement) elt;
 
-    TypeMirror methodReceiverType = method.getReceiverType();
+    // In Java 16, method.getReceiverType() is null when it should not be.
+    // TypeMirror methodReceiverType = method.getReceiverType();
+    TypeMirror methodReceiverType;
+    if (ElementUtils.hasReceiver(method)) {
+      methodReceiverType = ElementUtils.enclosingTypeElement(method).asType();
+    } else {
+      return null;
+    }
     if (methodReceiverType != null && methodReceiverType.getKind() == TypeKind.NONE) {
       return null;
     }
