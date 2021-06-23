@@ -1,6 +1,7 @@
 package org.checkerframework.common.basetype;
 
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -208,6 +209,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The type of java.util.Vector. */
   private final AnnotatedDeclaredType vectorType;
 
+  /** The source language level used in the compilation */
+  private final ParserConfiguration.LanguageLevel languageLevel;
+
   /** The @java.lang.annotation.Target annotation. */
   protected final AnnotationMirror TARGET =
       AnnotationBuilder.fromClass(
@@ -244,6 +248,41 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     this.visitorState = atypeFactory.getVisitorState();
     this.typeValidator = createTypeValidator();
     ProcessingEnvironment env = checker.getProcessingEnvironment();
+    // Use String comparison so we can compile on older JDKs which
+    // don't have all the latest SourceVersion constants:
+    switch (env.getSourceVersion().name()) {
+      case "RELEASE_8":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_8;
+        break;
+      case "RELEASE_9":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_9;
+        break;
+      case "RELEASE_10":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_10;
+        break;
+      case "RELEASE_11":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_11;
+        break;
+      case "RELEASE_12":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_12;
+        break;
+      case "RELEASE_13":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_13;
+        break;
+      case "RELEASE_14":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_14;
+        break;
+      case "RELEASE_15":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_15;
+        break;
+      case "RELEASE_16":
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_16;
+        break;
+      default:
+        // By default, fall back to Java 8:
+        this.languageLevel = ParserConfiguration.LanguageLevel.JAVA_8;
+        break;
+    }
     this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
     this.functionApply = TreeUtils.getMethod("java.util.function.Function", "apply", 1, env);
     this.vectorType =
@@ -342,7 +381,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
     try (InputStream reader = root.getSourceFile().openInputStream()) {
-      CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader);
+      CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader, languageLevel);
       JavaParserUtil.concatenateAddedStringLiterals(javaParserRoot);
       new JointVisitorWithDefaultAction() {
         @Override
@@ -384,7 +423,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     CompilationUnit originalAst;
     try (InputStream originalInputStream = root.getSourceFile().openInputStream()) {
-      originalAst = JavaParserUtil.parseCompilationUnit(originalInputStream);
+      originalAst = JavaParserUtil.parseCompilationUnit(originalInputStream, languageLevel);
     } catch (IOException e) {
       throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
     }
@@ -400,14 +439,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // fail on Mac or Windows.
       withAnnotations =
           new InsertAjavaAnnotations(elements)
-              .insertAnnotations(annotationInputStream, withoutAnnotations, "\n");
+              .insertAnnotations(annotationInputStream, withoutAnnotations, "\n", languageLevel);
     } catch (IOException e) {
       throw new BugInCF("Error while reading Java file: " + root.getSourceFile().toUri(), e);
     }
 
     CompilationUnit modifiedAst = null;
     try {
-      modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations);
+      modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations, languageLevel);
     } catch (ParseProblemException e) {
       throw new BugInCF("Failed to parse annotation insertion:\n" + withAnnotations, e);
     }

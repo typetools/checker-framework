@@ -41,11 +41,15 @@ public class JavaParserUtil {
    * causes memory problems because it retains too much memory.
    *
    * @param inputStream the Java source code
+   * @param languageLevel the language level to use when parsing the Java source
    * @return CompilationUnit representing the Java source code
    * @throws ParseProblemException if the source code has parser errors
    */
-  public static CompilationUnit parseCompilationUnit(InputStream inputStream) {
-    JavaParser javaParser = new JavaParser(new ParserConfiguration());
+  public static CompilationUnit parseCompilationUnit(
+      InputStream inputStream, ParserConfiguration.LanguageLevel languageLevel) {
+    ParserConfiguration parserConfiguration = new ParserConfiguration();
+    parserConfiguration.setLanguageLevel(languageLevel);
+    JavaParser javaParser = new JavaParser(parserConfiguration);
     ParseResult<CompilationUnit> parseResult = javaParser.parse(inputStream);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
       return parseResult.getResult().get();
@@ -63,12 +67,16 @@ public class JavaParserUtil {
    * causes memory problems because it retains too much memory.
    *
    * @param file the Java source code
+   * @param languageLevel the language level to use when parsing the Java source
    * @return CompilationUnit representing the Java source code
    * @throws ParseProblemException if the source code has parser errors
    * @throws FileNotFoundException if the file was not found
    */
-  public static CompilationUnit parseCompilationUnit(File file) throws FileNotFoundException {
-    JavaParser javaParser = new JavaParser(new ParserConfiguration());
+  public static CompilationUnit parseCompilationUnit(
+      File file, ParserConfiguration.LanguageLevel languageLevel) throws FileNotFoundException {
+    ParserConfiguration configuration = new ParserConfiguration();
+    configuration.setLanguageLevel(languageLevel);
+    JavaParser javaParser = new JavaParser(configuration);
     ParseResult<CompilationUnit> parseResult = javaParser.parse(file);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
       return parseResult.getResult().get();
@@ -86,11 +94,15 @@ public class JavaParserUtil {
    * causes memory problems because it retains too much memory.
    *
    * @param javaSource the Java source code
+   * @param languageLevel the language level to use when parsing the Java source
    * @return CompilationUnit representing the Java source code
    * @throws ParseProblemException if the source code has parser errors
    */
-  public static CompilationUnit parseCompilationUnit(String javaSource) {
-    JavaParser javaParser = new JavaParser(new ParserConfiguration());
+  public static CompilationUnit parseCompilationUnit(
+      String javaSource, ParserConfiguration.LanguageLevel languageLevel) {
+    ParserConfiguration parserConfiguration = new ParserConfiguration();
+    parserConfiguration.setLanguageLevel(languageLevel);
+    JavaParser javaParser = new JavaParser(parserConfiguration);
     ParseResult<CompilationUnit> parseResult = javaParser.parse(javaSource);
     if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
       return parseResult.getResult().get();

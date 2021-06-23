@@ -1,5 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
@@ -349,7 +350,9 @@ public class WholeProgramInferenceJavaParserStorage
 
     CompilationUnit root;
     try {
-      root = JavaParserUtil.parseCompilationUnit(new File(path));
+      root =
+          JavaParserUtil.parseCompilationUnit(
+              new File(path), ParserConfiguration.LanguageLevel.JAVA_8);
     } catch (FileNotFoundException e) {
       throw new BugInCF("Failed to read Java file " + path, e);
     }
