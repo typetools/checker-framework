@@ -365,6 +365,19 @@ This example shows both sorts of problems:
 
 \label{lint-dotequals}
 
+The Interning Checker's warnings look like
+
+\begin{Verbatim}
+MyFile.java:716: error: [interning:not.interned] attempting to use a non-@Interned comparison operand
+        if (date == idate)
+            ^
+\end{Verbatim}
+
+\noindent
+To resolve a \<not.interned> error, you should change the argument that is
+passed to \<==>, or use \<.equals()> instead of \<==>, or suppress the
+warning.
+
 The checker also issues a warning when \code{.equals} is used where
 \code{==} could be safely used.  You can disable this behavior via the
 javac \code{-Alint=-dotequals} command-line option.
