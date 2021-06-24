@@ -277,81 +277,7 @@ class MustCallConsistencyAnalyzer {
             node, typeFactory, typeFactory);
     Set<JavaExpression> missing = new HashSet<>();
     for (JavaExpression target : targetExprs) {
-      boolean validInvocation = false;
-      if (target instanceof FieldAccess) {
-        Element elt = ((FieldAccess) target).getField();
-        if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-            && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-          // The target is an Owning field.  This satisfies case 1.
-          validInvocation = true;
-        }
-      } else if (target instanceof LocalVariable) {
-        Element elt = ((LocalVariable) target).getElement();
-        if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-            && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-          // The target is an Owning param.  This satisfies case 1.
-          validInvocation = true;
-        } else {
-          ImmutableSet<LocalVarWithTree> toRemoveSet = null;
-          ImmutableSet<LocalVarWithTree> toAddSet = null;
-          for (ImmutableSet<LocalVarWithTree> resourceAliasSet : obligations) {
-            for (LocalVarWithTree alias : resourceAliasSet) {
-              if (target.equals(alias.localVar)) {
-                // This satisfies case 2 above. Remove all its aliases, then return below.
-                if (toRemoveSet != null) {
-                  throw new BugInCF(
-                      "tried to remove multiple sets containing a reset target at once");
-                }
-                toRemoveSet = resourceAliasSet;
-                toAddSet = ImmutableSet.of(alias);
-              }
-            }
-          }
-
-          if (toRemoveSet != null) {
-            obligations.remove(toRemoveSet);
-            obligations.add(toAddSet);
-            // This satisfies case 2.
-            validInvocation = true;
-          }
-        }
-      }
-
-      if (!validInvocation) {
-        // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
-        // annotations, but that should be a rare path.
-        MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
-        if (enclosingMethodTree != null) {
-          ExecutableElement enclosingMethodElt =
-              TreeUtils.elementFromDeclaration(enclosingMethodTree);
-          MustCallAnnotatedTypeFactory mcAtf =
-              typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-          List<String> enclosingCmcfValues =
-              ResourceLeakVisitor.getCreatesMustCallForValues(
-                  enclosingMethodElt, mcAtf, typeFactory);
-          if (!enclosingCmcfValues.isEmpty()) {
-            for (String enclosingCmcfValue : enclosingCmcfValues) {
-              JavaExpression enclosingTarget;
-              try {
-                enclosingTarget =
-                    StringToJavaExpression.atMethodBody(
-                        enclosingCmcfValue, enclosingMethodTree, checker);
-              } catch (JavaExpressionParseException e) {
-                // Do not issue an error here, because it would be a duplicate.
-                // The error will be issued by the Transfer class of the checker,
-                // via the CreatesMustCallForElementSupplier interface.
-                enclosingTarget = null;
-              }
-
-              if (representSame(target, enclosingTarget)) {
-                // This satisifies case 3.
-                validInvocation = true;
-              }
-            }
-          }
-        }
-      }
-      if (!validInvocation) {
+      if (!isValidInvocation(obligations, target, currentPath)) {
         missing.add(target);
       }
     }
@@ -363,6 +289,94 @@ class MustCallConsistencyAnalyzer {
 
     String missingStrs = StringsPlume.join(", ", missing);
     checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
+  }
+
+  /**
+   * An invocation is valid if one of the following conditions is true: 1) the target is an owning
+   * pointer, 2) the target already has a tracked obligation, or 3) the method in which the
+   * invocation occurs also has an @CreatesMustCallFor annotation, with the same target.
+   *
+   * @param obligations the currently-tracked obligations. This value is side-effected if it
+   *     contains the target of the reset method.
+   * @param target an argument of a method's @CreatesMustCallFor annotation
+   * @param currentPath
+   * @return
+   */
+  private boolean isValidInvocation(
+      Set<ImmutableSet<LocalVarWithTree>> obligations,
+      JavaExpression target,
+      TreePath currentPath) {
+    if (target instanceof FieldAccess) {
+      Element elt = ((FieldAccess) target).getField();
+      if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
+          && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
+        // The target is an Owning field.  This satisfies case 1.
+        return true;
+      }
+    } else if (target instanceof LocalVariable) {
+      Element elt = ((LocalVariable) target).getElement();
+      if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
+          && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
+        // The target is an Owning param.  This satisfies case 1.
+        return true;
+      } else {
+        ImmutableSet<LocalVarWithTree> toRemoveSet = null;
+        ImmutableSet<LocalVarWithTree> toAddSet = null;
+        for (ImmutableSet<LocalVarWithTree> resourceAliasSet : obligations) {
+          for (LocalVarWithTree alias : resourceAliasSet) {
+            if (target.equals(alias.localVar)) {
+              // This satisfies case 2 above. Remove all its aliases, then return below.
+              if (toRemoveSet != null) {
+                throw new BugInCF(
+                    "tried to remove multiple sets containing a reset target at once");
+              }
+              toRemoveSet = resourceAliasSet;
+              toAddSet = ImmutableSet.of(alias);
+            }
+          }
+        }
+
+        if (toRemoveSet != null) {
+          obligations.remove(toRemoveSet);
+          obligations.add(toAddSet);
+          // This satisfies case 2.
+          return true;
+        }
+      }
+    }
+
+    // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
+    // annotations, but that should be a rare path.
+    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+    if (enclosingMethodTree == null) {
+      return false;
+    }
+    ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethodTree);
+    MustCallAnnotatedTypeFactory mcAtf =
+        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    List<String> enclosingCmcfValues =
+        ResourceLeakVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, typeFactory);
+    if (enclosingCmcfValues.isEmpty()) {
+      return false;
+    }
+    for (String enclosingCmcfValue : enclosingCmcfValues) {
+      JavaExpression enclosingTarget;
+      try {
+        enclosingTarget =
+            StringToJavaExpression.atMethodBody(enclosingCmcfValue, enclosingMethodTree, checker);
+      } catch (JavaExpressionParseException e) {
+        // Do not issue an error here, because it would be a duplicate.
+        // The error will be issued by the Transfer class of the checker,
+        // via the CreatesMustCallForElementSupplier interface.
+        enclosingTarget = null;
+      }
+
+      if (representSame(target, enclosingTarget)) {
+        // This satisfies case 3.
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
