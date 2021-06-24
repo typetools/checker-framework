@@ -32,7 +32,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -398,15 +397,10 @@ public class AnnotationFileElementTypes {
 
     ExecutableElement method = (ExecutableElement) elt;
 
-    TypeMirror methodReceiverType = method.getReceiverType();
-    if (methodReceiverType != null && methodReceiverType.getKind() == TypeKind.NONE) {
-      return null;
-    }
-
     // This is a list of pairs of (where defined, method type) for fake overrides.  The second
     // element of each pair is currently always an AnnotatedExecutableType.
     List<Pair<TypeMirror, AnnotatedTypeMirror>> candidates =
-        annotationFileAnnos.fakeOverrides.get(elt);
+        annotationFileAnnos.fakeOverrides.get(method);
 
     if (candidates == null || candidates.isEmpty()) {
       return null;
