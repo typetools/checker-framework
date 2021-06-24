@@ -9,6 +9,7 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -308,6 +309,18 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     if (node1.getReceiverParameter().isPresent() && node2.getReceiverParameter().isPresent()) {
       node1.getReceiverParameter().get().accept(this, node2.getReceiverParameter().get());
     }
+
+    visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
+    visitLists(node1.getTypeParameters(), node2.getTypeParameters());
+  }
+
+  @Override
+  public void visit(CompactConstructorDeclaration node1, Node other) {
+    CompactConstructorDeclaration node2 = (CompactConstructorDeclaration) other;
+    defaultAction(node1, node2);
+    node1.getBody().accept(this, node2.getBody());
+    visitLists(node1.getModifiers(), node2.getModifiers());
+    node1.getName().accept(this, node2.getName());
 
     visitLists(node1.getThrownExceptions(), node2.getThrownExceptions());
     visitLists(node1.getTypeParameters(), node2.getTypeParameters());

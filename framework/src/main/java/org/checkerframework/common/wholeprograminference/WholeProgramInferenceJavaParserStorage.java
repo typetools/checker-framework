@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -381,6 +382,11 @@ public class WholeProgramInferenceJavaParserStorage
 
           @Override
           public void processClass(ClassTree javacTree, EnumDeclaration javaParserNode) {
+            addClass(javacTree);
+          }
+
+          @Override
+          public void processClass(ClassTree javacTree, RecordDeclaration javaParserNode) {
             addClass(javacTree);
           }
 
