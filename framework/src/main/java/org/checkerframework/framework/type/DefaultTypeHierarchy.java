@@ -314,6 +314,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       if (previousResult != null) {
         return previousResult;
       }
+      // Add a placeholder in case of recursion, to prevent infinite regress.
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       boolean result;
       if (outside.getKind() == TypeKind.WILDCARD) {
@@ -345,9 +346,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   /**
    * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
-   * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}. See
-   * {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)} for a full
-   * explanation.
+   * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
+   * Helper method for {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)}.
    *
    * @param inside a possibly-contained type
    * @param outsideLower the lower bound of the possibly-containing type
