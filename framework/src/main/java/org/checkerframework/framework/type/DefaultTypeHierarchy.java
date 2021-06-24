@@ -487,11 +487,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * A helper class for visitDeclared_Declared. There are subtypes of DefaultTypeHierarchy that need
-   * to customize the handling of type arguments. This method provides a convenient extension point.
+   * Checks that the type arguments in {@code supertype} contain the type arguments in {@code
+   * subtype}. See {@link #isContainedBy} for an explanation of containment.
    *
-   * @param subtype a possible subtype
-   * @param supertype a possible supertype
+   * @param subtype a possible subtype (its underlying type is a subtype of {@code supertype})
+   * @param supertype a possible supertype (its underlying type is a supertype of {@code subtype})
    * @param subtypeRaw whether {@code subtype} is a raw type
    * @param supertypeRaw whether {@code supertype} is a raw type
    * @return the result of visiting type args
