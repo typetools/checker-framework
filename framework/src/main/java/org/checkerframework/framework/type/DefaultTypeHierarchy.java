@@ -305,7 +305,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   protected boolean isContainedBy(
       AnnotatedTypeMirror inside, AnnotatedTypeMirror outside, boolean canBeCovariant) {
 
-    if (ignoreUninferredTypeArgument(inside) || ignoreUninferredTypeArgument(outside)) {
+    if (shouldIgnoreUninferredTypeArgs(inside) || shouldIgnoreUninferredTypeArgs(outside)) {
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       return true;
     }
@@ -349,9 +349,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
-   * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
-   * Helper method for {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)}.
+   * Let {@code outside} be {@code ? super outsideLower extends outsideUpper}. Returns true if
+   * {@code outside} contains {@code inside}, that is, if the set of types denoted by {@code
+   * outside} is a superset of or equal to the set of types denoted by {@code inside}. Helper method
+   * for {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)}.
    *
    * @param inside a possibly-contained type
    * @param outsideLower the lower bound of the possibly-containing type
@@ -392,7 +393,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @return true if {@code type} is an uninferred type argument and if the checker should not issue
    *     warnings about uninferred type arguments
    */
-  private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
+  private boolean shouldIgnoreUninferredTypeArgs(AnnotatedTypeMirror type) {
     return type.atypeFactory.ignoreUninferredTypeArguments
         && type.getKind() == TypeKind.WILDCARD
         && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
@@ -529,11 +530,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 covariantAnno, covariantValueElement, Integer.class);
 
     // JLS: 4.10.2. Subtyping among Class and Interface Types
-    // 3th paragraph
+    // 4th paragraph
     if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
       return true;
     }
-    // 4th paragraph
+    // 5th paragraph
     AnnotatedDeclaredType capturedSubtype =
         (AnnotatedDeclaredType) subtype.atypeFactory.applyCaptureConversion(subtype);
     return isContainedMany(
