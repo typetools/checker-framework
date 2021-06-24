@@ -184,14 +184,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     if (!(left.hasEffectiveAnnotation(INTERNED)
         || (leftElt != null
             && atypeFactory.getDeclAnnotation(leftElt, UsesObjectEquals.class) != null))) {
-      checker.reportError(leftOp, "not.interned", left);
+      checker.reportError(leftOp, "not.interned");
     }
 
     Element rightElt = TypesUtils.getTypeElement(right.getUnderlyingType());
     if (!(right.hasEffectiveAnnotation(INTERNED)
         || (rightElt != null
             && atypeFactory.getDeclAnnotation(rightElt, UsesObjectEquals.class) != null))) {
-      checker.reportError(rightOp, "not.interned", right);
+      checker.reportError(rightOp, "not.interned");
     }
     return super.visitBinary(node, p);
   }

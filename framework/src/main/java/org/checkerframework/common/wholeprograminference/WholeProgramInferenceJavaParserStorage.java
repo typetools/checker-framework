@@ -542,7 +542,7 @@ public class WholeProgramInferenceJavaParserStorage
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
       prepareCompilationUnitForWriting(root);
-      root.transferAnnotations();
+      root.transferAnnotations(checker);
       String packageDir = AJAVA_FILES_PATH;
       if (root.compilationUnit.getPackageDeclaration().isPresent()) {
         packageDir +=
@@ -666,9 +666,17 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations inferred by whole program inference for the wrapped compilation
      * unit to their corresponding JavaParser locations.
+     *
+     * @param checker the checker who's name to include in the @AnnotatedFor annotation
      */
-    public void transferAnnotations() {
+    public void transferAnnotations(BaseTypeChecker checker) {
       JavaParserUtil.clearAnnotations(compilationUnit);
+      for (TypeDeclaration<?> typeDecl : compilationUnit.getTypes()) {
+        typeDecl.addSingleMemberAnnotation(
+            "org.checkerframework.framework.qual.AnnotatedFor",
+            "\"" + checker.getClass().getCanonicalName() + "\"");
+      }
+
       for (ClassOrInterfaceAnnos typeAnnos : types) {
         typeAnnos.transferAnnotations();
       }
