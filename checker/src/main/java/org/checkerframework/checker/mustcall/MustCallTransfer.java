@@ -10,10 +10,12 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -34,7 +36,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  * Transfer function for the must-call type system. Its primary purposes are (1) to create temporary
  * variables for expressions (which allow those expressions to have refined information in the
  * store, which the consistency checker can use), and (2) to reset refined information when a method
- * annotated with @CreatesObligation is called.
+ * annotated with @CreatesMustCallFor is called.
  */
 public class MustCallTransfer extends CFTransfer {
 
@@ -95,14 +97,36 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   @Override
+  public TransferResult<CFValue, CFStore> visitAssignment(
+      AssignmentNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitAssignment(n, in);
+    // Remove "close" from the type in the store for resource variables.
+    // The Resource Leak Checker relies on this code to avoid checking that
+    // resource variables are closed.
+    if (atypeFactory.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
+      CFStore store = result.getRegularStore();
+      JavaExpression expr = JavaExpression.fromNode(n.getTarget());
+      CFValue value = store.getValue(expr);
+      AnnotationMirror withClose =
+          atypeFactory.getAnnotationByClass(value.getAnnotations(), MustCall.class);
+      if (withClose == null) {
+        return result;
+      }
+      AnnotationMirror withoutClose = atypeFactory.withoutClose(withClose);
+      insertIntoStores(result, expr, withoutClose);
+    }
+    return result;
+  }
+
+  @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
 
     updateStoreWithTempVar(result, n);
-    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_OBLIGATION)) {
+    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
       List<JavaExpression> targetExprs =
-          CreatesObligationElementSupplier.getCreatesObligationExpressions(
+          CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
               n, atypeFactory, atypeFactory);
       for (JavaExpression targetExpr : targetExprs) {
         AnnotationMirror defaultType =
@@ -160,7 +184,7 @@ public class MustCallTransfer extends CFTransfer {
 
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to
-   * give t the same type as node.
+   * give t the same type as {@code node}.
    *
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified

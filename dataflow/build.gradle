@@ -7,7 +7,7 @@ dependencies {
     api project(':checker-qual')
 
     // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
-    api 'org.plumelib:plume-util:1.5.3'
+    api 'org.plumelib:plume-util:1.5.5'
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
@@ -54,7 +54,7 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
+task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
     description 'Test the live variable analysis test for dataflow framework.'
     inputs.file('tests/live-variable/Expected.txt')
     inputs.file('tests/live-variable/Test.java')
@@ -72,7 +72,7 @@ task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
             }
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
-            main = 'livevar.LiveVariable'
+            mainClass = 'livevar.LiveVariable'
         }
         exec {
             workingDir = 'tests/live-variable'
@@ -82,7 +82,7 @@ task liveVariableTest(dependsOn: compileTestJava, group: 'Verification') {
     }
 }
 
-task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
+task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification') {
     description 'Test issue 3447 test case for backward analysis.'
     inputs.file('tests/issue3447/Test.java')
     delete('tests/issue3447/Out.txt')
@@ -96,7 +96,7 @@ task issue3447Test(dependsOn: compileTestJava, group: 'Verification') {
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
 
-            main = 'livevar.LiveVariable'
+            mainClass = 'livevar.LiveVariable'
         }
     }
 }

@@ -1,3 +1,31 @@
+Version 3.15.1 (July 1, 2021)
+----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+Version 3.15.0 (June 18, 2021)
+----------------------------
+
+**User-visible changes:**
+
+The Resource Leak Checker ensures that certain methods are called on an
+object before it is de-allocated. By default, it enforces that `close()` is
+called on any expression whose compile-time type implements `java.io.Closeable`.
+
+**Implementation details:**
+
+Method renamings (the old methods remain but are deprecated):
+ * `AnnotatedDeclaredType#wasRaw` => `isUnderlyingTypeRaw`
+ * `AnnotatedDeclaredType#setWasRaw` => `setIsUnderlyingTypeRaw`
+
+**Closed issues:**
+#4549, #4646, #4684, and #4699.
+
+
 Version 3.14.0 (June 1, 2021)
 ----------------------------
 
@@ -23,6 +51,7 @@ Method `TreeUtils.getMethodName()` returns a `String` rather than a `Name`.
 Removed CheckerDevelMain.
 
 **Closed issues:**
+#3993, #4116, #4586, #4598, #4612, #4614.
 
 
 Version 3.13.0 (May 3, 2021)

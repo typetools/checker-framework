@@ -82,6 +82,19 @@ public class LiveVarTransfer
     return transferResult;
   }
 
+  @Override
+  public RegularTransferResult<LiveVarValue, LiveVarStore> visitReturn(
+      ReturnNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
+    RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
+        (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitReturn(n, p);
+    Node result = n.getResult();
+    if (result != null) {
+      LiveVarStore store = transferResult.getRegularStore();
+      store.addUseInExpression(result);
+    }
+    return transferResult;
+  }
+
   /**
    * Update the information of live variables from an assignment statement.
    *

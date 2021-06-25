@@ -40,9 +40,9 @@ dependencies {
     // External dependencies:
     // If you add an external dependency, you must shadow its packages.
     // See the comment in ../build.gradle in the shadowJar block.
-    implementation 'org.plumelib:plume-util:1.5.3'
+    implementation 'org.plumelib:plume-util:1.5.5'
     implementation 'org.plumelib:reflection-util:1.0.3'
-    implementation 'io.github.classgraph:classgraph:4.8.105'
+    implementation 'io.github.classgraph:classgraph:4.8.108'
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
     // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
@@ -124,11 +124,12 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
         javaexec {
             classpath = sourceSets.main.runtimeClasspath
 
-            main = 'org.checkerframework.framework.stub.JavaStubifier'
+            mainClass = 'org.checkerframework.framework.stub.JavaStubifier'
             args outputDir
         }
     }
 }
+sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
