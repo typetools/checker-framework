@@ -330,7 +330,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     } else if ((TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
       // TODO: This branch should be removed after #979 is fixed.
-      // If both outside and inside are captured types, they should be equal.
+      // If both outside and inside are captured type variables, they should be equal.
       Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
       if (previousResult != null) {
         return previousResult;
