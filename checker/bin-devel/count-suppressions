@@ -4,6 +4,7 @@
 # warning suppressions, in all files under the current directory.
 # To invoke it, pass a type system name; for example:
 #   count-suppressions nullness
+# The argument to this script is actually a regular expression.
 
 # The "reason" for a warning suppression is the Java line comment after it:
 #   @SuppressWarnings("nullness") // here is the reason

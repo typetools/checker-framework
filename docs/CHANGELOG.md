@@ -1,3 +1,12 @@
+Version 3.15.1 (July 1, 2021)
+----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
 Version 3.15.0 (June 18, 2021)
 ----------------------------
 
@@ -15,6 +24,7 @@ Method renamings (the old methods remain but are deprecated):
 
 **Closed issues:**
 #4549, #4646, #4684, and #4699.
+
 
 Version 3.14.0 (June 1, 2021)
 ----------------------------

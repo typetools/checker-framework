@@ -72,7 +72,7 @@ task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verificati
             }
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
-            main = 'livevar.LiveVariable'
+            mainClass = 'livevar.LiveVariable'
         }
         exec {
             workingDir = 'tests/live-variable'
@@ -96,7 +96,7 @@ task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification'
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
 
-            main = 'livevar.LiveVariable'
+            mainClass = 'livevar.LiveVariable'
         }
     }
 }
