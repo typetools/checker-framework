@@ -79,6 +79,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
   public LockVisitor(BaseTypeChecker checker) {
     super(checker);
+    inferPurity = false;
   }
 
   @Override

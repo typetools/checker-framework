@@ -243,6 +243,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * command line.
    */
   private final boolean checkPurity;
+  /**
+   * True if purity annotations should be inferred. This ought to be false if both the Lock Checker
+   * (or some other checker that overrides {@link CFAbstractStore#isSideEffectFree} in a
+   * non-standard way) and some other checker is being run. Currently, it is false if the Lock
+   * Checker is being run.
+   */
+  protected boolean inferPurity = false;
 
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
@@ -1015,16 +1022,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       if (!additionalKinds.isEmpty()) {
         if (infer) {
-          WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-          ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
-          if (additionalKinds.size() == 2) {
-            wpi.addMethodDeclarationAnnotation(methodElt, PURE);
-          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
-          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-            wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+          if (inferPurity) {
+            WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+            ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
+            if (additionalKinds.size() == 2) {
+              wpi.addMethodDeclarationAnnotation(methodElt, PURE);
+            } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+              wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
+            } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+              wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
+            } else {
+              throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+            }
           }
         } else {
           if (additionalKinds.size() == 2) {
