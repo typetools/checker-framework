@@ -2,7 +2,6 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
