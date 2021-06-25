@@ -244,10 +244,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private final boolean checkPurity;
   /**
-   * True if purity annotations should be inferred. This ought to be false if both the Lock Checker
+   * True if purity annotations should be inferred. Should be set to false if both the Lock Checker
    * (or some other checker that overrides {@link CFAbstractStore#isSideEffectFree} in a
-   * non-standard way) and some other checker is being run. Currently, it is false if the Lock
-   * Checker is being run.
+   * non-standard way) and some other checker is being run.
    */
   protected boolean inferPurity = true;
 
