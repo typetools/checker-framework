@@ -25,17 +25,24 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.util.Options;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +51,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -724,6 +732,35 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public BaseTypeChecker getChecker() {
     return checker;
+  }
+
+  /**
+   * Returns the names of the annotation processors that are being run.
+   *
+   * @return the names of the annotation processors that are being run
+   */
+  @SuppressWarnings("JdkObsolete") // ClassLoader.getResources returns an Enumeration
+  public String[] getCheckerNames() {
+    com.sun.tools.javac.util.Context context =
+        ((JavacProcessingEnvironment) processingEnv).getContext();
+    String processorArg = Options.instance(context).get("-processor");
+    if (processorArg != null) {
+      return processorArg.split(",");
+    }
+    try {
+      String filename = "META-INF/services/javax.annotation.processing.Processor";
+      List<String> lines = new ArrayList<>();
+      Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
+      while (urls.hasMoreElements()) {
+        URL url = urls.nextElement();
+        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+        lines.addAll(in.lines().collect(Collectors.toList()));
+      }
+      String[] result = lines.toArray(new String[0]);
+      return result;
+    } catch (IOException e) {
+      throw new BugInCF(e);
+    }
   }
 
   /**
