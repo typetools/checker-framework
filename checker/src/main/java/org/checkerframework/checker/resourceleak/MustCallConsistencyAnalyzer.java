@@ -14,6 +14,7 @@ import com.sun.tools.javac.code.Type;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -41,6 +42,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
@@ -74,13 +76,23 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
+// FYI Some of my comments start with TODO: and some are bracketed in [[]].
+
+// Throughout this file, in Javadoc comments, use {@code } rather than ``.
+
+// You call things with type ImmutableSet<LocalVarWithTree> both obligation(s)
+// and resource aliases.  It seems to me they are resource aliases that all have the same
+// obligation(s?) is that right?
+// I think it might make the code clearer if you created a class for ImmutableSet<LocalVarWithTree>.
+
 /**
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types,
- * thereby detecting resource leaks. For any expression <em>e</em>, the analyzer ensures that when
+ * thereby detecting resource leaks. For any expression <em>e</em> the analyzer ensures that when
  * <em>e</em> goes out of scope, there exists a resource alias <em>r</em> of <em>e</em> (which might
- * be <em>e</em> itself) such that MustCall(r) is contained in CalledMethods(r). For any <em>e</em>
- * for which this property does not hold, the analyzer reports a {@code
- * "required.method.not.called"} error, indicating a possible resource leak.
+ * be <em>e</em> itself) such that MustCall(r) [[I think "r" here is wrong. It should be a set of
+ * methods.]] is contained in CalledMethods(r). For any <em>e</em> for which this property does not
+ * hold, the analyzer reports a {@code "required.method.not.called"} error, indicating a possible
+ * resource leak.
  *
  * <p>Mechanically, the analysis tracks dataflow facts about the obligations of sets of
  * resource-aliases that refer to the same resource, and checks their must-call and called-methods
@@ -411,7 +423,8 @@ class MustCallConsistencyAnalyzer {
    *     obligation is either modified (by removing it from the obligation set and adding a new one)
    *     to include a new resource alias (the result of the invocation being tracked) or a new
    *     resource alias set (i.e. obligation) is created and added.
-   * @param node the node whose result is to be tracked
+   * @param node the node whose result is to be tracked; must be {@link MethodInvocationNode} or
+   *     {@link ObjectCreationNode}
    */
   private void trackInvocationResult(Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
     Tree tree = node.getTree();
@@ -459,15 +472,20 @@ class MustCallConsistencyAnalyzer {
     }
   }
 
+  // TODO: This Javadoc needs to be rewritten.
+  // Don't use `we`.
   /**
-   * Checks for cases where we do not need to track the result of a method call (that is, cases
-   * where the obligations are already satisfied in some other way or where there cannot possibly be
-   * obligations because of the structure of the code). Specifically, an invocation result does not
-   * need to be tracked if the method invocation is a call to a constructor `this()` or `super()`,
-   * if the method's return type is annotated with MustCallAlias and the argument in the
-   * corresponding position is an owning field, or if the method's return type is non-owning, which
-   * can either be because the method has no return type or because it is annotated with {@link
-   * NotOwning}.
+   * Checks for cases where we do not [[not? this method true when the result needs to be tracked.]]
+   * need to track the result of a method call (that is, cases where the obligations are already
+   * satisfied in some other way or where there cannot possibly be obligations because of the
+   * structure of the code).
+   *
+   * <p>Specifically, an invocation result does not need to be tracked if the method invocation is a
+   * call to a constructor `this()` or `super()`, if the method's return type [[Do you mean the
+   * result type of the constructor?]] is annotated with MustCallAlias and the argument [[I think
+   * you mean parameter here??]] in the corresponding position is an owning field, or if the
+   * method's return type [[again constructor result?]] is non-owning, which can either be because
+   * the method has no return type or because it is annotated with {@link NotOwning}.
    *
    * <p>This method can also side-effect obligations, if node is a super or this constructor call
    * with MustCallAlias annotations, by removing that obligation.
@@ -558,6 +576,7 @@ class MustCallConsistencyAnalyzer {
       Set<ImmutableSet<LocalVarWithTree>> obligations, Node node) {
 
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
+      // TODO: What's ECJ's?
       // Never transfer ownership to parameters, matching ECJ's default.
       return;
     }
@@ -995,7 +1014,8 @@ class MustCallConsistencyAnalyzer {
   /**
    * Finds the argument passed in the {@code @MustCallAlias} position for a call.
    *
-   * @param callNode callNode representing the call
+   * @param callNode callNode representing the call; must be {@link MethodInvocationNode} or {@link
+   *     ObjectCreationNode}
    * @return if {@code callNode} invokes a method with a {@code @MustCallAlias} annotation on some
    *     formal parameter (or the receiver), returns the result of calling {@link
    *     #removeCastsAndGetTmpVarIfPresent(Node)} on the argument passed in that position.
@@ -1341,21 +1361,20 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Finds {@link Owning} formal parameters for the method corresponding to a CFG.
+   * Finds {@link Owning} formal parameters for the method corresponding to a CFG. // TODO: What if
+   * the CFG isn't for a method? What does this method do?
    *
    * @param cfg the CFG
    * @return the owning formal parameters of the method that corresponds to the given cfg
    */
   private Set<ImmutableSet<LocalVarWithTree>> computeOwningParameters(ControlFlowGraph cfg) {
-    Set<ImmutableSet<LocalVarWithTree>> result = new LinkedHashSet<>();
-    UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-    if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
-      // TODO what about lambdas?
-      MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
+    // TODO what about lambdas?
+    if (cfg.getUnderlyingAST().getKind() == Kind.METHOD) {
+      MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
+      Set<ImmutableSet<LocalVarWithTree>> result = new LinkedHashSet<>(1);
       for (VariableTree param : method.getParameters()) {
         Element paramElement = TreeUtils.elementFromDeclaration(param);
-        boolean isMustCallAlias = typeFactory.hasMustCallAlias(paramElement);
-        if (isMustCallAlias
+        if (typeFactory.hasMustCallAlias(paramElement)
             || (typeFactory.hasDeclaredMustCall(param)
                 && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
                 && paramElement.getAnnotation(Owning.class) != null)) {
@@ -1364,8 +1383,9 @@ class MustCallConsistencyAnalyzer {
           incrementNumMustCall(paramElement);
         }
       }
+      return result;
     }
-    return result;
+    return Collections.emptySet();
   }
 
   /**
@@ -1509,6 +1529,7 @@ class MustCallConsistencyAnalyzer {
    *
    * @param type the type of the object that has a must call obligation
    */
+  // TODO: Should this be removed?  It doesn't seem like some thing a user needs.
   private void incrementMustCallImpl(TypeMirror type) {
     // only count uses of JDK classes, since that's what we report on in the paper
     if (!isJdkClass(TypesUtils.getTypeElement(type).getQualifiedName().toString())) {
@@ -1685,8 +1706,12 @@ class MustCallConsistencyAnalyzer {
    *
    * <p>This class is used to represent a single resource alias in a resource alias set.
    */
+  // TODO: This class needs a better name.  It's current name doesn't give an clue about it's
+  // purpose.
+  // Maybe TmpVarFakeAssignment?
   /* package-private */ static class LocalVarWithTree {
 
+    // TODO: isn't this a tmp variable? If so the Javadoc should say so.
     /** The variable. */
     public final LocalVariable localVar;
 
