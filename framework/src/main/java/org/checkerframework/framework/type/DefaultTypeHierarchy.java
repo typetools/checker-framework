@@ -309,35 +309,42 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       return true;
     }
-    if (outside.getKind() == TypeKind.WILDCARD
-        // TODO: the below should be removed after #979 is fixed.
-        || (TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
-            && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
 
+    if (outside.getKind() == TypeKind.WILDCARD) {
       Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
       if (previousResult != null) {
         return previousResult;
       }
+      AnnotatedWildcardType outsideWildcard = (AnnotatedWildcardType) outside;
+
       // Add a placeholder in case of recursion, to prevent infinite regress.
       areEqualVisitHistory.put(inside, outside, currentTop, true);
-      boolean result;
-      if (outside.getKind() == TypeKind.WILDCARD) {
-        AnnotatedWildcardType outsideWildcard = (AnnotatedWildcardType) outside;
-        result =
-            isContainedByBoundType(
-                inside,
-                outsideWildcard.getSuperBound(),
-                outsideWildcard.getExtendsBound(),
-                canBeCovariant);
-      } else {
-        AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
-        result =
-            isContainedByBoundType(
-                inside,
-                outsideTypeVar.getLowerBound(),
-                outsideTypeVar.getUpperBound(),
-                canBeCovariant);
+      boolean result =
+          isContainedByBoundType(
+              inside,
+              outsideWildcard.getSuperBound(),
+              outsideWildcard.getExtendsBound(),
+              canBeCovariant);
+      areEqualVisitHistory.put(inside, outside, currentTop, result);
+      return result;
+    } else if ((TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
+        && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
+      // TODO: This branch should be removed after #979 is fixed.
+      // If both outside and inside are captured types, they should be equal.
+      Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
+      if (previousResult != null) {
+        return previousResult;
       }
+      AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
+
+      // Add a placeholder in case of recursion, to prevent infinite regress.
+      areEqualVisitHistory.put(inside, outside, currentTop, true);
+      boolean result =
+          isContainedByBoundType(
+              inside,
+              outsideTypeVar.getLowerBound(),
+              outsideTypeVar.getUpperBound(),
+              canBeCovariant);
 
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
