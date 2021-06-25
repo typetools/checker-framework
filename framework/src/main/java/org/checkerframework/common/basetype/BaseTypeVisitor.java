@@ -249,7 +249,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * non-standard way) and some other checker is being run. Currently, it is false if the Lock
    * Checker is being run.
    */
-  protected boolean inferPurity = false;
+  protected boolean inferPurity = true;
 
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
