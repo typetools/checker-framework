@@ -28,7 +28,7 @@ import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.LocalVarWithTree;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.ResourceAlias;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -117,7 +117,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * Use the must-call store to get the must-call value of the resource represented by the given
    * local variables.
    *
-   * @param localVarWithTreeSet a set of local variables with their assignment trees, all of which
+   * @param resourceAliasSet a set of local variables with their assignment trees, all of which
    *     represent the same resource
    * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is null,
    *     then the default MustCall type of each variable's class will be used.
@@ -125,7 +125,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *     unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
    */
   public @Nullable List<String> getMustCallValue(
-      ImmutableSet<LocalVarWithTree> localVarWithTreeSet, @Nullable CFStore mcStore) {
+      Set<ResourceAlias> resourceAliasSet, @Nullable CFStore mcStore) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
 
@@ -133,9 +133,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     // called on just one of the locals then they all need to be treated as if
     // they need to call the relevant methods.
     AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
-    for (LocalVarWithTree lvt : localVarWithTreeSet) {
+    for (ResourceAlias lvt : resourceAliasSet) {
       AnnotationMirror mcAnno = null;
-      LocalVariable local = lvt.localVar;
+      LocalVariable local = lvt.reference;
       CFValue value = mcStore == null ? null : mcStore.getValue(local);
       if (value != null) {
         mcAnno = getAnnotationByClass(value.getAnnotations(), MustCall.class);
@@ -260,7 +260,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /**
    * Returns true if the type of the tree includes a must-call annotation. Note that this method may
    * not consider dataflow, and is only safe to use when you need the declared, rather than
-   * inferred, type of the tree. Use {@link #getMustCallValue(ImmutableSet, CFStore)} (and check for
+   * inferred, type of the tree. Use {@link #getMustCallValue(Set, CFStore)} (and check for
    * emptiness) if you are trying to determine whether a local variable has must-call obligations.
    *
    * @param tree a tree
