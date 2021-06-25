@@ -2929,17 +2929,16 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     ReturnNode result = null;
     if (ret != null) {
       Node node = scan(ret, p);
-      Tree enclosing =
-          TreePathUtil.enclosingOfKind(
+      TreePath enclosingPath =
+          TreePathUtil.pathTillOfKind(
               getCurrentPath(), new HashSet<>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
+      Tree enclosing = enclosingPath.getLeaf();
       if (enclosing.getKind() == Kind.LAMBDA_EXPRESSION) {
         LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
-        TreePath lambdaTreePath =
-            TreePath.getPath(getCurrentPath().getCompilationUnit(), lambdaTree);
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         Element overriddenElement =
             com.sun.tools.javac.code.Types.instance(ctx)
-                .findDescriptorSymbol(((Type) trees.getTypeMirror(lambdaTreePath)).tsym);
+                .findDescriptorSymbol(((Type) trees.getTypeMirror(enclosingPath)).tsym);
 
         result =
             new ReturnNode(
