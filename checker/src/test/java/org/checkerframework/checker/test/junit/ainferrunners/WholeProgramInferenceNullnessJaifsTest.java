@@ -10,9 +10,9 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * Runs whole-program inference and inserts annotations into source code.
  *
- * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-nullness/ are not relevant.
- * The meaning of this test class is to test if the generated .jaif files are similar to the
- * expected ones. The errors on .java files must be ignored.
+ * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-nullness/ are not
+ * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
+ * the expected ones. The errors on .java files must be ignored.
  */
 @Category(WholeProgramInferenceNullnessJaifsTest.class)
 public class WholeProgramInferenceNullnessJaifsTest extends CheckerFrameworkPerDirectoryTest {
