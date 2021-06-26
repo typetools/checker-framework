@@ -6,7 +6,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
@@ -184,7 +183,7 @@ public final class TreePathUtil {
    *     exist
    */
   public static @Nullable Tree enclosingMethodOrLambda(final TreePath path) {
-    return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
+    return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
   }
 
   /**
@@ -217,7 +216,7 @@ public final class TreePathUtil {
     TreePath parentPath = path.getParentPath();
     Tree enclosing = parentPath.getLeaf();
     Tree enclosingChild = path.getLeaf();
-    while (enclosing.getKind() == Kind.PARENTHESIZED) {
+    while (enclosing.getKind() == Tree.Kind.PARENTHESIZED) {
       parentPath = parentPath.getParentPath();
       enclosingChild = enclosing;
       enclosing = parentPath.getLeaf();

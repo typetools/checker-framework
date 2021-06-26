@@ -4,7 +4,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -65,7 +65,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     if (TreeUtils.isMethodInvocation(node, patternCompile, env)) {
       ExpressionTree flagParam = node.getArguments().get(1);
-      if (flagParam.getKind() == Kind.MEMBER_SELECT) {
+      if (flagParam.getKind() == Tree.Kind.MEMBER_SELECT) {
         MemberSelectTree memSelect = (MemberSelectTree) flagParam;
         if (TreeUtils.isSpecificFieldAccess(memSelect, patternLiteral)) {
           // This is a call to Pattern.compile with the Pattern.LITERAL flag so the first parameter
@@ -86,7 +86,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
        * MatchResult.group} to ensure that a valid group number is passed.
        */
       ExpressionTree group = node.getArguments().get(0);
-      if (group.getKind() == Kind.INT_LITERAL) {
+      if (group.getKind() == Tree.Kind.INT_LITERAL) {
         LiteralTree literal = (LiteralTree) group;
         int paramGroups = (Integer) literal.getValue();
         ExpressionTree receiver = TreeUtils.getReceiverTree(node);

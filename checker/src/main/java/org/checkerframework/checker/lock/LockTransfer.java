@@ -110,7 +110,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
     // it or any of its non-static fields.
 
     // Handle synchronized methods and constructors.
-    if (astKind == Kind.METHOD) {
+    if (astKind == UnderlyingAST.Kind.METHOD) {
       CFGMethod method = (CFGMethod) underlyingAST;
       MethodTree methodTree = method.getMethod();
 

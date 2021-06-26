@@ -9,7 +9,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
@@ -193,7 +192,7 @@ public class OptionalVisitor
       falseExpr = tmp;
     }
 
-    if (trueExpr.getKind() != Kind.METHOD_INVOCATION) {
+    if (trueExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return;
     }
     ExpressionTree trueReceiver = TreeUtils.getReceiverTree(trueExpr);
@@ -273,11 +272,11 @@ public class OptionalVisitor
       return;
     }
 
-    if (thenStmt.getKind() != Kind.EXPRESSION_STATEMENT) {
+    if (thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
       return;
     }
     ExpressionTree thenExpr = ((ExpressionStatementTree) thenStmt).getExpression();
-    if (thenExpr.getKind() != Kind.METHOD_INVOCATION) {
+    if (thenExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return;
     }
     MethodInvocationTree invok = (MethodInvocationTree) thenExpr;
@@ -323,7 +322,7 @@ public class OptionalVisitor
       return;
     }
     ExpressionTree receiver = TreeUtils.getReceiverTree(node);
-    if (!(receiver.getKind() == Kind.METHOD_INVOCATION
+    if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
         && isOptionalCreation((MethodInvocationTree) receiver))) {
       return;
     }

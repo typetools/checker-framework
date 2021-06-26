@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -16,7 +16,7 @@ public class NumericalPlusNode extends UnaryOperationNode {
 
   public NumericalPlusNode(UnaryTree tree, Node operand) {
     super(tree, operand);
-    assert tree.getKind() == Kind.UNARY_PLUS;
+    assert tree.getKind() == Tree.Kind.UNARY_PLUS;
   }
 
   @Override
