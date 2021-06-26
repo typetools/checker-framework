@@ -1,4 +1,4 @@
-package org.checkerframework.checker.test.junit.wpirunners;
+package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
@@ -19,7 +19,7 @@ public class WholeProgramInferenceTestCheckerJaifsValidationTest
     super(
         testFiles,
         WholeProgramInferenceTestChecker.class,
-        "wpi-testchecker/non-annotated",
+        "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
         "-Awarns");
   }
@@ -27,8 +27,8 @@ public class WholeProgramInferenceTestCheckerJaifsValidationTest
   @Override
   public void run() {
     // Only run if annotated files have been created.
-    // See wholeProgramInferenceTests task.
-    if (!new File("tests/wpi-testchecker/annotated/").exists()) {
+    // See ainferTests task.
+    if (!new File("tests/ainfer-testchecker/annotated/").exists()) {
       throw new RuntimeException(
           WholeProgramInferenceTestCheckerJaifsTest.class + " must be run before this test.");
     }
@@ -37,6 +37,6 @@ public class WholeProgramInferenceTestCheckerJaifsValidationTest
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"wpi-testchecker/annotated/"};
+    return new String[] {"ainfer-testchecker/annotated/"};
   }
 }

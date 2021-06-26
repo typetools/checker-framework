@@ -1,0 +1,31 @@
+All tests for the -Ainfer command-line argument must be added to the
+"non-annotated" folder. These tests must have expected error comments
+(// :: error...) in places where the type-checker issues an error.
+These are locations that an annotation is needed for it to
+type-check. Also, these tests must ONLY have expected error comments for those
+cases -- no other expected errors comments should be added.
+
+The task ainferTests tests the -Ainfer command-line argument in three
+steps:
+
+1. The TestChecker will type-check all files in the "non-annotated" folder
+using the -Ainfer command-liner argument, which write the inferred types of
+some elements into annotation files. The inferred types are written into
+annotation files, but are not considered during this type-check -- for that
+reason the expected error comments are necessary.
+
+2. All tests in "non-annotated" are copied to a temporary directory, named
+"annotated". All expected error comments are removed from the files in
+"annotated", and the insert-annotations-to-source tool will insert the
+annotations that were inferred in the previous step into the files of the
+temporary directory.
+
+3. The TestChecker will type-check all files in the temporary "annotated"
+folder. The expected error comments were removed, but the inferred types
+that were inserted should ensure that type-checking completes without
+errors.
+
+If an error should persist even with the annotations produced by -Ainfer,
+add the test to the "non-annotated/ExpectedErrors.java" file. This is the
+only file where the expected error comments are not removed when copied to
+"annotated/ExpectedErrors.java".
