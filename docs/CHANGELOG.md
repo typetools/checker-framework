@@ -8,6 +8,9 @@ neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is present.
 
 **Implementation details:**
 
+Method renamings (the old methods remain but are deprecated):
+ * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
+
 **Closed issues:**
 
 Version 3.15.0 (June 18, 2021)

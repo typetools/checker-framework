@@ -3775,10 +3775,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // Add annotations from annotation files.
-    results.addAll(stubTypes.getDeclAnnotation(elt));
-    results.addAll(ajavaTypes.getDeclAnnotation(elt));
+    results.addAll(stubTypes.getDeclAnnotations(elt));
+    results.addAll(ajavaTypes.getDeclAnnotations(elt));
     if (currentFileAjavaTypes != null) {
-      results.addAll(currentFileAjavaTypes.getDeclAnnotation(elt));
+      results.addAll(currentFileAjavaTypes.getDeclAnnotations(elt));
     }
 
     if (elt.getKind() == ElementKind.METHOD) {

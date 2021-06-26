@@ -362,8 +362,24 @@ public class AnnotationFileElementTypes {
    * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written in
    *     the annotation file and in the element. {@code null} is returned if {@code element} does
    *     not appear in an annotation file.
+   * @deprecated use {@link #getDeclAnnotations}
    */
+  @Deprecated // 2021-06-26
   public Set<AnnotationMirror> getDeclAnnotation(Element elt) {
+    return getDeclAnnotations(elt);
+  }
+
+  /**
+   * Returns the set of declaration annotations for {@code e} containing only annotations explicitly
+   * written in an annotation file or the empty set if {@code e} does not appear in an annotation
+   * file.
+   *
+   * @param elt element for which annotations are returned
+   * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written in
+   *     the annotation file and in the element. {@code null} is returned if {@code element} does
+   *     not appear in an annotation file.
+   */
+  public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
     if (parsing) {
       return Collections.emptySet();
     }
