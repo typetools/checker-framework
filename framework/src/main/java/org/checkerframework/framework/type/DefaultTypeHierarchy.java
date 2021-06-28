@@ -529,6 +529,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (subtypeTypeArgs.size() != supertypeTypeArgs.size()) {
       return false;
     }
+    // This method, `visitTypeArgs`, is called even if `subtype` doesn't have type arguments.
     if (subtypeTypeArgs.isEmpty()) {
       return true;
     }
