@@ -44,9 +44,9 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
-import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -62,6 +62,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -76,7 +77,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
-// FYI Some of my comments start with TODO: and some are bracketed in [[]].
+// There are still references to ImmutableSet<LocalVarWithTree> and LocalVarWithTree in Javadoc
+// comments.
 
 /**
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types,
@@ -670,14 +672,14 @@ class MustCallConsistencyAnalyzer {
    * remove obligations, assigning to a new local variable might modify an obligation (by increasing
    * the size of its resource alias set), etc.
    *
-   * @param node the assignment
+   * @param assignmentNode the assignment
    * @param obligations the set of obligations to update
    */
-  private void handleAssignment(AssignmentNode node, Set<Obligation> obligations) {
-    Node lhs = node.getTarget();
+  private void handleAssignment(AssignmentNode assignmentNode, Set<Obligation> obligations) {
+    Node lhs = assignmentNode.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // Use the temporary variable for the rhs if it exists.
-    Node rhs = removeCasts(node.getExpression());
+    Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
     rhs = getTempVarOrNode(rhs);
 
     // Ownership transfer to @Owning field.
@@ -689,7 +691,7 @@ class MustCallConsistencyAnalyzer {
       if (isOwningField
           && typeFactory.canCreateObligations()
           && !ElementUtils.isFinal(lhsElement)) {
-        checkReassignmentToField(node, obligations);
+        checkReassignmentToField(assignmentNode, obligations);
       }
       // Remove obligations from local variables, now that the owning field is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
@@ -700,7 +702,7 @@ class MustCallConsistencyAnalyzer {
       }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
-      doGenKillForPseudoAssignment(node, obligations, lhsVar, rhs);
+      doGenKillForPseudoAssignment(assignmentNode, obligations, lhsVar, rhs);
     }
   }
 
@@ -719,20 +721,6 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Remove any {@link TypeCastNode}s wrapping a node, returning the operand nested within the type
-   * casts.
-   *
-   * @param node a node
-   * @return node, but with any surrounding typecasts removed
-   */
-  private Node removeCasts(Node node) {
-    while (node instanceof TypeCastNode) {
-      node = ((TypeCastNode) node).getOperand();
-    }
-    return node;
-  }
-
-  /**
    * Update a set of tracked obligations to account for a (pseudo-)assignment to some variable, as
    * in a gen-kill dataflow analysis problem. Pseudo-assignments may include operations that
    * "assign" to a temporary variable, exposing the possible value flow into the variable. E.g., for
@@ -747,44 +735,49 @@ class MustCallConsistencyAnalyzer {
    *     temporary variable (via a call to {@link
    *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode(Node)})
    */
+  // TODO: This method is hard to follow.  What exactly do you mean by "kill" and "gen" in this
+  // context? I think "kill" means to remove from to obligation and "gen" means to add to
+  // obligation.  So a better name for this method might be updateObligationsForPseudoAssignment.
+  // TODO: This method also checks the must call if all references go out of scope. The Javadoc
+  // should mention this.
   private void doGenKillForPseudoAssignment(
       Node node, Set<Obligation> obligations, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
     Map<Obligation, Obligation> replacements = new LinkedHashMap<>();
-    // construct lhsVarWithTreeToGen once outside the loop for efficiency
-    ResourceAlias lhsVarWithTreeToGen =
-        new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
+    // construct aliasForAssignment once outside the loop for efficiency
+    ResourceAlias aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
     for (Obligation obligation : obligations) {
-      Set<ResourceAlias> kill = new LinkedHashSet<>();
+      boolean obligationModified = false;
+      Set<ResourceAlias> newObligation = new LinkedHashSet<>(obligation.resourceAliases);
+
       // always kill the lhs var if present
-      addResourceAliasToSetIfPresentInObligation(obligation, lhsVar.getElement(), kill);
-      ResourceAlias gen = null;
+      ResourceAlias aliasForLhs = obligation.getResourceAlias(lhsVar);
+      if (aliasForLhs != null) {
+        newObligation.remove(aliasForLhs);
+        obligationModified = true;
+      }
       // if rhs is a variable tracked in the obligation's resource alias set, gen the lhs
-      if (rhs instanceof LocalVariableNode) {
+      if (rhs instanceof LocalVariableNode
+          && obligation.hasResourceAlias((LocalVariableNode) rhs)) {
+        obligationModified = true;
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-        for (ResourceAlias alias : obligation.resourceAliases) {
-          if (alias.reference.getElement().equals(rhsVar.getElement())) {
-            gen = lhsVarWithTreeToGen;
-            // Remove temp vars from tracking once they are assigned to another location.
-            if (typeFactory.isTempVar(rhsVar)) {
-              addResourceAliasToSetIfPresentInObligation(obligation, rhsVar.getElement(), kill);
-            }
-            break;
+        newObligation.add(aliasForAssignment);
+        // Remove temp vars from tracking once they are assigned to another location.
+        if (typeFactory.isTempVar(rhsVar)) {
+          ResourceAlias aliasForRhs = obligation.getResourceAlias(rhsVar);
+          if (aliasForRhs != null) {
+            newObligation.remove(aliasForRhs);
           }
         }
       }
-      // Check if there is something to do before creating a new obligation, for efficiency.
-      if (kill.isEmpty() && gen == null) {
+
+      if (obligationModified) {
+        // If the obligation wasn't modified, don't update it.
         continue;
       }
-      Set<ResourceAlias> newObligationResourceAliases =
-          new LinkedHashSet<>(obligation.resourceAliases);
-      newObligationResourceAliases.removeAll(kill);
-      if (gen != null) {
-        newObligationResourceAliases.add(gen);
-      }
-      if (newObligationResourceAliases.size() == 0) {
+
+      if (newObligation.isEmpty()) {
         // Because the last reference to the resource has been killed, check the must-call
         // obligation.
         MustCallAnnotatedTypeFactory mcAtf =
@@ -795,31 +788,14 @@ class MustCallConsistencyAnalyzer {
             mcAtf.getStoreBefore(node),
             "variable overwritten by assignment " + node.getTree());
       }
-      replacements.put(
-          obligation, new Obligation(ImmutableSet.copyOf(newObligationResourceAliases)));
+      replacements.put(obligation, new Obligation(ImmutableSet.copyOf(newObligation)));
     }
+
     // Finally, update obligations according to the replacements.
     for (Map.Entry<Obligation, Obligation> entry : replacements.entrySet()) {
       obligations.remove(entry.getKey());
       if (!entry.getValue().resourceAliases.isEmpty()) {
         obligations.add(entry.getValue());
-      }
-    }
-  }
-
-  /**
-   * Add each {@link ResourceAlias} in {@code obligation} whose variable element is {@code element}
-   * to {@code resourceAliasSetToAddTo}.
-   *
-   * @param obligation the resource-alias set of an obligation
-   * @param element the element to search for
-   * @param resourceAliasSetToAddTo the set to add to
-   */
-  private void addResourceAliasToSetIfPresentInObligation(
-      Obligation obligation, Element element, Set<ResourceAlias> resourceAliasSetToAddTo) {
-    for (ResourceAlias alias : obligation.resourceAliases) {
-      if (alias.reference.getElement().equals(element)) {
-        resourceAliasSetToAddTo.add(alias);
       }
     }
   }
@@ -872,8 +848,8 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotationMirror mcAnno =
-        mcTypeFactory.getAnnotationFromJavaExpression(
-            JavaExpression.fromNode(lhs), node.getTree(), MustCall.class);
+        mcTypeFactory.getAnnotatedType(lhs.getTree()).getAnnotation(MustCall.class);
+
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
             mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1041,7 +1017,7 @@ class MustCallConsistencyAnalyzer {
     // TODO: Create temp vars for TypeCastNodes as well, so there is no need to explicitly remove
     // casts
     // here.
-    node = removeCasts(node);
+    node = NodeUtils.removeCasts(node);
     return getTempVarOrNode(node);
   }
 
@@ -1106,7 +1082,7 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Get all successor blocks for some block, except for those corresponding to ignored exception
-   * types.
+   * types. See {@link #ignoredExceptionTypes}.
    *
    * @param block input block
    * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
@@ -1167,7 +1143,7 @@ class MustCallConsistencyAnalyzer {
       // A detailed reason to give in the case that a relevant variable goes out of scope with an
       // unsatisfied obligation along the current control-flow edge.
       String reasonForSucc =
-          exceptionType == null
+          succ.getType() != BlockType.EXCEPTION_BLOCK
               ?
               // Technically the variable may be going out of scope before the method exit, but that
               // doesn't seem to provide additional helpful information.
@@ -1185,41 +1161,38 @@ class MustCallConsistencyAnalyzer {
             break;
           }
         }
-        if (succ instanceof SpecialBlockImpl /* exit block */ || noInfoInSuccStoreForVars) {
+        if (succ.getType() == BlockType.SPECIAL_BLOCK /* exit block */
+            || noInfoInSuccStoreForVars) {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
           // If succ is an exceptional successor, and obligation represents the temporary
-          // variable for
-          // curBlock's node, do not propagate, as in the exceptional case the "assignment" to
-          // the temporary variable does not succeed.
-          if (exceptionType != null) {
-            Node exceptionalNode = removeCasts(((ExceptionBlock) curBlock).getNode());
+          // variable for curBlock's node, do not propagate, as in the exceptional case the
+          // "assignment" to the temporary variable does not succeed.
+          if (succ.getType() == BlockType.EXCEPTION_BLOCK) {
+            Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) curBlock).getNode());
             LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
             if (tmpVarForExcNode != null
                 && obligation.resourceAliases.size() == 1
-                && Iterables.getOnlyElement(obligation.resourceAliases)
-                    .reference
-                    .getElement()
-                    .equals(tmpVarForExcNode.getElement())) {
+                && obligation.hasResourceAlias(tmpVarForExcNode)) {
               break;
             }
           }
 
           // Always propagate obligation to successor if current block represents code nested
-          // in a cast or
-          // ternary expression.  Without this logic, the analysis may report a false positive in
-          // when the obligation represents a temporary variable for a nested expression, as
-          // the temporary
-          // may not appear in the successor store and hence seems to be going out of scope.  The
-          // temporary will be handled with special logic; casts are unwrapped at various points in
-          // the analysis, and ternary expressions are handled by handleTernarySuccIfNeeded.
+          // in a cast or ternary expression.  Without this logic, the analysis may report a false
+          // positive in when the obligation represents a temporary variable for a nested
+          // expression, as the temporary may not appear in the successor store and hence seems to
+          // be going out of scope.  The temporary will be handled with special logic; casts are
+          // unwrapped at various points in the analysis, and ternary expressions are handled by
+          // handleTernarySuccIfNeeded.
           if (curBlockNodes.size() == 1 && inCastOrTernary(curBlockNodes.get(0))) {
             obligationsForSucc.add(obligation);
             break;
           }
 
           if (curBlockNodes.size() == 0 /* curBlock is special or conditional */) {
+            // TODO: Can you clarify the comment below?
             // Use the store from the block actually being analyzed, rather than succRegularStore,
             // if succRegularStore contains no information about the variables of interest.
             // In the case where none of the aliases in obligation appear in
@@ -1242,7 +1215,8 @@ class MustCallConsistencyAnalyzer {
             // issuing an error about a call to a CreatesMustCallFor method that might throw
             // an exception. Otherwise, use the store after.
             CFStore mcStore;
-            if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
+            if (succ.getType() == BlockType.EXCEPTION_BLOCK
+                && isInvocationOfCreatesMustCallForMethod(last)) {
               mcStore = mcAtf.getStoreBefore(last);
             } else {
               mcStore = mcAtf.getStoreAfter(last);
@@ -1251,8 +1225,8 @@ class MustCallConsistencyAnalyzer {
           }
 
         } else { // In this case, there is info in the successor store about some alias in
-          // obligation.
-          // Handles the possibility that some resource in the obligation may go out of scope.
+          // obligation. Handles the possibility that some resource in the obligation may go out of
+          // scope.
           Set<ResourceAlias> copyOfResourceAliases =
               new LinkedHashSet<>(obligation.resourceAliases);
           copyOfResourceAliases.removeIf(
@@ -1317,7 +1291,7 @@ class MustCallConsistencyAnalyzer {
     }
     List<Node> predNodes = pred.getNodes();
     // Right-hand side of the pseudo-assignment to the ternary expression temporary variable.
-    Node rhs = removeCasts(predNodes.get(predNodes.size() - 1));
+    Node rhs = NodeUtils.removeCasts(predNodes.get(predNodes.size() - 1));
     if (!(rhs instanceof LocalVariableNode)) {
       rhs = typeFactory.getTempVarForNode(rhs);
       if (rhs == null) {
@@ -1384,12 +1358,9 @@ class MustCallConsistencyAnalyzer {
    */
   private static boolean varTrackedInObligations(
       LocalVariableNode var, Set<Obligation> obligations) {
-    Element nodeElement = var.getElement();
     for (Obligation obligation : obligations) {
-      for (ResourceAlias alias : obligation.resourceAliases) {
-        if (alias.reference.getElement().equals(nodeElement)) {
-          return true;
-        }
+      if (obligation.hasResourceAlias(var)) {
+        return true;
       }
     }
     return false;
@@ -1406,12 +1377,9 @@ class MustCallConsistencyAnalyzer {
    */
   private static @Nullable Obligation getObligationForVar(
       Set<Obligation> obligations, LocalVariableNode node) {
-    Element nodeElement = node.getElement();
     for (Obligation obligation : obligations) {
-      for (ResourceAlias alias : obligation.resourceAliases) {
-        if (alias.reference.getElement().equals(nodeElement)) {
-          return obligation;
-        }
+      if (obligation.hasResourceAlias(node)) {
+        return obligation;
       }
     }
     return null;
@@ -1512,7 +1480,6 @@ class MustCallConsistencyAnalyzer {
    *
    * @param type the type of the object that has a must call obligation
    */
-  // TODO: Should this be removed?  It doesn't seem like some thing a user needs.
   private void incrementMustCallImpl(TypeMirror type) {
     // only count uses of JDK classes, since that's what the paper reported
     if (!isJdkClass(TypesUtils.getTypeElement(type).getQualifiedName().toString())) {
@@ -1701,6 +1668,36 @@ class MustCallConsistencyAnalyzer {
       this.resourceAliases = resourceAliases;
     }
 
+    /**
+     * Returns the resource alias corresponding to {@code localVariableNode} if one is present.
+     * Otherwise, returns null.
+     *
+     * @param localVariableNode some local variable
+     * @return the resource alias corresponding to {@code localVariableNode} if one is present;
+     *     otherwise, null
+     */
+    private @Nullable ResourceAlias getResourceAlias(LocalVariableNode localVariableNode) {
+      Element element = localVariableNode.getElement();
+      for (ResourceAlias alias : resourceAliases) {
+        if (alias.reference.getElement().equals(element)) {
+          return alias;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Returns true if the resource alias corresponding to {@code localVariableNode} is present.
+     * Otherwise, returns false.
+     *
+     * @param localVariableNode some local variable node
+     * @return true if the resource alias corresponding to {@code localVariableNode} is present;
+     *     otherwise, false
+     */
+    private boolean hasResourceAlias(LocalVariableNode localVariableNode) {
+      return getResourceAlias(localVariableNode) != null;
+    }
+
     @Override
     public String toString() {
       return "Obligation: resourceAliases: " + Iterables.toString(resourceAliases);
@@ -1727,7 +1724,7 @@ class MustCallConsistencyAnalyzer {
   /**
    * This class represents a single resource alias in a resource alias set.
    *
-   * <p>Interally, a resource alias is represented by a pair of a local or temporary variable (the
+   * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
    * "reference" through which the must-call obligations for the alias set can be satisfied) along
    * with a tree in the corresponding method that "assigns" the variable. Besides a normal
    * assignment, the tree may be a {@link VariableTree} in the case of a formal parameter. The tree
