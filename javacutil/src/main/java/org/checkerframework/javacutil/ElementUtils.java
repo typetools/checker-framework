@@ -61,7 +61,7 @@ public class ElementUtils {
    * @return the innermost type element, or null if no type element encloses {@code elem}
    * @deprecated use {@link #enclosingTypeElement}
    */
-  @Deprecated // use enclosingTypeElement
+  @Deprecated // 2021-01-16
   public static @Nullable TypeElement enclosingClass(final Element elem) {
     return enclosingTypeElement(elem);
   }
@@ -736,7 +736,7 @@ public class ElementUtils {
    * @return the set of kinds that represent classes
    * @deprecated use {@link #typeElementKinds()}
    */
-  @Deprecated // use typeElementKinds
+  @Deprecated // 2020-12-11
   public static Set<ElementKind> classElementKinds() {
     return typeElementKinds();
   }
@@ -757,7 +757,7 @@ public class ElementUtils {
    * @return true, iff the given kind is a class kind
    * @deprecated use {@link #isTypeElement}
    */
-  @Deprecated // use isTypeElement
+  @Deprecated // 2020-12-11
   public static boolean isClassElement(Element element) {
     return isTypeElement(element);
   }
