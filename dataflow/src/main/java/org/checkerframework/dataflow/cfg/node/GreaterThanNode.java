@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -16,7 +16,7 @@ public class GreaterThanNode extends BinaryOperationNode {
 
   public GreaterThanNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Kind.GREATER_THAN;
+    assert tree.getKind() == Tree.Kind.GREATER_THAN;
   }
 
   @Override

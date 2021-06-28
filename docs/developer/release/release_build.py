@@ -273,11 +273,8 @@ def build_checker_framework_release(
         'If any occurrence is not acceptable, then stop the release, update target "update-checker-framework-versions" in file release.xml, and start over.'
     )
 
-    # build the checker framework binaries and documents, run checker framework tests
-    if notest:
-        ant_cmd = "./gradlew releaseBuild"
-    else:
-        ant_cmd = "./gradlew releaseAndTest"
+    # build the checker framework binaries and documents.  Tests are run by release_push.py
+    ant_cmd = "./gradlew releaseBuild"
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
