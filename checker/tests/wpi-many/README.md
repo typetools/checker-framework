@@ -4,7 +4,7 @@ git URL and commit hash, separated by whitespace.
 
 The projects listed in `testin.txt` are derived from plume-lib projects; each is a hard fork.
 These forks have had their (inferrable) annotations removed, and their typical checker
-build infrastructure disabled. The `./gradlew testWpiScripts` task defined in `checker/build.gradle`
+build infrastructure disabled. The `./gradlew wpiManyTests` task defined in `checker/build.gradle`
 runs the `wpi-many.sh` script on these projects, and then checks that they typecheck afterwards.
 
 To add a new project (named `$PROJECT` below) to `testin.txt`, follow these steps:
@@ -19,10 +19,10 @@ In addition, you probably will need to add `org.checkerframework:checker-qual:$L
 `implementation` dependency. Ensure that the build still succeeds (correcting any errors) and then commit.
 6. Run `wpi.sh` on the project yourself and locate any annotations that cannot be inferred by WPI and/or
 any false positives from the relevant typecheckers (see `checker/build.gradle` for the list of
-checkers that the `testWpiScripts` task uses). You must add annotations or warning suppressions to your
+checkers that the `wpiManyTests` task uses). You must add annotations or warning suppressions to your
 project until running `wpi.sh` on the project with those checkers produces no errors in its final iteration.
 When that is the case, commit the result and note the commit hash.
 7. Push the state of your new repo to GitHub.
 8. Add the HTTPS version of the GitHub URL (without the `.git`!) and the commit hash you noted in step 6
 to `testin.txt`.
-9. Run `./gradlew testWpiScripts` to ensure that the tests still pass, and correct any errors.
+9. Run `./gradlew wpiManyTests` to ensure that the tests still pass, and correct any errors.
