@@ -2,7 +2,6 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -91,7 +90,7 @@ public class IndexMethodIdentifier {
    *     this}
    */
   public boolean isLengthOfMethodInvocation(Tree tree) {
-    if (tree.getKind() != Kind.METHOD_INVOCATION) {
+    if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return false;
     }
     return isLengthOfMethodInvocation(TreeUtils.elementFromUse((MethodInvocationTree) tree));

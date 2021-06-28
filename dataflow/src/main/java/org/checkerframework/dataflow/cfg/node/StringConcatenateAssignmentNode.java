@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -22,7 +21,7 @@ public class StringConcatenateAssignmentNode extends Node {
 
   public StringConcatenateAssignmentNode(Tree tree, Node left, Node right) {
     super(TreeUtils.typeOf(tree));
-    assert tree.getKind() == Kind.PLUS_ASSIGNMENT;
+    assert tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT;
     this.tree = tree;
     this.left = left;
     this.right = right;

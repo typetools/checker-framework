@@ -36,7 +36,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -437,7 +436,7 @@ public class ElementUtils {
       Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
       if (null != clss.classfile) {
         // The class file could be a .java file
-        return clss.classfile.getKind() == Kind.CLASS;
+        return clss.classfile.getKind() == JavaFileObject.Kind.CLASS;
       } else {
         return elt.asType().getKind().isPrimitive();
       }
