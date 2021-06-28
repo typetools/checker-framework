@@ -1,6 +1,5 @@
 package org.checkerframework.framework.ajava;
 
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import java.io.File;
@@ -46,8 +45,7 @@ public class AnnotationFileStore {
 
     if (location.isFile() && location.getName().endsWith(".ajava")) {
       try {
-        CompilationUnit root =
-            JavaParserUtil.parseCompilationUnit(location, ParserConfiguration.LanguageLevel.JAVA_8);
+        CompilationUnit root = JavaParserUtil.parseCompilationUnit(location);
         for (TypeDeclaration<?> type : root.getTypes()) {
           String name = JavaParserUtil.getFullyQualifiedName(type, root);
 

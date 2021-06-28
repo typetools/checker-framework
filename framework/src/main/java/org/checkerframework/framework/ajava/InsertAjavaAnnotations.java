@@ -1,6 +1,5 @@
 package org.checkerframework.framework.ajava;
 
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Position;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -456,18 +455,13 @@ public class InsertAjavaAnnotations {
    * @param annotationFile input stream for an ajava file for {@code javaFileContents}
    * @param javaFileContents contents of a Java file to insert annotations into
    * @param lineSeparator the line separator {@code javaFileContents} uses
-   * @param languageLevel the language level to use when parsing the Java file contents
    * @return a modified {@code javaFileContents} with annotations from {@code annotationFile}
    *     inserted
    */
   public String insertAnnotations(
-      InputStream annotationFile,
-      String javaFileContents,
-      String lineSeparator,
-      ParserConfiguration.LanguageLevel languageLevel) {
-    CompilationUnit annotationCu =
-        JavaParserUtil.parseCompilationUnit(annotationFile, languageLevel);
-    CompilationUnit javaCu = JavaParserUtil.parseCompilationUnit(javaFileContents, languageLevel);
+      InputStream annotationFile, String javaFileContents, String lineSeparator) {
+    CompilationUnit annotationCu = JavaParserUtil.parseCompilationUnit(annotationFile);
+    CompilationUnit javaCu = JavaParserUtil.parseCompilationUnit(javaFileContents);
     BuildInsertionsVisitor insertionVisitor =
         new BuildInsertionsVisitor(javaFileContents, lineSeparator);
     annotationCu.accept(insertionVisitor, javaCu);
@@ -517,19 +511,14 @@ public class InsertAjavaAnnotations {
    *
    * @param annotationFilePath path to an ajava file
    * @param javaFilePath path to a Java file to insert annotation into
-   * @param languageLevel the language level to use when parsing the target Java file
    */
-  public void insertAnnotations(
-      String annotationFilePath,
-      String javaFilePath,
-      ParserConfiguration.LanguageLevel languageLevel) {
+  public void insertAnnotations(String annotationFilePath, String javaFilePath) {
     try {
       File javaFile = new File(javaFilePath);
       String fileContents = FilesPlume.readFile(javaFile);
       String lineSeparator = FilesPlume.inferLineSeparator(annotationFilePath);
       FileInputStream annotationInputStream = new FileInputStream(annotationFilePath);
-      String result =
-          insertAnnotations(annotationInputStream, fileContents, lineSeparator, languageLevel);
+      String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
       annotationInputStream.close();
       FilesPlume.writeFile(javaFile, result);
     } catch (IOException e) {
@@ -565,8 +554,6 @@ public class InsertAjavaAnnotations {
 
     String ajavaDir = args[0];
     String javaSourceDir = args[1];
-    // In future this may need to be configurable or use the current Java version:
-    ParserConfiguration.LanguageLevel languageLevel = ParserConfiguration.LanguageLevel.JAVA_8;
     AnnotationFileStore annotationFiles = new AnnotationFileStore();
     annotationFiles.addFileOrDirectory(new File(ajavaDir));
     InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
@@ -581,7 +568,7 @@ public class InsertAjavaAnnotations {
 
             CompilationUnit root = null;
             try {
-              root = JavaParserUtil.parseCompilationUnit(path.toFile(), languageLevel);
+              root = JavaParserUtil.parseCompilationUnit(path.toFile());
             } catch (IOException e) {
               System.err.println("Failed to read file: " + path);
               System.exit(1);
@@ -594,7 +581,7 @@ public class InsertAjavaAnnotations {
             }
 
             for (String annotationFile : annotationFilesForRoot) {
-              inserter.insertAnnotations(annotationFile, path.toString(), languageLevel);
+              inserter.insertAnnotations(annotationFile, path.toString());
             }
 
             return FileVisitResult.CONTINUE;
