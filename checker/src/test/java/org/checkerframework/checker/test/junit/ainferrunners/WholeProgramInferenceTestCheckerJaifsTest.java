@@ -1,4 +1,4 @@
-package org.checkerframework.checker.test.junit.wpirunners;
+package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
 /**
  * Runs whole-program inference and inserts annotations into source code.
  *
- * <p>IMPORTANT: The errors captured in the tests located in tests/wpi-testchecker/ are not
+ * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-testchecker/ are not
  * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
@@ -21,7 +21,7 @@ public class WholeProgramInferenceTestCheckerJaifsTest extends CheckerFrameworkP
     super(
         testFiles,
         WholeProgramInferenceTestChecker.class,
-        "wpi-testchecker/non-annotated",
+        "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
         "-Ainfer=jaifs",
         "-Awarns");
@@ -29,6 +29,6 @@ public class WholeProgramInferenceTestCheckerJaifsTest extends CheckerFrameworkP
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"wpi-testchecker/non-annotated"};
+    return new String[] {"ainfer-testchecker/non-annotated"};
   }
 }

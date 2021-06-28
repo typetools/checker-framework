@@ -1,4 +1,4 @@
-package org.checkerframework.checker.test.junit.wpirunners;
+package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
@@ -22,8 +22,8 @@ public class WholeProgramInferenceNullnessJaifsValidationTest
   @Override
   public void run() {
     // Only run if annotated files have been created.
-    // See wholeProgramInferenceTests task.
-    if (!new File("tests/wpi-nullness/annotated/").exists()) {
+    // See ainferTests task.
+    if (!new File("tests/ainfer-nullness/annotated/").exists()) {
       throw new RuntimeException(
           WholeProgramInferenceNullnessJaifsTest.class + " must be run before this test.");
     }
@@ -32,6 +32,6 @@ public class WholeProgramInferenceNullnessJaifsValidationTest
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"wpi-nullness/annotated/"};
+    return new String[] {"ainfer-nullness/annotated/"};
   }
 }

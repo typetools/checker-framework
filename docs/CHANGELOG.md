@@ -1,9 +1,15 @@
-Version 3.15.1 (July 1, 2021)
-----------------------------
+Version 3.16.0 (July 1, 2021)
+-----------------------------
 
 **User-visible changes:**
 
+The `-Ainfer` command-line argument now outputs purity annotations even if
+neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is present.
+
 **Implementation details:**
+
+Method renamings (the old methods remain but are deprecated):
+ * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
 
 **Closed issues:**
 

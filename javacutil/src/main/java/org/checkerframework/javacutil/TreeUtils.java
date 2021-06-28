@@ -23,7 +23,6 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -447,7 +446,7 @@ public final class TreeUtils {
       return false;
     }
     for (Tree member : tree.getClassBody().getMembers()) {
-      if (member.getKind() == Kind.METHOD && isConstructor((MethodTree) member)) {
+      if (member.getKind() == Tree.Kind.METHOD && isConstructor((MethodTree) member)) {
         MethodTree methodTree = (MethodTree) member;
         StatementTree f = methodTree.getBody().getStatements().get(0);
         return TreeUtils.getReceiverTree(((ExpressionStatementTree) f).getExpression()) != null;
@@ -1179,7 +1178,7 @@ public final class TreeUtils {
    * @return true if tree is an access of array length
    */
   public static boolean isArrayLengthAccess(Tree tree) {
-    if (tree.getKind() == Kind.MEMBER_SELECT
+    if (tree.getKind() == Tree.Kind.MEMBER_SELECT
         && isFieldAccess(tree)
         && getFieldName(tree).equals("length")) {
       ExpressionTree expressionTree = ((MemberSelectTree) tree).getExpression();
@@ -1278,9 +1277,9 @@ public final class TreeUtils {
    * @return true if the tree is the declaration or use of a local variable
    */
   public static boolean isLocalVariable(Tree tree) {
-    if (tree.getKind() == Kind.VARIABLE) {
+    if (tree.getKind() == Tree.Kind.VARIABLE) {
       return elementFromDeclaration((VariableTree) tree).getKind() == ElementKind.LOCAL_VARIABLE;
-    } else if (tree.getKind() == Kind.IDENTIFIER) {
+    } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
       ExpressionTree etree = (ExpressionTree) tree;
       assert isUseOfElement(etree) : "@AssumeAssertion(nullness): tree kind";
       return elementFromUse(etree).getKind() == ElementKind.LOCAL_VARIABLE;
@@ -1323,7 +1322,7 @@ public final class TreeUtils {
    * @return true iff {@code tree} is an implicitly typed lambda
    */
   public static boolean isImplicitlyTypedLambda(Tree tree) {
-    return tree.getKind() == Kind.LAMBDA_EXPRESSION
+    return tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
         && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
   }
 

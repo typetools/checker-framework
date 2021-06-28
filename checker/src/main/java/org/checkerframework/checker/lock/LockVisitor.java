@@ -12,7 +12,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -79,6 +78,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
   public LockVisitor(BaseTypeChecker checker) {
     super(checker);
+    for (String checkerName : atypeFactory.getCheckerNames()) {
+      if (!(checkerName.equals("lock")
+          || checkerName.equals("LockChecker")
+          || checkerName.equals("org.checkerframework.checker.lock.LockChecker"))) {
+        // The Lock Checker redefines CFAbstractStore#isSideEffectFree in a way that is incompatible
+        // with (semantically different than) other checkers.
+        inferPurity = false;
+        break;
+      }
+    }
   }
 
   @Override
@@ -328,7 +337,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
-    Kind valueTreeKind = valueTree.getKind();
+    Tree.Kind valueTreeKind = valueTree.getKind();
 
     switch (valueTreeKind) {
       case NEW_CLASS:
@@ -1040,7 +1049,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       Tree parent = getCurrentPath().getParentPath().getLeaf();
       // If the parent is not a member select, or if it is and the field is the expression,
       // then the field is accessed via an implicit this.
-      if ((parent.getKind() != Kind.MEMBER_SELECT
+      if ((parent.getKind() != Tree.Kind.MEMBER_SELECT
               || ((MemberSelectTree) parent).getExpression() == tree)
           && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
         AnnotationMirror guardedBy =
