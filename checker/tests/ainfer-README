@@ -16,14 +16,15 @@ reason the expected error comments are necessary.
 
 2. All tests in "non-annotated" are copied to a temporary directory, named
 "annotated". All expected error comments are removed from the files in
-"annotated", and the insert-annotations-to-source tool will insert the
-annotations that were inferred in the previous step into the files of the
-temporary directory.
+"annotated".  When testing `.jaif` files, the insert-annotations-to-source
+tool inserts the annotations that were inferred in the previous step into
+the files of the temporary directory.
 
 3. The TestChecker will type-check all files in the temporary "annotated"
 folder. The expected error comments were removed, but the inferred types
-that were inserted should ensure that type-checking completes without
-errors.
+(for `.jaif` files, they were inserted; for other annotation file tests,
+they are used as stub files) should ensure that type-checking completes
+without errors.
 
 If an error should persist even with the annotations produced by -Ainfer,
 add the test to the "non-annotated/ExpectedErrors.java" file. This is the
