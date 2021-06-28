@@ -183,7 +183,7 @@ You can also compare run times of the Checker Framework test suite.
 <p>
 Code in this project follows the
 <a href="https://google.github.io/styleguide/javaguide.html">Google Java Style
-  Guide</a> (except 4 spaces are used for indentation),
+  Guide</a>,
 <a href="https://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
 Ernst's coding style guidelines</a>, and <a href="http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248">Oracle's
 Java code conventions</a>.
@@ -208,6 +208,12 @@ version control system, such as by running <code>git annotate <em>filename</em><
 <p>
   Every class, method, and field (even private ones) must have a
   descriptive Javadoc comment.
+</p>
+
+<p>
+Do not <code>import</code> nested classes.  In code, write the outer and
+inner class name (as in <code>Tree.Kind</code>) rather than just the
+simple name <code>Kind</code>.
 </p>
 
 
