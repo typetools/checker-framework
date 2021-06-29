@@ -2,7 +2,7 @@ package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.checker.testchecker.wholeprograminference.WholeProgramInferenceTestChecker;
+import org.checkerframework.checker.testchecker.ainfer.AinferTestChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
@@ -11,14 +11,13 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests whole-program type inference with the aid of .jaif files. This test is the second pass,
  * which ensures that with the annotations inserted, the errors are no longer issued.
  */
-@Category(WholeProgramInferenceTestCheckerJaifsTest.class)
-public class WholeProgramInferenceTestCheckerJaifsValidationTest
-    extends CheckerFrameworkPerDirectoryTest {
+@Category(AinferTestCheckerJaifsTest.class)
+public class AinferTestCheckerJaifsValidationTest extends CheckerFrameworkPerDirectoryTest {
   /** @param testFiles the files containing test code, which will be type-checked */
-  public WholeProgramInferenceTestCheckerJaifsValidationTest(List<File> testFiles) {
+  public AinferTestCheckerJaifsValidationTest(List<File> testFiles) {
     super(
         testFiles,
-        WholeProgramInferenceTestChecker.class,
+        AinferTestChecker.class,
         "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
         "-Awarns");
@@ -30,7 +29,7 @@ public class WholeProgramInferenceTestCheckerJaifsValidationTest
     // See ainferTests task.
     if (!new File("tests/ainfer-testchecker/annotated/").exists()) {
       throw new RuntimeException(
-          WholeProgramInferenceTestCheckerJaifsTest.class + " must be run before this test.");
+          AinferTestCheckerJaifsTest.class + " must be run before this test.");
     }
     super.run();
   }

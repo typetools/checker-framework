@@ -1,4 +1,4 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
 
 abstract class MethodOverrideInSubtype2 extends MethodDefinedInSupertype {
 

@@ -1,7 +1,7 @@
 // Tests whether the stub writer correctly handles named inner classes
 // in anonymous classes.
 
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
 
 public class NamedInnerClassInAnonymous {
   void test() {

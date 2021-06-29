@@ -1,4 +1,4 @@
-package org.checkerframework.checker.testchecker.wholeprograminference.qual;
+package org.checkerframework.checker.testchecker.ainfer.qual;
 
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 

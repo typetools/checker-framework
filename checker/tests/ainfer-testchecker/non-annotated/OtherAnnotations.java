@@ -1,6 +1,6 @@
 // Test that having other, unrelated annotations on fields/methods/etc doesn't foul up inference.
 
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
 import org.checkerframework.common.aliasing.qual.Unique;
 
 public class OtherAnnotations {

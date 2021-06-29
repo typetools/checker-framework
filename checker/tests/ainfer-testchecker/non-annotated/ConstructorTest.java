@@ -1,4 +1,4 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Top;
+import org.checkerframework.checker.testchecker.ainfer.qual.Top;
 
 public class ConstructorTest {
 

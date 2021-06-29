@@ -1,4 +1,4 @@
-package org.checkerframework.checker.testchecker.wholeprograminference;
+package org.checkerframework.checker.testchecker.ainfer;
 
 import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -10,11 +10,11 @@ import org.checkerframework.common.value.ValueChecker;
  * subchecker to ensure that generated files contain annotations both from this checker and from the
  * Value Checker, to make certain that subchecker outputs aren't overwritten.
  */
-public class WholeProgramInferenceTestChecker extends BaseTypeChecker {
+public class AinferTestChecker extends BaseTypeChecker {
 
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
-    return new WholeProgramInferenceTestVisitor(this);
+    return new AinferTestVisitor(this);
   }
 
   @Override

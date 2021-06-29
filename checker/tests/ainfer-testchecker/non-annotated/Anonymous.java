@@ -1,8 +1,8 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Parent;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Top;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.Top;
 
 public class Anonymous {
   public static int field1; // parent
@@ -21,7 +21,7 @@ public class Anonymous {
     expectsParent(field2);
   }
 
-  void expectsBottom(@WholeProgramInferenceBottom int t) {}
+  void expectsBottom(@AinferBottom int t) {}
 
   void expectsSibling1(@Sibling1 int t) {}
 
