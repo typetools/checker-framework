@@ -143,7 +143,7 @@ public class JavaExpressionParseUtil {
       throws JavaExpressionParseException {
 
     // Use the current source version to parse with because a JavaExpression could refer to a
-    // variable named "var", which is a keyword in later versions of Java.
+    // variable named "var", which is a keyword in Java 10 and later.
     LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
     String expressionWithParameterNames =
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
