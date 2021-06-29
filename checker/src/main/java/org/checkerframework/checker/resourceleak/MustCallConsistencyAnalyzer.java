@@ -1143,7 +1143,7 @@ class MustCallConsistencyAnalyzer {
       // A detailed reason to give in the case that a relevant variable goes out of scope with an
       // unsatisfied obligation along the current control-flow edge.
       String reasonForSucc =
-          succ.getType() != BlockType.EXCEPTION_BLOCK
+          curBlock.getType() != BlockType.EXCEPTION_BLOCK
               ?
               // Technically the variable may be going out of scope before the method exit, but that
               // doesn't seem to provide additional helpful information.
@@ -1167,7 +1167,7 @@ class MustCallConsistencyAnalyzer {
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
           // If succ is an exceptional successor, and obligation represents the temporary
-          // variable for curBlock's node, do not propagate, as in the exceptional case the
+          // variable for  curBlock's node, do not propagate, as in the exceptional case the
           // "assignment" to the temporary variable does not succeed.
           if (succ.getType() == BlockType.EXCEPTION_BLOCK) {
             Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) curBlock).getNode());
@@ -1215,7 +1215,7 @@ class MustCallConsistencyAnalyzer {
             // issuing an error about a call to a CreatesMustCallFor method that might throw
             // an exception. Otherwise, use the store after.
             CFStore mcStore;
-            if (succ.getType() == BlockType.EXCEPTION_BLOCK
+            if (curBlock.getType() == BlockType.EXCEPTION_BLOCK
                 && isInvocationOfCreatesMustCallForMethod(last)) {
               mcStore = mcAtf.getStoreBefore(last);
             } else {
