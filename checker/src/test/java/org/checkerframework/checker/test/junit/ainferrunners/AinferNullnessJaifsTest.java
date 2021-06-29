@@ -14,10 +14,10 @@ import org.junit.runners.Parameterized.Parameters;
  * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-@Category(WholeProgramInferenceNullnessJaifsTest.class)
-public class WholeProgramInferenceNullnessJaifsTest extends CheckerFrameworkPerDirectoryTest {
+@Category(AinferNullnessJaifsTest.class)
+public class AinferNullnessJaifsTest extends CheckerFrameworkPerDirectoryTest {
   /** @param testFiles the files containing test code, which will be type-checked */
-  public WholeProgramInferenceNullnessJaifsTest(List<File> testFiles) {
+  public AinferNullnessJaifsTest(List<File> testFiles) {
     super(testFiles, NullnessChecker.class, "nullness", "-Anomsgtext", "-Ainfer=jaifs", "-Awarns");
   }
 

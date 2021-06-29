@@ -1,10 +1,10 @@
 import java.lang.reflect.Field;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Parent;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.ToIgnore;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Top;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.ToIgnore;
+import org.checkerframework.checker.testchecker.ainfer.qual.Top;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 
 /**
@@ -17,7 +17,7 @@ public class ExpectedErrors {
   public @Top int publicDeclaredField;
 
   // The type of both privateDeclaredField and publicDeclaredField are
-  // not refined to @WholeProgramInferenceBottom.
+  // not refined to @AinferBottom.
   void assignFieldsToSibling1() {
     privateDeclaredField = getSibling1();
     publicDeclaredField = getSibling1();
@@ -31,8 +31,8 @@ public class ExpectedErrors {
   }
 
   // Case where the declared type is a subtype of the refined type.
-  private @WholeProgramInferenceBottom int privateDeclaredField2;
-  public @WholeProgramInferenceBottom int publicDeclaredField2;
+  private @AinferBottom int privateDeclaredField2;
+  public @AinferBottom int publicDeclaredField2;
 
   // The refinement cannot happen and an assignemnt type incompatible error occurs.
   void assignFieldsToTop() {
@@ -109,9 +109,9 @@ public class ExpectedErrors {
 
   void expectsSibling2(@Sibling2 int t) {}
 
-  void expectsBottom(@WholeProgramInferenceBottom int t) {}
+  void expectsBottom(@AinferBottom int t) {}
 
-  void expectsBottom(@WholeProgramInferenceBottom String t) {}
+  void expectsBottom(@AinferBottom String t) {}
 
   void expectsTop(@Top int t) {}
 
@@ -125,7 +125,7 @@ public class ExpectedErrors {
     return 0;
   }
 
-  @WholeProgramInferenceBottom int getBottom() {
+  @AinferBottom int getBottom() {
     return 0;
   }
 
@@ -141,7 +141,7 @@ public class ExpectedErrors {
 
   void setBoolean(Object o, boolean b) {
     // :: warning: (assignment)
-    @WholeProgramInferenceBottom Object bot = o;
+    @AinferBottom Object bot = o;
   }
 
   public class SuppressWarningsTest {
@@ -200,7 +200,7 @@ public class ExpectedErrors {
     private String privateField;
     public String publicField;
 
-    // The types of both fields are not refined to @WholeProgramInferenceBottom, as whole-program
+    // The types of both fields are not refined to @AinferBottom, as whole-program
     // inference never performs refinement in the presence of the null literal.
     @SuppressWarnings("value")
     void assignFieldsToBottom() {
@@ -235,7 +235,7 @@ public class ExpectedErrors {
   }
 
   class AssignParam {
-    public void f(@WholeProgramInferenceBottom Object param) {
+    public void f(@AinferBottom Object param) {
       // :: warning: assignment
       param = ((@Top Object) null);
     }

@@ -1,8 +1,8 @@
 // This test makes sure that if a class has two methods with the same name,
 // the parameters are inferred correctly and are not confused.
 
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
 
 public class TwoMethodsSameName {
 

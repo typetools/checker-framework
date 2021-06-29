@@ -1,8 +1,8 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Parent;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Top;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.Top;
 
 class RequiresQualifierTest {
 
@@ -13,7 +13,7 @@ class RequiresQualifierTest {
   @Parent int parent;
   @Sibling1 int sibling1;
   @Sibling2 int sibling2;
-  @WholeProgramInferenceBottom int bottom;
+  @AinferBottom int bottom;
 
   void field1IsParent() {
     // :: warning: (assignment)
