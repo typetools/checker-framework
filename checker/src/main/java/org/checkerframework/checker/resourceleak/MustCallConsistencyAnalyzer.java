@@ -1135,23 +1135,23 @@ class MustCallConsistencyAnalyzer {
     for (Pair<Block, @Nullable TypeMirror> succAndExcType :
         getSuccessorsExceptIgnoredExceptions(curBlock)) {
       Block succ = succAndExcType.first;
+      // If nonnull, curBlock is an ExceptionBlock.
       TypeMirror exceptionType = succAndExcType.second;
       Set<Obligation> curObligations = handleTernarySuccIfNeeded(curBlock, succ, obligations);
       // obligationsForSucc eventually contains the obligations to propagate to succ.  The loop
       // below mutates it.
       Set<Obligation> obligationsForSucc = new LinkedHashSet<>();
-      // A detailed reason to give in the case that a relevant variable goes out of scope with an
-      // unsatisfied obligation along the current control-flow edge.
-      String reasonForSucc =
-          curBlock.getType() != BlockType.EXCEPTION_BLOCK
-              ?
-              // Technically the variable may be going out of scope before the method exit, but that
-              // doesn't seem to provide additional helpful information.
-              "regular method exit"
-              : "possible exceptional exit due to "
-                  + ((ExceptionBlock) curBlock).getNode().getTree()
-                  + " with exception type "
-                  + exceptionType;
+      String outOfScopeReason;
+      if (curBlock.getType() == BlockType.EXCEPTION_BLOCK) {
+        outOfScopeReason =
+            String.format(
+                "possible exceptional exit due to %s with exception type %s",
+                ((ExceptionBlock) curBlock).getNode().getTree(), exceptionType);
+      } else {
+        // Technically the variable may be going out of scope before the method exit, but that
+        // doesn't seem to provide additional helpful information.
+        outOfScopeReason = "regular method exit";
+      }
       CFStore succRegularStore = analysis.getInput(succ).getRegularStore();
       for (Obligation obligation : curObligations) {
         boolean noInfoInSuccStoreForVars = true;
@@ -1191,6 +1191,8 @@ class MustCallConsistencyAnalyzer {
             break;
           }
 
+          CFStore mcStore;
+          CFStore cmStore;
           if (curBlockNodes.size() == 0 /* curBlock is special or conditional */) {
             // TODO: Can you clarify the comment below?
             // Use the store from the block actually being analyzed, rather than succRegularStore,
@@ -1201,29 +1203,26 @@ class MustCallConsistencyAnalyzer {
             // not have any information about it, by construction, and
             // any information in the previous store remains true. If any locals from the resource
             // alias set do appear in succRegularStore, that store is always used.
-            CFStore cmStore =
+            cmStore =
                 noInfoInSuccStoreForVars
                     ? analysis.getInput(curBlock).getRegularStore()
                     : succRegularStore;
-            CFStore mcStore = mcAtf.getStoreForBlock(noInfoInSuccStoreForVars, curBlock, succ);
-            checkMustCall(obligation, cmStore, mcStore, reasonForSucc);
+            mcStore = mcAtf.getStoreForBlock(noInfoInSuccStoreForVars, curBlock, succ);
           } else { // In this case, current block has at least one node.
             // Use the called-methods store immediately after the last node in curBlock.
             Node last = curBlockNodes.get(curBlockNodes.size() - 1);
-            CFStore cmStoreAfter = typeFactory.getStoreAfter(last);
+            cmStore = typeFactory.getStoreAfter(last);
             // If this is an exceptional block, check the MC store beforehand to avoid
             // issuing an error about a call to a CreatesMustCallFor method that might throw
             // an exception. Otherwise, use the store after.
-            CFStore mcStore;
             if (curBlock.getType() == BlockType.EXCEPTION_BLOCK
                 && isInvocationOfCreatesMustCallForMethod(last)) {
               mcStore = mcAtf.getStoreBefore(last);
             } else {
               mcStore = mcAtf.getStoreAfter(last);
             }
-            checkMustCall(obligation, cmStoreAfter, mcStore, reasonForSucc);
           }
-
+          checkMustCall(obligation, cmStore, mcStore, outOfScopeReason);
         } else { // In this case, there is info in the successor store about some alias in
           // obligation. Handles the possibility that some resource in the obligation may go out of
           // scope.
