@@ -268,8 +268,10 @@ Fill in each ellipsis (\ldots) from the original compilation target.
 However, do not copy any \<fork=> setting from the original \code{<javac>}
 task invocation.
 
-If your original compilation target set the classpath or bootclasspath,
-then you will need to adjust it; see Section~\ref{javac-jdk8}.
+If your original compilation target set the bootclasspath, then you cannot
+use the javac wrapper script as the above instructions do.  You should edit
+your Ant buildfile to make invocations similar to those described in
+Section~\ref{javac}, but accommodating your bootclasspath.
 
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
@@ -370,9 +372,12 @@ java_library (
 
 To perform pluggable type-checking from the command line, run the \<javac>
 command that ships with the Checker Framework.  This is called the
-``Checker Framework compiler''.  It is exactly the same as the OpenJDK
+``Checker Framework compiler'' or the ``Checker Framework \<javac> wrapper''.
+It is exactly the same as the OpenJDK
 \<javac> compiler, with one small difference:  it includes the Checker
 Framework jar file on its classpath.
+
+You cannot use the \<javac> wrapper if you wish to set the bootclasspath.
 
 There are three ways to use the Checker Framework compiler from the command
 line.  You can use any
@@ -531,7 +536,9 @@ Different arguments to \<javac> are required for JDK 8
 
 \subsectionAndLabel{JDK 8}{javac-jdk8}
 
-This section shows what arguments to pass to javac to run the Checker
+This section shows what arguments to pass to the OpenJDK or OracleJDK
+\<javac> (\emph{not} the \<javac> wrapper script of
+Section~\ref{javac-wrapper}) to run the Checker
 Framework, if you are using JDK 8.
 
 \begin{Verbatim}
@@ -584,7 +591,10 @@ source code is Java 8 and that Java 8 bytecode is created.
 
 \subsectionAndLabel{JDK 11}{javac-jdk11}
 
-This section shows what arguments to pass to javac to run the Checker Framework using JDK 11.  These
+This section shows what arguments to pass to the OpenJDK or OracleJDK
+\<javac> (\emph{not} the \<javac> wrapper script of
+Section~\ref{javac-wrapper}) to run the Checker
+Framework, if you are using JDK 9 or later.  These
 instructions should work on JDK 9 or later, but we only test with JDK 11.
 
 
@@ -1343,7 +1353,7 @@ lists type inference tools.
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle cp
-% LocalWords:  compilerArgs Xbootclasspath mvn
+% LocalWords:  compilerArgs Xbootclasspath mvn sbt runtime jdk11
 % LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
 % LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
