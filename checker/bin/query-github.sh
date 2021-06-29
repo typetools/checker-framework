@@ -11,8 +11,13 @@
 # $1 is the query file, which should contain the literal string to use
 # as the github search. REQUIRED, no default.
 #
-# $2 is the number of GitHub search pages.  Default 1.  GitHub only returns
+# $2 is the number of GitHub search pages.  Default 1. Each page contains 10 results.  GitHub only returns
 # the first 1000 results, so 100 is the maximum useful number of search pages.
+#
+# This script outputs a list of projects. The underlying GitHub search is for code snippets, and this
+# script eliminates duplicates (i.e. different code snippets from the same project are combined into
+# a single result for the project), so the number of projects the script outputs will usually be less
+# than 10 times the number of pages requested.
 
 # Set to 1 to enable debug output from this script.
 DEBUG=0
