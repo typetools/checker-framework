@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
@@ -286,7 +285,7 @@ public class InitializationVisitor<
     super.processClassTree(node);
 
     // Warn about uninitialized static fields.
-    if (node.getKind() == Kind.CLASS) {
+    if (node.getKind() == Tree.Kind.CLASS) {
       boolean isStatic = true;
       // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
       // the regular exit store of the class here.

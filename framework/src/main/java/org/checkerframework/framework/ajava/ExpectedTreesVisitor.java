@@ -21,7 +21,6 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -77,7 +76,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     visit(tree.getTypeParameters(), p);
     visit(tree.getExtendsClause(), p);
     visit(tree.getImplementsClause(), p);
-    if (tree.getKind() == Kind.ENUM) {
+    if (tree.getKind() == Tree.Kind.ENUM) {
       // Enum constants expand to a VariableTree like
       //    public static final MY_ENUM_CONSTANT = new MyEnum(args ...)
       // The constructor invocation in the initializer has no corresponding JavaParser node,
@@ -86,18 +85,18 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
       // instance of an enum.
       for (Tree member : tree.getMembers()) {
         member.accept(this, p);
-        if (member.getKind() != Kind.VARIABLE) {
+        if (member.getKind() != Tree.Kind.VARIABLE) {
           continue;
         }
 
         VariableTree variable = (VariableTree) member;
         ExpressionTree initializer = variable.getInitializer();
-        if (initializer == null || initializer.getKind() != Kind.NEW_CLASS) {
+        if (initializer == null || initializer.getKind() != Tree.Kind.NEW_CLASS) {
           continue;
         }
 
         NewClassTree constructor = (NewClassTree) initializer;
-        if (constructor.getIdentifier().getKind() != Kind.IDENTIFIER) {
+        if (constructor.getIdentifier().getKind() != Tree.Kind.IDENTIFIER) {
           continue;
         }
 
@@ -127,9 +126,9 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // be added. JavaParser has no expression statement surrounding these, so remove the
     // expression statement itself.
     Void result = super.visitExpressionStatement(tree, p);
-    if (tree.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+    if (tree.getExpression().getKind() == Tree.Kind.METHOD_INVOCATION) {
       MethodInvocationTree invocation = (MethodInvocationTree) tree.getExpression();
-      if (invocation.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+      if (invocation.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER) {
         IdentifierTree identifier = (IdentifierTree) invocation.getMethodSelect();
         if (identifier.getName().contentEquals("this")
             || identifier.getName().contentEquals("super")) {
@@ -187,7 +186,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   public Void visitImport(ImportTree tree, Void p) {
     // Javac stores an import like a.* as a member select, but JavaParser just stores "a", so
     // don't add the member select in that case.
-    if (tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {
+    if (tree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
       MemberSelectTree memberSelect = (MemberSelectTree) tree.getQualifiedIdentifier();
       if (memberSelect.getIdentifier().contentEquals("*")) {
         memberSelect.getExpression().accept(this, p);
@@ -212,13 +211,13 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // component type) if it's the last argument.
     if (!tree.getParameters().isEmpty()) {
       VariableTree last = tree.getParameters().get(tree.getParameters().size() - 1);
-      if (last.getType().getKind() == Kind.ARRAY_TYPE) {
+      if (last.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
         trees.remove(last.getType());
       }
 
-      if (last.getType().getKind() == Kind.ANNOTATED_TYPE) {
+      if (last.getType().getKind() == Tree.Kind.ANNOTATED_TYPE) {
         AnnotatedTypeTree annotatedType = (AnnotatedTypeTree) last.getType();
-        if (annotatedType.getUnderlyingType().getKind() == Kind.ARRAY_TYPE) {
+        if (annotatedType.getUnderlyingType().getKind() == Tree.Kind.ARRAY_TYPE) {
           trees.remove(annotatedType);
           trees.remove(annotatedType.getUnderlyingType());
         }
@@ -233,7 +232,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     Void result = super.visitMethodInvocation(tree, p);
     // In a method invocation like myObject.myMethod(), the method invocation stores
     // myObject.myMethod as its own MemberSelectTree which has no corresponding JavaParserNode.
-    if (tree.getMethodSelect().getKind() == Kind.MEMBER_SELECT) {
+    if (tree.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
       trees.remove(tree.getMethodSelect());
     }
 
@@ -281,7 +280,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     visit(body.getImplementsClause(), p);
     for (Tree member : body.getMembers()) {
       // Constructors cannot be declared in an anonymous class, so don't add them.
-      if (member.getKind() == Kind.METHOD) {
+      if (member.getKind() == Tree.Kind.METHOD) {
         MethodTree methodTree = (MethodTree) member;
         if (methodTree.getName().contentEquals("<init>")) {
           continue;

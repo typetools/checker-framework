@@ -2,7 +2,7 @@ package org.checkerframework.checker.lock;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -36,7 +36,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
   }
 
   /** Indicates that the result of the operation is a boolean value. */
-  private static boolean isBinaryComparisonOrInstanceOfOperator(Kind opKind) {
+  private static boolean isBinaryComparisonOrInstanceOfOperator(Tree.Kind opKind) {
     switch (opKind) {
       case EQUAL_TO:
       case NOT_EQUAL_TO:

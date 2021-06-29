@@ -152,8 +152,8 @@ checker/jtreg/multipleexecutions/Main.class
 checker-qual-android/src
 
 # Some tests produce output into the tests/ directory instead of the build/ directory.
-checker/tests/wpi-testchecker/annotated/
-checker/tests/wpi-testchecker/inference-output/
-checker/tests/wpi-nullness/annotated/
-checker/tests/wpi-nullness/inference-output/
+checker/tests/ainfer-testchecker/annotated/
+checker/tests/ainfer-testchecker/inference-output/
+checker/tests/ainfer-nullness/annotated/
+checker/tests/ainfer-nullness/inference-output/
 framework/tests/returnsreceiverdelomboked/

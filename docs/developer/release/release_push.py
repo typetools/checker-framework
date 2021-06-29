@@ -371,6 +371,13 @@ def main(argv):
         if prompt_yes_no("Run Maven sanity test on development repo?", True):
             maven_sanity_check("maven-dev", "", new_cf_version)
 
+    # Runs all tests on the development release.
+
+    print_step("Push Step 4: Run all tests (takes a long time)")
+    if prompt_yes_no("Perform this step?", True):
+        ant_cmd = "./gradlew allTests"
+        execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
+
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
     # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
     # Central Repository.
@@ -385,15 +392,15 @@ def main(argv):
     # For more information on deploying to the Central Repository see:
     # https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
 
-    print_step("Push Step 4: Stage Maven artifacts in Central")  # SEMIAUTO
+    print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
-    print_step("4a: Stage the artifacts at Maven central.")
+    print_step("5a: Stage the artifacts at Maven central.")
     if (not test_mode) or prompt_yes_no(
         "Stage Maven artifacts in Maven Central?", not test_mode
     ):
         stage_maven_artifacts_in_maven_central(new_cf_version)
 
-        print_step("4b: Close staged artifacts at Maven central.")
+        print_step("5b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
             + " * Browse to https://oss.sonatype.org/#stagingRepositories\n"
@@ -410,7 +417,7 @@ def main(argv):
             "(You can also see the instructions at: http://central.sonatype.org/pages/releasing-the-deployment.html)\n"
         )
 
-        print_step("4c: Run Maven sanity test on Maven central artifacts.")
+        print_step("5c: Run Maven sanity test on Maven central artifacts.")
         if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
             repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
@@ -422,7 +429,7 @@ def main(argv):
     # will NOT update the symlinks.
 
     print_step(
-        "Push Step 5. Copy dev current release website to live website"
+        "Push Step 6. Copy dev current release website to live website"
     )  # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Copy release to the live website?"):
@@ -436,7 +443,7 @@ def main(argv):
     # This step downloads the checker-framework-X.Y.Z.zip file of the newly live release and ensures we
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
-    print_step("Push Step 6: Run javac sanity tests on the live release.")  # SEMIAUTO
+    print_step("Push Step 7: Run javac sanity tests on the live release.")  # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Run javac sanity test on live release?", True):
             javac_sanity_check(live_checker_website, new_cf_version)
@@ -464,7 +471,7 @@ def main(argv):
     # live site (the previous release). After step 5, these links point to the current
     # release and may be broken.
 
-    print_step("Push Step 7. Check live site links")  # SEMIAUTO
+    print_step("Push Step 8. Check live site links")  # SEMIAUTO
     if not test_mode:
         if prompt_yes_no("Run link checker on LIVE site?", True):
             check_all_links(live_afu_website, live_checker_website, "live", test_mode)
@@ -475,7 +482,7 @@ def main(argv):
     # repositories. This is the first irreversible change. After this point, you can no longer
     # backout changes and should do another release in case of critical errors.
 
-    print_step("Push Step 8. Push changes to repositories")  # SEMIAUTO
+    print_step("Push Step 9. Push changes to repositories")  # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
         if prompt_yes_no(
@@ -491,7 +498,7 @@ def main(argv):
     # available to the Java community through the Central repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    print_step("Push Step 9. Release staged artifacts in Central repository.")  # MANUAL
+    print_step("Push Step 10. Release staged artifacts in Central repository.")  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
@@ -522,7 +529,7 @@ def main(argv):
         # Please fill out the email and announce the release.
 
         print_step(
-            "Push Step 10. Post the Checker Framework and Annotation File Utilities releases on GitHub."
+            "Push Step 11. Post the Checker Framework and Annotation File Utilities releases on GitHub."
         )  # MANUAL
 
         msg = (
@@ -567,21 +574,21 @@ def main(argv):
 
         print(msg)
 
-        print_step("Push Step 11. Announce the release.")  # MANUAL
+        print_step("Push Step 12. Announce the release.")  # MANUAL
         continue_or_exit(
             "Please announce the release using the email structure below.\n"
             + get_announcement_email(new_cf_version)
         )
 
         print_step(
-            "Push Step 12. Update the Checker Framework Gradle plugin."
+            "Push Step 13. Update the Checker Framework Gradle plugin."
         )  # MANUAL
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
             + "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
         )
 
-        print_step("Push Step 13. Prep for next Checker Framework release.")  # MANUAL
+        print_step("Push Step 14. Prep for next Checker Framework release.")  # MANUAL
         continue_or_exit(
             "Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n"
         )

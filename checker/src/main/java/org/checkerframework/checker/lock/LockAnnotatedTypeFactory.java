@@ -3,7 +3,6 @@ package org.checkerframework.checker.lock;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -558,7 +557,7 @@ public class LockAnnotatedTypeFactory
       ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
     ParameterizedExecutableType mType = super.methodFromUse(tree, methodElt, receiverType);
 
-    if (tree.getKind() != Kind.METHOD_INVOCATION) {
+    if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return mType;
     }
 

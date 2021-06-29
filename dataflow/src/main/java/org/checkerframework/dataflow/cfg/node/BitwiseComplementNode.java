@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -16,7 +16,7 @@ public class BitwiseComplementNode extends UnaryOperationNode {
 
   public BitwiseComplementNode(UnaryTree tree, Node operand) {
     super(tree, operand);
-    assert tree.getKind() == Kind.BITWISE_COMPLEMENT;
+    assert tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT;
   }
 
   @Override
