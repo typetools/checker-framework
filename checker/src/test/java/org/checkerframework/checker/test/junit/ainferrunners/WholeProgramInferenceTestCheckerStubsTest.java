@@ -1,4 +1,4 @@
-package org.checkerframework.checker.test.junit.wpirunners;
+package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests whole-program inference with the aid of stub files. This test is the first pass on the test
  * data, which generates the stubs.
  *
- * <p>IMPORTANT: The errors captured in the tests located in tests/wpi-testchecker/ are not
+ * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-testchecker/ are not
  * relevant. The meaning of this test class is to test if the generated stub files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
@@ -23,7 +23,7 @@ public class WholeProgramInferenceTestCheckerStubsTest extends CheckerFrameworkP
     super(
         testFiles,
         WholeProgramInferenceTestChecker.class,
-        "wpi-testchecker/non-annotated",
+        "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
         "-Ainfer=stubs",
         "-Awarns");
@@ -31,6 +31,6 @@ public class WholeProgramInferenceTestCheckerStubsTest extends CheckerFrameworkP
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"wpi-testchecker/non-annotated"};
+    return new String[] {"ainfer-testchecker/non-annotated"};
   }
 }
