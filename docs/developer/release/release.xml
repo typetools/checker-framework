@@ -3,11 +3,11 @@
     <description>
         Ant utilities for releasing the Checker-Framework.  All targets in this file
         are intended to be run much like method calls (i.e. you must specify a certain set of properties
-        as parameters and they do not depend on any other target.
+        as parameters and they do not depend on any other target).
     </description>
 
     <property file="docs/developer/release/release.properties"/>
-    <!-- Todays date -->
+    <!-- Today's date -->
     <tstamp>
         <format property="release.date" pattern="d MMM yyyy"/>
     </tstamp>

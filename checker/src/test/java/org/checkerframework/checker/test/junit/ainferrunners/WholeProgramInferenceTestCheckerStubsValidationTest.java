@@ -1,4 +1,4 @@
-package org.checkerframework.checker.test.junit.wpirunners;
+package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
@@ -20,9 +20,9 @@ public class WholeProgramInferenceTestCheckerStubsValidationTest
     super(
         testFiles,
         WholeProgramInferenceTestChecker.class,
-        "wpi-testchecker/annotated",
+        "ainfer-testchecker/annotated",
         "-Anomsgtext",
-        "-Astubs=tests/wpi-testchecker/inference-output",
+        "-Astubs=tests/ainfer-testchecker/inference-output",
         // "-AstubDebug",
         "-AmergeStubsWithSource",
         "-Awarns");
@@ -31,8 +31,8 @@ public class WholeProgramInferenceTestCheckerStubsValidationTest
   @Override
   public void run() {
     // Only run if annotated files have been created.
-    // See wholeProgramInferenceTests task.
-    if (!new File("tests/wpi-testchecker/annotated/").exists()) {
+    // See ainferTests task.
+    if (!new File("tests/ainfer-testchecker/annotated/").exists()) {
       throw new RuntimeException(
           WholeProgramInferenceTestCheckerStubsTest.class + " must be run before this test.");
     }
@@ -41,6 +41,6 @@ public class WholeProgramInferenceTestCheckerStubsValidationTest
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"wpi-testchecker/annotated/"};
+    return new String[] {"ainfer-testchecker/annotated/"};
   }
 }

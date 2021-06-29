@@ -172,7 +172,7 @@ public interface WholeProgramInferenceStorage<T> {
    * class will be the last one in the type-checking process.
    *
    * @param outputFormat the file format in which to write the results
-   * @param checker the checker from which this method is called, for naming stub files
+   * @param checker the checker from which this method is called, for naming annotation files
    */
   public void writeResultsToFile(
       WholeProgramInference.OutputFormat outputFormat, BaseTypeChecker checker);

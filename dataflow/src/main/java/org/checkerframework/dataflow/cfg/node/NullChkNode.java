@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -22,7 +21,7 @@ public class NullChkNode extends Node {
 
   public NullChkNode(Tree tree, Node operand) {
     super(TreeUtils.typeOf(tree));
-    assert tree.getKind() == Kind.OTHER;
+    assert tree.getKind() == Tree.Kind.OTHER;
     this.tree = tree;
     this.operand = operand;
   }
