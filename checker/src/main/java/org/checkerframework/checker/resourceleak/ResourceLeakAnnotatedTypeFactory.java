@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -267,10 +266,10 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return whether the tree has declared must-call obligations
    */
   /* package-private */ boolean hasDeclaredMustCall(Tree tree) {
-    assert tree.getKind() == Kind.METHOD
-            || tree.getKind() == Kind.VARIABLE
-            || tree.getKind() == Kind.NEW_CLASS
-            || tree.getKind() == Kind.METHOD_INVOCATION
+    assert tree.getKind() == Tree.Kind.METHOD
+            || tree.getKind() == Tree.Kind.VARIABLE
+            || tree.getKind() == Tree.Kind.NEW_CLASS
+            || tree.getKind() == Tree.Kind.METHOD_INVOCATION
         : "unexpected declaration tree kind: " + tree.getKind();
     return !getMustCallValue(tree).isEmpty();
   }

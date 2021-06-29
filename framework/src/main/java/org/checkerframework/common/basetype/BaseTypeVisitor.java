@@ -81,6 +81,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
@@ -89,7 +90,9 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -215,6 +218,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           java.lang.annotation.Target.class,
           AnnotationBuilder.elementNamesValues("value", new ElementType[0]));
 
+  /** The @{@link Deterministic} annotation. */
+  protected final AnnotationMirror DETERMINISTIC =
+      AnnotationBuilder.fromClass(elements, Deterministic.class);
+  /** The @{@link SideEffectFree} annotation. */
+  protected final AnnotationMirror SIDE_EFFECT_FREE =
+      AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+  /** The @{@link Pure} annotation. */
+  protected final AnnotationMirror PURE = AnnotationBuilder.fromClass(elements, Pure.class);
+
   /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
   protected final ExecutableElement targetValueElement;
   /** The {@code when} element/field of the @Unused annotation. */
@@ -222,6 +234,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /** True if "-Ashowchecks" was passed on the command line. */
   private final boolean showchecks;
+  /** True if "-Ainfer" was passed on the command line. */
+  private final boolean infer;
+  /** True if "-AsuggestPureMethods" or "-Ainfer" was passed on the command line. */
+  private final boolean suggestPureMethods;
+  /**
+   * True if "-AcheckPurityAnnotations" or "-AsuggestPureMethods" or "-Ainfer" was passed on the
+   * command line.
+   */
+  private final boolean checkPurity;
+  /**
+   * True if purity annotations should be inferred. Should be set to false if both the Lock Checker
+   * (or some other checker that overrides {@link CFAbstractStore#isSideEffectFree} in a
+   * non-standard way) and some other checker is being run.
+   */
+  protected boolean inferPurity = true;
 
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
@@ -251,6 +278,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
     showchecks = checker.hasOption("showchecks");
+    infer = checker.hasOption("infer");
+    suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
+    checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
   }
 
   /**
@@ -416,24 +446,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     originalAst.accept(visitor, modifiedAst);
     if (!visitor.getAnnotationsMatch()) {
       throw new BugInCF(
-          "Reinserting annotations produced different AST.\n"
-              + "Original node: "
-              + visitor.getMismatchedNode1()
-              + "\n"
-              + "Node with annotations re-inserted: "
-              + visitor.getMismatchedNode2()
-              + "\n"
-              + "Original annotations: "
-              + visitor.getMismatchedNode1().getAnnotations()
-              + "\n"
-              + "Re-inserted annotations: "
-              + visitor.getMismatchedNode2().getAnnotations()
-              + "\n"
-              + "Original AST:\n"
-              + originalAst
-              + "\n"
-              + "Ast with annotations re-inserted: "
-              + modifiedAst);
+          String.join(
+              System.lineSeparator(),
+              "Sanity check of erasing then reinserting annotations produced a different AST.",
+              "File: " + root.getSourceFile(),
+              "Original node: " + visitor.getMismatchedNode1(),
+              "Node with annotations re-inserted: " + visitor.getMismatchedNode2(),
+              "Original annotations: " + visitor.getMismatchedNode1().getAnnotations(),
+              "Re-inserted annotations: " + visitor.getMismatchedNode2().getAnnotations(),
+              "Original AST:",
+              originalAst.toString(),
+              "Ast with annotations re-inserted: " + modifiedAst));
     }
   }
 
@@ -952,13 +975,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param node the method tree to check
    */
   protected void checkPurity(MethodTree node) {
-    if (!checker.hasOption("checkPurityAnnotations")) {
+    if (!checkPurity) {
       return;
     }
 
-    boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
-    boolean suggestPureMethods = checker.hasOption("suggestPureMethods");
-    if (!anyPurityAnnotation && !suggestPureMethods) {
+    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
+      // There is nothing to check.
       return;
     }
 
@@ -998,14 +1020,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         additionalKinds.remove(Pure.Kind.DETERMINISTIC);
       }
       if (!additionalKinds.isEmpty()) {
-        if (additionalKinds.size() == 2) {
-          checker.reportWarning(node, "purity.more.pure", node.getName());
-        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-          checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
-        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-          checker.reportWarning(node, "purity.more.deterministic", node.getName());
+        if (infer) {
+          if (inferPurity) {
+            WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+            ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
+            if (additionalKinds.size() == 2) {
+              wpi.addMethodDeclarationAnnotation(methodElt, PURE);
+            } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+              wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
+            } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+              wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
+            } else {
+              throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+            }
+          }
         } else {
-          assert false : "BaseTypeVisitor reached undesirable state";
+          if (additionalKinds.size() == 2) {
+            checker.reportWarning(node, "purity.more.pure", node.getName());
+          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
+          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+            checker.reportWarning(node, "purity.more.deterministic", node.getName());
+          } else {
+            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+          }
         }
       }
     }

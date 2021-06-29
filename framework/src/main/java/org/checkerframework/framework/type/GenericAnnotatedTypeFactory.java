@@ -11,7 +11,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -1274,7 +1273,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     // no need to scan annotations
-    if (classTree.getKind() == Kind.ANNOTATION_TYPE) {
+    if (classTree.getKind() == Tree.Kind.ANNOTATION_TYPE) {
       // Mark finished so that default annotations will be applied.
       scannedClasses.put(classTree, ScanState.FINISHED);
       return;
@@ -1404,7 +1403,8 @@ public abstract class GenericAnnotatedTypeFactory<
         while (!lambdaQueue.isEmpty()) {
           Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
           MethodTree mt =
-              (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Kind.METHOD);
+              (MethodTree)
+                  TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Tree.Kind.METHOD);
           analyze(
               queue,
               lambdaQueue,
@@ -1941,7 +1941,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     Tree declTree = declarationFromElement(elt);
-    if (declTree == null || declTree.getKind() != Kind.VARIABLE) {
+    if (declTree == null || declTree.getKind() != Tree.Kind.VARIABLE) {
       return;
     }
 

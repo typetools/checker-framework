@@ -454,7 +454,7 @@ public interface QualifierHierarchy {
    *     the subtype relationship between "no qualifier" and a qualifier. Use {@link
    *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
    */
-  @Deprecated
+  @Deprecated // 2020-07-29
   default boolean isSubtype(
       AnnotatedTypeMirror subType,
       AnnotatedTypeMirror superType,

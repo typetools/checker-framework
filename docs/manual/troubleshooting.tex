@@ -933,138 +933,6 @@ to assist you.  If you don't know how to get started fixing a particular
 bug, then you should contribute to the project in other ways.  Thanks!
 
 
-\sectionAndLabel{Publications}{publications}
-
-Here are two technical papers about the Checker Framework itself:
-
-\begin{itemize}
-\item
-``Practical pluggable types for Java''~\cite{PapiACPE2008}
-(ISSTA 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
-describes the design and implementation of the Checker Framework.
-The paper also describes case
-studies in which the Nullness, Interning, Javari, and IGJ Checkers found
-previously-unknown errors in real software.
-The case studies also yielded new insights about type systems.
-
-\item
-``Building and using pluggable
-type-checkers''~\cite{DietlDEMS2011}
-(ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
-discusses further experience with the Checker Framework, increasing the
-number of lines of verified code to 3 million.  The case studies are of the
-Fake Enum, Signature String, Interning, and Nullness Checkers.
-The paper also evaluates the ease
-of pluggable type-checking with the Checker Framework:  type-checkers
-were easy to write, easy for novices to use, and effective in finding
-errors.
-\end{itemize}
-
-Here are some papers about type systems that were implemented and evaluated
-using the Checker Framework:
-
-\begin{description}
-\item[Nullness (Chapter~\ref{nullness-checker})]
-See the two papers about the Checker Framework, described above.
-
-\item[Rawness initialization (Section~\ref{initialization-rawness-checker})]
-``Inference of field initialization'' (ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
-describes inference for the Rawness Initialization Checker.
-
-\item[Interning (Chapter~\ref{interning-checker})]
-See the two papers about the Checker Framework, described above.
-
-\item[Locking (Chapter~\ref{lock-checker})]
-``Locking discipline inference and checking'' (ICSE 2016,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
-describes the Lock Checker.
-
-\item[Fake enumerations, type aliases, and typedefs (Chapter~\ref{fenum-checker})]
-See the ICSE 2011 paper about the Checker Framework, described above.
-
-\item[Regular expressions (Chapter~\ref{regex-checker})]
-``A type system for regular expressions''~\cite{SpishakDE2012} (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/regex-types-ftfjp2012-abstract.html})
-            describes the Regex Checker.
-
-\item[Format Strings (Chapter~\ref{formatter-checker})]
-``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
-            describes the Format String Checker.
-
-\item[Signature strings (Chapter~\ref{signature-checker})]
-See the ICSE 2011 paper about the Checker Framework, described above.
-
-\item[GUI Effects (Chapter~\ref{guieffect-checker})]
-``JavaUI: Effects for controlling UI object access''~\cite{GordonDEG2013} (ECOOP 2013, \myurl{https://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html})
-            describes the GUI Effect Checker.
-
-\item
-``Verification games: Making verification fun'' (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
-            describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
-
-\item[Thread locality (Section~\ref{loci-thread-locality-checker})]
-``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
-\myurl{http://janvitek.org/pubs/ecoop09.pdf})
-
-\item[Security (Section~\ref{sparta-checker})]
-``Static analysis of implicit control flow: Resolving Java reflection and
-  Android intents''~\cite{BarrosJMVDdAE2015} (ASE 2015,
-  \myurl{https://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
-  describes the SPARTA toolset and information flow type-checker.
-
-``Boolean formulas for the static identification of injection attacks in
-  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{https://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
-
-\item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
-    Types} (Section~\ref{gut-checker})]
-``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
-            describes inference for the Generic Universe Types type system.
-
-Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
-``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
-
-\item[Approximate data (Section~\ref{enerj-checker})]
-``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
-
-\item[Information flow and tainting (Section~\ref{sparta-checker})]
-``Collaborative Verification of Information Flow
-for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
-
-\item[IGJ and OIGJ immutability (Section~\ref{igj-checker})]
-``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{https://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
-and
-``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
-            describe the IGJ and OIGJ immutability type systems.
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
-\item[Javari immutability (Section~\ref{javari-checker})]
-``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
-            describes the Javari type system.
-For inference, see
-``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
-and
-``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{https://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
-\item[ReIm immutability]
-% TODO:  (Section~\ref{reim-checker})
-``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
-            describes the ReIm immutability type system.
-
-\end{description}
-
-In addition to these papers that discuss use the Checker Framework
-directly, other academic papers use the Checker Framework in their
-implementation or evaluation.
-Most educational use of the Checker
-Framework is never published, and most commercial use of the Checker
-Framework is never discussed publicly.
-
-(If you know of a paper or other use that is not listed here, please inform
-the Checker Framework developers so we can add it.)
-
-
 \sectionAndLabel{Credits and changelog}{credits}
 
 Differences from previous versions of the checkers and framework can be found
@@ -1110,6 +978,191 @@ program, such as the annotations and run-time utility classes.
 \noindent
 For details, see file
 \ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt}{\<LICENSE.txt>}.
+
+
+\sectionAndLabel{Publications}{publications}
+
+Here are some papers that use the Checker Framework;
+for instance, they build a type-checker on top of the Checker Framework, or
+their methodology depends on using the Checker Framework.
+This list is \emph{incomplete}; if you know of a paper that
+is missing, please let us know so that we can add it.
+Most educational use of the Checker Framework is never published, and most
+commercial use of the Checker Framework is never discussed publicly.
+Most of the papers are available for free online; do a web search on the
+title.
+
+\begin{itemize}
+% To populate this list, use 3 searches for "checker framework" (because each one misses some papers):
+% TODO: add searches for citations of some of my papers, such as our two main papers and also tool papers.
+
+% https://dl.acm.org/action/doSearch?AllField=%22checker+framework%22&sortBy=Ppub_asc&expand=all
+% https://scholar.google.com/scholar?q=%22checker+framework%22+or+checkerframework&hl=en&as_sdt=0%2C48&as_ylo=2013&as_yhi=2013
+% https://www.semanticscholar.org/search?year%5B0%5D=2011&year%5B1%5D=2011&fos%5B0%5D=computer-science&q=%22checker%20framework%22&sort=relevance
+
+% 2008
+\item
+  Practical pluggable types for Java (ISSTA 2008)~\cite{PapiACPE2008}
+\item
+  % Tool paper
+  Building and using pluggable type systems with the Checker Framework
+  (ECOOP 2008)~\cite{Ernst2008}
+
+% 2010
+\item
+  The nullness analyser of Julia (LPAR 2010)~\cite{Spoto10:LPAR}
+\item
+  Static checking of safety critical Java annotations (JTRES 2010)~\cite{TangPJ2010}
+\item
+  Ownership and immutability in generic Java (OOPSLA 2010)~\cite{ZibinPLAE2010}
+\item
+  Rethinking the economics of software engineering (FOSER 2010)~\cite{SchillerE2010}
+
+% 2011
+\item
+  Building and using pluggable type-checkers (ICSE 2011)~\cite{DietlDEMS2011}
+\item
+  Inference of field initialization (ICSE 2011)~\cite{SpotoE2011}
+\item
+  EnerJ: approximate data types for safe and general low-power computation
+  (PLDI 2011)~\cite{SampsonDFGCG2011}
+\item
+  Tunable static inference for generic universe types (ECOOP 2011)~\cite{DietlEM2011}
+\item
+  Separating ownership topology and encapsulation with generic universe
+  types (TOPLAS 2011)~\cite{DietlDM2011}
+\item
+  The design, implementation and evaluation of a pluggable type checker for
+  thread-locality in Java (Master's Thesis, 2011)~\cite{Sherwany2011}
+
+% 2012
+\item
+  Inference and checking of object ownership (ECOOP 2012)~\cite{HuangDME2012}
+\item
+  A type system for regular expressions (FTfJP 2012)~\cite{SpishakDE2012}
+\item
+  Verification games: making verification fun (FTfJF 2012)~\cite{DietlDEMWCPP2012}
+\item
+  Reim \& ReImInfer: checking and inference of reference immutability and
+  method purity (OOPSLA 2012)~\cite{HuangMDE2012}
+\item
+  ReImInfer: method purity inference for Java (FSE 2012)~\cite{HuangM2012}
+\item
+  Inference and checking of context-sensitive pluggable types (FSE 2012)~\cite{MilanovaH2012}
+
+% 2013
+\item
+  Immutability (book chapter, 2013)~\cite{PotaninOZE2013}
+\item
+  JavaUI: Effects for controlling UI object access (ECOOP 2013)~\cite{GordonDEG2013}
+\item
+  Reified type parameters using Java annotations (GPCE 2013)~\cite{GerakiosBS2013}
+
+% 2014
+\item
+  Type-based taint analysis for Java web applications (FASE 2014)~\cite{HuangDM2014}
+\item
+  A type system for format strings (ISSTA 2014)~\cite{WeitzKSE2014}
+\item
+  Collaborative verification of information flow for a high-assurance app
+  store (CCS 2014)~\cite{ErnstJMDPRKBBHVW2014}
+\item
+  Cascade: A universal type qualifier inference tool (ICSE 2015)~\cite{VakilianPEJ2015}
+
+% 2015
+\item
+  Static analysis of implicit control flow: resolving Java reflection and
+  Android intents (ASE 2015)~\cite{BarrosJMVDdAE2015}
+
+% 2016
+\item
+  Locking discipline inference and checking (ICSE 2016)~\cite{ErnstLMST2016}
+\item
+  Semantics for locking specifications (NFM 2016)~\cite{ErnstMMS2016}
+\item
+  JCrypt: Towards computation over encrypted data (PPPJ 2016)~\cite{DongMD2016}
+\item
+  Preventing signedness errors in numerical computations in Java (FSE
+  2016)~\cite{Mackie2016}
+\item
+  Enforcing correct array indexes with a type system (FSE 2016)~\cite{Santino2016}
+\item
+  Gradual Pluggable Typing in Java (Master's Thesis, 2016)~\cite{Brotherston2016}
+\item
+  Security analysis of the IRMA app using SPARTA and fuzzing (Bachelor
+  Thesis, 2016)~\cite{Brinker2016}
+\item
+  Towards using concurrent Java API correctly (ICECCS 2016)~\cite{LiuBSD2016}
+
+% In Greek:
+% https://ir.lib.uth.gr/xmlui/bitstream/handle/11615/48274/15028.pdf?sequence=1
+
+% 2017
+\item
+  Granullar: Gradual nullable types for {Java} (CC 2017)~\cite{BrotherstonDL2017}
+\item
+  Type checking for reliable APIs (WAPI 2017)~\cite{KechagiaS2017}
+\item
+  Glacier: transitive class immutability for Java (ICSE 2017)~\cite{CoblenzNAMS2017}
+\item
+  A General Pluggable Type Inference Framework and its use for Data-flow
+  Analysis (Master's Thesis, 2017)~\cite{Li2017}
+
+% DARPA report: Static Program Analysis for Reliable, Trusted Apps
+
+% 2018
+\item
+  Lightweight verification of array indexing (ISSTA 2018)~\cite{KelloggDME2018}
+\item
+  Safe Stream-based Programming with Refinement Types (ASE 2018)~\cite{SteinCSC2018}
+\item
+  Don't miss the end: Preventing unsafe end-of-file comparisons (NFM 2018)~\cite{ChenD2018}
+\item
+  Context sensitive typechecking and inference: ownership and immutability
+  (Master's Thesis, 2018)~\cite{Ta2018}
+\item
+  Usable and Sound Static Analysis through its Integration into Automated
+  and Interactive Workflows (Master's Thesis, 2018)~\cite{Valgma2018}
+\item
+  Pluggable properties for program understanding: Ontic type checking and
+  inference (Master's Thesis, 2018)~\cite{Chen2018}
+\item
+  Definite reference mutability (ECOOP 2018)~\cite{Milanova2018}
+\item
+  Googletest to CUTE converter (Technical report, 2018)~\cite{GschwindV2018}
+
+% Implementierung eines automatischen Refactorings zur Reduzierung von dupliziertem Quellcode
+% https://elib.uni-stuttgart.de/handle/11682/10449
+
+% 2019
+\item
+  NullAway: Practical type-based null safety for Java (ESEC/FSE 2019)~\cite{BanerjeeCS2019}
+\item
+  Compile-time detection of machine image sniping (ASE 2019)~\cite{Kellogg2019}
+
+% 2020
+\item
+  Synthesis of assurance cases for software certification (ICSE NIER 2020)~\cite{BagheriKM2020}
+\item
+  Verifying object construction (ICSE 2020)~\cite{KelloggRSSE2020}
+\item
+  Precise inference of expressive units of measurement types (OOPSLA 2020)~\cite{XiaohuiLD2020}
+\item
+  Rethinking safe consistency in distributed object-oriented programming
+  (OOPSLA 2020)~\cite{KohlerEWMS2020}
+\item
+  Continuous compliance (ASE 2020)~\cite{KelloggSTE2020}
+\item
+  Light-weight verification of cryptographic API usage (Master's Thesis, 2020)~\cite{Xing2020}
+\item
+  Type checking and whole-program inference for value range analysis (Master's Thesis, 2020)~\cite{Xiang2020}
+\item
+  User-Centered Design of Principled Programming Languages (PhD thesis, 2020)~\cite{Coblenz2020}
+
+% 2021
+% TODO, probably midway through 2022 so databases have had time to be updated.
+
+\end{itemize}
 
 
 

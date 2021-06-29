@@ -10,7 +10,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -434,7 +433,7 @@ public class DependentTypesHelper {
         }
         Tree enclTree = pathTillEnclTree.getLeaf();
 
-        if (enclTree.getKind() == Kind.METHOD) {
+        if (enclTree.getKind() == Tree.Kind.METHOD) {
           MethodTree methodDeclTree = (MethodTree) enclTree;
           StringToJavaExpression stringToJavaExpr =
               stringExpr ->
@@ -903,7 +902,7 @@ public class DependentTypesHelper {
       return;
     }
 
-    if (errorTree.getKind() == Kind.VARIABLE) {
+    if (errorTree.getKind() == Tree.Kind.VARIABLE) {
       ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
       errorTree = ((VariableTree) errorTree).getType();
       for (AnnotationTree annoTree : modifiers.getAnnotations()) {
