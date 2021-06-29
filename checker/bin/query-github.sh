@@ -16,8 +16,8 @@
 #
 # This script outputs a list of projects. The underlying GitHub search is for code snippets, and this
 # script eliminates duplicates (i.e. different code snippets from the same project are combined into
-# a single result for the project), so the number of results will usually be less than 10 times the number
-# of pages you request.
+# a single result for the project), so the number of projects the script outputs will usually be less
+# than 10 times the number of pages requested.
 
 # Set to 1 to enable debug output from this script.
 DEBUG=0
