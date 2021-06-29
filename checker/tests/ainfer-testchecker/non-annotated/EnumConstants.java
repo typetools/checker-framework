@@ -4,7 +4,7 @@
 // WPI, because WPI doesn't learn anything about enum constants from how they're used. They also
 // cannot be assigned to, so there's no way for WPI to learn their types.
 
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
 
 public class EnumConstants {
   enum MyEnum {

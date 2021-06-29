@@ -1,5 +1,5 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.DefaultType;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.DefaultType;
 
 // The @DefaultType annotation, which is the default for every location, is forbidden to be written
 // anywhere. This class attempts to infer @DefaultType in several locations, and the annotated
@@ -21,7 +21,7 @@ public class DefaultsTest {
       return ""; // @DefaultType
     } else {
       @SuppressWarnings("cast.unsafe")
-      @WholeProgramInferenceBottom String s = (@WholeProgramInferenceBottom String) "";
+      @AinferBottom String s = (@AinferBottom String) "";
       return s;
     }
   }
