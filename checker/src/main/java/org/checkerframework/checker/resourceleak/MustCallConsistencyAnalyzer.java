@@ -1175,6 +1175,8 @@ class MustCallConsistencyAnalyzer {
             if (tmpVarForExcNode != null
                 && obligation.resourceAliases.size() == 1
                 && obligation.hasResourceAlias(tmpVarForExcNode)) {
+              // TODO: Should this be continue?  Other obligations may need to be passed along.
+              // If it should be a continue, considering adding a test case.
               break;
             }
           }
@@ -1188,6 +1190,8 @@ class MustCallConsistencyAnalyzer {
           // handleTernarySuccIfNeeded.
           if (curBlockNodes.size() == 1 && inCastOrTernary(curBlockNodes.get(0))) {
             obligationsForSucc.add(obligation);
+            // TODO: Should this be continue in case of other obligations?  If so, then can
+            // it be moved out of this for loop?
             break;
           }
 
