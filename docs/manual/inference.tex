@@ -273,14 +273,6 @@ you should manually examine the log files for the projects that appear in the
 that the script was able to successfully run WPI on.  (This does not mean
 that the project type-checks without errors afterward.)
 
-\item (Optional) Fork repositories and make changes (e.g., add annotations or fix bugs).
-Modify the input file for \<wpi-many.sh> to remove the line for the original repository,
-but add a new line that indicates the location of both your
-fork and the original repository.
-Then, re-run your experiments, supplying the \<-u "\$yourGithubId"> option to \<wpi-many.sh>.
-\<wpi-many.sh> will perform inference on your forked version rather than
-the original.
-
 \end{enumerate}
 
 A typical invocation is
