@@ -335,7 +335,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     } else if ((TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
       // TODO: This branch should be removed after #979 is fixed.
-      // If both outside and inside are captured type variables, they should be equal.
+      // This work around is only needed when outside is a captured type variable,
+      // but inside is not.
       AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
 
       // Add a placeholder in case of recursion, to prevent infinite regress.
@@ -506,8 +507,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Returns true if the type arguments in {@code supertype} contain the type arguments in {@code
    * subtype} and false otherwise. See {@link #isContainedBy} for an explanation of containment.
    *
-   * @param subtype a possible subtype (its underlying type is a subtype of {@code supertype})
-   * @param supertype a possible supertype (its underlying type is a supertype of {@code subtype})
+   * @param subtype a possible subtype (its underlying type is the same as {@code supertype})
+   * @param supertype a possible supertype (its underlying type is the same as {@code subtype})
    * @param subtypeRaw whether {@code subtype} is a raw type
    * @param supertypeRaw whether {@code supertype} is a raw type
    * @return true if the type arguments in {@code supertype} contain the type arguments in {@code
