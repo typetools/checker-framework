@@ -1186,7 +1186,9 @@ class MustCallConsistencyAnalyzer {
       // Computed outside the obligation loop for efficiency.
       CFStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
       for (Obligation obligation : curObligations) {
-        // This boolean is true if there is no evidence that
+        // This boolean is true if there is no evidence that the obligation does not go out of
+        // scope - that is, if there is definitely a resource alias that is in scope in the
+        // successor.
         boolean obligationGoesOutOfScopeBeforeSuccessor = true;
         for (ResourceAlias resourceAlias : obligation.resourceAliases) {
           if (aliasInScopeInSuccessor(regularStoreOfSuccessor, resourceAlias)) {
