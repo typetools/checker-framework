@@ -485,6 +485,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // return true here.
       return true;
     }
+
+    // JLS 11: 4.10.2. Subtyping among Class and Interface Types
+    // 4th paragraph, bullet 1.
     AnnotatedDeclaredType subtypeAsSuper =
         AnnotatedTypes.castedAsSuper(subtype.atypeFactory, subtype, supertype);
 
@@ -546,11 +549,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 covariantAnno, covariantValueElement, Integer.class);
 
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types
-    // 4th paragraph
+    // 4th paragraph, bullet 2
     if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
       return true;
     }
-    // 5th paragraph
+    // 5th paragraph:
+    // Instead of calling isSubtype with the captured type, just check for containment.
     AnnotatedDeclaredType capturedSubtype =
         (AnnotatedDeclaredType) subtype.atypeFactory.applyCaptureConversion(subtype);
     return isContainedMany(
