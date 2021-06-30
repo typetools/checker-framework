@@ -1,6 +1,7 @@
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public class TestTreeKinds {
@@ -63,15 +64,18 @@ public class TestTreeKinds {
   @Holding("lock")
   void requiresLockHeldMethod() {}
 
-  MyClass fooArray @GuardedBy("lock") [] = new MyClass[3];
+  @SuppressWarnings("assignment")
+  MyClass @GuardedBy("lock") [] fooArray = new MyClass[3];
 
-  @GuardedBy("lock") MyClass fooArray2[] = new MyClass[3];
+  @GuardedBy("lock") MyClass[] fooArray2 = new MyClass[3];
 
-  @GuardedBy("lock") MyClass fooArray3[][] = new MyClass[3][3];
+  @SuppressWarnings("assignment")
+  @GuardedBy("lock") MyClass[][] fooArray3 = new MyClass[3][3];
 
-  MyClass fooArray4 @GuardedBy("lock") [][] = new MyClass[3][3];
+  @SuppressWarnings("assignment")
+  MyClass @GuardedBy("lock") [][] fooArray4 = new MyClass[3][3];
 
-  MyClass fooArray5[] @GuardedBy("lock") [] = new MyClass[3][3];
+  MyClass[] @GuardedBy("lock") [] fooArray5 = new MyClass[3][3];
 
   class myClass {
     int i = 0;
@@ -270,6 +274,7 @@ public class TestTreeKinds {
     l = getFooArray5().length;
 
     // Test different @GuardedBy(...) present on the element and array locations.
+    // :: error: (assignment)
     @GuardedBy("lock") MyClass @GuardedBy("lock2") [] array = new MyClass[3];
     // :: error: (lock.not.held)
     array[0].field = new Object();
@@ -313,6 +318,7 @@ public class TestTreeKinds {
     // :: error: (lock.not.held)
     i = myClassInstance.i; // access to member field of guarded object
     // MemberReferenceTrees? how do they work
+    // :: error: (assignment)
     fooArray = new MyClass[3]; // second allocation of guarded array (OK)
     // dereference of guarded object in conditional expression tree
     // :: error: (lock.not.held)
@@ -363,16 +369,25 @@ public class TestTreeKinds {
     // m2.field.toString();
   }
 
+  @GuardedBy("lock") MyClass guardedByLock() {
+    return new MyClass();
+  }
+
+  @GuardedByUnknown MyClass someValue() {
+    return new MyClass();
+  }
+
   @MayReleaseLocks
   public void testLocals() {
     final ReentrantLock localLock = new ReentrantLock();
 
-    @GuardedBy("localLock") MyClass guardedByLocalLock = new MyClass();
+    @SuppressWarnings("assignment") // prevent flow-sensitive refinement
+    @GuardedBy("localLock") MyClass guardedByLocalLock = someValue();
 
     // :: error: (lock.not.held)
     guardedByLocalLock.field.toString();
 
-    @GuardedBy("lock") MyClass local = new MyClass();
+    @GuardedBy("lock") MyClass local = guardedByLock();
 
     // :: error: (lock.not.held)
     local.field.toString();

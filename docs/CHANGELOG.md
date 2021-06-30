@@ -1,3 +1,12 @@
+Version 3.??.?? (?? ??, 2021)
+-----------------------------
+
+**User-visible changes:**
+
+The Lock Checker supports a new type, `@NewObject`, for the result of a
+constructor invocation.
+
+
 Version 3.16.0 (July 1, 2021)
 -----------------------------
 
@@ -13,6 +22,7 @@ Method renamings (the old methods remain but are deprecated):
  * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
 
 **Closed issues:**
+
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------

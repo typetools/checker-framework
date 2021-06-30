@@ -28,7 +28,7 @@ public class ThreadLocalTest2 {
   class MyThreadLocalNN extends ThreadLocal<@NonNull Integer> {
     @Override
     protected Integer initialValue() {
-      return new Integer(0);
+      return Integer.valueOf(0);
     }
   }
 
@@ -53,7 +53,7 @@ public class ThreadLocalTest2 {
   class MyThreadLocalNbleStrongerOverride extends ThreadLocal<@Nullable Integer> {
     @Override
     protected @NonNull Integer initialValue() {
-      return new Integer(0);
+      return Integer.valueOf(0);
     }
   }
 
