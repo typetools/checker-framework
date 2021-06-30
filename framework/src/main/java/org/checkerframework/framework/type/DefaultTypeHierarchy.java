@@ -926,7 +926,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
     if (TypesUtils.isCapturedTypeVariable(subtype.getUnderlyingType())
         && TypesUtils.isCapturedTypeVariable(supertype.getUnderlyingType())) {
-      // TODO: Can this be removed?
+      // This should be removed when 979 is fixed.
+      // This case happens when the captured type variables should be the same type, but
+      // aren't because type argument inference isn't implemented correctly.
       return isContainedByBoundType(
           subtype, supertype.getLowerBound(), supertype.getUpperBound(), false);
     }
