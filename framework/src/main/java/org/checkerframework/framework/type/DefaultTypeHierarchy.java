@@ -39,6 +39,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
  * TypeHierarchy interface reference which will only allow isSubtype to be called. Clients should
  * not call the visit methods.
+ *
+ * <p>The visit methods return true if the first argument is a subtype of the second argument.
  */
 public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     implements TypeHierarchy {
@@ -457,7 +459,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitArray_Typevar(
       AnnotatedArrayType subtype, AnnotatedTypeVariable superType, Void p) {
-    return visitTypevarSupertype(subtype, superType);
+    return visitType_Typevar(subtype, superType);
   }
 
   // ------------------------------------------------------------------------
@@ -501,14 +503,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Checks that the type arguments in {@code supertype} contain the type arguments in {@code
-   * subtype}. See {@link #isContainedBy} for an explanation of containment.
+   * Returns true if the type arguments in {@code supertype} contain the type arguments in {@code
+   * subtype} and false otherwise. See {@link #isContainedBy} for an explanation of containment.
    *
    * @param subtype a possible subtype (its underlying type is a subtype of {@code supertype})
    * @param supertype a possible supertype (its underlying type is a supertype of {@code subtype})
    * @param subtypeRaw whether {@code subtype} is a raw type
    * @param supertypeRaw whether {@code supertype} is a raw type
-   * @return the result of visiting type args
+   * @return true if the type arguments in {@code supertype} contain the type arguments in {@code
+   *     subtype} and false otherwise.
    */
   protected boolean visitTypeArgs(
       AnnotatedDeclaredType subtype,
@@ -841,7 +844,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     //     ArrayList<? super Exception> lWildcard = new ArrayList<>();
     //     lWildcard.add(e);
 
-    return visitTypevarSupertype(subtype, supertype);
+    return visitType_Typevar(subtype, supertype);
   }
 
   // ------------------------------------------------------------------------
@@ -869,7 +872,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitTypevar_Array(
       AnnotatedTypeVariable subtype, AnnotatedArrayType supertype, Void p) {
     // This happens when the type variable is a captured wildcard.
-    return visitTypevarSubtype(subtype, supertype);
+    return visitTypevar_Type(subtype, supertype);
   }
 
   @Override
