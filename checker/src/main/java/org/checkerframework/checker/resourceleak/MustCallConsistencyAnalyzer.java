@@ -44,9 +44,9 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -841,9 +841,11 @@ class MustCallConsistencyAnalyzer {
 
     MustCallAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotationMirror mcAnno =
-        mcTypeFactory.getAnnotatedType(lhs.getTree()).getAnnotation(MustCall.class);
 
+    // TODO: Why is this using a JavaExpression to get the type?
+    AnnotationMirror mcAnno =
+        mcTypeFactory.getAnnotationFromJavaExpression(
+            JavaExpression.fromNode(lhs), node.getTree(), MustCall.class);
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
             mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1119,6 +1121,12 @@ class MustCallConsistencyAnalyzer {
    * @param obligations obligations to propagate to successors
    * @param curBlock the current block
    */
+  // TODO: This method is hard to follow.  I think it's doing the following:
+  //  for each successor block and for each obligation,
+  // if any of the resource aliases do not go out of scope,
+  // then propagate the obligation to the successor block.
+  // Otherwise, check that the obligation is fulfilled.
+  // If this is a correct summary, can you refactor this method to match that?
   private void handleSuccessorBlocks(
       Set<BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist,
@@ -1134,17 +1142,18 @@ class MustCallConsistencyAnalyzer {
       // obligationsForSucc eventually contains the obligations to propagate to succ.  The loop
       // below mutates it.
       Set<Obligation> obligationsForSucc = new LinkedHashSet<>();
-      String outOfScopeReason;
-      if (curBlock.getType() == BlockType.EXCEPTION_BLOCK) {
-        outOfScopeReason =
-            String.format(
-                "possible exceptional exit due to %s with exception type %s",
-                ((ExceptionBlock) curBlock).getNode().getTree(), exceptionType);
-      } else {
-        // Technically the variable may be going out of scope before the method exit, but that
-        // doesn't seem to provide additional helpful information.
-        outOfScopeReason = "regular method exit";
-      }
+      // A detailed reason to give in the case that a relevant variable goes out of scope with an
+      // unsatisfied obligation along the current control-flow edge.
+      String reasonForSucc =
+          exceptionType == null
+              ?
+              // Technically the variable may be going out of scope before the method exit, but that
+              // doesn't seem to provide additional helpful information.
+              "regular method exit"
+              : "possible exceptional exit due to "
+                  + ((ExceptionBlock) curBlock).getNode().getTree()
+                  + " with exception type "
+                  + exceptionType;
       CFStore succRegularStore = analysis.getInput(succ).getRegularStore();
       for (Obligation obligation : curObligations) {
         boolean noInfoInSuccStoreForVars = true;
@@ -1154,15 +1163,14 @@ class MustCallConsistencyAnalyzer {
             break;
           }
         }
-        if (succ.getType() == BlockType.SPECIAL_BLOCK /* exit block */
-            || noInfoInSuccStoreForVars) {
+        if (succ instanceof SpecialBlockImpl /* exit block */ || noInfoInSuccStoreForVars) {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
           // If succ is an exceptional successor, and obligation represents the temporary
-          // variable for curBlock's node, do not propagate, as in the exceptional case the
+          // variable for  curBlock's node, do not propagate, as in the exceptional case the
           // "assignment" to the temporary variable does not succeed.
-          if (succ.getType() == BlockType.EXCEPTION_BLOCK) {
+          if (exceptionType != null) {
             Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) curBlock).getNode());
             LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
             if (tmpVarForExcNode != null
@@ -1188,8 +1196,6 @@ class MustCallConsistencyAnalyzer {
             break;
           }
 
-          CFStore mcStore;
-          CFStore cmStore;
           if (curBlockNodes.size() == 0 /* curBlock is special or conditional */) {
             // TODO: Can you clarify the comment below?
             // Use the store from the block actually being analyzed, rather than succRegularStore,
@@ -1200,26 +1206,28 @@ class MustCallConsistencyAnalyzer {
             // not have any information about it, by construction, and
             // any information in the previous store remains true. If any locals from the resource
             // alias set do appear in succRegularStore, that store is always used.
-            cmStore =
+            CFStore cmStore =
                 noInfoInSuccStoreForVars
                     ? analysis.getInput(curBlock).getRegularStore()
                     : succRegularStore;
-            mcStore = mcAtf.getStoreForBlock(noInfoInSuccStoreForVars, curBlock, succ);
+            CFStore mcStore = mcAtf.getStoreForBlock(noInfoInSuccStoreForVars, curBlock, succ);
+            checkMustCall(obligation, cmStore, mcStore, reasonForSucc);
           } else { // In this case, current block has at least one node.
             // Use the called-methods store immediately after the last node in curBlock.
             Node last = curBlockNodes.get(curBlockNodes.size() - 1);
-            cmStore = typeFactory.getStoreAfter(last);
+            CFStore cmStoreAfter = typeFactory.getStoreAfter(last);
             // If this is an exceptional block, check the MC store beforehand to avoid
             // issuing an error about a call to a CreatesMustCallFor method that might throw
             // an exception. Otherwise, use the store after.
-            if (curBlock.getType() == BlockType.EXCEPTION_BLOCK
-                && isInvocationOfCreatesMustCallForMethod(last)) {
+            CFStore mcStore;
+            if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
               mcStore = mcAtf.getStoreBefore(last);
             } else {
               mcStore = mcAtf.getStoreAfter(last);
             }
+            checkMustCall(obligation, cmStoreAfter, mcStore, reasonForSucc);
           }
-          checkMustCall(obligation, cmStore, mcStore, outOfScopeReason);
+
         } else { // In this case, there is info in the successor store about some alias in
           // obligation. Handles the possibility that some resource in the obligation may go out of
           // scope.
