@@ -889,31 +889,21 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // as the bounds are the same.
         return isPrimarySubtype(subtype, supertype);
 
-      } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype)) {
+      } else if (!subtypeHasAnno && !supertypeHasAnno) {
         // two unannotated uses of the same type parameter are of the same type
-        return true;
-      } else if (subtypeHasAnno) {
+        return areEqualInHierarchy(subtype, supertype);
+      } else if (subtypeHasAnno && !supertypeHasAnno) {
         // This is the case "@A T <: T" where T is a type variable.
         Set<AnnotationMirror> superLBs =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, supertype);
         AnnotationMirror superLB =
             qualifierHierarchy.findAnnotationInHierarchy(superLBs, currentTop);
         return qualifierHierarchy.isSubtype(subtype.getAnnotationInHierarchy(currentTop), superLB);
-      } else if (supertypeHasAnno) {
+      } else if (!subtypeHasAnno && supertypeHasAnno) {
         // This is the case "T <: @A T" where T is a type variable.
         return qualifierHierarchy.isSubtype(
             subtype.getEffectiveAnnotationInHierarchy(currentTop),
             supertype.getAnnotationInHierarchy(currentTop));
-
-      } else if (subtype.getUpperBound().getKind() == TypeKind.INTERSECTION) {
-        // This case happens when a type has an intersection bound.  e.g.,
-        // T extends A & B
-        //
-        // And one use of the type has an annotation and the other does not. e.g.,
-        // @X T xt = ...;  T t = ..;
-        // xt = t;
-        //
-        return visit(subtype.getUpperBound(), supertype.getLowerBound(), null);
       }
     }
 
