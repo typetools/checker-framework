@@ -77,9 +77,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
-// There are still references to ImmutableSet<LocalVarWithTree> and LocalVarWithTree in Javadoc
-// comments.
-
 /**
  * An analyzer that checks consistency of {@code @MustCall} and {@code @CalledMethods} types,
  * thereby detecting resource leaks. For any expression <em>e</em> the analyzer ensures that when
@@ -95,7 +92,7 @@ import org.plumelib.util.StringsPlume;
  * lightweight alias analysis that tracks must-alias sets for resources.
  *
  * <p>Throughout this class, variables named "obligation" or "obligations" are dataflow facts of
- * type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of resource aliases for some
+ * type {@link Obligation}, each representing a set of resource aliases for some
  * value with a non-empty {@code @MustCall} obligation. These obligations can be resolved either via
  * ownership transfer (e.g. by being assigned into an owning field) or via their must-call
  * obligations being contained in their called-methods type when the last reference in a set goes
@@ -161,7 +158,7 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts
-   * ("obligations") of type {@code ImmutableSet<LocalVarWithTree>}, each representing a set of
+   * ("obligations") of type {@link Obligation}, each representing a set of
    * resource aliases for some value with a non-empty {@code @MustCall} obligation. (It is not
    * necessary to track expressions with empty {@code @MustCall} obligations, because they are
    * trivially fulfilled.)
@@ -408,7 +405,7 @@ class MustCallConsistencyAnalyzer {
    * Given a node representing a method or constructor call, checks that if the result of the call
    * has a non-empty {@code @MustCall} type, then the result is pseudo-assigned to some location
    * that can take ownership of the result. Searches for the set of same resources in {@code
-   * obligations} and adds the new LocalVarWithTree to it if one exists. Otherwise creates a new
+   * obligations} and adds the new resource alias to it if one exists. Otherwise creates a new
    * set.
    *
    * @param obligations the currently-tracked obligations. This is always side-effected: an
@@ -1015,8 +1012,7 @@ class MustCallConsistencyAnalyzer {
    */
   private Node removeCastsAndGetTmpVarIfPresent(Node node) {
     // TODO: Create temp vars for TypeCastNodes as well, so there is no need to explicitly remove
-    // casts
-    // here.
+    // casts here.
     node = NodeUtils.removeCasts(node);
     return getTempVarOrNode(node);
   }
@@ -1167,7 +1163,7 @@ class MustCallConsistencyAnalyzer {
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
           // If succ is an exceptional successor, and obligation represents the temporary
-          // variable for  curBlock's node, do not propagate, as in the exceptional case the
+          // variable for curBlock's node, do not propagate, as in the exceptional case the
           // "assignment" to the temporary variable does not succeed.
           if (succ.getType() == BlockType.EXCEPTION_BLOCK) {
             Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) curBlock).getNode());
@@ -1183,7 +1179,7 @@ class MustCallConsistencyAnalyzer {
 
           // Always propagate obligation to successor if current block represents code nested
           // in a cast or ternary expression.  Without this logic, the analysis may report a false
-          // positive in when the obligation represents a temporary variable for a nested
+          // positive when the obligation represents a temporary variable for a nested
           // expression, as the temporary may not appear in the successor store and hence seems to
           // be going out of scope.  The temporary will be handled with special logic; casts are
           // unwrapped at various points in the analysis, and ternary expressions are handled by
@@ -1609,7 +1605,7 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * A pair of a {@link Block} and a set of obligations (i.e. dataflow facts) on entry to the block.
-   * Each obligation is an {@code ImmutableSet<LocalVarWithTree>}, representing a set of resource
+   * Each obligation is an {@link Obligation}, representing a set of resource
    * aliases for some tracked resource. The analyzer's worklist consists of BlockWithObligations
    * objects, each representing the need to handle the set of obligations reaching the block during
    * analysis.
@@ -1746,7 +1742,7 @@ class MustCallConsistencyAnalyzer {
     public final Tree tree;
 
     /**
-     * Create a new LocalVarWithTree.
+     * Create a new resource alias.
      *
      * @param reference the local variable
      * @param tree the tree
