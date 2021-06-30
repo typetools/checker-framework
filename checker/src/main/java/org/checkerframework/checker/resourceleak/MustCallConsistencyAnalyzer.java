@@ -851,10 +851,17 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-    // TODO: Why is this using a JavaExpression to get the type?
-    AnnotationMirror mcAnno =
-        mcTypeFactory.getAnnotationFromJavaExpression(
-            JavaExpression.fromNode(lhs), node.getTree(), MustCall.class);
+    // Get the Must Call type for the field. If there's info about this field in the store, use
+    // that. Otherwise, use the declared type of the field
+    CFStore mcStore = mcTypeFactory.getStoreBefore(lhs);
+    CFValue mcValue = mcStore.getValue(lhs);
+    AnnotationMirror mcAnno;
+    if (mcValue == null) {
+      // No store value, so use the declared type.
+      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+    } else {
+      mcAnno = AnnotationUtils.getAnnotationByClass(mcValue.getAnnotations(), MustCall.class);
+    }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
             mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);

@@ -131,10 +131,10 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     // called on just one of the locals then they all need to be treated as if
     // they need to call the relevant methods.
     AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
-    for (ResourceAlias lvt : resourceAliasSet) {
+    for (ResourceAlias alias : resourceAliasSet) {
       AnnotationMirror mcAnno = null;
-      LocalVariable local = lvt.reference;
-      CFValue value = mcStore == null ? null : mcStore.getValue(local);
+      LocalVariable reference = alias.reference;
+      CFValue value = mcStore == null ? null : mcStore.getValue(reference);
       if (value != null) {
         mcAnno = getAnnotationByClass(value.getAnnotations(), MustCall.class);
       }
@@ -145,7 +145,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we
         // can; that would probably require us to change the Must Call Checker to also
         // track temporaries.
-        TypeElement typeElt = TypesUtils.getTypeElement(local.getType());
+        TypeElement typeElt = TypesUtils.getTypeElement(reference.getType());
         if (typeElt == null) {
           // typeElt is null if local.getType() was not a class, interface, annotation type, or
           // enum---that is, was not an annotatable type.
