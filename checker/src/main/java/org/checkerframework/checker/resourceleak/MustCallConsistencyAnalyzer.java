@@ -790,8 +790,7 @@ class MustCallConsistencyAnalyzer {
             mcAtf.getStoreBefore(node),
             "variable overwritten by assignment " + node.getTree());
       }
-      replacements.put(
-          obligation, new Obligation(ImmutableSet.copyOf(newResourceAliasesForObligation)));
+      replacements.put(obligation, new Obligation(newResourceAliasesForObligation));
     }
 
     // Finally, update obligations according to the replacements.
@@ -1290,7 +1289,7 @@ class MustCallConsistencyAnalyzer {
               new LinkedHashSet<>(obligation.resourceAliases);
           copyOfResourceAliases.removeIf(
               alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
-          successorObligations.add(new Obligation(ImmutableSet.copyOf(copyOfResourceAliases)));
+          successorObligations.add(new Obligation(copyOfResourceAliases));
         }
       }
 
