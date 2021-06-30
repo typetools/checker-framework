@@ -358,12 +358,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   /**
    * Let {@code outside} be {@code ? super outsideLower extends outsideUpper}. Returns true if
    * {@code outside} contains {@code inside}, that is, if the set of types denoted by {@code
-   * outside} is a superset of or equal to the set of types denoted by {@code inside}. Helper method
-   * for {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)}.
+   * outside} is a superset of or equal to the set of types denoted by {@code inside}.
+   *
+   * <p>This method is a helper method for {@link #isContainedBy(AnnotatedTypeMirror,
+   * AnnotatedTypeMirror, boolean)}.
    *
    * @param inside a possibly-contained type
    * @param outsideLower the lower bound of the possibly-containing type
-   * @param outsideUpper a the upper bound of the possibly-containing type
+   * @param outsideUpper the upper bound of the possibly-containing type
    * @param canBeCovariant whether or not type arguments are allowed to be covariant
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
@@ -375,19 +377,17 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean canBeCovariant) {
     try {
       if (canBeCovariant) {
-        if (outsideLower.getKind() != TypeKind.NULL) {
-          return isSubtype(outsideLower, inside);
-        } else {
+        if (outsideLower.getKind() == TypeKind.NULL) {
           return isSubtype(inside, outsideUpper);
+        } else {
+          return isSubtype(outsideLower, inside);
         }
       }
-      // If inside is a wildcard, then isSubtype(outsideLower, inside) calls
-      // isSubtype(outsideLower, inside.getLowerBound()) and isSubtype(inside, outsideUpper) calls
+      // If inside is a wildcard, then isSubtype(outsideLower, inside) calls isSubtype(outsideLower,
+      // inside.getLowerBound()) and isSubtype(inside, outsideUpper) calls
       // isSubtype(inside.getUpperBound(), outsideUpper). This is slightly different from the
-      // algorithm in the JLS
-      // because there can be annotations on both the upper and lower bound of a wildcard, but only
-      // one of the Java type bounds
-      // can be specified.
+      // algorithm in the JLS.  Only one of the Java type bounds can be specified, but there can be
+      // annotations on both the upper and lower bound of a wildcard.
       return isSubtype(outsideLower, inside) && isSubtype(inside, outsideUpper);
     } catch (Throwable ex) {
       // Work around:
@@ -517,9 +517,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       final boolean subtypeRaw,
       final boolean supertypeRaw) {
 
-    final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeRaw || supertypeRaw);
-
-    if (ignoreTypeArgs) {
+    if (ignoreRawTypes && (subtypeRaw || supertypeRaw)) {
       return true;
     }
 
@@ -558,8 +556,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   /**
    * Calls {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)} on the two
-   * lists of type arguments. Returns true the type argument in {@code supertypeTypeArgs} contains
-   * the type argument at the same index in {@code subtypeTypeArgs}.
+   * lists of type arguments. Returns true if every type argument in {@code supertypeTypeArgs}
+   * contains the type argument at the same index in {@code subtypeTypeArgs}.
    *
    * @param subtypeTypeArgs subtype arguments
    * @param supertypeTypeArgs supertype arguments
@@ -885,20 +883,22 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
-        // if both have primary annotations then you can just check the primary annotations
-        // as the bounds are the same
+        // If both have primary annotations then just check the primary annotations
+        // as the bounds are the same.
         return isPrimarySubtype(subtype, supertype);
 
       } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype)) {
         // two unannotated uses of the same type parameter are of the same type
         return true;
       } else if (subtypeHasAnno) {
+        // This is the case "@A T <: T" where T is a type variable.
         Set<AnnotationMirror> superLBs =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, supertype);
         AnnotationMirror superLB =
             qualifierHierarchy.findAnnotationInHierarchy(superLBs, currentTop);
         return qualifierHierarchy.isSubtype(subtype.getAnnotationInHierarchy(currentTop), superLB);
       } else if (supertypeHasAnno) {
+        // This is the case "T <: @A T" where T is a type variable.
         return qualifierHierarchy.isSubtype(
             subtype.getEffectiveAnnotationInHierarchy(currentTop),
             supertype.getAnnotationInHierarchy(currentTop));
@@ -1075,37 +1075,39 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * A type variable is a subtype if its upper bounds is below the supertype. Note: When comparing
-   * two type variables this method and visitTypevarSupertype will combine to isValid the subtypes
+   * A type variable is a subtype if its upper bound is below the supertype. Note: When comparing
+   * two type variables, this method and visitTypevarSupertype will combine to isValid the subtypes
    * upper bound against the supertypes lower bound.
    */
   protected boolean visitTypevarSubtype(
       AnnotatedTypeVariable subtype, AnnotatedTypeMirror supertype) {
-    AnnotatedTypeMirror upperBound = subtype.getUpperBound();
-    if (TypesUtils.isBoxedPrimitive(upperBound.getUnderlyingType())
+    AnnotatedTypeMirror subtypeUpperBound = subtype.getUpperBound();
+    if (TypesUtils.isBoxedPrimitive(subtypeUpperBound.getUnderlyingType())
         && supertype instanceof AnnotatedPrimitiveType) {
-      upperBound = supertype.atypeFactory.getUnboxedType((AnnotatedDeclaredType) upperBound);
+      subtypeUpperBound =
+          supertype.atypeFactory.getUnboxedType((AnnotatedDeclaredType) subtypeUpperBound);
     }
     if (supertype.getKind() == TypeKind.DECLARED
         && TypesUtils.getTypeElement(supertype.getUnderlyingType()).getKind()
             == ElementKind.INTERFACE) {
-      // Make sure the upper bound is no wildcard or type variable
-      while (upperBound.getKind() == TypeKind.TYPEVAR
-          || upperBound.getKind() == TypeKind.WILDCARD) {
-        if (upperBound.getKind() == TypeKind.TYPEVAR) {
-          upperBound = ((AnnotatedTypeVariable) upperBound).getUpperBound();
+      // Make sure the upper bound is no wildcard or type variable.
+      while (subtypeUpperBound.getKind() == TypeKind.TYPEVAR
+          || subtypeUpperBound.getKind() == TypeKind.WILDCARD) {
+        if (subtypeUpperBound.getKind() == TypeKind.TYPEVAR) {
+          subtypeUpperBound = ((AnnotatedTypeVariable) subtypeUpperBound).getUpperBound();
         }
-        if (upperBound.getKind() == TypeKind.WILDCARD) {
-          upperBound = ((AnnotatedWildcardType) upperBound).getExtendsBound();
+        if (subtypeUpperBound.getKind() == TypeKind.WILDCARD) {
+          subtypeUpperBound = ((AnnotatedWildcardType) subtypeUpperBound).getExtendsBound();
         }
       }
       // If the supertype is an interface, only compare the primary annotations.
       // The actual type argument could implement the interface and the bound of
       // the type variable must not implement the interface.
-      if (upperBound.getKind() == TypeKind.INTERSECTION) {
+      if (subtypeUpperBound.getKind() == TypeKind.INTERSECTION) {
         Types types = checker.getTypeUtils();
-        for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) upperBound).getBounds()) {
-          // Make sure the upper bound is no wildcard or type variable
+        for (AnnotatedTypeMirror bound :
+            ((AnnotatedIntersectionType) subtypeUpperBound).getBounds()) {
+          // Make sure the upper bound is no wildcard or type variable.
           while (bound.getKind() == TypeKind.TYPEVAR || bound.getKind() == TypeKind.WILDCARD) {
             if (bound.getKind() == TypeKind.TYPEVAR) {
               bound = ((AnnotatedTypeVariable) bound).getUpperBound();
@@ -1123,7 +1125,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return false;
       }
     }
-    return isSubtypeCaching(upperBound, supertype);
+    return isSubtypeCaching(subtypeUpperBound, supertype);
   }
 
   /** A union type is a subtype if ALL of its alternatives are subtypes of supertype. */
@@ -1159,8 +1161,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
-        // if both have primary annotations then just check the primary annotations
-        // as the bounds are the same
+        // If both have primary annotations then just check the primary annotations
+        // as the bounds are the same.
         return isPrimarySubtype(subtype, supertype);
 
       } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype)) {
