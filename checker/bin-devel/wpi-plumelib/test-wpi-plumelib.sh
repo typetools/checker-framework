@@ -45,7 +45,7 @@ clean_compile_output() {
 
     # Remove uninteresting output
     sed -i '/^warning: \[path\] bad path element /d' "$out"
-    sed -i '/^OpenJDK 64-Bit Server VM warning: Option --illegal-access is deprecated and will be removed in a future release./d' "$out"
+    sed -i '/^.*warning: Option --illegal-access is deprecated and will be removed in a future release./d' "$out"
     sed -i '/^warning: \[options\] bootstrap class path not set/d' "$out"
 
     # Remove warning count because it can differ between JDK 8 and later JDKs due to the bootstrap warning:
