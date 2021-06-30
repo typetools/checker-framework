@@ -92,11 +92,10 @@ import org.plumelib.util.StringsPlume;
  * lightweight alias analysis that tracks must-alias sets for resources.
  *
  * <p>Throughout this class, variables named "obligation" or "obligations" are dataflow facts of
- * type {@link Obligation}, each representing a set of resource aliases for some
- * value with a non-empty {@code @MustCall} obligation. These obligations can be resolved either via
- * ownership transfer (e.g. by being assigned into an owning field) or via their must-call
- * obligations being contained in their called-methods type when the last reference in a set goes
- * out of scope.
+ * type {@link Obligation}, each representing a set of resource aliases for some value with a
+ * non-empty {@code @MustCall} obligation. These obligations can be resolved either via ownership
+ * transfer (e.g. by being assigned into an owning field) or via their must-call obligations being
+ * contained in their called-methods type when the last reference in a set goes out of scope.
  *
  * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
  * certain code patterns are encountered. (Because they are immutable, obligations are modified by
@@ -158,10 +157,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts
-   * ("obligations") of type {@link Obligation}, each representing a set of
-   * resource aliases for some value with a non-empty {@code @MustCall} obligation. (It is not
-   * necessary to track expressions with empty {@code @MustCall} obligations, because they are
-   * trivially fulfilled.)
+   * ("obligations") of type {@link Obligation}, each representing a set of resource aliases for
+   * some value with a non-empty {@code @MustCall} obligation. (It is not necessary to track
+   * expressions with empty {@code @MustCall} obligations, because they are trivially fulfilled.)
    *
    * @param cfg the control flow graph of the method to check
    */
@@ -405,8 +403,7 @@ class MustCallConsistencyAnalyzer {
    * Given a node representing a method or constructor call, checks that if the result of the call
    * has a non-empty {@code @MustCall} type, then the result is pseudo-assigned to some location
    * that can take ownership of the result. Searches for the set of same resources in {@code
-   * obligations} and adds the new resource alias to it if one exists. Otherwise creates a new
-   * set.
+   * obligations} and adds the new resource alias to it if one exists. Otherwise creates a new set.
    *
    * @param obligations the currently-tracked obligations. This is always side-effected: an
    *     obligation is either modified (by removing it from the obligation set and adding a new one)
@@ -1605,10 +1602,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * A pair of a {@link Block} and a set of obligations (i.e. dataflow facts) on entry to the block.
-   * Each obligation is an {@link Obligation}, representing a set of resource
-   * aliases for some tracked resource. The analyzer's worklist consists of BlockWithObligations
-   * objects, each representing the need to handle the set of obligations reaching the block during
-   * analysis.
+   * Each obligation is an {@link Obligation}, representing a set of resource aliases for some
+   * tracked resource. The analyzer's worklist consists of BlockWithObligations objects, each
+   * representing the need to handle the set of obligations reaching the block during analysis.
    */
   private static class BlockWithObligations {
 
