@@ -545,7 +545,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             : AnnotationUtils.getElementValueArray(
                 covariantAnno, covariantValueElement, Integer.class);
 
-    // JLS: 4.10.2. Subtyping among Class and Interface Types
+    // JLS 11: 4.10.2. Subtyping among Class and Interface Types
     // 4th paragraph
     if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
       return true;
