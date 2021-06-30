@@ -360,10 +360,10 @@ tasks.test.dependsOn("delombok")
 test {
     useJUnit {
         // These are run in task ainferTests.
-        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.WholeProgramInferenceTestCheckerJaifsTest'
-        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.WholeProgramInferenceTestCheckerStubsTest'
-        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.WholeProgramInferenceTestCheckerAjavaTest'
-        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.WholeProgramInferenceNullnessJaifsTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerJaifsTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerStubsTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerAjavaTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferNullnessJaifsTest'
     }
 }
 
@@ -376,7 +376,7 @@ task ainferTestCheckerGenerateStubs(type: Test) {
         delete("${buildDir}/ainfer-testchecker/")
     }
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceTestCheckerStubsTest.class'
+    include '**/AinferTestCheckerStubsTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
@@ -403,7 +403,7 @@ task ainferTestCheckerValidateStubs(type: Test) {
 
     dependsOn(ainferTestCheckerGenerateStubs)
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceTestCheckerStubsValidationTest.class'
+    include '**/AinferTestCheckerStubsValidationTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
@@ -423,7 +423,7 @@ task ainferTestCheckerGenerateAjava(type: Test) {
         delete("${buildDir}/ainfer-testchecker/")
     }
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceTestCheckerAjavaTest.class'
+    include '**/AinferTestCheckerAjavaTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
@@ -443,7 +443,7 @@ task ainferTestCheckerValidateAjava(type: Test) {
 
     dependsOn(ainferTestCheckerGenerateAjava)
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceTestCheckerAjavaValidationTest.class'
+    include '**/AinferTestCheckerAjavaValidationTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
@@ -505,7 +505,7 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
         delete("tests/ainfer-testchecker/annotated")
     }
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceTestCheckerJaifsTest.class'
+    include '**/AinferTestCheckerJaifsTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
@@ -559,7 +559,7 @@ task ainferTestCheckerValidateJaifs(type: Test) {
 
     dependsOn(ainferTestCheckerGenerateJaifs)
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceTestCheckerJaifsValidationTest.class'
+    include '**/AinferTestCheckerJaifsValidationTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
@@ -585,7 +585,7 @@ task ainferNullnessGenerateJaifs(type: Test) {
         delete("tests/ainfer-nullness/annotated")
     }
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceNullnessJaifsTest.class'
+    include '**/AinferNullnessJaifsTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }
@@ -638,7 +638,7 @@ task ainferNullnessValidateJaifs(type: Test) {
 
     dependsOn(ainferNullnessGenerateJaifs)
     outputs.upToDateWhen { false }
-    include '**/WholeProgramInferenceNullnessJaifsValidationTest.class'
+    include '**/AinferNullnessJaifsValidationTest.class'
     testLogging {
         // Always run the tests
         outputs.upToDateWhen { false }

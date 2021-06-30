@@ -1,4 +1,4 @@
-package org.checkerframework.checker.testchecker.wholeprograminference.qual;
+package org.checkerframework.checker.testchecker.ainfer.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

@@ -1,4 +1,4 @@
-package org.checkerframework.checker.testchecker.wholeprograminference.qual;
+package org.checkerframework.checker.testchecker.ainfer.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -11,4 +11,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  */
 @SubtypeOf(Parent.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Sibling1 {}
+public @interface SiblingWithFields {
+  String[] value() default {};
+
+  String value2() default "";
+}

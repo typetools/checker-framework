@@ -1,5 +1,5 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
 
 public class TypeVariablesTest3<@Sibling1 T extends @Sibling1 Object> {
   public @Sibling2 T sibling2;
