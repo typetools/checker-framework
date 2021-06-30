@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util;
 
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
@@ -141,11 +142,14 @@ public class JavaExpressionParseUtil {
       ProcessingEnvironment env)
       throws JavaExpressionParseException {
 
+    // Use the current source version to parse with because a JavaExpression could refer to a
+    // variable named "var", which is a keyword in Java 10 and later.
+    LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
     String expressionWithParameterNames =
         StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
-      expr = JavaParserUtil.parseExpression(expressionWithParameterNames);
+      expr = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
     } catch (ParseProblemException e) {
       String extra = ".";
       if (!e.getProblems().isEmpty()) {
@@ -1000,8 +1004,11 @@ public class JavaExpressionParseUtil {
      */
     private @Nullable TypeMirror convertTypeToTypeMirror(Type type) {
       if (type.isClassOrInterfaceType()) {
+        LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
         try {
-          return JavaParserUtil.parseExpression(type.asString()).accept(this, null).getType();
+          return JavaParserUtil.parseExpression(type.asString(), currentSourceVersion)
+              .accept(this, null)
+              .getType();
         } catch (ParseProblemException e) {
           return null;
         }
