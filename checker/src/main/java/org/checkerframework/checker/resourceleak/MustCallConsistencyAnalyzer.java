@@ -766,7 +766,7 @@ class MustCallConsistencyAnalyzer {
         }
       }
 
-      if (obligationModified) {
+      if (!obligationModified) {
         // If the obligation wasn't modified, don't update it.
         continue;
       }
