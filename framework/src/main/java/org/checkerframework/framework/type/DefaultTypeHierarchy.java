@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -296,14 +297,20 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * of another declared type only if all of the type arguments of the declared type "contain" the
    * corresponding type arguments of the subtype.
    *
-   * @param inside a possibly-contained type
-   * @param outside a possibly-containing type
+   * @param inside a possibly-contained type; its underlying type is contained by {@code outside}'s
+   *     underlying type
+   * @param outside a possibly-containing type; its underlying type contains {@code inside}'s
+   *     underlying type
    * @param canBeCovariant whether or not type arguments are allowed to be covariant
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
    */
   protected boolean isContainedBy(
       AnnotatedTypeMirror inside, AnnotatedTypeMirror outside, boolean canBeCovariant) {
+    Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
+    if (previousResult != null) {
+      return previousResult;
+    }
 
     if (shouldIgnoreUninferredTypeArgs(inside) || shouldIgnoreUninferredTypeArgs(outside)) {
       areEqualVisitHistory.put(inside, outside, currentTop, true);
@@ -311,10 +318,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     if (outside.getKind() == TypeKind.WILDCARD) {
-      Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
-      if (previousResult != null) {
-        return previousResult;
-      }
       AnnotatedWildcardType outsideWildcard = (AnnotatedWildcardType) outside;
 
       // Add a placeholder in case of recursion, to prevent infinite regress.
@@ -331,10 +334,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
       // TODO: This branch should be removed after #979 is fixed.
       // If both outside and inside are captured type variables, they should be equal.
-      Boolean previousResult = areEqualVisitHistory.get(inside, outside, currentTop);
-      if (previousResult != null) {
-        return previousResult;
-      }
       AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
 
       // Add a placeholder in case of recursion, to prevent infinite regress.
@@ -525,7 +524,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     final List<? extends AnnotatedTypeMirror> supertypeTypeArgs = supertype.getTypeArguments();
 
     if (subtypeTypeArgs.size() != supertypeTypeArgs.size()) {
-      return false;
+      throw new BugInCF("Type arguments are not the same size: %s %s", subtype, supertype);
     }
     // This method, `visitTypeArgs`, is called even if `subtype` doesn't have type arguments.
     if (subtypeTypeArgs.isEmpty()) {
@@ -1090,16 +1089,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (supertype.getKind() == TypeKind.DECLARED
         && TypesUtils.getTypeElement(supertype.getUnderlyingType()).getKind()
             == ElementKind.INTERFACE) {
-      // Make sure the upper bound is no wildcard or type variable.
-      while (subtypeUpperBound.getKind() == TypeKind.TYPEVAR
-          || subtypeUpperBound.getKind() == TypeKind.WILDCARD) {
-        if (subtypeUpperBound.getKind() == TypeKind.TYPEVAR) {
-          subtypeUpperBound = ((AnnotatedTypeVariable) subtypeUpperBound).getUpperBound();
-        }
-        if (subtypeUpperBound.getKind() == TypeKind.WILDCARD) {
-          subtypeUpperBound = ((AnnotatedWildcardType) subtypeUpperBound).getExtendsBound();
-        }
-      }
+      subtypeUpperBound = getNonWildcardOrTypeVarUpperBound(subtypeUpperBound);
       // If the supertype is an interface, only compare the primary annotations.
       // The actual type argument could implement the interface and the bound of
       // the type variable must not implement the interface.
@@ -1108,14 +1098,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         for (AnnotatedTypeMirror bound :
             ((AnnotatedIntersectionType) subtypeUpperBound).getBounds()) {
           // Make sure the upper bound is no wildcard or type variable.
-          while (bound.getKind() == TypeKind.TYPEVAR || bound.getKind() == TypeKind.WILDCARD) {
-            if (bound.getKind() == TypeKind.TYPEVAR) {
-              bound = ((AnnotatedTypeVariable) bound).getUpperBound();
-            }
-            if (bound.getKind() == TypeKind.WILDCARD) {
-              bound = ((AnnotatedWildcardType) bound).getExtendsBound();
-            }
-          }
+          bound = getNonWildcardOrTypeVarUpperBound(bound);
           if (TypesUtils.isErasedSubtype(
                   bound.getUnderlyingType(), supertype.getUnderlyingType(), types)
               && isPrimarySubtype(bound, supertype)) {
@@ -1126,6 +1109,27 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       }
     }
     return isSubtypeCaching(subtypeUpperBound, supertype);
+  }
+
+  /**
+   * If {@code type} is a type variable or wildcard recur on its upper bound until an upper bound is
+   * found that is neither a type variable nor a wildcard.
+   *
+   * @param type the type
+   * @return {@code type} if it is not a type variable or a wildcard, or if it is a type variable or
+   *     wildcard recur on its upper bound until an upper bound is found that is neither a type
+   *     variable nor a wildcard
+   */
+  private AnnotatedTypeMirror getNonWildcardOrTypeVarUpperBound(AnnotatedTypeMirror type) {
+    while (type.getKind() == TypeKind.TYPEVAR || type.getKind() == TypeKind.WILDCARD) {
+      if (type.getKind() == TypeKind.TYPEVAR) {
+        type = ((AnnotatedTypeVariable) type).getUpperBound();
+      }
+      if (type.getKind() == TypeKind.WILDCARD) {
+        type = ((AnnotatedWildcardType) type).getExtendsBound();
+      }
+    }
+    return type;
   }
 
   /** A union type is a subtype if ALL of its alternatives are subtypes of supertype. */
