@@ -696,7 +696,7 @@ class MustCallConsistencyAnalyzer {
       }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
-      doGenKillForPseudoAssignment(assignmentNode, obligations, lhsVar, rhs);
+      updateObligationsForPseduoAssignment(assignmentNode, obligations, lhsVar, rhs);
     }
   }
 
@@ -716,11 +716,17 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Update a set of tracked obligations to account for a (pseudo-)assignment to some variable, as
-   * in a gen-kill dataflow analysis problem. Pseudo-assignments may include operations that
-   * "assign" to a temporary variable, exposing the possible value flow into the variable. E.g., for
-   * a ternary expression {@code b ? x : y} whose temporary variable is {@code t}, this method may
-   * process "assignments" {@code t = x} and {@code t = y}, thereby capturing the two possible
-   * values of {@code t}.
+   * in a gen-kill dataflow analysis problem. That is, add ("gen") and remove ("kill") resource
+   * aliases from obligations in the {@code obligations} set as appropriate based on the
+   * (pseudo-)assignment performed by {@code node}. This method may also remove an obligation
+   * entirely if the analysis concludes that its resource alias set is empty because the last
+   * tracked alias to it has been overwritten (including checking that the must-call obligations
+   * were satisfied before the assignment).
+   *
+   * <p>Pseudo-assignments may include operations that "assign" to a temporary variable, exposing
+   * the possible value flow into the variable. E.g., for a ternary expression {@code b ? x : y}
+   * whose temporary variable is {@code t}, this method may process "assignments" {@code t = x} and
+   * {@code t = y}, thereby capturing the two possible values of {@code t}.
    *
    * @param node the node performing the pseudo-assignment; it is not necessarily an assignment node
    * @param obligations the tracked obligations, which will be side-effected
@@ -729,50 +735,52 @@ class MustCallConsistencyAnalyzer {
    *     temporary variable (via a call to {@link
    *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode(Node)})
    */
-  // TODO: This method is hard to follow.  What exactly do you mean by "kill" and "gen" in this
-  // context? I think "kill" means to remove from to obligation and "gen" means to add to
-  // obligation.  So a better name for this method might be updateObligationsForPseudoAssignment.
-  // TODO: This method also checks the must call if all references go out of scope. The Javadoc
-  // should mention this.
-  private void doGenKillForPseudoAssignment(
+  private void updateObligationsForPseduoAssignment(
       Node node, Set<Obligation> obligations, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
     Map<Obligation, Obligation> replacements = new LinkedHashMap<>();
-    // construct aliasForAssignment once outside the loop for efficiency
+    // Construct aliasForAssignment once outside the loop for efficiency.
     ResourceAlias aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
     for (Obligation obligation : obligations) {
-      boolean obligationModified = false;
-      Set<ResourceAlias> newObligation = new LinkedHashSet<>(obligation.resourceAliases);
+      // This is non-null value iff the resource alias set for obligation needs to
+      // change because of the pseudo-assignment. The value of this variable is the new
+      // alias set for obligation if it is non-null.
+      Set<ResourceAlias> newResourceAliasesForObligation = null;
 
-      // always kill the lhs var if present
+      // Always kill the lhs var if it is present in the resource alias set for this obligation
+      // by removing it from the resource alias set.
       ResourceAlias aliasForLhs = obligation.getResourceAlias(lhsVar);
       if (aliasForLhs != null) {
-        newObligation.remove(aliasForLhs);
-        obligationModified = true;
+        newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
+        newResourceAliasesForObligation.remove(aliasForLhs);
       }
-      // if rhs is a variable tracked in the obligation's resource alias set, gen the lhs
+      // If rhs is a variable tracked in the obligation's resource alias set, gen the lhs
+      // by adding it to the resource alias set.
       if (rhs instanceof LocalVariableNode
           && obligation.hasResourceAlias((LocalVariableNode) rhs)) {
-        obligationModified = true;
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-        newObligation.add(aliasForAssignment);
+        if (newResourceAliasesForObligation == null) {
+          newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
+        }
+        newResourceAliasesForObligation.add(aliasForAssignment);
         // Remove temp vars from tracking once they are assigned to another location.
         if (typeFactory.isTempVar(rhsVar)) {
           ResourceAlias aliasForRhs = obligation.getResourceAlias(rhsVar);
           if (aliasForRhs != null) {
-            newObligation.remove(aliasForRhs);
+            newResourceAliasesForObligation.remove(aliasForRhs);
           }
         }
       }
 
-      if (!obligationModified) {
-        // If the obligation wasn't modified, don't update it.
+      // If no changes were made to the resource alias set, there is no need to update the
+      // obligation.
+      if (newResourceAliasesForObligation == null) {
         continue;
       }
 
-      if (newObligation.isEmpty()) {
-        // Because the last reference to the resource has been killed, check the must-call
+      if (newResourceAliasesForObligation.isEmpty()) {
+        // Because the last reference to the resource has been overwritten, check the must-call
         // obligation.
         MustCallAnnotatedTypeFactory mcAtf =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
@@ -782,7 +790,8 @@ class MustCallConsistencyAnalyzer {
             mcAtf.getStoreBefore(node),
             "variable overwritten by assignment " + node.getTree());
       }
-      replacements.put(obligation, new Obligation(ImmutableSet.copyOf(newObligation)));
+      replacements.put(
+          obligation, new Obligation(ImmutableSet.copyOf(newResourceAliasesForObligation)));
     }
 
     // Finally, update obligations according to the replacements.
@@ -1303,7 +1312,7 @@ class MustCallConsistencyAnalyzer {
       }
     }
     Set<Obligation> newDefs = new LinkedHashSet<>(obligations);
-    doGenKillForPseudoAssignment(ternaryNode, newDefs, ternaryTempVar, rhs);
+    updateObligationsForPseduoAssignment(ternaryNode, newDefs, ternaryTempVar, rhs);
     return newDefs;
   }
 
