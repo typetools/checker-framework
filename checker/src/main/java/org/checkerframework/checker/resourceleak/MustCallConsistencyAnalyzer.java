@@ -940,7 +940,7 @@ class MustCallConsistencyAnalyzer {
 
     List<String> checked = new ArrayList<>();
     for (String targetStrWithoutAdaptation : cmcfValues) {
-      String targetStr = null;
+      String targetStr;
       try {
         targetStr =
             StringToJavaExpression.atMethodBody(
