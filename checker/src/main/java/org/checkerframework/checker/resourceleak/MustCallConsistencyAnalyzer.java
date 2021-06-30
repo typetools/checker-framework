@@ -44,9 +44,9 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
-import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -1093,7 +1093,8 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Get all successor blocks for some block, except for those corresponding to ignored exception
-   * types. See {@link #ignoredExceptionTypes}.
+   * types. See {@link #ignoredExceptionTypes}. Each exceptional successor is paired with the type
+   * of exception that leads to it, for use in error messages.
    *
    * @param block input block
    * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
@@ -1132,69 +1133,94 @@ class MustCallConsistencyAnalyzer {
    * Propagates a set of obligations to successors, and performs consistency checks when variables
    * are going out of scope.
    *
+   * <p>The basic algorithm loops over the successor blocks of the current block. For each
+   * successor, it checks every obligation in obligations. If the successor is an exit block or all
+   * of an obligation's resource aliases might be going out of scope, then a consistency check
+   * occurs (with two exceptions, both related to temporary variables that don't actually get
+   * assigned; see code comments for details) and an error is issued if it fails. If the successor
+   * is any other kind of block and there is information about at least one of the obligation's
+   * aliases in the successor store (i.e. the resource itself definitely does not go out of scope),
+   * then the obligation is passed forward to the successor ("propagated") with any definitely
+   * out-of-scope aliases removed from its resource alias set.
+   *
    * @param visited block-obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
-   * @param obligations obligations to propagate to successors
-   * @param curBlock the current block
+   * @param obligations obligations of the current block
+   * @param currentBlock the current block
    */
-  // TODO: This method is hard to follow.  I think it's doing the following:
-  //  for each successor block and for each obligation,
-  // if any of the resource aliases do not go out of scope,
-  // then propagate the obligation to the successor block.
-  // Otherwise, check that the obligation is fulfilled.
-  // If this is a correct summary, can you refactor this method to match that?
   private void handleSuccessorBlocks(
       Set<BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist,
       Set<Obligation> obligations,
-      Block curBlock) {
-    List<Node> curBlockNodes = curBlock.getNodes();
-    for (Pair<Block, @Nullable TypeMirror> succAndExcType :
-        getSuccessorsExceptIgnoredExceptions(curBlock)) {
-      Block succ = succAndExcType.first;
-      // If nonnull, curBlock is an ExceptionBlock.
-      TypeMirror exceptionType = succAndExcType.second;
-      Set<Obligation> curObligations = handleTernarySuccIfNeeded(curBlock, succ, obligations);
-      // obligationsForSucc eventually contains the obligations to propagate to succ.  The loop
+      Block currentBlock) {
+    List<Node> currentBlockNodes = currentBlock.getNodes();
+    // For each successor block that isn't caused by an ignored exception type, this loop computes
+    // the
+    // set of obligations that should be propagated to it and then adds it to the worklist if any of
+    // its resource aliases are still in scope in the successor block. If none are, then the loop
+    // performs a consistency check for that obligation.
+    for (Pair<Block, @Nullable TypeMirror> successorAndExceptionType :
+        getSuccessorsExceptIgnoredExceptions(currentBlock)) {
+      Block successor = successorAndExceptionType.first;
+      // If nonnull, currentBlock is an ExceptionBlock.
+      TypeMirror exceptionType = successorAndExceptionType.second;
+      Set<Obligation> curObligations =
+          handleTernarySuccIfNeeded(currentBlock, successor, obligations);
+      // successorObligations eventually contains the obligations to propagate to successor. The
+      // loop
       // below mutates it.
-      Set<Obligation> obligationsForSucc = new LinkedHashSet<>();
-      // A detailed reason to give in the case that a relevant variable goes out of scope with an
-      // unsatisfied obligation along the current control-flow edge.
-      String reasonForSucc =
+      Set<Obligation> successorObligations = new LinkedHashSet<>();
+      // A detailed reason to give in the case that the last resource alias of an obligation
+      // goes out of scope without a called-methods type that satisfies the obligation along the
+      // current control-flow edge. Computed here for efficiency; used in the loop over the
+      // obligations, below.
+      String exitReasonForErrorMessage =
           exceptionType == null
               ?
               // Technically the variable may be going out of scope before the method exit, but that
               // doesn't seem to provide additional helpful information.
               "regular method exit"
               : "possible exceptional exit due to "
-                  + ((ExceptionBlock) curBlock).getNode().getTree()
+                  + ((ExceptionBlock) currentBlock).getNode().getTree()
                   + " with exception type "
                   + exceptionType;
-      CFStore succRegularStore = analysis.getInput(succ).getRegularStore();
+      // Computed outside the obligation loop for efficiency.
+      CFStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
       for (Obligation obligation : curObligations) {
-        boolean noInfoInSuccStoreForVars = true;
+        // This boolean is true if there is no evidence that
+        boolean obligationGoesOutOfScopeBeforeSuccessor = true;
         for (ResourceAlias resourceAlias : obligation.resourceAliases) {
-          if (!varNotPresentInStoreAndNotForTernary(succRegularStore, resourceAlias)) {
-            noInfoInSuccStoreForVars = false;
+          if (aliasInScopeInSuccessor(regularStoreOfSuccessor, resourceAlias)) {
+            obligationGoesOutOfScopeBeforeSuccessor = false;
             break;
           }
         }
-        if (succ instanceof SpecialBlockImpl /* exit block */ || noInfoInSuccStoreForVars) {
+        // This check is to determine if this obligation's resource aliases are definitely going
+        // out of scope: if this is an exit block or there is no information about any of them in
+        // the successor store, all aliases must be going out of scope and a consistency check
+        // should occur.
+        if (successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
+            || obligationGoesOutOfScopeBeforeSuccessor) {
           MustCallAnnotatedTypeFactory mcAtf =
               typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-          // If succ is an exceptional successor, and obligation represents the temporary
-          // variable for  curBlock's node, do not propagate, as in the exceptional case the
-          // "assignment" to the temporary variable does not succeed.
+          // If successor is an exceptional successor, and obligation represents the temporary
+          // variable for  currentBlock's node, do not propagate or do a consistency check, as in
+          // the exceptional case the "assignment" to the temporary variable does not succeed.
+          //
+          // Note that this test cannot be "successor.getType() == BlockType.EXCEPTIONAL_BLOCK",
+          // because not every exceptional successor is an exceptional block. For example,
+          // the successor might be a regular block (containing a catch clause, for example),
+          // or a special block indicating an exceptional exit. Nor can this test be
+          // "currentBlock.getType() == BlockType.EXCEPTIONAL_BLOCK", because some exception types
+          // are ignored. Whether exceptionType is null captures the logic of both of these cases.
           if (exceptionType != null) {
-            Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) curBlock).getNode());
+            Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) currentBlock).getNode());
             LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
             if (tmpVarForExcNode != null
                 && obligation.resourceAliases.size() == 1
                 && obligation.hasResourceAlias(tmpVarForExcNode)) {
-              // TODO: Should this be continue?  Other obligations may need to be passed along.
-              // If it should be a continue, considering adding a test case.
-              break;
+              continue;
             }
           }
 
@@ -1205,44 +1231,57 @@ class MustCallConsistencyAnalyzer {
           // be going out of scope.  The temporary will be handled with special logic; casts are
           // unwrapped at various points in the analysis, and ternary expressions are handled by
           // handleTernarySuccIfNeeded.
-          if (curBlockNodes.size() == 1 && inCastOrTernary(curBlockNodes.get(0))) {
-            obligationsForSucc.add(obligation);
-            // TODO: Should this be continue in case of other obligations?  If so, then can
-            // it be moved out of this for loop?
-            break;
+          if (currentBlockNodes.size() == 1 && inCastOrTernary(currentBlockNodes.get(0))) {
+            successorObligations.add(obligation);
+            continue;
           }
 
-          if (curBlockNodes.size() == 0 /* curBlock is special or conditional */) {
-            // TODO: Can you clarify the comment below?
-            // Use the store from the block actually being analyzed, rather than succRegularStore,
-            // if succRegularStore contains no information about the variables of interest.
-            // In the case where none of the aliases in obligation appear in
-            // succRegularStore, the resource is going out of scope, and it doesn't make
-            // sense to pass succRegularStore to checkMustCall - the successor store will
-            // not have any information about it, by construction, and
-            // any information in the previous store remains true. If any locals from the resource
-            // alias set do appear in succRegularStore, that store is always used.
-            CFStore cmStore =
-                noInfoInSuccStoreForVars
-                    ? analysis.getInput(curBlock).getRegularStore()
-                    : succRegularStore;
-            CFStore mcStore = mcAtf.getStoreForBlock(noInfoInSuccStoreForVars, curBlock, succ);
-            checkMustCall(obligation, cmStore, mcStore, reasonForSucc);
+          // At this point, a consistency check will definitely occur.
+          // Which stores from the called-methods and must-call checkers are used in
+          // the consistency check varies depending on the context. The rules are:
+          // 1. if the current block has no nodes (and therefore the store must come from a block
+          //    rather than a node):
+          //    1a. if there is information about any alias in the resource alias set
+          //        in the successor store, use the successor's CM and MC stores, which
+          //        contain whatever information is true after this block finishes
+          //    1b. if there is not any information about any alias in the resource alias
+          //        set in the successor store, use the current blocks' CM and MC stores,
+          //        which contain whatever information is true before this (empty) block
+          // 2. if the current block has one or more nodes, always use the CM store after
+          //    the last node. To decide which MC store to use:
+          //    2a. if the last node in the block is the invocation of an @CreatesMustCallFor
+          //        method that might throw an exception, and the consistency check is for
+          //        an exceptional path, use the MC store immediately before the method invocation,
+          //        because the method threw an exception rather than finishing and therefore did
+          //        not actually create an obligation, so the MC store after might contain
+          // obligations
+          //        that do not need to be fulfilled along this path
+          //        2b. in all other cases, use the MC store from after the last node in the block
+          CFStore mcStore, cmStore;
+          if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
+            cmStore =
+                obligationGoesOutOfScopeBeforeSuccessor
+                    ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
+                    : regularStoreOfSuccessor; // 1b. (CM)
+            mcStore =
+                mcAtf.getStoreForBlock(
+                    obligationGoesOutOfScopeBeforeSuccessor,
+                    currentBlock, // 1a. (MC)
+                    successor); // 1b. (MC)
           } else { // In this case, current block has at least one node.
-            // Use the called-methods store immediately after the last node in curBlock.
-            Node last = curBlockNodes.get(curBlockNodes.size() - 1);
-            CFStore cmStoreAfter = typeFactory.getStoreAfter(last);
+            // Use the called-methods store immediately after the last node in currentBlock.
+            Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)
+            cmStore = typeFactory.getStoreAfter(last);
             // If this is an exceptional block, check the MC store beforehand to avoid
             // issuing an error about a call to a CreatesMustCallFor method that might throw
             // an exception. Otherwise, use the store after.
-            CFStore mcStore;
             if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
-              mcStore = mcAtf.getStoreBefore(last);
+              mcStore = mcAtf.getStoreBefore(last); // 2a. (MC)
             } else {
-              mcStore = mcAtf.getStoreAfter(last);
+              mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
             }
-            checkMustCall(obligation, cmStoreAfter, mcStore, reasonForSucc);
           }
+          checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
 
         } else { // In this case, there is info in the successor store about some alias in
           // obligation. Handles the possibility that some resource in the obligation may go out of
@@ -1250,29 +1289,31 @@ class MustCallConsistencyAnalyzer {
           Set<ResourceAlias> copyOfResourceAliases =
               new LinkedHashSet<>(obligation.resourceAliases);
           copyOfResourceAliases.removeIf(
-              assign -> varNotPresentInStoreAndNotForTernary(succRegularStore, assign));
-          obligationsForSucc.add(new Obligation(ImmutableSet.copyOf(copyOfResourceAliases)));
+              alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
+          successorObligations.add(new Obligation(ImmutableSet.copyOf(copyOfResourceAliases)));
         }
       }
 
-      propagate(new BlockWithObligations(succ, obligationsForSucc), visited, worklist);
+      propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
     }
   }
 
   /**
-   * Returns true if {@code assign.localVar} has no value in {@code store} and {@code assign.tree}
-   * is not a {@link ConditionalExpressionTree}. The check for a {@link ConditionalExpressionTree}
-   * is to accommodate the handling of ternary expressions, because the analysis tracks the
-   * temporary variable for the expression at the program point before that expression; see {@link
+   * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that is,
+   * there is a value for it in {@code successorStore}. Also returns true if {@code alias.tree} is a
+   * {@link ConditionalExpressionTree}. This special rule for a {@link ConditionalExpressionTree} is
+   * to accommodate the handling of ternary expressions, because the analysis tracks the temporary
+   * variable for the expression at the program point before that expression; see {@link
    * #handleTernarySuccIfNeeded(Block, Block, Set)}.
    *
-   * @param store the store to check
-   * @param assign the lvt to check
-   * @return true if the variable is not present in store and is not for a ternary
+   * @param successorStore the regular store of the successor block
+   * @param alias the resource alias to check
+   * @return true if the variable is definitely in scope for the purposes of the consistency
+   *     checking algorithm in the successor block from which the store came
    */
-  private boolean varNotPresentInStoreAndNotForTernary(CFStore store, ResourceAlias assign) {
-    return store.getValue(assign.reference) == null
-        && !(assign.tree instanceof ConditionalExpressionTree);
+  private boolean aliasInScopeInSuccessor(CFStore successorStore, ResourceAlias alias) {
+    return successorStore.getValue(alias.reference) != null
+        || alias.tree instanceof ConditionalExpressionTree;
   }
 
   /**
