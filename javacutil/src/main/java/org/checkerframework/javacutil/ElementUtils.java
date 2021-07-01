@@ -837,6 +837,12 @@ public class ElementUtils {
   /**
    * Given an annotation name, return true if the element has the annotation of that name.
    *
+   * <p>It is more efficient to use {@code Element#getAnnotation(Class)}, but note that both methods
+   * ignore types from annotation files, such as stub or ajava files.
+   *
+   * <p>To include types from annotation files, use {@code AnnotatedTypeFactory#fromElement} or
+   * {@code AnnotatedTypeFactory#getDeclAnnotations}.
+   *
    * @param element the element
    * @param annotName name of the annotation
    * @return true if the element has the annotation of that name

@@ -1,6 +1,7 @@
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public class TestTreeKinds {
@@ -63,13 +64,13 @@ public class TestTreeKinds {
   @Holding("lock")
   void requiresLockHeldMethod() {}
 
-  MyClass fooArray @GuardedBy("lock") [] = new MyClass[3];
+  MyClass @GuardedBy("lock") [] fooArray = new MyClass[3];
 
-  @GuardedBy("lock") MyClass fooArray2[] = new MyClass[3];
+  @GuardedBy("lock") MyClass[] fooArray2 = new MyClass[3];
 
-  @GuardedBy("lock") MyClass fooArray3[][] = new MyClass[3][3];
+  @GuardedBy("lock") MyClass[][] fooArray3 = new MyClass[3][3];
 
-  MyClass fooArray4 @GuardedBy("lock") [][] = new MyClass[3][3];
+  MyClass @GuardedBy("lock") [][] fooArray4 = new MyClass[3][3];
 
   MyClass fooArray5[] @GuardedBy("lock") [] = new MyClass[3][3];
 
@@ -363,16 +364,25 @@ public class TestTreeKinds {
     // m2.field.toString();
   }
 
+  @GuardedBy("lock") MyClass guardedByLock() {
+    return new MyClass();
+  }
+
+  @GuardedByUnknown MyClass someValue() {
+    return new MyClass();
+  }
+
   @MayReleaseLocks
   public void testLocals() {
     final ReentrantLock localLock = new ReentrantLock();
 
-    @GuardedBy("localLock") MyClass guardedByLocalLock = new MyClass();
+    @SuppressWarnings("assignment") // prevent flow-sensitive refinement
+    @GuardedBy("localLock") MyClass guardedByLocalLock = someValue();
 
     // :: error: (lock.not.held)
     guardedByLocalLock.field.toString();
 
-    @GuardedBy("lock") MyClass local = new MyClass();
+    @GuardedBy("lock") MyClass local = guardedByLock();
 
     // :: error: (lock.not.held)
     local.field.toString();
