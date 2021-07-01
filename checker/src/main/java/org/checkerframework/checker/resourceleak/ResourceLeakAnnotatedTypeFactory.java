@@ -113,10 +113,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   /**
    * Use the must-call store to get the must-call value of the resource represented by the given
-   * local variables.
+   * resource aliases.
    *
-   * @param resourceAliasSet a set of local variables with their assignment trees, all of which
-   *     represent the same resource
+   * @param resourceAliasSet a set of resource aliases of the same resource
    * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is null,
    *     then the default MustCall type of each variable's class will be used.
    * @return the list of must-call method names, or null if the resource's must-call obligations are
@@ -143,16 +142,15 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         // TODO: we currently end up in this case when checking a call to the return type
         // of a returns-receiver method on something with a MustCall type; for example,
         // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we
-        // can; that would probably require us to change the Must Call Checker to also
-        // track temporaries.
+        // can.
         TypeElement typeElt = TypesUtils.getTypeElement(reference.getType());
         if (typeElt == null) {
-          // typeElt is null if local.getType() was not a class, interface, annotation type, or
+          // typeElt is null if reference.getType() was not a class, interface, annotation type, or
           // enum---that is, was not an annotatable type.
           // That shouldn't happen, but if it does fall back to a safe default (i.e. top).
           mcAnno = mustCallAnnotatedTypeFactory.TOP;
         } else {
-          // Why does this happen sometimes?
+          // TODO: Why does this happen sometimes?
           if (typeElt.asType().getKind() == TypeKind.VOID) {
             return Collections.emptyList();
           }
