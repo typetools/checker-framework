@@ -1244,10 +1244,10 @@ class MustCallConsistencyAnalyzer {
           //    rather than a node):
           //    1a. if there is information about any alias in the resource alias set
           //        in the successor store, use the successor's CM and MC stores, which
-          //        contain whatever information is true after this block finishes
+          //        contain whatever information is true after this block finishes.
           //    1b. if there is not any information about any alias in the resource alias
           //        set in the successor store, use the current blocks' CM and MC stores,
-          //        which contain whatever information is true before this (empty) block
+          //        which contain whatever information is true before this (empty) block.
           // 2. if the current block has one or more nodes, always use the CM store after
           //    the last node. To decide which MC store to use:
           //    2a. if the last node in the block is the invocation of an @CreatesMustCallFor
@@ -1255,9 +1255,8 @@ class MustCallConsistencyAnalyzer {
           //        an exceptional path, use the MC store immediately before the method invocation,
           //        because the method threw an exception rather than finishing and therefore did
           //        not actually create an obligation, so the MC store after might contain
-          // obligations
-          //        that do not need to be fulfilled along this path
-          //        2b. in all other cases, use the MC store from after the last node in the block
+          //        obligations that do not need to be fulfilled along this path.
+          //        2b. in all other cases, use the MC store from after the last node in the block.
           CFStore mcStore, cmStore;
           if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
             cmStore =
@@ -1718,7 +1717,7 @@ class MustCallConsistencyAnalyzer {
   private static class Obligation {
 
     /** The set of resource aliases that can satisfy this obligation. */
-    public Set<ResourceAlias> resourceAliases;
+    public final Set<ResourceAlias> resourceAliases;
 
     /**
      * Create an obligation from a set of resource aliases.
