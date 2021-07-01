@@ -1,7 +1,12 @@
-Version 3.16.0 (July 1, 2021)
+Version 3.16.0 (July 9, 2021)
 -----------------------------
 
 **User-visible changes:**
+
+Partial support for JDK 16.  You can run the Checker Framework on a JDK 16 JVM.
+You can pass the `--release 16` command-line argument to the compiler.  New
+syntax, such as records and switch expressions, is not yet type-checked; that
+will be added in a future release.  Thanks to Neil Brown for the JDK 16 support.
 
 The `-Ainfer` command-line argument now outputs purity annotations even if
 neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is present.
