@@ -191,7 +191,7 @@ public class GuardSatisfiedTest {
   final Object lock1 = new Object();
   final Object lock2 = new Object();
 
-  // This method exists to prevent flow-sensitive refinement
+  // This method exists to prevent flow-sensitive refinement.
   @GuardedBy({"lock1", "lock2"}) Object guardedByLock1Lock2() {
     return new Object();
   }
