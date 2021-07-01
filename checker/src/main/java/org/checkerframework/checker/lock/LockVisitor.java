@@ -324,7 +324,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // Newly created objects are guarded by nothing, so allow @GuardBy({}) on constructor results.
     AnnotationMirror anno =
         constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
-    // anno can be null for synthetic/implicit constructors, I think.
     if (AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYUNKNOWN)
         || AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYBOTTOM)) {
       checker.reportWarning(constructorElement, "inconsistent.constructor.type", anno, null);
