@@ -99,14 +99,14 @@ Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, K{\i}van{\c{c}} Mu{\c{s}}lu,
   and Todd Schiller.
 \newblock Building and using pluggable type-checkers.
 \newblock In {\em ICSE 2011, Proceedings of the 33rd International Conference
-  on Software Engineering}, pages 681--690, Waikiki, Hawaii, USA, May 2011.
+  on Software Engineering\/} \cite{ICSE2011}, pages 681--690.
 
 \bibitem[DDE{\etalchar{+}}12]{DietlDEMWCPP2012}
 Werner Dietl, Stephanie Dietzel, Michael~D. Ernst, Nathaniel Mote, Brian
   Walker, Seth Cooper, Timothy Pavlik, and Zoran Popovi{\'c}.
 \newblock Verification games: Making verification fun.
 \newblock In {\em FTfJP: 14th Workshop on Formal Techniques for Java-like
-  Programs}, pages 42--49, Beijing, China, June 2012.
+  Programs\/} \cite{FTFJP2012}, pages 42--49.
 
 \bibitem[DDM11]{DietlDM2011}
 Werner Dietl, Sophia Drossopoulou, and Peter M{\"u}ller.
@@ -127,6 +127,10 @@ Yao Dong, Ana Milanova, and Julian Dolby.
 \newblock In {\em PPPJ 2016: Proceedings of the 4th International Conference on
   Principles and Practice of Programming in Java: Virtual Machines, Languages,
   and Tools}, Lugano, Switzerland, August 2016.
+
+\bibitem[ECO08]{ECOOP2008}
+{\em ECOOP 2008 --- Object-Oriented Programming, 22nd European Conference},
+  Paphos, Cyprus, July 2008.
 
 \bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
 Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
@@ -156,13 +160,25 @@ Michael~D. Ernst.
 \newblock Building and using pluggable type systems with the {Checker
   Framework}.
 \newblock In {\em ECOOP 2008 --- Object-Oriented Programming, 22nd European
-  Conference}, Paphos, Cyprus, July 2008.
+  Conference\/} \cite{ECOOP2008}.
 \newblock Tool demo.
 
 \bibitem[Ern08b]{JSR308-2008-09-12}
 Michael~D. Ernst.
 \newblock {Type Annotations} specification ({JSR} 308).
 \newblock \url{https://checkerframework.org/jsr308/}, September~12, 2008.
+
+\bibitem[FSE12]{FSE2012}
+{\em FSE 2012: Proceedings of the {ACM} {SIGSOFT} 20th Symposium on the
+  Foundations of Software Engineering}, Cary, NC, USA, November 2012.
+
+\bibitem[FSE16]{FSE2016}
+{\em FSE 2016: Proceedings of the {ACM} {SIGSOFT} 24th Symposium on the
+  Foundations of Software Engineering}, Seattle, WA, USA, November 2016.
+
+\bibitem[FTF12]{FTFJP2012}
+{\em FTfJP: 14th Workshop on Formal Techniques for Java-like Programs},
+  Beijing, China, June 2012.
 
 \bibitem[GBS13]{GerakiosBS2013}
 Prodromos Gerakios, Aggelos Biboudis, and Yannis Smaragdakis.
@@ -211,8 +227,7 @@ Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
 Wei Huang and Ana Milanova.
 \newblock {ReImInfer}: Method purity inference for {Java}.
 \newblock In {\em FSE 2012: Proceedings of the {ACM} {SIGSOFT} 20th Symposium
-  on the Foundations of Software Engineering}, pages 1--4, Cary, NC, USA,
-  November 2012.
+  on the Foundations of Software Engineering\/} \cite{FSE2012}, pages 1--4.
 
 \bibitem[HMDE12]{HuangMDE2012}
 Wei Huang, Ana Milanova, Werner Dietl, and Michael~D. Ernst.
@@ -235,6 +250,10 @@ David Hovemeyer, Jaime Spacco, and William Pugh.
   for Software Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon,
   Portugal, September 2005.
 
+\bibitem[ICS11]{ICSE2011}
+{\em ICSE 2011, Proceedings of the 33rd International Conference on Software
+  Engineering}, Waikiki, Hawaii, USA, May 2011.
+
 \bibitem[KDME18]{KelloggDME2018}
 Martin Kellogg, Vlastimil Dort, Suzanne Millstein, and Michael~D. Ernst.
 \newblock Lightweight verification of array indexing.
@@ -255,7 +274,7 @@ Mirko K{\"o}hler, Nafise Eskandani, Pascal Weisenburger, Alessandro Margara,
 \newblock Rethinking safe consistency in distributed object-oriented
   programming.
 \newblock In {\em OOPSLA 2020, Object-Oriented Programming Systems, Languages,
-  and Applications}, Chicago, IL, USA, November 2020.
+  and Applications\/} \cite{OOPSLA2020}.
 
 \bibitem[KRS{\etalchar{+}}20]{KelloggRSSE2020}
 Martin Kellogg, Manli Ran, Manu Sridharan, Martin Sch{\"a}f, and Michael~D.
@@ -306,15 +325,14 @@ Jianchu Li.
 Christopher~A. Mackie.
 \newblock Preventing signedness errors in numerical computations in java.
 \newblock In {\em FSE 2016: Proceedings of the {ACM} {SIGSOFT} 24th Symposium
-  on the Foundations of Software Engineering}, pages 1148--1150, Seattle, WA,
-  USA, November 2016.
+  on the Foundations of Software Engineering\/} \cite{FSE2016}, pages
+  1148--1150.
 
 \bibitem[MH12]{MilanovaH2012}
 Ana Milanova and Wei Huang.
 \newblock Inference and checking of context-sensitive pluggable types.
 \newblock In {\em FSE 2012: Proceedings of the {ACM} {SIGSOFT} 20th Symposium
-  on the Foundations of Software Engineering}, pages 1--4, Cary, NC, USA,
-  November 2012.
+  on the Foundations of Software Engineering\/} \cite{FSE2012}, pages 1--4.
 
 \bibitem[Mil18]{Milanova2018}
 Ana Milanova.
@@ -327,6 +345,10 @@ Rashmi Mudduluru, Jason Waataja, Suzanne Millstein, and Michael~D. Ernst.
 \newblock Verifying determinism in sequential programs.
 \newblock In {\em ICSE 2021, Proceedings of the 43rd International Conference
   on Software Engineering}, Madrid, Spain, May 2021.
+
+\bibitem[OOP20]{OOPSLA2020}
+{\em OOPSLA 2020, Object-Oriented Programming Systems, Languages, and
+  Applications}, Chicago, IL, USA, November 2020.
 
 \bibitem[PAC{\etalchar{+}}08]{PapiACPE2008}
 Matthew~M. Papi, Mahmood Ali, Telmo~Luis {Correa~Jr.}, Jeff~H. Perkins, and
@@ -346,14 +368,14 @@ Alex Potanin, Johan {\"O}stlund, Yoav Zibin, and Michael~D. Ernst.
 Jaime Quinonez, Matthew~S. Tschantz, and Michael~D. Ernst.
 \newblock Inference of reference immutability.
 \newblock In {\em ECOOP 2008 --- Object-Oriented Programming, 22nd European
-  Conference}, pages 616--641, Paphos, Cyprus, July 2008.
+  Conference\/} \cite{ECOOP2008}, pages 616--641.
 
 \bibitem[San16]{Santino2016}
 Joseph Santino.
 \newblock Enforcing correct array indexes with a type system.
 \newblock In {\em FSE 2016: Proceedings of the {ACM} {SIGSOFT} 24th Symposium
-  on the Foundations of Software Engineering}, pages 1142--1144, Seattle, WA,
-  USA, November 2016.
+  on the Foundations of Software Engineering\/} \cite{FSE2016}, pages
+  1142--1144.
 
 \bibitem[SCSC18]{SteinCSC2018}
 Benno Stein, Lazaro Clapp, Manu Sridharan, and Bor{-}Yuh~Evan Chang.
@@ -366,7 +388,7 @@ Benno Stein, Lazaro Clapp, Manu Sridharan, and Bor{-}Yuh~Evan Chang.
 Eric Spishak, Werner Dietl, and Michael~D. Ernst.
 \newblock A type system for regular expressions.
 \newblock In {\em FTfJP: 14th Workshop on Formal Techniques for Java-like
-  Programs}, pages 20--26, Beijing, China, June 2012.
+  Programs\/} \cite{FTFJP2012}, pages 20--26.
 
 \bibitem[SDF{\etalchar{+}}11]{SampsonDFGCG2011}
 Adrian Sampson, Werner Dietl, Emily Fortuna, Danushen Gnanapragasam, Luis Ceze,
@@ -387,7 +409,7 @@ Todd~W. Schiller and Michael~D. Ernst.
 Fausto Spoto and Michael~D. Ernst.
 \newblock Inference of field initialization.
 \newblock In {\em ICSE 2011, Proceedings of the 33rd International Conference
-  on Software Engineering}, pages 231--240, Waikiki, Hawaii, USA, May 2011.
+  on Software Engineering\/} \cite{ICSE2011}, pages 231--240.
 
 \bibitem[She11]{Sherwany2011}
 Amanj Sherwany.
@@ -475,7 +497,7 @@ Weitian Xing.
 Tongtong Xiang, Jeff~Y. Luo, and Werner Dietl.
 \newblock Precise inference of expressive units of measurement types.
 \newblock In {\em OOPSLA 2020, Object-Oriented Programming Systems, Languages,
-  and Applications}, Chicago, IL, USA, November 2020.
+  and Applications\/} \cite{OOPSLA2020}.
 
 \bibitem[ZPA{\etalchar{+}}07]{ZibinPAAKE2007}
 Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and

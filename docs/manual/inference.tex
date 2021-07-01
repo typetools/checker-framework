@@ -271,7 +271,9 @@ Use its output to guide your analysis of the results of running \<wpi-many.sh>:
 you should manually examine the log files for the projects that appear in the
 "results available" list it produces. This list is the list of every project
 that the script was able to successfully run WPI on.  (This does not mean
-that the project type-checks without errors afterward.)
+that the project type-checks without errors afterward, or even typechecks at
+all---just that the Checker Framework attempted to typecheck the project and
+some output was produced.)
 
 \item (Optional) Add annotations to the target projects that WPI cannot or does not infer.
 For example, you might want to do this if the checker encounters a false positive (i.e.
