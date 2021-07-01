@@ -98,8 +98,7 @@ import org.plumelib.util.StringsPlume;
  * contained in their called-methods type when the last reference in a set goes out of scope.
  *
  * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
- * certain code patterns are encountered. (Because they are immutable, obligations are modified by
- * removing them and creating a new, related obligation.) Here are non-exhaustive examples:
+ * certain code patterns are encountered. Here are non-exhaustive examples:
  *
  * <ul>
  *   <li>A new obligation is added to the tracked set when a constructor or a method with an owning
@@ -124,8 +123,11 @@ import org.plumelib.util.StringsPlume;
 /* package-private */
 class MustCallConsistencyAnalyzer {
 
-  /** {@code @MustCall} errors reported thus far, to avoid duplicate reports. */
-  private final Set<ResourceAlias> reportedMustCallErrors = new HashSet<>();
+  /**
+   * Aliases through which the checker has already reported about a resource leak, to avoid
+   * duplicate reports.
+   */
+  private final Set<ResourceAlias> reportedErrorAliases = new HashSet<>();
 
   /**
    * The type factory for the Resource Leak Checker, which is used to get called methods types and
@@ -1498,9 +1500,9 @@ class MustCallConsistencyAnalyzer {
     if (!mustCallSatisfied) {
       // Report the error at the first alias' definition. This choice is arbitrary but consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
-      if (!reportedMustCallErrors.contains(firstAlias)) {
+      if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
-          reportedMustCallErrors.add(firstAlias);
+          reportedErrorAliases.add(firstAlias);
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
