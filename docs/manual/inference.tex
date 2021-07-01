@@ -273,6 +273,22 @@ you should manually examine the log files for the projects that appear in the
 that the script was able to successfully run WPI on.  (This does not mean
 that the project type-checks without errors afterward.)
 
+\item (Optional) Add annotations to the target projects that WPI cannot or does not infer.
+For example, you might want to do this if the checker encounters a false positive (i.e.
+there is a fact that the type system cannot prove, but you know to be true) and you want
+WPI to take that fact into account. There are three ways you can add annotations to a target
+program: (1) you can fork the project and add the annotations directly to the project's source
+code (you will also need to add a dependency on \<org.checkerframework:checker-qual> to the
+project's build system). This approach is the most difficult, but has the advantage that the
+checker will attempt to verify any annotations you add. (2) You can add the annotations in
+a \<.ajava> file. To do this, copy the \<.java> file which you want to annotate into a new file
+with the same name but the \<.ajava> extension, following the instructions in
+Section~\ref{ajava-files} about directory structure, etc. Annotations can be added to \<.ajava> files directly.
+(3) Use a stub file and supply the checker with the \<-AmergeStubsWithSource> option. This option is
+similar to option 2, but requires an extra command-line option to the checker rather than a specific
+directory structure. To do this, copy the \<.java> file into an identical file with a \<.astub> extension,
+and supply that file to the checker as part of the \<-Astubs> argument.
+
 \end{enumerate}
 
 A typical invocation is
