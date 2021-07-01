@@ -300,7 +300,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   protected boolean isContainedBy(
       final AnnotatedTypeMirror inside, final AnnotatedTypeMirror outside, boolean canBeCovariant) {
 
-    if (ignoreUninferredTypeArgument(inside) || ignoreUninferredTypeArgument(outside)) {
+    if (shouldIgnoreUninferredTypeArgs(inside) || shouldIgnoreUninferredTypeArgs(outside)) {
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       return true;
     }
@@ -355,7 +355,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
               .widenToUpperBound(outsideUpperBound, (AnnotatedWildcardType) inside);
     }
     while (outsideUpperBound.getKind() == TypeKind.WILDCARD) {
-      if (ignoreUninferredTypeArgument(outsideUpperBound)) {
+      if (shouldIgnoreUninferredTypeArgs(outsideUpperBound)) {
         return true;
       }
       outsideUpperBound = ((AnnotatedWildcardType) outsideUpperBound).getExtendsBound();
@@ -393,7 +393,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @return true if {@code type} is an uninferred type argument and if the checker should not issue
    *     warnings about uninferred type arguments
    */
-  private boolean ignoreUninferredTypeArgument(AnnotatedTypeMirror type) {
+  private boolean shouldIgnoreUninferredTypeArgs(AnnotatedTypeMirror type) {
     return type.atypeFactory.ignoreUninferredTypeArguments
         && type.getKind() == TypeKind.WILDCARD
         && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
@@ -491,9 +491,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       final boolean subtypeRaw,
       final boolean supertypeRaw) {
 
-    final boolean ignoreTypeArgs = ignoreRawTypes && (subtypeRaw || supertypeRaw);
-
-    if (ignoreTypeArgs) {
+    if (ignoreRawTypes && (subtypeRaw || supertypeRaw)) {
       return true;
     }
 
@@ -503,6 +501,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (subtypeTypeArgs.size() != supertypeTypeArgs.size()) {
       return false;
     }
+    // This method, `visitTypeArgs`, is called even if `subtype` doesn't have type arguments.
     if (subtypeTypeArgs.isEmpty()) {
       return true;
     }
@@ -818,8 +817,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
-        // if both have primary annotations then you can just check the primary annotations
-        // as the bounds are the same
+        // If both have primary annotations then just check the primary annotations
+        // as the bounds are the same.
         return isPrimarySubtype(subtype, supertype);
 
       } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype)) {
@@ -1070,8 +1069,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
-        // if both have primary annotations then just check the primary annotations
-        // as the bounds are the same
+        // If both have primary annotations then just check the primary annotations
+        // as the bounds are the same.
         return isPrimarySubtype(subtype, supertype);
 
       } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype)) {
