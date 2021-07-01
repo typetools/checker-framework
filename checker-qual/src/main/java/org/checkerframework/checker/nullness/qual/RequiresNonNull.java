@@ -18,6 +18,10 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * <!-- The "&nbsp;" is to hide the at-signs from Javadoc. -->
  *
  * <pre>
+ * import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+ * import org.checkerframework.checker.nullness.qual.NonNull;
+ * import org.checkerframework.checker.nullness.qual.Nullable;
+ *
  * class MyClass {
  * &nbsp; @Nullable Object field1;
  * &nbsp; @Nullable Object field2;
