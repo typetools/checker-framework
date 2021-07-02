@@ -325,7 +325,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // Add a placeholder in case of recursion, to prevent infinite regress.
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       boolean result =
-          isContainedByBoundType(
+          isContainedWithinBounds(
               inside,
               outsideWildcard.getSuperBound(),
               outsideWildcard.getExtendsBound(),
@@ -342,7 +342,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // Add a placeholder in case of recursion, to prevent infinite regress.
       areEqualVisitHistory.put(inside, outside, currentTop, true);
       boolean result =
-          isContainedByBoundType(
+          isContainedWithinBounds(
               inside,
               outsideTypeVar.getLowerBound(),
               outsideTypeVar.getUpperBound(),
@@ -372,7 +372,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @return true if inside is contained by outside, or if canBeCovariant == true and {@code inside
    *     <: outside}
    */
-  protected boolean isContainedByBoundType(
+  protected boolean isContainedWithinBounds(
       AnnotatedTypeMirror inside,
       AnnotatedTypeMirror outsideLower,
       AnnotatedTypeMirror outsideUpper,
@@ -924,7 +924,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // This should be removed when 979 is fixed.
       // This case happens when the captured type variables should be the same type, but
       // aren't because type argument inference isn't implemented correctly.
-      return isContainedByBoundType(
+      return isContainedWithinBounds(
           subtype, supertype.getLowerBound(), supertype.getUpperBound(), false);
     }
 
