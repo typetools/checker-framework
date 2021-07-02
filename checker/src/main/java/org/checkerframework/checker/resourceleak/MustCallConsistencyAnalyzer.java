@@ -737,7 +737,7 @@ class MustCallConsistencyAnalyzer {
    *     temporary variable (via a call to {@link
    *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode(Node)})
    */
-  private void updateObligationsForPseduoAssignment(
+  private void updateObligationsForPseudoAssignment(
       Node node, Set<Obligation> obligations, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
