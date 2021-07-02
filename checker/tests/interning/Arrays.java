@@ -7,7 +7,6 @@ public class Arrays {
 
   public static Integer[] arrayclone_simple(Integer[] a_old) {
     int len = a_old.length;
-    @SuppressWarnings("deprecation")
     Integer[] a_new = new Integer[len];
     for (int i = 0; i < len; i++) {
       a_new[i] = Integer.valueOf(a_old[i]); // valid

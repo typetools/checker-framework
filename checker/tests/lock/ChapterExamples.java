@@ -448,9 +448,6 @@ public class ChapterExamples {
 
     c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()).
 
-    // `method.invocation` errors below are expected, since b and c cannot be @GuardedBy("lock")
-    // since they are boxed primitives.
-
     c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
     c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
 
