@@ -4,7 +4,8 @@ Version 3.16.0 (July 1, 2021)
 **User-visible changes:**
 
 The `-Ainfer` command-line argument now outputs purity annotations even if
-neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is present.
+neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is supplied
+on the command line.
 
 **Implementation details:**
 
