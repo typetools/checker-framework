@@ -56,13 +56,17 @@ public class BasicLockTest {
 
   @AnnotatedFor("lock")
   @MayReleaseLocks
-  void testLocalVariables() {
+  void testLocalVariables1() {
     MyClass o2 = new MyClass(), p2;
     // :: error: (argument)
     p2 = myUnannotatedMethod(o2);
     MyClass o3 = new MyClass();
     myAnnotatedMethod(o3);
+  }
 
+  @AnnotatedFor("lock")
+  @MayReleaseLocks
+  void testLocalVariables2() {
     // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
     final @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
     @GuardedBy("lock") MyClass q = new MyClass();
@@ -74,6 +78,14 @@ public class BasicLockTest {
     myUnannotatedMethod2();
     // :: error: (lock.not.held)
     q.field = new Object();
+  }
+
+  @AnnotatedFor("lock")
+  @MayReleaseLocks
+  void testLocalVariables3() {
+    // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
+    final @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
+    @GuardedBy("lock") MyClass q = new MyClass();
     lock.lock();
     // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
     // variable lock.
