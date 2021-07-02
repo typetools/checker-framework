@@ -698,7 +698,7 @@ class MustCallConsistencyAnalyzer {
       }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
-      updateObligationsForPseudoAssignment(assignmentNode, obligations, lhsVar, rhs);
+      updateObligationsForPseduoAssignment(assignmentNode, obligations, lhsVar, rhs);
     }
   }
 
@@ -1362,7 +1362,7 @@ class MustCallConsistencyAnalyzer {
       }
     }
     Set<Obligation> newDefs = new LinkedHashSet<>(obligations);
-    updateObligationsForPseudoAssignment(ternaryNode, newDefs, ternaryTempVar, rhs);
+    updateObligationsForPseduoAssignment(ternaryNode, newDefs, ternaryTempVar, rhs);
     return newDefs;
   }
 
@@ -1719,9 +1719,10 @@ class MustCallConsistencyAnalyzer {
   private static class Obligation {
 
     /**
-     * The set of resource aliases that can satisfy this obligation. {@code Obligation} is deeply
-     * immutable. If some code were to accidentally mutate a {@code resourceAliases} set it could be
-     * really nasty to debug, so this set is always immutable.
+     * The set of resource aliases that can satisfy this obligation.
+     * {@code Obligation} is deeply immutable. If some code were to accidentally
+     * mutate a {@code resourceAliases} set it could be really nasty to debug, so
+     * this set is always immutable.
      */
     public final ImmutableSet<ResourceAlias> resourceAliases;
 
