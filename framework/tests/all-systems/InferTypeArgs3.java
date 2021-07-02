@@ -7,6 +7,11 @@ public class InferTypeArgs3 {
     java.util.Arrays.asList(new Integer(1), "");
   }
 
+  void test2() {
+    Integer i = Integer.valueOf(1);
+    java.util.Arrays.asList(i, "");
+  }
+
   void foo() {
     new HashSet<>(Arrays.asList(new Object()));
     new HashSet<Object>(Arrays.asList(new Object())) {};
