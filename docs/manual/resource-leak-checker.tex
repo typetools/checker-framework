@@ -335,15 +335,15 @@ At a call site to a method annotated as
 Treating the obligation before the call as satisfied is sound: the
 checker creates a new obligation for calls to \<@CreatesMustCallFor> methods,
 and the Must Call Checker (\chapterpageref{must-call-checker}) ensures the
-\<@MustCall> type for the target will have a \emph{superset} of any methods
+\<@MustCall> type for the target expression will have a \emph{superset} of any methods
 present before the call. Intuitively, calling an \<@CreatesMustCallFor> method
-``resets'' the obligations of the target, so whether they were satisfied before
+``resets'' the obligations of the target expression, so whether they were satisfied before
 the call or not is irrelevant.
 
 If an \<@CreatesMustCallFor>
 method \emph{n} is invoked within a method \emph{m} that has an \<@CreatesMustCallFor> annotation,
 and the \<@CreatesMustCallFor> annotations on \emph{n} and \emph{m} have
-the same target---imposing the obligation produced by calling \emph{n} on the caller of \emph{m}---then
+the same target expression---imposing the obligation produced by calling \emph{n} on the caller of \emph{m}---then
 the newly-created obligation is treated as satisfied immediately
 at the call-site of \emph{n} in the body of \emph{m} (because it is imposed at call-sites of \emph{m}
 instead).
@@ -361,7 +361,7 @@ sound:
 \begin{itemize}
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with a \<@CreatesMustCallFor> annotation
-  that targets that object.
+  whose expression is a reference to that object.
 \item when a non-final, owning field $f$ is re-assigned at statement $s$,
   at the program point before $s$, $f$'s must-call obligations must have been satisfied.
 \end{itemize}
