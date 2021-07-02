@@ -9,6 +9,8 @@ public class BasicLockTest {
 
   Object someValue = new Object();
 
+  MyClass newMyClass = new MyClass();
+
   MyClass myUnannotatedMethod(MyClass param) {
     return param;
   }
@@ -71,7 +73,8 @@ public class BasicLockTest {
   void testLocalVariables2() {
     // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
     final @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
-    @GuardedBy("lock") MyClass q = new MyClass();
+    @SuppressWarnings("lock:assignment") // prevents flow-sensitive type refinement
+    @GuardedBy("lock") MyClass q = newMyClass;
     lock.lock();
     myAnnotatedMethod2();
     q.field = someValue;
@@ -87,7 +90,8 @@ public class BasicLockTest {
   void testLocalVariables3() {
     // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
     final @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
-    @GuardedBy("lock") MyClass q = new MyClass();
+    @SuppressWarnings("lock:assignment") // prevents flow-sensitive type refinement
+    @GuardedBy("lock") MyClass q = newMyClass;
     lock.lock();
     // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
     // variable lock.
