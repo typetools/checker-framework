@@ -698,7 +698,7 @@ class MustCallConsistencyAnalyzer {
       }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
-      updateObligationsForPseduoAssignment(assignmentNode, obligations, lhsVar, rhs);
+      updateObligationsForPseudoAssignment(assignmentNode, obligations, lhsVar, rhs);
     }
   }
 
@@ -1362,7 +1362,7 @@ class MustCallConsistencyAnalyzer {
       }
     }
     Set<Obligation> newDefs = new LinkedHashSet<>(obligations);
-    updateObligationsForPseduoAssignment(ternaryNode, newDefs, ternaryTempVar, rhs);
+    updateObligationsForPseudoAssignment(ternaryNode, newDefs, ternaryTempVar, rhs);
     return newDefs;
   }
 
