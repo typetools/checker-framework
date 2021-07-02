@@ -10,22 +10,26 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.JavaExpression;
 
+// TODO: I replaced "target" with "expression"?  I kept asking myself "target of what?"
 /**
- * Indicates that the method resets the target's must-call type to its declared type. This
- * effectively undoes flow-sensitive type refinement. The target is the {@code value}
+ * Indicates that the method resets the expression's must-call type to its declared type. This
+ * effectively undoes flow-sensitive type refinement. The expression is the {@code value}
  * argument/element. More precisely, a call to a method annotated by this annotation changes the
- * target's must-call type to the least upper bound of its current must-call type and its declared
- * must-call type.
+ * expression's must-call type to the least upper bound of its current must-call type and its
+ * declared must-call type.
  *
- * <p>When calling a method annotated as {@code @CreatesMustCallFor("}<em>target</em>{@code ")}, the
- * expression {@code target}'s static type in the Called Methods type system must be {@code @}{@link
- * CalledMethods}{@code ({})}. That is, {@code target}'s CalledMethods type must be empty.
+ * <p>When calling a method annotated as {@code @CreatesMustCallFor("}<em>expression</em>{@code ")},
+ * the {@code expression}'s static type in the Called Methods type system must be {@code @}{@link
+ * CalledMethods}{@code ({})}. That is, {@code expression}'s CalledMethods type must be empty.
  *
  * <p>{@code @CreatesMustCallFor("this")} must be written on any method that assigns a non-final,
  * owning field whose declared type has a must-call obligation.
  *
  * <p>This annotation is trusted, not checked. (Because this annotation can only add obligations,
- * the analysis remains sound.)
+ * the analysis remains sound.) [[I would expand on the "not checked". I think you just mean that
+ * the checker doesn't verify that the method does reset the expressions' must call obligation.
+ * Also, I don't think I would use the word "trusted". That makes it sound like a soundness problem,
+ * when it isn't.]]
  *
  * <p>For example, consider the following code, which uses a {@code @CreatesMustCallFor} annotation
  * to indicate that the {@code reset()} method re-assigns the {@code socket} field:
@@ -72,6 +76,15 @@ import org.checkerframework.framework.qual.JavaExpression;
 @Repeatable(CreatesMustCallFor.List.class)
 public @interface CreatesMustCallFor {
 
+  // TODO: I would change this Javadoc to the following:
+  //   Returns the expressions whose must-call type is reset after a call to a method with this
+  //   annotation.
+  // But, I also have a comment about the current Javadoc:
+  // "The target must be an expression which can be refined in the store, such as a local variable
+  // or field."
+  // This isn't true.  "target" can be any expression that's legal to write on a method declaration.
+  // At a call site you'll get an error if the viewpoint-adapted "target" is not a field access,
+  // local variable, or some expression that can be written at the enclosing method declaration.
   /**
    * The target of this annotation is stored in this field. The target must be an expression which
    * can be refined in the store, such as a local variable or field.

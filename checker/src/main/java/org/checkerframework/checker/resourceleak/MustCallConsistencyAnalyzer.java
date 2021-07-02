@@ -255,33 +255,35 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks that an invocation of a CreatesMustCallFor method is valid. Such an invocation is valid
-   * if one of the following conditions is true: 1) the target is an owning pointer, 2) the target
+   * Checks that an invocation of a CreatesMustCallFor method is valid.
+   *
+   * <p>Such an invocation is valid for all expressions in the CreatesMustCallFor annotation one of
+   * of the following conditions are true: 1) the expression is an owning pointer, 2) the expression
    * already has a tracked obligation, or 3) the method in which the invocation occurs also has
-   * an @CreatesMustCallFor annotation, with the same target.
+   * an @CreatesMustCallFor annotation, with the same expression.
    *
    * <p>If none of the above are true, this method issues a reset.not.owning error.
    *
-   * <p>For soundness, this method also guarantees that if the target has a tracked obligation, any
-   * tracked aliases will be removed (lest the analysis conclude that it is already closed because
-   * one of these aliases was closed before the method was invoked). Aliases created after the
-   * CreatesMustCallFor method is invoked are still permitted.
+   * <p>For soundness, this method also guarantees that if the expression has a tracked obligation,
+   * any tracked aliases will be removed (lest the analysis conclude that it is already closed
+   * because one of these aliases was closed before the method was invoked). Aliases created after
+   * the CreatesMustCallFor method is invoked are still permitted.
    *
-   * @param obligations the currently-tracked obligations. This value is side-effected if it
-   *     contains the target of the reset method.
+   * @param obligations the currently-tracked obligations; this value is side-effected if it
+   *     contains an expression that is whose must-call obligation is reset
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
    */
   private void checkCreatesMustCallForInvocation(
       Set<Obligation> obligations, MethodInvocationNode node) {
 
     TreePath currentPath = typeFactory.getPath(node.getTree());
-    List<JavaExpression> targetExprs =
+    List<JavaExpression> expressions =
         CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             node, typeFactory, typeFactory);
     Set<JavaExpression> missing = new HashSet<>();
-    for (JavaExpression target : targetExprs) {
-      if (!isValidInvocation(obligations, target, currentPath)) {
-        missing.add(target);
+    for (JavaExpression expression : expressions) {
+      if (!isValidInvocation(obligations, expression, currentPath)) {
+        missing.add(expression);
       }
     }
 
@@ -295,41 +297,41 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * An invocation is valid if one of the following conditions is true: 1) the target is an owning
-   * pointer, 2) the target already has a tracked obligation, or 3) the method in which the
-   * invocation occurs also has an @CreatesMustCallFor annotation, with the same target.
+   * An invocation is valid if one of the following conditions is true: 1) the expression is an
+   * owning pointer, 2) the expression already has a tracked obligation, or 3) the method in which
+   * the invocation occurs also has an @CreatesMustCallFor annotation, with the same expression.
    *
-   * @param obligations the currently-tracked obligations. This value is side-effected if it
-   *     contains the target of the reset method.
-   * @param target an argument of a method's @CreatesMustCallFor annotation
+   * @param obligations the currently-tracked obligations; this value is side-effected if it
+   *     contains an expression that is whose must-call obligation is reset
+   * @param expression an element of a method's @CreatesMustCallFor annotation
    * @param currentPath the current path
    * @return true iff the invocation is valid, as defined above
    */
   private boolean isValidInvocation(
-      Set<Obligation> obligations, JavaExpression target, TreePath currentPath) {
-    if (target instanceof FieldAccess) {
-      Element elt = ((FieldAccess) target).getField();
+      Set<Obligation> obligations, JavaExpression expression, TreePath currentPath) {
+    if (expression instanceof FieldAccess) {
+      Element elt = ((FieldAccess) expression).getField();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
           && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-        // The target is an Owning field.  This satisfies case 1.
+        // The expression is an Owning field.  This satisfies case 1.
         return true;
       }
-    } else if (target instanceof LocalVariable) {
-      Element elt = ((LocalVariable) target).getElement();
+    } else if (expression instanceof LocalVariable) {
+      Element elt = ((LocalVariable) expression).getElement();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
           && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-        // The target is an Owning param.  This satisfies case 1.
+        // The expression is an Owning param.  This satisfies case 1.
         return true;
       } else {
         Obligation toRemove = null;
         Obligation toAdd = null;
         for (Obligation obligation : obligations) {
           for (ResourceAlias alias : obligation.resourceAliases) {
-            if (target.equals(alias.reference)) {
+            if (expression.equals(alias.reference)) {
               // This satisfies case 2 above. Remove all its aliases, then return below.
               if (toRemove != null) {
                 throw new BugInCF(
-                    "tried to remove multiple sets containing a reset target at once");
+                    "tried to remove multiple sets containing a reset expression at once");
               }
               toRemove = obligation;
               toAdd = new Obligation(ImmutableSet.of(alias));
@@ -372,7 +374,7 @@ class MustCallConsistencyAnalyzer {
         enclosingTarget = null;
       }
 
-      if (representSame(target, enclosingTarget)) {
+      if (representSame(expression, enclosingTarget)) {
         // This satisfies case 3.
         return true;
       }
@@ -745,7 +747,7 @@ class MustCallConsistencyAnalyzer {
     // Construct aliasForAssignment once outside the loop for efficiency.
     ResourceAlias aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
     for (Obligation obligation : obligations) {
-      // This is non-null value iff the resource alias set for obligation needs to
+      // This is a non-null value iff the resource alias set for obligation needs to
       // change because of the pseudo-assignment. The value of this variable is the new
       // alias set for obligation if it is non-null.
       Set<ResourceAlias> newResourceAliasesForObligation = null;
@@ -1156,10 +1158,9 @@ class MustCallConsistencyAnalyzer {
       Block currentBlock) {
     List<Node> currentBlockNodes = currentBlock.getNodes();
     // For each successor block that isn't caused by an ignored exception type, this loop computes
-    // the
-    // set of obligations that should be propagated to it and then adds it to the worklist if any of
-    // its resource aliases are still in scope in the successor block. If none are, then the loop
-    // performs a consistency check for that obligation.
+    // the set of obligations that should be propagated to it and then adds it to the worklist if
+    // any of its resource aliases are still in scope in the successor block. If none are, then the
+    // loop performs a consistency check for that obligation.
     for (Pair<Block, @Nullable TypeMirror> successorAndExceptionType :
         getSuccessorsExceptIgnoredExceptions(currentBlock)) {
       Block successor = successorAndExceptionType.first;
@@ -1168,8 +1169,7 @@ class MustCallConsistencyAnalyzer {
       Set<Obligation> curObligations =
           handleTernarySuccIfNeeded(currentBlock, successor, obligations);
       // successorObligations eventually contains the obligations to propagate to successor. The
-      // loop
-      // below mutates it.
+      // loop below mutates it.
       Set<Obligation> successorObligations = new LinkedHashSet<>();
       // A detailed reason to give in the case that the last resource alias of an obligation
       // goes out of scope without a called-methods type that satisfies the obligation along the
