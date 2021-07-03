@@ -12,7 +12,7 @@ on the command line.
 Method renamings (the old methods remain but are deprecated):
  * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
 
-Method renamings in DefaultTypeHierarchy(the old methods were removed):
+Method renamings in DefaultTypeHierarchy (the old methods were removed):
  * `visitIntersectionSupertype` => `visitIntersectionSupertype`
  * `visitIntersectionSubtype` => `visitIntersection_Type`
  * `visitUnionSubtype` => `visitUnion_Type`
