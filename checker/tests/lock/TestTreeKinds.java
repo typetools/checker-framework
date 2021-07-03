@@ -16,6 +16,10 @@ public class TestTreeKinds {
     void method2(@GuardSatisfied MyClass this) {}
   }
 
+  MyClass[] newMyClassArray() {
+    return new MyClass[3];
+  }
+
   @GuardedBy("lock") MyClass m;
 
   {
@@ -274,8 +278,8 @@ public class TestTreeKinds {
     l = getFooArray5().length;
 
     // Test different @GuardedBy(...) present on the element and array locations.
-    // :: error: (assignment)
-    @GuardedBy("lock") MyClass @GuardedBy("lock2") [] array = new MyClass[3];
+    @SuppressWarnings("lock:assignment") // prevent flow-sensitive type refinement
+    @GuardedBy("lock") MyClass @GuardedBy("lock2") [] array = newMyClassArray();
     // :: error: (lock.not.held)
     array[0].field = new Object();
     if (lock.isHeldByCurrentThread()) {
@@ -318,7 +322,6 @@ public class TestTreeKinds {
     // :: error: (lock.not.held)
     i = myClassInstance.i; // access to member field of guarded object
     // MemberReferenceTrees? how do they work
-    // :: error: (assignment)
     fooArray = new MyClass[3]; // second allocation of guarded array (OK)
     // dereference of guarded object in conditional expression tree
     // :: error: (lock.not.held)
