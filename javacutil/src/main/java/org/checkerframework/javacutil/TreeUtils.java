@@ -78,6 +78,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -99,6 +100,9 @@ public final class TreeUtils {
 
   /** Unique IDs for trees. */
   public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
+
+  /** Cached flag looked up via reflection. */
+  private static @MonotonicNonNull Long Flags_GENERATED_MEMBER;
 
   /**
    * Checks if the provided method is a constructor method or no.
@@ -1253,9 +1257,12 @@ public final class TreeUtils {
       return false;
     }
     try {
-      Field recordField = Flags.class.getDeclaredField("GENERATED_MEMBER");
-      @SuppressWarnings("nullness") // getLong accepts null for static fields
-      long Flags_GENERATED_MEMBER = recordField.getLong(null);
+      if (Flags_GENERATED_MEMBER == null) {
+        Field recordField = Flags.class.getDeclaredField("GENERATED_MEMBER");
+        @SuppressWarnings("nullness") // getLong accepts null for static fields
+        long flag = recordField.getLong(null);
+        Flags_GENERATED_MEMBER = flag;
+      }
 
       // Generated constructors seem to get GENERATEDCONSTR even though the documentation
       // seems to imply they would get GENERATED_MEMBER like the fields do:
