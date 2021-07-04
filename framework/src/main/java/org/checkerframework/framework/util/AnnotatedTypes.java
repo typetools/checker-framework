@@ -807,6 +807,7 @@ public class AnnotatedTypes {
       parameters.add(varargs.getComponentType().deepCopy());
     }
 
+    System.out.printf("expandVarArgs(%s, %s, %s) => %s%n", atypeFactory, method, args, parameters);
     return parameters;
   }
 
@@ -837,6 +838,7 @@ public class AnnotatedTypes {
       parameters.add(varargs.getComponentType());
     }
 
+    System.out.printf("expandVarArgsFromTypes(%s, %s) => %s%n", method, args, parameters);
     return parameters;
   }
 

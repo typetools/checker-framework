@@ -359,7 +359,7 @@ tasks.test.dependsOn("delombok")
 
 test {
     useJUnit {
-        // These are run in task ainferTests.
+        // These are run in task ainferTest.
         excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerJaifsTest'
         excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerStubsTest'
         excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerAjavaTest'
@@ -658,7 +658,7 @@ task ainferNullnessJaifTests(dependsOn: 'shadowJar', group: 'Verification') {
 
 // Empty task that just runs both the jaif and stub WPI tests.
 // It is run as part of the inferenceTests task.
-task ainferTests(group: 'Verification') {
+task ainferTest(group: 'Verification') {
     description "Run tests for all whole program inference modes."
     dependsOn('ainferTestCheckerJaifTests')
     dependsOn('ainferTestCheckerStubTests')
