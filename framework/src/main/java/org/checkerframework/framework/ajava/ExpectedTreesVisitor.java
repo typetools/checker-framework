@@ -135,7 +135,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         } else {
           // If the user declares a canonical constructor, javac
           // will automatically fill in the parameters and these trees also don't have a match:
-          if (member.getKind() == Kind.METHOD) {
+          if (member.getKind() == Tree.Kind.METHOD) {
             MethodTree methodTree = (MethodTree) member;
             if (TreeUtils.isCanonicalRecordConstructor(methodTree)) {
               for (VariableTree canonicalParameter : methodTree.getParameters()) {
