@@ -626,7 +626,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
     AnnotatedExecutableType invokedMethod = mType.executableType;
 
-    List<AnnotatedTypeMirror> requiredArgs =
+    List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.expandVarArgsParameters(atypeFactory, invokedMethod, node.getArguments());
 
     // Index on @GuardSatisfied at each location. -1 when no @GuardSatisfied annotation was present.
@@ -635,7 +635,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // encountered we leave its index as -1.
     // The first element of the array is reserved for the receiver.
     int guardSatisfiedIndex[] =
-        new int[requiredArgs.size() + 1]; // + 1 for the receiver parameter type
+        new int[paramTypes.size() + 1]; // + 1 for the receiver parameter type
 
     // Retrieve receiver types from method definition and method call
 
@@ -657,13 +657,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     // Retrieve formal parameter types from the method definition
 
-    for (int i = 0; i < requiredArgs.size(); i++) {
+    for (int i = 0; i < paramTypes.size(); i++) {
       guardSatisfiedIndex[i + 1] = -1;
 
-      AnnotatedTypeMirror arg = requiredArgs.get(i);
+      AnnotatedTypeMirror paramType = paramTypes.get(i);
 
-      if (arg.hasAnnotation(checkerGuardSatisfiedClass)) {
-        guardSatisfiedIndex[i + 1] = atypeFactory.getGuardSatisfiedIndex(arg);
+      if (paramType.hasAnnotation(checkerGuardSatisfiedClass)) {
+        guardSatisfiedIndex[i + 1] = atypeFactory.getGuardSatisfiedIndex(paramType);
       }
     }
 
