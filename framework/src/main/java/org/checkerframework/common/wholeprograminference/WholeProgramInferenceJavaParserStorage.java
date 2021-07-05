@@ -1020,7 +1020,6 @@ public class WholeProgramInferenceJavaParserStorage
         Parameter param = declaration.getParameter(i);
         Type javaParserType = param.getType();
         if (param.isVarArgs()) {
-          System.out.printf("param.isVarArgs() == true%n");
           NodeList<AnnotationExpr> varArgsAnnoExprs =
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorSetToAnnotationExprList(
                   inferredType.getAnnotations());
