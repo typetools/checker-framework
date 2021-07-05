@@ -270,7 +270,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
     // Deal with varargs
     if (memberReference.isVarArgs() && !functionalInterface.isVarArgs()) {
-      parameters = AnnotatedTypes.expandVarArgsFromTypes(memberReference, args);
+      parameters = AnnotatedTypes.expandVarArgsParametersFromTypes(memberReference, args);
     }
 
     instantiationMapping =
