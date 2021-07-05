@@ -1602,50 +1602,6 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the arguments of a method/constructor invocation.
-   *
-   * <p>if the argument's type is MethodInvocationTree or NewClassTree, use its <code>getArguments()
-   * </code> method instead.
-   *
-   * @param tree a method/constructor invocation
-   * @return true if the given method invocation is a varargs invocation
-   */
-  public static List<? extends ExpressionTree> getArguments(Tree tree) {
-    switch (tree.getKind()) {
-      case METHOD_INVOCATION:
-        return ((MethodInvocationTree) tree).getArguments();
-      case NEW_CLASS:
-        return ((NewClassTree) tree).getArguments();
-      default:
-        throw new BugInCF("Unexpected kind of tree: " + tree);
-    }
-  }
-
-  /**
-   * Returns the arguments of a method invocation.
-   *
-   * @param invok a method invocation
-   * @return true if the given method invocation is a varargs invocation
-   * @deprecated Use {@link MethodInvocationTree#getArguments()}.
-   */
-  @Deprecated // Not for removal, just to prevent incorrect calls.
-  public static List<? extends ExpressionTree> getArguments(MethodInvocationTree invok) {
-    return invok.getArguments();
-  }
-
-  /**
-   * Returns the arguments of a constructor invocation
-   *
-   * @param newClassTree a constructor invocation
-   * @return the arguments
-   * @deprecated Use {@link NewClassTree#getArguments()}.
-   */
-  @Deprecated // Not for removal, just to prevent incorrect calls.
-  public static List<? extends ExpressionTree> getArguments(NewClassTree newClassTree) {
-    return newClassTree.getArguments();
-  }
-
-  /**
    * Returns true if the given method/constructor invocation is a varargs invocation.
    *
    * @param tree a method/constructor invocation
