@@ -856,8 +856,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkDefaultConstructor(ClassTree node) {}
 
   /**
-   * Performs pseudo-assignment check: checks that the method obeys override and subtype rules to
-   * all overridden methods.
+   * Checks that the method obeys override and subtype rules to all overridden methods. (Uses the
+   * pseudo-assignment logic to do so.)
    *
    * <p>The override rule specifies that a method, m1, may override a method m2 only if:
    *
@@ -1760,12 +1760,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * A helper method to check that the array type of actual varargs is a subtype of the
-   * corresponding required varargs, and issues "argument" error if it's not a subtype of the
-   * required one.
+   * If the given invocation is a varargs invocation, check that the array type of actual varargs is
+   * a subtype of the corresponding formal parameter; issues "argument" error if not.
    *
-   * <p>Note it's required that type checking for each element in varargs is executed by the caller
-   * before or after calling this method.
+   * <p>The caller must type-check for each element in varargs before or after calling this method.
    *
    * @see #checkArguments
    * @param invokedMethod the method type to be invoked
@@ -3212,6 +3210,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
     if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)) {
+      // The diagnostic can be a bit misleading because the check is of the receiver but `node` is
+      // the entire method invocation (where the receiver might be implicit).
       commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, node);
       boolean success = atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
       commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
