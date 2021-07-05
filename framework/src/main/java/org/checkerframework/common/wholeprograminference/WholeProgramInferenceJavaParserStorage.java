@@ -1023,9 +1023,6 @@ public class WholeProgramInferenceJavaParserStorage
           NodeList<AnnotationExpr> varArgsAnnoExprs =
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorSetToAnnotationExprList(
                   inferredType.getAnnotations());
-          System.out.printf(
-              "About to call param.setVarArgsAnnotations(%s) where param=%s%n",
-              varArgsAnnoExprs, param);
           param.setVarArgsAnnotations(varArgsAnnoExprs);
 
           AnnotatedTypeMirror inferredComponentType =
