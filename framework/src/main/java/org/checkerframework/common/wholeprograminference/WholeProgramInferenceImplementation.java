@@ -592,7 +592,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
    * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
    *
-   * @param sourceCodeATM the annotated type on the source code
+   * @param sourceCodeATM the annotated type on the source code; side effected by this method
    * @param ajavaATM the annotated type on the ajava file
    */
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
