@@ -856,8 +856,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkDefaultConstructor(ClassTree node) {}
 
   /**
-   * Performs pseudo-assignment check: checks that the method obeys override and subtype rules to
-   * all overridden methods.
+   * Checks that the method obeys override and subtype rules to all overridden methods. (Uses the
+   * pseudo-assignment logic to do so.)
    *
    * <p>The override rule specifies that a method, m1, may override a method m2 only if:
    *
@@ -1760,49 +1760,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * A helper method to check that the array type of actual varargs is a subtype of the
-   * corresponding required varargs, and issues "argument" error if it's not a subtype of the
-   * required one.
+   * If the given invocation is a varargs invocation, check that the array type of actual varargs is
+   * a subtype of the corresponding formal parameter; issues "argument" error if not.
    *
-   * <p>Note it's required that type checking for each element in varargs is executed by the caller
-   * before or after calling this method.
+   * <p>The caller must type-check for each element in varargs before or after calling this method.
    *
    * @see #checkArguments
    * @param invokedMethod the method type to be invoked
    * @param tree method or constructor invocation tree
    */
   protected void checkVarargs(AnnotatedExecutableType invokedMethod, Tree tree) {
-    if (!invokedMethod.isVarArgs()) {
+    if (!TreeUtils.isVarArgs(tree)) {
+      // If not a varargs invocation, type checking is already done in checkArguments.
       return;
     }
 
     List<AnnotatedTypeMirror> formals = invokedMethod.getParameterTypes();
     int numFormals = formals.size();
     int lastArgIndex = numFormals - 1;
+    // This is the varags type, an array.
     AnnotatedArrayType lastParamAnnotatedType = (AnnotatedArrayType) formals.get(lastArgIndex);
-
-    // We will skip type checking so that we avoid duplicating error message if the last argument is
-    // same depth with the depth of formal varargs because type checking is already done in
-    // checkArguments.
-    List<? extends ExpressionTree> args;
-    switch (tree.getKind()) {
-      case METHOD_INVOCATION:
-        args = ((MethodInvocationTree) tree).getArguments();
-        break;
-      case NEW_CLASS:
-        args = ((NewClassTree) tree).getArguments();
-        break;
-      default:
-        throw new BugInCF("Unexpected kind of tree: " + tree);
-    }
-    if (numFormals == args.size()) {
-      AnnotatedTypeMirror lastArgType = atypeFactory.getAnnotatedType(args.get(args.size() - 1));
-      if (lastArgType.getKind() == TypeKind.ARRAY
-          && AnnotatedTypes.getArrayDepth(lastParamAnnotatedType)
-              == AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArgType)) {
-        return;
-      }
-    }
 
     AnnotatedTypeMirror wrappedVarargsType = atypeFactory.getAnnotatedTypeVarargsArray(tree);
 
