@@ -782,7 +782,7 @@ public class AnnotatedTypes {
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of
    */
-  public static List<AnnotatedTypeMirror> expandVarArgs(
+  public static List<AnnotatedTypeMirror> expandVarArgsParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
