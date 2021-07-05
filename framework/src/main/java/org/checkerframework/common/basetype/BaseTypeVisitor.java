@@ -3965,7 +3965,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         // Deal with varargs
         if (overrider.isVarArgs() && !overridden.isVarArgs()) {
-          overriderParams = AnnotatedTypes.expandVarArgsFromTypes(overrider, overriddenParams);
+          overriderParams =
+              AnnotatedTypes.expandVarArgsParametersFromTypes(overrider, overriddenParams);
         }
       }
 
