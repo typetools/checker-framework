@@ -2817,16 +2817,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (showchecks) {
       long valuePos = positions.getStartPosition(root, valueTree);
       System.out.printf(
-          "%s %s (line %3d): actual tree = %s %s%n",
+          "%s %s (line %3d): actual tree = %s %s%n     actual: %s %s%n   expected: %s %s%n",
           this.getClass().getSimpleName(),
           "about to test whether actual is a subtype of expected",
           (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
           valueTree.getKind(),
-          valueTree);
-      System.out.printf(
-          "     actual: %s %s%n   expected: %s %s%n",
-          valueType.getKind(), valueType.toString(), varType.getKind(), varType.toString());
-      // new Error("backtrace").printStackTrace(System.out);
+          valueTree,
+          valueType.getKind(),
+          valueType.toString(),
+          varType.getKind(),
+          varType.toString());
     }
   }
 
