@@ -782,7 +782,7 @@ public class AnnotatedTypes {
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of
    */
-  public static List<AnnotatedTypeMirror> expandVarArgs(
+  public static List<AnnotatedTypeMirror> expandVarArgsParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
@@ -807,11 +807,10 @@ public class AnnotatedTypes {
       parameters.add(varargs.getComponentType().deepCopy());
     }
 
-    System.out.printf("expandVarArgs(%s, %s, %s) => %s%n", atypeFactory, method, args, parameters);
     return parameters;
   }
 
-  public static List<AnnotatedTypeMirror> expandVarArgsFromTypes(
+  public static List<AnnotatedTypeMirror> expandVarArgsParametersFromTypes(
       AnnotatedExecutableType method, List<AnnotatedTypeMirror> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     if (!method.getElement().isVarArgs()) {
@@ -838,7 +837,79 @@ public class AnnotatedTypes {
       parameters.add(varargs.getComponentType());
     }
 
-    System.out.printf("expandVarArgsFromTypes(%s, %s) => %s%n", method, args, parameters);
+    return parameters;
+  }
+
+  /**
+   * If the invocation is a varargs invocation, replace the varargs arguments with a NewArray tree.
+   * Otherwise, return the arguments unmodified.
+   *
+   * @param method the method's type
+   * @param args the arguments to the method invocation
+   * @return the types that the method invocation arguments need to be subtype of
+   */
+  public static List<AnnotatedTypeMirror> createNewArrayForVarArgsArguments(
+      AnnotatedTypeFactory atypeFactory,
+      AnnotatedExecutableType method,
+      List<? extends ExpressionTree> args) {
+    List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+    if (!method.getElement().isVarArgs()) {
+      return parameters;
+    }
+
+    AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
+
+    if (parameters.size() == args.size()) {
+      // Check if one sent an element or an array
+      AnnotatedTypeMirror lastArg = atypeFactory.getAnnotatedType(args.get(args.size() - 1));
+      if (lastArg.getKind() == TypeKind.ARRAY
+          && getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)) {
+        return parameters;
+      }
+    }
+
+    parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
+    for (int i = args.size() - parameters.size(); i > 0; --i) {
+      parameters.add(varargs.getComponentType().deepCopy());
+    }
+
+    return parameters;
+  }
+
+  /**
+   * If the invocation is a varargs invocation, replace the varargs arguments with a NewArray tree.
+   * Otherwise, return the arguments unmodified.
+   *
+   * @param method the method's type
+   * @param args the arguments to the method invocation
+   */
+  public static List<AnnotatedTypeMirror> createNewArrayForVarArgsArgumentsFromTypes(
+      AnnotatedExecutableType method, List<AnnotatedTypeMirror> args) {
+    List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+    if (!method.getElement().isVarArgs()) {
+      return parameters;
+    }
+
+    AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
+
+    if (parameters.size() == args.size()) {
+      // Check if one sent an element or an array
+      AnnotatedTypeMirror lastArg = args.get(args.size() - 1);
+      if (lastArg.getKind() == TypeKind.ARRAY
+          && (getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)
+              // If the array depths don't match, but the component type of the vararg
+              // is a type variable, then that type variable might later be
+              // substituted for an array.
+              || varargs.getComponentType().getKind() == TypeKind.TYPEVAR)) {
+        return parameters;
+      }
+    }
+
+    parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
+    for (int i = args.size() - parameters.size(); i > 0; --i) {
+      parameters.add(varargs.getComponentType());
+    }
+
     return parameters;
   }
 
