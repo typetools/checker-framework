@@ -623,7 +623,7 @@ public class NullnessVisitor
   protected void checkMethodInvocability(
       AnnotatedExecutableType method, MethodInvocationTree node) {
     if (method.getReceiverType() == null) {
-      // Static methods don't have a receiver.
+      // Static methods don't have a receiver to check.
       return;
     }
 
