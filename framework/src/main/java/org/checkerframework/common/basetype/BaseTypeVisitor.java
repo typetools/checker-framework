@@ -3189,6 +3189,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
     if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv)) {
+      // The diagnostic can be a bit misleading because the check is of the receiver but `node` is
+      // the entire method invocation (where the receiver might be implicit).
       commonAssignmentCheckStartDiagnostic(methodReceiver, treeReceiver, node);
       boolean success = atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver);
       commonAssignmentCheckEndDiagnostic(success, null, methodReceiver, treeReceiver, node);
