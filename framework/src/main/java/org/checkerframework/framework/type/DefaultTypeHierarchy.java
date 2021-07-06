@@ -1120,9 +1120,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * found that is neither a type variable nor a wildcard.
    *
    * @param type the type
-   * @return {@code type} if it is not a type variable or a wildcard, or if it is a type variable or
-   *     wildcard recur on its upper bound until an upper bound is found that is neither a type
-   *     variable nor a wildcard
+   * @return if {@code type} is a type variable or wildcard, recur on its upper bound until an upper
+   *     bound is found that is neither a type variable nor a wildcard. Otherwise, return {@code
+   *     type} itself.
    */
   private AnnotatedTypeMirror getNonWildcardOrTypeVarUpperBound(AnnotatedTypeMirror type) {
     while (type.getKind() == TypeKind.TYPEVAR || type.getKind() == TypeKind.WILDCARD) {
@@ -1160,10 +1160,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // This can happen at a method invocation where a type variable in the method
       // declaration is substituted with a wildcard.
       // For example:
-      // <T> void method(Gen<T> t) {}
-      // Gen<?> x;
-      // method(x); // this method is called when checking this method call
-      // And also when checking lambdas
+      //   <T> void method(Gen<T> t) {}
+      //   Gen<?> x;
+      //   method(x);
+      // visitWildcard_Type is called when checking the method call `method(x)`,
+      // and also when checking lambdas.
 
       boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
