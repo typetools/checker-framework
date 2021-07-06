@@ -1,4 +1,4 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
 
 class IParent {
   int field;
@@ -10,12 +10,12 @@ class IParent {
     expectsBot(field);
   }
 
-  void expectsBot(@WholeProgramInferenceBottom int t) {}
+  void expectsBot(@AinferBottom int t) {}
 }
 
 class IChild extends IParent {
   void test1() {
-    @WholeProgramInferenceBottom int bot = (@WholeProgramInferenceBottom int) 0;
+    @AinferBottom int bot = (@AinferBottom int) 0;
     expectsBotNoSignature(bot);
     field = bot;
   }

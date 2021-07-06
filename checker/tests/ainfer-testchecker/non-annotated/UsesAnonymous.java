@@ -1,6 +1,6 @@
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Top;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.Top;
 
 public class UsesAnonymous {
   void method() {
@@ -19,8 +19,8 @@ public class UsesAnonymous {
             expectsSibling2(innerField);
           }
 
-          @WholeProgramInferenceBottom int getBottom() {
-            return (@WholeProgramInferenceBottom int) 0;
+          @AinferBottom int getBottom() {
+            return (@AinferBottom int) 0;
           }
 
           @Top int getTop() {

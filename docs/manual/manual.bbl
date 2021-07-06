@@ -1,5 +1,5 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
-\begin{thebibliography}{WPM{\etalchar{+}}09}
+\begin{thebibliography}{MWME21}
 
 \bibitem[AQKE09]{ArtziQKE2009}
 Shay Artzi, Jaime Quinonez, Adam Kie{\.z}un, and Michael~D. Ernst.
@@ -270,6 +270,13 @@ Maria Kechagia and Diomidis Spinellis.
 \newblock In {\em WAPI '17: Proceedings of the 1st International Workshop on
   API Usage and Evolution}, pages 15--18, Buenos Aires, Argentina, May 2017.
 
+\bibitem[KSSE21]{KelloggSSE2021}
+Martin Kellogg, Narges Shadab, Manu Sridharan, and Michael~D. Ernst.
+\newblock Lightweight and modular resource leak verification.
+\newblock In {\em ESEC/FSE 2021: The ACM 29th joint European Software
+  Engineering Conference and Symposium on the Foundations of Software
+  Engineering (ESEC/FSE)}, Athens, Greece, August 2021.
+
 \bibitem[KSTE20]{KelloggSTE2020}
 Martin Kellogg, Martin Sch{\"a}f, Serdar Tasiran, and Michael~D. Ernst.
 \newblock Continuous compliance.
@@ -314,6 +321,12 @@ Ana Milanova.
 \newblock Definite reference mutability.
 \newblock In {\em ECOOP 2018 --- Object-Oriented Programming, 32nd European
   Conference}, pages 25:1--25:30, Amsterdam, Netherlands, July 2018.
+
+\bibitem[MWME21]{MudduluruWME2021}
+Rashmi Mudduluru, Jason Waataja, Suzanne Millstein, and Michael~D. Ernst.
+\newblock Verifying determinism in sequential programs.
+\newblock In {\em ICSE 2021, Proceedings of the 43rd International Conference
+  on Software Engineering}, Madrid, Spain, May 2021.
 
 \bibitem[PAC{\etalchar{+}}08]{PapiACPE2008}
 Matthew~M. Papi, Mahmood Ali, Telmo~Luis {Correa~Jr.}, Jeff~H. Perkins, and

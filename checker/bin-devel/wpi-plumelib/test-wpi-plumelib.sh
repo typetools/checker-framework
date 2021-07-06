@@ -11,7 +11,7 @@
 # The exact directory name is the last directory in the -Ajava= argument in file
 # checker-framework/checker/build/wpi-plumelib-tests/PROJECTNAME/dljc-out/typecheck.out .
 
-# This script is run by `./gradlew wpiPlumeLibTests` at the top level.
+# This script is run by `./gradlew wpiPlumeLibTest` at the top level.
 
 # wpi.sh may exit with non-zero status.
 set +e

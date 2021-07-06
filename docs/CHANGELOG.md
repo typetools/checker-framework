@@ -9,12 +9,27 @@ syntax, such as records and switch expressions, is not yet type-checked; that
 will be added in a future release.  Thanks to Neil Brown for the JDK 16 support.
 
 The `-Ainfer` command-line argument now outputs purity annotations even if
-neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is present.
+neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is supplied
+on the command line.
 
 **Implementation details:**
 
 Method renamings (the old methods remain but are deprecated):
  * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
+
+Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
+ * `visitIntersectionSupertype` => `visitIntersectionSupertype`
+ * `visitIntersectionSubtype` => `visitIntersection_Type`
+ * `visitUnionSubtype` => `visitUnion_Type`
+ * `visitTypevarSubtype` => `visitTypevar_Type`
+ * `visitTypevarSupertype` => `visitType_Typevar`
+ * `visitWildcardSubtype` => `visitWildcard_Type`
+ * `visitWildcardSupertype` => `visitType_Wildcard`
+
+Method renamings in `AnnotatedTypes` (the old methods were removed):
+ * `expandVarArgs` => `expandVarArgsParameters`
+ * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
+
 
 **Closed issues:**
 

@@ -1,4 +1,4 @@
-package org.checkerframework.checker.testchecker.wholeprograminference;
+package org.checkerframework.checker.testchecker.ainfer;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -10,14 +10,14 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.DefaultType;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.ImplicitAnno;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Parent;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling2;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.SiblingWithFields;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.Top;
-import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
+import org.checkerframework.checker.testchecker.ainfer.qual.DefaultType;
+import org.checkerframework.checker.testchecker.ainfer.qual.ImplicitAnno;
+import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.SiblingWithFields;
+import org.checkerframework.checker.testchecker.ainfer.qual.Top;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -38,12 +38,12 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>The used qualifier hierarchy is straightforward and only intended for test purposes.
  */
-public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private final AnnotationMirror PARENT =
       new AnnotationBuilder(processingEnv, Parent.class).build();
   private final AnnotationMirror BOTTOM =
-      new AnnotationBuilder(processingEnv, WholeProgramInferenceBottom.class).build();
+      new AnnotationBuilder(processingEnv, AinferBottom.class).build();
   private final AnnotationMirror IMPLICIT_ANNO =
       new AnnotationBuilder(processingEnv, ImplicitAnno.class).build();
 
@@ -54,7 +54,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
   private final ExecutableElement siblingWithFieldsValue2Element =
       TreeUtils.getMethod(SiblingWithFields.class, "value2", 0, processingEnv);
 
-  public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
+  public AinferTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();
   }
@@ -68,7 +68,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
             Top.class,
             Sibling1.class,
             Sibling2.class,
-            WholeProgramInferenceBottom.class,
+            AinferBottom.class,
             SiblingWithFields.class,
             ImplicitAnno.class));
   }
@@ -84,26 +84,24 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
 
   @Override
   protected QualifierHierarchy createQualifierHierarchy() {
-    return new WholeProgramInferenceTestQualifierHierarchy(
-        this.getSupportedTypeQualifiers(), elements);
+    return new AinferTestQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
   }
 
   /**
    * Using a MultiGraphQualifierHierarchy to enable tests with Annotations that contain fields. @see
    * SiblingWithFields.
    */
-  protected class WholeProgramInferenceTestQualifierHierarchy
-      extends MostlyNoElementQualifierHierarchy {
+  protected class AinferTestQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
     private final QualifierKind SIBLING_WITH_FIELDS_KIND;
 
     /**
-     * Creates a WholeProgramInferenceTestQualifierHierarchy from the given classes.
+     * Creates a AinferTestQualifierHierarchy from the given classes.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
      */
-    protected WholeProgramInferenceTestQualifierHierarchy(
+    protected AinferTestQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
       super(qualifierClasses, elements);
       SIBLING_WITH_FIELDS_KIND = getQualifierKind(SiblingWithFields.class.getCanonicalName());
