@@ -120,6 +120,11 @@ This section describes the lock annotations you can write on types and methods.
   default type qualifier for method receivers in unannotated libraries
   (see \chapterpageref{annotating-libraries}).
 
+\item[\refqualclass{checker/lock/qual}{NewObject}]
+  This type represents a newly-consructed value; such as the result of
+  calling a constructor or factory method.  The client can use the value as
+  any \refqualclass{checker/lock/qual}{GuardedBy} type.
+
 \item[\refqualclass{checker/lock/qual}{GuardedByBottom}]
   If a variable \<x> has type \code{@GuardedByBottom}, then
   the value referred to by \<x> is \code{null} and can never

@@ -8,6 +8,9 @@ You can pass the `--release 16` command-line argument to the compiler.  New
 syntax, such as records and switch expressions, is not yet type-checked; that
 will be added in a future release.  Thanks to Neil Brown for the JDK 16 support.
 
+The Lock Checker supports a new type, `@NewObject`, for the result of a
+constructor invocation.
+
 The `-Ainfer` command-line argument now outputs purity annotations even if
 neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is supplied
 on the command line.
@@ -32,6 +35,7 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
 
 
 **Closed issues:**
+
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------
