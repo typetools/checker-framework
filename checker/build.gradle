@@ -710,8 +710,10 @@ task wpiManyTests(group: "Verification") {
         def typecheckFiles = fileTree(typecheckFilesDir).matching {
             include "**/*-typecheck.out"
         }
-        if (typecheckFiles.size() == 0) {
-            println("Failure: No *-typecheck.out files in ${typecheckFilesDir}")
+        def expectedTypecheckFileCount = file("${project.projectDir}/tests/wpi-many/testin.txt").text.readLines().size()
+        def actualTypecheckFileCount = typecheckFiles.size()
+        if (actualTypecheckFileCount != expectedTypecheckFileCount) {
+            println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
             println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
             exec {
                 commandLine 'cat', "${typecheckFilesDir}/wpi-out"
@@ -726,7 +728,7 @@ task wpiManyTests(group: "Verification") {
                 details.getFile().eachLine { line -> println(line) }
                 println("======== end of contents of ${filename} ========")
             }
-            throw new GradleException("Failure: No *-typecheck.out files in ${project.projectDir}/build/wpi-many-tests-results/")
+            throw new GradleException("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
         }
 
         // check that WPI causes the expected builds to succeed
