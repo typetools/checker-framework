@@ -287,7 +287,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
   /**
    * Returns true if {@code outside} contains {@code inside}, that is, if the set of types denoted
-   * by {@code outside} is a superset of or equal to the set of types denoted by {@code inside}.
+   * by {@code outside} is a superset of, or equal to, the set of types denoted by {@code inside}.
    *
    * <p>Containment is described in <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
@@ -295,9 +295,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * <p>As described in <a
    * href=https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2>JLS section
-   * 4.10.2 Subtyping among Class and Interface Types</a>, a declared type is considered a supertype
-   * of another declared type only if all of the type arguments of the declared type "contain" the
-   * corresponding type arguments of the subtype.
+   * 4.10.2 Subtyping among Class and Interface Types</a>, a declared type S is considered a
+   * supertype of another declared type T only if all of S's type arguments "contain" the
+   * corresponding type arguments of the subtype T.
    *
    * @param inside a possibly-contained type; its underlying type is contained by {@code outside}'s
    *     underlying type
@@ -320,6 +320,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     if (outside.getKind() == TypeKind.WILDCARD) {
+      // This is all cases except bullet 6, "T <= T".
       AnnotatedWildcardType outsideWildcard = (AnnotatedWildcardType) outside;
 
       // Add a placeholder in case of recursion, to prevent infinite regress.
@@ -332,10 +333,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
               canBeCovariant);
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
-    } else if ((TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
+    }
+    if ((TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
       // TODO: This branch should be removed after #979 is fixed.
-      // This work around is only needed when outside is a captured type variable,
+      // This workaround is only needed when outside is a captured type variable,
       // but inside is not.
       AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
 
@@ -351,6 +353,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
     }
+    // The remainder of the method is bullet 6, "T <= T".
     if (canBeCovariant) {
       return isSubtype(inside, outside, currentTop);
     }
@@ -360,7 +363,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   /**
    * Let {@code outside} be {@code ? super outsideLower extends outsideUpper}. Returns true if
    * {@code outside} contains {@code inside}, that is, if the set of types denoted by {@code
-   * outside} is a superset of or equal to the set of types denoted by {@code inside}.
+   * outside} is a superset of, or equal to, the set of types denoted by {@code inside}.
    *
    * <p>This method is a helper method for {@link #isContainedBy(AnnotatedTypeMirror,
    * AnnotatedTypeMirror, boolean)}.
@@ -515,7 +518,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param subtypeRaw whether {@code subtype} is a raw type
    * @param supertypeRaw whether {@code supertype} is a raw type
    * @return true if the type arguments in {@code supertype} contain the type arguments in {@code
-   *     subtype} and false otherwise.
+   *     subtype} and false otherwise
    */
   protected boolean visitTypeArgs(
       AnnotatedDeclaredType subtype,
@@ -1091,8 +1094,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (supertype.getKind() == TypeKind.DECLARED
         && TypesUtils.getTypeElement(supertype.getUnderlyingType()).getKind()
             == ElementKind.INTERFACE) {
+      // The supertype is an interface.
       subtypeUpperBound = getNonWildcardOrTypeVarUpperBound(subtypeUpperBound);
-      // If the supertype is an interface, only compare the primary annotations.
+      // Only compare the primary annotations.
       // The actual type argument could implement the interface and the bound of
       // the type variable must not implement the interface.
       if (subtypeUpperBound.getKind() == TypeKind.INTERSECTION) {
@@ -1118,9 +1122,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * found that is neither a type variable nor a wildcard.
    *
    * @param type the type
-   * @return {@code type} if it is not a type variable or a wildcard, or if it is a type variable or
-   *     wildcard recur on its upper bound until an upper bound is found that is neither a type
-   *     variable nor a wildcard
+   * @return if {@code type} is a type variable or wildcard, recur on its upper bound until an upper
+   *     bound is found that is neither a type variable nor a wildcard. Otherwise, return {@code
+   *     type} itself.
    */
   private AnnotatedTypeMirror getNonWildcardOrTypeVarUpperBound(AnnotatedTypeMirror type) {
     while (type.getKind() == TypeKind.TYPEVAR || type.getKind() == TypeKind.WILDCARD) {
@@ -1158,10 +1162,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // This can happen at a method invocation where a type variable in the method
       // declaration is substituted with a wildcard.
       // For example:
-      // <T> void method(Gen<T> t) {}
-      // Gen<?> x;
-      // method(x); // this method is called when checking this method call
-      // And also when checking lambdas
+      //   <T> void method(Gen<T> t) {}
+      //   Gen<?> x;
+      //   method(x);
+      // visitWildcard_Type is called when checking the method call `method(x)`,
+      // and also when checking lambdas.
 
       boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
