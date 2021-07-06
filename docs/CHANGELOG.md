@@ -1,7 +1,10 @@
-Version 3.16.0 (July 1, 2021)
+Version 3.16.0 (July 9, 2021)
 -----------------------------
 
 **User-visible changes:**
+
+The Lock Checker supports a new type, `@NewObject`, for the result of a
+constructor invocation.
 
 The `-Ainfer` command-line argument now outputs purity annotations even if
 neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is supplied
@@ -27,6 +30,7 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
 
 
 **Closed issues:**
+
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------

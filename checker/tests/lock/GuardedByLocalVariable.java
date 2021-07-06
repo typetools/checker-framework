@@ -11,14 +11,18 @@ public class GuardedByLocalVariable {
     // :: error: (expression.unparsable)
     @GuardedBy("m0") Object kk;
     {
-      final Map<Object, Integer> m0 = new HashMap<>();
+      @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
+      final Map<Object, Integer> m0 = someValue();
       @GuardedBy("m0") Object k = "key";
-      // :: error: (assignment)
+      // If the type of kk were legal, this assignment would be illegal because the two instances of
+      // "m0" would refer to different variables.
       kk = k;
     }
     {
-      final Map<Object, Integer> m0 = new HashMap<>();
-      // :: error: (assignment)
+      @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
+      final Map<Object, Integer> m0 = someValue();
+      // If the type of kk were legal, this assignment would be illegal because the two instances of
+      // "m0" would refer to different variables.
       @GuardedBy("m0") Object k2 = kk;
     }
   }
@@ -26,5 +30,9 @@ public class GuardedByLocalVariable {
   public static void invalidLocalVariable() {
     // :: error: (expression.unparsable)
     @GuardedBy("foobar") Object kk;
+  }
+
+  static @GuardedByUnknown Map<Object, Integer> someValue() {
+    return new HashMap<>();
   }
 }
