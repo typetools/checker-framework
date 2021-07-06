@@ -21,7 +21,7 @@ public class AinferNullnessJaifsValidationTest extends CheckerFrameworkPerDirect
   @Override
   public void run() {
     // Only run if annotated files have been created.
-    // See ainferTests task.
+    // See ainferTest task.
     if (!new File("tests/ainfer-nullness/annotated/").exists()) {
       throw new RuntimeException(AinferNullnessJaifsTest.class + " must be run before this test.");
     }

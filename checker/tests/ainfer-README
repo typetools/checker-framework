@@ -5,7 +5,7 @@ These are locations that an annotation is needed for it to
 type-check. Also, these tests must ONLY have expected error comments for those
 cases -- no other expected errors comments should be added.
 
-The task ainferTests tests the -Ainfer command-line argument in three
+The task ainferTest tests the -Ainfer command-line argument in three
 steps:
 
 1. The TestChecker will type-check all files in the "non-annotated" folder

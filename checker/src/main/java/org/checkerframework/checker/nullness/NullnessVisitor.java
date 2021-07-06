@@ -622,6 +622,11 @@ public class NullnessVisitor
   @Override
   protected void checkMethodInvocability(
       AnnotatedExecutableType method, MethodInvocationTree node) {
+    if (method.getReceiverType() == null) {
+      // Static methods don't have a receiver to check.
+      return;
+    }
+
     if (!TreeUtils.isSelfAccess(node)
         &&
         // Static methods don't have a receiver
