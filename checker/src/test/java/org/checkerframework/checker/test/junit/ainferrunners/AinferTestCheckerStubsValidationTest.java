@@ -30,7 +30,7 @@ public class AinferTestCheckerStubsValidationTest extends CheckerFrameworkPerDir
   @Override
   public void run() {
     // Only run if annotated files have been created.
-    // See ainferTests task.
+    // See ainferTest task.
     if (!new File("tests/ainfer-testchecker/annotated/").exists()) {
       throw new RuntimeException(
           AinferTestCheckerStubsTest.class + " must be run before this test.");
