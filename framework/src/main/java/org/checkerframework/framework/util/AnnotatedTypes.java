@@ -1155,9 +1155,15 @@ public class AnnotatedTypes {
   /**
    * When overriding a method, you must include the same number of type parameters as the base
    * method. By index, these parameters are considered equivalent to the type parameters of the
-   * overridden method. Necessary conditions: Both type variables are defined in methods One of the
-   * two methods overrides the other Within their method declaration, both types have the same type
-   * parameter index
+   * overridden method.
+   *
+   * <p>Necessary conditions:
+   *
+   * <ul>
+   *   <li>Both type variables are defined in methods.
+   *   <li>One of the two methods overrides the other.
+   *   <li>Within their method declaration, both types have the same type parameter index.
+   * </ul>
    *
    * @return true if type1 and type2 are corresponding type variables (that is, either one
    *     "overrides" the other)
