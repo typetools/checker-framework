@@ -408,8 +408,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *
    * @param tree tree to search
    * @param type type to return if no parameter type tree is found
-   * @return If {@code tree} has a type parameter tree, then the tree and its type is returned.
-   *     Otherwise null and {@code type} are returned
+   * @return if {@code tree} has a type parameter tree, then returns the tree and its type.
+   *     Otherwise, returns null and {@code type}.
    */
   private Pair<@Nullable ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
       Tree tree, AnnotatedDeclaredType type) {
@@ -558,14 +558,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       reportInvalidBounds(type, tree);
     }
     AnnotatedTypeVariable useOfTypeVar = type.asUse();
-    if (!(tree instanceof TypeParameterTree)) {
-      return super.visitTypeVariable(useOfTypeVar, tree);
+    if (tree instanceof TypeParameterTree) {
+      TypeParameterTree typeParameterTree = (TypeParameterTree) tree;
+      visitedNodes.put(useOfTypeVar, defaultResult);
+      visitTypeParameterBounds(useOfTypeVar, typeParameterTree);
+      visitedNodes.put(useOfTypeVar, defaultResult);
+      return null;
     }
-    TypeParameterTree typeParameterTree = (TypeParameterTree) tree;
-    visitedNodes.put(useOfTypeVar, defaultResult);
-    visitTypeParameterBounds(useOfTypeVar, typeParameterTree);
-    visitedNodes.put(useOfTypeVar, defaultResult);
-    return null;
+    return super.visitTypeVariable(useOfTypeVar, tree);
   }
 
   @Override
