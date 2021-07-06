@@ -1770,37 +1770,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree method or constructor invocation tree
    */
   protected void checkVarargs(AnnotatedExecutableType invokedMethod, Tree tree) {
-    if (!invokedMethod.isVarArgs()) {
+    if (!TreeUtils.isVarArgs(tree)) {
+      // If not a varargs invocation, type checking is already done in checkArguments.
       return;
     }
 
     List<AnnotatedTypeMirror> formals = invokedMethod.getParameterTypes();
     int numFormals = formals.size();
     int lastArgIndex = numFormals - 1;
+    // This is the varags type, an array.
     AnnotatedArrayType lastParamAnnotatedType = (AnnotatedArrayType) formals.get(lastArgIndex);
-
-    // We will skip type checking so that we avoid duplicating error message if the last argument is
-    // same depth with the depth of formal varargs because type checking is already done in
-    // checkArguments.
-    List<? extends ExpressionTree> args;
-    switch (tree.getKind()) {
-      case METHOD_INVOCATION:
-        args = ((MethodInvocationTree) tree).getArguments();
-        break;
-      case NEW_CLASS:
-        args = ((NewClassTree) tree).getArguments();
-        break;
-      default:
-        throw new BugInCF("Unexpected kind of tree: " + tree);
-    }
-    if (numFormals == args.size()) {
-      AnnotatedTypeMirror lastArgType = atypeFactory.getAnnotatedType(args.get(args.size() - 1));
-      if (lastArgType.getKind() == TypeKind.ARRAY
-          && AnnotatedTypes.getArrayDepth(lastParamAnnotatedType)
-              == AnnotatedTypes.getArrayDepth((AnnotatedArrayType) lastArgType)) {
-        return;
-      }
-    }
 
     AnnotatedTypeMirror wrappedVarargsType = atypeFactory.getAnnotatedTypeVarargsArray(tree);
 
