@@ -477,7 +477,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       final Set<TypeVariable> targets,
       boolean useNullArguments) {
     final List<AnnotatedTypeMirror> paramTypes =
-        AnnotatedTypes.expandVarArgsFromTypes(methodType, argTypes);
+        AnnotatedTypes.expandVarArgsParametersFromTypes(methodType, argTypes);
 
     if (argTypes.size() != paramTypes.size()) {
       throw new BugInCF(
