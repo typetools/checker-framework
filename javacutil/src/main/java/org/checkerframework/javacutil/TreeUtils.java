@@ -1656,6 +1656,9 @@ public final class TreeUtils {
     }
 
     TypeMirror lastArgType = typeOf(args.get(args.size() - 1));
+    if (lastArgType.getKind() == TypeKind.NULL) {
+      return false;
+    }
     if (lastArgType.getKind() != TypeKind.ARRAY) {
       return true;
     }

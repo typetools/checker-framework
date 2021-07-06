@@ -796,8 +796,9 @@ public class AnnotatedTypes {
     if (parameters.size() == args.size()) {
       // Check if one sent an element or an array
       AnnotatedTypeMirror lastArg = atypeFactory.getAnnotatedType(args.get(args.size() - 1));
-      if (lastArg.getKind() == TypeKind.ARRAY
-          && getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg)) {
+      if (lastArg.getKind() == TypeKind.NULL
+          || (lastArg.getKind() == TypeKind.ARRAY
+              && getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType) lastArg))) {
         return parameters;
       }
     }
