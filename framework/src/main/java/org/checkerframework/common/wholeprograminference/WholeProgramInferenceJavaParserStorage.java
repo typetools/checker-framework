@@ -624,7 +624,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
    * which is the JavaParser node representing the same type. Does nothing if {@code annotatedType}
-   * is null (this may occur if there's no inferred annotations for the type).
+   * is null (this may occur if there are no inferred annotations for the type).
    *
    * @param annotatedType type to transfer annotations from
    * @param target the JavaParser type to transfer annotation to; must represent the same type as
@@ -650,7 +650,7 @@ public class WholeProgramInferenceJavaParserStorage
   private static class CompilationUnitAnnos {
     /** Compilation unit being wrapped. */
     public CompilationUnit compilationUnit;
-    /** Wrappers for classes and interfaces in {@code declaration} */
+    /** Wrappers for classes and interfaces in {@code compilationUnit}. */
     public List<ClassOrInterfaceAnnos> types;
 
     /**
@@ -748,8 +748,8 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private @MonotonicNonNull AnnotatedTypeMirror receiverType = null;
     /**
-     * Inferred annotations for parameter types. Initialized the first time any parameter is
-     * accessed and each parameter is initialized the first time it's accessed.
+     * Inferred annotations for parameter types. The list is initialized the first time any
+     * parameter is accessed, and each parameter is initialized the first time it's accessed.
      */
     private @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
     /** Annotations on the callable declaration. */
