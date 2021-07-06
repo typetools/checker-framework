@@ -7,9 +7,11 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
@@ -1014,8 +1016,22 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       for (int i = 0; i < parameterTypes.size(); i++) {
-        WholeProgramInferenceJavaParserStorage.transferAnnotations(
-            parameterTypes.get(i), declaration.getParameter(i).getType());
+        AnnotatedTypeMirror inferredType = parameterTypes.get(i);
+        Parameter param = declaration.getParameter(i);
+        Type javaParserType = param.getType();
+        if (param.isVarArgs()) {
+          NodeList<AnnotationExpr> varArgsAnnoExprs =
+              AnnotationMirrorToAnnotationExprConversion.annotationMirrorSetToAnnotationExprList(
+                  inferredType.getAnnotations());
+          param.setVarArgsAnnotations(varArgsAnnoExprs);
+
+          AnnotatedTypeMirror inferredComponentType =
+              ((AnnotatedArrayType) inferredType).getComponentType();
+          WholeProgramInferenceJavaParserStorage.transferAnnotations(
+              inferredComponentType, javaParserType);
+        } else {
+          WholeProgramInferenceJavaParserStorage.transferAnnotations(inferredType, javaParserType);
+        }
       }
     }
 
