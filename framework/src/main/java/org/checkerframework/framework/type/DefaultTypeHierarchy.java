@@ -568,7 +568,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *
    * @param subtypeTypeArgs subtype arguments
    * @param supertypeTypeArgs supertype arguments
-   * @param covariantArgIndexes with the type argument is covariant
+   * @param covariantArgIndexes indexes into the type arguments list which correspond to the type
+   *     arguments that are marked @{@link Covariant}.
    * @return whether {@code supertypeTypeArgs} contain {@code subtypeTypeArgs}
    */
   protected boolean isContainedMany(
@@ -885,7 +886,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, Void p) {
 
     if (AnnotatedTypes.haveSameDeclaration(checker.getTypeUtils(), subtype, supertype)) {
-      // subtype and supertype are uses of the same type parameter
+      // The underlying types of subtype and supertype are uses of the same type parameter, but they
+      // may have different primary annotations.
       boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
 
