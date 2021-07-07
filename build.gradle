@@ -363,8 +363,8 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
 /**
  * Returns a list of all the Java files that should be formatted for the given project. These are:
  *
- * All java files in the main sourceSet.
- * All java files in the tests directory that compile.
+ * All Java files in the main sourceSet.
+ * All Java files in the tests directory that compile.
  *
  * @param projectName name of the project to format
  * @return a list of all Java files that should be formatted for projectName
@@ -375,7 +375,7 @@ List<String> getJavaFilesToFormat(projectName) {
         javaFiles.addAll(set.java.files)
     }
 
-    // Collect all java files in tests directory
+    // Collect all Java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
         // If you change this, also change checker/bin-devel/git.pre-commit
         if (!details.path.contains("nullness-javac-errors")
@@ -386,14 +386,14 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
-    // Collect all java files in jtreg directory
+    // Collect all Java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
-    // Collect all java files in jtregJdk11 directory
+    // Collect all Java files in jtregJdk11 directory
     fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
