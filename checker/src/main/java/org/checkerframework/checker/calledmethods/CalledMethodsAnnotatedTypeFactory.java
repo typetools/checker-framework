@@ -398,11 +398,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Returns a {@code EnsuresCalledMethods("...")} annotation for the given field.
+   * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given field.
    *
    * @param fieldElement a field
    * @param calledMethods the methods that were definitely called on the field
-   * @return a {@code EnsuresCalledMethods("...")} annotation for the given field
+   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given field
    */
   private List<AnnotationMirror> ensuresCMAnno(
       VariableElement fieldElement, List<String> calledMethods) {
