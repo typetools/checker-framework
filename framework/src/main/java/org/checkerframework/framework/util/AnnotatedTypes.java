@@ -834,7 +834,7 @@ public class AnnotatedTypes {
       AnnotatedTypeMirror subtype,
       AnnotatedTypeMirror supertype) {
     AnnotatedTypeMirror glb = subtype.deepCopy();
-    glb.clearAnnotations();
+    glb.clearPrimaryAnnotations();
 
     for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
       AnnotationMirror subAnno = subtype.getAnnotationInHierarchy(top);
