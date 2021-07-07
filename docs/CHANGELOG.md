@@ -15,6 +15,9 @@ on the command line.
 Method renamings (the old methods remain but are deprecated):
  * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
 
+Method renamings (the old methods were removed):
+ * `AnnotatedTypeMirror.clearAnnotations => `clearPrimaryAnnotations`
+
 Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
  * `visitIntersectionSupertype` => `visitIntersectionSupertype`
  * `visitIntersectionSubtype` => `visitIntersection_Type`
@@ -27,7 +30,6 @@ Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
 Method renamings in `AnnotatedTypes` (the old methods were removed):
  * `expandVarArgs` => `expandVarArgsParameters`
  * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
-
 
 **Closed issues:**
 

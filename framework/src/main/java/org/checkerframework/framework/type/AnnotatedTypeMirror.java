@@ -727,7 +727,7 @@ public abstract class AnnotatedTypeMirror {
    * <p>This method should only be used in very specific situations. For individual type systems, it
    * is generally better to use {@link #removeAnnotation(AnnotationMirror)} and similar methods.
    */
-  public void clearAnnotations() {
+  public void clearPrimaryAnnotations() {
     annotations.clear();
   }
 
