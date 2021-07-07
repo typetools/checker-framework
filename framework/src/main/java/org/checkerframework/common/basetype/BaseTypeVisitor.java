@@ -528,6 +528,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
         if (superType.getUnderlyingType().asElement().getKind().isClass()) {
           validateType(ext, superType);
+          break;
         }
       }
     }
@@ -539,6 +540,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           if (superType.getUnderlyingType().asElement().getKind().isInterface()
               && types.isSameType(superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
             validateType(im, superType);
+            break;
           }
         }
       }

@@ -842,9 +842,14 @@ public class AnnotatedTypes {
       if (subAnno != null && superAnno != null) {
         glb.addAnnotation(qualifierHierarchy.greatestLowerBound(subAnno, superAnno));
       } else if (subAnno == null && superAnno == null) {
-        assert subtype.getKind() == TypeKind.TYPEVAR && supertype.getKind() == TypeKind.TYPEVAR;
+        if (subtype.getKind() != TypeKind.TYPEVAR || supertype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF(
+              "Missing primary annotations: subtype: %s, supertype: %s", subtype, supertype);
+        }
       } else if (subAnno == null) {
-        assert subtype.getKind() == TypeKind.TYPEVAR;
+        if (subtype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF("Missing primary annotations: subtype: %s", subtype);
+        }
         Set<AnnotationMirror> lb = findEffectiveLowerBoundAnnotations(qualifierHierarchy, subtype);
         AnnotationMirror lbAnno = qualifierHierarchy.findAnnotationInHierarchy(lb, top);
         if (lbAnno != null && !qualifierHierarchy.isSubtype(lbAnno, superAnno)) {
