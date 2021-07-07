@@ -936,7 +936,6 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param ts the type arguments
      */
-    // WMD
     public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
       if (ts == null || ts.isEmpty()) {
         typeArgs = Collections.emptyList();
@@ -1375,7 +1374,6 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the component type
      */
-    // WMD
     public void setComponentType(AnnotatedTypeMirror type) {
       this.componentType = type;
     }
