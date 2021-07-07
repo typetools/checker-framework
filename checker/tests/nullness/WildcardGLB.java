@@ -11,11 +11,13 @@ public class WildcardGLB {
   }
 
   // TODO: There should be an error here.
-  // The capture type variable for ? extends @List<@NonNull String> is
-  // capture#865 extends @NonNull List<@Nullable String>.
-  // It's weird that the upper bound of the captured type variable isn't a subtype of the extends
-  // bound of the wildcard, but I don't think this leads to unsoundness, but it makes it so that
-  // this method can't be called without an error.  The method testUse below demos this.
+  // The captured type variable for ? extends @List<@NonNull String> is
+  // capture#865 extends @NonNull List<@Nullable String>.  The upper bound of
+  // the capture type variable is not a subtype of the extends bound of the
+  // wildcard because the glb of the type parameter bound and the wildcard
+  // extends bound does not exist.  I don't think this leads to unsoundness,
+  // but it makes it so that this method can't be called without an error.  The
+  // method testUse below demos this.
   void use(MyClass<? extends List<String>> s) {
     // :: error: (assignment)
     List<String> f = s.getE();
