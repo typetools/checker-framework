@@ -12,6 +12,20 @@ on the command line.
 Method renamings (the old methods remain but are deprecated):
  * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
 
+Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
+ * `visitIntersectionSupertype` => `visitIntersectionSupertype`
+ * `visitIntersectionSubtype` => `visitIntersection_Type`
+ * `visitUnionSubtype` => `visitUnion_Type`
+ * `visitTypevarSubtype` => `visitTypevar_Type`
+ * `visitTypevarSupertype` => `visitType_Typevar`
+ * `visitWildcardSubtype` => `visitWildcard_Type`
+ * `visitWildcardSupertype` => `visitType_Wildcard`
+
+Method renamings in `AnnotatedTypes` (the old methods were removed):
+ * `expandVarArgs` => `expandVarArgsParameters`
+ * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
+
+
 **Closed issues:**
 
 Version 3.15.0 (June 18, 2021)
