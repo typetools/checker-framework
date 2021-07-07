@@ -809,7 +809,7 @@ public class DependentTypesHelper {
    *
    * @param expression an expression that caused {@code e} when parsed
    * @param e the exception thrown when parsing {@code expression}
-   * @return a java expression
+   * @return a Java expression
    */
   protected PassThroughExpression createError(String expression, JavaExpressionParseException e) {
     return new PassThroughExpression(objectTM, new DependentTypesError(expression, e).toString());
@@ -820,7 +820,7 @@ public class DependentTypesHelper {
    *
    * @param expression an expression that caused {@code error} when parsed
    * @param error the error message caused by {@code expression}
-   * @return a java expression
+   * @return a Java expression
    */
   protected PassThroughExpression createError(String expression, String error) {
     return new PassThroughExpression(

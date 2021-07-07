@@ -86,7 +86,7 @@ public class TestConfigurationBuilder {
    *
    * @param testSourcePath the path to the Checker test file sources, usually this is the directory
    *     of Checker's tests
-   * @param testFile a single test java file to compile
+   * @param testFile a single test Java file to compile
    * @param processor a single checker to include in the processors field
    * @param options the options to the compiler/processors
    * @param shouldEmitDebugInfo whether or not debug information should be emitted

@@ -162,7 +162,12 @@ public class TestUtilities {
     return arguments;
   }
 
-  /** Returns all the java files that are descendants of the given directory. */
+  /**
+   * Returns all the Java files that are descendants of the given directory.
+   *
+   * @param directory a directory
+   * @return all the Java files that are descendants of the given directory
+   */
   public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
     if (!directory.exists()) {
       throw new IllegalArgumentException(
