@@ -16,6 +16,10 @@ public class TestTreeKinds {
     void method2(@GuardSatisfied MyClass this) {}
   }
 
+  MyClass[] newMyClassArray() {
+    return new MyClass[3];
+  }
+
   @GuardedBy("lock") MyClass m;
 
   {
@@ -64,15 +68,18 @@ public class TestTreeKinds {
   @Holding("lock")
   void requiresLockHeldMethod() {}
 
+  @SuppressWarnings("assignment")
   MyClass @GuardedBy("lock") [] fooArray = new MyClass[3];
 
   @GuardedBy("lock") MyClass[] fooArray2 = new MyClass[3];
 
+  @SuppressWarnings("assignment")
   @GuardedBy("lock") MyClass[][] fooArray3 = new MyClass[3][3];
 
+  @SuppressWarnings("assignment")
   MyClass @GuardedBy("lock") [][] fooArray4 = new MyClass[3][3];
 
-  MyClass fooArray5[] @GuardedBy("lock") [] = new MyClass[3][3];
+  MyClass[] @GuardedBy("lock") [] fooArray5 = new MyClass[3][3];
 
   class myClass {
     int i = 0;
@@ -271,7 +278,8 @@ public class TestTreeKinds {
     l = getFooArray5().length;
 
     // Test different @GuardedBy(...) present on the element and array locations.
-    @GuardedBy("lock") MyClass @GuardedBy("lock2") [] array = new MyClass[3];
+    @SuppressWarnings("lock:assignment") // prevent flow-sensitive type refinement
+    @GuardedBy("lock") MyClass @GuardedBy("lock2") [] array = newMyClassArray();
     // :: error: (lock.not.held)
     array[0].field = new Object();
     if (lock.isHeldByCurrentThread()) {

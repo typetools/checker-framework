@@ -31,6 +31,7 @@ import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
+import org.checkerframework.checker.lock.qual.NewObject;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -98,6 +99,9 @@ public class LockAnnotatedTypeFactory
   /** The @{@link GuardedBy} annotation. */
   protected final AnnotationMirror GUARDEDBY =
       createGuardedByAnnotationMirror(new ArrayList<String>());
+  /** The @{@link NewObject} annotation. */
+  protected final AnnotationMirror NEWOBJECT =
+      AnnotationBuilder.fromClass(elements, NewObject.class);
   /** The @{@link GuardedByBottom} annotation. */
   protected final AnnotationMirror GUARDEDBYBOTTOM =
       AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
@@ -251,6 +255,7 @@ public class LockAnnotatedTypeFactory
             GuardedBy.class,
             GuardedByUnknown.class,
             GuardSatisfied.class,
+            NewObject.class,
             GuardedByBottom.class));
   }
 
@@ -279,6 +284,8 @@ public class LockAnnotatedTypeFactory
     private final QualifierKind GUARDEDBY_KIND;
     /** Qualifier kind for the @{@link GuardSatisfied} annotation. */
     private final QualifierKind GUARDSATISFIED_KIND;
+    /** Qualifier kind for the @{@link NewObject} annotation. */
+    private final QualifierKind NEWOBJECT_KIND;
     /** Qualifier kind for the @{@link GuardedByBottom} annotation. */
     private final QualifierKind GUARDEDBYBOTTOM_KIND;
 
@@ -294,6 +301,7 @@ public class LockAnnotatedTypeFactory
       GUARDEDBYUNKNOWN_KIND = getQualifierKind(GUARDEDBYUNKNOWN);
       GUARDEDBY_KIND = getQualifierKind(GUARDEDBY);
       GUARDSATISFIED_KIND = getQualifierKind(GUARDSATISFIED);
+      NEWOBJECT_KIND = getQualifierKind(NEWOBJECT);
       GUARDEDBYBOTTOM_KIND = getQualifierKind(GUARDEDBYBOTTOM);
     }
 
@@ -346,12 +354,18 @@ public class LockAnnotatedTypeFactory
         return a2;
       } else if (qualifierKind2 == GUARDEDBYBOTTOM_KIND) {
         return a1;
+      } else if (qualifierKind1 == NEWOBJECT_KIND) {
+        return a2;
+      } else if (qualifierKind2 == NEWOBJECT_KIND) {
+        return a1;
       }
       throw new BugInCF(
           "leastUpperBoundWithElements(%s, %s, %s, %s, %s)",
           a1, qualifierKind1, a2, qualifierKind2, lubKind);
     }
 
+    // GLB never returns @NewObject unless one of the argumetns is @NewObject; it returns
+    // @GuardedByBottom instead, to prevent showing users the unexpected @NewObject type.
     @Override
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,

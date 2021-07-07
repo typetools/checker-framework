@@ -1399,7 +1399,6 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the component type
      */
-    // WMD
     public void setComponentType(AnnotatedTypeMirror type) {
       this.componentType = type;
     }
