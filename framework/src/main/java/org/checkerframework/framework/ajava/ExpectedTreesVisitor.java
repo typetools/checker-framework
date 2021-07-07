@@ -65,7 +65,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   @Override
   public Void visitAnnotation(AnnotationTree tree, Void p) {
     // Skip annotations because ajava files are not required to have the same annotations as
-    // their corresponding java files.
+    // their corresponding Java files.
     return null;
   }
 

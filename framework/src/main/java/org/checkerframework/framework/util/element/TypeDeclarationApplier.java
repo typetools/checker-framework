@@ -23,7 +23,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 
   /**
    * If a type_index == -1 it means that the index refers to the immediate supertype class of the
-   * declaration. There is only ever one of these since java has no multiple inheritance
+   * declaration. There is only ever one of these since Java has no multiple inheritance
    */
   public static final int SUPERCLASS_INDEX = -1;
 

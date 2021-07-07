@@ -156,7 +156,7 @@ function configure_and_exec_dljc {
       else
         MVN_EXEC="mvn"
       fi
-      # if running on java 8, need /jre at the end of this Maven command
+      # if running on Java 8, need /jre at the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
           BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"

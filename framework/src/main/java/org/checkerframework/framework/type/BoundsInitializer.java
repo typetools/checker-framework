@@ -576,7 +576,7 @@ public class BoundsInitializer {
         // Otherwise use the upper bound of the type variable associated with this wildcard.
         javaExtendsBound = wildcard.getTypeVariable().getUpperBound();
       } else {
-        // Otherwise use the upper bound of the java wildcard.
+        // Otherwise use the upper bound of the Java wildcard.
         javaExtendsBound =
             TypesUtils.wildUpperBound(javaWildcardType, wildcard.atypeFactory.processingEnv);
       }
@@ -651,13 +651,13 @@ public class BoundsInitializer {
     private final Map<TypeVariable, WildcardType> rawTypeWildcards = new HashMap<>();
 
     /**
-     * Returns the underlying java type of the {@code i}-th type argument of {@code type}. If {@code
+     * Returns the underlying Java type of the {@code i}-th type argument of {@code type}. If {@code
      * type} is raw, then a new wildcard is created or returned from {@code rawTypeWildcards}.
      *
      * @param type declared type
      * @param parameters elements of the type parameters
      * @param i index of the type parameter
-     * @return the underlying java type of the {@code i}-th type argument of {@code type}
+     * @return the underlying Java type of the {@code i}-th type argument of {@code type}
      */
     private TypeMirror getJavaType(
         AnnotatedDeclaredType type, List<? extends TypeParameterElement> parameters, int i) {
