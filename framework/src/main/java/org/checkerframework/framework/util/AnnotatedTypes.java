@@ -1284,10 +1284,8 @@ public class AnnotatedTypes {
   }
 
   /**
-   * When comparing types against the bounds of a type variable, we may encounter other type
-   * variables, wildcards, and intersections in those bounds. This method traverses the lower bounds
-   * until it finds a concrete type from which it can pull an annotation. This occurs for every
-   * hierarchy in QualifierHierarchy.
+   * This method returns the effective annotation on the lower bound of a type, or on the type
+   * itself if the type has no lower bound (it is not a type variable, wildcard, or intersection).
    *
    * @return the set of effective annotation mirrors in all hierarchies
    */
