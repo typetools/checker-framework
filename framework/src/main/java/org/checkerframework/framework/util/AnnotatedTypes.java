@@ -1151,8 +1151,10 @@ public class AnnotatedTypes {
    * @param typeVar2 a type variable
    * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
    */
-  // This is an equals method but @EqualsMethod can't be used because this method has 3 arguments.
-  @SuppressWarnings("interning:not.interned")
+  @SuppressWarnings(
+      "interning:not.interned" // This is an equals method but @EqualsMethod can't be used because
+  // this method has 3 arguments.
+  )
   public static boolean haveSameDeclaration(
       Types types, final AnnotatedTypeVariable typeVar1, final AnnotatedTypeVariable typeVar2) {
 

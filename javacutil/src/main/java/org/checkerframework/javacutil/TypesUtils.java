@@ -705,10 +705,10 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the {@code DeclaredType} for java.lang.Object.
+   * Returns the {@code DeclaredType} for {@code java.lang.Object}.
    *
    * @param env {@link ProcessingEnvironment}
-   * @return the {@code DeclaredType} for java.lang.Object.
+   * @return the {@code DeclaredType} for {@code java.lang.Object}
    */
   public static DeclaredType getObjectTypeMirror(ProcessingEnvironment env) {
     Context context = ((JavacProcessingEnvironment) env).getContext();
@@ -782,7 +782,7 @@ public final class TypesUtils {
    * @return true if {@code type} is a type variable created during capture conversion
    * @deprecated use {@link #isCapturedTypeVariable(TypeMirror)} instead
    */
-  @Deprecated
+  @Deprecated // 2021-07-06
   public static boolean isCaptured(TypeMirror type) {
     if (type.getKind() != TypeKind.TYPEVAR) {
       return false;
@@ -809,7 +809,7 @@ public final class TypesUtils {
    *
    * @param typeVar a type variable that might be a captured type variable
    * @return {@code typeVar} is a captured type variable, then returns its underlying wildcard;
-   *     otherwise returns {@code null}.
+   *     otherwise returns {@code null}
    */
   public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
     if (isCapturedTypeVariable(typeVar)) {
@@ -1095,7 +1095,7 @@ public final class TypesUtils {
 
   /**
    * Returns a fresh type variable, a captured type variable, for {@code typeMirror}, if {@code
-   * typeMirror} is a wildcard. If it is not a wildcard, {@code typeMirror} is returned.
+   * typeMirror} is a wildcard. If it is not a wildcard, returns {@code typeMirror}.
    *
    * @param typeMirror a type
    * @param env processing environment
@@ -1114,7 +1114,7 @@ public final class TypesUtils {
    *
    * @param collection a collection of type variables
    * @param types type utilities
-   * @return the type variables ordered so that eachtype variable only references earlier type
+   * @return the type variables ordered so that each type variable only references earlier type
    *     variables
    */
   public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
@@ -1135,7 +1135,7 @@ public final class TypesUtils {
    * @param collection a collection of type variables
    * @param types types
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
-   *     the collection, but maybe its self
+   *     the collection, but maybe itsself
    */
   @SuppressWarnings("interning:not.interned") // must be the same object from collection
   private static TypeVariable doesNotContainOthers(
