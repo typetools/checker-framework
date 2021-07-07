@@ -761,14 +761,35 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Returns the glb of two annotated types.
+   * Returns the annotated greatest lower bound of {@code type1} and {@code type2}.
+   *
+   * <p>The underlying type of the annotated greatest lower bound must be the glb of the underlying
+   * types of {@code type1} and {@code type2}. Because of this rule, the glb of two annotated types
+   * may not be a subtype of one of the types.
+   *
+   * <p>The annotated greatest lower bound is defined as follows:
+   *
+   * <ol>
+   *   <li>If the underlying type of {@code type1} and {@code type2} are the same, then return a
+   *       copy of {@code type1} whose primary annotations are the greatest lower bound of the
+   *       primary annotations on {@code type1} and {@code type2}.
+   *   <li>If the underlying type of {@code type1} is a subtype of the underlying type of {@code
+   *       type2}, then return a copy of {@code type1} whose primary annotations are the greatest
+   *       lower bound of the primary annotations on {@code type1} and {@code type2}.
+   *   <li>If the underlying type of {@code type1} is a supertype of the underlying type of {@code
+   *       type2}, then return a copy of {@code type2} whose primary annotations are the greatest
+   *       lower bound of the primary annotations on {@code type1} and {@code type2}.
+   *   <li>If the underlying type of {@code type1} and {@code type2} are not in a subtyping
+   *       relationship, then return an annotated intersection type whose bounds are {@code type1}
+   *       and {@code type2}
+   * </ol>
    *
    * @param atypeFactory the AnnotatedTypeFactory
    * @param type1 annotated type
    * @param type2 annotated type
-   * @return the glb of type1 and type2
+   * @return the annotated glb of type1 and type2
    */
-  public static AnnotatedTypeMirror greatestLowerBound(
+  public static AnnotatedTypeMirror annotatedGLB(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     Types types = atypeFactory.types;
     if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
@@ -790,7 +811,7 @@ public class AnnotatedTypes {
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(
-          "AnnotatedTypes#greatestLowerBound: expected intersection, got %s %s. "
+          "AnnotatedTypes#annotatedGLB: expected intersection, got %s %s. "
               + "type1: %s, type2: %s",
           glbJava.getKind(), glbJava, type1, type2);
     }
@@ -823,6 +844,9 @@ public class AnnotatedTypes {
   /**
    * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
    * underlying Java types are in a subtyping relationship.
+   *
+   * <p>This handles cases 2 and 3 mentioned in the Javadoc of {@link
+   * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
    *
    * @param qualifierHierarchy QualifierHierarchy
    * @param subtype annotated type whose underlying type is a subtype of {@code supertype}

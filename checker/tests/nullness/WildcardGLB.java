@@ -1,0 +1,63 @@
+import java.util.ArrayList;
+import java.util.List;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+public class WildcardGLB {
+
+  static class MyClass<E extends List<@Nullable String>> {
+    E getE() {
+      throw new RuntimeException();
+    }
+  }
+
+  // TODO: There should be an error here.
+  // The capture type variable for ? extends @List<@NonNull String> is
+  // capture#865 extends @NonNull List<@Nullable String>.
+  // It's weird that the upper bound of the captured type variable isn't a subtype of the extends
+  // bound of the wildcard, but I don't think this leads to unsoundness, but it makes it so that
+  // this method can't be called without an error.  The method testUse below demos this.
+  void use(MyClass<? extends List<String>> s) {
+    // :: error: (assignment)
+    List<String> f = s.getE();
+    List<@Nullable String> f2 = s.getE();
+  }
+
+  // :: error: (type.argument)
+  void testUse(
+      MyClass<List<String>> p1,
+      // A comment to force a line break.
+      MyClass<List<@Nullable String>> p2) {
+    use(p1);
+    // :: error: (argument)
+    use(p2);
+  }
+
+  // capture#196 extends @NonNull ArrayList<@NonNull String>
+  // :: error: (type.argument)
+  void use2(MyClass<? extends ArrayList<String>> s) { // error: type.argument
+    List<String> f = s.getE();
+    // :: error: (assignment)
+    List<@Nullable String> f2 = s.getE(); // error: assignment
+  }
+
+  static class MyClass2<E extends ArrayList<@Nullable String>> {
+    E getE() {
+      throw new RuntimeException();
+    }
+  }
+
+  // capture#952 extends @NonNull ArrayList<@Nullable String>
+  void use3(MyClass2<? extends List<String>> s) {
+    // :: error: (assignment)
+    List<String> f = s.getE();
+    List<@Nullable String> f2 = s.getE();
+  }
+
+  // capture#196 extends @NonNull ArrayList<@NonNull String>
+  // :: error: (type.argument)
+  void use4(MyClass2<? extends ArrayList<String>> s) {
+    // :: error: assignment
+    List<String> f = s.getE();
+    List<@Nullable String> f2 = s.getE(); // ok
+  }
+}
