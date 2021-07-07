@@ -590,12 +590,13 @@ class MustCallConsistencyAnalyzer {
                 .toSet();
         obligations.remove(obligationContainingMustCallAlias);
         obligations.add(new Obligation(newResourceAliasSet));
-      } else {
-        throw new BugInCF(
-            "Found an untracked local variable in a MustCallAlias position in a "
-                + "method invocation. Untracked variable: "
-                + mustCallAlias);
       }
+      // It is not an error if there is no obligation containing the must-call alias. In that
+      // case, what has usually happened is that no obligation was created in the first place.
+      // For example, when checking the invocation of a "wrapper stream" constructor, if the
+      // argument in the must-call alias position is some stream with no obligations like a
+      // ByteArrayInputStream, then no Obligation object will have been created for it and therefore
+      // obligationContainingMustCallAlias will be null.
     } else {
       // If there is no MustCallAlias, create a new obligation for the resouce alias.
       obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias)));
