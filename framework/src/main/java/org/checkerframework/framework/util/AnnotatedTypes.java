@@ -790,15 +790,16 @@ public class AnnotatedTypes {
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(
-          "AnnotatedTypes#greatestLowerBound: unexpected java type: %s. type1: %s, type2: %s",
-          glbJava, type1, type2);
+          "AnnotatedTypes#greatestLowerBound: expected intersection, got %s %s. "
+              + "type1: %s, type2: %s",
+          glbJava.getKind(), glbJava, type1, type2);
     }
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-    Set<AnnotationMirror> setA =
+    Set<AnnotationMirror> set1 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type1);
-    Set<AnnotationMirror> setB =
+    Set<AnnotationMirror> set2 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
-    Set<? extends AnnotationMirror> glbAnno = qualifierHierarchy.greatestLowerBounds(setA, setB);
+    Set<? extends AnnotationMirror> glbAnno = qualifierHierarchy.greatestLowerBounds(set1, set2);
 
     AnnotatedIntersectionType glb =
         (AnnotatedIntersectionType) AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
