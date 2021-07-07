@@ -85,7 +85,7 @@ class SupertypeFinder {
     private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a {@code SupertypeFindingVisitor}
+     * Creates a {@code SupertypeFindingVisitor}.
      *
      * @param atypeFactory annotated type factory
      */

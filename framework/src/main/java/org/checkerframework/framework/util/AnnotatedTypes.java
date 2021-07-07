@@ -763,7 +763,7 @@ public class AnnotatedTypes {
   /**
    * Returns the glb of two annotated types.
    *
-   * @param atypeFactory AnnotatedTypeFactory
+   * @param atypeFactory the AnnotatedTypeFactory
    * @param type1 annotated type
    * @param type2 annotated type
    * @return the glb of type1 and type2
@@ -821,11 +821,11 @@ public class AnnotatedTypes {
 
   /**
    * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
-   * underlying java types are in a subtyping relationship.
+   * underlying Java types are in a subtyping relationship.
    *
    * @param qualifierHierarchy QualifierHierarchy
-   * @param subtype annotated types whose underlying type is a subtype of {@code supertype}
-   * @param supertype annotated types whose underlying type is a supertype of {@code subtype}
+   * @param subtype annotated type whose underlying type is a subtype of {@code supertype}
+   * @param supertype annotated type whose underlying type is a supertype of {@code subtype}
    * @return the annotated greatest lower bound of {@code subtype} and {@code supertype}
    */
   private static AnnotatedTypeMirror glbSubtype(

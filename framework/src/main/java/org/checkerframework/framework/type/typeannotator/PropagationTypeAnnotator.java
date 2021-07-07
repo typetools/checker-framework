@@ -197,13 +197,13 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Search parent's type arguments for wildcard. Using the index of wildcard, find the
-   * corresponding type parameter element and return it. Returns null if the wildcard is the result
-   * of substitution and therefore not in the list of type arguments.
+   * Search {@code} parent's type arguments for {@code wildcard}. Using the index of {@code
+   * wildcard}, find the corresponding type parameter element and return it. Returns null if {@code
+   * wildcard} is the result of substitution and therefore not in the list of type arguments.
    *
    * @param wildcard the wildcard type whose corresponding type argument to determine
    * @param parent the type that may have a type argument corresponding to {@code wildcard}
-   * @return the type argument in {@code parent} that corresponds to {@code wildcard}
+   * @return the type parameter in {@code parent} that corresponds to {@code wildcard}
    */
   private Element getTypeParamFromEnclosingClass(
       final @FindDistinct AnnotatedWildcardType wildcard, final AnnotatedDeclaredType parent) {
