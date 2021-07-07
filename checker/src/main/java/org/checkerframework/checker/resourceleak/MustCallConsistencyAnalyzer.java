@@ -563,7 +563,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     // `mustCallAlias` is the argument passed in the MustCallAlias position, if any exists,
-    // otherwise null. If mustCallAlias is non-null, then the
+    // otherwise null.
     Node mustCallAlias = getMustCallAliasArgumentNode(node);
     // If mustCallAlias is null and call returns @This, set mustCallAlias to the receiver.
     if (mustCallAlias == null
