@@ -22,8 +22,8 @@ public class WildcardGLB {
     List<@Nullable String> f2 = s.getE();
   }
 
-  // :: error: (type.argument)
   void testUse(
+      // :: error: (type.argument)
       MyClass<List<String>> p1,
       // A comment to force a line break.
       MyClass<List<@Nullable String>> p2) {
@@ -53,8 +53,8 @@ public class WildcardGLB {
     List<@Nullable String> f2 = s.getE();
   }
 
+  // TODO: error here for the same reason as use1.
   // capture#196 extends @NonNull ArrayList<@NonNull String>
-  // :: error: (type.argument)
   void use4(MyClass2<? extends ArrayList<String>> s) {
     // :: error: assignment
     List<String> f = s.getE();
