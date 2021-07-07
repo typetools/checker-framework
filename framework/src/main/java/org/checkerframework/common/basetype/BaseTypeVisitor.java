@@ -3058,11 +3058,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeParameterBounds bounds = paramBounds.get(i);
       AnnotatedTypeMirror typeArg = typeargs.get(i);
 
-      if (typeArg.getKind() == TypeKind.WILDCARD) {
-        // Even if the wildcard is outside the bound, it is made within the bound during
-        // capture conversion.
-        continue;
-      }
       if (isIgnoredUninferredWildcard(bounds.getUpperBound())) {
         continue;
       }
