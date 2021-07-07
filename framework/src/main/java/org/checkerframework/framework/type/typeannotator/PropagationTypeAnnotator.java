@@ -118,11 +118,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
 
     final WildcardType wildcard = (WildcardType) wildcardAtm.getUnderlyingType();
     Element typeParamElement = TypesUtils.wildcardToTypeParam(wildcard);
-    if (typeParamElement == null) {
-      typeParamElement =
-          parents.isEmpty()
-              ? null
-              : getTypeParamFromEnclosingClass(wildcardAtm, parents.peekFirst());
+    if (typeParamElement == null && !parents.isEmpty()) {
+      typeParamElement = getTypeParameterElement(wildcardAtm, parents.peekFirst());
     }
 
     if (typeParamElement != null) {
@@ -197,26 +194,21 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Search {@code parent}'s type arguments for {@code wildcard}. Using the index of {@code
-   * wildcard}, find the corresponding type parameter element and return it. Returns null if {@code
-   * wildcard} is the result of substitution and therefore not in the list of type arguments.
+   * Search {@code declaredType}'s type arguments for {@code typeArg}. Using the index of {@code
+   * typeArg}, find the corresponding type parameter element and return it.
    *
-   * @param wildcard the wildcard type whose corresponding type argument to determine
-   * @param parent the type that may have a type argument corresponding to {@code wildcard}
-   * @return the type parameter in {@code parent} that corresponds to {@code wildcard}
+   * @param typeArg a typeArg of {@code declaredType}
+   * @param declaredType the type in which {@code typeArg} is a type argument
+   * @return the type parameter in {@code declaredType} that corresponds to {@code typeArg}
    */
-  private Element getTypeParamFromEnclosingClass(
-      final @FindDistinct AnnotatedWildcardType wildcard, final AnnotatedDeclaredType parent) {
-    for (int i = 0; i < parent.getTypeArguments().size(); i++) {
-      AnnotatedTypeMirror typeArg = parent.getTypeArguments().get(i);
-      if (typeArg == wildcard) {
-        final TypeElement typeElement =
-            (TypeElement)
-                typeFactory.getProcessingEnv().getTypeUtils().asElement(parent.getUnderlyingType());
-
+  private Element getTypeParameterElement(
+      final @FindDistinct AnnotatedTypeMirror typeArg, final AnnotatedDeclaredType declaredType) {
+    for (int i = 0; i < declaredType.getTypeArguments().size(); i++) {
+      if (declaredType.getTypeArguments().get(i) == typeArg) {
+        TypeElement typeElement = TypesUtils.getTypeElement(declaredType.getUnderlyingType());
         return typeElement.getTypeParameters().get(i);
       }
     }
-    throw new BugInCF("Wildcard %s not a type argument of %s", wildcard, parent);
+    throw new BugInCF("Wildcard %s not a type argument of %s", typeArg, declaredType);
   }
 }
