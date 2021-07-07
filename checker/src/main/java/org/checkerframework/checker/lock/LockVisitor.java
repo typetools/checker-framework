@@ -338,33 +338,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
-    Tree.Kind valueTreeKind = valueTree.getKind();
-
-    switch (valueTreeKind) {
-      case NEW_CLASS:
-      case NEW_ARRAY:
-        // Avoid issuing warnings for: @GuardedBy(<something>) Object o = new Object();
-        // Do NOT do this if the LHS is @GuardedByBottom.
-        if (!varType.hasAnnotation(GuardedByBottom.class)) {
-          return;
-        }
-        break;
-      case INT_LITERAL:
-      case LONG_LITERAL:
-      case FLOAT_LITERAL:
-      case DOUBLE_LITERAL:
-      case BOOLEAN_LITERAL:
-      case CHAR_LITERAL:
-      case STRING_LITERAL:
-        // Avoid issuing warnings for: @GuardedBy(<something>) Object o; o = <some literal>;
-        // Do NOT do this if the LHS is @GuardedByBottom.
-        if (!varType.hasAnnotation(GuardedByBottom.class)) {
-          return;
-        }
-        break;
-      default:
-    }
-
     // In cases where assigning a value with a @GuardedBy annotation to a variable with a
     // @GuardSatisfied annotation is legal, this is our last chance to check that the appropriate
     // locks are held before the information in the @GuardedBy annotation is lost in the assignment

@@ -7,12 +7,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="682.53998"
-   height="194.88"
-   viewBox="328 238 765.22915 204.99801"
+   width="685"
+   height="260"
+   viewBox="328 238 767.9872 273.49898"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
    sodipodi:docname="lock-guardedby.svg">
   <metadata
      id="metadata198">
@@ -22,6 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -36,20 +37,24 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="978"
+     inkscape:window-width="2560"
+     inkscape:window-height="1536"
      id="namedview194"
      showgrid="false"
      inkscape:zoom="1.7467478"
-     inkscape:cx="306.15895"
-     inkscape:cy="41.341013"
+     inkscape:cx="519.59903"
+     inkscape:cy="87.263489"
      inkscape:window-x="0"
-     inkscape:window-y="31"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g66-6" />
+     inkscape:current-layer="svg2"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <g
      id="g4"
-     transform="translate(2.2396156,-0.00294728)">
+     transform="translate(2.0443003,-1.2277484)">
     <rect
        style="fill:#ffffff"
        x="329.198"
@@ -66,7 +71,7 @@
        id="rect8" />
     <text
        font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="409.198"
        y="345.90601"
        id="text10">
@@ -78,7 +83,7 @@
   </g>
   <g
      id="g58"
-     transform="matrix(0.61098909,0,0,1,170.58624,-0.00294728)">
+     transform="matrix(0.61098909,0,0,1,170.39093,-1.2277484)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -97,7 +102,7 @@
   </g>
   <g
      id="g66"
-     transform="translate(-147.99294,-0.00294728)"
+     transform="translate(-148.18825,-1.2277484)"
      style="stroke:#000000;stroke-opacity:1">
     <rect
        style="fill:#ffffff;stroke:#000000;stroke-opacity:1"
@@ -115,7 +120,7 @@
        id="rect70" />
     <text
        font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new;stroke:none;stroke-opacity:1"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000;stroke:none;stroke-opacity:1"
        x="820"
        y="425.85001"
        id="text72">
@@ -123,34 +128,45 @@
          x="820"
          y="425.85001"
          id="tspan74"
-         style="fill:#000000;stroke:none;stroke-opacity:1">@GuardedByBottom</tspan>
+         style="fill:#000000;stroke:none;stroke-opacity:1">@NewObject</tspan>
     </text>
-  </g>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot912"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       transform="matrix(1.1211492,0,0,1.1211492,475.99294,231.25717)"><flowRegion
+         id="flowRegion914"><rect
+           id="rect916"
+           width="169.45778"
+           height="68.12661"
+           x="225.56204"
+           y="198.31496" /></flowRegion><flowPara
+         id="flowPara918"></flowPara></flowRoot>  </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="820"
-     y="260.99786"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="817.56238"
+     y="279.95377"
      id="text76">
     <tspan
-       x="820"
-       y="260.99786"
+       x="817.56238"
+       y="279.95377"
        id="tspan78" />
   </text>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="409.198"
-     y="341.05386"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="406.76038"
+     y="360.00974"
      id="text80">
     <tspan
-       x="409.198"
-       y="341.05386"
+       x="406.76038"
+       y="360.00974"
        id="tspan82" />
   </text>
   <g
      id="g84"
-     transform="translate(2.2396156,-0.00294728)">
+     transform="translate(2.0443003,-1.2277484)">
     <rect
        style="fill:#ffffff"
        x="499.97"
@@ -167,7 +183,7 @@
        id="rect88" />
     <text
        font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="579.96997"
        y="345.80801"
        id="text90">
@@ -179,18 +195,18 @@
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="579.96997"
-     y="340.95587"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="577.53235"
+     y="359.91174"
      id="text94">
     <tspan
-       x="579.96997"
-       y="340.95587"
+       x="577.53235"
+       y="359.91174"
        id="tspan96" />
   </text>
   <g
      id="g98"
-     transform="translate(-65.028862,-0.00294728)">
+     transform="translate(-65.22417,-1.2277484)">
     <rect
        style="fill:#ffffff"
        x="739.44598"
@@ -207,7 +223,7 @@
        id="rect102" />
     <text
        font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="819.44598"
        y="345.80801"
        id="text104">
@@ -219,18 +235,18 @@
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="819.44598"
-     y="340.95587"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="817.00836"
+     y="359.91174"
      id="text108">
     <tspan
-       x="819.44598"
-       y="340.95587"
+       x="817.00836"
+       y="359.91174"
        id="tspan110" />
   </text>
   <g
      id="g128"
-     transform="matrix(0.92931178,0,0,1,-89.991164,-0.00294728)">
+     transform="matrix(0.92931178,0,0,1,-90.18648,-1.2277484)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -249,18 +265,18 @@
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:start;fill:#000000;font-family:courier new"
-     x="409.198"
-     y="341.05386"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="406.76038"
+     y="360.00974"
      id="text144">
     <tspan
-       x="409.198"
-       y="341.05386"
+       x="406.76038"
+       y="360.00974"
        id="tspan146" />
   </text>
   <g
      id="g168"
-     transform="translate(-65.028862,-0.00294728)">
+     transform="translate(-65.22417,-1.2277484)">
     <rect
        style="fill:#ffffff"
        x="910.43402"
@@ -277,7 +293,7 @@
        id="rect172" />
     <text
        font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="1017.3417"
        y="346.28799"
        id="text174">
@@ -289,7 +305,7 @@
   </g>
   <g
      id="g186"
-     transform="matrix(0.55513772,0,0,1,216.34935,-0.00294728)">
+     transform="matrix(0.55513772,0,0,1,216.15404,-1.2277484)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -307,7 +323,7 @@
        id="polygon192" />
   </g>
   <g
-     transform="translate(-167.53712,-158.70237)"
+     transform="translate(-167.73243,-159.92719)"
      id="g66-6">
     <rect
        style="fill:#ffffff"
@@ -326,7 +342,7 @@
        transform="scale(1,-1)" />
     <text
        font-size="16"
-       style="font-size:16px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="840.18079"
        y="425.85001"
        id="text72-9">
@@ -339,7 +355,7 @@
   </g>
   <g
      id="g58-5"
-     transform="matrix(-0.51494794,0,0,0.98010942,1345.6669,-72.390198)">
+     transform="matrix(-0.51494794,0,0,0.98010942,1345.4716,-73.614995)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -358,7 +374,7 @@
   </g>
   <g
      id="g186-4"
-     transform="matrix(-0.40806447,0,0,0.99800889,1093.9352,-78.824065)">
+     transform="matrix(-0.40806447,0,0,0.99800889,1093.7399,-80.048855)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -377,7 +393,7 @@
   </g>
   <g
      id="g128-9-4"
-     transform="matrix(-0.83627951,0,0,0.98528777,1137.4596,-74.271689)">
+     transform="matrix(-0.83627951,0,0,0.98528777,1137.2643,-75.496485)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -396,18 +412,18 @@
   </g>
   <text
      font-size="12.8"
-     style="font-size:12.80000019px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:courier new"
-     x="1083.5023"
-     y="344.13104"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
+     x="1083.307"
+     y="342.90613"
      id="text154">
     <tspan
-       x="1083.5023"
-       y="344.13104"
+       x="1083.307"
+       y="342.90613"
        id="tspan156">...</tspan>
   </text>
   <g
      id="g186-2"
-     transform="matrix(-0.55513772,0,0,1,1123.2398,-0.25815538)">
+     transform="matrix(-0.55513772,0,0,1,1123.0445,-1.4829484)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -426,7 +442,7 @@
   </g>
   <g
      id="g186-4-0"
-     transform="matrix(0.40806447,0,0,0.99800889,244.18996,-78.440616)">
+     transform="matrix(0.40806447,0,0,0.99800889,243.99465,-79.665405)">
     <line
        style="fill:none;stroke:#000000;stroke-width:2"
        x1="820"
@@ -442,5 +458,55 @@
        style="fill:none;stroke:#000000;stroke-width:2"
        points="980.928,364.407 977.407,360.064 988.251,362.787 979.566,369.828 "
        id="polygon192-7-3" />
+  </g>
+  <g
+     id="g66-0"
+     transform="translate(-147.86392,65.571255)"
+     style="stroke:#000000;stroke-opacity:1">
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-opacity:1"
+       x="740"
+       y="400"
+       width="160"
+       height="42"
+       id="rect68-02" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-opacity:1"
+       x="740"
+       y="400"
+       width="160"
+       height="42"
+       id="rect70-5" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000;stroke:none;stroke-opacity:1"
+       x="820"
+       y="425.85001"
+       id="text72-1">
+      <tspan
+         x="820"
+         y="425.85001"
+         id="tspan74-1"
+         style="fill:#000000;stroke:none;stroke-opacity:1">@GuardedByBottom</tspan>
+    </text>
+  </g>
+  <g
+     transform="matrix(1.0901625,0,0,0.6719452,171.74174,276.78803)"
+     id="g78">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="460.5"
+       y1="280"
+       x2="460.5"
+       y2="253.73599"
+       id="line72" />
+    <polygon
+       style="fill:#000000"
+       points="460.5,253.736 455.5,256.236 460.5,246.236 465.5,256.236 "
+       id="polygon74" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="460.5,253.736 455.5,256.236 460.5,246.236 465.5,256.236 "
+       id="polygon76" />
   </g>
 </svg>
