@@ -380,7 +380,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * Visits type parameters .bounds
+   * Visits type parameters bounds.
    *
    * @param typeParameter type of {@code typeParameterTree}
    * @param typeParameterTree a type parameter tree

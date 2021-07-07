@@ -197,7 +197,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Search {@code} parent's type arguments for {@code wildcard}. Using the index of {@code
+   * Search {@code parent}'s type arguments for {@code wildcard}. Using the index of {@code
    * wildcard}, find the corresponding type parameter element and return it. Returns null if {@code
    * wildcard} is the result of substitution and therefore not in the list of type arguments.
    *

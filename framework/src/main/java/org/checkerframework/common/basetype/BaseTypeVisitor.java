@@ -1394,9 +1394,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) type.getUpperBound();
       checkExplicitAnnotationsOnIntersectionBounds(intersection, node.getBounds());
     }
-    if (TreeUtils.isClassTree(getCurrentPath().getParentPath().getLeaf())) {
-      return null;
-    }
     validateTypeOf(node);
 
     return super.visitTypeParameter(node, p);
