@@ -296,7 +296,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             && !offsets.isEmpty()) {
           // Cannot use type.replaceAnnotation because it will call isSubtype, which will
           // try to process the annotation and throw an error.
-          type.clearAnnotations();
+          type.clearPrimaryAnnotations();
           type.addAnnotation(BOTTOM);
         }
       }
