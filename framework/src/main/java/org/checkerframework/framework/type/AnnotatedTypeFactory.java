@@ -4623,7 +4623,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (isExtendsWildcard(wildcardType)) {
           TypeMirror correctArgType;
           if (sizesDiffer) {
-            // The java type is raw.
+            // The Java type is raw.
             TypeMirror typeParamUbType = bounds.get(i).getUpperBound().getUnderlyingType();
             correctArgType =
                 TypesUtils.greatestLowerBound(
