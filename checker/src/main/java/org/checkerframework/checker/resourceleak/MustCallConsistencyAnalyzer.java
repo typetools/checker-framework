@@ -148,6 +148,147 @@ class MustCallConsistencyAnalyzer {
   /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
   private final CFAnalysis analysis;
 
+  // TODO: It's confusing that "obligation" is used to mean two different things here.  Rename this
+  // class.  Suggestions:  ResourceAliasSet, AliasSet, ResourceAliases, Aliases.
+
+  /**
+   * An Obligation is the abstraction used by this dataflow analysis for a must-call obligation. A
+   * must-call obligation has two parts: the list of one or more methods that must be called, and
+   * the set of "resource aliases" on which calling the required method(s) are equivalent. This
+   * dataflow analysis (and therefore this class) tracks only the latter; the former are tracked by
+   * the {@link MustCallChecker} and are accessed by looking up the type(s) in its type system of
+   * the resource aliases contained in each obligation.
+   */
+  private static class Obligation {
+
+    /**
+     * The set of resource aliases through which this must-call obligation can be satisfied. {@code
+     * Obligation} is deeply immutable. If some code were to accidentally mutate a {@code
+     * resourceAliases} set it could be really nasty to debug, so this set is always immutable.
+     */
+    public final ImmutableSet<ResourceAlias> resourceAliases;
+
+    /**
+     * Create an obligation from a set of resource aliases.
+     *
+     * @param resourceAliases a set of resource aliases
+     */
+    public Obligation(Set<ResourceAlias> resourceAliases) {
+      this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
+    }
+
+    /**
+     * Returns the resource alias in this obligation's resource alias set corresponding to {@code
+     * localVariableNode} if one is present. Otherwise, returns null.
+     *
+     * @param localVariableNode some local variable
+     * @return the resource alias corresponding to {@code localVariableNode} if one is present;
+     *     otherwise, null
+     */
+    private @Nullable ResourceAlias getResourceAlias(LocalVariableNode localVariableNode) {
+      Element element = localVariableNode.getElement();
+      for (ResourceAlias alias : resourceAliases) {
+        if (alias.reference.getElement().equals(element)) {
+          return alias;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Returns true if this contains a resource alias corresponding to {@code localVariableNode},
+     * meaning that calling the required methods on {@code localVariableNode} is sufficient to
+     * satisfy the must-call obligation this object represents.
+     *
+     * @param localVariableNode some local variable node
+     * @return true if a resource alias corresponding to {@code localVariableNode} is present
+     */
+    private boolean canBeSatisfiedThrough(LocalVariableNode localVariableNode) {
+      return getResourceAlias(localVariableNode) != null;
+    }
+
+    @Override
+    public String toString() {
+      return "Obligation: resourceAliases: " + Iterables.toString(resourceAliases);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      }
+      Obligation that = (Obligation) obj;
+      return this.resourceAliases.equals(that.resourceAliases);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(resourceAliases);
+    }
+  }
+
+  /**
+   * This class represents a single resource alias in a resource alias set. A resource alias is a
+   * reference through which a must-call obligation can be satisfied; every must-call obligation has
+   * one or more resource aliases, and calling the required method(s) through any of them satisfies
+   * the obligation.
+   *
+   * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
+   * "reference" through which the must-call obligations for the alias set to which it belongs can
+   * be satisfied) along with a tree that "assigns" the reference. The tree's primary purpose is
+   * error reporting, but it is also used to determine if this resource alias is one of the
+   * expressions in a ternary, which are treated specially by the algorithm (see {@link
+   * #handleTernarySuccIfNeeded(Block, Block, Set)}).
+   */
+  /* package-private */ static class ResourceAlias {
+
+    /**
+     * The JavaExpression that represents the reference through which this resource can have its
+     * must-call obligations satisfied. This is either a local variable actually defined in the
+     * source code, or a temporary variable for an expression.
+     */
+    public final LocalVariable reference;
+
+    /** The tree at which it was assigned, for error reporting. */
+    public final Tree tree;
+
+    /**
+     * Create a new resource alias.
+     *
+     * @param reference the local variable
+     * @param tree the tree
+     */
+    public ResourceAlias(LocalVariable reference, Tree tree) {
+      this.reference = reference;
+      this.tree = tree;
+    }
+
+    @Override
+    public String toString() {
+      return "(ResourceAlias: reference: " + reference + " |||| tree: " + tree + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      ResourceAlias that = (ResourceAlias) o;
+      return reference.equals(that.reference) && tree.equals(that.tree);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(reference, tree);
+    }
+  }
+
   /**
    * Creates a consistency analyzer. Typically, the type factory's postAnalyze method would
    * instantiate a new consistency analyzer using this constructor and then call {@link
@@ -194,24 +335,19 @@ class MustCallConsistencyAnalyzer {
       // invoked in the for loop below.
       Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
-      // TODO: It is confusing that the similarly-named methods "handleAssignment" and
-      // "handleSuccessorBlocks" do very different things.  As a general rule, don't use generic
-      // words like "handle" in a method name; prefer an active verb.  For the next three methods, I
-      // suggest the prefix "updateObligationsFor...".  For "handleSuccessorBlocks", I suggest the
-      // prefix "propagateTo...".
       for (Node node : current.block.getNodes()) {
         if (node instanceof AssignmentNode) {
-          handleAssignment((AssignmentNode) node, obligations);
+          updateObligationsForAssignment((AssignmentNode) node, obligations);
         } else if (node instanceof ReturnNode) {
-          handleReturn((ReturnNode) node, cfg, obligations);
+          updateObligationsForOwningReturn((ReturnNode) node, cfg, obligations);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          handleInvocation(obligations, node);
+          updateObligationsForInvocation(obligations, node);
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is tracking.
       }
 
-      handleSuccessorBlocks(visited, worklist, obligations, current.block);
+      propagateObligationsToSuccessorBlocks(visited, worklist, obligations, current.block);
     }
   }
 
@@ -221,8 +357,8 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the obligations to update
    * @param node the method or constructor invocation
    */
-  private void handleInvocation(Set<Obligation> obligations, Node node) {
-    transferOwnershipToParameters(obligations, node);
+  private void updateObligationsForInvocation(Set<Obligation> obligations, Node node) {
+    removeObligationsAtOwnershipTransferToParameters(obligations, node);
     if (node instanceof MethodInvocationNode
         && typeFactory.canCreateObligations()
         && typeFactory.hasCreatesMustCallFor((MethodInvocationNode) node)) {
@@ -244,55 +380,29 @@ class MustCallConsistencyAnalyzer {
       // doesn't support that).
       incrementNumMustCall(node);
     }
-    trackInvocationResult(obligations, node);
+    updateObligationsWithInvocationResult(obligations, node);
   }
 
-  // TODO: Why is this method defined here?  It's kind of a random place for it, where I expected to
-  // see the three "handle" methods that update obligations defined.  This method isn't used nearby,
-  // either, so I would move it closer to its use to keep the file more logically organized.
-  // TODO: Is "has a MustCallAlias return type and" relevant?  Can that phrase be removed?
-  /**
-   * If node is an invocation of a this or super constructor that has a MustCallAlias return type
-   * and a MustCallAlias parameter, check if any variable in the current set of obligations is being
-   * passed to the other constructor. If so, remove it from the obligations.
-   *
-   * @param obligations current obligations
-   * @param node a super or this constructor invocation
-   */
-  private void handleThisOrSuperConstructorMustCallAlias(Set<Obligation> obligations, Node node) {
-    Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
-    // If the MustCallAlias argument is also in the set of obligations, then remove it -- its
-    // obligation has been fulfilled by being passed on to the MustCallAlias constructor (because a
-    // this/super constructor call can only occur in the body of another constructor).
-    if (mustCallAliasArgument instanceof LocalVariableNode) {
-      removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
-    }
-  }
-
-  // TODO: What is the difference between "is valid" in the first sentence and "is valid for all
-  // expressions" in the second sentence?
-  // TODO: What is the difference between "all expressions" in the second sentence and "the
-  // expression" in the fourth paragraph?
-  // TODO: The validity text is almost identical to that in isValidInvocation.  This offers the
-  // opportunity for them to fall out of sync.  I suggest cross-referencing the documentation of
-  // isValid.
   /**
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
-   * <p>Such an invocation is valid for all expressions in the CreatesMustCallFor annotation if one
-   * of of the following conditions is true: 1) the expression is an owning pointer, 2) the
-   * expression already has a tracked obligation, or 3) the method in which the invocation occurs
-   * also has an @CreatesMustCallFor annotation, with the same expression.
+   * <p>Such an invocation is valid if for all expressions in the CreatesMustCallFor annotation one
+   * of the following conditions is true: 1) the expression is an owning pointer, 2) the expression
+   * already has a tracked obligation, or 3) the method in which the invocation occurs also has
+   * an @CreatesMustCallFor annotation, with the same expression. {@link
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} contains the logic for
+   * checking an individual expression against these rules.
    *
    * <p>If none of the above are true, this method issues a reset.not.owning error.
    *
-   * <p>For soundness, this method also guarantees that if the expression has a tracked obligation,
-   * any tracked aliases will be removed (lest the analysis conclude that it is already closed
-   * because one of these aliases was closed before the method was invoked). Aliases created after
-   * the CreatesMustCallFor method is invoked are still permitted.
+   * <p>For soundness, this method also guarantees that if any of the expressions has a tracked
+   * obligation, any tracked resource aliases of it will be removed (lest the analysis conclude that
+   * it is already closed because one of these aliases was closed before the method was invoked).
+   * Aliases created after the CreatesMustCallFor method is invoked are still permitted.
    *
-   * @param obligations the currently-tracked obligations; this value is side-effected if it
-   *     contains an expression that is whose must-call obligation is reset
+   * @param obligations the currently-tracked obligations; this value is side-effected if there is
+   *     an obligation in it which tracks any expression from the CreatesMustCallFor annotation as
+   *     one of its resource aliases
    * @param node a method invocation node, invoking a method with a CreatesMustCallFor annotation
    */
   private void checkCreatesMustCallForInvocation(
@@ -304,13 +414,13 @@ class MustCallConsistencyAnalyzer {
             node, typeFactory, typeFactory);
     Set<JavaExpression> missing = new HashSet<>();
     for (JavaExpression expression : expressions) {
-      if (!isValidInvocation(obligations, expression, currentPath)) {
+      if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
         missing.add(expression);
       }
     }
 
     if (missing.isEmpty()) {
-      // all targets were valid
+      // All expressions matched one of the rules, so the invocation is valid.
       return;
     }
 
@@ -318,21 +428,24 @@ class MustCallConsistencyAnalyzer {
     checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
   }
 
-  // TODO: What invocation is being tested?  What is the relationship between `expression` and that
-  // invocation?  What is the relationship between `currentPath` and that invocation?
   /**
-   * An invocation is valid if one of the following conditions is true: 1) the expression is an
+   * Checks the validity of the given expression from an invoked method's {@link
+   * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. See {@link
+   * #checkCreatesMustCallForInvocation(Set, MethodInvocationNode)}.
+   *
+   * <p>An expression is valid if one of the following conditions is true: 1) the expression is an
    * owning pointer, 2) the expression already has a tracked obligation, or 3) the method in which
    * the invocation occurs also has an @CreatesMustCallFor annotation, with the same expression.
    *
-   * @param obligations the currently-tracked obligations; this value is side-effected if it
-   *     contains an expression that is whose must-call obligation is reset
+   * @param obligations the currently-tracked obligations; this value is side-effected if there is
+   *     an obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
-   * @param currentPath the current path
-   * @return true iff the invocation is valid, as defined above
+   * @param path the path on which the method from whose @CreateMustCallFor annotation {@code
+   *     expression} came was invoked
+   * @return true iff the expression is valid, as defined above
    */
-  private boolean isValidInvocation(
-      Set<Obligation> obligations, JavaExpression expression, TreePath currentPath) {
+  private boolean isValidCreatesMustCallForExpression(
+      Set<Obligation> obligations, JavaExpression expression, TreePath path) {
     if (expression instanceof FieldAccess) {
       Element elt = ((FieldAccess) expression).getField();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
@@ -374,7 +487,7 @@ class MustCallConsistencyAnalyzer {
 
     // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
     // annotations, but that should be a rare path.
-    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
     if (enclosingMethodTree == null) {
       return false;
     }
@@ -398,7 +511,7 @@ class MustCallConsistencyAnalyzer {
         enclosingTarget = null;
       }
 
-      if (representSame(expression, enclosingTarget)) {
+      if (areSame(expression, enclosingTarget)) {
         // This satisfies case 3.
         return true;
       }
@@ -416,8 +529,7 @@ class MustCallConsistencyAnalyzer {
    * @param enclosingTarget another, possibly null, JavaExpression
    * @return true iff they represent the same program element
    */
-  // TODO: Why not name this `areSame`?
-  private boolean representSame(JavaExpression target, @Nullable JavaExpression enclosingTarget) {
+  private boolean areSame(JavaExpression target, @Nullable JavaExpression enclosingTarget) {
     if (enclosingTarget == null) {
       return false;
     }
@@ -429,24 +541,18 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Given a node representing a method or constructor call, checks that if the result of the call
-   * has a non-empty {@code @MustCall} type, then the result is pseudo-assigned to some location
-   * that can take ownership of the result. Adds the new resource alias to a set in {@code
-   * obligations}: either an existing set or a new set.
+   * Given a node representing a method or constructor call, updates the set of obligations to
+   * account for the result, which is treated as a new resource alias. Adds the new resource alias
+   * to the set of an obligation in {@code obligations}: either an existing obligation if the result
+   * is definitely resource-aliased with it, or a new obligation if not.
    *
-   * <p>TODO: I don't understand the second sentence below. Removing an obligation from a set does
-   * not modify the obligation, so maybe "it" does not refer to the obligation? Please clarify.
-   * Also, it's confusing terminology to state that a resource alias set is an obligation; please
-   * use one term consistently throughout the code.
-   *
-   * @param obligations the currently-tracked obligations. This is always side-effected: an
-   *     obligation is either modified (by removing it from the obligation set and adding a new one)
-   *     to include a new resource alias (the result of the invocation being tracked) or a new
-   *     resource alias set (i.e. obligation) is created and added.
+   * @param obligations the currently-tracked obligations. This is always side-effected: either a
+   *     new resource alias is added to the resource alias set of an existing obligation, or a new
+   *     obligation with a single-element resource alias set is created and added.
    * @param node the node whose result is to be tracked; must be {@link MethodInvocationNode} or
    *     {@link ObjectCreationNode}
    */
-  private void trackInvocationResult(Set<Obligation> obligations, Node node) {
+  private void updateObligationsWithInvocationResult(Set<Obligation> obligations, Node node) {
     Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
     // (because if there is no temporary, then the invocation must produce an untrackable value,
@@ -457,7 +563,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     // `mustCallAlias` is the argument passed in the MustCallAlias position, if any exists,
-    // otherwise null.
+    // otherwise null. If mustCallAlias is non-null, then the
     Node mustCallAlias = getMustCallAliasArgumentNode(node);
     // If mustCallAlias is null and call returns @This, set mustCallAlias to the receiver.
     if (mustCallAlias == null
@@ -471,13 +577,12 @@ class MustCallConsistencyAnalyzer {
     if (mustCallAlias instanceof FieldAccessNode) {
       // Do not track the call result if the MustCallAlias argument is a field.  Handling of
       // @Owning fields is a completely separate check, and there is never a need to track an alias
-      // of
-      // a non-@Owning field, as by definition such a field does not have obligations!
+      // of a non-@Owning field, as by definition such a field does not have obligations!
     } else if (mustCallAlias instanceof LocalVariableNode) {
-      Obligation obligationContainingMustCallAlias =
-          getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
       // If mustCallAlias is a local variable already being tracked, add tmpVarAsResourceAlias
       // to the set containing mustCallAlias.
+      Obligation obligationContainingMustCallAlias =
+          getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
       if (obligationContainingMustCallAlias != null) {
         Set<ResourceAlias> newResourceAliasSet =
             FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
@@ -485,10 +590,14 @@ class MustCallConsistencyAnalyzer {
                 .toSet();
         obligations.remove(obligationContainingMustCallAlias);
         obligations.add(new Obligation(newResourceAliasSet));
+      } else {
+        throw new BugInCF(
+            "Found an untracked local variable in a MustCallAlias position in a "
+                + "method invocation. Untracked variable: "
+                + mustCallAlias);
       }
     } else {
-      // If mustCallAlias is neither a field nor a local already in the set of obligations,
-      // add it to a new set.
+      // If there is no MustCallAlias, create a new obligation for the resouce alias.
       obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias)));
     }
   }
@@ -502,17 +611,12 @@ class MustCallConsistencyAnalyzer {
    * <p>Specifically, an invocation result does NOT need to be tracked if any of the following is
    * true:
    *
-   * <p>TODO: I don't see logic for the "or, the constructor result" part. This method always
-   * returns true if the call tree is not a method invocation.
-   *
    * <ul>
    *   <li>The invocation is a call to a {@code this()} or {@code super()} constructor.
-   *   <li>The method's return type (or, the constructor result, if this is an invocation of a
-   *       constructor) is annotated with MustCallAlias and the argument passed in this invocation
-   *       in the corresponding position is an owning field.
-   *   <li>The method's return type (or the constructor result) is non-owning, which can either be
-   *       because the method has no return type or because the return type is annotated with {@link
-   *       NotOwning}.
+   *   <li>The method's return type is annotated with MustCallAlias and the argument passed in this
+   *       invocation in the corresponding position is an owning field.
+   *   <li>The method's return type is non-owning, which can either be because the method has no
+   *       return type or because the return type is annotated with {@link NotOwning}.
    * </ul>
    *
    * <p>This method can also side-effect {@code obligations}, if node is a super or this constructor
@@ -530,24 +634,31 @@ class MustCallConsistencyAnalyzer {
 
       if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
           || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
-        handleThisOrSuperConstructorMustCallAlias(obligations, node);
+        Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
+        // If the MustCallAlias argument is also in the set of obligations, then remove it -- its
+        // obligation has been fulfilled by being passed on to the MustCallAlias constructor
+        // (because a
+        // this/super constructor call can only occur in the body of another constructor).
+        if (mustCallAliasArgument instanceof LocalVariableNode) {
+          removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
+        }
         return false;
       }
       return !returnTypeIsMustCallAliasWithUntrackable((MethodInvocationNode) node)
           && !hasNotOwningReturnType((MethodInvocationNode) node);
     }
+    // Constructor results from new expressions are always owning.
     return true;
   }
 
-  // TODO: What is "the other must call alias"?
-  // TODO: line 2 says "untrackable" but line 5 says "need to be tracked".  Those are different
-  // concepts.  Please clarify.
   /**
    * Returns true if this node represents a method invocation of a must-call-alias method, where the
-   * other must call alias is untrackable: an owning field or a pointer that is guaranteed to be
-   * non-owning, such as {@code "this"} or a non-owning field. Owning fields are handled by the rest
-   * of the checker, not by this algorithm, so they are "untrackable". Non-owning fields and this
-   * nodes are guaranteed to be non-owning, and therefore do not need to be tracked, either.
+   * argument in the must-call-alias position is untrackable: an owning field or a pointer that is
+   * guaranteed to be non-owning, such as {@code "this"} or a non-owning field. Owning fields are
+   * handled by the rest of the checker, not by this algorithm, so they are "untrackable".
+   * Non-owning fields and this nodes are guaranteed to be non-owning, and are therefore also
+   * "untrackable". Because both owning and non-owning fields are untrackable (and there are no
+   * other kinds of fields), this method returns true for all field accesses.
    *
    * @param node a method invocation node
    * @return true if this is the invocation of a method whose return type is MCA with an owning
@@ -564,10 +675,10 @@ class MustCallConsistencyAnalyzer {
    * else operand of a {@link TernaryExpressionNode}, by looking at the successor block in the CFG.
    * These are all the cases where the enclosing operator is a "no-op" that evaluates to the same
    * value as {@code node} (in the appropriate case for a ternary expression). This method is only
-   * used within {@link #handleSuccessorBlocks(Set, Deque, Set, Block)} to ensure obligations are
-   * propagated to cast / ternary nodes properly. It relies on the assumption that a {@link
-   * TypeCastNode} or {@link TernaryExpressionNode} will only appear in a CFG as the first node in a
-   * block.
+   * used within {@link #propagateObligationsToSuccessorBlocks(Set, Deque, Set, Block)} to ensure
+   * obligations are propagated to cast / ternary nodes properly. It relies on the assumption that a
+   * {@link TypeCastNode} or {@link TernaryExpressionNode} will only appear in a CFG as the first
+   * node in a block.
    *
    * @param node the CFG node
    * @return {@code true} if {@code node} is in a {@link SingleSuccessorBlock} {@code b}, the first
@@ -596,16 +707,16 @@ class MustCallConsistencyAnalyzer {
     return false;
   }
 
-  // TODO: This method implements part of ownership transfer, but this method does not transfer
-  // ownership.  It merely removes obligations.
   /**
-   * Transfers ownership of locals to {@code @Owning} parameters at a method or constructor call.
+   * Transfer ownership of any locals passed as arguments to {@code @Owning} parameters at a method
+   * or constructor call by removing the obligations corresponding to those locals.
    *
    * @param obligations the current set of obligations, which is side-effected to remove obligations
    *     for locals that are passed as owning parameters to the method or constructor
    * @param node a method or constructor invocation node
    */
-  private void transferOwnershipToParameters(Set<Obligation> obligations, Node node) {
+  private void removeObligationsAtOwnershipTransferToParameters(
+      Set<Obligation> obligations, Node node) {
 
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
       // Never transfer ownership to parameters, matching the default in the analysis built into
@@ -649,19 +760,17 @@ class MustCallConsistencyAnalyzer {
     }
   }
 
-  // TODO: This method implements part of ownership transfer, but actually it just does part of the
-  // work.  The "transfer ownership of the return value" text is not accurate, but the text after
-  // that is accurate.
   /**
-   * If the return type of the enclosing method is {@code @Owning}, transfer ownership of the return
-   * value and treat its obligations as satisfied by removing it from {@code obligations}.
+   * If the return type of the enclosing method is {@code @Owning}, treat its obligations as
+   * satisfied by removing it from {@code obligations}.
    *
    * @param node a return node
    * @param cfg the CFG of the enclosing method
    * @param obligations the current set of tracked obligations. If ownership is transferred, it is
    *     side-effected to remove the obligations of the returned value.
    */
-  private void handleReturn(ReturnNode node, ControlFlowGraph cfg, Set<Obligation> obligations) {
+  private void updateObligationsForOwningReturn(
+      ReturnNode node, ControlFlowGraph cfg, Set<Obligation> obligations) {
     if (isTransferOwnershipAtReturn(cfg)) {
       Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
@@ -719,7 +828,8 @@ class MustCallConsistencyAnalyzer {
    * @param assignmentNode the assignment
    * @param obligations the set of obligations to update
    */
-  private void handleAssignment(AssignmentNode assignmentNode, Set<Obligation> obligations) {
+  private void updateObligationsForAssignment(
+      AssignmentNode assignmentNode, Set<Obligation> obligations) {
     Node lhs = assignmentNode.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // Use the temporary variable for the rhs if it exists.
@@ -808,7 +918,7 @@ class MustCallConsistencyAnalyzer {
       // If rhs is a variable tracked in the obligation's resource alias set, gen the lhs
       // by adding it to the resource alias set.
       if (rhs instanceof LocalVariableNode
-          && obligation.hasResourceAlias((LocalVariableNode) rhs)) {
+          && obligation.canBeSatisfiedThrough((LocalVariableNode) rhs)) {
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
         if (newResourceAliasesForObligation == null) {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
@@ -1197,7 +1307,7 @@ class MustCallConsistencyAnalyzer {
    * @param obligations obligations of the current block
    * @param currentBlock the current block
    */
-  private void handleSuccessorBlocks(
+  private void propagateObligationsToSuccessorBlocks(
       Set<BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist,
       Set<Obligation> obligations,
@@ -1268,7 +1378,7 @@ class MustCallConsistencyAnalyzer {
             LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
             if (tmpVarForExcNode != null
                 && obligation.resourceAliases.size() == 1
-                && obligation.hasResourceAlias(tmpVarForExcNode)) {
+                && obligation.canBeSatisfiedThrough(tmpVarForExcNode)) {
               continue;
             }
           }
@@ -1468,7 +1578,7 @@ class MustCallConsistencyAnalyzer {
   private static boolean varTrackedInObligations(
       LocalVariableNode var, Set<Obligation> obligations) {
     for (Obligation obligation : obligations) {
-      if (obligation.hasResourceAlias(var)) {
+      if (obligation.canBeSatisfiedThrough(var)) {
         return true;
       }
     }
@@ -1487,7 +1597,7 @@ class MustCallConsistencyAnalyzer {
   private static @Nullable Obligation getObligationForVar(
       Set<Obligation> obligations, LocalVariableNode node) {
     for (Obligation obligation : obligations) {
-      if (obligation.hasResourceAlias(node)) {
+      if (obligation.canBeSatisfiedThrough(node)) {
         return obligation;
       }
     }
@@ -1754,162 +1864,6 @@ class MustCallConsistencyAnalyzer {
     @Override
     public int hashCode() {
       return Objects.hash(block, obligations);
-    }
-  }
-
-  // TODO: I suggest moving these to near the beginning of the class.  It is helpful to put helper
-  // methods whose function is obvious from their name after their use, but to put data structures
-  // (such as class fields) before their use.  This feels more like the latter:  the rest of the
-  // code cannot be understood without understanding these two classes.
-
-  // TODO: It's confusing that "obligation" is used to mean two different things here.  Rename this
-  // class.  Suggestions:  ResourceAliasSet, AliasSet, ResourceAliases, Aliases.
-
-  // TODO: What is "the required method"?  It's not part of this abstraction, so mentioning it in
-  // the first sentence using a definite pronoun is confusing.
-
-  // TODO: Are the dataflow facts just Obligations, or do the dataflow facts also track which
-  // methods need to be called?  Or is that encoded in other types, and this is really just tracking
-  // a set of local variables?
-  /**
-   * An Obligation is a set of resource aliases whose must-call obligations can all be fulfilled by
-   * calling the required method(s) on any of the resource aliases. {@link
-   * MustCallConsistencyAnalyzer} is a dataflow analysis whose dataflow facts are Obligations.
-   */
-  private static class Obligation {
-
-    /**
-     * The set of resource aliases that can satisfy this obligation. {@code Obligation} is deeply
-     * immutable. If some code were to accidentally mutate a {@code resourceAliases} set it could be
-     * really nasty to debug, so this set is always immutable.
-     */
-    public final ImmutableSet<ResourceAlias> resourceAliases;
-
-    /**
-     * Create an obligation from a set of resource aliases.
-     *
-     * @param resourceAliases a set of resource aliases
-     */
-    public Obligation(Set<ResourceAlias> resourceAliases) {
-      this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
-    }
-
-    /**
-     * Returns the resource alias in this corresponding to {@code localVariableNode} if one is
-     * present. Otherwise, returns null.
-     *
-     * @param localVariableNode some local variable
-     * @return the resource alias corresponding to {@code localVariableNode} if one is present;
-     *     otherwise, null
-     */
-    private @Nullable ResourceAlias getResourceAlias(LocalVariableNode localVariableNode) {
-      Element element = localVariableNode.getElement();
-      for (ResourceAlias alias : resourceAliases) {
-        if (alias.reference.getElement().equals(element)) {
-          return alias;
-        }
-      }
-      return null;
-    }
-
-    // Why does this comment say "the resource alias" rather than "a resource alias"?  I think there
-    // can be more than one resource alias for a given variable (one per assignment).
-    /**
-     * Returns true if this contains the resource alias corresponding to {@code localVariableNode}
-     * is present.
-     *
-     * @param localVariableNode some local variable node
-     * @return true if the resource alias corresponding to {@code localVariableNode} is present
-     */
-    // TODO: Since this class represents a set, I think "contains..." is a better prefix for this
-    // method than "has...".
-    private boolean hasResourceAlias(LocalVariableNode localVariableNode) {
-      return getResourceAlias(localVariableNode) != null;
-    }
-
-    @Override
-    public String toString() {
-      return "Obligation: resourceAliases: " + Iterables.toString(resourceAliases);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null || getClass() != obj.getClass()) {
-        return false;
-      }
-      Obligation that = (Obligation) obj;
-      return this.resourceAliases.equals(that.resourceAliases);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(resourceAliases);
-    }
-  }
-
-  // TODO: What *is* a resource alias?  This definition doesn't say.  The first sentence is a
-  // circular definition and the next paragraph is about representation, not the abstraction.
-  // TODO: "Besides a normal assignment": What about variable initialization?  That is not a normal
-  // assignment according to the JLS.
-  // TODO: Is the tree part of the abstraction or not?  That is, might there be multiple
-  // ResourceAlias objects for the same variable, if the variable is reassigned after
-  // initialization?  This comment says it's used only for error reporting, but the equals and
-  // hashCode methods do depend on it, so I'm not sure.
-  /**
-   * This class represents a single resource alias in a resource alias set.
-   *
-   * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
-   * "reference" through which the must-call obligations for the alias set can be satisfied) along
-   * with a tree in the corresponding method that "assigns" the variable. Besides a normal
-   * assignment, the tree may be a {@link VariableTree} in the case of a formal parameter. The tree
-   * is only used for error-reporting purposes.
-   */
-  /* package-private */ static class ResourceAlias {
-
-    /**
-     * The JavaExpression that represents the reference through which this resource can have its
-     * must-call obligations satisfied. This is either a local variable actually defined in the
-     * source code, or a temporary variable for an expression.
-     */
-    public final LocalVariable reference;
-
-    /** The tree at which it was assigned, for error reporting. */
-    public final Tree tree;
-
-    /**
-     * Create a new resource alias.
-     *
-     * @param reference the local variable
-     * @param tree the tree
-     */
-    public ResourceAlias(LocalVariable reference, Tree tree) {
-      this.reference = reference;
-      this.tree = tree;
-    }
-
-    @Override
-    public String toString() {
-      return "(ResourceAlias: reference: " + reference + " |||| tree: " + tree + ")";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      ResourceAlias that = (ResourceAlias) o;
-      return reference.equals(that.reference) && tree.equals(that.tree);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(reference, tree);
     }
   }
 }
