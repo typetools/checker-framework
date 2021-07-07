@@ -6,10 +6,13 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.builder.AutoValueSupport;
@@ -18,6 +21,7 @@ import org.checkerframework.checker.calledmethods.builder.LombokSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
@@ -25,12 +29,15 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -371,5 +378,40 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    */
   /* package-private */ Collection<BuilderFrameworkSupport> getBuilderFrameworkSupports() {
     return builderFrameworkSupports;
+  }
+
+  @Override
+  public List<AnnotationMirror> getPostconditionAnnotation(
+      VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
+    AnnotationMirror cmAnno =
+        AnnotationUtils.getAnnotationByName(
+            fieldAnnos.getAnnotations(),
+            "org.checkerframework.checker.calledmethods.qual.CalledMethods");
+    if (cmAnno != null) {
+      List<String> calledMethods =
+          AnnotationUtils.getElementValueArray(cmAnno, calledMethodsValueElement, String.class);
+      if (!calledMethods.isEmpty()) {
+        return ensuresCMAnno(elt, calledMethods);
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Returns a {@code EnsuresCalledMethods("...")} annotation for the given field.
+   *
+   * @param fieldElement a field
+   * @param calledMethods the methods that were definitely called on the field
+   * @return a {@code EnsuresCalledMethods("...")} annotation for the given field
+   */
+  private List<AnnotationMirror> ensuresCMAnno(
+      VariableElement fieldElement, List<String> calledMethods) {
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
+    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
+    String expression = receiver + "." + fieldElement.getSimpleName();
+    builder.setValue("value", new String[] {expression});
+    builder.setValue("methods", calledMethods.toArray(new String[0]));
+    AnnotationMirror am = builder.build();
+    return Collections.singletonList(am);
   }
 }
