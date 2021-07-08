@@ -10,9 +10,12 @@ public class WildcardGLB {
     }
   }
 
-  // The captured type variable for ? extends @List<@NonNull String> is
-  // capture#865 extends @NonNull List<@Nullable String>.  The upper bound of
-  // the capture type variable is not a subtype of the extends bound of the
+  // The captured type variable for
+  //    ? extends @List<@NonNull String>
+  // is
+  //    capture#865 extends @NonNull List<@Nullable String>
+  // .  The upper bound of
+  // the captured type variable is not a subtype of the extends bound of the
   // wildcard because the glb of the type parameter bound and the wildcard
   // extends bound does not exist.  I don't think this leads to unsoundness,
   // but it makes it so that this method can't be called without an error.  The
