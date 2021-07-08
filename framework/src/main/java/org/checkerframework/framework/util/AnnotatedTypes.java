@@ -761,13 +761,14 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Returns the annotated greatest lower bound of {@code type1} and {@code type2}.
+   * Returns the "annotated greatest lower bound" of {@code type1} and {@code type2}.
    *
-   * <p>Its required by the Checker Framework that the underlying type of an annotated type of an
-   * expression is the same as the Java type of that same expression. Therefore, the underlying type
-   * of the annotated greatest lower bound must be the glb of the underlying of the underlying types
-   * of {@code type1} and {@code type2}. Because of this rule, the return value of this method may
-   * not be a subtype of one of the types.
+   * <p>Suppose that there in an expression e with annotated type T. The underlying type of T must
+   * be the same as javac's type for e. (This is a requirement of the Checker Framework.) As a
+   * corollary, when computing a glb of atype1 and atype2, it is required that
+   * underlyingType(cfGLB(atype1, atype2) == glb(javacGLB(underlyingType(atype1),
+   * underlyingType(atype2)). Because of this requirement, the return value of this method may not
+   * be a subtype of one of the types.
    *
    * <p>The annotated greatest lower bound is defined as follows:
    *
