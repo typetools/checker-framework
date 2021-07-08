@@ -51,7 +51,9 @@ public class Driver {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
         ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
-        List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
+        boolean ignoreConstructors = !clazz.getName().equals("Constructors");
+        List<TypeAnnotation> actual =
+            ReferenceInfoUtil.extendedAnnotationsOf(cf, ignoreConstructors);
         ReferenceInfoUtil.compare(expected, actual, cf);
         out.println("PASSED:  " + method.getName());
         ++passed;
