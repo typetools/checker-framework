@@ -91,21 +91,17 @@ import org.plumelib.util.StringsPlume;
  * types when the last reference to those sets goes out of scope. That is, this class implements a
  * lightweight alias analysis that tracks must-alias sets for resources.
  *
- * <p>TODO: The use of the term "obligation" is ambiguous throughout this class. Sometimes it means
- * "an object of type Obligation", and sometimes it means "a must-call obligation". These are
- * different things, and therefore the naming is confusing. Please rename the Obligation class
- * (suggestions: ResourceAliasSets, ResourceAliases, AliasSets, Aliases). Then, ensure that,
- * throughout, the word "obligation" is not used in documentation, nor as a variable name, for
- * instances of that class.
- *
- * <p>Class {@link Obligation} represents a dataflow fact: a set of resource aliases for some value
- * with a non-empty {@code @MustCall} obligation. These obligations can be resolved either via
- * ownership transfer (e.g. by being assigned into an owning field) or via their must-call
- * obligations being contained in their called-methods type when the last reference in a set goes
- * out of scope.
+ * <p>Class {@link Obligation} represents a single such dataflow fact. Abstractly, each dataflow
+ * fact is a pair: a set of resource aliases to some resource, and the list of must-call methods
+ * that need to be called on one of the resource aliases. Concretely, the Must Call Checker is
+ * responsible for tracking the latter - an expression's must-call type indicates which methods must
+ * be called - so this dataflow analysis only actually tracks the sets of resource aliases. When the
+ * last resource alias in an Obligation goes out-of-scope, the analysis queries the Must Call
+ * Checker to get the list of must-call methods to check against.
  *
  * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
- * certain code patterns are encountered. Here are non-exhaustive examples:
+ * certain code patterns are encountered, to account for ownership transfer. Here are non-exhaustive
+ * examples:
  *
  * <ul>
  *   <li>A new obligation is added to the tracked set when a constructor or a method with an owning
@@ -147,9 +143,6 @@ class MustCallConsistencyAnalyzer {
 
   /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
   private final CFAnalysis analysis;
-
-  // TODO: It's confusing that "obligation" is used to mean two different things here.  Rename this
-  // class.  Suggestions:  ResourceAliasSet, AliasSet, ResourceAliases, Aliases.
 
   /**
    * An Obligation is the abstraction used by this dataflow analysis for a must-call obligation. A
