@@ -482,7 +482,7 @@ public class TestUtilities {
    * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
    * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String, boolean)} instead.
    */
-  @Deprecated
+  @Deprecated // 2020-04-30
   public static boolean testBooleanProperty(String key, boolean defaultValue) {
     return SystemUtil.getBooleanSystemProperty(key, defaultValue);
   }

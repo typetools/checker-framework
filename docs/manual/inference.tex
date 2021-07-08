@@ -143,7 +143,7 @@ target project. The results of type-checking with each candidate set of
 annotations will be concatenated into the file \<dljc-out/wpi.log>; the final
 results (i.e., those obtained using the most precise, consistent set of annotations)
 will appear at the end of this file.
-The inferred annotations appear in \<.stub> files in a
+The inferred annotations appear in \<.ajava> files in a
 temporary directory whose name appears in the \<dlcj-out/wpi.log> file.
 
 The full syntax for invoking \<wpi.sh> is
@@ -271,15 +271,30 @@ Use its output to guide your analysis of the results of running \<wpi-many.sh>:
 you should manually examine the log files for the projects that appear in the
 "results available" list it produces. This list is the list of every project
 that the script was able to successfully run WPI on.  (This does not mean
-that the project type-checks without errors afterward.)
+that the project type-checks without errors afterward, or even typechecks at
+all --- just that the Checker Framework attempted to typecheck the project and
+some output was produced.)
 
-\item (Optional) Fork repositories and make changes (e.g., add annotations or fix bugs).
-Modify the input file for \<wpi-many.sh> to remove the line for the original repository,
-but add a new line that indicates the location of both your
-fork and the original repository.
-Then, re-run your experiments, supplying the \<-u "\$yourGithubId"> option to \<wpi-many.sh>.
-\<wpi-many.sh> will perform inference on your forked version rather than
-the original.
+\item (Optional) Add annotations that WPI does not infer, to eliminate
+  false positive warnings. There are three ways you can add annotations to a target
+  program:
+  \begin{itemize}
+  \item
+    Fork the project and add the annotations directly to the project's
+    source code, and add a dependency on
+    \<org.checkerframework:checker-qual> to the project's build
+    system. This approach is the most difficult, but has the advantage that
+    the checker will attempt to verify any annotations you add.
+  \item
+    Add the annotations in an \<.ajava> file. Create the \<.ajava> file
+    as a copy of the \<.java> file, following the instructions in
+    Section~\ref{ajava-files} about directory structure, etc.
+  \item Add the annotations in a stub file, creating the \<.astub> file as
+    a copy of the \<.java> file.  When you run the checker, supply the
+    \<-AmergeStubsWithSource> and \<-Astubs=...> command-line arguments.  This
+    option is similar to option 2, but requires extra command-line options
+    to the checker rather than a specific directory structure.
+  \end{itemize}
 
 \end{enumerate}
 
@@ -505,18 +520,19 @@ skip this section.
 
 Each script repeatedly runs the checker with an \<-Ainfer=> command-line option to infer
 types for fields and method signatures.  The output of this step
-is a \<.jaif> (for \<infer-and-annotate.sh>) or stub (for \<wpi.sh>) file that records the inferred types.
+is a \<.jaif> (for \<infer-and-annotate.sh>) or \<.ajava> (for \<wpi.sh>) file that records the inferred types.
 Each script adds the inferred annotation to the next run, so that the checker takes them into
-account (and checks them). \<wpi.sh> does this using the \<-AmergeStubsWithSource> command-line
-option to the Checker Framework; \<infer-and-annotate.sh> inserts the inferred annotations in the program using the
+account (and checks them). \<wpi.sh> does this by updating the set of \<.ajava> files that are passed
+to the checker via the \<-Aajava> command-line argument;
+\<infer-and-annotate.sh> inserts the inferred annotations in the program using the
 \ahreforurl{https://checkerframework.org/annotation-file-utilities/}{Annotation File Utilities}.
 
 On each
-iteration through the process, there may be new annotations in the \<.jaif> or \<.astub>
+iteration through the process, there may be new annotations in the \<.jaif> or \<.ajava>
 files, and some type-checking errors may be eliminated (though others might
 be introduced).
 The process halts when there are no more changes to the inference results,
-that is, the \<.jaif> or \<.astub> files are unchanged between two runs.
+that is, the \<.jaif> or \<.ajava> files are unchanged between two runs.
 
 When the type-checker is run on the program with the final annotations
 inserted, there might still be errors.  This may be because the tool did

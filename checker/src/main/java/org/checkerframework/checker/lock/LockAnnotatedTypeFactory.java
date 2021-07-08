@@ -3,7 +3,6 @@ package org.checkerframework.checker.lock;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -32,6 +31,7 @@ import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
+import org.checkerframework.checker.lock.qual.NewObject;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -61,6 +61,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -95,9 +96,12 @@ public class LockAnnotatedTypeFactory
   /** The @{@link GuardedByUnknown} annotation. */
   protected final AnnotationMirror GUARDEDBYUNKNOWN =
       AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
-  /** The @{@link GuardedByBottom} annotation. */
+  /** The @{@link GuardedBy} annotation. */
   protected final AnnotationMirror GUARDEDBY =
       createGuardedByAnnotationMirror(new ArrayList<String>());
+  /** The @{@link NewObject} annotation. */
+  protected final AnnotationMirror NEWOBJECT =
+      AnnotationBuilder.fromClass(elements, NewObject.class);
   /** The @{@link GuardedByBottom} annotation. */
   protected final AnnotationMirror GUARDEDBYBOTTOM =
       AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
@@ -251,6 +255,7 @@ public class LockAnnotatedTypeFactory
             GuardedBy.class,
             GuardedByUnknown.class,
             GuardSatisfied.class,
+            NewObject.class,
             GuardedByBottom.class));
   }
 
@@ -273,14 +278,16 @@ public class LockAnnotatedTypeFactory
   /** LockQualifierHierarchy. */
   class LockQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
+    /** Qualifier kind for the @{@link GuardedByUnknown} annotation. */
+    private final QualifierKind GUARDEDBYUNKNOWN_KIND;
     /** Qualifier kind for the @{@link GuardedBy} annotation. */
     private final QualifierKind GUARDEDBY_KIND;
     /** Qualifier kind for the @{@link GuardSatisfied} annotation. */
     private final QualifierKind GUARDSATISFIED_KIND;
+    /** Qualifier kind for the @{@link NewObject} annotation. */
+    private final QualifierKind NEWOBJECT_KIND;
     /** Qualifier kind for the @{@link GuardedByBottom} annotation. */
     private final QualifierKind GUARDEDBYBOTTOM_KIND;
-    /** Qualifier kind for the @{@link GuardedByUnknown} annotation. */
-    private final QualifierKind GUARDEDBYUNKNOWN_KIND;
 
     /**
      * Creates a LockQualifierHierarchy.
@@ -291,10 +298,11 @@ public class LockAnnotatedTypeFactory
     public LockQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
       super(qualifierClasses, elements);
+      GUARDEDBYUNKNOWN_KIND = getQualifierKind(GUARDEDBYUNKNOWN);
       GUARDEDBY_KIND = getQualifierKind(GUARDEDBY);
       GUARDSATISFIED_KIND = getQualifierKind(GUARDSATISFIED);
+      NEWOBJECT_KIND = getQualifierKind(NEWOBJECT);
       GUARDEDBYBOTTOM_KIND = getQualifierKind(GUARDEDBYBOTTOM);
-      GUARDEDBYUNKNOWN_KIND = getQualifierKind(GUARDEDBYUNKNOWN);
     }
 
     @Override
@@ -346,10 +354,18 @@ public class LockAnnotatedTypeFactory
         return a2;
       } else if (qualifierKind2 == GUARDEDBYBOTTOM_KIND) {
         return a1;
+      } else if (qualifierKind1 == NEWOBJECT_KIND) {
+        return a2;
+      } else if (qualifierKind2 == NEWOBJECT_KIND) {
+        return a1;
       }
-      throw new RuntimeException("Unexpected");
+      throw new BugInCF(
+          "leastUpperBoundWithElements(%s, %s, %s, %s, %s)",
+          a1, qualifierKind1, a2, qualifierKind2, lubKind);
     }
 
+    // GLB never returns @NewObject unless one of the argumetns is @NewObject; it returns
+    // @GuardedByBottom instead, to prevent showing users the unexpected @NewObject type.
     @Override
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
@@ -380,7 +396,9 @@ public class LockAnnotatedTypeFactory
       } else if (qualifierKind2 == GUARDEDBYUNKNOWN_KIND) {
         return a1;
       }
-      throw new RuntimeException("Unexpected");
+      throw new BugInCF(
+          "greatestLowerBoundWithElements(%s, %s, %s, %s, %s)",
+          a1, qualifierKind1, a2, qualifierKind2, glbKind);
     }
   }
 
@@ -558,7 +576,7 @@ public class LockAnnotatedTypeFactory
       ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
     ParameterizedExecutableType mType = super.methodFromUse(tree, methodElt, receiverType);
 
-    if (tree.getKind() != Kind.METHOD_INVOCATION) {
+    if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return mType;
     }
 
@@ -606,13 +624,13 @@ public class LockAnnotatedTypeFactory
 
     List<? extends ExpressionTree> methodInvocationTreeArguments =
         ((MethodInvocationTree) tree).getArguments();
-    List<AnnotatedTypeMirror> requiredArgs =
-        AnnotatedTypes.expandVarArgs(this, invokedMethod, methodInvocationTreeArguments);
+    List<AnnotatedTypeMirror> paramTypes =
+        AnnotatedTypes.expandVarArgsParameters(this, invokedMethod, methodInvocationTreeArguments);
 
-    for (int i = 0; i < requiredArgs.size(); i++) {
+    for (int i = 0; i < paramTypes.size(); i++) {
       if (replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
           methodDefinitionReturn,
-          requiredArgs.get(i),
+          paramTypes.get(i),
           returnGuardSatisfiedIndex,
           getAnnotatedType(methodInvocationTreeArguments.get(i))
               .getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {

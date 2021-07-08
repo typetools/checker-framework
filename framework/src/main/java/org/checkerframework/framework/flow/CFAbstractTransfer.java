@@ -31,7 +31,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -266,7 +265,8 @@ public abstract class CFAbstractTransfer<
   /** The initial store maps method formal parameters to their currently most refined type. */
   @Override
   public S initialStore(UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
-    if (underlyingAST.getKind() != Kind.LAMBDA && underlyingAST.getKind() != Kind.METHOD) {
+    if (underlyingAST.getKind() != UnderlyingAST.Kind.LAMBDA
+        && underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
       if (fixedInitialStore != null) {
         return fixedInitialStore;
       } else {
@@ -276,7 +276,7 @@ public abstract class CFAbstractTransfer<
 
     S info;
 
-    if (underlyingAST.getKind() == Kind.METHOD) {
+    if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
 
       if (fixedInitialStore != null) {
         // copy knowledge
@@ -324,7 +324,7 @@ public abstract class CFAbstractTransfer<
         }
       }
 
-    } else if (underlyingAST.getKind() == Kind.LAMBDA) {
+    } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
       // Create a copy and keep only the field values (nothing else applies).
       info = analysis.createCopiedStore(fixedInitialStore);
       // Allow that local variables are retained; they are effectively final,
@@ -836,7 +836,8 @@ public abstract class CFAbstractTransfer<
   /**
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
    * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
-   * the rhs -- that is, the rhs may not appear in the result, but rather its lhs and rhs may).
+   * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
+   * lhs and rhs do).
    *
    * @param node possibly an assignment node
    * @return a list containing all the right- and left-hand sides in the given assignment node; it

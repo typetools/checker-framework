@@ -6,8 +6,14 @@ public class FlowExpressionsTest {
     public Object field;
   }
 
-  private final @GuardedBy({"<self>"}) MyClass m = new MyClass();
+  private final @GuardedBy({"<self>"}) MyClass m;
+
+  FlowExpressionsTest() {
+    m = new MyClass();
+  }
+
   // private @GuardedBy({"nonexistentfield"}) MyClass m2;
+
   @Pure
   private @GuardedBy({"<self>"}) MyClass getm() {
     return m;

@@ -4,10 +4,10 @@ plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
     id 'com.github.johnrengelman.shadow' version '6.1.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id "de.undercouch.download" version "4.1.1"
+    id "de.undercouch.download" version "4.1.2"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "2.0.1"
+    id "net.ltgt.errorprone" version "2.0.2"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
 }
@@ -923,7 +923,7 @@ subprojects {
         tasks.create(name: 'inferenceTests', group: 'Verification') {
             description 'Run inference tests.'
             if (project.name.is('checker')) {
-                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
             }
         }
 
