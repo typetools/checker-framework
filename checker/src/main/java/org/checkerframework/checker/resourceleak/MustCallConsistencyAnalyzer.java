@@ -92,12 +92,13 @@ import org.plumelib.util.StringsPlume;
  * lightweight alias analysis that tracks must-alias sets for resources.
  *
  * <p>Class {@link Obligation} represents a single such dataflow fact. Abstractly, each dataflow
- * fact is a pair: a set of resource aliases to some resource, and the list of must-call methods
- * that need to be called on one of the resource aliases. Concretely, the Must Call Checker is
- * responsible for tracking the latter - an expression's must-call type indicates which methods must
- * be called - so this dataflow analysis only actually tracks the sets of resource aliases. When the
- * last resource alias in an Obligation goes out-of-scope, the analysis queries the Must Call
- * Checker to get the list of must-call methods to check against.
+ * fact is a must-call obligation. A must-call obligation is a pair: a set of resource aliases to
+ * some resource, and the list of must-call methods that need to be called on one of the resource
+ * aliases. Concretely, the Must Call Checker is responsible for tracking the latter - an
+ * expression's must-call type indicates which methods must be called - so this dataflow analysis
+ * only actually tracks the sets of resource aliases. When the last resource alias in an Obligation
+ * goes out-of-scope, the analysis queries the Must Call Checker to get the list of must-call
+ * methods to check against.
  *
  * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
  * certain code patterns are encountered, to account for ownership transfer. Here are non-exhaustive
