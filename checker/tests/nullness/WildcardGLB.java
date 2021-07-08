@@ -10,7 +10,6 @@ public class WildcardGLB {
     }
   }
 
-  // TODO: There should be an error here.
   // The captured type variable for ? extends @List<@NonNull String> is
   // capture#865 extends @NonNull List<@Nullable String>.  The upper bound of
   // the capture type variable is not a subtype of the extends bound of the
@@ -18,6 +17,7 @@ public class WildcardGLB {
   // extends bound does not exist.  I don't think this leads to unsoundness,
   // but it makes it so that this method can't be called without an error.  The
   // method testUse below demos this.
+  // :: error: (type.argument)
   void use(MyClass<? extends List<String>> s) {
     // :: error: (assignment)
     List<String> f = s.getE();
@@ -49,14 +49,14 @@ public class WildcardGLB {
   }
 
   // capture#952 extends @NonNull ArrayList<@Nullable String>
+  // :: error: (type.argument)
   void use3(MyClass2<? extends List<String>> s) {
     // :: error: (assignment)
     List<String> f = s.getE();
     List<@Nullable String> f2 = s.getE();
   }
 
-  // TODO: error here for the same reason as use1.
-  // capture#196 extends @NonNull ArrayList<@NonNull String>
+  // :: error: (type.argument)
   void use4(MyClass2<? extends ArrayList<String>> s) {
     // :: error: assignment
     List<String> f = s.getE();

@@ -10,12 +10,15 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -38,6 +41,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * A visitor to validate the types in a tree.
@@ -544,6 +548,48 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         tree.getTypeArguments(),
         element.getSimpleName(),
         element.getTypeParameters());
+
+    if (capturedType != type) {
+      // Check that the extends bound the captured type variable is a subtype of the extends bound
+      // of the wildcard.
+      int numTypeArgs = capturedType.getTypeArguments().size();
+      // First creating a mapping from captured type variable to its wildcard.
+      Map<TypeVariable, AnnotatedTypeMirror> typeVarToWildcard = new HashMap<>(numTypeArgs);
+      for (int i = 0; i < numTypeArgs; i++) {
+        AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);
+        if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())) {
+          AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
+          AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type.getTypeArguments().get(i);
+          typeVarToWildcard.put(capturedTypeVar.getUnderlyingType(), wildcard);
+        }
+      }
+
+      for (int i = 0; i < numTypeArgs; i++) {
+        AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);
+        if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())) {
+          AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
+          AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type.getTypeArguments().get(i);
+          // Substitute the captured type variables with their wildcards. Without this, the
+          // isSubtype check crashes because wildcards aren't comparable with type variables.
+          AnnotatedTypeMirror catpureTypeVarUB =
+              atypeFactory
+                  .getTypeVarSubstitutor()
+                  .substituteWithoutCopyingTypeArguments(
+                      typeVarToWildcard, capturedTypeVar.getUpperBound());
+          if (!atypeFactory
+              .getTypeHierarchy()
+              .isSubtype(catpureTypeVarUB, wildcard.getExtendsBound())) {
+            checker.reportError(
+                tree.getTypeArguments().get(i),
+                "type.argument",
+                element.getTypeParameters().get(i),
+                element.getSimpleName(),
+                wildcard.getExtendsBound(),
+                capturedTypeVar.getUpperBound());
+          }
+        }
+      }
+    }
 
     return null;
   }
