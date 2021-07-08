@@ -153,14 +153,14 @@ public class AnnotatedTypes {
         && AnnotatedTypes.isEnum(asSuperType)
         && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
       final AnnotatedDeclaredType resultAtd = ((AnnotatedDeclaredType) supertype).deepCopy();
-      resultAtd.clearAnnotations();
+      resultAtd.clearPrimaryAnnotations();
       resultAtd.addAnnotations(asSuperType.getAnnotations());
 
       final AnnotatedDeclaredType asSuperAdt = (AnnotatedDeclaredType) asSuperType;
       if (!resultAtd.getTypeArguments().isEmpty() && !asSuperAdt.getTypeArguments().isEmpty()) {
         final AnnotatedTypeMirror sourceTypeArg = asSuperAdt.getTypeArguments().get(0);
         final AnnotatedTypeMirror resultTypeArg = resultAtd.getTypeArguments().get(0);
-        resultTypeArg.clearAnnotations();
+        resultTypeArg.clearPrimaryAnnotations();
         if (resultTypeArg.getKind() == TypeKind.TYPEVAR) {
           // Only change the upper bound of a type variable.
           AnnotatedTypeVariable resultTypeArgTV = (AnnotatedTypeVariable) resultTypeArg;
