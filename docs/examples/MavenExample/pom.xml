@@ -91,7 +91,7 @@
                 <path>
                   <groupId>org.checkerframework</groupId>
                   <artifactId>checker</artifactId>
-                  <version>3.7.0</version>
+                  <version>${checkerFrameworkVersion}</version>
                 </path>
               </annotationProcessorPaths>
               <annotationProcessors>
