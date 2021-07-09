@@ -1,6 +1,6 @@
 // Keep somewhat in sync with
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
-// Adapted to handled the same type qualifier appearing multiple times.
+// Adapted to handle the same type qualifier appearing multiple times.
 
 import com.sun.tools.classfile.Attribute;
 import com.sun.tools.classfile.ClassFile;
@@ -216,10 +216,12 @@ public class ReferenceInfoUtil {
   public static boolean compare(
       List<Pair<String, TypeAnnotation.Position>> expectedAnnos,
       List<TypeAnnotation> actualAnnos,
-      ClassFile cf)
+      ClassFile cf,
+      String diagnostic)
       throws InvalidIndex, UnexpectedEntry {
     if (actualAnnos.size() != expectedAnnos.size()) {
-      throw new ComparisonException("Wrong number of annotations", expectedAnnos, actualAnnos);
+      throw new ComparisonException(
+          "Wrong number of annotations in " + cf + "; " + diagnostic, expectedAnnos, actualAnnos);
     }
 
     for (Pair<String, TypeAnnotation.Position> e : expectedAnnos) {
@@ -228,7 +230,12 @@ public class ReferenceInfoUtil {
       TypeAnnotation actual = findAnnotation(aName, expected, actualAnnos, cf);
       if (actual == null) {
         throw new ComparisonException(
-            "Expected annotation not found: " + aName + " position: " + expected,
+            "Expected annotation not found: "
+                + aName
+                + " position: "
+                + expected
+                + "; "
+                + diagnostic,
             expectedAnnos,
             actualAnnos);
       }
@@ -253,15 +260,8 @@ class ComparisonException extends RuntimeException {
   }
 
   public String toString() {
-    return String.join(
-        System.lineSeparator(),
-        super.toString(),
-        "\tExpected: "
-            + expected.size()
-            + " annotations; but found: "
-            + found.size()
-            + " annotations",
-        "  Expected: " + expected,
-        "  Found: " + found);
+    return String.format(
+        "%s%n  Expected (%d): %s%s  Found (%d): %s",
+        super.toString(), expected.size(), expected, found.size(), found);
   }
 }
