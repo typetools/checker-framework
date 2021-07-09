@@ -128,7 +128,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
   ////////// Printer //////////
   /** Element printer */
-  @SuppressWarnings("deprecation") // For *Visitor7, needed on JDK 16+
+  @SuppressWarnings("deprecation") // *Visitor7 is deprecated in JDK 16+
   static class ElementPrinter extends AbstractElementVisitor7<Void, Void> {
     /** String used for indentation */
     private static final String INDENTION = "    ";

@@ -52,7 +52,7 @@ public class CaseNode extends Node {
    * Gets the nodes corresponding to the case expressions. There can be multiple expressions since
    * Java 12.
    *
-   * @return The nodes corresponding to the (potentially multiple) case expressions.
+   * @return the nodes corresponding to the (potentially multiple) case expressions
    */
   public List<Node> getCaseOperands() {
     return caseExprs;

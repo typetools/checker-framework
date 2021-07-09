@@ -261,9 +261,9 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   /**
    * Visit a BindingPatternTree
    *
-   * @param tree A BindingPatternTree, typed as Tree to be backward-compatible
-   * @param node A PatternExpr, typed as Node to be backward-compatible
-   * @return The visitor return
+   * @param tree a BindingPatternTree, typed as Tree to be backward-compatible
+   * @param node a PatternExpr, typed as Node to be backward-compatible
+   * @return nothing
    */
   public Void visitBindingPattern17(Tree tree, Node node) {
     return null;
@@ -1186,9 +1186,9 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   /**
    * Visit a SwitchExpressionTree
    *
-   * @param tree A SwitchExpressionTree, typed as Tree to be backward-compatible
-   * @param node A SwitchExpr, typed as Node to be backward-compatible
-   * @return The visitor return
+   * @param tree a SwitchExpressionTree, typed as Tree to be backward-compatible
+   * @param node a SwitchExpr, typed as Node to be backward-compatible
+   * @return nothing
    */
   public Void visitSwitchExpression17(Tree tree, Node node) {
     return null;
@@ -1402,9 +1402,9 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   /**
    * Visit a YieldTree
    *
-   * @param tree A YieldTree, typed as Tree to be backward-compatible
-   * @param node A YieldStmt, typed as Node to be backward-compatible
-   * @return The visitor return
+   * @param tree a YieldTree, typed as Tree to be backward-compatible
+   * @param node a YieldStmt, typed as Node to be backward-compatible
+   * @return nothing
    */
   public Void visitYield17(Tree tree, Node node) {
     return null;
@@ -2189,9 +2189,9 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * called for those methods which do not have an override of the visitXXX method in this class.
    * Ultimately, those are the methods added post Java 11, such as for switch-expressions.
    *
-   * @param tree The Javac tree
-   * @param node The Javaparser node
-   * @return The result of the action.
+   * @param tree the Javac tree
+   * @param node the Javaparser node
+   * @return nothing
    */
   @Override
   protected Void defaultAction(Tree tree, Node node) {

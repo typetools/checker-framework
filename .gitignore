@@ -119,12 +119,12 @@ target/
 
 ## Tests
 
-checker/tests/command-line/issue618/out.txt
 checker/tests/command-line/issue618/TwoCheckers.class
+checker/tests/command-line/issue618/out.txt
 checker/tests/nullness-extra/*.class
+checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
 checker/tests/nullness-extra/compat/lib/Lib.class
-checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/issue3597/testpkg/Issue3597A.class
 checker/tests/nullness-extra/issue3597/testpkg/Issue3597B.class
 checker/tests/nullness-extra/issue502/Issue502.class
@@ -139,9 +139,9 @@ checker/tests/nullness-extra/package-anno/Out.txt
 checker/tests/nullness-extra/package-anno/test/*.class
 checker/tests/nullness-extra/shorthand/NullnessRegexWithErrors.class
 checker/tests/nullness-extra/shorthand/Out.txt
-checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.class
 checker/tests/nullness-temp/*.java
+checker/tests/nullness/generics/*.class
 
 dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class

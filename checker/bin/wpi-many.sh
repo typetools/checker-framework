@@ -51,24 +51,21 @@ else
   has_java_home="yes"
 fi
 
-# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA8_HOME}" = "x" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA11_HOME}" = "x" ]; then
   has_java11="no"
 else
   has_java11="yes"
 fi
 
-# testing for JAVA16_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA16_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA16_HOME}" = "x" ]; then
   has_java16="no"
 else
@@ -107,7 +104,7 @@ if [ "${has_java16}" = "yes" ] && [ ! -d "${JAVA16_HOME}" ]; then
 fi
 
 if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java16}" = "no" ]; then
-    echo "No Java 8, 11 or 16 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA16_HOME must be set."
+    echo "No Java 8, 11, or 16 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA16_HOME must be set."
     exit 1
 fi
 

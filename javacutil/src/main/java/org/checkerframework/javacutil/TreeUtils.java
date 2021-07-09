@@ -1606,11 +1606,11 @@ public final class TreeUtils {
   }
 
   /**
-   * Get the list of expressions from a case expression. In JDK 11 and earlier, this will be a
-   * singleton list. In JDK 12 onwards, there can be multiple expressions per case.
+   * Get the list of expressions from a case expression. In JDK 11 and earlier, this is a singleton
+   * list. In JDK 12 onwards, there can be multiple expressions per case.
    *
-   * @param caseTree The case expression to get the expressions from.
-   * @return The list of expressions in the case.
+   * @param caseTree the case expression to get the expressions from
+   * @return the list of expressions in the case
    */
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
     try {
