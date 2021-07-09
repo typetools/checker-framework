@@ -831,9 +831,9 @@ public class AnnotatedTypes {
     List<AnnotatedTypeMirror> newBounds = new ArrayList<>(2);
     for (AnnotatedTypeMirror bound : glb.getBounds()) {
       if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
-        newBounds.add(type1);
+        newBounds.add(type1.deepCopy());
       } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
-        newBounds.add(type2);
+        newBounds.add(type2.deepCopy());
       } else {
         throw new BugInCF(
             "Neither %s nor %s is one of the intersection bounds in %s. Bound: %s",
