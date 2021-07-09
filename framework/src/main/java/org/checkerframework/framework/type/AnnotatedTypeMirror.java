@@ -2186,7 +2186,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param bounds bounds to use
      */
-    /*default-visibility*/ void setBounds(List<AnnotatedTypeMirror> bounds) {
+    public void setBounds(List<AnnotatedTypeMirror> bounds) {
       this.bounds = bounds;
     }
 

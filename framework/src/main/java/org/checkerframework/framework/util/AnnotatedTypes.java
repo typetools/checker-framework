@@ -828,11 +828,12 @@ public class AnnotatedTypes {
     AnnotatedIntersectionType glb =
         (AnnotatedIntersectionType) AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
 
+    List<AnnotatedTypeMirror> newBounds = new ArrayList<>(2);
     for (AnnotatedTypeMirror bound : glb.getBounds()) {
       if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
-        atypeFactory.replaceAnnotations(type1, bound);
+        newBounds.add(type1);
       } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
-        atypeFactory.replaceAnnotations(type2, bound);
+        newBounds.add(type2);
       } else {
         throw new BugInCF(
             "Neither %s nor %s is one of the intersection bounds in %s. Bound: %s",
@@ -840,6 +841,7 @@ public class AnnotatedTypes {
       }
     }
 
+    glb.setBounds(newBounds);
     glb.addAnnotations(glbAnno);
     return glb;
   }
