@@ -549,7 +549,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         element.getSimpleName(),
         element.getTypeParameters());
 
-    if (capturedType != type) {
+    @SuppressWarnings(
+        "interning:not.interned") // applyCaptureConversion returns the passed type if type does not
+    // have wildcards.
+    boolean hasCapturedTypeVariables = capturedType != type;
+    if (hasCapturedTypeVariables) {
       // Check that the extends bound the captured type variable is a subtype of the extends bound
       // of the wildcard.
       int numTypeArgs = capturedType.getTypeArguments().size();
