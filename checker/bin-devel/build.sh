@@ -68,7 +68,7 @@ fi
 version=$("$_java" -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
 if [[ "$version" -ge 9 ]]; then
   echo "Running:  (cd ../jspecify/ && ./gradlew build)"
-  ## Try twice in case of network lossage.
+  # If failure, retry in case the failure was due to network lossage.
   (cd ../jspecify/ && ./gradlew build) || (sleep 60 && cd ../jspecify/ && ./gradlew build)
   echo "... done: (cd ../jspecify/ && ./gradlew build)"
 fi
