@@ -55,7 +55,6 @@ public class Driver {
         boolean ignoreConstructors = !clazz.getName().equals("Constructors");
         List<TypeAnnotation> actual =
             ReferenceInfoUtil.extendedAnnotationsOf(cf, ignoreConstructors);
-        List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf, false);
         String diagnostic =
             String.join(
                 "; ",
