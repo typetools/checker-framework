@@ -53,63 +53,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   protected final boolean ignoreRawTypes;
   protected final boolean invariantArrayComponents;
 
-  // TODO: Incorporate feedback from David/Suzanne
-  // IMPORTANT_NOTE:
-  //
-  // For MultigraphQualifierHierarchies, we check the subtyping relationship of each annotation
-  // hierarchy individually.  This is done because when comparing a pair of type variables,
-  // sometimes you need to traverse and compare the bounds of two type variables.  Other times it
-  // is incorrect to compare the bounds.  These two cases can occur simultaneously when comparing
-  // two hierarchies at once.  In this case, comparing both hierarchies simultaneously would lead
-  // to an error.  More detail is given below.
-  //
-  // Recall, type variables may or may not have a primary annotation for each individual hierarchy.
-  // When comparing two type variables for a specific hierarchy we have five possible cases:
-  //      case 1:  only one of the type variables has a primary annotation
-  //      case 2a: both type variables have primary annotations and they are uses of the same type
-  //               parameter
-  //      case 2b: both type variables have primary annotations and they are uses of different
-  //               type parameters
-  //      case 3a: neither type variable has a primary annotation and they are uses of the same
-  //               type parameter
-  //      case 3b: neither type variable has a primary annotation and they are uses of different
-  //               type parameters
-  //
-  // Case 1, 2b, and 3b require us to traverse both type variables bounds to ensure that the
-  // subtype's upper bound is a subtype of the supertype's lower bound. Case 2a requires only
-  // that we check that the primary annotation on the subtype is a subtype of the primary
-  // annotation on the supertype.  In case 3a, we can just return true, since two
-  // non-primary-annotated uses of the same type parameter are equivalent.  In this case it would
-  // be an error to check the bounds because the check would only return true when the bounds are
-  // exact but it should always return true.
-  //
-  // A problem occurs when one hierarchy matches case 1, 2b, or 3b and the other hierarchy matches
-  // 3a.  In the first set of cases we MUST check the type variables' bounds.  In case 3a we MUST
-  // NOT check the bounds.  e.g.
-  //
-  // Suppose I have a hierarchy with two tops @A1 and @B1.  Let @A0 <: @A1 and @B0 <: @B1.
-  //  @A1 T t1;  T t2;
-  //  t1 = t2;
-  //
-  // To typecheck "t1 = t2;" in the hierarchy topped by @A1, we need to descend into the bounds of
-  // t1 and t2 (where t1's bounds will be overridden by @A1).  However, for hierarchy B we need
-  // only recognize that since neither variable has a primary annotation, the types are equivalent
-  // and no traversal is needed.  If we tried to do these two actions simultaneously, in every
-  // visit and isSubtype call, we would have to check to see that the @B hierarchy has been
-  // handled and ignore those annotations.
-  //
-  // Solutions:
-  // We could handle this problem by keeping track of which hierarchies have already been taken
-  // care of.  We could then check each hierarchy before making comparisons.  But this would lead
-  // to complicated plumbing that would be hard to understand.
-  // The chosen solution is to only check one hierarchy at a time.  One trade-off to this approach
-  // is that we have to re-traverse the types for each hierarchy being checked.
-  //
-  // The field currentTop identifies the hierarchy for which the types are currently being checked.
-  //
-  // Final note: all annotation comparisons are done via isPrimarySubtype(), isBottom(), and
-  // isAnnoSubtype() in order to ensure that we first get the annotations in the hierarchy of
-  // currentTop before passing annotations to qualifierHierarchy.
   /** The top annotation of the hierarchy currently being checked. */
   protected AnnotationMirror currentTop;
 
