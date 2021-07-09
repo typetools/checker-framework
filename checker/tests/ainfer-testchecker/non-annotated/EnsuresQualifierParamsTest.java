@@ -41,28 +41,25 @@ class EnsuresQualifierParamsTest {
 
   void noEnsures() {}
 
-  void client1() {
-    int arg;
+  void client1(int arg) {
     argIsParent(arg);
     // :: warning: (assignment)
     @Parent int p = arg;
   }
 
-  void client2() {
-    int arg;
+  void client2(int arg) {
     argIsParent_2(arg, true);
     // :: warning: (assignment)
     @Parent int p = arg;
   }
 
-  void client3() {
-    int arg;
+  void client3(int arg) {
     argIsSibling2(arg);
     // :: warning: (assignment)
     @Sibling2 int x = arg;
   }
 
-  void client4() {
+  void client4(int arg) {
     argIsSibling2_2(arg, true);
     // :: warning: (assignment)
     @Sibling2 int x = arg;
