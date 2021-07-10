@@ -19,7 +19,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.AbstractElementVisitor7;
+import javax.lang.model.util.AbstractElementVisitor8;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.framework.source.SourceChecker;
@@ -127,7 +127,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
   }
 
   ////////// Printer //////////
-  static class ElementPrinter extends AbstractElementVisitor7<Void, Void> {
+  static class ElementPrinter extends AbstractElementVisitor8<Void, Void> {
     private static final String INDENTION = "    ";
 
     private final PrintStream out;
