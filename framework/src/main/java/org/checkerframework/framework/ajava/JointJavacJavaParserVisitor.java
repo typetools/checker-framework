@@ -259,7 +259,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visit a BindingPatternTree
+   * Visit a BindingPatternTree.
    *
    * @param tree a BindingPatternTree, typed as Tree to be backward-compatible
    * @param node a PatternExpr, typed as Node to be backward-compatible

@@ -38,7 +38,6 @@ import org.checkerframework.javacutil.TypesUtils;
  * This class provides a collection of utilities to ease working with syntax trees that have
  * something to do with Formatters.
  */
-@SuppressWarnings("deprecation") // *Visitor7 is deprecated in JDK 16+
 public class FormatterTreeUtil {
   /** The checker. */
   public final BaseTypeChecker checker;

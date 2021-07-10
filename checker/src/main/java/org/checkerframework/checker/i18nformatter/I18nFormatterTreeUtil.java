@@ -53,7 +53,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
-@SuppressWarnings("deprecation") // *Visitor7 is deprecated in JDK 16+
 public class I18nFormatterTreeUtil {
   /** The checker. */
   public final BaseTypeChecker checker;

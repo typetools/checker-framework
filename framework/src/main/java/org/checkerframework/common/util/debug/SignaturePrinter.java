@@ -127,9 +127,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
   }
 
   ////////// Printer //////////
-  /** Element printer */
+  /** Element printer. */
   static class ElementPrinter extends AbstractElementVisitor8<Void, Void> {
-    /** String used for indentation */
+    /** String used for indentation. */
     private static final String INDENTION = "    ";
 
     private final PrintStream out;

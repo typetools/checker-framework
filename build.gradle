@@ -26,6 +26,8 @@ ext {
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
+    isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
+
     errorproneJavacVersion = '9+181-r4173-1'
 
     parentDir = file("${rootDir}/../").absolutePath
