@@ -1,4 +1,4 @@
-#!/bin/bash
+xxxxs#!/bin/bash
 
 # This script performs whole-program inference on a project directory.
 

@@ -14,7 +14,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.SimpleTypeVisitor7;
+import javax.lang.model.util.SimpleTypeVisitor8;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
@@ -275,7 +275,7 @@ public class FormatterTreeUtil {
         // figure out if argType is an array
         type =
             argType.accept(
-                new SimpleTypeVisitor7<InvocationType, Class<Void>>() {
+                new SimpleTypeVisitor8<InvocationType, Class<Void>>() {
                   @Override
                   protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
                     // not an array
@@ -385,7 +385,7 @@ public class FormatterTreeUtil {
 
       // is it the null literal
       return type.accept(
-          new SimpleTypeVisitor7<Boolean, Class<Void>>() {
+          new SimpleTypeVisitor8<Boolean, Class<Void>>() {
             @Override
             protected Boolean defaultAction(TypeMirror e, Class<Void> p) {
               // it's not the null literal
