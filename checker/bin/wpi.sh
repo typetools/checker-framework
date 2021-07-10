@@ -179,8 +179,9 @@ function configure_and_exec_dljc {
   # Remove old DLJC output.
   rm -rf dljc-out
 
-  # ensure the project is clean before invoking DLJC
-  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1
+  # Ensure the project is clean before invoking DLJC.
+  # If it fails, re-run without piping output to /dev/null.
+  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || eval "${CLEAN_CMD}" < /dev/null
 
   mkdir -p "${DIR}/dljc-out/"
   dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout-$(date +%Y%m%d-%H%M%S)-XXX")
