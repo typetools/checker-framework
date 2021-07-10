@@ -157,8 +157,10 @@ class MustCallConsistencyAnalyzer {
   private static class Obligation {
 
     /**
-     * The set of resource aliases through which this must-call obligation can be satisfied. {@code
-     * Obligation} is deeply immutable. If some code were to accidentally mutate a {@code
+     * The set of resource aliases through which this must-call obligation can be satisfied. Calling
+     * the required method(s) through any of them satisfies the obligation.
+     *
+     * <p>{@code Obligation} is deeply immutable. If some code were to accidentally mutate a {@code
      * resourceAliases} set it could be really nasty to debug, so this set is always immutable.
      */
     public final ImmutableSet<ResourceAlias> resourceAliases;
@@ -226,28 +228,27 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * This class represents a single resource alias in a resource alias set. A resource alias is a
-   * reference through which a must-call obligation can be satisfied; every must-call obligation has
-   * one or more resource aliases, and calling the required method(s) through any of them satisfies
-   * the obligation.
+   * A resource alias is a reference through which a must-call obligation can be satisfied.
    *
    * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
    * "reference" through which the must-call obligations for the alias set to which it belongs can
-   * be satisfied) along with a tree that "assigns" the reference. The tree's primary purpose is
-   * error reporting, but it is also used to determine if this resource alias is one of the
-   * expressions in a ternary, which are treated specially by the algorithm (see {@link
-   * #handleTernarySuccIfNeeded(Block, Block, Set)}).
+   * be satisfied) along with a tree that "assigns" the reference.
    */
   /* package-private */ static class ResourceAlias {
 
     /**
-     * The JavaExpression that represents the reference through which this resource can have its
-     * must-call obligations satisfied. This is either a local variable actually defined in the
-     * source code, or a temporary variable for an expression.
+     * The reference through which this resource can have its must-call obligations satisfied. This
+     * is either a local variable actually defined in the source code, or a temporary variable for
+     * an expression.
      */
     public final LocalVariable reference;
 
-    /** The tree at which it was assigned, for error reporting. */
+    /**
+     * The tree at which it was assigned. The tree's primary purpose is error reporting, but it is
+     * also used to determine if this resource alias is one of the expressions in a ternary
+     * expression, which are treated specially by the algorithm (see {@link
+     * #handleTernarySuccIfNeeded(Block, Block, Set)}).
+     */
     public final Tree tree;
 
     /**
@@ -325,9 +326,9 @@ class MustCallConsistencyAnalyzer {
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
-      // A *mutable* set that eventually holds the set of obligations to be propagated to successor
-      // blocks. The set is initialized to the current obligations and updated by the methods
-      // invoked in the for loop below.
+      // A *mutable* set that eventually holds the set of dataflow facts to be propagated to
+      // successor blocks. The set is initialized to the current dataflow facts and updated by the
+      // methods invoked in the for loop below.
       Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
@@ -425,8 +426,8 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks the validity of the given expression from an invoked method's {@link
-   * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. See {@link
-   * #checkCreatesMustCallForInvocation(Set, MethodInvocationNode)}.
+   * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. Helper method for
+   * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode)}.
    *
    * <p>An expression is valid if one of the following conditions is true: 1) the expression is an
    * owning pointer, 2) the expression already has a tracked obligation, or 3) the method in which
@@ -481,7 +482,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     // TODO: Getting this every time is inefficient if a method has many @CreatesMustCallFor
-    // annotations, but that should be a rare path.
+    // annotations, but that should be rare.
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
     if (enclosingMethodTree == null) {
       return false;
