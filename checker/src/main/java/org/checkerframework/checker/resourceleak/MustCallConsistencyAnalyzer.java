@@ -86,33 +86,34 @@ import org.plumelib.util.StringsPlume;
  * for which this property does not hold, the analyzer reports a {@code
  * "required.method.not.called"} error, indicating a possible resource leak.
  *
- * <p>Mechanically, the analysis tracks dataflow facts about the obligations of sets of
- * resource-aliases that refer to the same resource, and checks their must-call and called-methods
- * types when the last reference to those sets goes out of scope. That is, this class implements a
- * lightweight alias analysis that tracks must-alias sets for resources.
+ * <p>Mechanically, the analysis has two parts.
+ *
+ * <ul>
+ *   <li>A must-alias analysis, implemented as a dataflow analysis. Each dataflow fact is a set of
+ *       resource-aliases that refer to the same resource. Furthermore, that resource is owned. No
+ *       dataflow facts are maintained for a non-owned resource.
+ *   <li>When the last resource alias in a resource-alias set goes out-of-scope, it checks their
+ *       must-call and called-methods types. The analysis does not track must-call or called-methods
+ *       types, but queries other checkers to obtain them.
+ * </ul>
  *
  * <p>Class {@link Obligation} represents a single such dataflow fact. Abstractly, each dataflow
  * fact is a must-call obligation. A must-call obligation is a pair: a set of resource aliases to
  * some resource, and the list of must-call methods that need to be called on one of the resource
  * aliases. Concretely, the Must Call Checker is responsible for tracking the latter - an
  * expression's must-call type indicates which methods must be called - so this dataflow analysis
- * only actually tracks the sets of resource aliases. When the last resource alias in an Obligation
- * goes out-of-scope, the analysis queries the Must Call Checker to get the list of must-call
- * methods to check against.
+ * only actually tracks the sets of resource aliases.
  *
- * <p>The algorithm here adds, modifies, or removes obligations from those it is tracking when
- * certain code patterns are encountered, to account for ownership transfer. Here are non-exhaustive
- * examples:
+ * <p>The dataflow algorithm adds, modifies, or removes dataflow facts when certain code patterns
+ * are encountered, to account for ownership transfer. Here are non-exhaustive examples:
  *
  * <ul>
- *   <li>A new obligation is added to the tracked set when a constructor or a method with an owning
- *       return is invoked.
- *   <li>An obligation is modified when an expression with a tracked obligation is assigned to a
- *       local variable or a resource-alias method or constructor is called (the new local or the
- *       result of the resource-alias method/constructor is added to the existing resource alias
- *       set).
- *   <li>An obligation can be removed when a member of a resource-alias set is assigned to an owning
- *       field or passed to a method in a parameter location that is annotated as {@code @Owning}.
+ *   <li>A new fact is added to the tracked set when a constructor or a method with an owning return
+ *       is invoked.
+ *   <li>A fact is modified when an expression with a tracked obligation is the RHS of a
+ *       (pseudo-)assignment. The LHS is added to the existing resource alias set.
+ *   <li>A fact can be removed when a member of a resource-alias set is assigned to an owning field
+ *       or passed to a method in a parameter location that is annotated as {@code @Owning}.
  * </ul>
  *
  * <p>Throughout, this class uses the temporary-variable facilities provided by the Must Call and
