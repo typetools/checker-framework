@@ -51,16 +51,14 @@ else
   has_java_home="yes"
 fi
 
-# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA8_HOME}" = "x" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA11_HOME}" = "x" ]; then
   has_java11="no"
 else

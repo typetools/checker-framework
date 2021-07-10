@@ -45,16 +45,14 @@ else
   has_java_home="yes"
 fi
 
-# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA8_HOME}" = "x" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA11_HOME}" = "x" ]; then
   has_java11="no"
 else
@@ -159,7 +157,10 @@ function configure_and_exec_dljc {
 
   if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
     JDK_VERSION_ARG="--jdkVersion 8"
+  elif [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
+    JDK_VERSION_ARG="--jdkVersion 11"
   else
+    # Default to the latest LTS release.  (Probably better to compute the version.)
     JDK_VERSION_ARG="--jdkVersion 11"
   fi
 
@@ -187,8 +188,7 @@ function configure_and_exec_dljc {
   PATH_BACKUP="${PATH}"
   export PATH="${JAVA_HOME}/bin:${PATH}"
 
-  # use simpler syntax because this line was crashing mysteriously in CI, to get better debugging output
-  # shellcheck disable=SC2129
+  # shellcheck disable=SC2129 # recommended syntax was crashing mysteriously in CI
   echo "WORKING DIR: $(pwd)" >> "$dljc_stdout"
   echo "JAVA_HOME: ${JAVA_HOME}" >> "$dljc_stdout"
   echo "PATH: ${PATH}" >> "$dljc_stdout"
@@ -263,13 +263,12 @@ rm -f -- "${DIR}/.cannot-run-wpi"
 cd "${DIR}" || exit 5
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
-if [ "${has_java11}" = "yes" ]; then
-  export JAVA_HOME="${JAVA11_HOME}"
-  configure_and_exec_dljc "$@"
-elif [ "${has_java8}" = "yes" ]; then
+if [ "${has_java8}" = "yes" ]; then
   export JAVA_HOME="${JAVA8_HOME}"
-  configure_and_exec_dljc "$@"
+elif [ "${has_java11}" = "yes" ]; then
+  export JAVA_HOME="${JAVA11_HOME}"
 fi
+configure_and_exec_dljc "$@"
 
 if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
     # if running under Java 11 fails, try to run
