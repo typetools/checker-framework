@@ -74,6 +74,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -96,6 +97,15 @@ import org.plumelib.util.StringsPlume;
  *       must-call and called-methods types. The analysis does not track must-call or called-methods
  *       types, but queries other checkers to obtain them.
  * </ul>
+ *
+ * TODO: From our discussion, I thought that you were planning to use the term Obligation, but to be
+ * at pains to emphasize that an "Obligation" is different than a "must-call obligation". But this
+ * text does something different: it says that they are the same. I think that is a significant
+ * problem. The paper "Lightweight and Modular Resource Leak Verification" defines "must-call
+ * obligations" as "required methods". It says that a MustCall type represents a must-call
+ * obligation. The term "must-call obligation" is used similarly in the source code. Thus, there is
+ * already an established meaning for "must-call obligation". I find it confusing to redefine the
+ * term "must-call obligation" here in the code, in a different way than defined in the paper.
  *
  * <p>Class {@link Obligation} represents a single such dataflow fact. Abstractly, each dataflow
  * fact is a must-call obligation. A must-call obligation is a pair: a set of resource aliases to
@@ -156,6 +166,9 @@ class MustCallConsistencyAnalyzer {
    */
   private static class Obligation {
 
+    // TODO:  Is there any necessary relationship among their must-call types?  If their types are
+    // not guaranteed to be identical, then what does "the required method(s)" in the second
+    // sentence below mean?
     /**
      * The set of resource aliases through which this must-call obligation can be satisfied. Calling
      * the required method(s) through any of them satisfies the obligation.
@@ -192,6 +205,8 @@ class MustCallConsistencyAnalyzer {
       return null;
     }
 
+    // TODO: "is sufficient": is it necessary?  This is related to my question about what the
+    // required methods are.
     /**
      * Returns true if this contains a resource alias corresponding to {@code localVariableNode},
      * meaning that calling the required methods on {@code localVariableNode} is sufficient to
@@ -236,6 +251,10 @@ class MustCallConsistencyAnalyzer {
    */
   /* package-private */ static class ResourceAlias {
 
+    // TODO: The text about satisfying obligations does not belong here.  It is a fact about other
+    // data strutures and algorithms, not about the ResourcAlias abstraction.
+    // TODO: Should "the reference" be "a reference"?  (That question might be moot once you move
+    // the information about obligations elsewhere.)
     /**
      * The reference through which this resource can have its must-call obligations satisfied. This
      * is either a local variable actually defined in the source code, or a temporary variable for
@@ -301,6 +320,9 @@ class MustCallConsistencyAnalyzer {
     this.analysis = analysis;
   }
 
+  // TODO: I suspect there is another condition besides having a non-empty @MustCall type:  it also
+  // has to be owned/owning.  If so, explain that in the parenthesis too.  If not, I don't
+  // understand the algorithm.
   /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts
    * ("obligations") of type {@link Obligation}, each representing a set of resource aliases for
@@ -379,6 +401,11 @@ class MustCallConsistencyAnalyzer {
     updateObligationsWithInvocationResult(obligations, node);
   }
 
+  // TODO: This comment repeats, verbatim, text from `isValidCreatesMustCallForExpression`.  When
+  // text is repeated, a reader must carefully read both versions to see whether there are any
+  // differences or discrepancies.  It's better to give the information just once, to avoid the
+  // opportunity for the versions to get out of sync.  Could you change the paragraph into a
+  // cross-reference to `isValidCreatesMustCallForExpression`?
   /**
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
@@ -408,6 +435,11 @@ class MustCallConsistencyAnalyzer {
     List<JavaExpression> expressions =
         CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             node, typeFactory, typeFactory);
+    // TODO: Use of a HashSet makes the code nondeterministic and produces warnings in a different
+    // order than the expressions appeared in the source code.  I would use a list, and it's
+    // acceptable to produce a duplicate warning if the programmer wrote the same expression
+    // multiple times -- or, if you consider that unacceptable, either change
+    // getCreatesMustCallForExpressions or use a LinkedHashSet here.
     Set<JavaExpression> missing = new HashSet<>();
     for (JavaExpression expression : expressions) {
       if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
@@ -424,6 +456,10 @@ class MustCallConsistencyAnalyzer {
     checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
   }
 
+  // TODO: Whatdoes "has a tracked obligation" mean?  That term is not defined.  Does it mean that
+  // the expression appears in some set of resource aliases in the dataflow facts?
+  // TODO: I don't know what it means to invoke a method "on a path".  Do you mean that `path` is
+  // the path to the method invocation?
   /**
    * Checks the validity of the given expression from an invoked method's {@link
    * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. Helper method for
@@ -459,11 +495,15 @@ class MustCallConsistencyAnalyzer {
         Obligation toRemove = null;
         Obligation toAdd = null;
         for (Obligation obligation : obligations) {
+          // It seems that this predicate could be made into a method in the `Obligation` class,
+          // which would make the code slightly shorter and -- more importantly -- clearer.
           for (ResourceAlias alias : obligation.resourceAliases) {
             if (expression.equals(alias.reference)) {
               // This satisfies case 2 above. Remove all its aliases, then return below.
               if (toRemove != null) {
-                throw new BugInCF(
+                // TODO: I changed this from BugInCF to TypeSystemError.  Please look over the other
+                // uses of BugInCF and use TypeSystemError instead where appropriate.
+                throw new TypeSystemError(
                     "tried to remove multiple sets containing a reset expression at once");
               }
               toRemove = obligation;
