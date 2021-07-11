@@ -1056,6 +1056,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
   }
 
+  /**
+   * If the method {@param node} is annotated with {@link SideEffectsOnly}, checks that the method
+   * side-effects a subset of the expressions specified as annotation arguments/elements to {@link
+   * SideEffectsOnly}.
+   *
+   * @param node the method tree to check
+   */
   protected void checkSideEffectsOnly(MethodTree node) {
     if (!checker.hasOption("checkSideEffectsOnlyAnnotation")) {
       return;

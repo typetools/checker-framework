@@ -11,9 +11,16 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 public class SideEffectsOnlyAnnoChecker {
   public static SideEffectsOnlyResult checkSideEffectsOnly(
@@ -58,6 +65,27 @@ public class SideEffectsOnlyAnnoChecker {
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
+      Element treeElem = TreeUtils.elementFromTree(node);
+      AnnotationMirror pureAnno = annoProvider.getDeclAnnotation(treeElem, Pure.class);
+      AnnotationMirror sideEffectFreeAnno =
+          annoProvider.getDeclAnnotation(treeElem, SideEffectFree.class);
+      if (pureAnno != null || sideEffectFreeAnno != null) {
+        return super.visitMethodInvocation(node, aVoid);
+      }
+
+      AnnotationMirror sideEffectsOnlyAnno =
+          annoProvider.getDeclAnnotation(treeElem, SideEffectsOnly.class);
+      if (sideEffectsOnlyAnno != null) {
+        JavaExpression receiverExpr = JavaExpression.getReceiver(node);
+        sideEffectsOnlyResult.addNotSEOnlyExpr(node, receiverExpr);
+        List<JavaExpression> paramsAsLocals =
+            JavaExpression.getParametersAsLocalVariables((ExecutableElement) treeElem);
+        for (JavaExpression expr : paramsAsLocals) {
+          sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
+        }
+      } else {
+
+      }
       return super.visitMethodInvocation(node, aVoid);
     }
 
