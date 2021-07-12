@@ -589,13 +589,13 @@ source code is Java 8 and that Java 8 bytecode is created.
 \end{enumerate}
 
 
-\subsectionAndLabel{JDK 11}{javac-jdk11}
+\subsectionAndLabel{JDK 11+}{javac-jdk11}
 
 This section shows what arguments to pass to the OpenJDK or OracleJDK
 \<javac> (\emph{not} the \<javac> wrapper script of
 Section~\ref{javac-wrapper}) to run the Checker
 Framework, if you are using JDK 9 or later.  These
-instructions should work on JDK 9 or later, but we only test with JDK 11.
+instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK 16.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
@@ -605,15 +605,29 @@ To compile non-modularized code:
 \begin{Verbatim}
 javac \
 -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
 -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
 -cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
 -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
-The arguments are explained above, except for
-\<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
+The arguments are explained above, except for two of them:.
+\begin{enumerate}
+
+\item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
 opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
+
+\item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
+required with JDK 16+ because the Checker Framework accesses non-exported members of these packages.
+(These are also required with JDK 11 if \<--illegal-access> is set to \<deny>.)
+
+\end{enumerate}
 
 If this option is missing, \<javac> may issue the following warning:
 \begin{Verbatim}
