@@ -22,9 +22,10 @@ if [[ "${GROUPARG}" == "require-javadoc" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "signature-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "all" ]] || [[ "${GROUPARG}" == "" ]]; then
     if java -version 2>&1 | grep version | grep 1.8 ; then
-        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util require-javadoc)
+        # options does not compile under JDK 8
+        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control plume-util require-javadoc)
     else
-        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util)
+        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util require-javadoc)
     fi
 fi
 if [ -z ${PACKAGES+x} ]; then
