@@ -52,7 +52,9 @@ public class Driver {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
         ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
-        List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf, false);
+        boolean ignoreConstructors = !clazz.getName().equals("Constructors");
+        List<TypeAnnotation> actual =
+            ReferenceInfoUtil.extendedAnnotationsOf(cf, ignoreConstructors);
         String diagnostic =
             String.join(
                 "; ",
