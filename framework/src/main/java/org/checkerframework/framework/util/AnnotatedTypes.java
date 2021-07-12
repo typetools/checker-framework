@@ -770,7 +770,7 @@ public class AnnotatedTypes {
    * underlyingType(atype2)). Because of this requirement, the return value of this method (the
    * "annotated GLB") may not be a subtype of one of the types.
    *
-   * <p>The annotated greatest lower bound is defined as follows:
+   * <p>The "annotated greatest lower bound" is defined as follows:
    *
    * <ol>
    *   <li>If the underlying type of {@code type1} and {@code type2} are the same, then return a
@@ -784,7 +784,7 @@ public class AnnotatedTypes {
    *       lower bound of the primary annotations on {@code type1} and {@code type2}.
    *   <li>If the underlying type of {@code type1} and {@code type2} are not in a subtyping
    *       relationship, then return an annotated intersection type whose bounds are {@code type1}
-   *       and {@code type2}
+   *       and {@code type2}.
    * </ol>
    *
    * @param atypeFactory the AnnotatedTypeFactory
@@ -814,7 +814,7 @@ public class AnnotatedTypes {
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(
-          "AnnotatedTypes#annotatedGLB: expected intersection, got %s %s. "
+          "AnnotatedTypes#annotatedGLB: expected intersection, got [%s] %s. "
               + "type1: %s, type2: %s",
           glbJava.getKind(), glbJava, type1, type2);
     }

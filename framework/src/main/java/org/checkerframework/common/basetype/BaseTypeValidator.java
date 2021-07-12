@@ -384,7 +384,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * Visits type parameters bounds.
+   * Visits type parameter bounds.
    *
    * @param typeParameter type of {@code typeParameterTree}
    * @param typeParameterTree a type parameter tree
@@ -554,10 +554,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // have wildcards.
     boolean hasCapturedTypeVariables = capturedType != type;
     if (hasCapturedTypeVariables) {
-      // Check that the extends bound the captured type variable is a subtype of the extends bound
-      // of the wildcard.
+      // Check that the extends bound of the captured type variable is a subtype of the extends
+      // bound of the wildcard.
       int numTypeArgs = capturedType.getTypeArguments().size();
-      // First creating a mapping from captured type variable to its wildcard.
+      // First create a mapping from captured type variable to its wildcard.
       Map<TypeVariable, AnnotatedTypeMirror> typeVarToWildcard = new HashMap<>(numTypeArgs);
       for (int i = 0; i < numTypeArgs; i++) {
         AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);

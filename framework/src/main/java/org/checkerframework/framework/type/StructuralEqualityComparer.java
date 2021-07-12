@@ -353,8 +353,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     return result;
   }
 
-  // since we don't do a boxing conversion between primitive and declared types in some cases
-  // we must compare primitives with their boxed counterparts
+  // Since we don't do a boxing conversion between primitive and declared types, in some cases
+  // we must compare primitives with their boxed counterparts.
   @Override
   public Boolean visitDeclared_Primitive(
       AnnotatedDeclaredType type1, AnnotatedPrimitiveType type2, Void p) {

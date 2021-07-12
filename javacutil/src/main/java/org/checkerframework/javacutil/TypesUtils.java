@@ -1094,8 +1094,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns a fresh type variable, a captured type variable, for {@code typeMirror}, if {@code
-   * typeMirror} is a wildcard. If it is not a wildcard, returns {@code typeMirror}.
+   * If {@code typeMirror} is a wildcard, returns a fresh type variable that will be used as a
+   * captured type variable for it. If {@code typeMirror} is not a wildcard, returns {@code
+   * typeMirror}.
    *
    * @param typeMirror a type
    * @param env processing environment

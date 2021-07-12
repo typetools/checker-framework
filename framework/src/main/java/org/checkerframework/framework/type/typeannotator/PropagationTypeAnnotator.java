@@ -209,6 +209,6 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         return typeElement.getTypeParameters().get(i);
       }
     }
-    throw new BugInCF("Wildcard %s not a type argument of %s", typeArg, declaredType);
+    throw new BugInCF("Wildcard %s is not a type argument of %s", typeArg, declaredType);
   }
 }
