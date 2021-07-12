@@ -208,11 +208,14 @@ The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
 \begin{itemize}
 \item The project on which inference is run must contain an Ant, Gradle,
   or Maven buildfile that compiles the project.
-\item At least one of the \verb|JAVA_HOME|, \verb|JAVA8_HOME|, or \verb|JAVA_HOME| environment variables
-must be set.
-\item If set, the \verb|JAVA_HOME| environment variable must point to a Java 8 or Java 11 JDK.
+\item At least one of the \verb|JAVA_HOME|,
+  \verb|JAVA8_HOME|, \verb|JAVA11_HOME|, or \verb|JAVA16_HOME|
+  environment variables must be set.
+\item If set, the \verb|JAVA_HOME| environment variable must point to a
+  Java 8, 11, or 16 JDK.
 \item If set, the \verb|JAVA8_HOME| environment variable must point to a Java 8 JDK.
 \item If set, the \verb|JAVA11_HOME| environment variable must point to a Java 11 JDK.
+\item If set, the \verb|JAVA16_HOME| environment variable must point to a Java 16 JDK.
 \item \<CHECKERFRAMEWORK> environment variable must point to a built copy of the Checker Framework.
 \item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
 from \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not

@@ -137,12 +137,7 @@ if [ "x${SKIP_OR_DELETE_UNUSABLE}" = "x" ]; then
 fi
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
-
-if [ "${has_java16}" = "yes" ]; then
-  export JAVA_HOME="${JAVA16_HOME}"
-else
-  export JAVA_HOME="${JAVA11_HOME}"
-fi
+export JAVA_HOME="${JAVA11_HOME}"
 
 ### Script
 
