@@ -850,7 +850,7 @@ public class AnnotatedTypes {
    * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
    * underlying Java types are in a subtyping relationship.
    *
-   * <p>This handles cases 2 and 3 mentioned in the Javadoc of {@link
+   * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
    * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
    *
    * @param qualifierHierarchy QualifierHierarchy
