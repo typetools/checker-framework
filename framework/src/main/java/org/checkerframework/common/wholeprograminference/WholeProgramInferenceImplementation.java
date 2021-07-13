@@ -12,6 +12,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -25,6 +26,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -241,6 +243,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     ClassName classNameReceiver = new ClassName(containingClass.asType());
     for (VariableElement fieldElement :
         ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
+      if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF &&
+          containingClass.getNestingKind().isNested()) {
+        // Don't infer facts about fields of inner classes, because IndexFileWriter
+        // places the annotations incorrectly on the class declarations.
+        continue;
+      }
+      if (ElementUtils.isStatic(fieldElement)) {
+        // Don't infer postconditions for static fields, because sometimes
+        // some are inferred that the checker then can't prove. TODO: investigate
+        // why this doesn't work.
+        continue;
+      }
       FieldAccess fa =
           new FieldAccess(
               (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
@@ -254,14 +268,42 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
         atypeFactory.wpiAdjustForUpdateNonField(inferredType);
       } else {
-        // This field is not in the store. Add its declared type.
-        inferredType = atypeFactory.getAnnotatedType(fieldElement);
+        // This field is not in the store. Do not attempt to infer a post-condition annotation,
+        // because it may not be verifiable.
+        continue;
       }
       T preOrPostConditionAnnos =
           storage.getPreOrPostconditionsForField(preOrPost, methodElt, fieldElement, atypeFactory);
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
           preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
+    }
+    // This loop is 1-indexed to match the syntax used in annotation arguments.
+    for (int index = 1; index <= methodElt.getParameters().size(); index++) {
+      VariableElement paramElt = methodElt.getParameters().get(index - 1);
+
+      // Do not infer information about non-effectively-final method parameters, to avoid
+      // spurious flowexpr.parameter.not.final warnings.
+      if (!ElementUtils.isEffectivelyFinal(paramElt)) {
+        continue;
+      }
+      LocalVariable param = new LocalVariable(paramElt);
+      CFAbstractValue<?> v = store.getValue(param);
+      AnnotatedTypeMirror declType = atypeFactory.getAnnotatedType(paramElt);
+      AnnotatedTypeMirror inferredType;
+      if (v != null) {
+        // This parameter is in the store.
+        inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, declType);
+        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+      } else {
+        // The parameter is not in the store, so use the declared type.
+        inferredType = declType;
+      }
+      T preOrPostConditionAnnos = storage.getPreOrPostconditionsForParameter(preOrPost, methodElt, paramElt, index, atypeFactory);
+      if (preOrPostConditionAnnos != null) {
+        String file = storage.getFileForElement(methodElt);
+        updateAnnotationSet(preOrPostConditionAnnos, TypeUseLocation.PARAMETER, inferredType, declType, file, false);
+      }
     }
   }
 

@@ -6,8 +6,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -116,6 +118,22 @@ public interface WholeProgramInferenceStorage<T> {
       ExecutableElement methodElement,
       VariableElement fieldElement,
       AnnotatedTypeFactory atypeFactory);
+
+  /**
+   * Returns the pre- or postcondition annotations for a method parameter.
+   *
+   * @param preOrPost whether to get the precondition or postcondition
+   * @param methodElt the method
+   * @param paramElt the parameter
+   * @param index the parameter's index (1-based)
+   * @param atypeFactory the type factory
+   * @return the pre- or postcondition annotations for the parameter, or null if nothing is inferrable
+   */
+  // TODO: this method currently can return null because preconditions on parameters aren't supported.
+  // We might want to remove that restriction in the future (but preconditions on parameters are kind
+  // of unnecessary, because the parameters can just be annotated?)
+  public @Nullable T getPreOrPostconditionsForParameter(BeforeOrAfter preOrPost, ExecutableElement methodElt,
+      VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory);
 
   /**
    * Updates a method to add a declaration annotation.

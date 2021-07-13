@@ -381,7 +381,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   @Override
-  public List<AnnotationMirror> getPostconditionAnnotation(
+  public List<AnnotationMirror> getPostconditionAnnotationForField(
       VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
     AnnotationMirror cmAnno =
         AnnotationUtils.getAnnotationByName(
@@ -391,24 +391,42 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       List<String> calledMethods =
           AnnotationUtils.getElementValueArray(cmAnno, calledMethodsValueElement, String.class);
       if (!calledMethods.isEmpty()) {
-        return ensuresCMAnno(elt, calledMethods);
+        String receiver = JavaExpression.getImplicitReceiver(elt).toString();
+        String expression = receiver + "." + elt.getSimpleName();
+        return ensuresCMAnno(expression, calledMethods);
       }
     }
-    return Collections.emptyList();
+    return super.getPostconditionAnnotationForField(elt, fieldAnnos, preconds);
+  }
+
+  @Override
+  public List<AnnotationMirror> getPostconditionAnnotationForParameter(VariableElement elt,
+      Integer index, AnnotatedTypeMirror inferredType, List<AnnotationMirror> preconds) {
+    AnnotationMirror cmAnno =
+        AnnotationUtils.getAnnotationByName(
+            inferredType.getAnnotations(),
+            "org.checkerframework.checker.calledmethods.qual.CalledMethods");
+    if (cmAnno != null) {
+      List<String> calledMethods =
+          AnnotationUtils.getElementValueArray(cmAnno, calledMethodsValueElement, String.class);
+      if (!calledMethods.isEmpty()) {
+        String expression = "#" + index;
+        return ensuresCMAnno(expression, calledMethods);
+      }
+    }
+    return super.getPostconditionAnnotationForParameter(elt, index, inferredType, preconds);
   }
 
   /**
    * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given field.
    *
-   * @param fieldElement a field
+   * @param expression the expression to put in the value field of the EnsuresCalledMethods annotation
    * @param calledMethods the methods that were definitely called on the field
    * @return a {@code @EnsuresCalledMethods("...")} annotation for the given field
    */
   private List<AnnotationMirror> ensuresCMAnno(
-      VariableElement fieldElement, List<String> calledMethods) {
+      String expression, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
-    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
-    String expression = receiver + "." + fieldElement.getSimpleName();
     builder.setValue("value", new String[] {expression});
     builder.setValue("methods", calledMethods.toArray(new String[0]));
     AnnotationMirror am = builder.build();

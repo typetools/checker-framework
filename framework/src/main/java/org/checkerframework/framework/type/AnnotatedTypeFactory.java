@@ -413,7 +413,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Which whole-program inference output format to use, if doing whole-program inference. This
    * variable would be final, but it is not set unless WPI is enabled.
    */
-  protected WholeProgramInference.OutputFormat wpiOutputFormat;
+  public WholeProgramInference.OutputFormat wpiOutputFormat;
 
   /**
    * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used to

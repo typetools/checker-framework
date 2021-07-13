@@ -2,9 +2,12 @@ package org.checkerframework.framework.ajava;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Given two ASTs representing the same Java file that may differ in annotations, tests if they have
@@ -78,9 +81,15 @@ public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
       comment.remove();
     }
 
-    if (!((NodeWithAnnotations<?>) node1Copy)
-        .getAnnotations()
-        .equals(((NodeWithAnnotations<?>) node2Copy).getAnnotations())) {
+    // Annotation order is permitted to differ without changing the semantics of the annotations,
+    // so sort the two lists first.
+    Comparator<AnnotationExpr> alphabetic = Comparator.comparing(Node::toString);
+    List<AnnotationExpr> node1annos = ((NodeWithAnnotations<?>) node1Copy).getAnnotations();
+    node1annos.sort(alphabetic);
+    List<AnnotationExpr> node2annos = ((NodeWithAnnotations<?>) node2Copy).getAnnotations();
+    node2annos.sort(alphabetic);
+
+    if (!node1annos.equals(node2annos)) {
       annotationsMatch = false;
       mismatchedNode1 = (NodeWithAnnotations<?>) node1;
       mismatchedNode2 = (NodeWithAnnotations<?>) node2;

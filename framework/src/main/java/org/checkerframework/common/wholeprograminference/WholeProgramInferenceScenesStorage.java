@@ -24,6 +24,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -241,6 +242,19 @@ public class WholeProgramInferenceScenesStorage
     }
   }
 
+  @Override
+  public ATypeElement getPreOrPostconditionsForParameter(BeforeOrAfter preOrPost, ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+    switch (preOrPost) {
+      case BEFORE:
+        // TODO: support preconditions on parameters?
+        return null;
+      case AFTER:
+        return getPostconditionsForParameter(methodElt, paramElt, index, atypeFactory);
+      default:
+        throw new BugInCF("Unexpected " + preOrPost);
+    }
+  }
+
   /**
    * Returns the precondition annotations for a field.
    *
@@ -275,6 +289,26 @@ public class WholeProgramInferenceScenesStorage
     AMethod methodAnnos = getMethodAnnos(methodElement);
     TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
     return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror).type;
+  }
+
+  /**
+   * Returns the postcondition annotations for a parameter.
+   *
+   * @param methodElt the method
+   * @param paramElt the parameter
+   * @param index the 1-based index of the parameter
+   * @param atypeFactory the type factory
+   * @return the postcondition annotations for the parameter
+   */
+  @SuppressWarnings("UnusedVariable")
+  private ATypeElement getPostconditionsForParameter(ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+    AMethod methodAnnos = getMethodAnnos(methodElt);
+    TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(paramElt.asType());
+    // return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(paramElt, typeMirror).type;
+    // this is a horrible hack
+    AField result = new AField("#" + index, typeMirror);
+    methodAnnos.postconditions.put(paramElt, result);
+    return result.type;
   }
 
   @Override

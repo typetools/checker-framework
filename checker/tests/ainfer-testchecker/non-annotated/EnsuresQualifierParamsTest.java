@@ -2,40 +2,52 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
 import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
 import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
 import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
-import org.checkerframework.checker.testchecker.ainfer.qual.Top;
+
+import org.checkerframework.framework.qual.EnsuresQualifier;
 
 class EnsuresQualifierParamsTest {
 
-  @Top int field1;
-  @Top int field2;
+  // these methods are used to infer types
 
-  @Top int top;
-  @Parent int parent;
-  @Sibling1 int sibling1;
-  @Sibling2 int sibling2;
-  @AinferBottom int bottom;
+  @SuppressWarnings("contracts.postcondition") // establish ground truth
+  @EnsuresQualifier(expression = "#1", qualifier = Parent.class)
+  void becomeParent(int arg) { }
+
+  @SuppressWarnings("contracts.postcondition") // establish ground truth
+  @EnsuresQualifier(expression = "#1", qualifier = Sibling1.class)
+  void becomeSibling1(int arg) { }
+
+  @SuppressWarnings("contracts.postcondition") // establish ground truth
+  @EnsuresQualifier(expression = "#1", qualifier = Sibling2.class)
+  void becomeSibling2(int arg) { }
+
+  @SuppressWarnings("contracts.postcondition") // establish ground truth
+  @EnsuresQualifier(expression = "#1", qualifier = AinferBottom.class)
+  void becomeBottom(int arg) { }
+
+  // these methods should have types inferred for them
 
   void argIsParent(int arg) {
-    arg = parent;
+    becomeParent(arg);
   }
 
   void argIsParent_2(int arg, boolean b) {
     if (b) {
-      arg = sibling1;
+      becomeSibling1(arg);
     } else {
-      arg = sibling2;
+      becomeSibling2(arg);
     }
   }
 
   void argIsSibling2(int arg) {
-    arg = sibling2;
+    becomeSibling2(arg);
   }
 
   void argIsSibling2_2(int arg, boolean b) {
     if (b) {
-      arg = sibling2;
+      becomeSibling2(arg);
     } else {
-      arg = bottom;
+      becomeBottom(arg);
     }
   }
 

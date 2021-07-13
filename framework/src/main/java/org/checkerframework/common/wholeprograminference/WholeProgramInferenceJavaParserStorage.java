@@ -48,6 +48,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
@@ -61,6 +62,7 @@ import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.util.JVMNames;
 
@@ -230,6 +232,33 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
     return methodAnnos.getPostconditionsForField(fieldElement, atypeFactory);
+  }
+
+  @Override
+  public AnnotatedTypeMirror getPreOrPostconditionsForParameter(BeforeOrAfter preOrPost, ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+    switch (preOrPost) {
+      case BEFORE:
+        // TODO: handle preconditions
+        return null;
+      case AFTER:
+        return getPostconditionsForParameter(methodElt, paramElt, index, atypeFactory);
+      default:
+        throw new BugInCF("Unexpected " + preOrPost);
+    }
+  }
+
+  /**
+   * Returns the postcondition annotations for a parameter.
+   *
+   * @param methodElt the method
+   * @param paramElt the field
+   * @param index the one-based index of the parameter
+   * @param atypeFactory the type factory
+   * @return the postcondition annotations for a parameter
+   */
+  private AnnotatedTypeMirror getPostconditionsForParameter(ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
+    return methodAnnos.getPostconditionsForParameter(paramElt, index, atypeFactory);
   }
 
   @Override
@@ -768,6 +797,13 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions =
         null;
+
+    /**
+     * Mapping from VariableElements for parameters to a pair of the 1-based index of the parameter
+     * and an AnnotatedTypeMirror containing the inferred postconditions on that parameter.
+     */
+    private @MonotonicNonNull Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>> paramToPostconditions =
+        null;
     // /** Inferred contracts for the callable declaration. */
     // private @MonotonicNonNull List<AnnotationMirror> contracts = null;
 
@@ -909,7 +945,8 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred postconditions for this callable declaration.
+     * Returns the inferred postconditions for this callable declaration related to fields of
+     * this.
      *
      * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
      *     inferred postconditions for those fields.
@@ -920,6 +957,21 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       return Collections.unmodifiableMap(fieldToPostconditions);
+    }
+
+    /**
+     * Returns the inferred postconditions for this callable declaration's parameters.
+     *
+     * @return a mapping from VariableElements for parameters to pairs of the parameters' indices
+     * in the parameter list (i.e. 1 for the first parameter, etc.) and AnnotatedTypeMirrors
+     * containing the inferred postconditions for those parameters.
+     */
+    public Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>> getParametersToPostconditions() {
+      if (paramToPostconditions == null) {
+        return Collections.emptyMap();
+      }
+
+      return Collections.unmodifiableMap(paramToPostconditions);
     }
 
     /**
@@ -970,6 +1022,31 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       return fieldToPostconditions.get(field);
+    }
+
+    /**
+     * Returns an AnnotatedTypeMirror containing the postconditions for the given parameter.
+     *
+     * @param paramElt VariableElement for one of the method's parameters
+     * @param index the one-based index of the parameter
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used
+     * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
+     *     postconditions for the given parameter
+     */
+    public AnnotatedTypeMirror getPostconditionsForParameter(VariableElement paramElt, int index, AnnotatedTypeFactory atf) {
+      if (paramToPostconditions == null) {
+        paramToPostconditions = new HashMap<>(1);
+      }
+
+      if (!paramToPostconditions.containsKey(paramElt)) {
+        TypeMirror underlyingType = atf.getAnnotatedType(paramElt).getUnderlyingType();
+        AnnotatedTypeMirror postconditionsType =
+            AnnotatedTypeMirror.createType(underlyingType, atf, false);
+        paramToPostconditions.put(paramElt, Pair.of(index, postconditionsType));
+      }
+
+      return paramToPostconditions.get(paramElt).second;
     }
 
     /**
