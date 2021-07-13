@@ -7,8 +7,8 @@
 import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
 
 class EnsuresQualifierFieldDecl {
-  @Sibling1 Object foo;
+  @Sibling1 Object bar;
 
   // No annotation should be inferred here.
-  void test() { }
+  void test() {}
 }

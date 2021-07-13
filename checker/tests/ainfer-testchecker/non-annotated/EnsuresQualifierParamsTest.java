@@ -2,7 +2,6 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
 import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
 import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
 import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
-
 import org.checkerframework.framework.qual.EnsuresQualifier;
 
 class EnsuresQualifierParamsTest {
@@ -11,19 +10,19 @@ class EnsuresQualifierParamsTest {
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = Parent.class)
-  void becomeParent(int arg) { }
+  void becomeParent(int arg) {}
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = Sibling1.class)
-  void becomeSibling1(int arg) { }
+  void becomeSibling1(int arg) {}
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = Sibling2.class)
-  void becomeSibling2(int arg) { }
+  void becomeSibling2(int arg) {}
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = AinferBottom.class)
-  void becomeBottom(int arg) { }
+  void becomeBottom(int arg) {}
 
   // these methods should have types inferred for them
 

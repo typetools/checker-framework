@@ -2395,7 +2395,8 @@ public abstract class GenericAnnotatedTypeFactory<
       if (entry.getValue().getName().startsWith("#")) {
         int index = Integer.parseInt(entry.getValue().getName().substring(1));
         // this must be a parameter rather than a field
-        result.addAll(getPostconditionAnnotationForParameter(entry.getKey(), index, inferredType, preconds));
+        result.addAll(
+            getPostconditionAnnotationForParameter(entry.getKey(), index, inferredType, preconds));
       } else {
         result.addAll(getPostconditionAnnotationForField(entry.getKey(), inferredType, preconds));
       }
@@ -2457,22 +2458,24 @@ public abstract class GenericAnnotatedTypeFactory<
     }
     for (Map.Entry<VariableElement, Pair<Integer, AnnotatedTypeMirror>> entry :
         methodAnnos.getParametersToPostconditions().entrySet()) {
-      result.addAll(getPostconditionAnnotationForParameter(entry.getKey(), entry.getValue().first, entry.getValue().second, preconds));
+      result.addAll(
+          getPostconditionAnnotationForParameter(
+              entry.getKey(), entry.getValue().first, entry.getValue().second, preconds));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
   }
 
   /**
-   * Returns an {@code @EnsuresQualifier} annotation for the given parameter. Returns an empty list if
-   * none can be created, because the qualifier has elements/arguments, which
+   * Returns an {@code @EnsuresQualifier} annotation for the given parameter. Returns an empty list
+   * if none can be created, because the qualifier has elements/arguments, which
    * {@code @EnsuresQualifier} does not support.
    *
    * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
    * subclasses may do so.
    *
-   * <p>This is of the form {@code @EnsuresQualifier(expression="#X", qualifier=MyQual.class)}
-   * when elt is declared as {@code @A} or {@code @Poly*} and f contains {@code @B} which is a
+   * <p>This is of the form {@code @EnsuresQualifier(expression="#X", qualifier=MyQual.class)} when
+   * elt is declared as {@code @A} or {@code @Poly*} and f contains {@code @B} which is a
    * sub-qualifier of {@code @A}.
    *
    * @param elt element for a parameter
@@ -2482,8 +2485,11 @@ public abstract class GenericAnnotatedTypeFactory<
    *     postconditions
    * @return postcondition annotations for the element (possibly an empty list)
    */
-  public List<AnnotationMirror> getPostconditionAnnotationForParameter(VariableElement elt,
-      Integer index, AnnotatedTypeMirror inferredType, List<AnnotationMirror> preconds) {
+  public List<AnnotationMirror> getPostconditionAnnotationForParameter(
+      VariableElement elt,
+      Integer index,
+      AnnotatedTypeMirror inferredType,
+      List<AnnotationMirror> preconds) {
     return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.AFTER, index, preconds);
   }
 
@@ -2529,8 +2535,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Helper method for {@link #getPreconditionAnnotationForField}, {@link #getPostconditionAnnotationForField},
-   * and {@link #getPostconditionAnnotationForParameter}.
+   * Helper method for {@link #getPreconditionAnnotationForField}, {@link
+   * #getPostconditionAnnotationForField}, and {@link #getPostconditionAnnotationForParameter}.
    *
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
    * element. Returns an empty list if none can be created, because the qualifier has
@@ -2541,11 +2547,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * subclasses may do so.
    *
    * @param elt element for a field or parameter
-   * @param inferredType the type of the field or parameter, on method entry or exit (depending on the value of
-   *     {@code preOrPost})
+   * @param inferredType the type of the field or parameter, on method entry or exit (depending on
+   *     the value of {@code preOrPost})
    * @param preOrPost whether to return preconditions or postconditions
-   * @param index the 1-based index of the parameter, if {@code elt} if a parameter. If {@code elt} is a field,
-   *              this is null.
+   * @param index the 1-based index of the parameter, if {@code elt} if a parameter. If {@code elt}
+   *     is a field, this is null.
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
    * @return precondition or postcondition annotations for the element (possibly an empty list)
@@ -2599,7 +2605,7 @@ public abstract class GenericAnnotatedTypeFactory<
       // index is null when the target of inference is a field. Othwerise, it is the index
       // of the targeted parameter.
       if (index == null) {
-         anno = requiresOrEnsuresQualifierAnnoForField(elt, inferredAm, preOrPost);
+        anno = requiresOrEnsuresQualifierAnnoForField(elt, inferredAm, preOrPost);
       } else {
         anno = requiresOrEnsuresQualifierAnnoForParam(elt, index, inferredAm, preOrPost);
       }
@@ -2652,10 +2658,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
    * support.
    *
-   * <p>This is of the form {@code @RequiresQualifier(expression="#X",
-   * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="#X",
-   * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
-   * {@code @B} which is a sub-qualifier of {@code @A}.
+   * <p>This is of the form {@code @RequiresQualifier(expression="#X", qualifier=MyQual.class)} or
+   * {@code @EnsuresQualifier(expression="#X", qualifier=MyQual.class)} when elt is declared as
+   * {@code @A} or {@code @Poly*} and f contains {@code @B} which is a sub-qualifier of {@code @A}.
    *
    * @param paramElt a parameter
    * @param index the 1-based index
@@ -2665,7 +2670,10 @@ public abstract class GenericAnnotatedTypeFactory<
    *     the given parameter, or null
    */
   protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForParam(
-      VariableElement paramElt, int index, AnnotationMirror qualifier, Analysis.BeforeOrAfter preOrPost) {
+      VariableElement paramElt,
+      int index,
+      AnnotationMirror qualifier,
+      Analysis.BeforeOrAfter preOrPost) {
     if (!qualifier.getElementValues().isEmpty()) {
       // @RequiresQualifier does not yet support annotations with elements/arguments.
       return null;

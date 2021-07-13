@@ -235,7 +235,12 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public AnnotatedTypeMirror getPreOrPostconditionsForParameter(BeforeOrAfter preOrPost, ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+  public AnnotatedTypeMirror getPreOrPostconditionsForParameter(
+      BeforeOrAfter preOrPost,
+      ExecutableElement methodElt,
+      VariableElement paramElt,
+      int index,
+      AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
         // TODO: handle preconditions
@@ -256,7 +261,11 @@ public class WholeProgramInferenceJavaParserStorage
    * @param atypeFactory the type factory
    * @return the postcondition annotations for a parameter
    */
-  private AnnotatedTypeMirror getPostconditionsForParameter(ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+  private AnnotatedTypeMirror getPostconditionsForParameter(
+      ExecutableElement methodElt,
+      VariableElement paramElt,
+      int index,
+      AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     return methodAnnos.getPostconditionsForParameter(paramElt, index, atypeFactory);
   }
@@ -802,8 +811,8 @@ public class WholeProgramInferenceJavaParserStorage
      * Mapping from VariableElements for parameters to a pair of the 1-based index of the parameter
      * and an AnnotatedTypeMirror containing the inferred postconditions on that parameter.
      */
-    private @MonotonicNonNull Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>> paramToPostconditions =
-        null;
+    private @MonotonicNonNull Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>>
+        paramToPostconditions = null;
     // /** Inferred contracts for the callable declaration. */
     // private @MonotonicNonNull List<AnnotationMirror> contracts = null;
 
@@ -945,8 +954,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred postconditions for this callable declaration related to fields of
-     * this.
+     * Returns the inferred postconditions for this callable declaration related to fields of this.
      *
      * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
      *     inferred postconditions for those fields.
@@ -962,11 +970,12 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred postconditions for this callable declaration's parameters.
      *
-     * @return a mapping from VariableElements for parameters to pairs of the parameters' indices
-     * in the parameter list (i.e. 1 for the first parameter, etc.) and AnnotatedTypeMirrors
-     * containing the inferred postconditions for those parameters.
+     * @return a mapping from VariableElements for parameters to pairs of the parameters' indices in
+     *     the parameter list (i.e. 1 for the first parameter, etc.) and AnnotatedTypeMirrors
+     *     containing the inferred postconditions for those parameters.
      */
-    public Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>> getParametersToPostconditions() {
+    public Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>>
+        getParametersToPostconditions() {
       if (paramToPostconditions == null) {
         return Collections.emptyMap();
       }
@@ -1034,7 +1043,8 @@ public class WholeProgramInferenceJavaParserStorage
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
      *     postconditions for the given parameter
      */
-    public AnnotatedTypeMirror getPostconditionsForParameter(VariableElement paramElt, int index, AnnotatedTypeFactory atf) {
+    public AnnotatedTypeMirror getPostconditionsForParameter(
+        VariableElement paramElt, int index, AnnotatedTypeFactory atf) {
       if (paramToPostconditions == null) {
         paramToPostconditions = new HashMap<>(1);
       }

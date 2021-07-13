@@ -12,7 +12,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -243,8 +242,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     ClassName classNameReceiver = new ClassName(containingClass.asType());
     for (VariableElement fieldElement :
         ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
-      if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF &&
-          containingClass.getNestingKind().isNested()) {
+      if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF
+          && containingClass.getNestingKind().isNested()) {
         // Don't infer facts about fields of inner classes, because IndexFileWriter
         // places the annotations incorrectly on the class declarations.
         continue;
@@ -299,10 +298,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // The parameter is not in the store, so use the declared type.
         inferredType = declType;
       }
-      T preOrPostConditionAnnos = storage.getPreOrPostconditionsForParameter(preOrPost, methodElt, paramElt, index, atypeFactory);
+      T preOrPostConditionAnnos =
+          storage.getPreOrPostconditionsForParameter(
+              preOrPost, methodElt, paramElt, index, atypeFactory);
       if (preOrPostConditionAnnos != null) {
         String file = storage.getFileForElement(methodElt);
-        updateAnnotationSet(preOrPostConditionAnnos, TypeUseLocation.PARAMETER, inferredType, declType, file, false);
+        updateAnnotationSet(
+            preOrPostConditionAnnos,
+            TypeUseLocation.PARAMETER,
+            inferredType,
+            declType,
+            file,
+            false);
       }
     }
   }

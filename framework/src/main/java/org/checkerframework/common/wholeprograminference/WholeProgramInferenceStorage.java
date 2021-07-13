@@ -127,13 +127,20 @@ public interface WholeProgramInferenceStorage<T> {
    * @param paramElt the parameter
    * @param index the parameter's index (1-based)
    * @param atypeFactory the type factory
-   * @return the pre- or postcondition annotations for the parameter, or null if nothing is inferrable
+   * @return the pre- or postcondition annotations for the parameter, or null if nothing is
+   *     inferrable
    */
-  // TODO: this method currently can return null because preconditions on parameters aren't supported.
-  // We might want to remove that restriction in the future (but preconditions on parameters are kind
+  // TODO: this method currently can return null because preconditions on parameters aren't
+  // supported.
+  // We might want to remove that restriction in the future (but preconditions on parameters are
+  // kind
   // of unnecessary, because the parameters can just be annotated?)
-  public @Nullable T getPreOrPostconditionsForParameter(BeforeOrAfter preOrPost, ExecutableElement methodElt,
-      VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory);
+  public @Nullable T getPreOrPostconditionsForParameter(
+      BeforeOrAfter preOrPost,
+      ExecutableElement methodElt,
+      VariableElement paramElt,
+      int index,
+      AnnotatedTypeFactory atypeFactory);
 
   /**
    * Updates a method to add a declaration annotation.

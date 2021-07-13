@@ -243,7 +243,12 @@ public class WholeProgramInferenceScenesStorage
   }
 
   @Override
-  public ATypeElement getPreOrPostconditionsForParameter(BeforeOrAfter preOrPost, ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+  public ATypeElement getPreOrPostconditionsForParameter(
+      BeforeOrAfter preOrPost,
+      ExecutableElement methodElt,
+      VariableElement paramElt,
+      int index,
+      AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
         // TODO: support preconditions on parameters?
@@ -301,7 +306,11 @@ public class WholeProgramInferenceScenesStorage
    * @return the postcondition annotations for the parameter
    */
   @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPostconditionsForParameter(ExecutableElement methodElt, VariableElement paramElt, int index, AnnotatedTypeFactory atypeFactory) {
+  private ATypeElement getPostconditionsForParameter(
+      ExecutableElement methodElt,
+      VariableElement paramElt,
+      int index,
+      AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
     TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(paramElt.asType());
     // return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(paramElt, typeMirror).type;

@@ -400,8 +400,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   @Override
-  public List<AnnotationMirror> getPostconditionAnnotationForParameter(VariableElement elt,
-      Integer index, AnnotatedTypeMirror inferredType, List<AnnotationMirror> preconds) {
+  public List<AnnotationMirror> getPostconditionAnnotationForParameter(
+      VariableElement elt,
+      Integer index,
+      AnnotatedTypeMirror inferredType,
+      List<AnnotationMirror> preconds) {
     AnnotationMirror cmAnno =
         AnnotationUtils.getAnnotationByName(
             inferredType.getAnnotations(),
@@ -420,12 +423,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   /**
    * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given field.
    *
-   * @param expression the expression to put in the value field of the EnsuresCalledMethods annotation
+   * @param expression the expression to put in the value field of the EnsuresCalledMethods
+   *     annotation
    * @param calledMethods the methods that were definitely called on the field
    * @return a {@code @EnsuresCalledMethods("...")} annotation for the given field
    */
-  private List<AnnotationMirror> ensuresCMAnno(
-      String expression, List<String> calledMethods) {
+  private List<AnnotationMirror> ensuresCMAnno(String expression, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
     builder.setValue("value", new String[] {expression});
     builder.setValue("methods", calledMethods.toArray(new String[0]));
