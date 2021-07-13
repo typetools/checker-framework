@@ -2622,16 +2622,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else if (newClassTree.getClassBody() != null) {
       AnnotatedDeclaredType type =
           (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-      // If newClassTree creates an anonymous class, then annotations in this location:
+      // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in this
+      // location:
       //   new @HERE Class() {}
       // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
       List<? extends AnnotationTree> annos =
           newClassTree.getClassBody().getModifiers().getAnnotations();
       type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+
+      // In Java 16+, the annotations are on the identifier, so copy them.
+      AnnotatedDeclaredType identifierType =
+          (AnnotatedDeclaredType) TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
+      type.addAnnotations(identifierType.getAnnotations());
       type.setEnclosingType(enclosingType);
       return type;
     } else {
-      // If newClassTree does not create anonymous class,
+      // If newClassTree does not create an anonymous class (or if this is Java 16+),
       // newClassTree.getIdentifier includes the explicit annotations in this location:
       //   new @HERE Class()
       AnnotatedDeclaredType type =

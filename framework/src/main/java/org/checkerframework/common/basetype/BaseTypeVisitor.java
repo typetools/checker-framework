@@ -376,7 +376,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       JavaParserUtil.concatenateAddedStringLiterals(javaParserRoot);
       new JointVisitorWithDefaultAction() {
         @Override
-        public void defaultAction(Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
+        public void defaultJointAction(
+            Tree javacTree, com.github.javaparser.ast.Node javaParserNode) {
           treePairs.put(javacTree, javaParserNode);
         }
       }.visitCompilationUnit(root, javaParserRoot);
