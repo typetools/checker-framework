@@ -19,7 +19,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -33,7 +32,6 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -401,15 +399,6 @@ public class ElementAnnotationUtil {
             (AnnotatedDeclaredType) type, location, anno, isComponentTypeOfArray);
       case WILDCARD:
         return getLocationTypeAWT((AnnotatedWildcardType) type, location);
-      case TYPEVAR:
-        if (TypesUtils.isCaptured((TypeVariable) type.getUnderlyingType())) {
-          // Work-around for Issue 1696: ignore captured wildcards.
-          // There is no reason to observe such a type and it would be better
-          // to prevent that this type ever reaches this point.
-          return type;
-        }
-        // Raise an error for all other type variables (why isn't this needed?).
-        break;
       case ARRAY:
         return getLocationTypeAAT((AnnotatedArrayType) type, location, anno);
       case UNION:

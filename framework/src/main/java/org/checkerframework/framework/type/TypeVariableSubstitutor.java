@@ -33,6 +33,21 @@ public class TypeVariableSubstitutor {
   }
 
   /**
+   * Given a mapping from type variable to its type argument, replace each instance of a type
+   * variable with the given type argument.
+   *
+   * @see #substituteTypeVariable(AnnotatedTypeMirror,
+   *     org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable)
+   * @param typeVarToTypeArgument a mapping from type variable to its type argument
+   * @param type the type to substitute
+   * @return a copy of type with its type variables substituted
+   */
+  public AnnotatedTypeMirror substituteWithoutCopyingTypeArguments(
+      Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArgument, AnnotatedTypeMirror type) {
+    return new Visitor(typeVarToTypeArgument, false).visit(type);
+  }
+
+  /**
    * Given the types of a type parameter declaration, the argument to that type parameter
    * declaration, and a given use of that declaration, return a substitute for the use with the
    * correct annotations.
