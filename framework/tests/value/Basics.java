@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.*;
 
 /** Test subtyping, LUB and annotation replacement in special cases. */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "removal"})
 public class Basics {
 
   public void boolTest() {

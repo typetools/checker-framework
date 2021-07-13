@@ -352,15 +352,6 @@ public class AnnotatedTypes {
    * <p>Before returning the result, this method adjusts it by calling {@link
    * AnnotatedTypeFactory#postAsMemberOf(AnnotatedTypeMirror, AnnotatedTypeMirror, Element)}.
    *
-   * <p>Note that this method does not currently return (top level) captured types for type
-   * parameters, parameters, and return types. Instead, the original wildcard is returned, or
-   * sometimes inferring type arguments will create a wildcard type which is returned. The bounds of
-   * an inferred wildcard may itself have captures.
-   *
-   * <p>To prevent unsoundness, the rest of the Checker Framework must handle wildcards in places
-   * where captures should appear (like type arguments). This should just involve the bounds of the
-   * wildcard where the bounds of the capture would have been used.
-   *
    * @param types the Types instance to use
    * @param atypeFactory the type factory to use
    * @param t the receiver type
@@ -441,7 +432,8 @@ public class AnnotatedTypes {
         return asMemberOf(
             types,
             atypeFactory,
-            ((AnnotatedTypeVariable) receiverType).getUpperBound(),
+            atypeFactory.applyCaptureConversion(
+                ((AnnotatedTypeVariable) receiverType).getUpperBound()),
             member,
             memberType);
       case WILDCARD:
@@ -769,6 +761,138 @@ public class AnnotatedTypes {
   }
 
   /**
+   * Returns the "annotated greatest lower bound" of {@code type1} and {@code type2}.
+   *
+   * <p>Suppose that there is an expression e with annotated type T. The underlying type of T must
+   * be the same as javac's type for e. (This is a requirement of the Checker Framework.) As a
+   * corollary, when computing a glb of atype1 and atype2, it is required that
+   * underlyingType(cfGLB(atype1, atype2) == glb(javacGLB(underlyingType(atype1),
+   * underlyingType(atype2)). Because of this requirement, the return value of this method (the
+   * "annotated GLB") may not be a subtype of one of the types.
+   *
+   * <p>The "annotated greatest lower bound" is defined as follows:
+   *
+   * <ol>
+   *   <li>If the underlying type of {@code type1} and {@code type2} are the same, then return a
+   *       copy of {@code type1} whose primary annotations are the greatest lower bound of the
+   *       primary annotations on {@code type1} and {@code type2}.
+   *   <li>If the underlying type of {@code type1} is a subtype of the underlying type of {@code
+   *       type2}, then return a copy of {@code type1} whose primary annotations are the greatest
+   *       lower bound of the primary annotations on {@code type1} and {@code type2}.
+   *   <li>If the underlying type of {@code type1} is a supertype of the underlying type of {@code
+   *       type2}, then return a copy of {@code type2} whose primary annotations are the greatest
+   *       lower bound of the primary annotations on {@code type1} and {@code type2}.
+   *   <li>If the underlying type of {@code type1} and {@code type2} are not in a subtyping
+   *       relationship, then return an annotated intersection type whose bounds are {@code type1}
+   *       and {@code type2}.
+   * </ol>
+   *
+   * @param atypeFactory the AnnotatedTypeFactory
+   * @param type1 annotated type
+   * @param type2 annotated type
+   * @return the annotated glb of type1 and type2
+   */
+  public static AnnotatedTypeMirror annotatedGLB(
+      AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    Types types = atypeFactory.types;
+    if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
+      return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
+    } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+      return glbSubtype(atypeFactory.getQualifierHierarchy(), type2, type1);
+    }
+
+    TypeMirror glbJava =
+        TypesUtils.greatestLowerBound(
+            type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
+
+    if (types.isSameType(type1.getUnderlyingType(), glbJava)) {
+      return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
+    } else if (types.isSameType(type2.getUnderlyingType(), glbJava)) {
+      return glbSubtype(atypeFactory.getQualifierHierarchy(), type2, type1);
+    }
+
+    if (glbJava.getKind() != TypeKind.INTERSECTION) {
+      // If one type isn't a subtype of the other, then GLB must be an intersection.
+      throw new BugInCF(
+          "AnnotatedTypes#annotatedGLB: expected intersection, got [%s] %s. "
+              + "type1: %s, type2: %s",
+          glbJava.getKind(), glbJava, type1, type2);
+    }
+    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+    Set<AnnotationMirror> set1 =
+        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type1);
+    Set<AnnotationMirror> set2 =
+        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
+    Set<? extends AnnotationMirror> glbAnno = qualifierHierarchy.greatestLowerBounds(set1, set2);
+
+    AnnotatedIntersectionType glb =
+        (AnnotatedIntersectionType) AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
+
+    List<AnnotatedTypeMirror> newBounds = new ArrayList<>(2);
+    for (AnnotatedTypeMirror bound : glb.getBounds()) {
+      if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
+        newBounds.add(type1.deepCopy());
+      } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
+        newBounds.add(type2.deepCopy());
+      } else {
+        throw new BugInCF(
+            "Neither %s nor %s is one of the intersection bounds in %s. Bound: %s",
+            type1, type2, bound, glb);
+      }
+    }
+
+    glb.setBounds(newBounds);
+    glb.addAnnotations(glbAnno);
+    return glb;
+  }
+
+  /**
+   * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
+   * underlying Java types are in a subtyping relationship.
+   *
+   * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
+   * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
+   *
+   * @param qualifierHierarchy QualifierHierarchy
+   * @param subtype annotated type whose underlying type is a subtype of {@code supertype}
+   * @param supertype annotated type whose underlying type is a supertype of {@code subtype}
+   * @return the annotated greatest lower bound of {@code subtype} and {@code supertype}
+   */
+  private static AnnotatedTypeMirror glbSubtype(
+      QualifierHierarchy qualifierHierarchy,
+      AnnotatedTypeMirror subtype,
+      AnnotatedTypeMirror supertype) {
+    AnnotatedTypeMirror glb = subtype.deepCopy();
+    glb.clearPrimaryAnnotations();
+
+    for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+      AnnotationMirror subAnno = subtype.getAnnotationInHierarchy(top);
+      AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
+      if (subAnno != null && superAnno != null) {
+        glb.addAnnotation(qualifierHierarchy.greatestLowerBound(subAnno, superAnno));
+      } else if (subAnno == null && superAnno == null) {
+        if (subtype.getKind() != TypeKind.TYPEVAR || supertype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF(
+              "Missing primary annotations: subtype: %s, supertype: %s", subtype, supertype);
+        }
+      } else if (subAnno == null) {
+        if (subtype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF("Missing primary annotations: subtype: %s", subtype);
+        }
+        Set<AnnotationMirror> lb = findEffectiveLowerBoundAnnotations(qualifierHierarchy, subtype);
+        AnnotationMirror lbAnno = qualifierHierarchy.findAnnotationInHierarchy(lb, top);
+        if (lbAnno != null && !qualifierHierarchy.isSubtype(lbAnno, superAnno)) {
+          // The superAnno is lower than the lower bound annotation, so add it.
+          glb.addAnnotation(superAnno);
+        } // else don't add any annotation.
+      } else {
+        throw new BugInCF("GLB: subtype: %s, supertype: %s", subtype, supertype);
+      }
+    }
+    return glb;
+  }
+
+  /**
    * Returns the method parameters for the invoked method, with the same number of arguments passed
    * in the methodInvocation tree.
    *
@@ -1056,19 +1180,36 @@ public class AnnotatedTypes {
   /**
    * Returns true if the typeVar1 and typeVar2 are two uses of the same type variable.
    *
+   * @param types type utils
+   * @param typeVar1 a type variable
+   * @param typeVar2 a type variable
    * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
    */
+  @SuppressWarnings(
+      "interning:not.interned" // This is an equals method but @EqualsMethod can't be used because
+  // this method has 3 arguments.
+  )
   public static boolean haveSameDeclaration(
       Types types, final AnnotatedTypeVariable typeVar1, final AnnotatedTypeVariable typeVar2) {
+
+    if (typeVar1.getUnderlyingType() == typeVar2.getUnderlyingType()) {
+      return true;
+    }
     return types.isSameType(typeVar1.getUnderlyingType(), typeVar2.getUnderlyingType());
   }
 
   /**
    * When overriding a method, you must include the same number of type parameters as the base
    * method. By index, these parameters are considered equivalent to the type parameters of the
-   * overridden method. Necessary conditions: Both type variables are defined in methods One of the
-   * two methods overrides the other Within their method declaration, both types have the same type
-   * parameter index
+   * overridden method.
+   *
+   * <p>Necessary conditions:
+   *
+   * <ul>
+   *   <li>Both type variables are defined in methods.
+   *   <li>One of the two methods overrides the other.
+   *   <li>Within their method declaration, both types have the same type parameter index.
+   * </ul>
    *
    * @return true if type1 and type2 are corresponding type variables (that is, either one
    *     "overrides" the other)
@@ -1180,10 +1321,8 @@ public class AnnotatedTypes {
   }
 
   /**
-   * When comparing types against the bounds of a type variable, we may encounter other type
-   * variables, wildcards, and intersections in those bounds. This method traverses the lower bounds
-   * until it finds a concrete type from which it can pull an annotation. This occurs for every
-   * hierarchy in QualifierHierarchy.
+   * This method returns the effective annotation on the lower bound of a type, or on the type
+   * itself if the type has no lower bound (it is not a type variable, wildcard, or intersection).
    *
    * @return the set of effective annotation mirrors in all hierarchies
    */

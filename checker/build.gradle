@@ -314,7 +314,15 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
                     "-samevm",
                     "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
                     "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
                     "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                     "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
                     // Location of jtreg tests
                     '.'
@@ -746,7 +754,12 @@ task wpiManyTest(group: "Verification") {
                         line.startsWith("Running ")
                         // Warnings about bad path elements aren't related to WPI and are ignored.
                         || line.startsWith("warning: [path]")
-                        // Ignore the summary line that reports the total number of warnings.
+                        // Ignore bootstrap classpath warning:
+                        || line.startsWith("warning: [options] bootstrap")
+                        // Ignore warnings about illegal access:
+                        || line.contains("Option --illegal-access is deprecated")
+                        // Ignore the summary line that reports the total number of warnings (which can be single or plural).
+                        || line.endsWith("warning")
                         || line.endsWith("warnings")) {
                   return;
                 }

@@ -1,6 +1,6 @@
 // Keep somewhat in sync with
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
-// Adapted to handled the same type qualifier appearing multiple times.
+// Adapted to handle the same type qualifier appearing multiple times.
 
 import com.sun.tools.classfile.Annotation;
 import com.sun.tools.classfile.Attribute;
@@ -60,16 +60,20 @@ public class ReferenceInfoUtil {
   }
 
   public static boolean compare(
-      List<String> expectedAnnos, List<Annotation> actualAnnos, ClassFile cf)
+      List<String> expectedAnnos, List<Annotation> actualAnnos, ClassFile cf, String diagnostic)
       throws InvalidIndex, UnexpectedEntry {
     if (actualAnnos.size() != expectedAnnos.size()) {
-      throw new ComparisonException("Wrong number of annotations", expectedAnnos, actualAnnos, cf);
+      throw new ComparisonException(
+          "Wrong number of annotations; " + diagnostic, expectedAnnos, actualAnnos, cf);
     }
     for (String annoName : expectedAnnos) {
       Annotation anno = findAnnotation(annoName, actualAnnos, cf);
       if (anno == null) {
         throw new ComparisonException(
-            "Expected annotation not found: " + annoName, expectedAnnos, actualAnnos, cf);
+            "Expected annotation not found: " + annoName + "; " + diagnostic,
+            expectedAnnos,
+            actualAnnos,
+            cf);
       }
     }
     return true;

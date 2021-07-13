@@ -1189,17 +1189,18 @@ public abstract class CFAbstractTransfer<
         new ConditionalTransferResult<>(
             finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
 
-    V caseValue = in.getValueOfSubNode(n.getCaseOperand());
-    AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
-    V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-    result =
-        strengthenAnnotationOfEqualTo(
-            result, n.getCaseOperand(), assign.getExpression(), caseValue, switchValue, false);
-
-    // Update value of switch temporary variable
-    result =
-        strengthenAnnotationOfEqualTo(
-            result, n.getCaseOperand(), assign.getTarget(), caseValue, switchValue, false);
+    for (Node caseOperand : n.getCaseOperands()) {
+      V caseValue = in.getValueOfSubNode(caseOperand);
+      AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+      V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
+      result =
+          strengthenAnnotationOfEqualTo(
+              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      // Update value of switch temporary variable
+      result =
+          strengthenAnnotationOfEqualTo(
+              result, caseOperand, assign.getTarget(), caseValue, switchValue, false);
+    }
     return result;
   }
 
