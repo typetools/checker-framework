@@ -37,7 +37,7 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
  * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
 
 **Closed issues:**
-
+#3013, #3754, #3791, #3845, #4523, #4767.
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------
