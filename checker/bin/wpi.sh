@@ -292,11 +292,19 @@ fi
 configure_and_exec_dljc "$@"
 
 if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-    # if running under Java 11 fails, try to run
-    # under Java 8 instead
+    # If running under Java 11 fails, try Java 8.
     if [ "${has_java8}" = "yes" ]; then
       export JAVA_HOME="${JAVA8_HOME}"
       echo "couldn't build using Java 11; trying Java 8"
+      configure_and_exec_dljc "$@"
+    fi
+fi
+
+if [ "${has_java11}" = "yes" ] && [ "${has_java8}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+    # If running under Java 11 and Java 8 fails, try Java 16.
+    if [ "${has_java16}" = "yes" ]; then
+      export JAVA_HOME="${JAVA16_HOME}"
+      echo "couldn't build using Java 11 or Java 8; trying Java 16"
       configure_and_exec_dljc "$@"
     fi
 fi
