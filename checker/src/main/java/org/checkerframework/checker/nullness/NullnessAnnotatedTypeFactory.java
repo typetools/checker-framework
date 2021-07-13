@@ -55,7 +55,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
@@ -358,16 +358,18 @@ public class NullnessAnnotatedTypeFactory
 
   @Override
   public void adaptGetClassReturnTypeToReceiver(
-      final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
+      final AnnotatedExecutableType getClassType,
+      final AnnotatedTypeMirror receiverType,
+      ExpressionTree tree) {
 
-    super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType);
+    super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType, tree);
 
-    // Make the wildcard always @NonNull, regardless of the declared type.
+    // Make the captured wildcard always @NonNull, regardless of the declared type.
 
     final AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
     final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
-    final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
-    classWildcardArg.getExtendsBoundField().replaceAnnotation(NONNULL);
+    AnnotatedTypeVariable classWildcardArg = (AnnotatedTypeVariable) typeArgs.get(0);
+    classWildcardArg.getUpperBound().replaceAnnotation(NONNULL);
   }
 
   @Override

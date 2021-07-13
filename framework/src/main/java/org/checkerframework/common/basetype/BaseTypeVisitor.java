@@ -526,13 +526,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     Tree ext = classTree.getExtendsClause();
     if (ext != null) {
-      validateTypeOf(ext);
+      for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
+        if (superType.getUnderlyingType().asElement().getKind().isClass()) {
+          validateType(ext, superType);
+          break;
+        }
+      }
     }
 
     List<? extends Tree> impls = classTree.getImplementsClause();
     if (impls != null) {
       for (Tree im : impls) {
-        validateTypeOf(im);
+        for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
+          if (superType.getUnderlyingType().asElement().getKind().isInterface()
+              && types.isSameType(superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
+            validateType(im, superType);
+            break;
+          }
+        }
       }
     }
 
@@ -1379,14 +1390,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   @Override
   public Void visitTypeParameter(TypeParameterTree node, Void p) {
-    validateTypeOf(node);
-    // Check the bounds here and not with every TypeParameterTree.
-    // For the latter, we only need to check annotations on the type variable itself.
-    // Why isn't this covered by the super call?
-    for (Tree tpb : node.getBounds()) {
-      validateTypeOf(tpb);
-    }
-
     if (node.getBounds().size() > 1) {
       // The upper bound of the type parameter is an intersection
       AnnotatedTypeVariable type =
@@ -1394,6 +1397,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) type.getUpperBound();
       checkExplicitAnnotationsOnIntersectionBounds(intersection, node.getBounds());
     }
+    validateTypeOf(node);
 
     return super.visitTypeParameter(node, p);
   }
@@ -3057,20 +3061,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeParameterBounds bounds = paramBounds.get(i);
       AnnotatedTypeMirror typeArg = typeargs.get(i);
 
-      if (isIgnoredUninferredWildcard(bounds.getUpperBound())
-          || isIgnoredUninferredWildcard(typeArg)) {
-        continue;
-      }
-
-      if (shouldBeCaptureConverted(typeArg, bounds)) {
+      if (isIgnoredUninferredWildcard(bounds.getUpperBound())) {
         continue;
       }
 
       AnnotatedTypeMirror paramUpperBound = bounds.getUpperBound();
-      if (typeArg.getKind() == TypeKind.WILDCARD) {
-        paramUpperBound =
-            atypeFactory.widenToUpperBound(paramUpperBound, (AnnotatedWildcardType) typeArg);
-      }
 
       Tree reportErrorToTree;
       if (typeargTrees == null || typeargTrees.isEmpty()) {
@@ -3126,19 +3121,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return atypeFactory.ignoreUninferredTypeArguments
         && type.getKind() == TypeKind.WILDCARD
         && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
-  }
-
-  // TODO: REMOVE WHEN CAPTURE CONVERSION IS IMPLEMENTED
-  // TODO: This may not occur only in places where capture conversion occurs but in those cases
-  // TODO: The containment check provided by this method should be enough
-  /**
-   * Identifies cases that would not happen if capture conversion were implemented. These special
-   * cases should be removed when capture conversion is implemented.
-   */
-  private boolean shouldBeCaptureConverted(
-      final AnnotatedTypeMirror typeArg, final AnnotatedTypeParameterBounds bounds) {
-    return typeArg.getKind() == TypeKind.WILDCARD
-        && bounds.getUpperBound().getKind() == TypeKind.WILDCARD;
   }
 
   /**
@@ -3952,10 +3934,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       boolean result = true;
       for (int i = 0; i < overriderParams.size(); ++i) {
+        AnnotatedTypeMirror capturedParam =
+            atypeFactory.applyCaptureConversion(overriddenParams.get(i));
         boolean success =
-            atypeFactory
-                .getTypeHierarchy()
-                .isSubtype(overriddenParams.get(i), overriderParams.get(i));
+            atypeFactory.getTypeHierarchy().isSubtype(capturedParam, overriderParams.get(i));
         if (!success) {
           success = testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));
         }
@@ -3990,7 +3972,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         System.out.printf(
             " %s (line %3d):%n"
                 + "     overrider: %s %s (parameter %d type %s)%n"
-                + "   overridden: %s %s"
+                + "    overridden: %s %s"
                 + " (parameter %d type %s)%n",
             (success
                 ? "success: overridden parameter type is subtype of overriding"
@@ -4042,11 +4024,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       // Sometimes the overridden return type of a method reference becomes a captured
-      // type.  This leads to defaulting that often makes the overriding return type
+      // type variable.  This leads to defaulting that often makes the overriding return type
       // invalid.  We ignore these.  This happens in Issue403/Issue404.
       if (!success
           && isMethodReference
-          && TypesUtils.isCaptured(overriddenReturnType.getUnderlyingType())) {
+          && TypesUtils.isCapturedTypeVariable(overriddenReturnType.getUnderlyingType())) {
         if (ElementUtils.isMethod(
             overridden.getElement(), functionApply, atypeFactory.getProcessingEnv())) {
           success =
@@ -4088,7 +4070,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         System.out.printf(
             " %s (line %3d):%n"
                 + "     overrider: %s %s (return type %s)%n"
-                + "   overridden: %s %s (return type %s)%n",
+                + "    overridden: %s %s (return type %s)%n",
             (success
                 ? "success: overriding return type is subtype of overridden"
                 : "FAILURE: overriding return type is not subtype of overridden"),
@@ -4491,7 +4473,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Tests whether the type and corresponding type tree is a valid type, and emits an error if that
-   * is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, check the
+   * is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, tests the
    * return type.
    *
    * @param tree the type tree supplied by the user

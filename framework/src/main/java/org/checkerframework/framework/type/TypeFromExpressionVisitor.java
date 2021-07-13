@@ -178,7 +178,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt).asUse();
     }
 
-    return f.getAnnotatedType(elt);
+    AnnotatedTypeMirror type = f.getAnnotatedType(elt);
+
+    return f.applyCaptureConversion(type, TreeUtils.typeOf(node));
   }
 
   @Override
@@ -208,6 +210,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     } else {
       // node must be a field access, so get the type of the expression, and then call asMemberOf.
       AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
+      t = f.applyCaptureConversion(t);
       return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
     }
   }

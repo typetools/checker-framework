@@ -11,6 +11,7 @@ public class Figure3NC {
     }
 
     <B> A coerce(B b) {
+      // :: error: (return)
       return pair(this.<B>bad(), b).value;
     }
   }
