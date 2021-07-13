@@ -10,27 +10,27 @@ class EnsuresQualifierParamsTest {
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = Parent.class)
-  void becomeParent(int arg) {}
+  void becomeParent(Object arg) {}
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = Sibling1.class)
-  void becomeSibling1(int arg) {}
+  void becomeSibling1(Object arg) {}
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = Sibling2.class)
-  void becomeSibling2(int arg) {}
+  void becomeSibling2(Object arg) {}
 
   @SuppressWarnings("contracts.postcondition") // establish ground truth
   @EnsuresQualifier(expression = "#1", qualifier = AinferBottom.class)
-  void becomeBottom(int arg) {}
+  void becomeBottom(Object arg) {}
 
   // these methods should have types inferred for them
 
-  void argIsParent(int arg) {
+  void argIsParent(Object arg) {
     becomeParent(arg);
   }
 
-  void argIsParent_2(int arg, boolean b) {
+  void argIsParent_2(Object arg, boolean b) {
     if (b) {
       becomeSibling1(arg);
     } else {
@@ -38,11 +38,11 @@ class EnsuresQualifierParamsTest {
     }
   }
 
-  void argIsSibling2(int arg) {
+  void argIsSibling2(Object arg) {
     becomeSibling2(arg);
   }
 
-  void argIsSibling2_2(int arg, boolean b) {
+  void argIsSibling2_2(Object arg, boolean b) {
     if (b) {
       becomeSibling2(arg);
     } else {
@@ -50,29 +50,77 @@ class EnsuresQualifierParamsTest {
     }
   }
 
+  void thisIsParent() {
+    becomeParent(this);
+  }
+
+  void thisIsParent_2(boolean b) {
+    if (b) {
+      becomeSibling1(this);
+    } else {
+      becomeSibling2(this);
+    }
+  }
+
+  void thisIsSibling2() {
+    becomeSibling2(this);
+  }
+
+  void thisIsSibling2_2(boolean b) {
+    if (b) {
+      becomeSibling2(this);
+    } else {
+      becomeBottom(this);
+    }
+  }
+
   void noEnsures() {}
 
-  void client1(int arg) {
+  void client1(Object arg) {
     argIsParent(arg);
     // :: warning: (assignment)
-    @Parent int p = arg;
+    @Parent Object p = arg;
   }
 
-  void client2(int arg) {
+  void client2(Object arg) {
     argIsParent_2(arg, true);
     // :: warning: (assignment)
-    @Parent int p = arg;
+    @Parent Object p = arg;
   }
 
-  void client3(int arg) {
+  void client3(Object arg) {
     argIsSibling2(arg);
     // :: warning: (assignment)
-    @Sibling2 int x = arg;
+    @Sibling2 Object x = arg;
   }
 
-  void client4(int arg) {
+  void client4(Object arg) {
     argIsSibling2_2(arg, true);
     // :: warning: (assignment)
-    @Sibling2 int x = arg;
+    @Sibling2 Object x = arg;
+  }
+
+  void clientThis1() {
+    thisIsParent();
+    // :: warning: (assignment)
+    @Parent Object o = this;
+  }
+
+  void clientThis2() {
+    thisIsParent_2(true);
+    // :: warning: (assignment)
+    @Parent Object o = this;
+  }
+
+  void clientThis3() {
+    thisIsSibling2();
+    // :: warning: (assignment)
+    @Sibling2 Object o = this;
+  }
+
+  void clientThis4() {
+    thisIsSibling2_2(true);
+    // :: warning: (assignment)
+    @Sibling2 Object o = this;
   }
 }
