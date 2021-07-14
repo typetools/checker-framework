@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- These properties will be set by the Maven Dependency plugin -->
     <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.15.0<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.16.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -74,7 +74,7 @@
     <profile>
       <id>checkerframework</id>
       <activation>
-        <jdk>[1.8,13)</jdk>
+        <jdk>[1.8,)</jdk>
       </activation>
       <build>
         <plugins>
@@ -150,15 +150,16 @@
     </profile>
 
     <profile>
-      <id>checkerframework-jdk11</id>
+      <id>checkerframework-jdk9orlater</id>
       <activation>
-        <jdk>11</jdk>
+        <jdk>[9,)</jdk>
       </activation>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
             <configuration>
               <fork>true</fork>
               <release>11</release>

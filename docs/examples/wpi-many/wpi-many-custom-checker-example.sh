@@ -13,8 +13,9 @@
 
 ## Change these to match your system.
 
-export JAVA11_HOME=/usr/lib/jvm/java-11-openjdk/
 export JAVA8_HOME=/usr/lib/jvm/java-1.8.0-openjdk
+export JAVA11_HOME=/usr/lib/jvm/java-11-openjdk
+export JAVA16_HOME=/usr/lib/jvm/java-16-oracle
 
 export ANDROID_HOME=${HOME}/compliance-experiments/fse20/android_home
 

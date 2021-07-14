@@ -26,6 +26,8 @@ ext {
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
+    isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
+
     errorproneJavacVersion = '9+181-r4173-1'
 
     parentDir = file("${rootDir}/../").absolutePath
@@ -58,6 +60,7 @@ switch (JavaVersion.current()) {
         break;
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
+    case JavaVersion.VERSION_16:
         break; // Supported versions
     default:
         throw new GradleException("Build the Checker Framework with JDK 8 or JDK 11." +
@@ -92,7 +95,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.15.1-SNAPSHOT'
+    version '3.16.0'
 
     repositories {
         mavenCentral()
@@ -354,8 +357,18 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
         } else {
             options.fork = true
             options.forkOptions.jvmArgs += [
+                // These are required in Java 16+ because the --illegal-access option is set to deny
+                // by default.  None of these packages are accessed via reflection, so the module
+                // only needs to be exported, but not opened.
+                "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+                // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
                 "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                ]
+            ]
        }
     }
 }
@@ -379,6 +392,7 @@ List<String> getJavaFilesToFormat(projectName) {
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
         // If you change this, also change checker/bin-devel/git.pre-commit
         if (!details.path.contains("nullness-javac-errors")
+                && !details.path.contains("calledmethods-delomboked")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
                 && details.name.endsWith('.java')) {
@@ -662,6 +676,9 @@ subprojects {
             }
             args += "${formatScriptsHome}/check-google-java-format.py"
             args += getJavaFilesToFormat(project.name)
+            // Since the scripts are downloaded from third-party Github, the environment variable
+            // is the only way to add the necessary open:
+            environment('JDK_JAVA_OPTIONS', '--add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED')
         }
         ignoreExitValue = true
         doLast {
@@ -819,7 +836,16 @@ subprojects {
                                     // uses the jdk.jdeps module.
                                     "-javacoptions:--add-modules jdk.jdeps",
                                     "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
                                     "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                             ]
                         }
                         if (project.name.is('framework')) {
@@ -923,7 +949,12 @@ subprojects {
         tasks.create(name: 'inferenceTests', group: 'Verification') {
             description 'Run inference tests.'
             if (project.name.is('checker')) {
-                dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
+                // TODO JDK16: Use this line instead of the following lines.
+                // dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
+                dependsOn('ainferTest', 'wpiPlumeLibTest')
+                if (!isJava16) {
+                    dependsOn('wpiManyTest')
+                }
             }
         }
 

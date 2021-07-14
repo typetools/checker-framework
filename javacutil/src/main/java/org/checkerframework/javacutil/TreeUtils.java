@@ -6,6 +6,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -53,6 +54,8 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,6 +77,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
@@ -1599,6 +1603,33 @@ public final class TreeUtils {
     // Converting to a string in order to compare is somewhat inefficient, and it doesn't handle
     // internal parentheses.  We could create a visitor instead.
     return expr1.getKind() == expr2.getKind() && expr1.toString().equals(expr2.toString());
+  }
+
+  /**
+   * Get the list of expressions from a case expression. In JDK 11 and earlier, this is a singleton
+   * list. In JDK 12 onwards, there can be multiple expressions per case.
+   *
+   * @param caseTree the case expression to get the expressions from
+   * @return the list of expressions in the case
+   */
+  public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
+    try {
+      Method method = CaseTree.class.getDeclaredMethod("getExpressions");
+      @SuppressWarnings({"unchecked", "nullness"})
+      @NonNull List<? extends ExpressionTree> result =
+          (List<? extends ExpressionTree>) method.invoke(caseTree);
+      return result;
+    } catch (NoSuchMethodException e) {
+      // Must be on JDK 11 or earlier
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      // May as well fall back to old method
+    }
+
+    // Need to suppress deprecation on JDK 12 and later:
+    @SuppressWarnings("deprecation")
+    ExpressionTree expression = caseTree.getExpression();
+    if (expression == null) return Collections.emptyList();
+    else return Collections.singletonList(expression);
   }
 
   /**

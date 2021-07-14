@@ -70,6 +70,18 @@ task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verificati
             if (!JavaVersion.current().java9Compatible) {
                 jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             }
+            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+                jvmArgs += [
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+                ]
+            }
+
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output
             mainClass = 'livevar.LiveVariable'
@@ -92,6 +104,17 @@ task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification'
             workingDir = 'tests/issue3447'
             if (!JavaVersion.current().java9Compatible) {
                 jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+            }
+            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+                jvmArgs += [
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+                ]
             }
             classpath = sourceSets.test.runtimeClasspath
             classpath += sourceSets.test.output

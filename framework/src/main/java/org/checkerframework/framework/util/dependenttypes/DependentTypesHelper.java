@@ -1131,8 +1131,10 @@ public class DependentTypesHelper {
         }
       }
       to.replaceAnnotations(replacements);
-      if (from.getKind() != to.getKind()) {
-        // If the underlying types don't match, then this from has been substituted for a
+      if (from.getKind() != to.getKind()
+          || (from.getKind() == TypeKind.TYPEVAR
+              && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
+        // If the underlying types don't match, then from has been substituted for a
         // from variable, so don't recur. The primary annotation was copied because
         // the from variable might have had a primary annotation at a use.
         // For example:

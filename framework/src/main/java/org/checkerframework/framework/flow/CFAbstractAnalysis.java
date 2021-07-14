@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -22,6 +23,7 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * {@link CFAbstractAnalysis} is an extensible org.checkerframework.dataflow analysis for the
@@ -150,6 +152,8 @@ public abstract class CFAbstractAnalysis<
     Set<AnnotationMirror> annos;
     if (type.getKind() == TypeKind.WILDCARD) {
       annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
+    } else if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
+      annos = ((AnnotatedTypeVariable) type).getUpperBound().getAnnotations();
     } else {
       annos = type.getAnnotations();
     }
