@@ -2366,13 +2366,8 @@ public abstract class GenericAnnotatedTypeFactory<
       if (typeMirror == null) {
         throw new BugInCF("null TypeMirror in AField inferred by WPI precondition inference. AField: " + entry.getValue().toString());
       }
-      // This is a hack. Ideally, storage would keep track of the original declared type
-      // of each expression. But, the AFU doesn't have a dependency on AnnotatedTypeMirror, so
-      // there isn't a way to thread a type through it in a general manner. It would be possible
-      // to thread an element through the AFU (as part of the precondtions map), but that would
-      // only work for things that have an element (i.e. not receiver parameters).
-      AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
 
+      AnnotatedTypeMirror declaredType = storage.getPreconditionDeclaredType(m, entry.getKey());
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
       result.addAll(getPreOrPostconditionAnnotation(entry.getKey(), inferredType, declaredType, BeforeOrAfter.BEFORE, null));
@@ -2403,9 +2398,7 @@ public abstract class GenericAnnotatedTypeFactory<
         throw new BugInCF("null TypeMirror in AField inferred by WPI postcondition inference. AField: " + entry.getValue().toString());
       }
 
-      // This is a hack. See the comment in #getPreconditionAnnotations(AMethod) for the reasoning.
-      AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
-
+      AnnotatedTypeMirror declaredType = storage.getPostconditionDeclaredType(m, entry.getKey());
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
       result.addAll(getPreOrPostconditionAnnotation(entry.getKey(), inferredType, declaredType, BeforeOrAfter.AFTER, preconds));
