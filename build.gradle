@@ -394,6 +394,7 @@ List<String> getJavaFilesToFormat(projectName) {
         if (!details.path.contains("nullness-javac-errors")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
+                && (isJava16 || !details.path.contains("nullness-records"))
                 && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
@@ -669,8 +670,8 @@ subprojects {
         executable 'python3'
 
         doFirst {
-            if (JavaVersion.current().compareTo(JavaVersion.VERSION_16) < 0) {
-                println 'The checkFormat task cannot be run on Java 8 or Java 11.  Please use Java 16+.'
+            if (isJava8) {
+                println 'The checkFormat task cannot be run on Java 8.  Please use Java 11+.'
                 return
             }
             args += "${formatScriptsHome}/check-google-java-format.py"
@@ -693,8 +694,8 @@ subprojects {
         onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
         doFirst {
-            if (JavaVersion.current().compareTo(JavaVersion.VERSION_16) < 0) {
-                println 'The reformat task cannot be run on Java 8 or Java 11.  Please use Java 16+.'
+            if (isJava8) {
+                println 'The reformat task cannot be run on Java 8.  Please use Java 11+.'
                 return
             }
             args += "${formatScriptsHome}/run-google-java-format.py"
