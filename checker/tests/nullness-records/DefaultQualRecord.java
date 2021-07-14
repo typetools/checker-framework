@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 class StandardQualClass {
-  // :: error: foo
+  // :: error: assignment
   public static String s = null;
 }
 
@@ -12,10 +12,10 @@ class DefaultQualClass {
 }
 
 record StandardQualRecord(String m) {
-  // :: error: foo
+  // :: error: assignment
   public static String s = null;
   StandardQualRecord {
-    // :: error: foo
+    // :: error: assignment
     m = null;
   }
 }
