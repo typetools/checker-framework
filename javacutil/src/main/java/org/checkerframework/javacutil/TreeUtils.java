@@ -1771,4 +1771,18 @@ public final class TreeUtils {
     TypeMirror varargsParamType = parameters.get(parameters.size() - 1).asType();
     return TypesUtils.getArrayDepth(varargsParamType) != TypesUtils.getArrayDepth(lastArgType);
   }
+
+  /**
+   * Calls getKind() on the given tree, but if the Kind is RECORD, CLASS is returned instead. This
+   * is needed because the checker framework runs on JDKs before the RECORD item was added, so
+   * RECORD can't be used in case statements, and usually we want to treat them the same as classes.
+   */
+  public static Tree.Kind getKindRecordAsClass(Tree tree) {
+    Tree.Kind kind = tree.getKind();
+    // Must use String comparison because we may be on an older JDK:
+    if (kind.name().equals("RECORD")) {
+      kind = Tree.Kind.CLASS;
+    }
+    return kind;
+  }
 }
