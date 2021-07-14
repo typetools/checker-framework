@@ -48,7 +48,6 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
@@ -187,87 +186,54 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public AnnotatedTypeMirror getPreOrPostconditionsForField(
+  public AnnotatedTypeMirror getPreOrPostconditionsForExpression(
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
-      VariableElement fieldElement,
+      String expression,
+      AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
+        return getPreconditionsForExpression(methodElement, expression, declaredType, atypeFactory);
       case AFTER:
-        return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
+        return getPostconditionsForExpression(methodElement, expression, declaredType, atypeFactory);
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }
   }
 
   /**
-   * Returns the precondition annotations for a field.
+   * Returns the precondition annotations for the given expression.
    *
    * @param methodElement the method
-   * @param fieldElement the field
+   * @param expression the expression
+   * @param declaredType the declared type of the expression
    * @param atypeFactory the type factory
    * @return the precondition annotations for a field
    */
-  private AnnotatedTypeMirror getPreconditionsForField(
+  private AnnotatedTypeMirror getPreconditionsForExpression(
       ExecutableElement methodElement,
-      VariableElement fieldElement,
-      AnnotatedTypeFactory atypeFactory) {
+      String expression,
+      AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
-    return methodAnnos.getPreconditionsForField(fieldElement, atypeFactory);
+    return methodAnnos.getPreconditionsForExpression(expression, declaredType, atypeFactory);
   }
 
   /**
-   * Returns the postcondition annotations for a field.
+   * Returns the postcondition annotations for an expression.
    *
    * @param methodElement the method
-   * @param fieldElement the field
+   * @param expression the expression
+   * @param declaredType the declared type of the expression
    * @param atypeFactory the type factory
    * @return the postcondition annotations for a field
    */
-  private AnnotatedTypeMirror getPostconditionsForField(
+  private AnnotatedTypeMirror getPostconditionsForExpression(
       ExecutableElement methodElement,
-      VariableElement fieldElement,
-      AnnotatedTypeFactory atypeFactory) {
+      String expression,
+      AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
-    return methodAnnos.getPostconditionsForField(fieldElement, atypeFactory);
-  }
-
-  @Override
-  public AnnotatedTypeMirror getPreOrPostconditionsForParameter(
-      BeforeOrAfter preOrPost,
-      ExecutableElement methodElt,
-      VariableElement paramElt,
-      int index,
-      AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        // TODO: handle preconditions
-        return null;
-      case AFTER:
-        return getPostconditionsForParameter(methodElt, paramElt, index, atypeFactory);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
-  }
-
-  /**
-   * Returns the postcondition annotations for a parameter.
-   *
-   * @param methodElt the method
-   * @param paramElt the field
-   * @param index the one-based index of the parameter
-   * @param atypeFactory the type factory
-   * @return the postcondition annotations for a parameter
-   */
-  private AnnotatedTypeMirror getPostconditionsForParameter(
-      ExecutableElement methodElt,
-      VariableElement paramElt,
-      int index,
-      AnnotatedTypeFactory atypeFactory) {
-    CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
-    return methodAnnos.getPostconditionsForParameter(paramElt, index, atypeFactory);
+    return methodAnnos.getPostconditionsForExpression(expression, declaredType, atypeFactory);
   }
 
   @Override
@@ -796,25 +762,22 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
     /**
-     * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the inferred
-     * preconditions on that field.
+     * Mapping from Strings to pairs of AnnotatedTypeMirrors: the first contains an inferred
+     * precondition, and the second the declared type of the expression represented by
+     * the key. The keys are strings representing JavaExpressions, using the
+     * same format as a user would in an {@link org.checkerframework.framework.qual.RequiresQualifier}
+     * annotation.
      */
-    private @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions = null;
+    private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> preconditions = null;
     /**
-     * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the inferred
-     * postconditions on that field.
+     * Mapping from Strings to pairs of AnnotatedTypeMirrors: the first contains an inferred
+     * postcondition, and the second the declared type of the expression represented by
+     * the key. The keys are strings representing JavaExpressions, using the
+     * same format as a user would in an {@link org.checkerframework.framework.qual.EnsuresQualifier}
+     * annotation.
      */
-    private @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions =
+    private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> postconditions =
         null;
-
-    /**
-     * Mapping from VariableElements for parameters to a pair of the 1-based index of the parameter
-     * and an AnnotatedTypeMirror containing the inferred postconditions on that parameter.
-     */
-    private @MonotonicNonNull Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>>
-        paramToPostconditions = null;
-    // /** Inferred contracts for the callable declaration. */
-    // private @MonotonicNonNull List<AnnotationMirror> contracts = null;
 
     /**
      * Creates a wrapper for the given method or constructor declaration.
@@ -942,121 +905,89 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred preconditions for this callable declaration.
      *
-     * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
-     *     inferred preconditions for those fields.
+     * @return a mapping from strings to pairs of AnnotatedTypeMirrors containing the
+     *     inferred preconditions for the JavaExpressions represented by the strings
+     *     and their declared types, respectively. The keys of this map use the same string
+     *     formatting as the {@link org.checkerframework.framework.qual.RequiresQualifier}
+     *     annotation, e.g. "#1" for the first parameter.
      */
-    public Map<VariableElement, AnnotatedTypeMirror> getFieldToPreconditions() {
-      if (fieldToPreconditions == null) {
+    public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
+      if (preconditions == null) {
         return Collections.emptyMap();
       }
 
-      return Collections.unmodifiableMap(fieldToPreconditions);
+      return Collections.unmodifiableMap(preconditions);
     }
 
     /**
-     * Returns the inferred postconditions for this callable declaration related to fields of this.
+     * Returns the inferred postconditions for this callable declaration.
      *
-     * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
-     *     inferred postconditions for those fields.
+     * @return a mapping from strings to pairs of AnnotatedTypeMirrors containing the
+     *     inferred postconditions for the JavaExpressions represented by the strings
+     *     and their declared types, respectively. The keys of this map use the same string
+     *     formatting as the {@link org.checkerframework.framework.qual.EnsuresQualifier}
+     *     annotation, e.g. "#1" for the first parameter.
      */
-    public Map<VariableElement, AnnotatedTypeMirror> getFieldToPostconditions() {
-      if (fieldToPostconditions == null) {
+    public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
+      if (postconditions == null) {
         return Collections.emptyMap();
       }
 
-      return Collections.unmodifiableMap(fieldToPostconditions);
+      return Collections.unmodifiableMap(postconditions);
     }
 
     /**
-     * Returns the inferred postconditions for this callable declaration's parameters.
+     * Returns an AnnotatedTypeMirror containing the preconditions for the given expression.
      *
-     * @return a mapping from VariableElements for parameters to pairs of the parameters' indices in
-     *     the parameter list (i.e. 1 for the first parameter, etc.) and AnnotatedTypeMirrors
-     *     containing the inferred postconditions for those parameters.
-     */
-    public Map<VariableElement, Pair<Integer, AnnotatedTypeMirror>>
-        getParametersToPostconditions() {
-      if (paramToPostconditions == null) {
-        return Collections.emptyMap();
-      }
-
-      return Collections.unmodifiableMap(paramToPostconditions);
-    }
-
-    /**
-     * Returns an AnnotatedTypeMirror containing the preconditions for the given field.
-     *
-     * @param field VariableElement for a field in the enclosing class for this method
+     * @param expression a string representing a Java expression, in the same format
+     *                   as the argument to a {@link org.checkerframework.framework.qual.RequiresQualifier}
+     *                   annotation
+     * @param declaredType the declared type of {@code expression}
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
-     *     preconditions for the given field
+     *     preconditions for the given expression
      */
-    public AnnotatedTypeMirror getPreconditionsForField(
-        VariableElement field, AnnotatedTypeFactory atf) {
-      if (fieldToPreconditions == null) {
-        fieldToPreconditions = new HashMap<>(1);
+    public AnnotatedTypeMirror getPreconditionsForExpression(
+        String expression, AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atf) {
+      if (preconditions == null) {
+        preconditions = new HashMap<>(1);
       }
 
-      if (!fieldToPreconditions.containsKey(field)) {
-        TypeMirror underlyingType = atf.getAnnotatedType(field).getUnderlyingType();
+      if (!preconditions.containsKey(expression)) {
         AnnotatedTypeMirror preconditionsType =
-            AnnotatedTypeMirror.createType(underlyingType, atf, false);
-        fieldToPreconditions.put(field, preconditionsType);
+            AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
+        preconditions.put(expression, Pair.of(preconditionsType, declaredType));
       }
 
-      return fieldToPreconditions.get(field);
+      return preconditions.get(expression).first;
     }
 
     /**
-     * Returns an AnnotatedTypeMirror containing the postconditions for the given field.
+     * Returns an AnnotatedTypeMirror containing the postconditions for the given expression.
      *
-     * @param field VariableElement for a field in the enclosing class for this method
+     * @param expression a string representing a Java expression, in the same format
+     *                   as the argument to a {@link org.checkerframework.framework.qual.EnsuresQualifier}
+     *                   annotation
+     * @param declaredType the declared type of {@code expression}
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
-     *     postconditions for the given field
+     *     postconditions for the given expression
      */
-    public AnnotatedTypeMirror getPostconditionsForField(
-        VariableElement field, AnnotatedTypeFactory atf) {
-      if (fieldToPostconditions == null) {
-        fieldToPostconditions = new HashMap<>(1);
+    public AnnotatedTypeMirror getPostconditionsForExpression(
+        String expression, AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atf) {
+      if (postconditions == null) {
+        postconditions = new HashMap<>(1);
       }
 
-      if (!fieldToPostconditions.containsKey(field)) {
-        TypeMirror underlyingType = atf.getAnnotatedType(field).getUnderlyingType();
+      if (!postconditions.containsKey(expression)) {
         AnnotatedTypeMirror postconditionsType =
-            AnnotatedTypeMirror.createType(underlyingType, atf, false);
-        fieldToPostconditions.put(field, postconditionsType);
+            AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
+        postconditions.put(expression, Pair.of(postconditionsType, declaredType));
       }
 
-      return fieldToPostconditions.get(field);
-    }
-
-    /**
-     * Returns an AnnotatedTypeMirror containing the postconditions for the given parameter.
-     *
-     * @param paramElt VariableElement for one of the method's parameters
-     * @param index the one-based index of the parameter
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used
-     * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
-     *     postconditions for the given parameter
-     */
-    public AnnotatedTypeMirror getPostconditionsForParameter(
-        VariableElement paramElt, int index, AnnotatedTypeFactory atf) {
-      if (paramToPostconditions == null) {
-        paramToPostconditions = new HashMap<>(1);
-      }
-
-      if (!paramToPostconditions.containsKey(paramElt)) {
-        TypeMirror underlyingType = atf.getAnnotatedType(paramElt).getUnderlyingType();
-        AnnotatedTypeMirror postconditionsType =
-            AnnotatedTypeMirror.createType(underlyingType, atf, false);
-        paramToPostconditions.put(paramElt, Pair.of(index, postconditionsType));
-      }
-
-      return paramToPostconditions.get(paramElt).second;
+      return postconditions.get(expression).first;
     }
 
     /**

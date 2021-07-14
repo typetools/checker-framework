@@ -45,6 +45,8 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -801,72 +803,57 @@ public class NullnessAnnotatedTypeFactory
   //  * check for @MonotonicNonNull
   //  * output @RequiresNonNull rather than @RequiresQualifier.
   @Override
-  public List<AnnotationMirror> getPreconditionAnnotationForField(
-      VariableElement elt, AnnotatedTypeMirror fieldType) {
-    AnnotatedTypeMirror declaredType = fromElement(elt);
+  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
+      String expression, AnnotationMirror qualifier, AnnotatedTypeMirror declaredType,
+      Analysis.BeforeOrAfter preOrPost, List<AnnotationMirror> preconds) {
     // TODO: This does not handle the possibility that the user set a different default annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
         || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
-      return Collections.emptyList();
+      return null;
     }
 
-    if (AnnotationUtils.containsSameByName(
-        fieldType.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
-      return requiresNonNullAnno(elt);
-    }
-    return Collections.emptyList();
-  }
-
-  /**
-   * Returns a {@code RequiresNonNull("...")} annotation for the given field.
-   *
-   * @param fieldElement a field
-   * @return a {@code RequiresNonNull("...")} annotation for the given field
-   */
-  private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
-    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
-    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
-    String expression = receiver + "." + fieldElement.getSimpleName();
-    builder.setValue("value", new String[] {expression});
-    AnnotationMirror am = builder.build();
-    return Collections.singletonList(am);
-  }
-
-  @Override
-  public List<AnnotationMirror> getPostconditionAnnotationForField(
-      VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
-    AnnotatedTypeMirror declaredType = fromElement(elt);
-    // TODO: This does not handle the possibility that the user set a different default annotation.
-    if (!(declaredType.hasAnnotation(NULLABLE)
-        || declaredType.hasAnnotation(POLYNULL)
-        || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
-      return Collections.emptyList();
-    }
-    if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
-        && preconds.contains(requiresNonNullAnno(elt))) {
+    if (preOrPost == BeforeOrAfter.AFTER && declaredType.hasAnnotation(MONOTONIC_NONNULL)
+        && preconds.contains(requiresNonNullAnno(expression))) {
       // The postcondition is implied by the precondition and the field being @MonotonicNonNull.
-      return Collections.emptyList();
+      return null;
     }
-    if (AnnotationUtils.containsSameByName(
-        fieldAnnos.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
-      return ensuresNonNullAnno(elt);
+
+    if (preOrPost == BeforeOrAfter.BEFORE && AnnotationUtils.areSameByName(
+        qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
+      return requiresNonNullAnno(expression);
     }
-    return Collections.emptyList();
+    if (preOrPost == BeforeOrAfter.AFTER && AnnotationUtils.areSameByName(
+        qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
+      return ensuresNonNullAnno(expression);
+    }
+    return super.requiresOrEnsuresQualifierAnnoForExpression(expression, qualifier,
+        declaredType, preOrPost, preconds);
   }
 
   /**
-   * Returns a {@code EnsuresNonNull("...")} annotation for the given field.
+   * Returns a {@code RequiresNonNull("...")} annotation for the given expression.
    *
-   * @param fieldElement a field
-   * @return a {@code EnsuresNonNull("...")} annotation for the given field
+   * @param expression expression
+   * @return a {@code RequiresNonNull("...")} annotation for the given expression
    */
-  private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
-    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
-    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
-    String expression = receiver + "." + fieldElement.getSimpleName();
+  private AnnotationMirror requiresNonNullAnno(String expression) {
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
     builder.setValue("value", new String[] {expression});
     AnnotationMirror am = builder.build();
-    return Collections.singletonList(am);
+    return am;
+  }
+
+  /**
+   * Returns a {@code EnsuresNonNull("...")} annotation for the given expression.
+   *
+   * @param expression expression
+   * @return a {@code EnsuresNonNull("...")} annotation for the given expression
+   */
+  private AnnotationMirror ensuresNonNullAnno(String expression) {
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
+    builder.setValue("value", new String[] {expression});
+    AnnotationMirror am = builder.build();
+    return am;
   }
 }

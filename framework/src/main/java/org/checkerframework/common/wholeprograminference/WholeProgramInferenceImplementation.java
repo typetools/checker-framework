@@ -235,11 +235,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
-    // This code only handles fields of "this", for now.  In the future, extend it to other
-    // expressions.
+    // This code handles fields of "this" and method parameters (including the receiver parameter
+    // "this"), for now.  In the future, extend it to other expressions.
     TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
     ThisReference thisReference = new ThisReference(containingClass.asType());
     ClassName classNameReceiver = new ClassName(containingClass.asType());
+    // Fields of "this":
     for (VariableElement fieldElement :
         ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
       if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF
@@ -272,11 +273,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         continue;
       }
       T preOrPostConditionAnnos =
-          storage.getPreOrPostconditionsForField(preOrPost, methodElt, fieldElement, atypeFactory);
+          storage.getPreOrPostconditionsForExpression(preOrPost, methodElt,
+              "this." + fieldElement.getSimpleName().toString(),
+              fieldDeclType, atypeFactory);
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
           preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
     }
+    // Method parameters (other than the receiver parameter "this"):
     // This loop is 1-indexed to match the syntax used in annotation arguments.
     for (int index = 1; index <= methodElt.getParameters().size(); index++) {
       VariableElement paramElt = methodElt.getParameters().get(index - 1);
@@ -295,12 +299,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, declType);
         atypeFactory.wpiAdjustForUpdateNonField(inferredType);
       } else {
-        // The parameter is not in the store, so use the declared type.
-        inferredType = declType;
+        // The parameter is not in the store, so don't attempt to create a postcondition for it,
+        // since anything other than its default type would not be verifiable.
+        continue;
       }
       T preOrPostConditionAnnos =
-          storage.getPreOrPostconditionsForParameter(
-              preOrPost, methodElt, paramElt, index, atypeFactory);
+          storage.getPreOrPostconditionsForExpression(
+              preOrPost, methodElt, "#" + index, declType, atypeFactory);
       if (preOrPostConditionAnnos != null) {
         String file = storage.getFileForElement(methodElt);
         updateAnnotationSet(
@@ -312,6 +317,31 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             false);
       }
     }
+    // Receiver parameter ("this"):
+//    if (!ElementUtils.isStatic(methodElt)) { // Static methods do not have a receiver.
+//      CFAbstractValue<?> v = store.getValue(thisReference);
+//      if (v != null) {
+//        // This parameter is in the store.
+//        AnnotatedTypeMirror inferredType =
+//            AnnotatedTypeMirror.createType(methodElt.getReceiverType(), atypeFactory, false);
+//        inferredType.replaceAnnotations(v.getAnnotations());
+//        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+//        T preOrPostConditionAnnos =
+//            storage.getPreOrPostconditionsForParameter(
+//                preOrPost, methodElt, paramElt, 0, atypeFactory);
+//        if (preOrPostConditionAnnos != null) {
+//          String file = storage.getFileForElement(methodElt);
+//          updateAnnotationSet(
+//              preOrPostConditionAnnos,
+//              TypeUseLocation.PARAMETER,
+//              inferredType,
+//              declType,
+//              file,
+//              false);
+//        }
+//
+//      }
+//    }
   }
 
   /**

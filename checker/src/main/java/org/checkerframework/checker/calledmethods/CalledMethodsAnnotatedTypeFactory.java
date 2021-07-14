@@ -29,6 +29,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
+import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -381,43 +383,19 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   @Override
-  public List<AnnotationMirror> getPostconditionAnnotationForField(
-      VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
-    AnnotationMirror cmAnno =
-        AnnotationUtils.getAnnotationByName(
-            fieldAnnos.getAnnotations(),
-            "org.checkerframework.checker.calledmethods.qual.CalledMethods");
-    if (cmAnno != null) {
-      List<String> calledMethods =
-          AnnotationUtils.getElementValueArray(cmAnno, calledMethodsValueElement, String.class);
+  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
+      String expression, AnnotationMirror qualifier, AnnotatedTypeMirror declaredType,
+      Analysis.BeforeOrAfter preOrPost, List<AnnotationMirror> preconds) {
+    // Special handling to generate @EnsuresCalledMethods annotations.
+    if (preOrPost == BeforeOrAfter.AFTER && isAccumulatorAnnotation(qualifier)) {
+      List<String> calledMethods = AnnotationUtils.getElementValueArray(qualifier, calledMethodsValueElement, String.class);
       if (!calledMethods.isEmpty()) {
-        String receiver = JavaExpression.getImplicitReceiver(elt).toString();
-        String expression = receiver + "." + elt.getSimpleName();
         return ensuresCMAnno(expression, calledMethods);
       }
     }
-    return super.getPostconditionAnnotationForField(elt, fieldAnnos, preconds);
-  }
 
-  @Override
-  public List<AnnotationMirror> getPostconditionAnnotationForParameter(
-      VariableElement elt,
-      Integer index,
-      AnnotatedTypeMirror inferredType,
-      List<AnnotationMirror> preconds) {
-    AnnotationMirror cmAnno =
-        AnnotationUtils.getAnnotationByName(
-            inferredType.getAnnotations(),
-            "org.checkerframework.checker.calledmethods.qual.CalledMethods");
-    if (cmAnno != null) {
-      List<String> calledMethods =
-          AnnotationUtils.getElementValueArray(cmAnno, calledMethodsValueElement, String.class);
-      if (!calledMethods.isEmpty()) {
-        String expression = "#" + index;
-        return ensuresCMAnno(expression, calledMethods);
-      }
-    }
-    return super.getPostconditionAnnotationForParameter(elt, index, inferredType, preconds);
+    return super.requiresOrEnsuresQualifierAnnoForExpression(expression, qualifier, declaredType,
+        preOrPost, preconds);
   }
 
   /**
@@ -428,11 +406,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param calledMethods the methods that were definitely called on the field
    * @return a {@code @EnsuresCalledMethods("...")} annotation for the given field
    */
-  private List<AnnotationMirror> ensuresCMAnno(String expression, List<String> calledMethods) {
+  private AnnotationMirror ensuresCMAnno(String expression, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
     builder.setValue("value", new String[] {expression});
     builder.setValue("methods", calledMethods.toArray(new String[0]));
     AnnotationMirror am = builder.build();
-    return Collections.singletonList(am);
+    return am;
   }
 }

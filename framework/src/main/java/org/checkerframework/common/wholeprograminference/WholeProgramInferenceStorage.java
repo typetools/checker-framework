@@ -102,44 +102,28 @@ public interface WholeProgramInferenceStorage<T> {
       AnnotatedTypeMirror lhsATM,
       AnnotatedTypeFactory atypeFactory);
 
-  // Fields are special because currently WPI computes preconditions for fields only, not for
-  // other expressions.
   /**
-   * Returns the pre- or postcondition annotations for a field.
+   * Returns the pre- or postcondition annotations for an expression. The format of the
+   * expression is the same as a programmer would write in a {@link
+   * org.checkerframework.framework.qual.RequiresQualifier} or {@link
+   * org.checkerframework.framework.qual.EnsuresQualifier} annotation. This method
+   * may return null if the given expression is not a supported expression type. Currently,
+   * the supported expression types are: fields of "this" (e.g. "this.f", pre- and postconditions),
+   * "this" (postconditions only), and method parameters (e.g. "#1", "#2", etc., postconditions
+   * only).
    *
    * @param preOrPost whether to get the precondition or postcondition
    * @param methodElement the method
-   * @param fieldElement the field
+   * @param expression the expression
+   * @param declaredType the declared type of the expression
    * @param atypeFactory the type factory
    * @return the pre- or postcondition annotations for a field
    */
-  public T getPreOrPostconditionsForField(
+  public @Nullable T getPreOrPostconditionsForExpression(
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
-      VariableElement fieldElement,
-      AnnotatedTypeFactory atypeFactory);
-
-  /**
-   * Returns the pre- or postcondition annotations for a method parameter.
-   *
-   * @param preOrPost whether to get the precondition or postcondition
-   * @param methodElt the method
-   * @param paramElt the parameter
-   * @param index the parameter's index (1-based)
-   * @param atypeFactory the type factory
-   * @return the pre- or postcondition annotations for the parameter, or null if nothing is
-   *     inferrable
-   */
-  // TODO: this method currently can return null because preconditions on parameters aren't
-  // supported.
-  // We might want to remove that restriction in the future (but preconditions on parameters are
-  // kind
-  // of unnecessary, because the parameters can just be annotated?)
-  public @Nullable T getPreOrPostconditionsForParameter(
-      BeforeOrAfter preOrPost,
-      ExecutableElement methodElt,
-      VariableElement paramElt,
-      int index,
+      String expression,
+      AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory);
 
   /**

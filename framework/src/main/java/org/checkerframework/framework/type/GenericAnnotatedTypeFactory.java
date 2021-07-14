@@ -2357,15 +2357,25 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
     List<AnnotationMirror> result = new ArrayList<>(m.getPreconditions().size());
-    for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
+    for (Map.Entry<String, AField> entry : m.getPreconditions().entrySet()) {
       WholeProgramInferenceImplementation<?> wholeProgramInference =
           (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
       WholeProgramInferenceScenesStorage storage =
           (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
-      TypeMirror typeMirror = entry.getKey().asType();
+      TypeMirror typeMirror = entry.getValue().getTypeMirror();
+      if (typeMirror == null) {
+        throw new BugInCF("null TypeMirror in AField inferred by WPI precondition inference. AField: " + entry.getValue().toString());
+      }
+      // This is a hack. Ideally, storage would keep track of the original declared type
+      // of each expression. But, the AFU doesn't have a dependency on AnnotatedTypeMirror, so
+      // there isn't a way to thread a type through it in a general manner. It would be possible
+      // to thread an element through the AFU (as part of the precondtions map), but that would
+      // only work for things that have an element (i.e. not receiver parameters).
+      //AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
+
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
-      result.addAll(getPreconditionAnnotationForField(entry.getKey(), inferredType));
+      result.addAll(getPreOrPostconditionAnnotation(entry.getKey(), inferredType, declaredType, BeforeOrAfter.BEFORE, null));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
@@ -2383,23 +2393,22 @@ public abstract class GenericAnnotatedTypeFactory<
   public List<AnnotationMirror> getPostconditionAnnotations(
       AMethod m, List<AnnotationMirror> preconds) {
     List<AnnotationMirror> result = new ArrayList<>(m.getPostconditions().size());
-    for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
+    for (Map.Entry<String, AField> entry : m.getPostconditions().entrySet()) {
       WholeProgramInferenceImplementation<?> wholeProgramInference =
           (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
       WholeProgramInferenceScenesStorage storage =
           (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
-      TypeMirror typeMirror = entry.getKey().asType();
+      TypeMirror typeMirror = entry.getValue().getTypeMirror();
+      if (typeMirror == null) {
+        throw new BugInCF("null TypeMirror in AField inferred by WPI postcondition inference. AField: " + entry.getValue().toString());
+      }
+
+      // This is a hack. See the comment in #getPreconditionAnnotations(AMethod) for the reasoning.
+      //AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
+
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
-      // this is a hack to use the same storage in the AFU for fields and for parameters
-      if (entry.getValue().getName().startsWith("#")) {
-        int index = Integer.parseInt(entry.getValue().getName().substring(1));
-        // this must be a parameter rather than a field
-        result.addAll(
-            getPostconditionAnnotationForParameter(entry.getKey(), index, inferredType, preconds));
-      } else {
-        result.addAll(getPostconditionAnnotationForField(entry.getKey(), inferredType, preconds));
-      }
+      result.addAll(getPreOrPostconditionAnnotation(entry.getKey(), inferredType, declaredType, BeforeOrAfter.AFTER, preconds));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
@@ -2431,9 +2440,9 @@ public abstract class GenericAnnotatedTypeFactory<
   public List<AnnotationMirror> getPreconditionAnnotations(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<VariableElement, AnnotatedTypeMirror> entry :
-        methodAnnos.getFieldToPreconditions().entrySet()) {
-      result.addAll(getPreconditionAnnotationForField(entry.getKey(), entry.getValue()));
+    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
+        methodAnnos.getPreconditions().entrySet()) {
+      result.addAll(getPreOrPostconditionAnnotation(entry.getKey(), entry.getValue().first, entry.getValue().second, BeforeOrAfter.BEFORE, null));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
@@ -2452,91 +2461,16 @@ public abstract class GenericAnnotatedTypeFactory<
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       List<AnnotationMirror> preconds) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<VariableElement, AnnotatedTypeMirror> entry :
-        methodAnnos.getFieldToPostconditions().entrySet()) {
-      result.addAll(getPostconditionAnnotationForField(entry.getKey(), entry.getValue(), preconds));
-    }
-    for (Map.Entry<VariableElement, Pair<Integer, AnnotatedTypeMirror>> entry :
-        methodAnnos.getParametersToPostconditions().entrySet()) {
-      result.addAll(
-          getPostconditionAnnotationForParameter(
-              entry.getKey(), entry.getValue().first, entry.getValue().second, preconds));
+    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
+        methodAnnos.getPostconditions().entrySet()) {
+      result.addAll(getPreOrPostconditionAnnotation(entry.getKey(), entry.getValue().first, entry.getValue().second, BeforeOrAfter.AFTER, preconds));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
   }
 
   /**
-   * Returns an {@code @EnsuresQualifier} annotation for the given parameter. Returns an empty list
-   * if none can be created, because the qualifier has elements/arguments, which
-   * {@code @EnsuresQualifier} does not support.
-   *
-   * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
-   * subclasses may do so.
-   *
-   * <p>This is of the form {@code @EnsuresQualifier(expression="#X", qualifier=MyQual.class)} when
-   * elt is declared as {@code @A} or {@code @Poly*} and f contains {@code @B} which is a
-   * sub-qualifier of {@code @A}.
-   *
-   * @param elt element for a parameter
-   * @param index the one-based index of the parameter
-   * @param inferredType the type of the parameter, on method exit
-   * @param preconds the precondition annotations for the method; used to suppress redundant
-   *     postconditions
-   * @return postcondition annotations for the element (possibly an empty list)
-   */
-  public List<AnnotationMirror> getPostconditionAnnotationForParameter(
-      VariableElement elt,
-      Integer index,
-      AnnotatedTypeMirror inferredType,
-      List<AnnotationMirror> preconds) {
-    return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.AFTER, index, preconds);
-  }
-
-  /**
-   * Return a list of precondition annotations for the given field. Returns an empty list if none
-   * can be created, because the qualifier has elements/arguments, which {@code @RequiresQualifier}
-   * does not support.
-   *
-   * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
-   * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
-   * {@code @B} which is a sub-qualifier of {@code @A}.
-   *
-   * @param elt element for a field, which is declared in the same class as the method
-   * @param inferredType the type of the field, on method entry
-   * @return precondition annotations for the element (possibly an empty list)
-   */
-  public List<AnnotationMirror> getPreconditionAnnotationForField(
-      VariableElement elt, AnnotatedTypeMirror inferredType) {
-    return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.BEFORE, null, null);
-  }
-
-  /**
-   * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns an empty list if
-   * none can be created, because the qualifier has elements/arguments, which
-   * {@code @EnsuresQualifier} does not support.
-   *
-   * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
-   * subclasses may do so.
-   *
-   * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt", qualifier=MyQual.class)}
-   * when elt is declared as {@code @A} or {@code @Poly*} and f contains {@code @B} which is a
-   * sub-qualifier of {@code @A}.
-   *
-   * @param elt element for a field
-   * @param inferredType the type of the field, on method exit
-   * @param preconds the precondition annotations for the method; used to suppress redundant
-   *     postconditions
-   * @return postcondition annotations for the element (possibly an empty list)
-   */
-  public List<AnnotationMirror> getPostconditionAnnotationForField(
-      VariableElement elt, AnnotatedTypeMirror inferredType, List<AnnotationMirror> preconds) {
-    return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.AFTER, null, preconds);
-  }
-
-  /**
-   * Helper method for {@link #getPreconditionAnnotationForField}, {@link
-   * #getPostconditionAnnotationForField}, and {@link #getPostconditionAnnotationForParameter}.
+   * Helper method for creating actual pre- and postcondtion annotations.
    *
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
    * element. Returns an empty list if none can be created, because the qualifier has
@@ -2546,29 +2480,28 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
    * subclasses may do so.
    *
-   * @param elt element for a field or parameter
+   * @param expression the expression to which the annotation applies
    * @param inferredType the type of the field or parameter, on method entry or exit (depending on
    *     the value of {@code preOrPost})
+   * @param declaredType the declared type of the expression, which is used to determine
+   *                     if the inferredType is redundant or if a pre- or postcondition annotation
+   *                     should be inferred for it
    * @param preOrPost whether to return preconditions or postconditions
-   * @param index the 1-based index of the parameter, if {@code elt} if a parameter. If {@code elt}
-   *     is a field, this is null.
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
    * @return precondition or postcondition annotations for the element (possibly an empty list)
    */
   protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
-      VariableElement elt,
+      String expression,
       AnnotatedTypeMirror inferredType,
+      AnnotatedTypeMirror declaredType,
       Analysis.BeforeOrAfter preOrPost,
-      @Nullable Integer index,
       @Nullable List<AnnotationMirror> preconds) {
     assert (preOrPost == BeforeOrAfter.BEFORE) == (preconds == null);
 
     if (getWholeProgramInference() == null) {
       return Collections.emptyList();
     }
-
-    AnnotatedTypeMirror declaredType = fromElement(elt);
 
     // TODO: should this only check the top-level annotations?
     if (declaredType.equals(inferredType)) {
@@ -2578,37 +2511,30 @@ public abstract class GenericAnnotatedTypeFactory<
     List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
     for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
       AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
-      if (declaredAm == null && declaredType.getKind() != TypeKind.TYPEVAR) {
-        // There is no explicitly-written annotation for the given qualifier hierarchy.
-        // Determine the default.
-        addComputedTypeAnnotations(elt, declaredType);
-        declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
-        if (declaredAm == null) {
-          throw new BugInCF(
-              "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s"
-                  + "  [%s %s]%n  inferredType=%s  [%s %s]%n",
-              elt,
-              inferredType,
-              declaredType.toString(true),
-              declaredType.getKind(),
-              declaredType.getClass(),
-              inferredType.toString(true),
-              inferredType.getKind(),
-              inferredType.getClass());
-        }
-      }
+//      if (declaredAm == null && declaredType.getKind() != TypeKind.TYPEVAR) {
+//        // There is no explicitly-written annotation for the given qualifier hierarchy.
+//        // Determine the default.
+//        addComputedTypeAnnotations(elt, declaredType);
+//        declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+//        if (declaredAm == null) {
+//          throw new BugInCF(
+//              "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s"
+//                  + "  [%s %s]%n  inferredType=%s  [%s %s]%n",
+//              elt,
+//              inferredType,
+//              declaredType.toString(true),
+//              declaredType.getKind(),
+//              declaredType.getClass(),
+//              inferredType.toString(true),
+//              inferredType.getKind(),
+//              inferredType.getClass());
+//        }
+//      }
 
       if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
         continue;
       }
-      AnnotationMirror anno;
-      // index is null when the target of inference is a field. Othwerise, it is the index
-      // of the targeted parameter.
-      if (index == null) {
-        anno = requiresOrEnsuresQualifierAnnoForField(elt, inferredAm, preOrPost);
-      } else {
-        anno = requiresOrEnsuresQualifierAnnoForParam(elt, index, inferredAm, preOrPost);
-      }
+      AnnotationMirror anno = requiresOrEnsuresQualifierAnnoForExpression(expression, inferredAm, declaredType, preOrPost, preconds);
       if (anno != null) {
         result.add(anno);
       }
@@ -2619,7 +2545,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
-   * the given field. Returns null if none can be created, because the qualifier has
+   * the given expression. Returns null if none can be created, because the qualifier has
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
    * support.
    *
@@ -2628,16 +2554,21 @@ public abstract class GenericAnnotatedTypeFactory<
    * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
    * {@code @B} which is a sub-qualifier of {@code @A}.
    *
-   * @param fieldElement a field
+   * @param expression the expression to which the qualifier applies
    * @param qualifier the qualifier that must be present
+   * @param declaredType the declared type of the expression, which is used to avoid inferring
+   *                     redundant pre- or postcondition annotations
    * @param preOrPost whether to return a precondition or postcondition annotation
+   * @param preconds the list of precondition annotations; always null if {@code preOrPost} is
+   *                 {@code BeforeOrAfter.BEFORE}
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    *     the given field, or null
    */
-  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForField(
-      VariableElement fieldElement, AnnotationMirror qualifier, Analysis.BeforeOrAfter preOrPost) {
+  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
+      String expression, AnnotationMirror qualifier, AnnotatedTypeMirror declaredType,
+      Analysis.BeforeOrAfter preOrPost, @Nullable List<AnnotationMirror> preconds) {
     if (!qualifier.getElementValues().isEmpty()) {
-      // @RequiresQualifier does not yet support annotations with elements/arguments.
+      // @RequiresQualifier and @EnsuresQualifier do not yet support annotations with elements/arguments.
       return null;
     }
 
@@ -2645,45 +2576,6 @@ public abstract class GenericAnnotatedTypeFactory<
         new AnnotationBuilder(
             processingEnv,
             preOrPost == BeforeOrAfter.BEFORE ? RequiresQualifier.class : EnsuresQualifier.class);
-    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
-    String expression = receiver + "." + fieldElement.getSimpleName();
-    builder.setValue("expression", new String[] {expression});
-    builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
-    return builder.build();
-  }
-
-  /**
-   * Returns a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
-   * the given field. Returns null if none can be created, because the qualifier has
-   * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
-   * support.
-   *
-   * <p>This is of the form {@code @RequiresQualifier(expression="#X", qualifier=MyQual.class)} or
-   * {@code @EnsuresQualifier(expression="#X", qualifier=MyQual.class)} when elt is declared as
-   * {@code @A} or {@code @Poly*} and f contains {@code @B} which is a sub-qualifier of {@code @A}.
-   *
-   * @param paramElt a parameter
-   * @param index the 1-based index
-   * @param qualifier the qualifier that must be present
-   * @param preOrPost whether to return a precondition or postcondition annotation
-   * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
-   *     the given parameter, or null
-   */
-  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForParam(
-      VariableElement paramElt,
-      int index,
-      AnnotationMirror qualifier,
-      Analysis.BeforeOrAfter preOrPost) {
-    if (!qualifier.getElementValues().isEmpty()) {
-      // @RequiresQualifier does not yet support annotations with elements/arguments.
-      return null;
-    }
-
-    AnnotationBuilder builder =
-        new AnnotationBuilder(
-            processingEnv,
-            preOrPost == BeforeOrAfter.BEFORE ? RequiresQualifier.class : EnsuresQualifier.class);
-    String expression = "#" + index;
     builder.setValue("expression", new String[] {expression});
     builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
     return builder.build();

@@ -227,97 +227,51 @@ public class WholeProgramInferenceScenesStorage
   }
 
   @Override
-  public ATypeElement getPreOrPostconditionsForField(
+  public ATypeElement getPreOrPostconditionsForExpression(
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
-      VariableElement fieldElement,
+      String expression,
+      TypeMirror underlyingType,
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
+        return getPreconditionsForExpression(methodElement, expression, underlyingType);
       case AFTER:
-        return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
-      default:
-        throw new BugInCF("Unexpected " + preOrPost);
-    }
-  }
-
-  @Override
-  public ATypeElement getPreOrPostconditionsForParameter(
-      BeforeOrAfter preOrPost,
-      ExecutableElement methodElt,
-      VariableElement paramElt,
-      int index,
-      AnnotatedTypeFactory atypeFactory) {
-    switch (preOrPost) {
-      case BEFORE:
-        // TODO: support preconditions on parameters?
-        return null;
-      case AFTER:
-        return getPostconditionsForParameter(methodElt, paramElt, index, atypeFactory);
+        return getPostconditionsForExpression(methodElement, expression, underlyingType);
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }
   }
 
   /**
-   * Returns the precondition annotations for a field.
+   * Returns the precondition annotations for a Java expression.
    *
    * @param methodElement the method
-   * @param fieldElement the field
-   * @param atypeFactory the type factory
+   * @param expression the expression
+   * @param underlyingType the underlying Java type of the expression
    * @return the precondition annotations for a field
    */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPreconditionsForField(
+  private ATypeElement getPreconditionsForExpression(
       ExecutableElement methodElement,
-      VariableElement fieldElement,
-      AnnotatedTypeFactory atypeFactory) {
+      String expression,
+      TypeMirror underlyingType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
-    TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
-    return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror).type;
+    return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(expression, underlyingType).type;
   }
 
   /**
    * Returns the postcondition annotations for a field.
    *
    * @param methodElement the method
-   * @param fieldElement the field
-   * @param atypeFactory the type factory
+   * @param expression the expression
+   * @param underlyingType the underlying Java type of the expression
    * @return the postcondition annotations for a field
    */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPostconditionsForField(
+  private ATypeElement getPostconditionsForExpression(
       ExecutableElement methodElement,
-      VariableElement fieldElement,
-      AnnotatedTypeFactory atypeFactory) {
+      String expression, TypeMirror underlyingType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
-    TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
-    return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror).type;
-  }
-
-  /**
-   * Returns the postcondition annotations for a parameter.
-   *
-   * @param methodElt the method
-   * @param paramElt the parameter
-   * @param index the 1-based index of the parameter
-   * @param atypeFactory the type factory
-   * @return the postcondition annotations for the parameter
-   */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPostconditionsForParameter(
-      ExecutableElement methodElt,
-      VariableElement paramElt,
-      int index,
-      AnnotatedTypeFactory atypeFactory) {
-    AMethod methodAnnos = getMethodAnnos(methodElt);
-    TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(paramElt.asType());
-    // return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(paramElt, typeMirror).type;
-    // this is a horrible hack
-    AField result = new AField("#" + index, typeMirror);
-    methodAnnos.postconditions.put(paramElt, result);
-    return result.type;
+    return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(expression, underlyingType).type;
   }
 
   @Override
