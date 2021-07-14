@@ -1776,6 +1776,9 @@ public final class TreeUtils {
    * Calls getKind() on the given tree, but if the Kind is RECORD, CLASS is returned instead. This
    * is needed because the checker framework runs on JDKs before the RECORD item was added, so
    * RECORD can't be used in case statements, and usually we want to treat them the same as classes.
+   *
+   * @param tree the tree to get the kind for
+   * @return the kind of the tree, but CLASS if the kind was RECORD
    */
   public static Tree.Kind getKindRecordAsClass(Tree tree) {
     Tree.Kind kind = tree.getKind();
