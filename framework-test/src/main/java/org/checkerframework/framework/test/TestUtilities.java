@@ -43,6 +43,10 @@ public class TestUtilities {
   public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
   /** True if the JVM is version 11 or lower. */
   public static final boolean IS_AT_MOST_11_JVM = SystemUtil.getJreVersion() <= 11;
+  /** True if the JVM is version 16 or above. */
+  public static final boolean IS_AT_LEAST_16_JVM = SystemUtil.getJreVersion() >= 16;
+  /** True if the JVM is version 16 or lower. */
+  public static final boolean IS_AT_MOST_16_JVM = SystemUtil.getJreVersion() <= 16;
 
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -209,12 +213,6 @@ public class TestUtilities {
       return false;
     }
 
-    // We could implement special filtering based on directory names,
-    // but I prefer using @below-java9-jdk-skip-test
-    // if (!IS_AT_LEAST_9_JVM && file.getAbsolutePath().contains("java9")) {
-    //     return false;
-    // }
-
     Scanner in = null;
     try {
       in = new Scanner(file);
@@ -227,7 +225,9 @@ public class TestUtilities {
       if (nextLine.contains("@skip-test")
           || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
           || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
-          || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))) {
+          || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))
+          || (!IS_AT_LEAST_16_JVM && nextLine.contains("@below-java16-jdk-skip-test"))
+          || (!IS_AT_MOST_16_JVM && nextLine.contains("@above-java16-skip-test"))) {
         in.close();
         return false;
       }
