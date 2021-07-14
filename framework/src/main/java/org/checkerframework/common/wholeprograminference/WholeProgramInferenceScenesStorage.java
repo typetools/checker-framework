@@ -231,13 +231,13 @@ public class WholeProgramInferenceScenesStorage
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,
-      TypeMirror underlyingType,
+      AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForExpression(methodElement, expression, underlyingType);
+        return getPreconditionsForExpression(methodElement, expression, declaredType.getUnderlyingType());
       case AFTER:
-        return getPostconditionsForExpression(methodElement, expression, underlyingType);
+        return getPostconditionsForExpression(methodElement, expression, declaredType.getUnderlyingType());
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }

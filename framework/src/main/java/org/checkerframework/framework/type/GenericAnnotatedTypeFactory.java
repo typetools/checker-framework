@@ -2371,7 +2371,7 @@ public abstract class GenericAnnotatedTypeFactory<
       // there isn't a way to thread a type through it in a general manner. It would be possible
       // to thread an element through the AFU (as part of the precondtions map), but that would
       // only work for things that have an element (i.e. not receiver parameters).
-      //AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
+      AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
 
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
@@ -2404,7 +2404,7 @@ public abstract class GenericAnnotatedTypeFactory<
       }
 
       // This is a hack. See the comment in #getPreconditionAnnotations(AMethod) for the reasoning.
-      //AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
+      AnnotatedTypeMirror declaredType = AnnotatedTypeMirror.createType(typeMirror, this, true);
 
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
