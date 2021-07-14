@@ -1,3 +1,15 @@
+Version 3.??.? (August 2, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+Java records are type-checked.  Thanks to Neil Brown.
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.16.0 (July 13, 2021)
 ------------------------------
 
@@ -38,6 +50,7 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
 
 **Closed issues:**
 #3013, #3754, #3791, #3845, #4523, #4767.
+
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------
