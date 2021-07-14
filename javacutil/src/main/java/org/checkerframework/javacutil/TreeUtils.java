@@ -110,7 +110,7 @@ public final class TreeUtils {
     try {
       Field generatedMemberField = Flags.class.getDeclaredField("GENERATED_MEMBER");
       @SuppressWarnings("nullness") // getLong accepts null for static fields
-      long generatedMemberValue = recordField.getLong(null);
+      long generatedMemberValue = generatedMemberField.getLong(null);
       Flags_GENERATED_MEMBER = generatedMemberValue;
 
       Field recordField = Flags.class.getDeclaredField("RECORD");
