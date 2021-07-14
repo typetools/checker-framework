@@ -392,6 +392,7 @@ List<String> getJavaFilesToFormat(projectName) {
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
         // If you change this, also change checker/bin-devel/git.pre-commit
         if (!details.path.contains("nullness-javac-errors")
+                && !details.path.contains("calledmethods-delomboked")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
                 && (isJava16 || !details.path.contains("nullness-records"))
