@@ -43,6 +43,10 @@ public class TestUtilities {
   public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
   /** True if the JVM is version 11 or lower. */
   public static final boolean IS_AT_MOST_11_JVM = SystemUtil.getJreVersion() <= 11;
+  /** True if the JVM is version 16 or above. */
+  public static final boolean IS_AT_LEAST_16_JVM = SystemUtil.getJreVersion() >= 16;
+  /** True if the JVM is version 16 or lower. */
+  public static final boolean IS_AT_MOST_16_JVM = SystemUtil.getJreVersion() <= 16;
 
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
