@@ -11,14 +11,19 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -26,9 +31,12 @@ public class SideEffectsOnlyAnnoChecker {
   public static SideEffectsOnlyResult checkSideEffectsOnly(
       TreePath statement,
       AnnotationProvider annoProvider,
-      List<JavaExpression> sideEffectsOnlyExpressions) {
+      List<JavaExpression> sideEffectsOnlyExpressions,
+      ProcessingEnvironment processingEnv,
+      BaseTypeChecker checker) {
     SideEffectsOnlyCheckerHelper helper =
-        new SideEffectsOnlyCheckerHelper(annoProvider, sideEffectsOnlyExpressions);
+        new SideEffectsOnlyCheckerHelper(
+            annoProvider, sideEffectsOnlyExpressions, processingEnv, checker);
     helper.scan(statement, null);
     return helper.sideEffectsOnlyResult;
   }
@@ -51,11 +59,18 @@ public class SideEffectsOnlyAnnoChecker {
     List<JavaExpression> sideEffectsOnlyExpressions;
 
     protected final AnnotationProvider annoProvider;
+    ProcessingEnvironment processingEnv;
+    BaseTypeChecker checker;
 
     public SideEffectsOnlyCheckerHelper(
-        AnnotationProvider annoProvider, List<JavaExpression> sideEffectsOnlyExpressions) {
+        AnnotationProvider annoProvider,
+        List<JavaExpression> sideEffectsOnlyExpressions,
+        ProcessingEnvironment processingEnv,
+        BaseTypeChecker checker) {
       this.annoProvider = annoProvider;
       this.sideEffectsOnlyExpressions = sideEffectsOnlyExpressions;
+      this.processingEnv = processingEnv;
+      this.checker = checker;
     }
 
     @Override
@@ -75,7 +90,7 @@ public class SideEffectsOnlyAnnoChecker {
 
       AnnotationMirror sideEffectsOnlyAnno =
           annoProvider.getDeclAnnotation(treeElem, SideEffectsOnly.class);
-      if (sideEffectsOnlyAnno != null) {
+      if (sideEffectsOnlyAnno == null) {
         JavaExpression receiverExpr = JavaExpression.getReceiver(node);
         sideEffectsOnlyResult.addNotSEOnlyExpr(node, receiverExpr);
         List<JavaExpression> paramsAsLocals =
@@ -84,7 +99,26 @@ public class SideEffectsOnlyAnnoChecker {
           sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
         }
       } else {
+        ExecutableElement sideEffectsOnlyValueElement =
+            TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
+        List<String> sideEffectsOnlyExpressionStrings =
+            AnnotationUtils.getElementValueArray(
+                sideEffectsOnlyAnno, sideEffectsOnlyValueElement, String.class);
+        List<JavaExpression> sideEffectsOnlyExprInv = new ArrayList<>();
+        for (String st : sideEffectsOnlyExpressionStrings) {
+          try {
+            JavaExpression exprJe = StringToJavaExpression.atMethodInvocation(st, node, checker);
+            sideEffectsOnlyExprInv.add(exprJe);
+          } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+            checker.report(st, ex.getDiagMessage());
+          }
+        }
 
+        for (JavaExpression expr : sideEffectsOnlyExprInv) {
+          if (!sideEffectsOnlyExpressions.contains(expr)) {
+            sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
+          }
+        }
       }
       return super.visitMethodInvocation(node, aVoid);
     }

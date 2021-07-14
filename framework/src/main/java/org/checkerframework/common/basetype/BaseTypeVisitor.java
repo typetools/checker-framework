@@ -1098,7 +1098,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       SideEffectsOnlyAnnoChecker.SideEffectsOnlyResult sefOnlyResult =
           SideEffectsOnlyAnnoChecker.checkSideEffectsOnly(
-              body, atypeFactory, sideEffectsOnlyExpressions);
+              body,
+              atypeFactory,
+              sideEffectsOnlyExpressions,
+              atypeFactory.getProcessingEnv(),
+              checker);
 
       List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getSeOnlyResult();
       if (!seOnlyIncorrectExprs.isEmpty()) {
