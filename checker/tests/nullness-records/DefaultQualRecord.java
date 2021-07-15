@@ -14,6 +14,7 @@ class DefaultQualClass {
 record StandardQualRecord(String m) {
   // :: error: assignment
   public static String s = null;
+
   StandardQualRecord {
     // :: error: assignment
     m = null;
@@ -23,6 +24,7 @@ record StandardQualRecord(String m) {
 @DefaultQualifier(Nullable.class)
 record DefaultQualRecord(String m) {
   public static String s = null;
+
   DefaultQualRecord {
     m = null;
   }
