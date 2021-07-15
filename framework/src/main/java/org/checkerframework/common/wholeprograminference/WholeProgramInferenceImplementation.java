@@ -318,30 +318,39 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
     }
     // Receiver parameter ("this"):
-//    if (!ElementUtils.isStatic(methodElt)) { // Static methods do not have a receiver.
-//      CFAbstractValue<?> v = store.getValue(thisReference);
-//      if (v != null) {
-//        // This parameter is in the store.
-//        AnnotatedTypeMirror inferredType =
-//            AnnotatedTypeMirror.createType(methodElt.getReceiverType(), atypeFactory, false);
-//        inferredType.replaceAnnotations(v.getAnnotations());
-//        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
-//        T preOrPostConditionAnnos =
-//            storage.getPreOrPostconditionsForParameter(
-//                preOrPost, methodElt, paramElt, 0, atypeFactory);
-//        if (preOrPostConditionAnnos != null) {
-//          String file = storage.getFileForElement(methodElt);
-//          updateAnnotationSet(
-//              preOrPostConditionAnnos,
-//              TypeUseLocation.PARAMETER,
-//              inferredType,
-//              declType,
-//              file,
-//              false);
-//        }
-//
-//      }
-//    }
+    if (!ElementUtils.isStatic(methodElt)) { // Static methods do not have a receiver.
+      CFAbstractValue<?> v = store.getValue(thisReference);
+      if (v != null) {
+        System.out.println("found info about this:");
+        System.out.println("methodElt: " + methodElt);
+        System.out.println("store: " + store);
+        System.out.println("----------");
+        // This parameter is in the store.
+        AnnotatedTypeMirror declaredType = atypeFactory.getAnnotatedType(methodElt).getReceiverType();
+        if (declaredType == null) {
+          // declaredType is null when the method being analyzed is a constructor (which doesn't
+          // have a receiver).
+          return;
+        }
+        AnnotatedTypeMirror inferredType =
+            AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atypeFactory, false);
+        inferredType.replaceAnnotations(v.getAnnotations());
+        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+        T preOrPostConditionAnnos =
+            storage.getPreOrPostconditionsForExpression(
+                preOrPost, methodElt, "this", declaredType, atypeFactory);
+        if (preOrPostConditionAnnos != null) {
+          String file = storage.getFileForElement(methodElt);
+          updateAnnotationSet(
+              preOrPostConditionAnnos,
+              TypeUseLocation.PARAMETER,
+              inferredType,
+              declaredType,
+              file,
+              false);
+        }
+      }
+    }
   }
 
   /**

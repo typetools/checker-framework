@@ -225,6 +225,9 @@ public abstract class AbstractAnalysis<
   public @Nullable S getRegularExitStore() {
     SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
     if (inputs.containsKey(regularExitBlock)) {
+      // TODO: this might be the problem? could getRegularStore be returning only
+      // the then store, somehow? Investigate what's happening here and see
+      // whether things are correct.
       return inputs.get(regularExitBlock).getRegularStore();
     } else {
       return null;

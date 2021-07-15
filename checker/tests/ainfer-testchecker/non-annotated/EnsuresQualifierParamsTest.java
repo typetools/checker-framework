@@ -62,6 +62,14 @@ class EnsuresQualifierParamsTest {
     }
   }
 
+  void thisIsParent_2_2(boolean b) {
+    if (b) {
+      becomeSibling2(this);
+    } else {
+      becomeSibling1(this);
+    }
+  }
+
   void thisIsSibling2() {
     becomeSibling2(this);
   }
@@ -71,6 +79,14 @@ class EnsuresQualifierParamsTest {
       becomeSibling2(this);
     } else {
       becomeBottom(this);
+    }
+  }
+
+  void thisIsSibling2_2_2(boolean b) {
+    if (b) {
+      becomeBottom(this);
+    } else {
+      becomeSibling2(this);
     }
   }
 
@@ -100,5 +116,45 @@ class EnsuresQualifierParamsTest {
     @Sibling2 Object x = arg;
   }
 
+  void clientThis1() {
+    thisIsParent();
+    // :: warning: (assignment)
+    @Parent Object o = this;
+  }
 
+  void clientThis2() {
+    thisIsParent_2(true);
+    // :: warning: (assignment)
+    @Parent Object o = this;
+  }
+
+  void clientThis2_2() {
+    thisIsParent_2(false);
+    // :: warning: (assignment)
+    @Parent Object o = this;
+  }
+
+  void clientThis3() {
+    thisIsSibling2();
+    // :: warning: (assignment)
+    @Sibling2 Object o = this;
+  }
+
+  void clientThis4() {
+    thisIsSibling2_2(true);
+    // :: warning: (assignment)
+    @Sibling2 Object o = this;
+  }
+
+  void clientThis5() {
+    thisIsSibling2_2_2(true);
+    // :: warning: (assignment)
+    @Sibling2 Object o = this;
+  }
+
+  void clientThis6() {
+    thisIsParent_2_2(true);
+    // :: warning: (assignment)
+    @Parent Object o = this;
+  }
 }

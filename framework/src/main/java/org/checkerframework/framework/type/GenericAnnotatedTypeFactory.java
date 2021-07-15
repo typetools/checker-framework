@@ -30,6 +30,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -55,6 +56,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -1557,6 +1559,16 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
     handleCFGViz(cfg);
+//    if (this.getWholeProgramInference() != null && cfg.underlyingAST.getKind() == Kind.METHOD) {
+//      List<Node> nodes = cfg.getAllNodes();
+//      if (!nodes.isEmpty()) {
+//        Node last = nodes.get(nodes.size() - 1);
+//        CFAbstractStore<?, ?> store = getStoreAfter(last);
+//        ExecutableElement methodElt =
+//            (ExecutableElement) TreeUtils.elementFromTree(cfg.getUnderlyingAST().getCode());
+//        this.getWholeProgramInference().updateContracts(BeforeOrAfter.AFTER, methodElt, store);
+//      }
+//    }
   }
 
   /**
