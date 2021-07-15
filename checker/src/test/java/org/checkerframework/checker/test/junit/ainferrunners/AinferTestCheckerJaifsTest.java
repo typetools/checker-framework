@@ -24,6 +24,7 @@ public class AinferTestCheckerJaifsTest extends CheckerFrameworkPerDirectoryTest
         "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
         "-Ainfer=jaifs",
+        "-Aflowdotdir=/Users/kelloggm/jsr308/checker-framework/gen",
         "-Awarns");
   }
 

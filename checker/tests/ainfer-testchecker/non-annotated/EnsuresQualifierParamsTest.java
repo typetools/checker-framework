@@ -70,6 +70,24 @@ class EnsuresQualifierParamsTest {
     }
   }
 
+  void thisIsParent_3(boolean b) {
+    if (b) {
+      becomeSibling1(this);
+    } else {
+      becomeSibling2(this);
+    }
+    noEnsures();
+  }
+
+  void thisIsEmpty(boolean b) {
+    if (b) {
+      // do nothing
+      this.noEnsures();
+    } else {
+      becomeSibling1(this);
+    }
+  }
+
   void thisIsSibling2() {
     becomeSibling2(this);
   }
@@ -130,6 +148,12 @@ class EnsuresQualifierParamsTest {
 
   void clientThis2_2() {
     thisIsParent_2(false);
+    // :: warning: (assignment)
+    @Parent Object o = this;
+  }
+
+  void clientThis2_3() {
+    thisIsParent_3(false);
     // :: warning: (assignment)
     @Parent Object o = this;
   }

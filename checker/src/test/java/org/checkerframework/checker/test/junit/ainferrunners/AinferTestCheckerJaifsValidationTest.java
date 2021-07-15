@@ -22,6 +22,7 @@ public class AinferTestCheckerJaifsValidationTest extends CheckerFrameworkPerDir
         "-Anomsgtext",
         // IndexFileWriter doesn't emit annotations in any particular order.
         "-AsuppressWarnings=type.anno.before.decl.anno",
+        "-Aflowdotdir=/Users/kelloggm/jsr308/checker-framework/val",
         "-Awarns");
   }
 
