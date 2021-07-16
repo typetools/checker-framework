@@ -29,4 +29,15 @@ class EnsuresCalledMethodsThisLub {
     // :: error: (assignment)
     @CalledMethods({"toString", "equals"}) Object obj2 = this;
   }
+
+  void test_arg(Object arg, boolean b) {
+    if (b) {
+      call1(arg);
+    } else {
+      call2(arg);
+    }
+    @CalledMethods("toString") Object obj1 = arg;
+    // :: error: (assignment)
+    @CalledMethods({"toString", "equals"}) Object obj2 = arg;
+  }
 }
