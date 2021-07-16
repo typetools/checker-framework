@@ -285,7 +285,8 @@ public class InitializationVisitor<
     super.processClassTree(node);
 
     // Warn about uninitialized static fields.
-    if (node.getKind() == Tree.Kind.CLASS) {
+    if (TreeUtils.getKindRecordAsClass(node) == Tree.Kind.CLASS
+        || TreeUtils.getKindRecordAsClass(node) == Tree.Kind.ENUM) {
       boolean isStatic = true;
       // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
       // the regular exit store of the class here.
