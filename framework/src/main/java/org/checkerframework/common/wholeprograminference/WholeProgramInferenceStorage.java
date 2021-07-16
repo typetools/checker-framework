@@ -9,7 +9,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -103,14 +102,13 @@ public interface WholeProgramInferenceStorage<T> {
       AnnotatedTypeFactory atypeFactory);
 
   /**
-   * Returns the pre- or postcondition annotations for an expression. The format of the
-   * expression is the same as a programmer would write in a {@link
+   * Returns the pre- or postcondition annotations for an expression. The format of the expression
+   * is the same as a programmer would write in a {@link
    * org.checkerframework.framework.qual.RequiresQualifier} or {@link
-   * org.checkerframework.framework.qual.EnsuresQualifier} annotation. This method
-   * may return null if the given expression is not a supported expression type. Currently,
-   * the supported expression types are: fields of "this" (e.g. "this.f", pre- and postconditions),
-   * "this" (postconditions only), and method parameters (e.g. "#1", "#2", etc., postconditions
-   * only).
+   * org.checkerframework.framework.qual.EnsuresQualifier} annotation. This method may return null
+   * if the given expression is not a supported expression type. Currently, the supported expression
+   * types are: fields of "this" (e.g. "this.f", pre- and postconditions), "this" (postconditions
+   * only), and method parameters (e.g. "#1", "#2", etc., postconditions only).
    *
    * @param preOrPost whether to get the precondition or postcondition
    * @param methodElement the method

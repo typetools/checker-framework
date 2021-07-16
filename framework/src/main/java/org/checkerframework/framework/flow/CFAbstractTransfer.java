@@ -23,7 +23,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -916,7 +915,7 @@ public abstract class CFAbstractTransfer<
           .getWholeProgramInference()
           .updateFromReturn(
               n, classSymbol, analysis.getContainingMethod(n.getTree()), overriddenMethods);
-      }
+    }
 
     return result;
   }

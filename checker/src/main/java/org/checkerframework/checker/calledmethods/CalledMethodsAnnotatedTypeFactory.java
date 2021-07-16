@@ -6,13 +6,11 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.builder.AutoValueSupport;
@@ -31,7 +29,6 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
-import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -384,18 +381,22 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   @Override
   protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
-      String expression, AnnotationMirror qualifier, AnnotatedTypeMirror declaredType,
-      Analysis.BeforeOrAfter preOrPost, List<AnnotationMirror> preconds) {
+      String expression,
+      AnnotationMirror qualifier,
+      AnnotatedTypeMirror declaredType,
+      Analysis.BeforeOrAfter preOrPost,
+      List<AnnotationMirror> preconds) {
     // Special handling to generate @EnsuresCalledMethods annotations.
     if (preOrPost == BeforeOrAfter.AFTER && isAccumulatorAnnotation(qualifier)) {
-      List<String> calledMethods = AnnotationUtils.getElementValueArray(qualifier, calledMethodsValueElement, String.class);
+      List<String> calledMethods =
+          AnnotationUtils.getElementValueArray(qualifier, calledMethodsValueElement, String.class);
       if (!calledMethods.isEmpty()) {
         return ensuresCMAnno(expression, calledMethods);
       }
     }
 
-    return super.requiresOrEnsuresQualifierAnnoForExpression(expression, qualifier, declaredType,
-        preOrPost, preconds);
+    return super.requiresOrEnsuresQualifierAnnoForExpression(
+        expression, qualifier, declaredType, preOrPost, preconds);
   }
 
   /**

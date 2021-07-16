@@ -273,9 +273,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         continue;
       }
       T preOrPostConditionAnnos =
-          storage.getPreOrPostconditionsForExpression(preOrPost, methodElt,
+          storage.getPreOrPostconditionsForExpression(
+              preOrPost,
+              methodElt,
               "this." + fieldElement.getSimpleName().toString(),
-              fieldDeclType, atypeFactory);
+              fieldDeclType,
+              atypeFactory);
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
           preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
@@ -321,12 +324,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     if (!ElementUtils.isStatic(methodElt)) { // Static methods do not have a receiver.
       CFAbstractValue<?> v = store.getValue(thisReference);
       if (v != null) {
-        System.out.println("found info about this:");
-        System.out.println("methodElt: " + methodElt);
-        System.out.println("store: " + store);
-        System.out.println("----------");
         // This parameter is in the store.
-        AnnotatedTypeMirror declaredType = atypeFactory.getAnnotatedType(methodElt).getReceiverType();
+        AnnotatedTypeMirror declaredType =
+            atypeFactory.getAnnotatedType(methodElt).getReceiverType();
         if (declaredType == null) {
           // declaredType is null when the method being analyzed is a constructor (which doesn't
           // have a receiver).

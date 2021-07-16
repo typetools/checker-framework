@@ -47,7 +47,6 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
-import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -804,8 +803,11 @@ public class NullnessAnnotatedTypeFactory
   //  * output @RequiresNonNull rather than @RequiresQualifier.
   @Override
   protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
-      String expression, AnnotationMirror qualifier, AnnotatedTypeMirror declaredType,
-      Analysis.BeforeOrAfter preOrPost, List<AnnotationMirror> preconds) {
+      String expression,
+      AnnotationMirror qualifier,
+      AnnotatedTypeMirror declaredType,
+      Analysis.BeforeOrAfter preOrPost,
+      List<AnnotationMirror> preconds) {
     // TODO: This does not handle the possibility that the user set a different default annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
@@ -813,22 +815,25 @@ public class NullnessAnnotatedTypeFactory
       return null;
     }
 
-    if (preOrPost == BeforeOrAfter.AFTER && declaredType.hasAnnotation(MONOTONIC_NONNULL)
+    if (preOrPost == BeforeOrAfter.AFTER
+        && declaredType.hasAnnotation(MONOTONIC_NONNULL)
         && preconds.contains(requiresNonNullAnno(expression))) {
       // The postcondition is implied by the precondition and the field being @MonotonicNonNull.
       return null;
     }
 
-    if (preOrPost == BeforeOrAfter.BEFORE && AnnotationUtils.areSameByName(
-        qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
+    if (preOrPost == BeforeOrAfter.BEFORE
+        && AnnotationUtils.areSameByName(
+            qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
       return requiresNonNullAnno(expression);
     }
-    if (preOrPost == BeforeOrAfter.AFTER && AnnotationUtils.areSameByName(
-        qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
+    if (preOrPost == BeforeOrAfter.AFTER
+        && AnnotationUtils.areSameByName(
+            qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
       return ensuresNonNullAnno(expression);
     }
-    return super.requiresOrEnsuresQualifierAnnoForExpression(expression, qualifier,
-        declaredType, preOrPost, preconds);
+    return super.requiresOrEnsuresQualifierAnnoForExpression(
+        expression, qualifier, declaredType, preOrPost, preconds);
   }
 
   /**

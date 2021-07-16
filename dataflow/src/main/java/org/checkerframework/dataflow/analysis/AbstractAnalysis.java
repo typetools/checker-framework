@@ -228,10 +228,10 @@ public abstract class AbstractAnalysis<
       // TODO: this might be the problem? could getRegularStore be returning only
       // the then store, somehow? Investigate what's happening here and see
       // whether things are correct.
-//      System.out.println("fetching a regular exit store");
-//      System.out.println("regular exit block: " + regularExitBlock);
-//      System.out.println("inputs.get(regularExitBlock): " + inputs.get(regularExitBlock));
-//      System.out.println("-------------");
+      //      System.out.println("fetching a regular exit store");
+      //      System.out.println("regular exit block: " + regularExitBlock);
+      //      System.out.println("inputs.get(regularExitBlock): " + inputs.get(regularExitBlock));
+      //      System.out.println("-------------");
       return inputs.get(regularExitBlock).getRegularStore();
     } else {
       return null;
