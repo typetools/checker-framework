@@ -41,22 +41,22 @@ class MultipleMethodParamsMustCallAliasTest {
 
   class ReplicaInputStreams implements Closeable {
 
-    private final @Owning InputStream out1;
-    private final @Owning InputStream out2;
+    private final @Owning InputStream in1;
+    private final @Owning InputStream in2;
 
     public @MustCallAlias ReplicaInputStreams(
-        @MustCallAlias InputStream o1, @MustCallAlias InputStream o2) {
-      this.out1 = o1;
-      this.out2 = o2;
+        @MustCallAlias InputStream i1, @MustCallAlias InputStream i2) {
+      this.in1 = i1;
+      this.in2 = i2;
     }
 
     @Override
     @EnsuresCalledMethods(
-        value = {"this.out1", "this.out2"},
+        value = {"this.in1", "this.in2"},
         methods = {"close"})
     public void close() throws IOException {
-      out1.close();
-      out2.close();
+      in1.close();
+      in2.close();
     }
   }
 }

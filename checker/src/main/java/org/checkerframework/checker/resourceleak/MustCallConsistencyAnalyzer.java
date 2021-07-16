@@ -429,8 +429,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     // `mustCallAliases` is a set of the argument(s) passed in the MustCallAlias position(s), if any
-    // exists,
-    // otherwise is an empty List.
+    // exists, otherwise is an empty List.
     List<Node> mustCallAliases = getMustCallAliasArgumentNode(node);
     // If mustCallAlias is an empty List and call returns @This, add the receiver to
     // mustCallAliases.
