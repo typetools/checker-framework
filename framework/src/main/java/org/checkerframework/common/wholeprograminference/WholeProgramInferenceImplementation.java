@@ -249,12 +249,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // places the annotations incorrectly on the class declarations.
         continue;
       }
-      if (ElementUtils.isStatic(fieldElement)) {
-        // Don't infer postconditions for static fields, because sometimes
-        // some are inferred that the checker then can't prove. TODO: investigate
-        // why this doesn't work.
-        continue;
-      }
       FieldAccess fa =
           new FieldAccess(
               (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
@@ -268,17 +262,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
         atypeFactory.wpiAdjustForUpdateNonField(inferredType);
       } else {
-        // This field is not in the store. Do not attempt to infer a post-condition annotation,
-        // because it may not be verifiable.
-        continue;
+        // This field is not in the store. Use the declared type.
+        inferredType = fieldDeclType;
       }
       T preOrPostConditionAnnos =
           storage.getPreOrPostconditionsForExpression(
-              preOrPost,
-              methodElt,
-              "this." + fieldElement.getSimpleName().toString(),
-              fieldDeclType,
-              atypeFactory);
+              preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
           preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
@@ -303,7 +292,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.wpiAdjustForUpdateNonField(inferredType);
       } else {
         // The parameter is not in the store, so don't attempt to create a postcondition for it,
-        // since anything other than its default type would not be verifiable.
+        // since anything other than its default type would not be verifiable. (Only postconditions
+        // are supported for parameters.)
         continue;
       }
       T preOrPostConditionAnnos =

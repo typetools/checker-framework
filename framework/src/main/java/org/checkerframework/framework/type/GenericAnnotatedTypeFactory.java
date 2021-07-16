@@ -1557,18 +1557,6 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
     handleCFGViz(cfg);
-    //    if (this.getWholeProgramInference() != null && cfg.underlyingAST.getKind() == Kind.METHOD)
-    // {
-    //      List<Node> nodes = cfg.getAllNodes();
-    //      if (!nodes.isEmpty()) {
-    //        Node last = nodes.get(nodes.size() - 1);
-    //        CFAbstractStore<?, ?> store = getStoreAfter(last);
-    //        ExecutableElement methodElt =
-    //            (ExecutableElement) TreeUtils.elementFromTree(cfg.getUnderlyingAST().getCode());
-    //        this.getWholeProgramInference().updateContracts(BeforeOrAfter.AFTER, methodElt,
-    // store);
-    //      }
-    //    }
   }
 
   /**
