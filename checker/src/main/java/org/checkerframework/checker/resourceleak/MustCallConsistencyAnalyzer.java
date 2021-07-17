@@ -28,6 +28,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -87,10 +88,10 @@ import org.plumelib.util.StringsPlume;
  * for which this property does not hold, the analyzer reports a {@code
  * "required.method.not.called"} error, indicating a possible resource leak.
  *
- * <p>Mechanically, the analysis has two parts.
+ * <p>Mechanically, the analysis does two tasks.
  *
  * <ul>
- *   <li>A must-alias analysis, implemented as a dataflow analysis. Each dataflow fact is a set of
+ *   <li>Tracks must-aliases, implemented via a dataflow analysis. Each dataflow fact is a set of
  *       resource-aliases that refer to the same resource. Furthermore, that resource is owned. No
  *       dataflow facts are maintained for a non-owned resource.
  *   <li>When the last resource alias in a resource-alias set goes out-of-scope, it checks their
@@ -98,19 +99,10 @@ import org.plumelib.util.StringsPlume;
  *       types, but queries other checkers to obtain them.
  * </ul>
  *
- * TODO: From our discussion, I thought that you were planning to use the term Obligation, but to be
- * at pains to emphasize that an "Obligation" is different than a "must-call obligation". But this
- * text does something different: it says that they are the same. I think that is a significant
- * problem. The paper "Lightweight and Modular Resource Leak Verification" defines "must-call
- * obligations" as "required methods". It says that a MustCall type represents a must-call
- * obligation. The term "must-call obligation" is used similarly in the source code. Thus, there is
- * already an established meaning for "must-call obligation". I find it confusing to redefine the
- * term "must-call obligation" here in the code, in a different way than defined in the paper.
- *
  * <p>Class {@link Obligation} represents a single such dataflow fact. Abstractly, each dataflow
- * fact is a must-call obligation. A must-call obligation is a pair: a set of resource aliases to
- * some resource, and the list of must-call methods that need to be called on one of the resource
- * aliases. Concretely, the Must Call Checker is responsible for tracking the latter - an
+ * fact is a pair: a set of resource aliases to some resource, and the must-call obligations of that
+ * resource (i.e the list of must-call methods that need to be called on one of the resource
+ * aliases). Concretely, the Must Call Checker is responsible for tracking the latter - an
  * expression's must-call type indicates which methods must be called - so this dataflow analysis
  * only actually tracks the sets of resource aliases.
  *
@@ -157,12 +149,11 @@ class MustCallConsistencyAnalyzer {
   private final CFAnalysis analysis;
 
   /**
-   * An Obligation is the abstraction used by this dataflow analysis for a must-call obligation. A
-   * must-call obligation has two parts: the list of one or more methods that must be called, and
-   * the set of "resource aliases" on which calling the required method(s) are equivalent. This
-   * dataflow analysis (and therefore this class) tracks only the latter; the former are tracked by
-   * the {@link MustCallChecker} and are accessed by looking up the type(s) in its type system of
-   * the resource aliases contained in each obligation.
+   * An Obligation is the abstraction used by this dataflow analysis for a must-call obligation and
+   * the set of resource aliases through which that obligation can be fulfilled. This dataflow
+   * analysis (and therefore this class) tracks only the latter; the former are tracked by the
+   * {@link MustCallChecker} and are accessed by looking up the type(s) in its type system of the
+   * resource aliases contained in each {@code Obligation}.
    */
   private static class Obligation {
 
@@ -171,7 +162,8 @@ class MustCallConsistencyAnalyzer {
     // sentence below mean?
     /**
      * The set of resource aliases through which this must-call obligation can be satisfied. Calling
-     * the required method(s) through any of them satisfies the obligation.
+     * the required method(s) through any of them satisfies the obligation. The required methods can
+     * be determined by calling
      *
      * <p>{@code Obligation} is deeply immutable. If some code were to accidentally mutate a {@code
      * resourceAliases} set it could be really nasty to debug, so this set is always immutable.
@@ -205,8 +197,6 @@ class MustCallConsistencyAnalyzer {
       return null;
     }
 
-    // TODO: "is sufficient": is it necessary?  This is related to my question about what the
-    // required methods are.
     /**
      * Returns true if this contains a resource alias corresponding to {@code localVariableNode},
      * meaning that calling the required methods on {@code localVariableNode} is sufficient to
@@ -217,6 +207,66 @@ class MustCallConsistencyAnalyzer {
      */
     private boolean canBeSatisfiedThrough(LocalVariableNode localVariableNode) {
       return getResourceAlias(localVariableNode) != null;
+    }
+
+    /**
+     * Gets the must-call methods (i.e. the list of methods that must be called to satisfy the
+     * must-call obligation) of the resource represented by this Obligation.
+     *
+     * @param rlAtf the Resource Leak Annotated Type Factory to use
+     * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
+     *     null, then the default MustCall type of each variable's class will be used.
+     * @return the list of must-call method names, or null if the resource's must-call obligations
+     *     are unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
+     */
+    public @Nullable List<String> getMustCallMethods(
+        ResourceLeakAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
+      MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
+          rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
+
+      // Need to get the LUB of the MC values, because if a CreatesMustCallFor method was
+      // called on just one of the aliases then they all need to be treated as if
+      // they need to call the relevant methods.
+      AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
+      for (ResourceAlias alias : this.resourceAliases) {
+        AnnotationMirror mcAnno = null;
+        LocalVariable reference = alias.reference;
+        CFValue value = mcStore == null ? null : mcStore.getValue(reference);
+        if (value != null) {
+          mcAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), MustCall.class);
+        }
+        if (mcAnno == null) {
+          // It wasn't in the store, so fall back to the default must-call type for the class.
+          // TODO: we currently end up in this case when checking a call to the return type
+          // of a returns-receiver method on something with a MustCall type; for example,
+          // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we
+          // can.
+          TypeElement typeElt = TypesUtils.getTypeElement(reference.getType());
+          if (typeElt == null) {
+            // typeElt is null if reference.getType() was not a class, interface, annotation type,
+            // or
+            // enum---that is, was not an annotatable type.
+            // That shouldn't happen, but if it does fall back to a safe default (i.e. top).
+            mcAnno = mustCallAnnotatedTypeFactory.TOP;
+          } else {
+            // TODO: Why does this happen sometimes?
+            if (typeElt.asType().getKind() == TypeKind.VOID) {
+              return Collections.emptyList();
+            }
+            mcAnno =
+                mustCallAnnotatedTypeFactory
+                    .getAnnotatedType(typeElt)
+                    .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
+          }
+        }
+        mcLub = mustCallAnnotatedTypeFactory.getQualifierHierarchy().leastUpperBound(mcLub, mcAnno);
+      }
+      if (AnnotationUtils.areSameByName(
+          mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
+        return rlAtf.getMustCallValues(mcLub);
+      } else {
+        return null;
+      }
     }
 
     @Override
@@ -243,7 +293,12 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * A resource alias is a reference through which a must-call obligation can be satisfied.
+   * A resource alias is a reference through which a must-call obligation can be satisfied. Any
+   * must-call obligation might be satisfiable through one or more resource aliases; {@link
+   * Obligation} tracks the set of resource aliases that correspond to each must-call obligation in
+   * the program.
+   *
+   * <p>A resource alias is always owning; non-owning aliases are, by definition, not tracked.
    *
    * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
    * "reference" through which the must-call obligations for the alias set to which it belongs can
@@ -251,21 +306,16 @@ class MustCallConsistencyAnalyzer {
    */
   /* package-private */ static class ResourceAlias {
 
-    // TODO: The text about satisfying obligations does not belong here.  It is a fact about other
-    // data strutures and algorithms, not about the ResourcAlias abstraction.
-    // TODO: Should "the reference" be "a reference"?  (That question might be moot once you move
-    // the information about obligations elsewhere.)
     /**
-     * The reference through which this resource can have its must-call obligations satisfied. This
-     * is either a local variable actually defined in the source code, or a temporary variable for
-     * an expression.
+     * A local variable actually defined in the source code or a temporary variable for an
+     * expression.
      */
     public final LocalVariable reference;
 
     /**
-     * The tree at which it was assigned. The tree's primary purpose is error reporting, but it is
-     * also used to determine if this resource alias is one of the expressions in a ternary
-     * expression, which are treated specially by the algorithm (see {@link
+     * The tree at which {@code reference} was assigned. The tree's primary purpose is error
+     * reporting, but it is also used to determine if this resource alias is one of the expressions
+     * in a ternary expression, which are treated specially by the algorithm (see {@link
      * #handleTernarySuccIfNeeded(Block, Block, Set)}).
      */
     public final Tree tree;
@@ -320,14 +370,13 @@ class MustCallConsistencyAnalyzer {
     this.analysis = analysis;
   }
 
-  // TODO: I suspect there is another condition besides having a non-empty @MustCall type:  it also
-  // has to be owned/owning.  If so, explain that in the parenthesis too.  If not, I don't
-  // understand the algorithm.
   /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts
-   * ("obligations") of type {@link Obligation}, each representing a set of resource aliases for
-   * some value with a non-empty {@code @MustCall} obligation. (It is not necessary to track
-   * expressions with empty {@code @MustCall} obligations, because they are trivially fulfilled.)
+   * ("Obligations") of type {@link Obligation}, each representing a set of owning resource aliases
+   * for some value with a non-empty {@code @MustCall} obligation. (It is not necessary to track
+   * expressions with empty {@code @MustCall} obligations, because they are trivially fulfilled. Nor
+   * is tracking non-owning aliases necessary, because by definition they cannot be used to fulfill
+   * obligations.)
    *
    * @param cfg the control flow graph of the method to check
    */
@@ -401,22 +450,12 @@ class MustCallConsistencyAnalyzer {
     updateObligationsWithInvocationResult(obligations, node);
   }
 
-  // TODO: This comment repeats, verbatim, text from `isValidCreatesMustCallForExpression`.  When
-  // text is repeated, a reader must carefully read both versions to see whether there are any
-  // differences or discrepancies.  It's better to give the information just once, to avoid the
-  // opportunity for the versions to get out of sync.  Could you change the paragraph into a
-  // cross-reference to `isValidCreatesMustCallForExpression`?
   /**
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
-   * <p>Such an invocation is valid if for all expressions in the CreatesMustCallFor annotation one
-   * of the following conditions is true: 1) the expression is an owning pointer, 2) the expression
-   * already has a tracked obligation, or 3) the method in which the invocation occurs also has
-   * an @CreatesMustCallFor annotation, with the same expression. {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} contains the logic for
-   * checking an individual expression against these rules.
-   *
-   * <p>If none of the above are true, this method issues a reset.not.owning error.
+   * <p>Such an invocation is valid if any of the conditions in {@link
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} is true. If none of these
+   * conditions are true, this method issues a reset.not.owning error.
    *
    * <p>For soundness, this method also guarantees that if any of the expressions has a tracked
    * obligation, any tracked resource aliases of it will be removed (lest the analysis conclude that
@@ -435,12 +474,7 @@ class MustCallConsistencyAnalyzer {
     List<JavaExpression> expressions =
         CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             node, typeFactory, typeFactory);
-    // TODO: Use of a HashSet makes the code nondeterministic and produces warnings in a different
-    // order than the expressions appeared in the source code.  I would use a list, and it's
-    // acceptable to produce a duplicate warning if the programmer wrote the same expression
-    // multiple times -- or, if you consider that unacceptable, either change
-    // getCreatesMustCallForExpressions or use a LinkedHashSet here.
-    Set<JavaExpression> missing = new HashSet<>();
+    Set<JavaExpression> missing = new LinkedHashSet<>(1);
     for (JavaExpression expression : expressions) {
       if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
         missing.add(expression);
@@ -456,24 +490,22 @@ class MustCallConsistencyAnalyzer {
     checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
   }
 
-  // TODO: Whatdoes "has a tracked obligation" mean?  That term is not defined.  Does it mean that
-  // the expression appears in some set of resource aliases in the dataflow facts?
-  // TODO: I don't know what it means to invoke a method "on a path".  Do you mean that `path` is
-  // the path to the method invocation?
   /**
    * Checks the validity of the given expression from an invoked method's {@link
    * org.checkerframework.checker.mustcall.qual.CreatesMustCallFor} annotation. Helper method for
    * {@link #checkCreatesMustCallForInvocation(Set, MethodInvocationNode)}.
    *
    * <p>An expression is valid if one of the following conditions is true: 1) the expression is an
-   * owning pointer, 2) the expression already has a tracked obligation, or 3) the method in which
-   * the invocation occurs also has an @CreatesMustCallFor annotation, with the same expression.
+   * owning pointer, 2) the expression already has a tracked obligation (i.e. there is already a
+   * resource alias in some Obligation's resource alias set that refers to expression), or 3) the
+   * method in which the invocation occurs also has an @CreatesMustCallFor annotation, with the same
+   * expression.
    *
    * @param obligations the currently-tracked obligations; this value is side-effected if there is
    *     an obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
-   * @param path the path on which the method from whose @CreateMustCallFor annotation {@code
-   *     expression} came was invoked
+   * @param path the path to the invocation of the method from whose @CreateMustCallFor annotation
+   *     {@code expression} came
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
@@ -1655,7 +1687,7 @@ class MustCallConsistencyAnalyzer {
   private void checkMustCall(
       Obligation obligation, CFStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
-    List<String> mustCallValue = typeFactory.getMustCallValue(obligation.resourceAliases, mcStore);
+    List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
     // optimization: if there are no must-call methods, do not need to perform the check
     if (mustCallValue == null || mustCallValue.isEmpty()) {
       return;
