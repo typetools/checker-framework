@@ -86,7 +86,7 @@ Tom Copeland.
 Jose Cronembold.
 \newblock {JSR} 198: A standard extension {API} for {Integrated} {Development}
   {Environments}.
-\newblock \url{http://jcp.org/en/jsr/detail?id=198}, May~8, 2006.
+\newblock \url{https://jcp.org/en/jsr/detail?id=198}, May~8, 2006.
 
 \bibitem[Dar06]{JSR269}
 Joe Darcy.
@@ -180,7 +180,8 @@ Colin~S. Gordon, Werner Dietl, Michael~D. Ernst, and Dan Grossman.
 \bibitem[Goe06]{Goetz2006:typedef}
 Brian Goetz.
 \newblock The pseudo-typedef antipattern: Extension is not type definition.
-\newblock \url{https://www.ibm.com/developerworks/java/library/j-jtp02216/},
+\newblock
+  \url{http://web.archive.org/web/20171025205847/https://www.ibm.com/developerworks/java/library/j-jtp02216/},
   February~21, 2006.
 
 \bibitem[GPB{\etalchar{+}}06]{Goetz2006}

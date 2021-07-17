@@ -1,7 +1,14 @@
-Version 3.16.0 (July 9, 2021)
------------------------------
+Version 3.16.0 (July 13, 2021)
+------------------------------
 
 **User-visible changes:**
+
+You can run the Checker Framework on a JDK 16 JVM.  You can pass the `--release
+16` command-line argument to the compiler.  You may need to add additional
+command-line options, such as `--add-opens`; see the Checker Framework manual.
+New syntax, such as records and switch expressions, is not yet supported or
+type-checked; that will be added in a future release.  Thanks to Neil Brown for
+the JDK 16 support.
 
 The Lock Checker supports a new type, `@NewObject`, for the result of a
 constructor invocation.
@@ -32,7 +39,7 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
  * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
 
 **Closed issues:**
-
+#3013, #3754, #3791, #3845, #4523, #4767.
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------

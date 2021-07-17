@@ -118,7 +118,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.15.0'
+    ext.checkerFrameworkVersion = '3.16.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -191,7 +191,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.15.0'
+    ext.checkerFrameworkVersion = '3.16.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -344,13 +344,13 @@ file showing how to enable Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.15.0.jar',
+    binary_jar = 'checker-3.16.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.15.0.jar',
+    binary_jar = 'checker-qual-3.16.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -385,21 +385,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.15.0/>.
+other than \<\${HOME}/checker-framework-3.16.0/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.15.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.16.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.15.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.16.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -420,7 +420,7 @@ other than \<\${HOME}/checker-framework-3.15.0/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.15.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.16.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -442,11 +442,11 @@ other than \<\${HOME}/checker-framework-3.15.0/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.15.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.16.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.15.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.16.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -525,9 +525,9 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.15.0/checker-qual-3.15.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.15.0/checker-util-3.15.0.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.15.0/checker-3.15.0-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.16.0/checker-qual-3.16.0.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.16.0/checker-util-3.16.0.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.16.0/checker-3.16.0-all.jar}
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
@@ -589,13 +589,13 @@ source code is Java 8 and that Java 8 bytecode is created.
 \end{enumerate}
 
 
-\subsectionAndLabel{JDK 11}{javac-jdk11}
+\subsectionAndLabel{JDK 11+}{javac-jdk11}
 
 This section shows what arguments to pass to the OpenJDK or OracleJDK
 \<javac> (\emph{not} the \<javac> wrapper script of
 Section~\ref{javac-wrapper}) to run the Checker
 Framework, if you are using JDK 9 or later.  These
-instructions should work on JDK 9 or later, but we only test with JDK 11.
+instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK 16.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
@@ -605,15 +605,29 @@ To compile non-modularized code:
 \begin{Verbatim}
 javac \
 -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
 -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
 -cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
 -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
-The arguments are explained above, except for
-\<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
+The arguments are explained above, except for two of them:.
+\begin{enumerate}
+
+\item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
 opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
+
+\item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
+required with JDK 16+ because the Checker Framework accesses non-exported members of these packages.
+(These are also required with JDK 11 if \<--illegal-access> is set to \<deny>.)
+
+\end{enumerate}
 
 If this option is missing, \<javac> may issue the following warning:
 \begin{Verbatim}
@@ -884,6 +898,12 @@ is run.  The instructions in this section
 bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
 
+Debugging your Maven configuration can be tricky because of a
+\ahreforurl{https://issues.apache.org/jira/browse/MCOMPILER-434}{bug in
+  Maven}: Maven does not report annotation processor exceptions, even when
+the \<-X> command-line argument is passed.
+
+
 \begin{enumerate}
 
 \item Declare a dependency on the Checker Framework artifacts, either from
@@ -977,7 +997,7 @@ section, or add it if it is not present.
     <profile>
       <id>checkerframework</id>
       <activation>
-        <jdk>[1.8,13)</jdk>
+        <jdk>[1.8,)</jdk>
       </activation>
       <build>
         <plugins>
@@ -1051,9 +1071,9 @@ section, or add it if it is not present.
     </profile>
 
     <profile>
-      <id>checkerframework-jdk11</id>
+      <id>checkerframework-jdk9orlater</id>
       <activation>
-        <jdk>11</jdk>
+        <jdk>[9,)</jdk>
       </activation>
       <build>
         <plugins>

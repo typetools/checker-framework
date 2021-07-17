@@ -9,6 +9,7 @@ import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Utility class for applying the annotations inferred by dataflow to a given type. */
 public class DefaultInferredTypesApplier {
@@ -97,6 +98,9 @@ public class DefaultInferredTypesApplier {
       AnnotationMirror notInferred) {
     if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
       throw new BugInCF("Inferred value should not be missing annotations: " + inferredTypeMirror);
+    }
+    if (TypesUtils.isCapturedTypeVariable(inferredTypeMirror)) {
+      return;
     }
 
     TypeVariable typeVar = (TypeVariable) inferredTypeMirror;

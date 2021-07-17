@@ -59,7 +59,7 @@ public class BoundsInitializer {
   public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
     final DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
     if (underlyingType.getTypeArguments().isEmpty() && !declaredType.isUnderlyingTypeRaw()) {
-      // No type arguments to infer.
+      // No type arguments to initialize.
       return;
     }
 
@@ -81,7 +81,8 @@ public class BoundsInitializer {
       }
 
       final AnnotatedTypeMirror typeArg =
-          AnnotatedTypeMirror.createType(javaTypeArg, declaredType.atypeFactory, false);
+          AnnotatedTypeMirror.createType(
+              javaTypeArg, declaredType.atypeFactory, declaredType.isDeclaration());
       if (typeArg.getKind() == TypeKind.WILDCARD) {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) typeArg;
         wildcardType.setTypeVariable(typeElement.getTypeParameters().get(i));
@@ -413,10 +414,25 @@ public class BoundsInitializer {
       typeVarToStructure.put(type.getUnderlyingType(), typeVarStruct);
       RecursiveTypeStructure parentStructure = this.currentStructure;
 
+      // If type is a captured type variable, then its type variables should be created new, rather
+      // than using one from the rest of the type.  So, clear the typevars map of all but the
+      // mapping with key type.
+      Map<TypeVariable, AnnotatedTypeMirror> hold = new HashMap<>();
+      if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
+        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
+            new ArrayList<>(typevars.entrySet())) {
+          if (!type.atypeFactory.types.isSameType(
+              entry.getKey(), entry.getValue().underlyingType)) {
+            hold.put(entry.getKey(), entry.getValue());
+            typevars.remove(entry.getKey(), entry.getValue());
+          }
+        }
+      }
       this.currentStructure = typeVarStruct;
       initializeUpperBound(type);
       initializeLowerBound(type);
       this.currentStructure = parentStructure;
+      typevars.putAll(hold);
 
       return null;
     }
@@ -570,15 +586,9 @@ public class BoundsInitializer {
       WildcardType javaWildcardType = wildcard.getUnderlyingType();
       TypeMirror javaExtendsBound;
       if (javaWildcardType.getExtendsBound() != null) {
-        // If the wildcard type has an extends bound, use it.
         javaExtendsBound = javaWildcardType.getExtendsBound();
-      } else if (wildcard.getTypeVariable() != null) {
-        // Otherwise use the upper bound of the type variable associated with this wildcard.
-        javaExtendsBound = wildcard.getTypeVariable().getUpperBound();
       } else {
-        // Otherwise use the upper bound of the Java wildcard.
-        javaExtendsBound =
-            TypesUtils.wildUpperBound(javaWildcardType, wildcard.atypeFactory.processingEnv);
+        javaExtendsBound = TypesUtils.getObjectTypeMirror(typeFactory.processingEnv);
       }
 
       if (wildcard.isUninferredTypeArgument()) {
