@@ -375,14 +375,11 @@ public class InitializationVisitor<
     List<VariableTree> violatingFields = uninitializedFields.first;
     List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
+    // Remove fields that have already been initialized by an initializer block.
     if (staticFields) {
-      // TODO: Why is nothing done for static fields?
-      // Do we need the following?
       violatingFields.removeAll(store.initializedFields);
       nonviolatingFields.removeAll(store.initializedFields);
     } else {
-      // remove fields that have already been initialized by an
-      // initializer block
       violatingFields.removeAll(initializedFields);
       nonviolatingFields.removeAll(initializedFields);
     }
