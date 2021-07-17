@@ -378,7 +378,8 @@ public class InitializationVisitor<
     if (staticFields) {
       // TODO: Why is nothing done for static fields?
       // Do we need the following?
-      // violatingFields.removeAll(store.initializedFields);
+      violatingFields.removeAll(store.initializedFields);
+      nonviolatingFields.removeAll(store.initializedFields);
     } else {
       // remove fields that have already been initialized by an
       // initializer block

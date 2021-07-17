@@ -1312,7 +1312,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
       try {
         List<CFGMethod> methods = new ArrayList<>();
-        for (Tree m : ct.getMembers()) {
+        List<? extends Tree> members = new ArrayList<>(ct.getMembers());
+        // Process variables before methods, so all field initializers are observed before the
+        // constructor is analyzed and reports uninitialized variables.
+        members.sort(sortVariablesFirst);
+        for (Tree m : members) {
           switch (m.getKind()) {
             case METHOD:
               MethodTree mt = (MethodTree) m;
@@ -1350,7 +1354,7 @@ public abstract class GenericAnnotatedTypeFactory<
                     isStatic,
                     capturedStore);
                 Value value = flowResult.getValue(initializer);
-                if (vt.getModifiers().getFlags().contains(Modifier.FINAL) && value != null) {
+                if (value != null) {
                   // Store the abstract value for the field.
                   VariableElement element = TreeUtils.elementFromDeclaration(vt);
                   fieldValues.add(Pair.of(element, value));
@@ -1437,6 +1441,23 @@ public abstract class GenericAnnotatedTypeFactory<
       scannedClasses.put(ct, ScanState.FINISHED);
     }
   }
+
+  /** Sorts a list of trees with the variables first. */
+  Comparator<Tree> sortVariablesFirst =
+      new Comparator<Tree>() {
+        @Override
+        public int compare(Tree t1, Tree t2) {
+          boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
+          boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
+          if (variable1 && !variable2) {
+            return -1;
+          } else if (!variable1 && variable2) {
+            return 1;
+          } else {
+            return 0;
+          }
+        }
+      };
 
   /**
    * Analyze the AST {@code ast} and store the result. Additional operations that should be
