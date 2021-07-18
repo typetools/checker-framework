@@ -9,7 +9,7 @@ public class FlowNegation {
 
     void testCase1() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (s != null) {
         } else {
             // nothing to do
@@ -19,7 +19,7 @@ public class FlowNegation {
 
     void testCase2() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (s == null) {
         } else {
             // nothing to do
@@ -29,7 +29,7 @@ public class FlowNegation {
 
     void testInvalidCase1() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (s != null) {
             s = null;
         } else {
@@ -41,7 +41,7 @@ public class FlowNegation {
 
     void testInvalidCase2() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         if (s != null) {
             // nothing to do
         } else {
@@ -58,21 +58,21 @@ public class FlowNegation {
 
     void testTernaryCase1() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         Object m = (s != null) ? "m" : "n";
         s.toString();
     }
 
     void testTernaryCase2() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         Object m = (s == null) ? "m" : "n";
         s.toString();
     }
 
     void testTernaryInvalidCase1() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         Object m = (s != null) ? (s = null) : "n";
         // :: error: (dereference.of.nullable)
         s.toString(); // error
@@ -80,7 +80,7 @@ public class FlowNegation {
 
     void testTernaryInvalidCase2() {
         String s = "m";
-        // :: warning: (known.nonnull)
+        // :: warning: (nulltest.redundant)
         Object m = (s != null) ? "m" : (s = null);
         // :: error: (dereference.of.nullable)
         s.toString(); // error

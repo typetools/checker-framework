@@ -9,7 +9,8 @@ compile:
 	cd fenum-extension && $(MAKE)
 	cd subtyping-extension && $(MAKE)
 	cd units-extension && $(MAKE)
-	cd MavenExample && $(MAKE)
+# The Maven example downloads a lot.  Try twice in case of network lossage.
+	cd MavenExample && ($(MAKE) || (sleep 60 && echo "Trying again:" && $(MAKE)))
 	cd lombok && $(MAKE)
 	cd errorprone && $(MAKE)
 

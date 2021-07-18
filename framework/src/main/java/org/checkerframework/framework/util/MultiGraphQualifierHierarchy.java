@@ -255,13 +255,13 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
          * @return the {@link PolymorphicQualifier} meta-annotation on {@code qual} if one exists;
          *     otherwise return null
          */
-        private static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
+        private AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
             if (qual == null) {
                 return null;
             }
             Element qualElt = qual.getAnnotationType().asElement();
             for (AnnotationMirror am : qualElt.getAnnotationMirrors()) {
-                if (AnnotationUtils.areSameByClass(am, PolymorphicQualifier.class)) {
+                if (atypeFactory.areSameByClass(am, PolymorphicQualifier.class)) {
                     return am;
                 }
             }
@@ -284,7 +284,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
          *     otherwise, null.
          * @see org.checkerframework.framework.qual.PolymorphicQualifier#value()
          */
-        private static @Nullable @CanonicalName Name getPolymorphicQualifierElement(
+        private @Nullable @CanonicalName Name getPolymorphicQualifierElement(
                 AnnotationMirror qual) {
             AnnotationMirror poly = getPolymorphicQualifier(qual);
 
@@ -293,6 +293,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
             if (poly == null) {
                 return null;
             }
+            // Default value for `PolymorphicQualifier.value` is Annotation.class
             Name ret = AnnotationUtils.getElementValueClassName(poly, "value", true);
             return ret;
         }

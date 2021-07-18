@@ -32,11 +32,13 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -130,22 +132,34 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                         "override.receiver.invalid",
                         overrider.getReceiverType(),
                         overridden.getReceiverType(),
-                        overriderMeth,
-                        overriderTyp,
-                        overriddenMeth,
-                        overriddenTyp);
+                        overrider,
+                        overriderType,
+                        overridden,
+                        overriddenType);
                 return false;
             }
             return true;
         }
 
+        /**
+         * Create a GuiEffectOverrideChecker.
+         *
+         * @param overriderTree the AST node of the overriding method or method reference
+         * @param overrider the type of the overriding method
+         * @param overridingType the type enclosing the overrider method, usually an
+         *     AnnotatedDeclaredType; for Method References may be something else
+         * @param overridingReturnType the return type of the overriding method
+         * @param overridden the type of the overridden method
+         * @param overriddenType the declared type enclosing the overridden method
+         * @param overriddenReturnType the return type of the overridden method
+         */
         public GuiEffectOverrideChecker(
                 Tree overriderTree,
-                AnnotatedTypeMirror.AnnotatedExecutableType overrider,
+                AnnotatedExecutableType overrider,
                 AnnotatedTypeMirror overridingType,
                 AnnotatedTypeMirror overridingReturnType,
                 AnnotatedExecutableType overridden,
-                AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+                AnnotatedDeclaredType overriddenType,
                 AnnotatedTypeMirror overriddenReturnType) {
             super(
                     overriderTree,
@@ -253,7 +267,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             System.err.println("methodElt found");
         }
 
-        Tree callerTree = TreeUtils.enclosingMethodOrLambda(getCurrentPath());
+        Tree callerTree = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
         if (callerTree == null) {
             // Static initializer; let's assume this is safe to have the UI effect
             if (debugSpew) {
@@ -512,7 +526,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 ReturnTree returnTree = (ReturnTree) tree;
                 if (returnTree.getExpression().getKind() == Tree.Kind.NEW_CLASS
                         || returnTree.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-                    Tree enclosing = TreeUtils.enclosingMethodOrLambda(path);
+                    Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
                     AnnotatedTypeMirror ret = null;
                     if (enclosing.getKind() == Tree.Kind.METHOD) {
                         MethodTree enclosingMethod = (MethodTree) enclosing;

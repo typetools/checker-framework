@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -80,6 +81,9 @@ public class QualifierDefaults {
     /** Element utilities to use. */
     private final Elements elements;
 
+    /** The locations() element/field of a @DefaultQualifier annotation. */
+    protected final ExecutableElement defaultQualifierLocationsElement;
+
     /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
 
@@ -101,10 +105,10 @@ public class QualifierDefaults {
      * earlier name for the field was "qualifierCache"). It can also be used by type systems to set
      * defaults for certain Elements.
      */
-    private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+    private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
 
     /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
-    private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
+    private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /** CLIMB locations whose standard default is top for a given type system. */
     public static final List<TypeUseLocation> STANDARD_CLIMB_DEFAULTS_TOP =
@@ -171,9 +175,15 @@ public class QualifierDefaults {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
         this.useConservativeDefaultsBytecode =
-                atypeFactory.getContext().getChecker().useConservativeDefault("bytecode");
+                atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
-                atypeFactory.getContext().getChecker().useConservativeDefault("source");
+                atypeFactory.getChecker().useConservativeDefault("source");
+        this.defaultQualifierLocationsElement =
+                TreeUtils.getMethod(
+                        "org.checkerframework.framework.qual.DefaultQualifier",
+                        "locations",
+                        0,
+                        atypeFactory.getProcessingEnv());
     }
 
     @Override
@@ -353,6 +363,36 @@ public class QualifierDefaults {
      * @param type the type to annotate
      */
     public void annotate(Element elt, AnnotatedTypeMirror type) {
+        if (elt != null) {
+            switch (elt.getKind()) {
+                case FIELD:
+                case LOCAL_VARIABLE:
+                case PARAMETER:
+                case RESOURCE_VARIABLE:
+                case EXCEPTION_PARAMETER:
+                case ENUM_CONSTANT:
+                    String varName = elt.getSimpleName().toString();
+                    ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                            .getDefaultForTypeAnnotator()
+                            .defaultTypeFromName(type, varName);
+
+                    break;
+
+                case METHOD:
+                    String methodName = elt.getSimpleName().toString();
+                    AnnotatedTypeMirror returnType =
+                            ((AnnotatedExecutableType) type).getReturnType();
+                    ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                            .getDefaultForTypeAnnotator()
+                            .defaultTypeFromName(returnType, methodName);
+
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         applyDefaultsElement(elt, type);
     }
 
@@ -491,7 +531,16 @@ public class QualifierDefaults {
         applyToTypeVar = false;
     }
 
-    // dq must be an AnnotationMirror that represent a @DefaultQualifier
+    /** The default {@code value} element for a @DefaultQualifier annotation. */
+    private static TypeUseLocation[] defaultQualifierValueDefault =
+            new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
+
+    /**
+     * Create a DefaultSet from a @DefaultQualifier annotation.
+     *
+     * @param dq a @DefaultQualifier annotation
+     * @return a DefaultSet corresponding to the @DefaultQualifier annotation
+     */
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
         Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
@@ -506,9 +555,12 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            List<TypeUseLocation> locations =
+            TypeUseLocation[] locations =
                     AnnotationUtils.getElementValueEnumArray(
-                            dq, "locations", TypeUseLocation.class, true);
+                            dq,
+                            defaultQualifierLocationsElement,
+                            TypeUseLocation.class,
+                            defaultQualifierValueDefault);
             DefaultSet ret = new DefaultSet();
             for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));

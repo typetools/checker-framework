@@ -377,7 +377,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
             // instantiate the type variable for the Builder class
             retType =
                     AnnotatedTypes.asMemberOf(
-                                    atypeFactory.getContext().getTypeUtils(),
+                                    atypeFactory.getChecker().getTypeUtils(),
                                     atypeFactory,
                                     atypeFactory.getAnnotatedType(builderElement),
                                     method)

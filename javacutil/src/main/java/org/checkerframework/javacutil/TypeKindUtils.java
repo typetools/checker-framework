@@ -178,7 +178,7 @@ public final class TypeKindUtils {
      *
      * @param from a primitive type
      * @param to a primitive type
-     * @return the type of primitive conversion between {@code from} and {@code to}.
+     * @return the type of primitive conversion between {@code from} and {@code to}
      */
     public static PrimitiveConversionKind getPrimitiveConversionKind(TypeKind from, TypeKind to) {
         if (from == TypeKind.BOOLEAN && to == TypeKind.BOOLEAN) {
@@ -239,6 +239,58 @@ public final class TypeKindUtils {
             case BOOLEAN:
             default:
                 return -1;
+        }
+    }
+
+    /**
+     * Returns the minimum value representable by the given ingetgral primitive type.
+     *
+     * @param tk a primitive type kind
+     * @return the minimum value representable by the given integral primitive type.
+     */
+    public static long minValue(TypeKind tk) {
+        switch (tk) {
+            case BYTE:
+                return Byte.MIN_VALUE;
+            case SHORT:
+                return Short.MIN_VALUE;
+            case CHAR:
+                return Character.MIN_VALUE;
+            case INT:
+                return Integer.MIN_VALUE;
+            case LONG:
+                return Long.MIN_VALUE;
+            case FLOAT:
+            case DOUBLE:
+            case BOOLEAN:
+            default:
+                throw new BugInCF(tk + " does not have a minimum value");
+        }
+    }
+
+    /**
+     * Returns the maximum value representable by the given integral primitive type.
+     *
+     * @param tk a primitive type kind
+     * @return the maximum value representable by the given integral primitive type.
+     */
+    public static long maxValue(TypeKind tk) {
+        switch (tk) {
+            case BYTE:
+                return Byte.MAX_VALUE;
+            case SHORT:
+                return Short.MAX_VALUE;
+            case CHAR:
+                return Character.MAX_VALUE;
+            case INT:
+                return Integer.MAX_VALUE;
+            case LONG:
+                return Long.MAX_VALUE;
+            case FLOAT:
+            case DOUBLE:
+            case BOOLEAN:
+            default:
+                throw new BugInCF(tk + " does not have a maximum value");
         }
     }
 }

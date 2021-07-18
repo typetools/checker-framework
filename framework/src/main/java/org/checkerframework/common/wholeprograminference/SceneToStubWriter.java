@@ -1,7 +1,6 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.google.common.collect.ComparisonChain;
-import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -40,7 +39,7 @@ import scenelib.annotations.el.ATypeElement;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.el.DefCollector;
 import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.InnerTypeLocation;
+import scenelib.annotations.el.TypePathEntry;
 import scenelib.annotations.field.AnnotationFieldType;
 
 // In this file, "base name" means "type without its package part in binary name format".
@@ -217,6 +216,9 @@ public final class SceneToStubWriter {
         }
     }
 
+    /** Static variable to improve performance of getNextArrayLevel. */
+    private static List<TypePathEntry> location;
+
     /**
      * Gets the outermost array level (or the component if not an array) from the given type
      * element, or null if scene-lib is not storing any more information about this array (for
@@ -231,9 +233,9 @@ public final class SceneToStubWriter {
             return null;
         }
 
-        for (Map.Entry<InnerTypeLocation, ATypeElement> ite : e.innerTypes.entrySet()) {
-            InnerTypeLocation loc = ite.getKey();
-            if (loc.location.contains(TypePathEntry.ARRAY)) {
+        for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {
+            location = ite.getKey();
+            if (location.contains(TypePathEntry.ARRAY_ELEMENT)) {
                 return ite.getValue();
             }
         }
@@ -607,7 +609,10 @@ public final class SceneToStubWriter {
                     @Override
                     public int compare(@BinaryName String o1, @BinaryName String o2) {
                         return ComparisonChain.start()
-                                .compare(packagePart(o1), packagePart(o2))
+                                .compare(
+                                        packagePart(o1),
+                                        packagePart(o2),
+                                        Comparator.nullsFirst(Comparator.naturalOrder()))
                                 .compare(basenamePart(o1), basenamePart(o2))
                                 .result();
                     }

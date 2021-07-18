@@ -3,7 +3,6 @@ package org.checkerframework.checker.index.inequality;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -13,7 +12,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
+/** The visitor for the Less Than Checker. */
 public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactory> {
 
     private static final @CompilerMessageKey String FROM_GT_TO = "from.gt.to";
@@ -43,7 +44,9 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 anm = null;
             }
 
-            if (anm == null || !LessThanAnnotatedTypeFactory.isLessThanOrEqual(anm, subSeq.to)) {
+            LessThanAnnotatedTypeFactory factory = getTypeFactory();
+
+            if (anm == null || !factory.isLessThanOrEqual(anm, subSeq.to)) {
                 // issue an error
                 checker.reportError(
                         valueTree,
@@ -71,8 +74,10 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         // Also skip the check if the only expression is "a + 1" and the valueTree
         // is "a".
         List<String> expressions =
-                LessThanAnnotatedTypeFactory.getLessThanExpressions(
-                        varType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN));
+                getTypeFactory()
+                        .getLessThanExpressions(
+                                varType.getEffectiveAnnotationInHierarchy(
+                                        atypeFactory.LESS_THAN_UNKNOWN));
         if (expressions != null) {
             boolean isLessThan = true;
             for (String expression : expressions) {
@@ -112,17 +117,16 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
                 exprType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN);
 
         if (exprLTAnno != null) {
-            List<String> initialAnnotations =
-                    LessThanAnnotatedTypeFactory.getLessThanExpressions(exprLTAnno);
+            LessThanAnnotatedTypeFactory factory = getTypeFactory();
+            List<String> initialAnnotations = factory.getLessThanExpressions(exprLTAnno);
 
             if (initialAnnotations != null) {
-                List<String> updatedAnnotations = new ArrayList<>();
-
-                for (String annotation : initialAnnotations) {
-                    OffsetEquation updatedAnnotation =
-                            OffsetEquation.createOffsetFromJavaExpression(annotation);
-                    updatedAnnotations.add(updatedAnnotation.toString());
-                }
+                List<String> updatedAnnotations =
+                        SystemUtil.mapList(
+                                annotation ->
+                                        OffsetEquation.createOffsetFromJavaExpression(annotation)
+                                                .toString(),
+                                initialAnnotations);
 
                 exprType.replaceAnnotation(
                         atypeFactory.createLessThanQualifier(updatedAnnotations));

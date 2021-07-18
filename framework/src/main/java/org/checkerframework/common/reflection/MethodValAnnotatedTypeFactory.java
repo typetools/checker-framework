@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -44,7 +45,34 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror UNKNOWN_METHOD =
             AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
+    /** An arary length that represents that the length is unknown. */
     private static final int UNKNOWN_PARAM_LENGTH = -1;
+
+    /** A list containing just {@link #UNKNOWN_PARAM_LENGTH}. */
+    private static final List<Integer> UNKNOWN_PARAM_LENGTH_LIST =
+            Collections.singletonList(UNKNOWN_PARAM_LENGTH);
+
+    /** A list containing just 0. */
+    private static List<Integer> ZERO_LIST = Collections.singletonList(0);
+
+    /** A list containing just 1. */
+    private static List<Integer> ONE_LIST = Collections.singletonList(1);
+
+    /** An empty String list. */
+    private static List<String> EMPTY_STRING_LIST = Collections.emptyList();
+
+    /** The ArrayLen.value argument/element. */
+    public final ExecutableElement arrayLenValueElement =
+            TreeUtils.getMethod(ArrayLen.class, "value", 0, processingEnv);
+    /** The ClassBound.value argument/element. */
+    public final ExecutableElement classBoundValueElement =
+            TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);
+    /** The ClassVal.value argument/element. */
+    public final ExecutableElement classValValueElement =
+            TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);
+    /** The StringVal.value argument/element. */
+    public final ExecutableElement stringValValueElement =
+            TreeUtils.getMethod(StringVal.class, "value", 0, processingEnv);
 
     /**
      * Create a new MethodValAnnotatedTypeFactory.
@@ -70,24 +98,40 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         reflectionResolver = new DefaultReflectionResolver(checker, this, debug);
     }
 
-    static List<MethodSignature> getListOfMethodSignatures(AnnotationMirror anno) {
-        List<MethodSignature> list = new ArrayList<>();
+    /**
+     * Returns the methods that a {@code @MethodVal} represents.
+     *
+     * @param methodValAnno a {@code @MethodVal} annotation
+     * @return the methods that the given {@code @MethodVal} represents
+     */
+    List<MethodSignature> getListOfMethodSignatures(AnnotationMirror methodValAnno) {
         List<String> methodNames =
-                AnnotationUtils.getElementValueArray(anno, "methodName", String.class, true);
+                AnnotationUtils.getElementValueArray(
+                        methodValAnno, methodValMethodNameElement, String.class);
         List<String> classNames =
-                AnnotationUtils.getElementValueArray(anno, "className", String.class, true);
+                AnnotationUtils.getElementValueArray(
+                        methodValAnno, methodValClassNameElement, String.class);
         List<Integer> params =
-                AnnotationUtils.getElementValueArray(anno, "params", Integer.class, true);
+                AnnotationUtils.getElementValueArray(
+                        methodValAnno, methodValParamsElement, Integer.class);
+        List<MethodSignature> list = new ArrayList<>(methodNames.size());
         for (int i = 0; i < methodNames.size(); i++) {
             list.add(new MethodSignature(classNames.get(i), methodNames.get(i), params.get(i)));
         }
         return list;
     }
 
+    /**
+     * Creates a {@code @MethodVal} annotation.
+     *
+     * @param sigs the method signatures that the result should represent
+     * @return a {@code @MethodVal} annotation that represents {@code sigs}
+     */
     private AnnotationMirror createMethodVal(Set<MethodSignature> sigs) {
-        List<String> classNames = new ArrayList<>();
-        List<String> methodNames = new ArrayList<>();
-        List<Integer> params = new ArrayList<>();
+        int size = sigs.size();
+        List<String> classNames = new ArrayList<>(size);
+        List<String> methodNames = new ArrayList<>(size);
+        List<Integer> params = new ArrayList<>(size);
         for (MethodSignature sig : sigs) {
             classNames.add(sig.className);
             methodNames.add(sig.methodName);
@@ -99,11 +143,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         builder.setValue("params", params);
         return builder.build();
     }
+
     /**
      * Returns a list of class names for the given tree using the Class Val Checker.
      *
      * @param tree ExpressionTree whose class names are requested
-     * @param mustBeExact whether @ClassBound may be used
+     * @param mustBeExact whether @ClassBound may be read to produce the result; if false,
+     *     only @ClassVal may be read
      * @return list of class names or the empty list if no class names were found
      */
     private List<String> getClassNamesFromClassValChecker(
@@ -111,21 +157,22 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ClassValAnnotatedTypeFactory classValATF =
                 getTypeFactoryOfSubchecker(ClassValChecker.class);
         AnnotatedTypeMirror classAnno = classValATF.getAnnotatedType(tree);
-        List<String> classNames = new ArrayList<>();
-        AnnotationMirror annotation = classAnno.getAnnotation(ClassVal.class);
-        if (annotation != null) {
-            classNames =
-                    AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
-        } else if (!mustBeExact) {
-            // Could be ClassBound instead of ClassVal
-            annotation = classAnno.getAnnotation(ClassBound.class);
-            if (annotation != null) {
-                classNames =
-                        AnnotationUtils.getElementValueArray(
-                                annotation, "value", String.class, true);
-            }
+
+        AnnotationMirror classValAnno = classAnno.getAnnotation(ClassVal.class);
+        if (classValAnno != null) {
+            return AnnotationUtils.getElementValueArray(
+                    classValAnno, classValValueElement, String.class);
+        } else if (mustBeExact) {
+            return Collections.emptyList();
         }
-        return classNames;
+
+        AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
+        if (classBoundAnno != null) {
+            return AnnotationUtils.getElementValueArray(
+                    classBoundAnno, classBoundValueElement, String.class);
+        } else {
+            return Collections.emptyList();
+        }
     }
     /**
      * Returns the string values for the argument passed. The String Values are estimated using the
@@ -135,15 +182,15 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return string values of arg or the empty list if no values were found
      */
     private List<String> getMethodNamesFromStringArg(ExpressionTree arg) {
-        List<String> methodNames = new ArrayList<>();
         ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
         AnnotatedTypeMirror valueAnno = valueATF.getAnnotatedType(arg);
         AnnotationMirror annotation = valueAnno.getAnnotation(StringVal.class);
         if (annotation != null) {
-            methodNames =
-                    AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
+            return AnnotationUtils.getElementValueArray(
+                    annotation, stringValValueElement, String.class);
+        } else {
+            return EMPTY_STRING_LIST;
         }
-        return methodNames;
     }
 
     @Override
@@ -230,12 +277,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     : "Unexpected annotation in MethodVal";
             List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
             List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
-            for (MethodSignature sig : subSignatures) {
-                if (!superSignatures.contains(sig)) {
-                    return false;
-                }
-            }
-            return true;
+            return superSignatures.containsAll(subSignatures);
         }
     }
 
@@ -266,7 +308,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<String> classNames;
             if (isGetConstructorMethodInvocation(tree)) {
                 // method name for constructors is always <init>
-                methodNames = Arrays.asList(ReflectionResolver.INIT);
+                methodNames = ReflectionResolver.INIT_LIST;
                 params = getConstructorParamsLen(tree.getArguments());
                 classNames =
                         getClassNamesFromClassValChecker(TreeUtils.getReceiverTree(tree), true);
@@ -291,7 +333,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             Set<MethodSignature> methodSigs = new HashSet<>();
-
             // The possible method signatures are the Cartesian product of all
             // found class, method, and parameter lengths
             for (String methodName : methodNames) {
@@ -323,6 +364,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
         }
 
+        /**
+         * Returns a singleton list containing the number of parameters for a call to a method
+         * annotated with {@code @}{@link GetMethod}.
+         *
+         * @param args arguments to a call to a method such as {@code getMethod}
+         * @return the number of parameters
+         */
         private List<Integer> getMethodParamsLen(List<? extends ExpressionTree> args) {
             assert !args.isEmpty() : "getMethod must have at least one parameter";
 
@@ -334,6 +382,13 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.singletonList(numParams);
         }
 
+        /**
+         * Returns a singleton list containing the number of parameters for a call to a method
+         * annotated with {@code @}{@link GetConstructor}.
+         *
+         * @param args arguments to a call to a method such as {@code getConstructor}
+         * @return the number of parameters
+         */
         private List<Integer> getConstructorParamsLen(List<? extends ExpressionTree> args) {
             // Number of parameters in the created method object
             int numParams = args.size();
@@ -350,10 +405,16 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *
          * <ul>
          *   <li>0: if the argument is null
-         *   <li>x: if the argument is an array with @ArrayLen(x)
+         *   <li>x: if the argument is an array with @ArrayLen(x); note that x might be a set rather
+         *       than a single value
          *   <li>UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
          *   <li>1: otherwise
          * </ul>
+         *
+         * @param argument the single argument in a call to {@code getMethod} or {@code
+         *     getConstrutor}
+         * @return a list, each of whose elementts is a possible the number of parameters; it is
+         *     often, but not always, a singleton list
          */
         private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
             AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
@@ -361,29 +422,28 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case ARRAY:
                     ValueAnnotatedTypeFactory valueATF =
                             getTypeFactoryOfSubchecker(ValueChecker.class);
-                    AnnotatedTypeMirror valueAnno = valueATF.getAnnotatedType(argument);
-                    if (valueAnno.getAnnotation(ArrayLen.class) != null) {
-                        AnnotationMirror annotation = valueAnno.getAnnotation(ArrayLen.class);
+                    AnnotatedTypeMirror valueType = valueATF.getAnnotatedType(argument);
+                    AnnotationMirror arrayLenAnno = valueType.getAnnotation(ArrayLen.class);
+                    if (arrayLenAnno != null) {
                         return AnnotationUtils.getElementValueArray(
-                                annotation, "value", Integer.class, true);
-                    } else if (valueAnno.getAnnotation(BottomVal.class) != null) {
+                                arrayLenAnno, arrayLenValueElement, Integer.class);
+                    } else if (valueType.getAnnotation(BottomVal.class) != null) {
                         // happens in this case: (Class[]) null
-                        return Collections.singletonList(0);
+                        return ZERO_LIST;
                     }
                     // the argument is an array with unknown array length
-                    return Collections.singletonList(UNKNOWN_PARAM_LENGTH);
+                    return UNKNOWN_PARAM_LENGTH_LIST;
                 case NULL:
-                    // null is treated as the empty list of parameters, so size
-                    // is 0
-                    return Collections.singletonList(0);
+                    // null is treated as the empty list of parameters, so size is 0.
+                    return ZERO_LIST;
                 default:
-                    // The argument is not an array or null,
-                    // so it must be a class.
-                    return Collections.singletonList(1);
+                    // The argument is not an array or null, so it must be a class.
+                    return ONE_LIST;
             }
         }
     }
 }
+
 /**
  * An object that represents a the tuple that identifies a method signature: (fully qualified class
  * name, method name, number of parameters).

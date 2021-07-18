@@ -43,6 +43,7 @@
     <ul>
       <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#custom-tainting-checking">Custom tainting checking</a></li>
+      <li><a href="#track-unsupported-operations">Track unsupported operations</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
       <li><a href="#index-checker-mutable-length">Index checking for mutable length data structures</a></li>
       <li><a href="#nullness-bug-detector">Nullness bug detector</a></li>
@@ -1018,6 +1019,61 @@ For some microbenchmarks, see the Juliette test suite for Java from CWE.
 </p>
 
 
+<h2 id="track-unsupported-operations">Track unsupported operations</h2>
+
+<p>
+Some objects do not fully implement their interface; they
+throw <code>UnsupportedOperationException</code> for some operations.  One
+example is unmodifiable collections.  They throw the exception when a
+mutating operation is called, such
+as <code>add</code>, <code>addAll</code>, <code>put</code>, <code>remove</code>,
+etc.
+</p>
+
+<p>
+Design a type system to track which operations might not be supported.
+The checker would issue a warning whenever
+an <code>UnsupportedOperationException</code> might occur at run time.
+</p>
+
+<p>
+  Here is a possible type hierarchy:
+</p>
+
+<pre>
+  @MightSupportNothing     &larr; every hierarchy must have a top type
+         |
+  @MightNotSupport({"add", remove"})
+         |
+  @MightNotSupport("add")
+         |
+  @SupportsAllOperations   &larr; this is the default type qualifier
+</pre>
+
+<p>
+<code>@SupportsAllOperations</code>
+indicates that an object that supports all its documented operations:
+it never throws <code>UnsupportedOperationException</code>.
+<code>@MightNotSupport(operations)</code> indicates which methods might throw
+<code>UnsupportedOperationException</code>.
+Methods such
+as <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
+and <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
+must be annotated to return one of these less-capable supertypes.
+</p>
+
+<p>
+(An alternative would be to have annotations that are specific to certain
+types, such as <code>@MutableList</code> for lists.)
+</p>
+
+<p>
+If a program uses no objects that
+throw <code>UnsupportedOperationException</code>, no annotations are
+required.  Experiments must be done to determine how high the annotation
+burden is, in a program that extensively uses such objects.  If the whole
+program is available, then type inference can infer the needed types.
+</p>
 
 
 <h2 id="overflow">Overflow checking</h2>
@@ -1470,5 +1526,7 @@ currently of interest.
  -->
 <!--  LocalWords:  subchecker IntScope UnsignedLong UnsignedLongs doesn
  -->
-<!--  LocalWords:  rasmud nondet Geffken Dort
+<!--  LocalWords:  rasmud nondet Geffken Dort unmodifiable MightNotSupport
+ -->
+<!--  LocalWords:  SupportsAllOperations asList emptyList JavaExpression
  -->

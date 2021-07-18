@@ -69,6 +69,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -168,6 +169,8 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -317,13 +320,35 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     final TypeMirror nullPointerExceptionType;
 
     /** The OutOfMemoryError type. */
-    final TypeMirror outOfMemoryErrorType;
+    final @Nullable TypeMirror outOfMemoryErrorType;
+
+    /** The ClassCircularityError type. */
+    final @Nullable TypeMirror classCircularityErrorType;
+
+    /** The ClassFormatErrorType type. */
+    final @Nullable TypeMirror classFormatErrorType;
+
+    /** The NoClassDefFoundError type. */
+    final @Nullable TypeMirror noClassDefFoundErrorType;
 
     /** The String type. */
     final TypeMirror stringType;
 
     /** The Throwable type. */
     final TypeMirror throwableType;
+
+    /**
+     * Supertypes of all unchecked exceptions. The size is 2 and the contents are {@code
+     * RuntimeException} and {@code Error}.
+     */
+    final Set<TypeMirror> uncheckedExceptionTypes;
+
+    /**
+     * Exceptions that can be thrown by array creation "new SomeType[]". The size is 2 and the
+     * contents are {@code NegativeArraySizeException} and {@code OutOfMemoryError}. This list comes
+     * from JLS 15.10.1 "Run-Time Evaluation of Array Creation Expressions".
+     */
+    final Set<TypeMirror> newArrayExceptionTypes;
 
     /**
      * @param treeBuilder builder for new AST nodes
@@ -375,9 +400,20 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         iterableType = types.erasure(getTypeMirror(Iterable.class));
         negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
         nullPointerExceptionType = getTypeMirror(NullPointerException.class);
-        outOfMemoryErrorType = getTypeMirror(OutOfMemoryError.class);
+        outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
+        classCircularityErrorType = maybeGetTypeMirror(ClassCircularityError.class);
+        classFormatErrorType = maybeGetTypeMirror(ClassFormatError.class);
+        noClassDefFoundErrorType = maybeGetTypeMirror(NoClassDefFoundError.class);
         stringType = getTypeMirror(String.class);
         throwableType = getTypeMirror(Throwable.class);
+        uncheckedExceptionTypes = new LinkedHashSet<>(2);
+        uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
+        uncheckedExceptionTypes.add(getTypeMirror(Error.class));
+        newArrayExceptionTypes = new LinkedHashSet<>(2);
+        newArrayExceptionTypes.add(negativeArraySizeExceptionType);
+        if (outOfMemoryErrorType != null) {
+            newArrayExceptionTypes.add(outOfMemoryErrorType);
+        }
     }
 
     /**
@@ -548,7 +584,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /**
      * Extend the list of extended nodes with a node, where {@code node} might throw any of the
-     * exception in {@code causes}.
+     * exceptions in {@code causes}.
      *
      * @param node the node to add
      * @param causes set of exceptions that the node might throw
@@ -557,13 +593,40 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
             Node node, Set<TypeMirror> causes) {
         addToLookupMap(node);
-        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
+        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
         for (TypeMirror cause : causes) {
             exceptions.put(cause, tryStack.possibleLabels(cause));
         }
         NodeWithExceptionsHolder exNode = new NodeWithExceptionsHolder(node, exceptions);
         extendWithExtendedNode(exNode);
         return exNode;
+    }
+
+    /**
+     * Extend a list of extended nodes with a ClassName node.
+     *
+     * <p>Evaluating a class literal kicks off class loading (JLS 15.8.2) which can fail and throw
+     * one of the specified subclasses of a LinkageError or an OutOfMemoryError (JLS 12.2.1).
+     *
+     * @param node the ClassName node to add
+     * @return the node holder
+     */
+    protected NodeWithExceptionsHolder extendWithClassNameNode(ClassNameNode node) {
+        Set<TypeMirror> thrownSet = new LinkedHashSet<>(4);
+        if (classCircularityErrorType != null) {
+            thrownSet.add(classCircularityErrorType);
+        }
+        if (classFormatErrorType != null) {
+            thrownSet.add(classFormatErrorType);
+        }
+        if (noClassDefFoundErrorType != null) {
+            thrownSet.add(noClassDefFoundErrorType);
+        }
+        if (outOfMemoryErrorType != null) {
+            thrownSet.add(outOfMemoryErrorType);
+        }
+
+        return extendWithNodeWithExceptions(node, thrownSet);
     }
 
     /**
@@ -592,7 +655,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
             Node node, Set<TypeMirror> causes, Node pred) {
         addToLookupMap(node);
-        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>();
+        Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
         for (TypeMirror cause : causes) {
             exceptions.put(cause, tryStack.possibleLabels(cause));
         }
@@ -686,6 +749,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
             IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
             handleArtificialTree(classTree);
+            // No need to handle possible errors from evaluating a class literal here
+            // since this is a synthetic code that can't fail.
             ClassNameNode className = new ClassNameNode(classTree);
             className.setInSource(false);
             insertNodeAfter(className, node);
@@ -709,8 +774,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             boxed.setInSource(false);
             // Add Throwable to account for unchecked exceptions
             addToConvertedLookupMap(node.getTree(), boxed);
-            insertNodeWithExceptionsAfter(
-                    boxed, Collections.singleton(throwableType), valueOfAccess);
+            insertNodeWithExceptionsAfter(boxed, uncheckedExceptionTypes, valueOfAccess);
             return boxed;
         } else {
             return node;
@@ -748,8 +812,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
             // Add Throwable to account for unchecked exceptions
             addToConvertedLookupMap(node.getTree(), unboxed);
-            insertNodeWithExceptionsAfter(
-                    unboxed, Collections.singleton(throwableType), primValueAccess);
+            insertNodeWithExceptionsAfter(unboxed, uncheckedExceptionTypes, primValueAccess);
             return unboxed;
         } else {
             return node;
@@ -1089,10 +1152,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         // this method first determines which conversions need to be applied
         // and then iterates over the actual arguments.
         List<? extends VariableElement> formals = method.getParameters();
-
-        ArrayList<Node> convertedNodes = new ArrayList<>();
-
         int numFormals = formals.size();
+
+        ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
+
         int numActuals = actualExprs.size();
         if (method.isVarArgs()) {
             // Create a new array argument if the actuals outnumber
@@ -1100,8 +1163,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             // to the last formal.
             int lastArgIndex = numFormals - 1;
             TypeMirror lastParamType = formals.get(lastArgIndex).asType();
-            List<Node> dimensions = new ArrayList<>();
-            List<Node> initializers = new ArrayList<>();
             if (numActuals == numFormals
                     && types.isAssignable(
                             TreeUtils.typeOf(actualExprs.get(numActuals - 1)), lastParamType)) {
@@ -1127,8 +1188,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i).asType()));
                 }
 
-                List<ExpressionTree> inits = new ArrayList<>();
                 TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
+                List<ExpressionTree> inits = new ArrayList<>(numActuals - lastArgIndex);
+                List<Node> initializers = new ArrayList<>(numActuals - lastArgIndex);
                 for (int i = lastArgIndex; i < numActuals; i++) {
                     inits.add(actualExprs.get(i));
                     Node actualVal = scan(actualExprs.get(i), null);
@@ -1140,7 +1202,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
                 Node lastArgument =
                         new ArrayCreationNode(
-                                wrappedVarargs, lastParamType, dimensions, initializers);
+                                wrappedVarargs,
+                                lastParamType,
+                                /*dimensions=*/ Collections.emptyList(),
+                                initializers);
                 extendWithNode(lastArgument);
 
                 convertedNodes.add(lastArgument);
@@ -1288,16 +1353,17 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             extendWithNodeWithException(target, nullPointerExceptionType);
         }
 
-        List<Node> arguments = new ArrayList<>();
-
-        // Don't convert arguments for enum super calls.  The AST contains
-        // no actual arguments, while the method element expects two arguments,
-        // leading to an exception in convertCallArguments.  Since no actual
-        // arguments are present in the AST that is being checked, it shouldn't
-        // cause any harm to omit the conversions.
-        // See also BaseTypeVisitor.visitMethodInvocation and
-        // QualifierPolymorphism.annotate
-        if (!TreeUtils.isEnumSuper(tree)) {
+        List<Node> arguments;
+        if (TreeUtils.isEnumSuper(tree)) {
+            // Don't convert arguments for enum super calls.  The AST contains
+            // no actual arguments, while the method element expects two arguments,
+            // leading to an exception in convertCallArguments.  Since no actual
+            // arguments are present in the AST that is being checked, it shouldn't
+            // cause any harm to omit the conversions.
+            // See also BaseTypeVisitor.visitMethodInvocation and
+            // QualifierPolymorphism.annotate
+            arguments = Collections.emptyList();
+        } else {
             arguments = convertCallArguments(method, actualExprs);
         }
 
@@ -1306,12 +1372,13 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         MethodInvocationNode node =
                 new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-        Set<TypeMirror> thrownSet = new HashSet<>();
-        // Add exceptions explicitly mentioned in the throws clause.
         List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
+        Set<TypeMirror> thrownSet =
+                new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+        // Add exceptions explicitly mentioned in the throws clause.
         thrownSet.addAll(thrownTypes);
-        // Add Throwable to account for unchecked exceptions
-        thrownSet.add(throwableType);
+        // Add types to account for unchecked exceptions
+        thrownSet.addAll(uncheckedExceptionTypes);
 
         ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
@@ -1398,11 +1465,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * @return nearest owner element of current tree
      */
     private Element findOwner() {
-        MethodTree enclosingMethod = TreeUtils.enclosingMethod(getCurrentPath());
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
         if (enclosingMethod != null) {
             return TreeUtils.elementFromDeclaration(enclosingMethod);
         } else {
-            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
             return TreeUtils.elementFromDeclaration(enclosingClass);
         }
     }
@@ -1517,11 +1584,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             return scan(mtree.getExpression(), null);
         } else {
             Element ele = TreeUtils.elementFromUse(tree);
-            TypeElement declaringClass = ElementUtils.enclosingClass(ele);
+            TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
             TypeMirror type = ElementUtils.getType(declaringClass);
             if (ElementUtils.isStatic(ele)) {
-                Node node = new ClassNameNode(type, declaringClass);
-                extendWithNode(node);
+                ClassNameNode node = new ClassNameNode(type, declaringClass);
+                extendWithClassNameNode(node);
                 return node;
             } else {
                 Node node = new ImplicitThisNode(type);
@@ -2113,7 +2180,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             variableNode.setInSource(false);
             extendWithNode(variableNode);
 
-            ExpressionTree variableUse = treeBuilder.buildVariableUse(variable);
+            IdentifierTree variableUse = treeBuilder.buildVariableUse(variable);
             handleArtificialTree(variableUse);
 
             LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
@@ -2539,10 +2606,23 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             handleArtificialTree(arrayAccess);
             ArrayAccessNode arrayAccessNode =
                     new ArrayAccessNode(arrayAccess, arrayNode2, indexNode2);
+            arrayAccessNode.setArrayExpression(expression);
             arrayAccessNode.setInSource(false);
             extendWithNode(arrayAccessNode);
-            translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+            AssignmentNode arrayAccessAssignNode =
+                    translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
             extendWithNodeWithException(arrayAccessNode, nullPointerExceptionType);
+            // translateAssignment() scans variable and creates new nodes, so set the expression
+            // there, too.
+            Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
+            if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode) {
+                ((ArrayAccessNode) arrayAccessAssignNodeExpr).setArrayExpression(expression);
+            } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode) {
+                // If the array component type is a primitive, there may be a boxing or unboxing
+                // conversion. Treat that as an iterator.
+                MethodInvocationNode boxingNode = (MethodInvocationNode) arrayAccessAssignNodeExpr;
+                boxingNode.setIterableExpression(expression);
+            }
 
             assert statement != null;
             scan(statement, p);
@@ -2708,7 +2788,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     throw new BugInCF("bad element kind " + element.getKind());
             }
         }
-        extendWithNode(node);
+        if (node instanceof ClassNameNode) {
+            extendWithClassNameNode((ClassNameNode) node);
+        } else {
+            extendWithNode(node);
+        }
         return node;
     }
 
@@ -2839,29 +2923,23 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         List<? extends ExpressionTree> dimensions = tree.getDimensions();
         List<? extends ExpressionTree> initializers = tree.getInitializers();
-
-        List<Node> dimensionNodes = new ArrayList<>();
         assert dimensions != null;
-        for (ExpressionTree dim : dimensions) {
-            dimensionNodes.add(unaryNumericPromotion(scan(dim, p)));
-        }
 
-        List<Node> initializerNodes = new ArrayList<>();
-        if (initializers != null) {
-            for (ExpressionTree init : initializers) {
-                initializerNodes.add(assignConvert(scan(init, p), elemType));
-            }
+        List<Node> dimensionNodes =
+                SystemUtil.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
+
+        List<Node> initializerNodes;
+        if (initializers == null) {
+            initializerNodes = Collections.emptyList();
+        } else {
+            initializerNodes =
+                    SystemUtil.mapList(
+                            init -> assignConvert(scan(init, p), elemType), initializers);
         }
 
         Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
 
-        Set<TypeMirror> thrownSet = new HashSet<>();
-        // List of exceptions comes from JLS 15.10.1 "Run-Time Evaluation of Array Creation
-        // Expressions".
-        thrownSet.add(negativeArraySizeExceptionType);
-        thrownSet.add(outOfMemoryErrorType);
-
-        extendWithNodeWithExceptions(node, thrownSet);
+        extendWithNodeWithExceptions(node, newArrayExceptionTypes);
         return node;
     }
 
@@ -2891,12 +2969,13 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
 
-        Set<TypeMirror> thrownSet = new HashSet<>();
-        // Add exceptions explicitly mentioned in the throws clause.
         List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
+        Set<TypeMirror> thrownSet =
+                new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+        // Add exceptions explicitly mentioned in the throws clause.
         thrownSet.addAll(thrownTypes);
-        // Add Throwable to account for unchecked exceptions
-        thrownSet.add(throwableType);
+        // Add types to account for unchecked exceptions
+        thrownSet.addAll(uncheckedExceptionTypes);
 
         extendWithNodeWithExceptions(node, thrownSet);
 
@@ -2927,7 +3006,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         if (ret != null) {
             Node node = scan(ret, p);
             Tree enclosing =
-                    TreeUtils.enclosingOfKind(
+                    TreePathUtil.enclosingOfKind(
                             getCurrentPath(),
                             new HashSet<>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
             if (enclosing.getKind() == Kind.LAMBDA_EXPRESSION) {
@@ -2966,8 +3045,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             // Could be a selector of a class or package
             Element element = TreeUtils.elementFromUse(tree);
             if (ElementUtils.isTypeElement(element)) {
-                Node result = new ClassNameNode(tree, expr);
-                extendWithNode(result);
+                ClassNameNode result = new ClassNameNode(tree, expr);
+                extendWithClassNameNode(result);
                 return result;
             } else if (element.getKind() == ElementKind.PACKAGE) {
                 Node result = new PackageNameNode(tree, (PackageNameNode) expr);
@@ -3040,12 +3119,13 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         "start of try statement #" + TreeUtils.treeUids.get(tree),
                         env.getTypeUtils()));
 
-        List<Pair<TypeMirror, Label>> catchLabels = new ArrayList<>();
-        for (CatchTree c : catches) {
-            TypeMirror type = TreeUtils.typeOf(c.getParameter().getType());
-            assert type != null : "exception parameters must have a type";
-            catchLabels.add(Pair.of(type, new Label()));
-        }
+        List<Pair<TypeMirror, Label>> catchLabels =
+                SystemUtil.mapList(
+                        (CatchTree c) -> {
+                            return Pair.of(
+                                    TreeUtils.typeOf(c.getParameter().getType()), new Label());
+                        },
+                        catches);
 
         // Store return/break/continue labels, just in case we need them for a finally block.
         TryFinallyScopeCell oldReturnTargetL = returnTargetL;
@@ -3551,7 +3631,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.CLASS;
         Node node = null;
 
-        ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
         TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
         Node receiver = new ImplicitThisNode(classElem.asType());
 
@@ -3683,5 +3763,25 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     private TypeMirror getTypeMirror(Class<?> clazz) {
         return TypesUtils.typeFromClass(clazz, types, elements);
+    }
+
+    /**
+     * Returns the TypeMirror for the given class, or {@code null} if the type is not present.
+     *
+     * <p>This can be used to handle system types that are not present. For example, in Java code
+     * that is translated to JavaScript using j2cl, the custom bootclasspath contains APIs that are
+     * emulated in JavaScript, so some types such as OutOfMemoryError are deliberately not present.
+     *
+     * @param clazz a class, which must have a canonical name
+     * @return the TypeMirror for the class, or {@code null} if the type is not present
+     */
+    private @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
+        String name = clazz.getCanonicalName();
+        assert name != null : clazz + " does not have a canonical name";
+        TypeElement element = elements.getTypeElement(name);
+        if (element == null) {
+            return null;
+        }
+        return element.asType();
     }
 }

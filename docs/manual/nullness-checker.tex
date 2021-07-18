@@ -586,8 +586,8 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
-  \href{http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
-    checker and inferencer} of the \href{http://jastadd.org/}{JastAdd
+  \href{https://jastadd.cs.lth.se/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
+    checker and inferencer} of the \href{https://jastadd.cs.lth.se/}{JastAdd
     Extensible Compiler}.
 \end{itemize}
 
@@ -649,7 +649,7 @@ an \<assert> message (see Section~\ref{assumeassertion}).
 If you need to suppress a warning within an expression, then
 sometimes writing an assertion is not convenient.  In such a case,
 you can suppress warnings by writing a call to the
-\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method.
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} method.
 The rest of this section discusses the \<castNonNull> method.
 
 The Nullness Checker considers both the return value, and also the
@@ -675,7 +675,7 @@ code:
   the argument is \<null>.  However, it is not intended for general defensive
   programming; see Section~\ref{defensive-programming}.
 
-  To use the \<castNonNull> method, the \<checker-qual.jar> file
+  To use the \<castNonNull> method, the \<checker-util.jar> file
   must be on the classpath at run time.
 
 \begin{sloppypar}
@@ -949,8 +949,8 @@ $\Rightarrow$
  ~org.eclipse.jgit.annotations.Nullable~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
  ~org.jmlspecs.annotation.Nullable~ \\ \hline
- ~org.jspecify.annotations.Nullable~ \\ \hline
- ~org.jspecify.annotations.NullnessUnspecified~ \\ \hline
+ ~org.jspecify.nullness.Nullable~ \\ \hline
+ ~org.jspecify.nullness.NullnessUnspecified~ \\ \hline
  ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
  ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
@@ -1190,8 +1190,10 @@ based on previous statements in the method.
 
 Java's \<Optional> class provides utility routines to reduce clutter when
 using \<Optional>.  The Nullness Checker provides an
-\refclass{checker/nullness}{Opt} class that provides all the same methods,
+\refclass{checker/nullness/util}{Opt} class that provides all the same methods,
 but written for regular possibly-null Java references.
+To use the \refclass{checker/nullness/util}{Opt} class, the
+\<checker-util.jar> file must be on the classpath at run time.
 
 
 \sectionAndLabel{Initialization Checker}{initialization-checker}
@@ -1257,7 +1259,7 @@ When a field \<f> is declared with a \refqualclass{checker/nullness/qual}{NonNul
 type, then code can depend on the fact that the field is not \<null>.
 However, this guarantee does not hold for a partially-initialized object.
 
-The Nullness Checker uses three annotations to indicate whether an object
+The Initialization Checker uses three annotations to indicate whether an object
 is initialized (all its \<@NonNull> fields have been assigned), under
 initialization (its constructor is currently executing), or its
 initialization state is unknown.
@@ -2018,11 +2020,11 @@ initialization was actually complete, then the receiver should have type
 \subsectionAndLabel{Suppressing warnings}{initialization-checking-suppressing-warnings}
 
 To suppress most warnings related to partially-initialized values, use the
-warning suppression string ``initialization.''~(note the trailing period).
-You can write \<@SuppressWarnings("initialization.")>
+warning suppression string ``initialization''.
+You can write \<@SuppressWarnings("initialization")>
 on a field, constructor, or
 class, or pass the command-line argument
-\<-AsuppressWarnings=initialization.> when
+\<-AsuppressWarnings=initialization> when
 running the Nullness Checker.
 (For more about suppressing warnings, see
 \chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
@@ -2034,9 +2036,7 @@ but does not suppress warnings issued by the Checker Framework itself, such
 as about assignments or method overriding.
 
 It is not possible to completely disable initialization checking while
-retaining nullness checking.  The ``initialization'' warning suppression
-string (without a period) has the same effect as ``nullness'':  both
-of them disable all nullness and initialization checking.  That is because
+retaining nullness checking.  That is because
 of an implementation detail of the Nullness and Initialization Checkers:
 they are actually the same checker, rather than being two separate checkers
 that are aggregated together.

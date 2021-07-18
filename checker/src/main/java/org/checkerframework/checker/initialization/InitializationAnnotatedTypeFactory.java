@@ -57,6 +57,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -456,7 +457,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return null;
             }
         }
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
         if (enclosingClass != null) {
             List<? extends Tree> classMembers = enclosingClass.getMembers();
             TreePath searchPath = path;
@@ -474,10 +475,14 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Side-effects argument {@code selfType} to make it @Initialized or @UnderInitialization,
      * depending on whether all fields have been set.
+     *
+     * @param tree a tree
+     * @param selfType the type to side-effect
+     * @param path a path
      */
     protected void setSelfTypeInInitializationCode(
             Tree tree, AnnotatedDeclaredType selfType, TreePath path) {
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
         Type classType = ((JCTree) enclosingClass).type;
         AnnotationMirror annotation = null;
 
@@ -553,8 +558,8 @@ public abstract class InitializationAnnotatedTypeFactory<
             Store store,
             TreePath path,
             boolean isStatic,
-            List<? extends AnnotationMirror> receiverAnnotations) {
-        ClassTree currentClass = TreeUtils.enclosingClass(path);
+            Collection<? extends AnnotationMirror> receiverAnnotations) {
+        ClassTree currentClass = TreePathUtil.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> uninitWithInvariantAnno = new ArrayList<>();
         List<VariableTree> uninitWithoutInvariantAnno = new ArrayList<>();
@@ -607,7 +612,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     public List<VariableTree> getInitializedInvariantFields(Store store, TreePath path) {
         // TODO: Instead of passing the TreePath around, can we use
         // getCurrentClassTree?
-        ClassTree currentClass = TreeUtils.enclosingClass(path);
+        ClassTree currentClass = TreePathUtil.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> initializedFields = new ArrayList<>();
         for (VariableTree field : fields) {

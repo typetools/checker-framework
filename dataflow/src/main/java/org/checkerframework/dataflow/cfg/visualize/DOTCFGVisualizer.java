@@ -5,6 +5,7 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -37,18 +38,19 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
 /** Generate a graph description in the DOT language of a control graph. */
-@SuppressWarnings("nullness:initialization.fields.uninitialized") // uses init method
 public class DOTCFGVisualizer<
                 V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
         extends AbstractCFGVisualizer<V, S, T> {
 
     /** The output directory. */
+    @SuppressWarnings("nullness:initialization.field.uninitialized") // uses init method
     protected String outDir;
 
     /** The (optional) checker name. Used as a part of the name of the output dot file. */
     protected @Nullable String checkerName;
 
     /** Mapping from class/method representation to generated dot file. */
+    @SuppressWarnings("nullness:initialization.field.uninitialized") // uses init method
     protected Map<String, String> generated;
 
     /** Terminator for lines that are left-justified. */
@@ -88,10 +90,7 @@ public class DOTCFGVisualizer<
             throw new UserError("Error creating dot file (is the path valid?): " + dotFileName, e);
         }
 
-        Map<String, Object> res = new HashMap<>();
-        res.put("dotFileName", dotFileName);
-
-        return res;
+        return Collections.singletonMap("dotFileName", dotFileName);
     }
 
     @SuppressWarnings("keyfor:enhancedfor.type.incompatible")

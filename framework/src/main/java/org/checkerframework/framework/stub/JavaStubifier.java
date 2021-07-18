@@ -2,9 +2,17 @@ package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.ast.*;
-import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.MemberValuePair;
+import com.github.javaparser.ast.AccessSpecifier;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.InitializerDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -55,7 +63,7 @@ public class JavaStubifier {
      * @param dir directory to process
      */
     private static void process(String dir) {
-        Path root = Paths.get(dir);
+        Path root = dirnameToPath(dir);
         MinimizerCallback mc = new MinimizerCallback();
         CollectionStrategy strategy = new ParserCollectionStrategy();
         // Required to include directories that contain a module-info.java, which don't parse by
@@ -74,6 +82,32 @@ public class JavaStubifier {
                                 System.err.println("IOException: " + e);
                             }
                         });
+    }
+
+    /**
+     * Converts a directory name to a path. It issues a warning and terminates the program if the
+     * argument does not exist or is not a directory.
+     *
+     * <p>Unlike {@code Paths.get}, it handles "." which means the current directory in Unix.
+     *
+     * @param dir a directory name
+     * @return a path for the directory name
+     */
+    public static Path dirnameToPath(String dir) {
+        File f = new File(dir);
+        if (!f.exists()) {
+            System.err.printf("Directory %s (%s) does not exist.%n", dir, f);
+            System.exit(1);
+        }
+        if (!f.isDirectory()) {
+            System.err.printf("Not a directory: %s (%s).%n", dir, f);
+            System.exit(1);
+        }
+        String absoluteDir = f.getAbsolutePath();
+        if (absoluteDir.endsWith("/.")) {
+            absoluteDir = absoluteDir.substring(0, absoluteDir.length() - 2);
+        }
+        return Paths.get(absoluteDir);
     }
 
     /** Callback to process each Java file; see class documentation for details. */
@@ -184,9 +218,8 @@ public class JavaStubifier {
         @Override
         public NormalAnnotationExpr visit(NormalAnnotationExpr nae, Void arg) {
             super.visit(nae, arg);
-            NodeList<MemberValuePair> empty = new NodeList<>();
             if (nae.getNameAsString().equals("Deprecated")) {
-                nae.setPairs(empty);
+                nae.setPairs(new NodeList<>());
             }
             return nae;
         }

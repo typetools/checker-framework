@@ -374,7 +374,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *
      * @param newInternedObject call to a constructor of an interned class
      * @param constructor declared type of the constructor
-     * @return false unless {@code newInternedObject} is immediately interned.
+     * @return false unless {@code newInternedObject} is immediately interned
      */
     private boolean checkCreationOfInternedObject(
             NewClassTree newInternedObject, AnnotatedExecutableType constructor) {

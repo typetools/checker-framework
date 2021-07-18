@@ -34,7 +34,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     /** The set of fields that are initialized. */
     protected final Set<VariableElement> initializedFields;
-    /** The set of fields that have 'invariant' annotation. */
+    /** The set of fields that have the 'invariant' annotation, and their value. */
     protected final Map<FieldAccess, V> invariantFields;
 
     public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
@@ -50,10 +50,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
      * initialized.
      */
     @Override
-    public void insertValue(JavaExpression je, V value) {
-        if (value == null) {
-            // No need to insert a null abstract value because it represents
-            // top and top is also the default value.
+    public void insertValue(JavaExpression je, V value, boolean permitNondeterministic) {
+        if (!shouldInsert(je, value, permitNondeterministic)) {
             return;
         }
 
@@ -78,7 +76,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             }
         }
 
-        super.insertValue(je, value);
+        super.insertValue(je, value, permitNondeterministic);
 
         for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
@@ -165,8 +163,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             }
         }
 
-        Map<FieldAccess, V> removedFieldValues = new HashMap<>();
-        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedFieldValues = new HashMap<>(invariantFields.size());
+        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>(other.invariantFields.size());
         try {
             // Remove invariant annotated fields to avoid performance issue reported in #1438.
             for (FieldAccess invariantField : invariantFields.keySet()) {
@@ -189,8 +187,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public S leastUpperBound(S other) {
         // Remove invariant annotated fields to avoid performance issue reported in #1438.
-        Map<FieldAccess, V> removedFieldValues = new HashMap<>();
-        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>();
+        Map<FieldAccess, V> removedFieldValues = new HashMap<>(invariantFields.size());
+        Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>(other.invariantFields.size());
         for (FieldAccess invariantField : invariantFields.keySet()) {
             V v = fieldValues.remove(invariantField);
             removedFieldValues.put(invariantField, v);

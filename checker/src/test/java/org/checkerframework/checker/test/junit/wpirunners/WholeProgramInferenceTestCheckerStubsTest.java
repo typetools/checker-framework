@@ -25,7 +25,8 @@ public class WholeProgramInferenceTestCheckerStubsTest extends CheckerFrameworkP
                 WholeProgramInferenceTestChecker.class,
                 "wpi-testchecker/non-annotated",
                 "-Anomsgtext",
-                "-Ainfer=stubs");
+                "-Ainfer=stubs",
+                "-Awarns");
     }
 
     @Parameters

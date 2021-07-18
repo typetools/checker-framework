@@ -219,6 +219,10 @@ rules are used in order, until one applies.
   The qualifier with a meta-annotation \<@DefaultFor(typeKinds = KIND)>, where \<KIND> is the
   \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
 \item
+  The qualifier with a meta-annotation \<@DefaultFor(names = REGEX)>, where \<REGEX>
+  matches the name of the variable being defined (if any).  For return types, the  the name of
+  the method is used. (Section~\ref{default-for-use})
+\item
   The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
   (Section~\ref{default-qualifier})
 \item
@@ -467,27 +471,44 @@ the CLIMB-to-top rule.
 
 \subsectionAndLabel{Inherited defaults}{inherited-defaults}
 
-In certain situations, it would be convenient for an annotation on a
-superclass member to be automatically inherited by subclasses that override
-it.  (An example is that programmers must add `@Nullable` to the formal
-parameter type of every implementation of the `equals()` method.)
-Such a feature would reduce annotation effort, but it would also reduce program
-comprehensibility.  In general, a program is read more often than it is
-edited/annotated, so the Checker Framework does not currently support this
-feature.  In the future, this feature may be added.
+When overriding a method, programmers must fully specify types in the overridding
+method, which duplicates information on the overridden method.
+By contrast, declaration annotations that are meta-annotated with
+\<@InheritedAnnotation> are inherited by overriding methods.
 
+An example for type annotations is that when definining an \<equals()>
+method, programmers must write the type annotation \<@Nullable>:
+
+\begin{Verbatim}
+  public boolean equals(@Nullable Object obj) {
+      ...
+  }
+\end{Verbatim}
+
+An alternate design would be for every annotation on a superclass member to
+to be automatically inherited by subclasses that override it.
+
+The alternate design would reduce annotation effort.
+
+The alternate design would reduce program comprehensibility.
 Currently, a user can determine the annotation on a parameter or return
 value by looking at a single file.  If annotations could be inherited from
 supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
-Computation is necessary because different annotations might be inherited
+For declaration annotations, no computation is necessary; that is why they
+may be inherited.
+Computation is necessary for type annotations because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
 annotations on overridden implementations in supertypes.  For method
 parameters, the inherited type should be the greatest lower bound of all
-annotations on overridden implementations in supertypes.  In each case, an
-error would be thrown if no such annotations existed.
+annotations on overridden implementations in supertypes.  In each case, the
+Checker Framework would need to issue an error if no such annotations existed.
+
+Because a program is read more often than it is edited/annotated, the
+Checker Framework does not currently support the alternate design.  In the
+future, this feature may be added.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
@@ -1167,12 +1188,13 @@ expression as an argument include:
 \end{itemize}
 
 The set of permitted expressions is a subset of all Java expressions,
-with a few extensions, formal parameters like \<\#1> and (for some type
+with a few extensions.
+The extensions are formal parameters like \<\#1> and (for some type
 systems) \code{<self>}.
 
 \begin{itemize}
 \item
-  the receiver object, \<this>.  You can write \<this> to annotate any
+  \<this>, the receiver object.  You can write \<this> to annotate any
   variable or declaration where you could write \<this> in code.
   Notably, it cannot be used in annotations on declarations of
   static fields or methods.  For a field, \<this> is the field's
@@ -1180,7 +1202,7 @@ systems) \code{<self>}.
   method's receiver.
 
 \item
-  the receiver object as seen from the superclass, \<super>.  This can be used
+  \<super>, the receiver object as seen from the superclass.  This can be used
   to refer to fields shadowed in the subclass (although shadowing fields is
   discouraged in Java).
 
@@ -1192,36 +1214,32 @@ systems) \code{<self>}.
   referenced by \<o>.
 
 \item
-  a formal parameter, represented as \<\#> followed by the \textbf{one-based} parameter
+  a formal parameter, e.g., \<\#2>.  It is represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
   refer to the receiver object; use \<this> instead.
 
   The formal parameter syntax \<\#1> is less natural in source code
   than writing the formal parameter name.  This syntax is necessary for
-  separate compilation, when an annotated method has already been compiled
-  into a \<.class> file and a client of that method is later compiled.
-  In the \<.class> file, no formal parameter name information is available,
-  so it is necessary to use a number to indicate a formal parameter.
-  If all your annotated code is always provided to the checker in source
-  code format (this also implies that you will never provide \<.class>
-  files to clients who might want to do type-checking), then you can use
-  the formal parameter name instead of the numeric index.
-%% At some point, we will start assuming that the .class file was created
-%% by the Checker Framework and this justification, and the #n syntax
-%% itself, will not be necessary.
-% Running
-% the compiler without a checker should create legal annotations in the
-% \<.class> file, so we cannot rely on the checker to translate names to
-% indices.
+  separate compilation, because no formal parameter name information is
+  available in a \<.class> file.  Suppose an annotated method \<m> has
+  already been compiled into a \<.class> file, perhaps by a compilation
+  that did not use the Checker Framework.  When a client of \<m> is later
+  compiled, it cannot interpret a formal parameter name, but it can
+  interpret a number.
+
+  Within a method \emph{body}, you may use the formal parameter name.  The
+  formal parameter name never works within a method \emph{signature} or for
+  a contract (pre- or post-condition) annotation; in those locations, an
+  identifier is interpreted as a field name (not a formal parameter).
 
 \item
-  a local variable.  Write the variable name.  For example: \<myLocalVar>.
+  a local variable, e.g., \<myLocalVar>.
   The variable must be in scope; for example, a method annotation on method
   \<m> cannot mention a local variable that is declared inside \<m>.
 
 \item
-  a static variable.  Write the class name and the variable, as in
-  \<System.out>.
+  a static variable, e.g., \<System.out>.
+  Write the class name and the variable.
 
 \item
   a field of any expression.  For example:  \<next>,
@@ -1259,6 +1277,16 @@ systems) \code{<self>}.
 
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
+
+\item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
+  the Index Checker, for example.
+
+\item a class name expression within another expression, e.g., ``String''
+  in \<String.class> or ``pkg.MyClass'' in \<pkg.MyClass.staticField>.  The
+  class name must be fully-qualified unless it can be referenced by its
+  simple name without an \<import> statement at the location where the
+  annotation appears.  For example, an annotation in class \<C> can use the
+  simple name of a class in \<java.lang> or in the same package as \<C>.
 
 \end{itemize}
 

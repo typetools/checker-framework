@@ -65,12 +65,13 @@ public class BoundsInitializer {
 
         final TypeElement typeElement =
                 (TypeElement) declaredType.atypeFactory.types.asElement(underlyingType);
-        final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>();
+        int numTypeParameters = typeElement.getTypeParameters().size();
+        final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(numTypeParameters);
 
         // Create AnnotatedTypeMirror for each type argument and store them in the typeArgsMap.
         // Take un-annotated type variables as the key for this map.
-        Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>();
-        for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
+        Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>(numTypeParameters);
+        for (int i = 0; i < numTypeParameters; i++) {
             TypeMirror javaTypeArg;
             if (declaredType.wasRaw()) {
                 TypeVariable typeVariable =
@@ -329,7 +330,7 @@ public class BoundsInitializer {
             if (typevars != null) {
                 this.typevars = typevars;
             } else {
-                this.typevars = new HashMap<>();
+                this.typevars = Collections.emptyMap();
             }
             if (recursiveTypeStructure instanceof TypeVariableStructure) {
                 TypeVariableStructure typeVarStruct =
@@ -620,8 +621,9 @@ public class BoundsInitializer {
                     (TypeElement) declaredType.atypeFactory.types.asElement(underlyingType);
             List<AnnotatedTypeMirror> typeArgs;
             if (declaredType.typeArgs == null) {
-                typeArgs = new ArrayList<>();
-                for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
+                int numTypeParameters = typeElement.getTypeParameters().size();
+                typeArgs = new ArrayList<>(numTypeParameters);
+                for (int i = 0; i < numTypeParameters; i++) {
                     TypeMirror javaTypeArg =
                             getJavaType(declaredType, typeElement.getTypeParameters(), i);
                     AnnotatedTypeMirror atmArg =
@@ -827,8 +829,8 @@ public class BoundsInitializer {
          */
         public void findAllReplacements(
                 Map<TypeVariable, TypeVariableStructure> typeVarToStructure) {
-            this.annotatedTypeVariables = new ArrayList<>();
-            this.replacementList = new ArrayList<>();
+            this.annotatedTypeVariables = new ArrayList<>(typeVarsInType.size());
+            this.replacementList = new ArrayList<>(typeVarsInType.size());
             for (Pair<TypePath, TypeVariable> pair : typeVarsInType) {
                 TypeVariableStructure targetStructure = typeVarToStructure.get(pair.second);
                 AnnotatedTypeVariable template =
@@ -1320,11 +1322,11 @@ public class BoundsInitializer {
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedUnionType isect = (AnnotatedUnionType) parent;
-            if (parent.directSuperTypes().size() <= altIndex) {
+            if (parent.directSupertypes().size() <= altIndex) {
                 throw new BugInCF("Invalid altIndex( %s ):%nparent=%s", altIndex, parent);
             }
 
-            return isect.directSuperTypes().get(altIndex);
+            return isect.directSupertypes().get(altIndex);
         }
 
         @Override

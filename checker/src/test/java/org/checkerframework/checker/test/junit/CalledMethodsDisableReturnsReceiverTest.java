@@ -15,7 +15,6 @@ public class CalledMethodsDisableReturnsReceiverTest extends CheckerFrameworkPer
                 "calledmethods-disablereturnsreceiver",
                 "-Anomsgtext",
                 "-AdisableReturnsReceiver",
-                "-nowarn",
                 "-encoding",
                 "UTF-8");
     }

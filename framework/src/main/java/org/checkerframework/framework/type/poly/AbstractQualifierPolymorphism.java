@@ -262,7 +262,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             // If the member reference is a reference to an instance method of an arbitrary
             // object, then first parameter of the functional interface corresponds to the
             // receiver of the member reference.
-            List<AnnotatedTypeMirror> newParameters = new ArrayList<>();
+            List<AnnotatedTypeMirror> newParameters = new ArrayList<>(parameters.size() + 1);
             newParameters.add(memberReference.getReceiverType());
             newParameters.addAll(parameters);
             parameters = newParameters;
@@ -523,7 +523,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 if (TypesUtils.isErasedSubtype(
                         type1Arg.getUnderlyingType(),
                         type2Arg.getUnderlyingType(),
-                        atypeFactory.getContext().getTypeUtils())) {
+                        atypeFactory.getChecker().getTypeUtils())) {
                     result = reduce(result, visit(type1Arg, type2Arg));
                 } // else an unchecked warning was issued by Java, ignore this part of the type.
             }

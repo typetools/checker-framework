@@ -1,7 +1,7 @@
-import org.checkerframework.checker.nullness.Opt;
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.util.Opt;
 
-/** Test class org.checkerframework.checker.nullness.Opt. */
+/** Test class org.checkerframework.checker.nullness.util.Opt. */
 public class TestOpt {
     void foo1(@Nullable Object p) {
         if (Opt.isPresent(p)) {

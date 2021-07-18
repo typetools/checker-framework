@@ -6,7 +6,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
@@ -25,7 +25,6 @@ import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -35,9 +34,9 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The SameLen Checker is used to determine whether there are multiple fixed-length sequences (such
@@ -78,6 +77,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The @{@link PolySameLen} annotation. */
     private final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
 
+    /** The SameLen.value field/element. */
+    final ExecutableElement sameLenValueElement =
+            TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
+
+    /** Predicates about method calls. */
     private final IndexMethodIdentifier imf = new IndexMethodIdentifier(this);
 
     /** Create a new SameLenAnnotatedTypeFactory. */
@@ -116,29 +120,21 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(tree);
 
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            AnnotationMirror anm = atm.getAnnotation(SameLen.class);
-            if (anm != null) {
+            AnnotationMirror sameLenAnno = atm.getAnnotation(SameLen.class);
+            if (sameLenAnno != null) {
+                JavaExpression je = JavaExpression.fromVariableTree((VariableTree) tree);
+                String varName = je.toString();
 
-                JavaExpression je;
-                try {
-                    je = JavaExpressionParseUtil.fromVariableTree(this, (VariableTree) tree);
-                } catch (JavaExpressionParseException ex) {
-                    je = null;
+                List<String> exprs =
+                        AnnotationUtils.getElementValueArray(
+                                sameLenAnno, sameLenValueElement, String.class);
+                if (exprs.contains(varName)) {
+                    exprs.remove(varName);
                 }
-
-                if (je != null) {
-                    String varName = je.toString();
-
-                    List<String> exprs =
-                            ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anm);
-                    if (exprs.contains(varName)) {
-                        exprs.remove(varName);
-                    }
-                    if (exprs.isEmpty()) {
-                        atm.replaceAnnotation(UNKNOWN);
-                    } else {
-                        atm.replaceAnnotation(createSameLen(exprs));
-                    }
+                if (exprs.isEmpty()) {
+                    atm.replaceAnnotation(UNKNOWN);
+                } else {
+                    atm.replaceAnnotation(createSameLen(exprs));
                 }
             }
         }
@@ -199,10 +195,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // if the sets do not intersect.
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
+            if (areSameByClass(a1, SameLen.class) && areSameByClass(a2, SameLen.class)) {
+                List<String> a1Val =
+                        AnnotationUtils.getElementValueArray(a1, sameLenValueElement, String.class);
+                List<String> a2Val =
+                        AnnotationUtils.getElementValueArray(a2, sameLenValueElement, String.class);
 
                 Set<String> exprs = unionIfNotDisjoint(a1Val, a2Val);
                 if (exprs == null) {
@@ -226,10 +223,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // top if they do not intersect.
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
-                List<String> a1Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a1);
-                List<String> a2Val = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(a2);
+            if (areSameByClass(a1, SameLen.class) && areSameByClass(a2, SameLen.class)) {
+                List<String> a1Val =
+                        AnnotationUtils.getElementValueArray(a1, sameLenValueElement, String.class);
+                List<String> a2Val =
+                        AnnotationUtils.getElementValueArray(a2, sameLenValueElement, String.class);
 
                 if (!Collections.disjoint(a1Val, a2Val)) {
                     a1Val.retainAll(a2Val);
@@ -261,12 +259,14 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (areSameByClass(subAnno, PolySameLen.class)) {
                 return areSameByClass(superAnno, PolySameLen.class);
-            } else if (AnnotationUtils.hasElementValue(subAnno, "value")
-                    && AnnotationUtils.hasElementValue(superAnno, "value")) {
+            } else if (areSameByClass(subAnno, SameLen.class)
+                    && areSameByClass(superAnno, SameLen.class)) {
                 List<String> subArrays =
-                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(subAnno);
+                        AnnotationUtils.getElementValueArray(
+                                subAnno, sameLenValueElement, String.class);
                 List<String> superArrays =
-                        ValueCheckerUtils.getValueOfAnnotationWithStringArgument(superAnno);
+                        AnnotationUtils.getElementValueArray(
+                                superAnno, sameLenValueElement, String.class);
 
                 if (subArrays.containsAll(superArrays)) {
                     return true;
@@ -302,8 +302,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     AnnotationMirror sequenceAnno =
                             getAnnotatedType(sequenceTree).getAnnotationInHierarchy(UNKNOWN);
 
-                    JavaExpression sequenceExpr =
-                            JavaExpression.fromTree(this.atypeFactory, sequenceTree);
+                    JavaExpression sequenceExpr = JavaExpression.fromTree(sequenceTree);
                     if (mayAppearInSameLen(sequenceExpr)) {
                         String recString = sequenceExpr.toString();
                         if (areSameByClass(sequenceAnno, SameLenUnknown.class)) {
@@ -311,8 +310,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         } else if (areSameByClass(sequenceAnno, SameLen.class)) {
                             // Add the sequence whose length is being used to the annotation.
                             List<String> exprs =
-                                    ValueCheckerUtils.getValueOfAnnotationWithStringArgument(
-                                            sequenceAnno);
+                                    AnnotationUtils.getElementValueArray(
+                                            sequenceAnno, sameLenValueElement, String.class);
                             int index = Collections.binarySearch(exprs, recString);
                             if (index < 0) {
                                 exprs.add(-index - 1, recString);
@@ -340,12 +339,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             sequenceExpression, tree, currentPath, SameLen.class);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException e) {
             // ignore parse errors
-            sameLenAnno = null;
+            return Collections.emptyList();
         }
         if (sameLenAnno == null) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
-        return ValueCheckerUtils.getValueOfAnnotationWithStringArgument(sameLenAnno);
+        return AnnotationUtils.getElementValueArray(sameLenAnno, sameLenValueElement, String.class);
     }
 
     ///
@@ -361,23 +360,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String[] exprArray = exprs.toArray(new String[0]);
         builder.setValue("value", exprArray);
         return builder.build();
-    }
-
-    // In Java 9, this method can be eliminated:  it is simple enough for clients to inline, using
-    // List.of.
-    /**
-     * Combines the given arrays and annotations into a single SameLen annotation. See {@link
-     * #createCombinedSameLen(List, List)}.
-     */
-    public AnnotationMirror createCombinedSameLen(
-            JavaExpression expr1, JavaExpression expr2, AnnotationMirror a1, AnnotationMirror a2) {
-        List<JavaExpression> exprs = new ArrayList<>();
-        exprs.add(expr1);
-        exprs.add(expr2);
-        List<AnnotationMirror> annos = new ArrayList<>();
-        annos.add(a1);
-        annos.add(a2);
-        return createCombinedSameLen(exprs, annos);
     }
 
     /**
@@ -400,7 +382,9 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         for (AnnotationMirror anno : annos) {
             if (areSameByClass(anno, SameLen.class)) {
-                strings.addAll(ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno));
+                strings.addAll(
+                        AnnotationUtils.getElementValueArray(
+                                anno, sameLenValueElement, String.class));
             }
         }
         return createSameLen(strings);

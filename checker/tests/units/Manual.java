@@ -1,5 +1,7 @@
-import org.checkerframework.checker.units.UnitsTools;
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.m;
+import org.checkerframework.checker.units.qual.mPERs;
+import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.util.UnitsTools;
 
 // Include all the examples from the manual here,
 // to ensure they work as expected.

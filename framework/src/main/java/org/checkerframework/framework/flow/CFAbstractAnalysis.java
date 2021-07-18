@@ -46,7 +46,8 @@ public abstract class CFAbstractAnalysis<
     protected final TypeHierarchy typeHierarchy;
 
     /**
-     * The dependent type helper used to standardize annotations belonging to the type hierarchy.
+     * The dependent type helper used to standardize both annotations belonging to the type
+     * hierarchy, and contract expressions.
      */
     protected final DependentTypesHelper dependentTypesHelper;
 
@@ -142,7 +143,8 @@ public abstract class CFAbstractAnalysis<
      * the annotations in the created value are the primary annotations on the extends bound. See
      * {@link CFAbstractValue} for an explanation.
      *
-     * @return an abstract value containing the given annotated {@code type}.
+     * @param type the type to convert into an abstract value
+     * @return an abstract value containing the given annotated {@code type}
      */
     public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
         Set<AnnotationMirror> annos;
@@ -156,7 +158,7 @@ public abstract class CFAbstractAnalysis<
 
     /**
      * Returns an abstract value containing the given {@code annotations} and {@code
-     * underlyingType}.
+     * underlyingType}. Returns null if the annotation set has missing annotations.
      *
      * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
      */

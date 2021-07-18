@@ -28,8 +28,8 @@ public final class SubtypingChecker extends BaseTypeChecker {
     /**
      * Compute SuppressWarnings prefixes, based on the names of all the qualifiers.
      *
-     * <p>Provided for the convenience of checkers that do not subclass Subtyping Checker (because
-     * it is final). Clients should call it like:
+     * <p>Provided for the convenience of checkers that do not subclass {@code SubtypingChecker}
+     * (because it is final). Clients should call it like:
      *
      * <pre>{@code
      * SubtypingChecker.getSuppressWarningsPrefixes(this.visitor, super.getSuppressWarningsPrefixes());

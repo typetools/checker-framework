@@ -154,11 +154,10 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * @param voidParam void parameter to differentiate from {@link
      *     #DefaultQualifierKindHierarchy(Collection, Class)}
      */
-    @SuppressWarnings("UnusedVariable") // voidParam is intentionally not used.
     private DefaultQualifierKindHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses,
             @Nullable Class<? extends Annotation> bottom,
-            Void voidParam) {
+            @SuppressWarnings("UnusedVariable") Void voidParam) {
         this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
         this.qualifierKinds = new ArrayList<>(nameToQualifierKind.values());
         Collections.sort(qualifierKinds);
