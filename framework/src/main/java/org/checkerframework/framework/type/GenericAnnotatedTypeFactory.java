@@ -1312,10 +1312,13 @@ public abstract class GenericAnnotatedTypeFactory<
 
       try {
         List<CFGMethod> methods = new ArrayList<>();
-        List<? extends Tree> members = new ArrayList<>(ct.getMembers());
-        // Process variables before methods, so all field initializers are observed before the
-        // constructor is analyzed and reports uninitialized variables.
-        members.sort(sortVariablesFirst);
+        List<? extends Tree> members = ct.getMembers();
+        if (!Ordering.from(sortVariablesFirst).isOrdered(members)) {
+          members = new ArrayList<>(members);
+          // Process variables before methods, so all field initializers are observed before the
+          // constructor is analyzed and reports uninitialized variables.
+          members.sort(sortVariablesFirst);
+        }
         for (Tree m : members) {
           switch (m.getKind()) {
             case METHOD:
