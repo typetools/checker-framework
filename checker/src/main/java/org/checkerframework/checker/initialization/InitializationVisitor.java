@@ -377,8 +377,8 @@ public class InitializationVisitor<
 
     // Remove fields that have already been initialized by an initializer block.
     if (staticFields) {
-      violatingFields.removeAll(store.initializedFields);
-      nonviolatingFields.removeAll(store.initializedFields);
+      violatingFields.removeAll(initializedFields);
+      nonviolatingFields.removeAll(initializedFields);
     } else {
       violatingFields.removeAll(initializedFields);
       nonviolatingFields.removeAll(initializedFields);
