@@ -898,6 +898,12 @@ is run.  The instructions in this section
 bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
 
+Debugging your Maven configuration can be tricky because of a
+\ahreforurl{https://issues.apache.org/jira/browse/MCOMPILER-434}{bug in
+  Maven}: Maven does not report annotation processor exceptions, even when
+the \<-X> command-line argument is passed.
+
+
 \begin{enumerate}
 
 \item Declare a dependency on the Checker Framework artifacts, either from

@@ -433,6 +433,13 @@ version of \code{java.lang.String}.  You don't need to repeat these steps
 to handle \code{java.lang.String} for the Interning Checker,
 but you might do something similar for a different class and/or checker.
 
+There are two types of annotation files, which are files containing annotations that
+can be read by the Checker Framework.
+This section describes stub files, which are used by programmers and
+type system designers.
+Section~\ref{ajava-files} dscribes ajava files, which are used mainly by
+tools, such as type inference.
+
 
 \subsectionAndLabel{Using a stub file}{stub-using}
 
@@ -885,16 +892,15 @@ can be read by the Checker Framework.
 Section~\ref{stub} describes stub files, which are used by programmers and
 type system designers.
 This section dscribes ajava files.
-
-Ajava files are simply valid Java
-source files whose annotations the Checker Framework can read.
-The Checker Framework can read their annotations that are written
-on anonymous and local classes (annotations in such locations are ignored
-in stub files).
-
 Ajava files are typically read and written by tools, such as whole-program
-inference (see Section~\ref{whole-program-inference}).  This section is
-primarily of interest to the maintainers of those tools.
+inference (see Section~\ref{whole-program-inference}).  This section about
+ajava files is primarily of interest to the maintainers of such tools.
+
+An ajava file is simply a valid Java source file.
+The Checker Framework reads its annotations.
+(This includes annotations that are written
+on anonymous and local classes --- annotations in such locations are ignored
+in stub files.)
 
 
 \subsectionAndLabel{Using an Ajava file}{ajava-using}

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
@@ -1180,6 +1181,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (value == null || !value.equals(e.getValue())) {
         return false;
       }
+    }
+    if (!Objects.equals(thisValue, other.thisValue)) {
+      return false;
     }
     for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
       FieldAccess key = e.getKey();

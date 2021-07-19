@@ -285,8 +285,10 @@ public class InitializationVisitor<
     super.processClassTree(node);
 
     // Warn about uninitialized static fields.
-    if (TreeUtils.getKindRecordAsClass(node) == Tree.Kind.CLASS
-        || TreeUtils.getKindRecordAsClass(node) == Tree.Kind.ENUM) {
+    Tree.Kind nodeKind = node.getKind();
+    // Skip interfaces (and annotations, which are interfaces).  In an interface, every static field
+    // must be initialized.  Java forbids uninitialized variables and static initalizer blocks.
+    if (nodeKind != Tree.Kind.INTERFACE && nodeKind != Tree.Kind.ANNOTATION_TYPE) {
       boolean isStatic = true;
       // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
       // the regular exit store of the class here.
@@ -384,13 +386,11 @@ public class InitializationVisitor<
     List<VariableTree> violatingFields = uninitializedFields.first;
     List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
+    // Remove fields that have already been initialized by an initializer block.
     if (staticFields) {
-      // TODO: Why is nothing done for static fields?
-      // Do we need the following?
-      // violatingFields.removeAll(store.initializedFields);
+      violatingFields.removeAll(initializedFields);
+      nonviolatingFields.removeAll(initializedFields);
     } else {
-      // remove fields that have already been initialized by an
-      // initializer block
       violatingFields.removeAll(initializedFields);
       nonviolatingFields.removeAll(initializedFields);
     }
