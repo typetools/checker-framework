@@ -1424,10 +1424,10 @@ public abstract class GenericAnnotatedTypeFactory<
               lambdaPair.second);
         }
 
-        // by convention we store the static initialization store as the regular exit
+        // By convention we store the static initialization store as the regular exit
         // store of the class node, so that it can later be used to check
         // that all fields are initialized properly.
-        // see InitializationVisitor.visitClass
+        // See InitializationVisitor.visitClass().
         if (initializationStaticStore == null) {
           regularExitStores.put(ct, emptyStore);
         } else {

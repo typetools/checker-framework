@@ -285,18 +285,16 @@ public class InitializationVisitor<
     super.processClassTree(node);
 
     // Warn about uninitialized static fields.
-    if (node.getKind() == Tree.Kind.CLASS || node.getKind() == Tree.Kind.ENUM) {
-      boolean isStatic = true;
-      // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
-      // the regular exit store of the class here.
-      Store store = atypeFactory.getRegularExitStore(node);
-      // Add field values for fields with an initializer.
-      for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-        store.addInitializedField(t.first);
-      }
-      List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
-      checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
+    boolean isStatic = true;
+    // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
+    // the regular exit store of the class here.
+    Store store = atypeFactory.getRegularExitStore(node);
+    // Add field values for fields with an initializer.
+    for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
+      store.addInitializedField(t.first);
     }
+    List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
+    checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
   }
 
   @Override
