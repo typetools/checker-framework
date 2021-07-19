@@ -6,5 +6,5 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 
 /** A mapping from type variables to inference variables. */
 public class Theta extends LinkedHashMap<TypeVariable, Variable> {
-    private static final long serialVersionUID = 42L;
+  private static final long serialVersionUID = 42L;
 }
