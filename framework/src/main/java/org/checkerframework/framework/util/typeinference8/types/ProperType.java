@@ -69,7 +69,7 @@ public class ProperType extends AbstractType {
         assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
         if (atm.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
-            if (TypesUtils.isCaptured(typeMirror)) {
+            if (TypesUtils.isCapturedTypeVariable(typeMirror)) {
                 atm = ((AnnotatedWildcardType) atm).capture((TypeVariable) typeMirror);
             } else if (wildcardType.isUninferredTypeArgument()) {
                 // TODO: Should be removed when inference is corrected

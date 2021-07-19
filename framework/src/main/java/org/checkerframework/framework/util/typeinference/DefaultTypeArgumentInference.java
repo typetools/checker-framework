@@ -237,17 +237,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return inferredArgs;
     }
   }
-        if (showInferenceSteps) {
-            checker.message(Kind.NOTE, "  results: %s", inferredArgs);
-        }
-        try {
-            return TypeArgInferenceUtil.correctResults(
-                    inferredArgs, expressionTree, methodType.getUnderlyingType(), typeFactory);
-        } catch (Throwable ex) {
-            // Ignore any exceptions
-            return inferredArgs;
-        }
-    }
 
     /**
      * If one of the inferredArgs are NullType, then re-run inference ignoring null method

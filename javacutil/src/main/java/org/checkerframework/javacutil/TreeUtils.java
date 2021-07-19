@@ -1739,7 +1739,7 @@ public final class TreeUtils {
      * @return true iff {@code tree} is an implicitly typed lambda.
      */
     public static boolean isExplicitlyTypeLambda(Tree tree) {
-        return tree.getKind() == Kind.LAMBDA_EXPRESSION
+        return tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
                 && ((JCLambda) tree).paramKind == ParameterKind.EXPLICIT;
     }
 
@@ -1822,9 +1822,9 @@ public final class TreeUtils {
      *     signature
      */
     public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
-        if (methodInvocation.getKind() == Kind.METHOD_INVOCATION) {
+        if (methodInvocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
             return ((JCMethodInvocation) methodInvocation).varargsElement != null;
-        } else if (methodInvocation.getKind() == Kind.NEW_CLASS) {
+        } else if (methodInvocation.getKind() == Tree.Kind.NEW_CLASS) {
             return ((JCNewClass) methodInvocation).varargsElement != null;
         } else {
             return false;
@@ -1842,7 +1842,7 @@ public final class TreeUtils {
      *     isn't specified
      */
     public static boolean isDiamondMemberReference(ExpressionTree tree) {
-        if (tree.getKind() != Kind.MEMBER_REFERENCE) {
+        if (tree.getKind() != Tree.Kind.MEMBER_REFERENCE) {
             return false;
         }
         MemberReferenceTree memRef = (MemberReferenceTree) tree;

@@ -141,7 +141,7 @@ public class Typing extends Constraint {
                 }
             }
             if (T.isVariable()) {
-                if (TypesUtils.isCaptured(S.getJavaType())) {
+                if (TypesUtils.isCapturedTypeVariable(S.getJavaType())) {
                     ((Variable) T)
                             .getBounds()
                             .addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());

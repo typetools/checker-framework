@@ -315,7 +315,7 @@ public class BoundSet implements ReductionResult {
      * Resolution#resolveWithCapture(LinkedHashSet, BoundSet, Java8InferenceContext)}}.
      */
     private void removeProblematicConstraints(Variable alpha) {
-        if (!TypesUtils.isCaptured(alpha.getBounds().getInstantiation().getJavaType())) {
+        if (!TypesUtils.isCapturedTypeVariable(alpha.getBounds().getInstantiation().getJavaType())) {
             return;
         }
         List<Constraint> constraints = new ArrayList<>();

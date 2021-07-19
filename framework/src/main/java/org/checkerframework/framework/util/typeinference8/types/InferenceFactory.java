@@ -651,7 +651,7 @@ public class InferenceFactory {
         if (memRef.getMode() == ReferenceMode.NEW) {
             enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
             if (enclosingType.getKind() == TypeKind.DECLARED
-                    && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
+                    && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
                 // The member reference is HashMap::new so the type arguments for HashMap must be
                 // inferred.
                 // So use the type declared type.
@@ -661,7 +661,7 @@ public class InferenceFactory {
         } else if (memRefKind == ReferenceKind.UNBOUND) {
             enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
             if (enclosingType.getKind() == TypeKind.DECLARED
-                    && ((AnnotatedDeclaredType) enclosingType).wasRaw()) {
+                    && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
                 List<AbstractType> params = targetType.getFunctionTypeParameterTypes();
                 if (params.size() > 0) {
                     enclosingType = params.get(0).getAnnotatedType();
@@ -848,7 +848,7 @@ public class InferenceFactory {
 
         AnnotatedTypeMirror aAtm = a.getAnnotatedType();
         AnnotatedTypeMirror bAtm = b.getAnnotatedType();
-        AnnotatedTypeMirror glbATM = AnnotatedTypes.greatestLowerBound(typeFactory, aAtm, bAtm);
+        AnnotatedTypeMirror glbATM = AnnotatedTypes.annotatedGLB(typeFactory, aAtm, bAtm);
         if (context.types.isSameType(aJavaType, (Type) glb)) {
             return a;
         }

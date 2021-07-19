@@ -229,7 +229,7 @@ public abstract class AbstractType {
                 AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
         AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
 
-        if (TypesUtils.isCaptured(type.getUnderlyingType())) {
+        if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
             return create(asSuper, asSuperJava).capture();
         }
         return create(asSuper, asSuperJava);
@@ -324,7 +324,7 @@ public abstract class AbstractType {
             if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
                 // › If Ai is a upper-bounded wildcard ? extends Ui, then Ti = glb(Ui, Bi)
                 newTypeArgs.add(
-                        AnnotatedTypes.greatestLowerBound(
+                        AnnotatedTypes.annotatedGLB(
                                 typeFactory,
                                 typeVariable.getUpperBound(),
                                 wildcardType.getExtendsBound()));
@@ -343,7 +343,7 @@ public abstract class AbstractType {
     public boolean isRaw() {
         assert TypesUtils.isRaw(getJavaType())
                 == (getAnnotatedType().getKind() == TypeKind.DECLARED
-                        && ((AnnotatedDeclaredType) getAnnotatedType()).wasRaw());
+                        && ((AnnotatedDeclaredType) getAnnotatedType()).isUnderlyingTypeRaw());
         return TypesUtils.isRaw(getJavaType());
     }
 
@@ -511,7 +511,7 @@ public abstract class AbstractType {
         if (getJavaType().getKind() != TypeKind.DECLARED) {
             return null;
         }
-        if (((AnnotatedDeclaredType) getAnnotatedType()).wasRaw()) {
+        if (((AnnotatedDeclaredType) getAnnotatedType()).isUnderlyingTypeRaw()) {
             return Collections.emptyList();
         }
         List<? extends TypeMirror> javaTypeArgs = ((DeclaredType) getJavaType()).getTypeArguments();
