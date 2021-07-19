@@ -123,7 +123,7 @@ public class InvocationTypeInference {
     protected Java8InferenceContext context;
 
     public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
-        this.checker = factory.getContext().getChecker();
+        this.checker = factory.getChecker();
         this.context = new Java8InferenceContext(factory, pathToExpression, this);
     }
 
@@ -641,7 +641,7 @@ public class InvocationTypeInference {
             case RETURN:
                 HashSet<Tree.Kind> kinds =
                         new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
-                Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
+                Tree enclosing = TreeP.enclosingOfKind(path, kinds);
                 return enclosing.getKind() != Tree.Kind.LAMBDA_EXPRESSION;
             case METHOD_INVOCATION:
                 MethodInvocationTree methodInvocationTree =

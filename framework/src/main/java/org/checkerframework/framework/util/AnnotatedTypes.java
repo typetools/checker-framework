@@ -825,13 +825,13 @@ public class AnnotatedTypes {
                 (AnnotatedIntersectionType)
                         AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
         glb.addAnnotations(glbAnno);
-        Types types = atypeFactory.getContext().getTypeUtils();
+        Types types = atypeFactory.getProcessingEnv().getTypeUtils();
 
-        for (AnnotatedTypeMirror bound : glb.directSuperTypes()) {
+        for (AnnotatedTypeMirror bound : glb.getBounds()) {
             if (types.isSameType(bound.getUnderlyingType(), type1Copy.getUnderlyingType())) {
-                AnnotatedTypeReplacer.replace(type1Copy, bound);
+                atypeFactory.replaceAnnotations(type1Copy, bound);
             } else if (types.isSameType(bound.getUnderlyingType(), type2Copy.getUnderlyingType())) {
-                AnnotatedTypeReplacer.replace(type2Copy, bound);
+                atypeFactory.replaceAnnotations(type2Copy, bound);
             } else {
                 return null;
             }
@@ -844,7 +844,7 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2) {
-        Types types = atypeFactory.getContext().getTypeUtils();
+        Types types = atypeFactory.getProcessingEnv().getTypeUtils();
         if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
             if (atypeFactory.getTypeHierarchy().isSubtype(type1, type2)) {
                 return type1;

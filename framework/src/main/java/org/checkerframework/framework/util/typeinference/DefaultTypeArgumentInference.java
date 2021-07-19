@@ -23,6 +23,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import nonapi.io.github.classgraph.utils.StringUtils;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -140,7 +141,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 List<Variable> result = java8Inference.infer(expressionTree, methodType);
                 if (result != null) {
                     System.out.println("Inferred the following for: " + expressionTree);
-                    System.out.println("\t" + UtilPlume.join("\n\t", result));
+                    System.out.println("\t" + StringUtils.join("\n\t", result));
                 }
             } finally {
                 if (!java8InferenceStack.isEmpty()) {

@@ -1166,40 +1166,6 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns a new type mirror with the same type as {@code type} where all the type variables in
-     * {@code typeVariables} have been substituted with the type arguments in {@code typeArgs}.
-     *
-     * <p>This is a wrapper around {@link com.sun.tools.javac.code.Types#subst(Type,
-     * com.sun.tools.javac.util.List, com.sun.tools.javac.util.List)}
-     *
-     * @return a new type mirror with the same type as {@code type} where all the type variables in
-     *     {@code typeVariables} have been substituted with the type arguments in {@code typeArgs}.
-     */
-    public static TypeMirror substitute(
-            TypeMirror type,
-            List<? extends TypeMirror> typeVariables,
-            List<? extends TypeMirror> typeArgs,
-            ProcessingEnvironment env) {
-
-        List<Type> newP = new ArrayList<>();
-        for (TypeMirror typeVariable : typeVariables) {
-            newP.add((Type) typeVariable);
-        }
-
-        List<Type> newT = new ArrayList<>();
-        for (TypeMirror typeMirror : typeArgs) {
-            newT.add((Type) typeMirror);
-        }
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
-        com.sun.tools.javac.code.Types types =
-                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
-        return types.subst(
-                (Type) type,
-                com.sun.tools.javac.util.List.from(newP),
-                com.sun.tools.javac.util.List.from(newT));
-    }
-
-    /**
      * Creates a wildcard with the given bounds. If upper bound is Object, then the created wildcard
      * will not have an upper bound.
      */
