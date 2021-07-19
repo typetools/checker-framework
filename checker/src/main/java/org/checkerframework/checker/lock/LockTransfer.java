@@ -7,8 +7,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -17,6 +15,8 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TreeUtils;
@@ -25,23 +25,40 @@ import org.checkerframework.javacutil.TreeUtils;
  * LockTransfer handles constructors, initializers, synchronized methods, and synchronized blocks.
  */
 public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTransfer> {
+    /** The type factory associated with this transfer function. */
     private final LockAnnotatedTypeFactory atypeFactory;
 
+    /**
+     * Create a transfer function for the Lock Checker.
+     *
+     * @param analysis the analysis this transfer function belongs to
+     * @param checker the type-checker this transfer function belongs to
+     */
     public LockTransfer(LockAnalysis analysis, LockChecker checker) {
         // Always run the Lock Checker with -AconcurrentSemantics turned on.
-        super(analysis, true /* useConcurrentSemantics */);
+        super(analysis, /*useConcurrentSemantics=*/ true);
         this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
-    /** Sets a given {@link Node} to @LockHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockHeld in the given {@code store}.
+     *
+     * @param store the store to update
+     * @param node the node that should be @LockHeld
+     */
     protected void makeLockHeld(LockStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(node);
         store.insertValue(internalRepr, atypeFactory.LOCKHELD);
     }
 
-    /** Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}.
+     *
+     * @param store the store to update
+     * @param node the node that should be @LockPossiblyHeld
+     */
     protected void makeLockPossiblyHeld(LockStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
+        JavaExpression internalRepr = JavaExpression.fromNode(node);
 
         // insertValue cannot change an annotation to a less
         // specific type (e.g. LockHeld to LockPossiblyHeld),
@@ -112,8 +129,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
                 TypeMirror classType = TreeUtils.typeOf(classTree);
 
                 if (methodElement.getModifiers().contains(Modifier.STATIC)) {
-                    store.insertValue(
-                            new FlowExpressions.ClassName(classType), atypeFactory.LOCKHELD);
+                    store.insertValue(new ClassName(classType), atypeFactory.LOCKHELD);
                 } else {
                     store.insertThisValue(atypeFactory.LOCKHELD, classType);
                 }

@@ -1,7 +1,7 @@
 // Test case for Issue 1609
 // https://github.com/typetools/checker-framework/issues/1609
 
-import testlib.flowexpression.qual.FlowExp;
+import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
 public class Issue1609 {
     void method(@FlowExp("\"" + s + "\"") String x) {}

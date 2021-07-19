@@ -1,0 +1,35 @@
+package com.amazonaws.services.ec2;
+
+import org.checkerframework.checker.calledmethods.qual.*;
+
+// Interface
+class AmazonEC2 {
+    DescribeImagesResult describeImages(
+    // The receiver must have its owner, imageId, or executable user set, either via the "wither" or "setter" methods.
+    @CalledMethodsPredicate("(withOwners || setOwners) || (withImageIds || setImageIds) || (withExecutableUsers || setExecutableUsers)")
+    DescribeImagesRequest request);
+}
+
+// The main implementation class
+class AmazonEC2Client {
+    DescribeImagesResult describeImages(
+    // any combination of withX/setX has to be permitted if an owner has been set or an imageId has been set
+    @CalledMethodsPredicate("(withOwners || setOwners) || (withImageIds || setImageIds) || (withExecutableUsers || setExecutableUsers)")
+    DescribeImagesRequest request);
+}
+
+// Async interface
+class AmazonEC2Async {
+    Future<DescribeImagesResult> describeImagesAsync(
+    // The receiver must have its owner, imageId, or executable user set, either via the "wither" or "setter" methods.
+    @CalledMethodsPredicate("(withOwners || setOwners) || (withImageIds || setImageIds) || (withExecutableUsers || setExecutableUsers)")
+    DescribeImagesRequest request);
+}
+
+// The main async implementation class
+class AmazonEC2AsyncClient {
+    Future<DescribeImagesResult> describeImagesAsync(
+    // any combination of withX/setX has to be permitted if an owner has been set or an imageId has been set
+    @CalledMethodsPredicate("(withOwners || setOwners) || (withImageIds || setImageIds) || (withExecutableUsers || setExecutableUsers)")
+    DescribeImagesRequest request);
+}

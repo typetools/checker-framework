@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class ExceptionTest {
+public class ExceptionTest {
 
     public void foo() {
         int indexTooBig = 5;

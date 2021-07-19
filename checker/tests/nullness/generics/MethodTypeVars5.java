@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class MethodTypeVars5 {
+public class MethodTypeVars5 {
     class B<S extends @Nullable Object> {
         S t;
 

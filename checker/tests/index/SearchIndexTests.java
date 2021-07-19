@@ -1,7 +1,7 @@
 import java.util.Arrays;
 import org.checkerframework.checker.index.qual.*;
 
-class SearchIndexTests {
+public class SearchIndexTests {
     public void test(short[] a, short instant) {
         int i = Arrays.binarySearch(a, instant);
         @SearchIndexFor("a") int z = i;

@@ -1,10 +1,11 @@
 // Test case for issue #3105: https://tinyurl.com/cfissue/3105
 
-// Issue3105Fields is framework/src/test/java/testlib/lib/Issue3105Fields.java.
+// Issue3105Fields is
+// framework/src/test/java/org/checkerframework/framework/testchecker/lib/Issue3105Fields.java.
 import org.checkerframework.common.value.qual.StringVal;
-import testlib.lib.Issue3105Fields;
+import org.checkerframework.framework.testchecker.lib.Issue3105Fields;
 
-class Issue3105 {
+public class Issue3105 {
     class Demo1 {
         @StringVal("foo") String m() {
             return Issue3105Fields.FIELD1;

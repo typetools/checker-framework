@@ -1,6 +1,6 @@
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
-class FieldWithInit {
+public class FieldWithInit {
     Object f = foo();
 
     Object foo(@UnknownInitialization FieldWithInit this) {

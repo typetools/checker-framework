@@ -1,4 +1,4 @@
-class GenericTest11full {
+public class GenericTest11full {
     public void m(BeanManager beanManager) {
         Bean<?> bean = beanManager.getBeans(GenericTest11full.class).iterator().next();
         CreationalContext<?> context = beanManager.createCreationalContext(bean);

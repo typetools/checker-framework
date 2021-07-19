@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * We allow local variable uses introduced by the {@link
- * org.checkerframework.dataflow.cfg.CFGBuilder} without corresponding AST {@link Tree}s.
+ * org.checkerframework.dataflow.cfg.builder.CFGBuilder} without corresponding AST {@link Tree}s.
  */
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {
@@ -29,19 +29,28 @@ public class LocalVariableNode extends Node {
     /** The receiver node for the local variable, {@code null} otherwise. */
     protected final @Nullable Node receiver;
 
-    /** Create a new local variable node for the given tree. */
-    public LocalVariableNode(Tree t) {
-        this(t, null);
+    /**
+     * Create a new local variable node for the given tree.
+     *
+     * @param tree thre tree for the local variable: a VariableTree or an IdentifierTree
+     */
+    public LocalVariableNode(Tree tree) {
+        this(tree, null);
     }
 
-    /** Create a new local variable node for the given tree and receiver. */
-    public LocalVariableNode(Tree t, @Nullable Node receiver) {
-        super(TreeUtils.typeOf(t));
+    /**
+     * Create a new local variable node for the given tree and receiver.
+     *
+     * @param tree the tree for the local variable: a VariableTree or an IdentifierTree
+     * @param receiver the receiver for the local variable, or null if none
+     */
+    public LocalVariableNode(Tree tree, @Nullable Node receiver) {
+        super(TreeUtils.typeOf(tree));
         // IdentifierTree for normal uses of the local variable or parameter,
-        // and VariableTree for the translation of an initializer block
-        assert t != null;
-        assert t instanceof IdentifierTree || t instanceof VariableTree;
-        this.tree = t;
+        // and VariableTree for declarations or the translation of an initializer block
+        assert tree != null;
+        assert tree instanceof IdentifierTree || tree instanceof VariableTree;
+        this.tree = tree;
         this.receiver = receiver;
     }
 

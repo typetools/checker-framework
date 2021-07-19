@@ -22,10 +22,11 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Generates a stub file from a single class or an entire package.
@@ -77,7 +78,7 @@ public class StubGenerator {
             return;
         }
 
-        String pkg = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
+        String pkg = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
         if (!"".equals(pkg)) {
             currentPackage = pkg;
             currentIndention = "    ";
@@ -110,7 +111,7 @@ public class StubGenerator {
             return;
         }
 
-        String newPackage = ElementUtils.getVerboseName(ElementUtils.enclosingPackage(elt));
+        String newPackage = ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(elt));
         if (!newPackage.equals("")) {
             currentPackage = newPackage;
             currentIndention = "    ";
@@ -131,7 +132,7 @@ public class StubGenerator {
         }
 
         String newPackageName =
-                ElementUtils.getVerboseName(ElementUtils.enclosingPackage(typeElement));
+                ElementUtils.getQualifiedName(ElementUtils.enclosingPackage(typeElement));
         boolean newPackage = !newPackageName.equals(currentPackage);
         currentPackage = newPackageName;
 
@@ -167,10 +168,14 @@ public class StubGenerator {
         printClass(typeElement, null);
     }
 
-    /** helper method that outputs the index for the provided class. */
-    private void printClass(TypeElement typeElement, String outerClass) {
-        List<TypeElement> innerClass = new ArrayList<>();
-
+    /**
+     * Helper method that prints the stub file for the provided class.
+     *
+     * @param typeElement the class to output
+     * @param outerClass the outer class of the class, or null if {@code typeElement} is a top-level
+     *     class
+     */
+    private void printClass(TypeElement typeElement, @Nullable String outerClass) {
         indent();
 
         List<? extends AnnotationMirror> teannos = typeElement.getAnnotationMirrors();
@@ -212,10 +217,8 @@ public class StubGenerator {
         if (!typeElement.getInterfaces().isEmpty()) {
             final boolean isInterface = typeElement.getKind() == ElementKind.INTERFACE;
             out.print(isInterface ? " extends " : " implements ");
-            List<String> ls = new ArrayList<>();
-            for (TypeMirror itf : typeElement.getInterfaces()) {
-                ls.add(formatType(itf));
-            }
+            List<String> ls =
+                    SystemUtil.mapList(StubGenerator::formatType, typeElement.getInterfaces());
             out.print(formatList(ls));
         }
 
@@ -224,6 +227,9 @@ public class StubGenerator {
 
         currentIndention = currentIndention + INDENTION;
 
+        // Inner classes, which the stub generator prints later.
+        List<TypeElement> innerClass = new ArrayList<>();
+        // side-effects innerClass
         printTypeMembers(typeElement.getEnclosedElements(), innerClass);
 
         currentIndention = tempIndention;
@@ -353,10 +359,8 @@ public class StubGenerator {
 
         if (!method.getThrownTypes().isEmpty()) {
             out.print(" throws ");
-            List<String> ltt = new ArrayList<>();
-            for (TypeMirror tt : method.getThrownTypes()) {
-                ltt.add(formatType(tt));
-            }
+            List<String> ltt =
+                    SystemUtil.mapList(StubGenerator::formatType, method.getThrownTypes());
             out.print(formatList(ltt));
         }
         out.println(';');
@@ -375,7 +379,7 @@ public class StubGenerator {
      * @return a string representation of the list, without surrounding square brackets
      */
     private String formatList(List<?> lst) {
-        return UtilPlume.join(", ", lst);
+        return StringsPlume.join(", ", lst);
     }
 
     /** Returns true if the element is public or protected element. */
@@ -384,8 +388,13 @@ public class StubGenerator {
                 || element.getModifiers().contains(Modifier.PROTECTED);
     }
 
-    /** Outputs the simple name of the type. */
-    private String formatType(TypeMirror typeRep) {
+    /**
+     * Returns the simple name of the type.
+     *
+     * @param typeRep a type
+     * @return the simple name of the type
+     */
+    private static String formatType(TypeMirror typeRep) {
         StringTokenizer tokenizer = new StringTokenizer(typeRep.toString(), "()<>[], ", true);
         StringBuilder sb = new StringBuilder();
 

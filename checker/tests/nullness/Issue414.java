@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 
-class Issue414 {
+public class Issue414 {
 
     void simple(String s) {
         Map<String, Integer> mymap = new HashMap<>();

@@ -1,4 +1,4 @@
-// Upstream version:
+// Upstream version (this is a clean-room reimplementation of its interface):
 // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/NotNull.java
 
 package org.jetbrains.annotations;

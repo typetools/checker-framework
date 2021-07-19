@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class RequiresNonNullTest {
+public class RequiresNonNullTest {
 
     @Nullable Object field1;
     @Nullable Object field2;
@@ -115,13 +115,14 @@ class RequiresNonNullTest {
 
         public void hidingClient1(NNOEHidingTest arg5) {
             arg5.field = "ha!";
-            /* We should be testing that the Object "field" from the superclass
-             * is non-null. We currently only match on the field name and do not
-             * handle hiding correctly. Instead, we output an error, if we
-             * detect that hiding happened.
-             * TODO: correctly resolve hidden fields.
-             */
+
+            // TODO: The error message should say something about the hidden field.
+            // :: error: (contracts.precondition.not.satisfied)
             arg5.requiresNonNullField();
+
+            // TODO: Add test like:
+            // arg5.ensuresNonNullField();
+            // arg5.requiresNonNullField();
         }
 
         public void hidingClient2(NNOEHidingTest arg6) {

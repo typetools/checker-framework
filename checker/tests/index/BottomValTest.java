@@ -1,7 +1,7 @@
 import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.common.value.qual.*;
 
-class BottomValTest {
+public class BottomValTest {
     @NonNegative int foo(@BottomVal int bottom) {
         return bottom;
     }

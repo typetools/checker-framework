@@ -1,7 +1,7 @@
 // Test case for Issue 1543
 // https://github.com/typetools/checker-framework/issues/1543
 @SuppressWarnings("all") // check for crashes only
-class Issue1543 {
+public class Issue1543 {
     static class BClass<T> {}
 
     interface AInterface<T> {}

@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.IntRange;
 
-class AnnotationUse {
+public class AnnotationUse {
     // :: error: (annotation.intrange.on.noninteger)
     @IntRange(to = 0) String s1;
 

@@ -2,16 +2,16 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '6.0.0'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
     // https://plugins.gradle.org/plugin/de.undercouch.download
     id "de.undercouch.download" version "4.1.1"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "1.2.1"
+    id "net.ltgt.errorprone" version "2.0.0"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.2.3"
+    id "com.gorylenko.gradle-git-properties" version "2.2.4"
 }
 apply plugin: "de.undercouch.download"
 
@@ -42,20 +42,18 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.18.0.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
+    htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
 
     javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
     // The local git repository, typically in the .git directory, but not for worktrees.
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
-
-    // Location of pom files that are only used to add meta-data to the artifacts published to Maven.
-    pomFiles = "${rootDir}/docs/developer/release/maven-artifacts"
 }
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
 // and with text in #installation
@@ -83,6 +81,7 @@ task setLocalRepo(type:Exec) {
     }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     description 'Copies git hooks to .git directory'
     from files("checker/bin-devel/git.post-merge", "checker/bin-devel/git.pre-commit")
@@ -99,10 +98,9 @@ allprojects {
     group 'org.checkerframework'
     // Increment the minor version (second number) rather than just the patch
     // level (third number) if:
-    //   * any new checkers have been added,
-    //   * the patch level is 9 (keep the patch level as a single digit), or
+    //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.7.0-SNAPSHOT'
+    version '3.11.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -123,6 +121,9 @@ allprojects {
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
+    configurations {
+        checkerFatJar
+    }
     dependencies {
         if (isJava8) {
             javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
@@ -131,7 +132,9 @@ allprojects {
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
         allProjects subprojects
+        checkerFatJar project(path: ':checker', configuration: 'shadow')
     }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -148,7 +151,7 @@ allprojects {
                 if (!name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
-                classpath += files(project(':checker').tasks.getByName('shadowJar').archivePath)
+                classpath += rootProject.configurations.getByName('checkerFatJar').asFileTree
                 if (isJava8) {
                     classpath += configurations.javacJar
                 }
@@ -172,8 +175,10 @@ allprojects {
         }
 
         // Add standard javac options
-        tasks.withType(JavaCompile) {
+        tasks.withType(JavaCompile) { compilationTask ->
             dependsOn(':installGitHooks')
+            // Put source files in deterministic order, for debugging.
+            compilationTask.source = compilationTask.source.sort()
             sourceCompatibility = 8
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
@@ -211,8 +216,10 @@ allprojects {
             options.compilerArgs += [
                     '-g',
                     '-Werror',
-                    // To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
-                    "-Xlint:-options",
+                    // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
+                    // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+                    // are suppressible warns with a "// fall through" comment.
+                    "-Xlint:-options,-fallthrough",
                     "-Xlint",
             ]
 
@@ -223,9 +230,8 @@ allprojects {
             }
 
             // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
-            // All the classes in checker-qual are also in checker, so they are checked.
             // TODO: enable Error Prone on test classes.
-            if (it.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
+            if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone
@@ -261,11 +267,12 @@ allprojects {
     }
 }
 
-task cloneAndBuildDependencies(type: Exec) {
+task cloneAndBuildDependencies(type: Exec, group: 'Build') {
     description 'Clones (or updates) and builds all dependencies'
     executable 'checker/bin-devel/build.sh'
 }
 task maybeCloneAndBuildDependencies(type: Exec) {
+    // No group so it does not show up in the output of `gradlew tasks`
     description 'Clones (or updates) and builds all dependencies if they are not present.'
     onlyIf {
         !file(stubparserJar).exists()
@@ -275,7 +282,7 @@ task maybeCloneAndBuildDependencies(type: Exec) {
     executable 'checker/bin-devel/build.sh'
 }
 
-task version() {
+task version(group: 'Documentation') {
     description 'Print Checker Framework version'
     doLast {
         println version
@@ -343,8 +350,10 @@ List<String> getJavaFilesToFormat(projectName) {
     project(':' + projectName).sourceSets.forEach { set ->
         javaFiles.addAll(set.java.files)
     }
+
     // Collect all java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
+        // If you change this, also change checker/bin-devel/git.pre-commit
         if (!details.path.contains("nullness-javac-errors")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
@@ -352,7 +361,8 @@ List<String> getJavaFilesToFormat(projectName) {
             javaFiles.add(details.file)
         }
     }
-     // Collect all java files in jtreg directory
+
+    // Collect all java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
             javaFiles.add(details.file)
@@ -366,9 +376,9 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
-    List<String> args = new ArrayList<>();
+    List<String> args = new ArrayList<>(javaFiles.size());
     for (File f : javaFiles) {
-        args += f.absolutePath
+        args += project(projectName).relativePath(f)
     }
     return args
 }
@@ -392,11 +402,11 @@ task htmlValidate(type: Exec, group: 'Format') {
 //   It's needed to create the Javadoc jars that we release in Maven Central.
 // To make javadoc for only one subproject, run `./gradlew javadoc`
 //   in the subproject or `./gradlew :checker:javadoc` at the top level.
-task allJavadoc(type: Javadoc, group: "Documentation") {
-    description = 'Generates a global API documentation for all the modules'
-    dependsOn(':checker:shadowJar', 'getPlumeScripts')
+task allJavadoc(type: Javadoc, group: 'Documentation') {
+    description = 'Generates API documentation that includes all the modules.'
+    dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
-    source(project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
+    source(project(':checker-util').sourceSets.main.allJava, project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
             project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
 
     classpath = configurations.allProjects
@@ -410,12 +420,16 @@ task allJavadoc(type: Javadoc, group: "Documentation") {
             workingDir "${rootDir}/docs/api"
             executable "${plumeScriptsHome}/preplace"
             args += ['<a href="https://docs.oracle.com/javase/9/docs/api/com/sun/tools/javac/.*?>(.*?)</a>', '\\1']
-
         }
         copy {
             from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
             rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
             into "${rootDir}/docs/api"
+        }
+        exec {
+            workingDir "${rootDir}/docs/api"
+            executable "${htmlToolsHome}/html-add-favicon"
+            args += ['.', 'favicon-checkerframework.png']
         }
     }
 }
@@ -427,10 +441,10 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.0"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.1"
 }
-task requireJavadoc(type: JavaExec) {
-    description = 'Ensures that Javadoc documentation exists.'
+task requireJavadoc(type: JavaExec, group: 'Documentation') {
+    description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
     args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
@@ -451,7 +465,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
         destinationDir = file("${rootDir}/docs/tmpapi")
         destinationDir.mkdirs()
         subprojects.forEach {
-            if (!it.name.startsWith("checker-qual")) {
+            if (!it.name.startsWith("checker-qual-android")) {
                 source += it.sourceSets.main.allJava
             }
         }
@@ -469,6 +483,16 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
 
 createJavadocTask('javadocDoclintAll', 'Runs javadoc with -Xdoclint:all option.', JavadocMemberLevel.PRIVATE)
 
+task manual(group: 'Documentation') {
+    description 'Build the manual'
+    doLast {
+        exec {
+            commandLine "make", "-C", "docs/manual", "all"
+        }
+    }
+}
+
+// No group so it does not show up in the output of `gradlew tasks`
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
     onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
@@ -490,6 +514,7 @@ task downloadJtreg(type: Download) {
 }
 
 // See alternate implementation getCodeFormatScriptsInGradle below.
+// No group so it does not show up in the output of `gradlew tasks`
 task getCodeFormatScripts() {
     description 'Obtain or update the run-google-java-format scripts'
     if (file(formatScriptsHome).exists()) {
@@ -503,17 +528,20 @@ task getCodeFormatScripts() {
         exec {
             workingDir "${formatScriptsHome}/../"
             executable 'git'
-            args = ['clone', '-q', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
         }
     }
 }
 
 // This implementation is preferable to the above because it does work in Gradle rather than in bash.
-// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97
+// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97 .
+// No group so it does not show up in the output of `gradlew tasks`
 task getCodeFormatScriptsInGradle {
   description "Obtain the run-google-java-format scripts"
   doLast {
     if (! new File(formatScriptsHome).exists()) {
+      // There is no support for the --depth argument:
+      // https://github.com/ajoberstar/grgit/issues/155   https://bugs.eclipse.org/bugs/show_bug.cgi?id=475615
       def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/plume-lib/run-google-java-format.git')
     } else {
       def rgjfGit = Grgit.open(dir: formatScriptsHome)
@@ -522,6 +550,7 @@ task getCodeFormatScriptsInGradle {
   }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task getPlumeScripts() {
     description 'Obtain or update plume-scripts'
     if (file(plumeScriptsHome).exists()) {
@@ -535,22 +564,43 @@ task getPlumeScripts() {
         exec {
             workingDir "${plumeScriptsHome}/../"
             executable 'git'
-            args = ['clone', '-q', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
         }
     }
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
+task getHtmlTools() {
+    description 'Obtain or update html-tools'
+    if (file(htmlToolsHome).exists()) {
+        exec {
+            workingDir htmlToolsHome
+            executable 'git'
+            args = ['pull', '-q']
+            ignoreExitValue = true
+        }
+    } else {
+        exec {
+            workingDir "${htmlToolsHome}/../"
+            executable 'git'
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/html-tools.git', '.html-tools']
+        }
+    }
+}
+
+// No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
-  description "Check that the python executable is installed."
-  executable = "python"
+  description "Check that the python3 executable is installed."
+  executable = "python3"
   args "--version"
 }
 
 task tags {
+    group 'Emacs'
     description 'Create Emacs TAGS table'
     doLast {
         exec {
-            commandLine "etags", "-i", "checker/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
+            commandLine "etags", "-i", "checker/TAGS", "-i", "checker-qual/TAGS", "-i", "checker-util/TAGS", "-i", "dataflow/TAGS", "-i", "framework/TAGS", "-i", "framework-test/TAGS", "-i", "javacutil/TAGS", "-i", "docs/manual/TAGS"
         }
         exec {
             commandLine "make", "-C", "docs/manual", "tags"
@@ -571,14 +621,14 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.4.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.5.1'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Check whether the source code is properly formatted'
-        // checker-qual* projects have no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual') }
-        executable 'python'
+        // checker-qual-android project has no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
+        executable 'python3'
 
         doFirst {
             args += "${formatScriptsHome}/check-google-java-format.py"
@@ -595,9 +645,9 @@ subprojects {
 
     task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
         description 'Format the Java source code'
-        // checker-qual* projects have no source, so skip
-        onlyIf { !project.name.startsWith('checker-qual') }
-        executable 'python'
+        // checker-qual-android project has no source, so skip
+        onlyIf {!project.name.startsWith('checker-qual-android') }
+        executable 'python3'
         doFirst {
             args += "${formatScriptsHome}/run-google-java-format.py"
             args += "--aosp" // 4 space indentation
@@ -606,55 +656,54 @@ subprojects {
     }
 
     shadowJar {
+        // If you add an external dependency, then do the following:
+        // 1. Before adding the dependency, run ./gradlew copyJarsToDist.
+        // 2. Copy checker/dist/checker.jar elsewhere.
+        // 3. Add the dependency, then run ./gradlew clean copyJarsToDist.
+        // 4. Unzip both jars and compare the contents.
+        // 5. Add relocate lines below for the packages.
+        // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
+
         // Relocate packages that might conflict with user's classpath.
+        relocate 'org.apache', 'org.checkerframework.org.apache'
+        relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
+        relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
+        relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
+        relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
+        relocate 'io.github.classgraph', 'org.checkerframework.io.github.classgraph'
+        relocate 'nonapi.io.github.classgraph', 'org.checkerframework.nonapi.io.github.classgraph'
+        // relocate 'sun', 'org.checkerframework.sun'
+        relocate 'com.google', 'org.checkerframework.com.google'
+        relocate 'plume', 'org.checkerframework.plume'
+        exclude '**/module-info.class'
+
         doFirst {
             if (release) {
                 // Only relocate JavaParser during a release:
                 relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
             }
         }
-
-        // These appear in annotation-file-utilities-all.jar:
-        relocate 'org.apache', 'org.checkerframework.org.apache'
-        relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
-        relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
-        relocate 'org.codehaus', 'org.checkerframework.org.codehaus'
-        // relocate 'sun', 'org.checkerframework.sun'
-        relocate 'org.objectweb.asm', 'org.checkerframework.org.objectweb.asm'
-        relocate 'com.google', 'org.checkerframework.com.google'
-        relocate 'plume', 'org.checkerframework.plume'
     }
 
-    if (!project.name.startsWith('checker-qual')) {
+    if (!project.name.startsWith('checker-qual-android')) {
         task tags(type: Exec) {
             description 'Create Emacs TAGS table'
             commandLine "bash", "-c", "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
         }
     }
 
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
     // Things in this block reference definitions in the subproject that do not exist,
     // until the project is evaluated.
     afterEvaluate {
-        // Create a sourcesJar task for each subproject
-        tasks.create(name: 'sourcesJar', type: Jar) {
-            description 'Creates sources jar.'
-            archiveClassifier = 'source'
-            archiveBaseName = jar.archiveBaseName
-            from sourceSets.main.java
-        }
-
-        // Create a javadocJar task for each subproject
-        tasks.create(name: 'javadocJar', type: Jar, dependsOn: 'javadoc') {
-            description 'Creates javadoc jar.'
-            archiveClassifier = 'javadoc'
-            archiveBaseName = jar.archiveBaseName
-            from tasks.javadoc.destinationDir
-        }
-
         // Adds manifest to all Jar files
         tasks.withType(Jar) {
             includeEmptyDirs = false
-            if (archiveFileName.get().startsWith("checker-qual")) {
+            if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                 metaInf {
                     from './LICENSE.txt'
                 }
@@ -669,7 +718,7 @@ subprojects {
                 if (! archiveFileName.get().endsWith("source.jar")) {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
                 }
-                if (archiveFileName.get().startsWith("checker-qual")) {
+                if (archiveFileName.get().startsWith("checker-qual") || archiveFileName.get().startsWith("checker-util")) {
                     attributes("Bundle-License": "MIT")
                 } else {
                     attributes("Bundle-License": "(GPL-2.0-only WITH Classpath-exception-2.0)")
@@ -679,6 +728,8 @@ subprojects {
 
         // Add tasks to run various checkers on all the main source sets.
         // These pass and are run by nonJunitTests.
+        createCheckTypeTask(project.name, 'Formatter',
+            'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
             'org.checkerframework.checker.interning.InterningChecker',
             ['-Astubs=javax-lang-model-element-name.astub'])
@@ -714,7 +765,8 @@ subprojects {
                                 "-workDir:${jtregOutput}/${name}/work",
                                 "-reportDir:${jtregOutput}/${name}/report",
                                 "-verbose:error,fail",
-                                "-javacoptions:-g",
+                                // Don't add debugging information
+                                //  "-javacoptions:-g",
                                 "-keywords:!ignore",
                                 "-samevm",
                                 "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
@@ -757,7 +809,7 @@ subprojects {
         }
 
         // Create a task for each JUnit test class whose name is the same as the JUnit class name.
-        sourceSets.test.allJava.filter { it.path.contains('src/test/java/tests') }.forEach { file ->
+        sourceSets.test.allJava.filter { it.path.contains('test/junit') }.forEach { file ->
             String junitClassName = file.name.replaceAll(".java", "")
             tasks.create(name: "${junitClassName}", type: Test) {
                 description "Run ${junitClassName} tests."
@@ -815,15 +867,19 @@ subprojects {
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
             description 'Run all Checker Framework tests except for the Junit tests.'
+            if (project.name.is('framework') || project.name.is('checker')) {
+                dependsOn('jtregTests')
+            }
             if (project.name.is('framework')) {
-                dependsOn('wholeProgramInferenceTests', 'loaderTests')
+                dependsOn('loaderTests')
             }
 
             if (project.name.is('checker')) {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                 }
-                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
+                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
 
             if (project.name.is('dataflow')) {
@@ -833,17 +889,15 @@ subprojects {
         }
 
         // Create a typecheck task per project (dogfooding the Checker Framework on itself).
-        // This isn't a test of the Checker Framework as the test and nonJunitTests are.
+        // This isn't a test of the Checker Framework as the test and nonJunitTests tasks are.
+        // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
         tasks.create(name: 'typecheck', group: 'Verification') {
             description 'Run the Checker Framework on itself'
-            dependsOn('checkInterning', 'checkPurity', 'checkSignature')
+            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkNullnessOnlyAnnotatedFor')
+                dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
             } else {
                 dependsOn('checkNullness')
-            }
-            if (project.name.is('framework') || project.name.is('checker')) {
-                dependsOn('checkCompilerMessages', 'jtregTests')
             }
         }
 
@@ -869,9 +923,10 @@ subprojects {
 assemble.dependsOn(':checker:copyJarsToDist')
 
 task checkBasicStyle(group: 'Format') {
-    description 'Check basic style guidelines.  Not related to Checkstyle tool.'
+    description 'Check basic style guidelines, mostly whitespace.  Not related to Checkstyle tool.'
     String[] ignoreDirectories = ['.git',
                                   '.gradle',
+                                  '.html-tools',
                                   '.idea',
                                   '.plume-scripts',
                                   '.run-google-java-format',
@@ -880,8 +935,7 @@ task checkBasicStyle(group: 'Format') {
                                   'plume-bib',
                                   'bootstrap',
                                   'build',
-                                  'jdk',
-                                  'maven-artifacts']
+                                  'jdk']
 
     String[] ignoreFilePatterns = [
             '*.aux',
@@ -907,6 +961,7 @@ task checkBasicStyle(group: 'Format') {
             'manual.html',
             'manual.html-e',
             'junit.*.properties',
+            'securerandom.*',
             'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
             'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
             'framework/src/main/resources/git.properties']
@@ -979,7 +1034,7 @@ task checkBasicStyle(group: 'Format') {
     }
 }
 assemble.mustRunAfter(clean)
-task buildAll {
+task buildAll(group: 'Build') {
     description 'Build all jar files, including source and javadoc jars'
     dependsOn(allJavadoc)
     subprojects { Project subproject ->
@@ -990,7 +1045,7 @@ task buildAll {
     dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar')
 }
 
-task releaseBuild {
+task releaseBuild(group: 'Build') {
     description 'Build everything required for a release'
     dependsOn(clean)
     doFirst {
@@ -1000,6 +1055,7 @@ task releaseBuild {
     finalizedBy(buildAll)
 }
 
+// No group so it does not show up in the output of `gradlew tasks`
 task releaseAndTest {
     description 'Build everything required for a release and run allTests'
     dependsOn(releaseBuild)
@@ -1012,99 +1068,35 @@ task releaseAndTest {
 jar.onlyIf {false}
 
 /**
- * Copies the pom file and expands any properties in the file. For example,
- * ${checkerframeworkversion} is changed to the current version.
- * @param pomFile file name of pom
- * @return file name of the copied and expanded pom file
+ * Adds the shared pom information to the given publication.
+ * @param publication MavenPublication
  */
-String copyAndExpandPomFile(String pomFile) {
-    mkdir "${buildDir}/maven"
-    copy {
-        from pomFile
-        into "${buildDir}/maven"
-        expand('checkerframeworkversion': version)
-    }
+final sharedPublicationConfiguration(publication) {
+    publication.pom {
+        url = 'https://checkerframework.org'
+        developers {
+            // These are the lead developers/maintainers, not all the developers or contributors.
+            developer {
+                id = 'mernst'
+                name = 'Michael Ernst'
+                email = 'mernst@cs.washington.edu'
+                url = 'https://homes.cs.washington.edu/~mernst/'
+                organization = 'University of Washington'
+                organizationUrl = 'https://www.cs.washington.edu/'
+            }
+            developer {
+                id = 'smillst'
+                name = 'Suzanne Millstein'
+                email = 'smillst@cs.washington.edu'
+                organization = 'University of Washington'
+                organizationUrl = 'https://www.cs.washington.edu/'
+            }
+        }
 
-    new File("${buildDir}/maven").toPath().resolve(new File(pomFile).toPath().last())
-}
-
-/**
- * Deploys the given jar file to the local Maven repository.
- * @param jar fully qualified file name of a jar file
- * @param pom filename of pom that describes the artifact
- */
-void mvnDeployToLocalRepo(String jar, String pom) {
-    String copiedFilename = copyAndExpandPomFile(pom)
-    exec {
-        executable 'mvn'
-        args += [
-                'install:install-file',
-                "-Dfile=${jar}",
-                "-DpomFile=${copiedFilename}",
-                '-DgeneratePom=true'
-
-        ]
-    }
-}
-
-/**
- * Deploys the jar file produced by the "jar" task of the given project to the local Maven repository.
- * @param project project whose jar file is deployed
- * @param pom filename of pom that describes the artifact
- */
-void mvnDeployToLocalRepo(Project project, String pomFile) {
-    String jarFile = project.tasks.getByName('jar').archiveFile.get().toString();
-    mvnDeployToLocalRepo(jarFile, pomFile)
-}
-
-/**
- * Signs and deploys the given jar file to the Sonatypes Maven repository.
- * @param jar fully qualified file name of a jar file
- * @param pom filename of pom that describes the artifact
- * @param classifier the kind of artifact; sources or javadoc; defaults to the empty string
- */
-void mvnSignAndDeployToSonatype(String jar, String pom, String classifier = "") {
-    String copiedFilename = copyAndExpandPomFile(pom)
-    String passwordFile = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
-    String passphrase = new File(passwordFile).readLines().get(0);
-
-    exec {
-        executable 'mvn'
-        args += [
-                'gpg:sign-and-deploy-file',
-                '-Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/',
-                '-DrepositoryId=sonatype-nexus-staging',
-                "-DpomFile=${copiedFilename}",
-                "-Dfile=${jar}",
-                '-Dgpg.keyname=checker-framework-dev@googlegroups.com',
-                "-Dgpg.passphrase=${passphrase}"
-        ]
-        if (!classifier.isEmpty()) {
-            args += ["-Dclassifier=${classifier}"]
+        scm {
+            url = 'https://github.com/typetools/checker-framework.git'
+            connection = 'scm:git:git://github.com/typetools/checker-framework.git'
+            developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
         }
     }
-}
-
-/**
- * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
- * @param classesJar class jar file
- * @param sourceJar source jar file corresponding to the classesJar
- * @param javadocJar javadoc jar file corresponding to the classesJar
- * @param pom filename of pom that describes the artifact
- */
-void mvnSignAndDeployMultipleToSonatype(String classesJar, String sourceJar, String javadocJar, String pom) {
-    mvnSignAndDeployToSonatype(classesJar, pom)
-    mvnSignAndDeployToSonatype(sourceJar, pom, "sources")
-    mvnSignAndDeployToSonatype(javadocJar, pom, "javadoc")
-}
-
-/**
- * Signs and deploys the classes jar, sources jar, and javadoc jar files for a single artifact.
- * @param project with a jar, sourcesJar, and javadocJar tasks defined
- * @param pom filename of pom that describes the artifact
- */
-void mvnSignAndDeployMultipleToSonatype(Project project, String pom) {
-    mvnSignAndDeployMultipleToSonatype(project.tasks.getByName('jar').archiveFile.get().toString(),
-            project.tasks.getByName('sourcesJar').archiveFile.get().toString(),
-            project.tasks.getByName('javadocJar').archiveFile.get().toString(), pom)
 }

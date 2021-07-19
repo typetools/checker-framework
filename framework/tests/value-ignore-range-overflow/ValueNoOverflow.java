@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class ValueNoOverflow {
+public class ValueNoOverflow {
 
     // This file contains a series of simple smoke tests for IntRange and ArrayLenRange with no
     // overflow.

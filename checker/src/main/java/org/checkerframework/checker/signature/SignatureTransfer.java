@@ -3,13 +3,12 @@ package org.checkerframework.checker.signature;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -53,10 +52,8 @@ public class SignatureTransfer extends CFTransfer {
                 ConditionalTransferResult<CFValue, CFStore> result =
                         new ConditionalTransferResult<>(
                                 superResult.getResultValue(), thenStore, elseStore);
-                // The refined expression is the receive of the method call.
-                Receiver refinedExpr =
-                        FlowExpressions.internalReprOf(
-                                aTypeFactory.getContext().getAnnotationProvider(), receiver);
+                // The refined expression is the receiver of the method call.
+                JavaExpression refinedExpr = JavaExpression.fromNode(receiver);
 
                 elseStore.insertValue(refinedExpr, aTypeFactory.CANONICAL_NAME);
                 return result;

@@ -1,10 +1,10 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 /*
  * See Issue 137:
  * https://github.com/typetools/checker-framework/issues/137
  */
-class GenericTest7 {
+public class GenericTest7 {
     interface A {}
 
     interface B<T> {}

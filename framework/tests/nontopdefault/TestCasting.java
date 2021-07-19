@@ -1,4 +1,4 @@
-import testlib.nontopdefault.qual.NTDMiddle;
+import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDMiddle;
 
 @SuppressWarnings("inconsistent.constructor.type") // Not the point of this test
 public class TestCasting {

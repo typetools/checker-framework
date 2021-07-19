@@ -37,8 +37,10 @@ The main type annotations are
 \refqualclass{common/value/qual}{BoolVal},
 \refqualclass{common/value/qual}{IntVal},
 \refqualclass{common/value/qual}{IntRange},
-\refqualclass{common/value/qual}{DoubleVal}, and
-\refqualclass{common/value/qual}{StringVal}.
+\refqualclass{common/value/qual}{DoubleVal},
+\refqualclass{common/value/qual}{StringVal},
+\refqualclass{common/value/qual}{MatchesRegex},
+and \refqualclass{common/value/qual}{EnumVal}.
 Additional type annotations for arrays and strings are
 \refqualclass{common/value/qual}{ArrayLen},
 \refqualclass{common/value/qual}{ArrayLenRange},
@@ -60,7 +62,9 @@ could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
 \refqualclass{common/value/qual}{IntRange} for integral types,
 \refqualclass{common/value/qual}{ArrayLenRange} for array types,
-\refqualclass{common/value/qual}{ArrayLen} or \refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
+\refqualclass{common/value/qual}{MatchesRegex},
+\refqualclass{common/value/qual}{ArrayLen}, or
+\refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
 The \<@ArrayLen> annotation means that at run time, the expression
 evaluates to an array or a string whose length is one of the annotation's arguments.
@@ -71,10 +75,26 @@ If this would result in too many lengths,
 only the minimum and maximum lengths are used in \<@ArrayLenRange>,
 giving a range of possible lengths of the string.
 
-The \<@StringVal> annotation may be applied to a char array.  Although byte
-arrays are often converted to/from strings, the \<@StringVal> annotation may
+The \<@StringVal> and \<@MatchesRegex> annotations may be applied to char arrays.  Although byte
+arrays are often converted to/from strings, these annotations may
 not be applied to them.  This is because the conversion depends on the
 platform's character set.
+
+The \<@MatchesRegex> annotation uses the standard Java regular expression syntax.
+\<@MatchesRegex(A)> is only a subtype of \<@MatchesRegex(B)> if the set of regular
+expressions \<A> is a subset of the set of regular expressions \<B>. An
+\<@StringVal> annotation is a subtype of an \<@MatchesRegex> annotation if
+each string matches at least one of the regular expressions.  Matching is done
+via the
+\href{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html\#matches(java.lang.String)}{java.lang.String\#matches}
+method, which matches against the entire string (it does not look for a
+matching substring).
+
+The \<@EnumVal> annotation's argument is the names of the enum constants
+that the type might evaluate to.  (Java syntax does not allow the enum
+constants themselves to be arguments.)  \<@EnumVal>
+is treated identically to \<@StringVal> by the checker internally, so
+\<@StringVal> may appear in error messages related to enums.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
@@ -109,7 +129,8 @@ subtype of a \<@DoubleVal> annotation with the same values.
 \caption{At the top, the type qualifier hierarchy of the Constant Value Checker
   annotations.
   The first four qualifiers are applicable to primitives and their
-  wrappers; the next to \<String>s, and the final two to arrays.
+  wrappers; the next to \<String>s (it can also be written as \<@EnumVal> for
+  enumeration constants), and the final two to arrays.
 Qualifiers in gray are used
 internally by the type system but should never be written by a
 programmer.  At the bottom are examples of additional subtyping
@@ -174,15 +195,14 @@ $\Rightarrow$
 \label{fig-constant-value-refactoring}
 \end{figure}
 
-\ifonbuffalo{\relax}\else{
-  The Constant Value Checker trusts the
-  \refqualclass{checker/index/qual}{Positive},
-  \refqualclass{checker/index/qual}{NonNegative},
-  and \refqualclass{checker/index/qual}{GTENegativeOne} annotations.  If your code
-  contains any of these annotations, then
-  in order to guarantee soundness, you must run the Index Checker whenever
-  you run the Constant Value Checker.
-}\fi
+The Constant Value Checker trusts the
+\refqualclass{checker/index/qual}{Positive},
+\refqualclass{checker/index/qual}{NonNegative},
+and \refqualclass{checker/index/qual}{GTENegativeOne} annotations.  If your code
+contains any of these annotations, then
+in order to guarantee soundness, you must run the Index Checker whenever
+you run the Constant Value Checker.
+
 
 \subsectionAndLabel{Compile-time execution of expressions}{constant-value-compile-time-execution}
 

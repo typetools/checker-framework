@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class WildcardSubtype {
+public class WildcardSubtype {
     class MyClass {}
 
     class Visitor<T> {

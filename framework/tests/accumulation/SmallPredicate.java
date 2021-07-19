@@ -1,8 +1,8 @@
 // small test case for predicates, for debugging
 
-import testaccumulation.qual.*;
+import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class SmallPredicate {
+public class SmallPredicate {
     void a() {}
 
     void b() {}
@@ -12,8 +12,7 @@ class SmallPredicate {
     static void test(SmallPredicate smallPredicate) {
         smallPredicate.a();
         smallPredicate.b();
-        @TestAccumulation({"a", "b"})
-        SmallPredicate p2 = smallPredicate;
+        @TestAccumulation({"a", "b"}) SmallPredicate p2 = smallPredicate;
         smallPredicate.d();
     }
 }

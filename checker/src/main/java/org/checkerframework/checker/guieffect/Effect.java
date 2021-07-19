@@ -80,6 +80,7 @@ public final class Effect {
      *
      * @return true if this is PolyUIEffect
      */
+    @Pure
     public boolean isPoly() {
         return annotClass == PolyUIEffect.class;
     }

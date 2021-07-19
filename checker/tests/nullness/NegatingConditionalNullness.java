@@ -2,8 +2,7 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
-class PptTopLevel {
-    /** List of all of the splitters for this ppt. */
+public class NegatingConditionalNullness {
     public @MonotonicNonNull List<Object> splitters = null;
 
     @EnsuresNonNullIf(result = true, expression = "splitters")
@@ -11,37 +10,37 @@ class PptTopLevel {
         return (splitters != null);
     }
 
-    static void testPptTopLevel(PptTopLevel ppt) {
+    static void test(NegatingConditionalNullness ppt) {
         if (!ppt.has_splitters()) {
             return;
         }
         @NonNull Object s2 = ppt.splitters;
     }
 
-    static void testPptTopLevelAssert(PptTopLevel ppt) {
+    static void testAssert(NegatingConditionalNullness ppt) {
         assert ppt.has_splitters() : "@AssumeAssertion(nullness)";
         @NonNull Object s2 = ppt.splitters;
     }
 
-    static void testSimple(PptTopLevel ppt) {
+    static void testSimple(NegatingConditionalNullness ppt) {
         if (ppt.has_splitters()) {
             @NonNull Object s2 = ppt.splitters;
         }
     }
 
     // False tests
-    static void testFalse(PptTopLevel ppt) {
+    static void testFalse(NegatingConditionalNullness ppt) {
         // :: error: (dereference.of.nullable)
         ppt.splitters.toString(); // error
     }
 
-    static void testFalseNoAssertion(PptTopLevel ppt) {
+    static void testFalseNoAssertion(NegatingConditionalNullness ppt) {
         ppt.has_splitters();
         // :: error: (dereference.of.nullable)
         ppt.splitters.toString(); // error
     }
 
-    static void testFalseIf(PptTopLevel ppt) {
+    static void testFalseIf(NegatingConditionalNullness ppt) {
         if (ppt.has_splitters()) {
             return;
         }
@@ -49,7 +48,7 @@ class PptTopLevel {
         ppt.splitters.toString(); // error
     }
 
-    //    static void testFalseIfBody(PptTopLevel ppt) {
+    //    static void testFalseIfBody(NegatingConditionalNullness ppt) {
     //        if (!ppt.has_splitters()) {
     //            // :: error: (dereference.of.nullable)
     //            ppt.splitters.toString();   // error

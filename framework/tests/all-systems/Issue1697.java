@@ -1,7 +1,7 @@
 // Test case for Issue 1697:
 // https://github.com/typetools/checker-framework/issues/1697
 
-class Issue1697 {
+public class Issue1697 {
 
     interface G<A> {
         A h(byte[] l);

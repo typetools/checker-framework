@@ -4,7 +4,7 @@ interface FunctionBC<T extends @Nullable Object, R> {
     R apply(T t);
 }
 
-class FromByteCode {
+public class FromByteCode {
 
     FunctionBC<String, String> f1 = String::toString;
 

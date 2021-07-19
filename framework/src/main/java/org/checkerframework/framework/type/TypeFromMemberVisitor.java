@@ -6,7 +6,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -43,7 +43,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         if (annoTrees != null && !annoTrees.isEmpty()) {
             modifierAnnos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
         } else {
-            modifierAnnos = new ArrayList<>();
+            modifierAnnos = Collections.emptyList();
         }
 
         if (result.getKind() == TypeKind.DECLARED
@@ -89,7 +89,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                     // Declaration annotations apply to the outer type.
                     result.addAnnotation(anno);
                 } else {
-                    // Type annotations apply to the inner most type.
+                    // Type annotations apply to the innermost type.
                     innerType.addAnnotation(anno);
                 }
             }
@@ -149,7 +149,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                 // inference (#979) isn't implement, check first. Use the erased types because the
                 // type arguments are not substituted when the annotated type arguments are.
                 if (TypesUtils.isErasedSubtype(
-                        funcTypeParam.actualType, lambdaParam.actualType, f.types)) {
+                        funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
                     return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
                 }
                 lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());

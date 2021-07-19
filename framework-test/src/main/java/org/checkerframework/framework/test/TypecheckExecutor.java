@@ -12,7 +12,7 @@ import javax.tools.ToolProvider;
 import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.javacutil.SystemUtil;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
@@ -27,7 +27,7 @@ public class TypecheckExecutor {
 
     /**
      * Using the settings from the input configuration, compile all source files in the
-     * configuration, and return place the result in a CompilationResult
+     * configuration, and return the result in a CompilationResult.
      */
     public CompilationResult compile(TestConfiguration configuration) {
         String dOption = configuration.getOptions().get("-d");
@@ -47,8 +47,8 @@ public class TypecheckExecutor {
 
         // Even though the method compiler.getTask takes a list of processors, it fails if
         // processors are passed this way with the message:
-        // error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only
-        // accepted if annotation processing is explicitly requested
+        //   error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only
+        //   accepted if annotation processing is explicitly requested
         // Therefore, we now add them to the beginning of the options list.
         final List<String> options = new ArrayList<>();
         options.add("-processor");
@@ -83,7 +83,7 @@ public class TypecheckExecutor {
                     "javac "
                             + String.join(" ", options)
                             + " "
-                            + UtilPlume.join(" ", configuration.getTestSourceFiles()));
+                            + StringsPlume.join(" ", configuration.getTestSourceFiles()));
         }
 
         JavaCompiler.CompilationTask task =
@@ -112,7 +112,7 @@ public class TypecheckExecutor {
 
     /**
      * Reads the expected diagnostics for the given configuration and creates a TypecheckResult
-     * which contains all of the missing and expected diagnostics
+     * which contains all of the missing and expected diagnostics.
      */
     public TypecheckResult interpretResults(
             TestConfiguration config, CompilationResult compilationResult) {
@@ -122,8 +122,8 @@ public class TypecheckExecutor {
     }
 
     /**
-     * Added in case a subclass wishes to filter out errors or add new expected errors. This method
-     * is called immediately before results are checked.
+     * A subclass can override this to filter out errors or add new expected errors. This method is
+     * called immediately before results are checked.
      */
     protected List<TestDiagnostic> readDiagnostics(
             TestConfiguration config, CompilationResult compilationResult) {

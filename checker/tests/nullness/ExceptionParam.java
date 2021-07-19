@@ -4,7 +4,7 @@ import org.checkerframework.framework.qual.DefaultQualifier;
 
 /** Exception parameters are non-null, even if the default is nullable. */
 @DefaultQualifier(org.checkerframework.checker.nullness.qual.Nullable.class)
-class ExceptionParam {
+public class ExceptionParam {
     void exc1() {
         try {
         } catch (AssertionError e) {
@@ -14,6 +14,7 @@ class ExceptionParam {
 
     void exc2() {
         try {
+            // :: warning: (nullness.on.exception.parameter)
         } catch (@NonNull AssertionError e) {
             @NonNull Object o = e;
         }
@@ -21,7 +22,7 @@ class ExceptionParam {
 
     void exc3() {
         try {
-            // :: error: (type.invalid.annotations.on.use)
+            // :: warning: (nullness.on.exception.parameter)
         } catch (@Nullable AssertionError e) {
             @NonNull Object o = e;
         }

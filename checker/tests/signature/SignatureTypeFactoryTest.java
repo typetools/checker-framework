@@ -130,7 +130,6 @@ public class SignatureTypeFactoryTest {
         fbn = s2;
 
         us = s3;
-        // :: error: (assignment.type.incompatible)
         fqn = s3;
         cgn = s3;
         // :: error: (assignment.type.incompatible)
@@ -243,7 +242,6 @@ public class SignatureTypeFactoryTest {
         fbn = s11;
 
         us = s12;
-        // :: error: (assignment.type.incompatible)
         fqn = s12;
         // :: error: (assignment.type.incompatible)
         cgn = s12;
@@ -701,7 +699,6 @@ public class SignatureTypeFactoryTest {
         fbn = t27;
 
         us = t26;
-        // :: error: (assignment.type.incompatible)
         fqn = t26;
         cgn = t26;
         // :: error: (assignment.type.incompatible)
@@ -730,7 +727,6 @@ public class SignatureTypeFactoryTest {
         fbn = t32;
 
         us = t30;
-        // :: error: (assignment.type.incompatible)
         fqn = t30;
         // :: error: (assignment.type.incompatible)
         cgn = t30;
@@ -759,7 +755,6 @@ public class SignatureTypeFactoryTest {
         fbn = t31;
 
         us = t34;
-        // :: error: (assignment.type.incompatible)
         fqn = t34;
         cgn = t34;
         // :: error: (assignment.type.incompatible)
@@ -768,9 +763,7 @@ public class SignatureTypeFactoryTest {
         iform = t34;
         // :: error: (assignment.type.incompatible)
         sn = t34;
-        // :: error: (assignment.type.incompatible)
         bn = t34;
-        // :: error: (assignment.type.incompatible)
         fbn = t34;
 
         us = t17;
@@ -799,7 +792,6 @@ public class SignatureTypeFactoryTest {
         bn = t18; // t18 is pakkage.Outer.Inner[]
 
         us = t19;
-        // :: error: (assignment.type.incompatible)
         fqn = t19;
         cgn = t19;
         // :: error: (assignment.type.incompatible)
@@ -812,7 +804,6 @@ public class SignatureTypeFactoryTest {
         fbn = t19;
 
         us = t21;
-        // :: error: (assignment.type.incompatible)
         fqn = t21;
         // :: error: (assignment.type.incompatible)
         cgn = t21;

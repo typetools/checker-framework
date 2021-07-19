@@ -12,7 +12,6 @@ public class ExtendHasQual {
     @HasQualifierParameter(Tainted.class)
     static class Buffer extends Super {}
 
-    // :: error: (missing.has.qual.param)
     static class MyBuffer1 extends Buffer {}
 
     @HasQualifierParameter(Tainted.class)
@@ -28,18 +27,15 @@ public class ExtendHasQual {
     @HasQualifierParameter(Tainted.class)
     interface BufferInterface {}
 
-    // :: error: (missing.has.qual.param)
     static class ImplementsBufferInterface1 implements BufferInterface {}
 
     @HasQualifierParameter(Tainted.class)
     static class ImplementsBufferInterface2 implements BufferInterface {}
 
-    // :: error: (missing.has.qual.param)
     static class Both1 extends Buffer implements BufferInterface {}
 
     @HasQualifierParameter(Tainted.class)
     static class Both2 extends Buffer implements BufferInterface {}
 
-    // :: error: (missing.has.qual.param)
     static class Both3 extends Super implements BufferInterface {}
 }

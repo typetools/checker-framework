@@ -1,6 +1,6 @@
 import org.checkerframework.common.aliasing.qual.*;
 
-class ReceiverParameterTest {
+public class ReceiverParameterTest {
 
     public @Unique ReceiverParameterTest() {
         nonLeaked();

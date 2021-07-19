@@ -1,4 +1,4 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 public class DeepOverride {
     public static class A {

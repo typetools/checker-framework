@@ -1,6 +1,6 @@
 import java.text.MessageFormat;
-import org.checkerframework.checker.i18nformatter.I18nFormatUtil;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
+import org.checkerframework.checker.i18nformatter.util.I18nFormatUtil;
 
 public class IsFormat {
     public static void test1(String cc) {

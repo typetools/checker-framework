@@ -1,0 +1,24 @@
+// Support for the EC2 classes that are automatically handled by the Called Methods Checker.
+
+import org.checkerframework.common.returnsreceiver.qual.*;
+
+package com.amazonaws.services.ec2.model;
+
+class DescribeImagesRequest {
+
+    @This DescribeImagesRequest withFilters(Filter... f);
+
+    @This DescribeImagesRequest withOwners(String... o);
+
+    @This DescribeImagesRequest withImageIds(String... i);
+
+    @This DescribeImagesRequest withFilters(Collection<Filter> f);
+
+    @This DescribeImagesRequest withOwners(Collection<String> o);
+
+    @This DescribeImagesRequest withImageIds(Collection<String> i);
+
+    @This DescribeImagesRequest withExecutableUsers(String... i);
+
+    @This DescribeImagesRequest withExecutableUsers(Collection<String> f);
+}

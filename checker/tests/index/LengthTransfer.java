@@ -1,4 +1,4 @@
-class LengthTransfer {
+public class LengthTransfer {
     void exceptional_control_flow(int[] a) {
         if (a.length == 0) {
             throw new IllegalArgumentException();

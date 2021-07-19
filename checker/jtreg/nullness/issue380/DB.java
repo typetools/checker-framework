@@ -1,3 +1,3 @@
-class DB extends DA {
+public class DB extends DA {
     void foo() {}
 }

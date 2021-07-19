@@ -1,9 +1,9 @@
-import h1h2checker.quals.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
+public class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     // ----------------------------------------------------------
     // Test Case - A
     <A> A methodA(@H2Top A a1, @H2Top A a2) {

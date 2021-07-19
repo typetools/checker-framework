@@ -1,4 +1,4 @@
-class Autoboxing {
+public class Autoboxing {
     Byte b;
     Short s;
     Short sInterned;

@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class GTETransferBug {
+public class GTETransferBug {
     void gte_bad_check(int[] a) {
         if (a.length >= 1) {
             // :: error: (assignment.type.incompatible)

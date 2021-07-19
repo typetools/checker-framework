@@ -1,6 +1,6 @@
 import java.util.Collections;
 
-class GetReceiverLoop {
+public class GetReceiverLoop {
 
     void test() {
         String s = Collections.emptyList().toString();

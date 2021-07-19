@@ -3,7 +3,7 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.LessThan;
 
-class InvalidSubsequence {
+public class InvalidSubsequence {
     // :: error: flowexpr.parse.error :: error: not.final
     @HasSubsequence(subsequence = "banana", from = "this.from", to = "this.to")
     int[] a;

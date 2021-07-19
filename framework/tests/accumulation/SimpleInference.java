@@ -1,6 +1,6 @@
-import testaccumulation.qual.*;
+import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class SimpleInference {
+public class SimpleInference {
     void build(@TestAccumulation({"a"}) SimpleInference this) {}
 
     void doublebuild(@TestAccumulation({"a", "b"}) SimpleInference this) {}

@@ -35,7 +35,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type
@@ -57,20 +57,21 @@ public class BoundsInitializer {
      * @param declaredType type whose arguments are initialized
      */
     public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
-        final DeclaredType actualType = (DeclaredType) declaredType.actualType;
-        if (actualType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
+        final DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
+        if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
             // No type arguments to infer.
             return;
         }
 
         final TypeElement typeElement =
-                (TypeElement) declaredType.atypeFactory.types.asElement(actualType);
-        final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>();
+                (TypeElement) declaredType.atypeFactory.types.asElement(underlyingType);
+        int numTypeParameters = typeElement.getTypeParameters().size();
+        final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(numTypeParameters);
 
         // Create AnnotatedTypeMirror for each type argument and store them in the typeArgsMap.
         // Take un-annotated type variables as the key for this map.
-        Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>();
-        for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
+        Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>(numTypeParameters);
+        for (int i = 0; i < numTypeParameters; i++) {
             TypeMirror javaTypeArg;
             if (declaredType.wasRaw()) {
                 TypeVariable typeVariable =
@@ -329,7 +330,7 @@ public class BoundsInitializer {
             if (typevars != null) {
                 this.typevars = typevars;
             } else {
-                this.typevars = new HashMap<>();
+                this.typevars = Collections.emptyMap();
             }
             if (recursiveTypeStructure instanceof TypeVariableStructure) {
                 TypeVariableStructure typeVarStruct =
@@ -375,9 +376,9 @@ public class BoundsInitializer {
 
             intersections.put(type.getUnderlyingType(), type);
 
-            List<AnnotatedDeclaredType> supertypes = type.directSuperTypes();
-            for (int i = 0; i < supertypes.size(); i++) {
-                AnnotatedDeclaredType supertype = supertypes.get(i);
+            List<AnnotatedTypeMirror> bounds = type.getBounds();
+            for (int i = 0; i < bounds.size(); i++) {
+                AnnotatedTypeMirror supertype = bounds.get(i);
                 TypePathNode node = currentStructure.addPathNode(new IntersectionBoundNode(i));
                 visit(supertype);
                 currentStructure.removePathNode(node);
@@ -612,16 +613,17 @@ public class BoundsInitializer {
          * @param declaredType declared type whose type arguments are initialized
          */
         private void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
-            DeclaredType actualType = (DeclaredType) declaredType.actualType;
-            if (actualType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
+            DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
+            if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
                 return;
             }
             TypeElement typeElement =
-                    (TypeElement) declaredType.atypeFactory.types.asElement(actualType);
+                    (TypeElement) declaredType.atypeFactory.types.asElement(underlyingType);
             List<AnnotatedTypeMirror> typeArgs;
             if (declaredType.typeArgs == null) {
-                typeArgs = new ArrayList<>();
-                for (int i = 0; i < typeElement.getTypeParameters().size(); i++) {
+                int numTypeParameters = typeElement.getTypeParameters().size();
+                typeArgs = new ArrayList<>(numTypeParameters);
+                for (int i = 0; i < numTypeParameters; i++) {
                     TypeMirror javaTypeArg =
                             getJavaType(declaredType, typeElement.getTypeParameters(), i);
                     AnnotatedTypeMirror atmArg =
@@ -827,8 +829,8 @@ public class BoundsInitializer {
          */
         public void findAllReplacements(
                 Map<TypeVariable, TypeVariableStructure> typeVarToStructure) {
-            this.annotatedTypeVariables = new ArrayList<>();
-            this.replacementList = new ArrayList<>();
+            this.annotatedTypeVariables = new ArrayList<>(typeVarsInType.size());
+            this.replacementList = new ArrayList<>(typeVarsInType.size());
             for (Pair<TypePath, TypeVariable> pair : typeVarsInType) {
                 TypeVariableStructure targetStructure = typeVarToStructure.get(pair.second);
                 AnnotatedTypeVariable template =
@@ -905,7 +907,7 @@ public class BoundsInitializer {
 
         @Override
         public String toString() {
-            return UtilPlume.join(",", this);
+            return StringsPlume.join(",", this);
         }
 
         /**
@@ -1222,17 +1224,17 @@ public class BoundsInitializer {
     private static class IntersectionBoundNode extends TypePathNode {
 
         /** The index of the particular bound type of an intersection type this node represents. */
-        public final int superIndex;
+        public final int boundIndex;
 
         /**
          * Creates an IntersectionBoundNode.
          *
-         * @param superIndex the index of the particular bound type of an intersection type this
+         * @param boundIndex the index of the particular bound type of an intersection type this
          *     node represents
          */
-        IntersectionBoundNode(int superIndex) {
+        IntersectionBoundNode(int boundIndex) {
             super(TypeKind.INTERSECTION);
-            this.superIndex = superIndex;
+            this.boundIndex = boundIndex;
         }
 
         /**
@@ -1242,30 +1244,31 @@ public class BoundsInitializer {
          */
         IntersectionBoundNode(IntersectionBoundNode template) {
             super(template);
-            superIndex = template.superIndex;
+            boundIndex = template.boundIndex;
         }
 
         @Override
         public String toString() {
-            return super.toString() + "( superIndex=" + superIndex + " )";
+            return super.toString() + "( superIndex=" + boundIndex + " )";
         }
 
         @Override
         protected void replaceTypeInternal(
                 AnnotatedTypeMirror parent, AnnotatedTypeVariable replacement) {
-            throw new BugInCF(
-                    "Type variables cannot be intersection bounds.%nparent=%s%nreplacement=%s",
-                    parent, replacement);
+            AnnotatedIntersectionType intersection = (AnnotatedIntersectionType) parent;
+            List<AnnotatedTypeMirror> bounds = new ArrayList<>(intersection.bounds);
+            bounds.set(boundIndex, replacement);
+            intersection.setBounds(bounds);
         }
 
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedIntersectionType isect = (AnnotatedIntersectionType) parent;
-            if (parent.directSuperTypes().size() <= superIndex) {
-                throw new BugInCF("Invalid superIndex %d: parent=%s", superIndex, parent);
+            if (isect.getBounds().size() <= boundIndex) {
+                throw new BugInCF("Invalid superIndex %d: parent=%s", boundIndex, parent);
             }
 
-            return isect.directSuperTypes().get(superIndex);
+            return isect.getBounds().get(boundIndex);
         }
 
         @Override
@@ -1319,11 +1322,11 @@ public class BoundsInitializer {
         @Override
         protected AnnotatedTypeMirror getTypeInternal(AnnotatedTypeMirror parent) {
             AnnotatedUnionType isect = (AnnotatedUnionType) parent;
-            if (parent.directSuperTypes().size() <= altIndex) {
+            if (parent.directSupertypes().size() <= altIndex) {
                 throw new BugInCF("Invalid altIndex( %s ):%nparent=%s", altIndex, parent);
             }
 
-            return isect.directSuperTypes().get(altIndex);
+            return isect.directSupertypes().get(altIndex);
         }
 
         @Override
@@ -1370,7 +1373,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(parentAdt.getTypeArguments());
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "replacement=" + replacement,
@@ -1388,7 +1391,7 @@ public class BoundsInitializer {
             List<AnnotatedTypeMirror> typeArgs = parentAdt.getTypeArguments();
             if (argIndex >= typeArgs.size()) {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "Invalid type arg index.",
                                 "parent=" + parent,
                                 "argIndex=" + argIndex));

@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.MinLen;
 
-class ConstantsIndex {
+public class ConstantsIndex {
 
     void test() {
         int @MinLen(3) [] arr = {1, 2, 3};

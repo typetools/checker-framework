@@ -1,10 +1,10 @@
 // Test case for Issue 849:
 // https://github.com/typetools/checker-framework/issues/849
 
-import h1h2checker.quals.H1S2;
-import h1h2checker.quals.H1Top;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.H1Top;
 
-class Issue849 {
+public class Issue849 {
     class Gen<G> {}
 
     void polyAll(Gen<Gen<@H1S2 Object>> genGenNonNull) {

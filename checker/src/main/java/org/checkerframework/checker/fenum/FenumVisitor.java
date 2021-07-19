@@ -53,6 +53,8 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
             if (realCaseExpr != null) {
                 AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
+                // There is currently no "switch.type.incompatible" message key, so it is treated
+                // identically to "type.incompatible".
                 this.commonAssignmentCheck(
                         exprType, caseType, caseExpr, "switch.type.incompatible");
             }

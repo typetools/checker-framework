@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 
@@ -73,9 +74,11 @@ public abstract class AbstractAnalysis<
      * invariant holds:
      *
      * <pre>
-     *   !isRunning ==&gt; (currentNode == null)
+     *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
+    // currentNode == null when isRunning is true.
+    // See https://github.com/typetools/checker-framework/issues/4115
     protected @InternedDistinct @Nullable Node currentNode;
 
     /**
@@ -366,8 +369,8 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Initialize class fields based on a given control flow graph. Sub-class may override this
-     * method to initialize customized fields.
+     * Initialize fields of this object based on a given control flow graph. Sub-class may override
+     * this method to initialize customized fields.
      *
      * @param cfg a given control flow graph
      */
@@ -469,9 +472,9 @@ public abstract class AbstractAnalysis<
             depthFirstOrder = new IdentityHashMap<>();
 
             if (direction == Direction.FORWARD) {
-                queue = new PriorityQueue<>(11, new ForwardDFOComparator());
+                queue = new PriorityQueue<>(new ForwardDFOComparator());
             } else if (direction == Direction.BACKWARD) {
-                queue = new PriorityQueue<>(11, new BackwardDFOComparator());
+                queue = new PriorityQueue<>(new BackwardDFOComparator());
             } else {
                 throw new BugInCF("Unexpected Direction meet: " + direction.name());
             }
@@ -498,6 +501,7 @@ public abstract class AbstractAnalysis<
          * @see PriorityQueue#isEmpty
          * @return true if {@link #queue} is empty else false
          */
+        @Pure
         @EnsuresNonNullIf(result = false, expression = "poll()")
         @SuppressWarnings("nullness:contracts.conditional.postcondition.not.satisfied") // forwarded
         public boolean isEmpty() {
@@ -529,6 +533,7 @@ public abstract class AbstractAnalysis<
          * @see PriorityQueue#poll
          * @return the head of {@link #queue}
          */
+        @Pure
         public @Nullable Block poll() {
             return queue.poll();
         }

@@ -10,7 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
@@ -138,7 +138,7 @@ public interface QualifierHierarchy {
             if (superQual == null) {
                 throw new BugInCF(
                         "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
-                        subQual, UtilPlume.join(",", superQualifiers));
+                        subQual, StringsPlume.join(",", superQualifiers));
             }
             if (!isSubtype(subQual, superQual)) {
                 return false;
@@ -257,12 +257,12 @@ public interface QualifierHierarchy {
     @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
     /**
-     * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
+     * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
      * qualifier for the same hierarchy in each set.
      *
      * @param qualifiers1 set of qualifiers; exactly one per hierarchy
      * @param qualifiers2 set of qualifiers; exactly one per hierarchy
-     * @return the least upper bound of the two sets of qualifiers
+     * @return the greatest lower bound of the two sets of qualifiers
      */
     default Set<? extends AnnotationMirror> greatestLowerBounds(
             Collection<? extends AnnotationMirror> qualifiers1,
@@ -385,8 +385,8 @@ public interface QualifierHierarchy {
     static void assertSameSize(Collection<?> c1, Collection<?> c2) {
         if (c1.size() != c2.size()) {
             throw new BugInCF(
-                    "inconsistent sizes (%d, %d):%n  %s%n  %s",
-                    c1.size(), c2.size(), UtilPlume.join(",", c1), UtilPlume.join(",", c1));
+                    "inconsistent sizes (%d, %d):%n  [%s]%n  [%s]",
+                    c1.size(), c2.size(), StringsPlume.join(",", c1), StringsPlume.join(",", c2));
         }
     }
 
@@ -405,9 +405,9 @@ public interface QualifierHierarchy {
                     c1.size(),
                     c2.size(),
                     result.size(),
-                    UtilPlume.join(",", c1),
-                    UtilPlume.join(",", c2),
-                    UtilPlume.join(",", result));
+                    StringsPlume.join(",", c1),
+                    StringsPlume.join(",", c2),
+                    StringsPlume.join(",", result));
         }
     }
 

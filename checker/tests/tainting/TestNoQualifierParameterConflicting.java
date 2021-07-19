@@ -11,6 +11,6 @@ public class TestNoQualifierParameterConflicting {
     static class Super {}
 
     @NoQualifierParameter(Tainted.class)
-    // :: error: (missing.has.qual.param)
+    // :: error: (conflicting.qual.param)
     static class Sup extends Super {}
 }

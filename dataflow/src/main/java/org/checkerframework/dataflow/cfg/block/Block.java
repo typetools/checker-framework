@@ -5,9 +5,10 @@ import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
+import org.plumelib.util.UniqueId;
 
 /** Represents a basic block in a control flow graph. */
-public interface Block {
+public interface Block extends UniqueId {
 
     /** The types of basic blocks. */
     public static enum BlockType {
@@ -31,13 +32,6 @@ public interface Block {
      * @return the type of this basic block
      */
     BlockType getType();
-
-    /**
-     * Returns the unique identifier of this block.
-     *
-     * @return the unique identifier of this block
-     */
-    long getId();
 
     /**
      * Returns the predecessors of this basic block.

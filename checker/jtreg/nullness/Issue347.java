@@ -9,7 +9,7 @@
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Issue347 {
+public class Issue347 {
 
     @MonotonicNonNull String mono;
 

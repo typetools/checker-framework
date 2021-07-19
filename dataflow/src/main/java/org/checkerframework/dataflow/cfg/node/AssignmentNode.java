@@ -5,7 +5,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -44,6 +44,11 @@ public class AssignmentNode extends Node {
         rhs.setAssignmentContext(new AssignmentLhsContext(lhs));
     }
 
+    /**
+     * Returns the left-hand-side of the assignment.
+     *
+     * @return the left-hand-side of the assignment
+     */
     public Node getTarget() {
         return lhs;
     }
@@ -84,9 +89,6 @@ public class AssignmentNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        ArrayList<Node> list = new ArrayList<>(2);
-        list.add(getTarget());
-        list.add(getExpression());
-        return list;
+        return Arrays.asList(getTarget(), getExpression());
     }
 }

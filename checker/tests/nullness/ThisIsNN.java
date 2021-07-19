@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class ThisIsNN {
+public class ThisIsNN {
     Object out = new Object();
 
     class Inner {

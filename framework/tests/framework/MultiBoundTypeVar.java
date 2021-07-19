@@ -1,4 +1,4 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 public class MultiBoundTypeVar {
 
@@ -8,7 +8,6 @@ public class MultiBoundTypeVar {
 
         Cloneable c1 = t;
 
-        // :: error: (assignment.type.incompatible)
         @Odd Cloneable c2 = t;
 
         Appendable d1 = t;

@@ -1,4 +1,4 @@
-import testlib.lib.UncheckedByteCode;
+import org.checkerframework.framework.testchecker.lib.UncheckedByteCode;
 
 public class TestUncheckedByteCode {
     Object field;

@@ -1,5 +1,10 @@
-import org.checkerframework.checker.units.*;
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.Area;
+import org.checkerframework.checker.units.qual.Length;
+import org.checkerframework.checker.units.qual.km;
+import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.m;
+import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.util.UnitsTools;
 
 /**
  * One possible future extension is adding method annotations to check for consistency of arguments.

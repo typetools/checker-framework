@@ -4,12 +4,15 @@ import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
- * Implementation of a {@link TransferResult} with two non-exceptional store; one for the 'then'
- * edge and one for 'else'. The result of {@code getRegularStore} will be the least upper bound of
- * the two underlying stores.
+ * Implementation of a {@link TransferResult} with two non-exceptional stores. The 'then' store
+ * contains information valid when the previous boolean-valued expression was true, and the 'else'
+ * store contains information valid when the expression was false.
+ *
+ * <p>The result of {@code getRegularStore} will be the least upper bound of the two underlying
+ * stores.
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis
@@ -139,9 +142,9 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
     public String toString() {
         StringJoiner result = new StringJoiner(System.lineSeparator());
         result.add("RegularTransferResult(");
-        result.add("  resultValue = " + UtilPlume.indentLinesExceptFirst(2, resultValue));
-        result.add("  thenStore = " + UtilPlume.indentLinesExceptFirst(2, thenStore));
-        result.add("  elseStore = " + UtilPlume.indentLinesExceptFirst(2, elseStore));
+        result.add("  resultValue = " + StringsPlume.indentLinesExceptFirst(2, resultValue));
+        result.add("  thenStore = " + StringsPlume.indentLinesExceptFirst(2, thenStore));
+        result.add("  elseStore = " + StringsPlume.indentLinesExceptFirst(2, elseStore));
         result.add(")");
         return result.toString();
     }

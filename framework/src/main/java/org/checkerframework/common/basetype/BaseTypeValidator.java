@@ -35,9 +35,18 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
-/** A visitor to validate the types in a tree. */
+/**
+ * A visitor to validate the types in a tree.
+ *
+ * <p>Note: A TypeValidator (this class and its subclasses) cannot tell whether an annotation was
+ * written by a programmer or defaulted/inferred/computed by the Checker Framework, because the
+ * AnnotatedTypeMirror does not make distinctions about which annotations in an AnnotatedTypeMirror
+ * were explicitly written and which were added by a checker. To issue a warning/error only when a
+ * programmer writes an annotation, override {@link BaseTypeVisitor#visitAnnotatedType} and {@link
+ * BaseTypeVisitor#visitVariable}.
+ */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
-    /** Is the type valid? */
+    /** Is the type valid? This is side-effected by the visitor, and read at the end of visiting. */
     protected boolean isValid = true;
 
     /** Should the primary annotation on the top level type be checked? */
@@ -61,18 +70,26 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
-     * The entry point to the type validator. Validate the type against the given tree. Neither this
-     * method nor visit should be called directly by a visitor, only use {@link
-     * BaseTypeVisitor#validateTypeOf(Tree)}.
+     * Validate the type against the given tree. This method both issues error messages and also
+     * returns a boolean value.
+     *
+     * <p>This is the entry point to the type validator. Neither this method nor visit should be
+     * called directly by a visitor, only use {@link BaseTypeVisitor#validateTypeOf(Tree)}.
+     *
+     * <p>This method is only called on top-level types, but it validates the entire type including
+     * components of a compound type. Subclasses should override this only if there is special-case
+     * behavior that should be performed only on top-level types.
      *
      * @param type the type to validate
-     * @param tree the tree from which the type originated. If the tree is a method tree, validate
-     *     its return type. If the tree is a variable tree, validate its field type.
-     * @return true, iff the type is valid
+     * @param tree the tree from which the type originated. If the tree is a method tree, {@code
+     *     type} is its return type. If the tree is a variable tree, {@code type} is the variable's
+     *     type.
+     * @return true if the type is valid
      */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
-        List<DiagMessage> diagMessages = isValidType(atypeFactory.getQualifierHierarchy(), type);
+        List<DiagMessage> diagMessages =
+                isValidStructurally(atypeFactory.getQualifierHierarchy(), type);
         if (!diagMessages.isEmpty()) {
             for (DiagMessage d : diagMessages) {
                 checker.report(tree, d);
@@ -112,22 +129,26 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * of failures. If successful, returns an empty list. The method will never return failures for
      * a valid type, but might not catch all invalid types.
      *
-     * <p>Currently, the following is checked:
+     * <p>This method ensures that the type is structurally or lexically well-formed, but it does
+     * not check whether the annotations are semantically sensible. Subclasses should generally
+     * override visit methods such as {@link #visitDeclared} rather than this method.
+     *
+     * <p>Currently, this implementation checks the following (subclasses can extend this behavior):
      *
      * <ol>
      *   <li>There should not be multiple annotations from the same qualifier hierarchy.
      *   <li>There should not be more annotations than the width of the QualifierHierarchy.
      *   <li>If the type is not a type variable, then the number of annotations should be the same
      *       as the width of the QualifierHierarchy.
-     *   <li>These properties should also hold recursively for component types of arrays, as wells
-     *       as bounds of type variables and wildcards.
+     *   <li>These properties should also hold recursively for component types of arrays and for
+     *       bounds of type variables and wildcards.
      * </ol>
      *
      * @param qualifierHierarchy the QualifierHierarchy
      * @param type the type to test
      * @return list of reasons the type is invalid, or empty list if the type is valid
      */
-    protected List<DiagMessage> isValidType(
+    protected List<DiagMessage> isValidStructurally(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
         SimpleAnnotatedTypeScanner<List<DiagMessage>, QualifierHierarchy> scanner =
                 new SimpleAnnotatedTypeScanner<>(
@@ -138,16 +159,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     /**
-     * Checks every property listed in {@link #isValidType}, but only for the top level type. If
-     * successful, returns an empty list. If not successful, returns diagnostics.
+     * Checks every property listed in {@link #isValidStructurally}, but only for the top level
+     * type. If successful, returns an empty list. If not successful, returns diagnostics.
      *
      * @param qualifierHierarchy the QualifierHierarchy
      * @param type the type to be checked
      * @return the diagnostics indicating failure, or an empty list if successful
      */
     // This method returns a singleton or empyty list.  Its return type is List rather than
-    // DiagMessage (with null indicting success) because its caller,  isValidType(), expects a
-    // list.
+    // DiagMessage (with null indicting success) because its caller, isValidStructurally(), expects
+    // a list.
     protected List<DiagMessage> isTopLevelValidType(
             QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
         // multiple annotations from the same hierarchy

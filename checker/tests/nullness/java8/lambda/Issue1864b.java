@@ -1,7 +1,7 @@
 // Test case for Issue 1864:
 // https://github.com/typetools/checker-framework/issues/1864
 
-class Issue1864b {
+public class Issue1864b {
     interface Supplier {
         Object get();
     }

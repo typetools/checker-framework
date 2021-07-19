@@ -11,14 +11,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.LessThanBottom;
 import org.checkerframework.checker.index.qual.LessThanUnknown;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -27,22 +28,35 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
-public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
-    private final AnnotationMirror BOTTOM =
+/** The type factory for the Less Than Checker. */
+public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForIndexChecker {
+    /** The @LessThanBottom annotation. */
+    private final AnnotationMirror LESS_THAN_BOTTOM =
             AnnotationBuilder.fromClass(elements, LessThanBottom.class);
-    public final AnnotationMirror UNKNOWN =
+    /** The @LessThanUnknown annotation. */
+    public final AnnotationMirror LESS_THAN_UNKNOWN =
             AnnotationBuilder.fromClass(elements, LessThanUnknown.class);
 
+    /** The LessThan.value argument/element. */
+    private final ExecutableElement lessThanValueElement =
+            TreeUtils.getMethod(LessThan.class, "value", 0, processingEnv);
+
+    /**
+     * Creates a new LessThanAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker associated with this type factory
+     */
     public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
@@ -74,7 +88,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new LessThanQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    /** LessThanQualifierHierarchy */
+    /** LessThanQualifierHierarchy. */
     class LessThanQualifierHierarchy extends ElementQualifierHierarchy {
 
         /**
@@ -144,7 +158,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public boolean isLessThan(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        return isLessThan(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
+        return isLessThan(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
     }
 
     /**
@@ -154,9 +168,10 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param right the second value to compare (an expression)
      * @return is left less than right?
      */
-    public static boolean isLessThan(AnnotationMirror left, String right) {
+    public boolean isLessThan(AnnotationMirror left, String right) {
         List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
+            // `left` is @LessThanBottom
             return true;
         }
         return expressions.contains(right);
@@ -197,48 +212,45 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param expression the expression whose minimum value to retrieve
      * @param tree where to determine the value
      * @param path the path to {@code tree}
+     * @return the minimum value of {@code expression} at {@code tree}
      */
     private long getMinValueFromString(String expression, Tree tree, TreePath path) {
-        Receiver expressionRec;
+        ValueAnnotatedTypeFactory valueAtypeFactory = getValueAnnotatedTypeFactory();
+        JavaExpression expressionJe;
         try {
-            expressionRec =
-                    getValueAnnotatedTypeFactory()
-                            .getReceiverFromJavaExpressionString(expression, path);
-        } catch (FlowExpressionParseException e) {
+            expressionJe = valueAtypeFactory.parseJavaExpressionString(expression, path);
+        } catch (JavaExpressionParseException e) {
             return Long.MIN_VALUE;
         }
 
         AnnotationMirror intRange =
-                getValueAnnotatedTypeFactory()
-                        .getAnnotationFromReceiver(expressionRec, tree, IntRange.class);
+                valueAtypeFactory.getAnnotationFromJavaExpression(
+                        expressionJe, tree, IntRange.class);
         if (intRange != null) {
-            return ValueAnnotatedTypeFactory.getRange(intRange).from;
+            return valueAtypeFactory.getRange(intRange).from;
         }
         AnnotationMirror intValue =
-                getValueAnnotatedTypeFactory()
-                        .getAnnotationFromReceiver(expressionRec, tree, IntVal.class);
+                valueAtypeFactory.getAnnotationFromJavaExpression(expressionJe, tree, IntVal.class);
         if (intValue != null) {
-            List<Long> possibleValues = ValueAnnotatedTypeFactory.getIntValues(intValue);
+            List<Long> possibleValues = valueAtypeFactory.getIntValues(intValue);
             return Collections.min(possibleValues);
         }
 
-        if (expressionRec instanceof FieldAccess) {
-            FieldAccess fieldAccess = ((FieldAccess) expressionRec);
+        if (expressionJe instanceof FieldAccess) {
+            FieldAccess fieldAccess = ((FieldAccess) expressionJe);
             if (fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY) {
                 // array.length might not be in the store, so check for the length of the array.
                 AnnotationMirror arrayRange =
-                        getValueAnnotatedTypeFactory()
-                                .getAnnotationFromReceiver(
-                                        fieldAccess.getReceiver(), tree, ArrayLenRange.class);
+                        valueAtypeFactory.getAnnotationFromJavaExpression(
+                                fieldAccess.getReceiver(), tree, ArrayLenRange.class);
                 if (arrayRange != null) {
-                    return ValueAnnotatedTypeFactory.getRange(arrayRange).from;
+                    return valueAtypeFactory.getRange(arrayRange).from;
                 }
                 AnnotationMirror arrayLen =
-                        getValueAnnotatedTypeFactory()
-                                .getAnnotationFromReceiver(expressionRec, tree, ArrayLen.class);
+                        valueAtypeFactory.getAnnotationFromJavaExpression(
+                                expressionJe, tree, ArrayLen.class);
                 if (arrayLen != null) {
-                    List<Integer> possibleValues =
-                            ValueAnnotatedTypeFactory.getArrayLength(arrayLen);
+                    List<Integer> possibleValues = valueAtypeFactory.getArrayLength(arrayLen);
                     return Collections.min(possibleValues);
                 }
                 // Even arrays that we know nothing about must have at least zero length.
@@ -258,7 +270,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public boolean isLessThanOrEqual(Tree left, String right) {
         AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-        return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(UNKNOWN), right);
+        return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
     }
 
     /**
@@ -268,7 +280,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param right the second value to compare
      * @return is left less than or equal to right?
      */
-    public static boolean isLessThanOrEqual(AnnotationMirror left, String right) {
+    public boolean isLessThanOrEqual(AnnotationMirror left, String right) {
         List<String> expressions = getLessThanExpressions(left);
         if (expressions == null) {
             // left is bottom so it is always less than right.
@@ -279,10 +291,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         // {@code @LessThan("end + 1")} is equivalent to {@code @LessThanOrEqual("end")}.
         for (String expression : expressions) {
-            if (expression.endsWith(" + 1")) {
-                if (expression.substring(0, expression.length() - 4).equals(right)) {
-                    return true;
-                }
+            if (expression.endsWith(" + 1")
+                    && expression.substring(0, expression.length() - 4).equals(right)) {
+                return true;
             }
         }
         return false;
@@ -291,23 +302,30 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns a sorted, modifiable list of expressions that {@code expression} is less than. If the
      * {@code expression} is annotated with {@link LessThanBottom}, null is returned.
+     *
+     * @param expression an expression
+     * @return expressions that {@code expression} is less than
      */
     public List<String> getLessThanExpressions(ExpressionTree expression) {
         AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-        return getLessThanExpressions(annotatedTypeMirror.getAnnotationInHierarchy(UNKNOWN));
+        return getLessThanExpressions(
+                annotatedTypeMirror.getAnnotationInHierarchy(LESS_THAN_UNKNOWN));
     }
 
     /**
      * Creates a less than qualifier given the expressions.
      *
      * <p>If expressions is null, {@link LessThanBottom} is returned. If expressions is empty,
-     * {@link LessThanUnknown} is returned. Otherwise, {@code LessThan(expressions)} is returned.
+     * {@link LessThanUnknown} is returned. Otherwise, {@code @LessThan(expressions)} is returned.
+     *
+     * @param expressions a list of expressions
+     * @return a @LessThan qualifier with the given arguments
      */
     public AnnotationMirror createLessThanQualifier(List<String> expressions) {
         if (expressions == null) {
-            return BOTTOM;
+            return LESS_THAN_BOTTOM;
         } else if (expressions.isEmpty()) {
-            return UNKNOWN;
+            return LESS_THAN_UNKNOWN;
         } else {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, LessThan.class);
             builder.setValue("value", expressions);
@@ -321,19 +339,22 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns a modifiable list of expressions in the annotation sorted. If the annotation is
-     * {@link LessThanBottom}, return null. If the annotation is {@link LessThanUnknown} return the
-     * empty list.
+     * If the annotation is LessThan, returns a list of expressions in the annotation. If the
+     * annotation is {@link LessThanBottom}, returns null. If the annotation is {@link
+     * LessThanUnknown}, returns the empty list.
+     *
+     * @param annotation an annotation from the same hierarchy as LessThan
+     * @return the list of expressions in the annotation
      */
-    public static List<String> getLessThanExpressions(AnnotationMirror annotation) {
+    public List<String> getLessThanExpressions(AnnotationMirror annotation) {
         if (AnnotationUtils.areSameByClass(annotation, LessThanBottom.class)) {
             return null;
         } else if (AnnotationUtils.areSameByClass(annotation, LessThanUnknown.class)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         } else {
-            List<String> list =
-                    AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
-            return list;
+            // The annotation is @LessThan.
+            return AnnotationUtils.getElementValueArray(
+                    annotation, lessThanValueElement, String.class);
         }
     }
 }

@@ -4,7 +4,7 @@
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.MinLen;
 
-class StartsEndsWith {
+public class StartsEndsWith {
 
     void refineStartsWith(String str) {
         if (str.startsWith("prefix")) {

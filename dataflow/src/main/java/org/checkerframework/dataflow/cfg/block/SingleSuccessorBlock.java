@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.qual.Pure;
 
 /** A basic block that has at exactly one non-exceptional successor. */
@@ -23,8 +23,12 @@ public interface SingleSuccessorBlock extends Block {
      * @return the flow rule for information flowing from this block to its successor
      */
     @Pure
-    Store.FlowRule getFlowRule();
+    FlowRule getFlowRule();
 
-    /** Set the flow rule for information flowing from this block to its successor. */
-    void setFlowRule(Store.FlowRule rule);
+    /**
+     * Set the flow rule for information flowing from this block to its successor.
+     *
+     * @param rule the new flow rule for information flowing from this block to its successor
+     */
+    void setFlowRule(FlowRule rule);
 }

@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
@@ -137,12 +138,14 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             return null;
         }
 
-        AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
-        AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+                atypeFactory.binaryTreeArgTypes(node);
         Set<? extends AnnotationMirror> lubs =
                 qualHierarchy.leastUpperBounds(
-                        a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+                        argTypes.first.getEffectiveAnnotations(),
+                        argTypes.second.getEffectiveAnnotations());
         type.addMissingAnnotations(lubs);
+
         return null;
     }
 
@@ -191,6 +194,28 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             // Use effective annotations from the expression, to get upper bound
             // of type variables.
             Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
+
+            TypeKind castKind = type.getPrimitiveKind();
+            if (castKind != null) {
+                TypeKind exprKind = exprType.getPrimitiveKind();
+                if (exprKind != null) {
+                    switch (TypeKindUtils.getPrimitiveConversionKind(exprKind, castKind)) {
+                        case WIDENING:
+                            expressionAnnos =
+                                    atypeFactory.getWidenedAnnotations(
+                                            expressionAnnos, exprKind, castKind);
+                            break;
+                        case NARROWING:
+                            atypeFactory.getNarrowedAnnotations(
+                                    expressionAnnos, exprKind, castKind);
+                            break;
+                        case SAME:
+                            // Nothing to do
+                            break;
+                    }
+                }
+            }
+
             // If the qualifier on the expression type is a supertype of the qualifier upper bound
             // of the cast type, then apply the bound as the default qualifier rather than the
             // expression qualifier.

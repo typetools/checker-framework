@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
-class RawMethodInvocation {
+public class RawMethodInvocation {
     Object a;
     Object b;
 

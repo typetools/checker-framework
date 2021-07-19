@@ -87,7 +87,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new AliasingQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    /** AliasingQualifierHierarchy */
+    /** AliasingQualifierHierarchy. */
     protected class AliasingQualifierHierarchy extends NoElementQualifierHierarchy {
 
         /**

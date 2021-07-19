@@ -1,4 +1,4 @@
-class InferTypeArgs2<V extends InferTypeArgs2<V>> {}
+public class InferTypeArgs2<V extends InferTypeArgs2<V>> {}
 
 // having a concrete extension of InferTypeArgs2 is the key difference between this and
 // InferTypeArgs1.java.  In this case we end up comparing CFValue with V extends InferTypeArgs2<V>

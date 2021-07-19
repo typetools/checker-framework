@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class ChainAssignment {
+public class ChainAssignment {
     @Nullable Object a;
     @Nullable Object b;
     Object x = new Object();

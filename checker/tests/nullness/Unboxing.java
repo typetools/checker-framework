@@ -1,12 +1,12 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class Unboxing {
+public class Unboxing {
 
     @Nullable Integer f;
 
     public void t1() {
         // :: error: (unboxing.of.nullable)
-        @NonNull int l = f + 1;
+        int l = f + 1;
         // no error, since f has been unboxed
         f.toString();
     }
@@ -14,11 +14,11 @@ class Unboxing {
     public void t2() {
         try {
             // :: error: (unboxing.of.nullable)
-            @NonNull int l = f + 1;
+            int l = f + 1;
         } catch (NullPointerException npe) {
             // f is known to be null on the exception edge
             // :: error: (unboxing.of.nullable)
-            @NonNull int m = f + 1;
+            int m = f + 1;
         }
         // after the merge, f cannot be null
         f.toString();

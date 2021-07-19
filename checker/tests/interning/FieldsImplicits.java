@@ -1,5 +1,5 @@
 /** Tests that a final field annotation is inferred. */
-class FieldsImplicits {
+public class FieldsImplicits {
     final String finalField = "asdf";
     static final String finalStaticField = "asdf";
     String nonFinalField = "asdf";

@@ -10,11 +10,13 @@ import com.sun.tools.javac.code.Type.UnionClassType;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
@@ -37,6 +39,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -45,6 +48,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror CLASSVAL_TOP =
             AnnotationBuilder.fromClass(elements, UnknownClass.class);
 
+    /** The ClassBound.value argument/element. */
+    private final ExecutableElement classBoundValueElement =
+            TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);;
+    /** The ClassVal.value argument/element. */
+    private final ExecutableElement classValValueElement =
+            TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);;
+
     /**
      * Create a new ClassValAnnotatedTypeFactory.
      *
@@ -52,6 +62,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+
         if (this.getClass() == ClassValAnnotatedTypeFactory.class) {
             this.postInit();
         }
@@ -67,16 +78,26 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         ClassValBottom.class));
     }
 
+    /**
+     * Create a {@code @ClassVal} annotation with the given values.
+     *
+     * @param values the "value" field of the resulting {@code @ClassVal} annotation
+     * @return a {@code @ClassVal} annotation with the given values
+     */
     private AnnotationMirror createClassVal(List<String> values) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, ClassVal.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ClassVal.class);
         builder.setValue("value", values);
         return builder.build();
     }
 
+    /**
+     * Create a {@code @ClassBound} annotation with the given values.
+     *
+     * @param values the "value" field of the resulting {@code @ClassBound} annotation
+     * @return a {@code @ClassBound} annotation with the given values
+     */
     private AnnotationMirror createClassBound(List<String> values) {
-        AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, ClassBound.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ClassBound.class);
         builder.setValue("value", values);
         return builder.build();
     }
@@ -89,10 +110,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return list of classnames in anno
      */
     public List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
-        if (areSameByClass(anno, ClassBound.class) || areSameByClass(anno, ClassVal.class)) {
-            return AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+        if (areSameByClass(anno, ClassBound.class)) {
+            return AnnotationUtils.getElementValueArray(anno, classBoundValueElement, String.class);
+        } else if (areSameByClass(anno, ClassVal.class)) {
+            return AnnotationUtils.getElementValueArray(anno, classValValueElement, String.class);
+        } else {
+            return Collections.emptyList();
         }
-        return new ArrayList<>();
     }
 
     @Override
@@ -229,7 +253,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree etree = tree.getExpression();
                 Type classType = (Type) TreeUtils.typeOf(etree);
                 String name = getClassNameFromType(classType);
-                if (name != null) {
+                if (name != null && !name.equals("void")) {
                     AnnotationMirror newQual = createClassVal(Arrays.asList(name));
                     type.replaceAnnotation(newQual);
                 }
@@ -254,7 +278,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (TreeUtils.getReceiverTree(tree) != null) {
                     clType = (Type) TreeUtils.typeOf(TreeUtils.getReceiverTree(tree));
                 } else { // receiver is null, so it is implicitly "this"
-                    ClassTree classTree = TreeUtils.enclosingClass(getPath(tree));
+                    ClassTree classTree = TreePathUtil.enclosingClass(getPath(tree));
                     clType = (Type) TreeUtils.typeOf(classTree);
                 }
                 String className = getClassNameFromType(clType);
@@ -286,7 +310,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (annotation == null) {
                 return null;
             }
-            return AnnotationUtils.getElementValueArray(annotation, "value", String.class, true);
+            return AnnotationUtils.getElementValueArray(
+                    annotation, valueATF.stringValValueElement, String.class);
         }
 
         // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type

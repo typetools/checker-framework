@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.*;
 
-class Overflows {
+public class Overflows {
 
     static void bytes() {
         byte max = Byte.MAX_VALUE;

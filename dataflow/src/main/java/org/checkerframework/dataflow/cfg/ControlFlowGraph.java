@@ -7,10 +7,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -18,6 +16,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -31,6 +30,9 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
+import org.plumelib.util.UniqueId;
 
 /**
  * A control flow graph (CFG for short) of a single method.
@@ -40,7 +42,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
  * ExceptionBlock#getExceptionalSuccessors}, {@link RegularBlock#getRegularSuccessor}) and
  * predecessors (method {@link Block#getPredecessors}) of the entry and exit blocks.
  */
-public class ControlFlowGraph {
+public class ControlFlowGraph implements UniqueId {
 
     /** The entry block of the control flow graph. */
     protected final SpecialBlock entryBlock;
@@ -52,7 +54,17 @@ public class ControlFlowGraph {
     protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
-    protected final UnderlyingAST underlyingAST;
+    public final UnderlyingAST underlyingAST;
+
+    /** The unique ID for the next-created object. */
+    static final AtomicLong nextUid = new AtomicLong(0);
+    /** The unique ID of this object. */
+    final transient long uid = nextUid.getAndIncrement();
+
+    @Override
+    public long getUid(@UnknownInitialization ControlFlowGraph this) {
+        return uid;
+    }
 
     /**
      * Maps from AST {@link Tree}s to sets of {@link Node}s.
@@ -172,6 +184,7 @@ public class ControlFlowGraph {
     public Set<Block> getAllBlocks(
             @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
         Set<Block> visited = new HashSet<>();
+        // worklist is always a subset of visited; any block in worklist is also in visited.
         Queue<Block> worklist = new ArrayDeque<>();
         Block cur = entryBlock;
         visited.add(entryBlock);
@@ -182,9 +195,7 @@ public class ControlFlowGraph {
                 break;
             }
 
-            Collection<Block> succs = cur.getSuccessors();
-
-            for (Block b : succs) {
+            for (Block b : cur.getSuccessors()) {
                 if (!visited.contains(b)) {
                     visited.add(b);
                     worklist.add(b);
@@ -221,6 +232,7 @@ public class ControlFlowGraph {
     public List<Block> getDepthFirstOrderedBlocks() {
         List<Block> dfsOrderResult = new ArrayList<>();
         Set<Block> visited = new HashSet<>();
+        // worklist can contain values that are not yet in visited.
         Deque<Block> worklist = new ArrayDeque<>();
         worklist.add(entryBlock);
         while (!worklist.isEmpty()) {
@@ -230,9 +242,12 @@ public class ControlFlowGraph {
                 worklist.removeLast();
             } else {
                 visited.add(cur);
-                Collection<Block> successors = cur.getSuccessors();
-                successors.removeAll(visited);
-                worklist.addAll(successors);
+
+                for (Block b : cur.getSuccessors()) {
+                    if (!visited.contains(b)) {
+                        worklist.add(b);
+                    }
+                }
             }
         }
 
@@ -297,18 +312,17 @@ public class ControlFlowGraph {
 
     @Override
     public String toString() {
-        Map<String, Object> args = new HashMap<>();
-        args.put("verbose", true);
-
         CFGVisualizer<?, ?, ?> viz = new StringCFGVisualizer<>();
-        viz.init(args);
+        viz.init(Collections.singletonMap("verbose", true));
         Map<String, Object> res = viz.visualize(this, this.getEntryBlock(), null);
         viz.shutdown();
         if (res == null) {
-            return super.toString();
+            return "unvisualizable " + getClass().getCanonicalName();
         }
         String stringGraph = (String) res.get("stringGraph");
-        return stringGraph == null ? super.toString() : stringGraph;
+        return stringGraph == null
+                ? "unvisualizable " + getClass().getCanonicalName()
+                : stringGraph;
     }
 
     /**

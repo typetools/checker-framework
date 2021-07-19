@@ -20,12 +20,13 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * This is the default implementation of {@link QualifierKindHierarchy}.
@@ -153,11 +154,10 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
      * @param voidParam void parameter to differentiate from {@link
      *     #DefaultQualifierKindHierarchy(Collection, Class)}
      */
-    @SuppressWarnings("UnusedVariable") // voidParam is intentionally not used.
     private DefaultQualifierKindHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses,
             @Nullable Class<? extends Annotation> bottom,
-            Void voidParam) {
+            @SuppressWarnings("UnusedVariable") Void voidParam) {
         this.nameToQualifierKind = createQualifierKinds(qualifierClasses);
         this.qualifierKinds = new ArrayList<>(nameToQualifierKind.values());
         Collections.sort(qualifierKinds);
@@ -208,11 +208,11 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 if (qualifierKind.top == null) {
                     throw new TypeSystemError(
                             "PolymorphicQualifier, %s, has to specify a type hierarchy in its @PolymorphicQualifier meta-annotation, if more than one exists; top types: [%s].",
-                            qualifierKind, UtilPlume.join(", ", tops));
+                            qualifierKind, StringsPlume.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
                     throw new TypeSystemError(
                             "Polymorphic qualifier %s has invalid top %s. Top qualifiers: %s",
-                            qualifierKind, qualifierKind.top, UtilPlume.join(", ", tops));
+                            qualifierKind, qualifierKind.top, StringsPlume.join(", ", tops));
                 }
             }
         }
@@ -220,7 +220,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         if (bottoms.size() != tops.size()) {
             throw new TypeSystemError(
                     "Number of tops not equal to number of bottoms: Tops: [%s] Bottoms: [%s]",
-                    UtilPlume.join(", ", tops), UtilPlume.join(", ", bottoms));
+                    StringsPlume.join(", ", tops), StringsPlume.join(", ", bottoms));
         }
     }
 
@@ -250,8 +250,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
 
     /**
      * Creates a mapping from a {@link QualifierKind} to a set of its direct super qualifier kinds.
-     * The direct super qualifier kinds do not contain the qualifier itself. This mapping is used by
-     * {@link #createBottomsSet(Map)}, {@link #createTopsSet(Map)}, and {@link
+     * The direct super qualifier kinds do not contain the qualifier itself. This mapping is used to
+     * create the bottom set, to create the top set, and by {@link
      * #initializeQualifierKindFields(Map)}.
      *
      * <p>This implementation uses the {@link SubtypeOf} meta-annotation. Subclasses may override
@@ -281,7 +281,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 if (superQualifier == null) {
                     throw new TypeSystemError(
                             "%s @Subtype argument %s isn't in the hierarchy. Qualifiers: [%s]",
-                            qualifierKind, superName, UtilPlume.join(", ", qualifierKinds));
+                            qualifierKind, superName, StringsPlume.join(", ", qualifierKinds));
                 }
                 directSupers.add(superQualifier);
             }
@@ -398,7 +398,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 } else {
                     throw new TypeSystemError(
                             "Polymorphic qualifier %s did not specify a top annotation class. Tops: [%s]",
-                            qualifierKind, UtilPlume.join(", ", tops));
+                            qualifierKind, StringsPlume.join(", ", tops));
                 }
             } else {
                 throw new TypeSystemError(
@@ -559,7 +559,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         if (lubs.size() != 1) {
             throw new TypeSystemError(
                     "lub(%s, %s) should have size 1: [%s]",
-                    qual1, qual2, UtilPlume.join(", ", lubs));
+                    qual1, qual2, StringsPlume.join(", ", lubs));
         }
         QualifierKind lub = lubs.iterator().next();
         if (lub.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {
@@ -634,7 +634,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         if (glbs.size() != 1) {
             throw new TypeSystemError(
                     "glb(%s, %s) should have size 1: [%s]",
-                    qual1, qual2, UtilPlume.join(", ", glbs));
+                    qual1, qual2, StringsPlume.join(", ", glbs));
         }
         QualifierKind glb = glbs.iterator().next();
         if (glb.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {
@@ -723,7 +723,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
          * this qualifier kind itself.
          */
         // Set while creating the QualifierKindHierarchy.
-        @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
+        protected @MonotonicNonNull Set<QualifierKind> strictSuperTypes;
 
         /**
          * Creates a {@link DefaultQualifierKind} for the given annotation class.
@@ -782,6 +782,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             return poly;
         }
 
+        @Pure
         @Override
         public boolean isPoly() {
             return this.poly == this;

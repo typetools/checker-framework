@@ -28,6 +28,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
@@ -55,6 +56,8 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -454,7 +457,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return null;
             }
         }
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
         if (enclosingClass != null) {
             List<? extends Tree> classMembers = enclosingClass.getMembers();
             TreePath searchPath = path;
@@ -472,10 +475,14 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Side-effects argument {@code selfType} to make it @Initialized or @UnderInitialization,
      * depending on whether all fields have been set.
+     *
+     * @param tree a tree
+     * @param selfType the type to side-effect
+     * @param path a path
      */
     protected void setSelfTypeInInitializationCode(
             Tree tree, AnnotatedDeclaredType selfType, TreePath path) {
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
         Type classType = ((JCTree) enclosingClass).type;
         AnnotationMirror annotation = null;
 
@@ -533,43 +540,79 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the (non-static) fields that have the invariant annotation and are not yet
-     * initialized in a given store.
+     * Returns the fields that are not yet initialized in a given store. The result is a pair of
+     * lists:
+     *
+     * <ul>
+     *   <li>fields that are not yet initialized and have the invariant annotation
+     *   <li>fields that are not yet initialized and do not have the invariant annotation
+     * </ul>
+     *
+     * @param store a store
+     * @param path the current path, used to determine the current class
+     * @param isStatic whether to report static fields or instance fields
+     * @param receiverAnnotations the annotations on the receiver
+     * @return the fields that are not yet initialized in a given store (a pair of lists)
      */
-    public List<VariableTree> getUninitializedInvariantFields(
+    public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
             Store store,
             TreePath path,
             boolean isStatic,
-            List<? extends AnnotationMirror> receiverAnnotations) {
-        ClassTree currentClass = TreeUtils.enclosingClass(path);
+            Collection<? extends AnnotationMirror> receiverAnnotations) {
+        ClassTree currentClass = TreePathUtil.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
-        List<VariableTree> violatingFields = new ArrayList<>();
+        List<VariableTree> uninitWithInvariantAnno = new ArrayList<>();
+        List<VariableTree> uninitWithoutInvariantAnno = new ArrayList<>();
         for (VariableTree field : fields) {
             if (isUnused(field, receiverAnnotations)) {
                 continue; // don't consider unused fields
             }
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (ElementUtils.isStatic(fieldElem) == isStatic) {
-                // Does this field need to satisfy the invariant?
-                if (hasFieldInvariantAnnotation(field)) {
-                    // Has the field been initialized?
-                    if (!store.isFieldInitialized(fieldElem)) {
-                        violatingFields.add(field);
+                // Has the field been initialized?
+                if (!store.isFieldInitialized(fieldElem)) {
+                    // Does this field need to satisfy the invariant?
+                    if (hasFieldInvariantAnnotation(field)) {
+                        uninitWithInvariantAnno.add(field);
+                    } else {
+                        uninitWithoutInvariantAnno.add(field);
                     }
                 }
             }
         }
-        return violatingFields;
+        return Pair.of(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
     }
 
     /**
-     * Returns the (non-static) fields that have the invariant annotation and are initialized in a
-     * given store.
+     * Returns the fields that have the invariant annotation and are not yet initialized in a given
+     * store.
+     *
+     * @param store a store
+     * @param path the current path, used to determine the current class
+     * @param isStatic whether to report static fields or instance fields
+     * @param receiverAnnotations the annotations on the receiver
+     * @return the fields that have the invariant annotation and are not yet initialized in a given
+     *     store (a pair of lists)
+     */
+    public final List<VariableTree> getUninitializedInvariantFields(
+            Store store,
+            TreePath path,
+            boolean isStatic,
+            List<? extends AnnotationMirror> receiverAnnotations) {
+        return getUninitializedFields(store, path, isStatic, receiverAnnotations).first;
+    }
+
+    /**
+     * Returns the fields that have the invariant annotation and are initialized in a given store.
+     *
+     * @param store a store
+     * @param path the current path; used to compute the current class
+     * @return the fields that have the invariant annotation and are initialized in a given store
      */
     public List<VariableTree> getInitializedInvariantFields(Store store, TreePath path) {
         // TODO: Instead of passing the TreePath around, can we use
         // getCurrentClassTree?
-        ClassTree currentClass = TreeUtils.enclosingClass(path);
+        ClassTree currentClass = TreePathUtil.enclosingClass(path);
         List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> initializedFields = new ArrayList<>();
         for (VariableTree field : fields) {
@@ -851,8 +894,8 @@ public abstract class InitializationAnnotatedTypeFactory<
             } else if (isSubtypeInitialization(anno2, qual2, anno1, qual1)) {
                 return anno1;
             }
-            boolean unc1 = isUnknownInitialization(anno1);
-            boolean unc2 = isUnknownInitialization(anno2);
+            boolean unknowninit1 = isUnknownInitialization(anno1);
+            boolean unknowninit2 = isUnknownInitialization(anno2);
             boolean underinit1 = isUnderInitialization(anno1);
             boolean underinit2 = isUnderInitialization(anno2);
 
@@ -872,13 +915,19 @@ public abstract class InitializationAnnotatedTypeFactory<
                                 getTypeFrameFromAnnotation(anno2)));
             }
 
-            assert (unc1 || underinit1) && (unc2 || underinit2);
+            assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
             return createUnknownInitializationAnnotation(
                     lubTypeFrame(
                             getTypeFrameFromAnnotation(anno1), getTypeFrameFromAnnotation(anno2)));
         }
 
-        /** Returns the least upper bound of two types. */
+        /**
+         * Returns the least upper bound of two types.
+         *
+         * @param a the first argument
+         * @param b the second argument
+         * @return the lub of the two arguments
+         */
         protected TypeMirror lubTypeFrame(TypeMirror a, TypeMirror b) {
             if (types.isSubtype(a, b)) {
                 return b;
@@ -887,6 +936,64 @@ public abstract class InitializationAnnotatedTypeFactory<
             }
 
             return TypesUtils.leastUpperBound(a, b, processingEnv);
+        }
+
+        /**
+         * Compute the greatest lower bound of two initialization qualifiers. Returns null if one of
+         * the qualifiers is not in the initialization hierarachy. Subclasses should override
+         * greatestLowerBound and call this method for initialization qualifiers.
+         *
+         * @param anno1 an initialization qualifier
+         * @param qual1 a qualifier kind
+         * @param anno2 an initialization qualifier
+         * @param qual2 a qualifier kind
+         * @return the glb of anno1 and anno2
+         */
+        protected AnnotationMirror greatestLowerBoundInitialization(
+                AnnotationMirror anno1,
+                QualifierKind qual1,
+                AnnotationMirror anno2,
+                QualifierKind qual2) {
+            if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
+                return null;
+            }
+
+            // Handle the case where one is a subtype of the other.
+            if (isSubtypeInitialization(anno1, qual1, anno2, qual2)) {
+                return anno1;
+            } else if (isSubtypeInitialization(anno2, qual2, anno1, qual1)) {
+                return anno2;
+            }
+            boolean unknowninit1 = isUnknownInitialization(anno1);
+            boolean unknowninit2 = isUnknownInitialization(anno2);
+            boolean underinit1 = isUnderInitialization(anno1);
+            boolean underinit2 = isUnderInitialization(anno2);
+
+            // Handle @Initialized.
+            if (isInitialized(anno1)) {
+                assert underinit2;
+                return FBCBOTTOM;
+            } else if (isInitialized(anno2)) {
+                assert underinit1;
+                return FBCBOTTOM;
+            }
+
+            TypeMirror typeFrame =
+                    TypesUtils.greatestLowerBound(
+                            getTypeFrameFromAnnotation(anno1),
+                            getTypeFrameFromAnnotation(anno2),
+                            processingEnv);
+            if (typeFrame.getKind() == TypeKind.ERROR
+                    || typeFrame.getKind() == TypeKind.INTERSECTION) {
+                return FBCBOTTOM;
+            }
+
+            if (underinit1 && underinit2) {
+                return createUnderInitializationAnnotation(typeFrame);
+            }
+
+            assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
+            return createUnderInitializationAnnotation(typeFrame);
         }
     }
 }

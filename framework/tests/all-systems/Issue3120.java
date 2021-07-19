@@ -1,5 +1,5 @@
 @SuppressWarnings("all") // Ensure no crashes
-class Issue3120 {
+public class Issue3120 {
     CharSequence foo() {
         return bar();
     }

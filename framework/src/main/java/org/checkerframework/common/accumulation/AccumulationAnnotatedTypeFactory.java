@@ -9,30 +9,33 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.accumulation.AccumulationChecker.AliasAnalysis;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.common.returnsreceiver.qual.This;
-import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 
 /**
@@ -43,6 +46,9 @@ import org.checkerframework.javacutil.UserError;
  * #postInit()}.
  */
 public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+    /** The typechecker associated with this factory. */
+    public final AccumulationChecker accumulationChecker;
 
     /**
      * The canonical top annotation for this accumulation checker: an instance of the accumulator
@@ -82,6 +88,13 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             Class<? extends Annotation> bottom,
             @Nullable Class<? extends Annotation> predicate) {
         super(checker);
+        if (!(checker instanceof AccumulationChecker)) {
+            throw new TypeSystemError(
+                    "AccumulationAnnotatedTypeFactory cannot be used with a checker "
+                            + "class that is not a subtype of AccumulationChecker. Found class: "
+                            + checker.getClass());
+        }
+        this.accumulationChecker = (AccumulationChecker) checker;
 
         this.accumulator = accumulator;
         // Check that the requirements of the accumulator are met.
@@ -97,7 +110,8 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (!accValue.getReturnType().isInstance(new String[0])) {
             rejectMalformedAccumulator("have an element of type String[]");
         }
-        if (((String[]) accValue.getDefaultValue()).length != 0) {
+        if (accValue.getDefaultValue() == null
+                || ((String[]) accValue.getDefaultValue()).length != 0) {
             rejectMalformedAccumulator("have the empty String array {} as its default value");
         }
 
@@ -185,7 +199,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      */
     public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
-        builder.setValue("value", ValueCheckerUtils.removeDuplicates(values));
+        builder.setValue("value", SystemUtil.removeDuplicates(values));
         return builder.build();
     }
 
@@ -210,13 +224,15 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the method being invoked returns its receiver
      */
     public boolean returnsThis(final MethodInvocationTree tree) {
+        if (!accumulationChecker.isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
+            return false;
+        }
         // Must call `getTypeFactoryOfSubchecker` each time, not store and reuse.
         ReturnsReceiverAnnotatedTypeFactory rrATF =
                 getTypeFactoryOfSubchecker(ReturnsReceiverChecker.class);
         ExecutableElement methodEle = TreeUtils.elementFromUse(tree);
-        AnnotatedTypeMirror methodAtm = rrATF.getAnnotatedType(methodEle);
-        AnnotatedTypeMirror rrType =
-                ((AnnotatedTypeMirror.AnnotatedExecutableType) methodAtm).getReturnType();
+        AnnotatedExecutableType methodAtm = rrATF.getAnnotatedType(methodEle);
+        AnnotatedTypeMirror rrType = methodAtm.getReturnType();
         return rrType != null && rrType.hasAnnotation(This.class);
     }
 
@@ -228,7 +244,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if the annotation mirror is an instance of this factory's accumulator annotation
      */
     public boolean isAccumulatorAnnotation(AnnotationMirror anm) {
-        return AnnotationUtils.areSameByClass(anm, accumulator);
+        return areSameByClass(anm, accumulator);
     }
 
     @Override
@@ -260,6 +276,10 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         /**
          * Implements rule RRA.
          *
+         * <p>This implementation propagates types from the receiver to the return value, without
+         * change. Subclasses may override this method to also add additional properties, as
+         * appropriate.
+         *
          * @param tree a method invocation tree
          * @param type the type of {@code tree} (i.e. the return type of the invoked method). Is
          *     (possibly) side-effected by this method.
@@ -285,7 +305,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new AccumulationQualifierHierarchy();
+        return new AccumulationQualifierHierarchy(this.getSupportedTypeQualifiers(), this.elements);
     }
 
     /**
@@ -297,11 +317,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      */
     public List<String> getAccumulatedValues(AnnotationMirror anno) {
         if (!isAccumulatorAnnotation(anno)) {
-            throw new BugInCF(anno + "isn't an accumulator annotation");
+            throw new BugInCF(anno + " isn't an accumulator annotation");
         }
-        List<String> values = ValueCheckerUtils.getValueOfAnnotationWithStringArgument(anno);
+        List<String> values =
+                AnnotationUtils.getElementValueArrayOrNull(anno, "value", String.class, false);
         if (values == null) {
-            return new ArrayList<>(0);
+            return Collections.emptyList();
         } else {
             return values;
         }
@@ -341,42 +362,17 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *       not very precise.)
      * </ul>
      */
-    protected class AccumulationQualifierHierarchy implements QualifierHierarchy {
+    protected class AccumulationQualifierHierarchy extends ElementQualifierHierarchy {
 
-        /** A set that includes only the {@link #top} annotation. */
-        final Set<AnnotationMirror> tops = AnnotationMirrorSet.singleElementSet(top);
-
-        /** A set that includes only the {@link #bottom} annotation. */
-        final Set<AnnotationMirror> bottoms = AnnotationMirrorSet.singleElementSet(bottom);
-
-        @Override
-        public Set<? extends AnnotationMirror> getTopAnnotations() {
-            return tops;
-        }
-
-        @Override
-        public AnnotationMirror getTopAnnotation(final AnnotationMirror start) {
-            return top;
-        }
-
-        @Override
-        public Set<? extends AnnotationMirror> getBottomAnnotations() {
-            return bottoms;
-        }
-
-        @Override
-        public AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier) {
-            return bottom;
-        }
-
-        @Override
-        public @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier) {
-            return null;
-        }
-
-        @Override
-        public boolean isPolymorphicQualifier(AnnotationMirror qualifier) {
-            return false;
+        /**
+         * Creates a ElementQualifierHierarchy from the given classes.
+         *
+         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+         * @param elements element utils
+         */
+        protected AccumulationQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+            super(qualifierClasses, elements);
         }
 
         /**
@@ -387,6 +383,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         public AnnotationMirror greatestLowerBound(
                 final AnnotationMirror a1, final AnnotationMirror a2) {
             if (AnnotationUtils.areSame(a1, bottom) || AnnotationUtils.areSame(a2, bottom)) {
+                return bottom;
+            }
+
+            if (isPolymorphicQualifier(a1) && isPolymorphicQualifier(a2)) {
+                return a1;
+            } else if (isPolymorphicQualifier(a1) || isPolymorphicQualifier(a2)) {
                 return bottom;
             }
 
@@ -430,6 +432,12 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
                 return a1;
             }
 
+            if (isPolymorphicQualifier(a1) && isPolymorphicQualifier(a2)) {
+                return a1;
+            } else if (isPolymorphicQualifier(a1) || isPolymorphicQualifier(a2)) {
+                return top;
+            }
+
             // If either is a predicate, then both should be converted to predicates and or-ed.
             if (isPredicate(a1) || isPredicate(a2)) {
                 String a1Pred = convertToPredicate(a1);
@@ -463,6 +471,21 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             if (AnnotationUtils.areSame(subAnno, bottom)) {
                 return true;
             } else if (AnnotationUtils.areSame(superAnno, bottom)) {
+                return false;
+            }
+
+            if (isPolymorphicQualifier(subAnno)) {
+                if (isPolymorphicQualifier(superAnno)) {
+                    return true;
+                } else {
+                    // Use this slightly more expensive conversion here because
+                    // this is a rare code path and it's simpler to read than
+                    // checking for both predicate and non-predicate forms of top.
+                    return "".equals(convertToPredicate(superAnno));
+                }
+            } else if (isPolymorphicQualifier(superAnno)) {
+                // Polymorphic annotations are only a supertype of other polymorphic annotations and
+                // the bottom type, both of which have already been checked above.
                 return false;
             }
 
@@ -549,7 +572,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         try {
             expression = StaticJavaParser.parseExpression(pred);
         } catch (ParseProblemException p) {
-            throw new UserError("unparseable predicate: " + pred + ". Parse exception: " + p);
+            throw new UserError("unparsable predicate: " + pred + ". Parse exception: " + p);
         }
         return evaluateBooleanExpression(expression, trueVariables);
     }
@@ -616,11 +639,9 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
         if (AnnotationUtils.areSame(anno, bottom)) {
             return "false";
         } else if (isPredicate(anno)) {
-            if (AnnotationUtils.hasElementValue(anno, "value")) {
-                return AnnotationUtils.getElementValue(anno, "value", String.class, false);
-            } else {
-                return "";
-            }
+            String result =
+                    AnnotationUtils.getElementValueOrNull(anno, "value", String.class, false);
+            return result == null ? "" : result;
         } else if (isAccumulatorAnnotation(anno)) {
             List<String> values = getAccumulatedValues(anno);
             StringJoiner sj = new StringJoiner(" && ");
@@ -640,6 +661,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * @return true if anno is a predicate annotation
      */
     protected boolean isPredicate(AnnotationMirror anno) {
-        return predicate != null && AnnotationUtils.areSameByClass(anno, predicate);
+        return predicate != null && areSameByClass(anno, predicate);
     }
 }

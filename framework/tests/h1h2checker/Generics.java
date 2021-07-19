@@ -1,6 +1,6 @@
-import h1h2checker.quals.*;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class Generics {
+public class Generics {
 
     class Generics1<T extends @H1Top @H2Top Object> {
 

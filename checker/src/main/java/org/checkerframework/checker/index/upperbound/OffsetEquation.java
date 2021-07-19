@@ -1,27 +1,18 @@
 package org.checkerframework.checker.index.upperbound;
 
-import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
-import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
@@ -30,6 +21,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * An offset equation is 2 sets of Java expression strings, one set of added terms and one set of
  * subtracted terms, and a single integer constant. The Java expression strings have been
  * standardized and viewpoint-adapted.
+ *
+ * <p>An OffsetEquation is mutable.
  */
 public class OffsetEquation {
     public static final OffsetEquation ZERO = createOffsetForInt(0);
@@ -42,11 +35,16 @@ public class OffsetEquation {
     private String error = null;
 
     private OffsetEquation() {
-        addedTerms = new ArrayList<>();
-        subtractedTerms = new ArrayList<>();
+        addedTerms = new ArrayList<>(1);
+        subtractedTerms = new ArrayList<>(1);
     }
 
-    private OffsetEquation(OffsetEquation other) {
+    /**
+     * Create a new OffsetEquation that is a copy of the given one.
+     *
+     * @param other the OffsetEquation to copy
+     */
+    protected OffsetEquation(OffsetEquation other) {
         this.addedTerms = new ArrayList<>(other.addedTerms);
         this.subtractedTerms = new ArrayList<>(other.subtractedTerms);
         this.error = other.error;
@@ -248,119 +246,6 @@ public class OffsetEquation {
     }
 
     /**
-     * Evaluates an offset term. If the term is an integer constant, returns its value. Otherwise,
-     * returns null.
-     *
-     * @param factory the AnnotatedTypeFactory used to access elements annotations. It can be null.
-     */
-    private Integer evalConstantTerm(Receiver termReceiver, BaseAnnotatedTypeFactory factory) {
-        if (termReceiver instanceof FlowExpressions.ValueLiteral) {
-            // Integer literal
-            Object value = ((FlowExpressions.ValueLiteral) termReceiver).getValue();
-            if (value instanceof Integer) {
-                return (Integer) value;
-            }
-        } else if (termReceiver instanceof FlowExpressions.MethodCall) {
-            // TODO: generalize
-            // Length of string literal
-            FlowExpressions.MethodCall call = (FlowExpressions.MethodCall) termReceiver;
-            if (call.getElement().getSimpleName().toString().equals("length")) {
-                Receiver callReceiver = call.getReceiver();
-                if (callReceiver instanceof FlowExpressions.ValueLiteral) {
-                    Object value = ((FlowExpressions.ValueLiteral) callReceiver).getValue();
-                    if (value instanceof String) {
-                        return ((String) value).length();
-                    }
-                }
-            }
-        } else if (factory != null && termReceiver instanceof FlowExpressions.LocalVariable) {
-            Element element = ((FlowExpressions.LocalVariable) termReceiver).getElement();
-            Long exactValue =
-                    ValueCheckerUtils.getExactValue(
-                            element, factory.getTypeFactoryOfSubchecker(ValueChecker.class));
-
-            if (exactValue != null) {
-                return exactValue.intValue();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Standardizes and viewpoint-adapts string terms in the list based on the supplied context.
-     * Terms that evaluate to a integer constant are removed from the list, and the constants are
-     * added to or subtracted from the intValue field.
-     *
-     * @param factory the AnnotatedTypeFactory used for annotation accessing. It can be null.
-     */
-    private void standardizeAndViewpointAdaptExpressions(
-            List<String> terms,
-            boolean subtract,
-            FlowExpressionContext context,
-            TreePath scope,
-            boolean useLocalScope,
-            AnnotatedTypeFactory factory)
-            throws FlowExpressionParseException {
-        // Standardize all terms and remove constants
-        int length = terms.size(), j = 0;
-        for (int i = 0; i < length; ++i) {
-            String term = terms.get(i);
-            Receiver receiver = FlowExpressionParseUtil.parse(term, context, scope, useLocalScope);
-            Integer termConstant = evalConstantTerm(receiver, (BaseAnnotatedTypeFactory) factory);
-            if (termConstant == null) {
-                terms.set(j, receiver.toString());
-                ++j;
-            } else if (subtract) {
-                intValue -= termConstant;
-            } else {
-                intValue += termConstant;
-            }
-        }
-        // Remove remaining elements from the end of the list
-        terms.subList(j, length).clear();
-    }
-
-    /**
-     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
-     *
-     * @param context a FlowExpressionContext
-     * @param scope local scope
-     * @param useLocalScope whether or not local scope is used
-     * @param factory an AnnotatedTypeFactory used for annotation accessing. It can be null.
-     * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
-     *     thrown. If this happens, no string terms are changed.
-     */
-    public void standardizeAndViewpointAdaptExpressions(
-            FlowExpressionContext context,
-            TreePath scope,
-            boolean useLocalScope,
-            AnnotatedTypeFactory factory)
-            throws FlowExpressionParseException {
-
-        standardizeAndViewpointAdaptExpressions(
-                addedTerms, false, context, scope, useLocalScope, factory);
-        standardizeAndViewpointAdaptExpressions(
-                subtractedTerms, true, context, scope, useLocalScope, factory);
-    }
-
-    /**
-     * Standardizes and viewpoint-adapts the string terms based us the supplied context.
-     *
-     * @param context a FlowExpressionContext
-     * @param scope local scope
-     * @param useLocalScope whether or not local scope is used
-     * @throws FlowExpressionParseException if any term isn't able to be parsed this exception is
-     *     thrown. If this happens, no string terms are changed.
-     */
-    public void standardizeAndViewpointAdaptExpressions(
-            FlowExpressionContext context, TreePath scope, boolean useLocalScope)
-            throws FlowExpressionParseException {
-
-        standardizeAndViewpointAdaptExpressions(context, scope, useLocalScope, null);
-    }
-
-    /**
      * Adds the term to this equation. If string is an integer, then it is added or subtracted,
      * depending on operator, from the int value of this equation. Otherwise, the term is placed in
      * the added or subtracted terms set, depending on operator.
@@ -370,6 +255,10 @@ public class OffsetEquation {
      */
     private void addTerm(char operator, String term) {
         term = term.trim();
+        if (operator == '-' && term.equals("2147483648")) {
+            addInt(-2147483648);
+            return;
+        }
         if (isInt(term)) {
             int literal = parseInt(term);
             addInt(operator == '-' ? -1 * literal : literal);
@@ -532,8 +421,8 @@ public class OffsetEquation {
      * on the value of op.
      *
      * <p>Otherwise the return equation is created by converting the node to a {@link
-     * org.checkerframework.dataflow.analysis.FlowExpressions.Receiver} and then added as a term to
-     * the returned equation. If op is '-' then it is a subtracted term.
+     * org.checkerframework.dataflow.expression.JavaExpression} and then added as a term to the
+     * returned equation. If op is '-' then it is a subtracted term.
      *
      * @param node the Node from which to create an offset equation
      * @param factory an AnnotationTypeFactory
@@ -548,10 +437,18 @@ public class OffsetEquation {
         return eq;
     }
 
+    /**
+     * Updates an offset equation from a Node.
+     *
+     * @param node the Node from which to create an offset equation
+     * @param factory an AnnotationTypeFactory
+     * @param eq an OffsetEquation to update
+     * @param op '+' or '-'
+     */
     private static void createOffsetFromNode(
             Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
-        Receiver r = FlowExpressions.internalReprOf(factory, node);
-        if (r instanceof Unknown || r == null) {
+        JavaExpression je = JavaExpression.fromNode(node);
+        if (je instanceof Unknown || je == null) {
             if (node instanceof NumericalAdditionNode) {
                 createOffsetFromNode(
                         ((NumericalAdditionNode) node).getLeftOperand(), factory, eq, op);
@@ -567,7 +464,7 @@ public class OffsetEquation {
                 eq.error = node.toString();
             }
         } else {
-            eq.addTerm(op, r.toString());
+            eq.addTerm(op, je.toString());
         }
     }
 }

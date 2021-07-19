@@ -8,7 +8,7 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class MethodValVisitor extends BaseTypeVisitor<MethodValAnnotatedTypeFactory> {
@@ -38,18 +38,20 @@ class MethodNameValidator extends BaseTypeValidator {
     }
 
     @Override
-    public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
+    public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
         AnnotationMirror methodVal = type.getAnnotation(MethodVal.class);
         if (methodVal != null) {
+            AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
             List<String> classNames =
                     AnnotationUtils.getElementValueArray(
-                            methodVal, "className", String.class, true);
-            List<Integer> params =
-                    AnnotationUtils.getElementValueArray(methodVal, "params", Integer.class, true);
+                            methodVal, atypeFactory.methodValClassNameElement, String.class);
             List<String> methodNames =
                     AnnotationUtils.getElementValueArray(
-                            methodVal, "methodName", String.class, true);
-            if (!(params.size() == methodNames.size() && params.size() == classNames.size())) {
+                            methodVal, atypeFactory.methodValMethodNameElement, String.class);
+            List<Integer> params =
+                    AnnotationUtils.getElementValueArray(
+                            methodVal, atypeFactory.methodValParamsElement, Integer.class);
+            if (!(classNames.size() == methodNames.size() && classNames.size() == params.size())) {
                 checker.reportError(tree, "invalid.methodval", methodVal);
             }
 
@@ -59,7 +61,7 @@ class MethodNameValidator extends BaseTypeValidator {
                 }
             }
         }
-        return super.isValid(type, tree);
+        return super.visitDeclared(type, tree);
     }
 
     private boolean legalMethodName(String methodName) {

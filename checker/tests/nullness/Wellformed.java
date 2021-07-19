@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class Wellformed {
+public class Wellformed {
     // :: error: (type.invalid.conflicting.annos)
     @NonNull @Nullable Object f = null;
 
@@ -40,8 +40,8 @@ class Wellformed {
         }
     }
 
-    // :: error: (initialization.fields.uninitialized)
     class Gen4<T extends @Nullable Object> {
+        // :: error: (initialization.field.uninitialized)
         @NonNull T f;
 
         @NonNull T get() {

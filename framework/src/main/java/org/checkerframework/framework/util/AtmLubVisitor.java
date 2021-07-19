@@ -166,15 +166,21 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedDeclaredType castedLub = castLub(type1, lub);
 
         lubPrimaryAnnotations(type1, type2, lub);
-        List<AnnotatedTypeMirror> lubTypArgs = new ArrayList<>();
+
+        if (lub.getKind() == TypeKind.DECLARED) {
+            AnnotatedDeclaredType enclosingLub = ((AnnotatedDeclaredType) lub).getEnclosingType();
+            AnnotatedDeclaredType enclosing1 = type1.getEnclosingType();
+            AnnotatedDeclaredType enclosing2 = type2.getEnclosingType();
+            if (enclosingLub != null && enclosing1 != null && enclosing2 != null) {
+                visitDeclared_Declared(enclosing1, enclosing2, enclosingLub);
+            }
+        }
+
         for (int i = 0; i < type1.getTypeArguments().size(); i++) {
             AnnotatedTypeMirror type1TypeArg = type1.getTypeArguments().get(i);
             AnnotatedTypeMirror type2TypeArg = type2.getTypeArguments().get(i);
             AnnotatedTypeMirror lubTypeArg = castedLub.getTypeArguments().get(i);
             lubTypeArgument(type1TypeArg, type2TypeArg, lubTypeArg);
-        }
-        if (!lubTypArgs.isEmpty()) {
-            castedLub.setTypeArguments(lubTypArgs);
         }
         return null;
     }
@@ -248,9 +254,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
             AnnotationMirror anno1 = type1LowerBound.getAnnotationInHierarchy(top);
             AnnotationMirror anno2 = type2LowerBound.getAnnotationInHierarchy(top);
 
-            AnnotationMirror glb = null;
             if (anno1 != null && anno2 != null) {
-                glb = qualifierHierarchy.greatestLowerBound(anno1, anno2);
+                AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(anno1, anno2);
                 lubLowerBound.replaceAnnotation(glb);
             }
         }
@@ -337,9 +342,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedIntersectionType castedLub = castLub(type1, lub);
         lubPrimaryAnnotations(type1, type2, lub);
 
-        for (int i = 0; i < lub.directSuperTypes().size(); i++) {
-            AnnotatedDeclaredType lubST = castedLub.directSuperTypes().get(i);
-            visit(type1.directSuperTypes().get(i), type2.directSuperTypes().get(i), lubST);
+        for (int i = 0; i < castedLub.getBounds().size(); i++) {
+            AnnotatedTypeMirror lubST = castedLub.getBounds().get(i);
+            visit(type1.getBounds().get(i), type2.getBounds().get(i), lubST);
         }
 
         return null;

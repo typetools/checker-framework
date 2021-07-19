@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class InLambdaAnnotated {
+public class InLambdaAnnotated {
     static class Mine<T> {
         @SuppressWarnings("nullness") // just a utility
         static <S> Mine<S> some() {

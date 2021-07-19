@@ -1,6 +1,6 @@
 // Test case for Issue 269
 // https://github.com/typetools/checker-framework/issues/269
-class Repro {
+class Issue269 {
     // Implicitly G has bound @Nullable Object
     interface Callback<G> {
         public boolean handler(G arg);
@@ -9,7 +9,7 @@ class Repro {
     void method1(Callback callback) {
         // Allow this call.
         // :: warning: [unchecked] unchecked call to handler(G) as a member of the raw type
-        // Repro.Callback
+        // Issue269.Callback
         callback.handler(this);
     }
 
@@ -23,7 +23,7 @@ class Repro {
         // TODO: false negative. See #635.
         //// :: error: (argument.type.incompatible)
         // :: warning: [unchecked] unchecked call to handler(H) as a member of the raw type
-        // Repro.CallbackNN
+        // Issue269.CallbackNN
         callback.handler(null);
     }
 }

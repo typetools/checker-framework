@@ -30,7 +30,7 @@ public class EnsuresNonNullIfTest {
 
 // TODO: Have a way of saying the property holds no matter what value is used in a given expression.
 
-class File1 {
+public class File1 {
     @EnsuresNonNullIf(
             result = true,
             expression = {

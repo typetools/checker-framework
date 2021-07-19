@@ -1,6 +1,6 @@
 import org.checkerframework.checker.index.qual.*;
 
-class Polymorphic3 {
+public class Polymorphic3 {
 
     // Identity functions
 

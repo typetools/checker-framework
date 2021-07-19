@@ -20,13 +20,13 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
@@ -42,7 +41,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -50,7 +48,7 @@ import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Determines the default qualifiers on a type. Default qualifiers are specified via the {@link
@@ -83,11 +81,11 @@ public class QualifierDefaults {
     /** Element utilities to use. */
     private final Elements elements;
 
+    /** The locations() element/field of a @DefaultQualifier annotation. */
+    protected final ExecutableElement defaultQualifierLocationsElement;
+
     /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
-
-    /** List of the upstream checker binary names. */
-    private final List<@FullyQualifiedName String> upstreamCheckerNames;
 
     /** Defaults for checked code. */
     private final DefaultSet checkedCodeDefaults = new DefaultSet();
@@ -107,10 +105,10 @@ public class QualifierDefaults {
      * earlier name for the field was "qualifierCache"). It can also be used by type systems to set
      * defaults for certain Elements.
      */
-    private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+    private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
 
     /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
-    private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
+    private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
     /** CLIMB locations whose standard default is top for a given type system. */
     public static final List<TypeUseLocation> STANDARD_CLIMB_DEFAULTS_TOP =
@@ -176,22 +174,26 @@ public class QualifierDefaults {
     public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
         this.elements = elements;
         this.atypeFactory = atypeFactory;
-        this.upstreamCheckerNames =
-                atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
         this.useConservativeDefaultsBytecode =
-                atypeFactory.getContext().getChecker().useConservativeDefault("bytecode");
+                atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
-                atypeFactory.getContext().getChecker().useConservativeDefault("source");
+                atypeFactory.getChecker().useConservativeDefault("source");
+        this.defaultQualifierLocationsElement =
+                TreeUtils.getMethod(
+                        "org.checkerframework.framework.qual.DefaultQualifier",
+                        "locations",
+                        0,
+                        atypeFactory.getProcessingEnv());
     }
 
     @Override
     public String toString() {
         // displays the checked and unchecked code defaults
-        return UtilPlume.joinLines(
+        return StringsPlume.joinLines(
                 "Checked code defaults: ",
-                UtilPlume.joinLines(checkedCodeDefaults),
+                StringsPlume.joinLines(checkedCodeDefaults),
                 "Unchecked code defaults: ",
-                UtilPlume.joinLines(uncheckedCodeDefaults),
+                StringsPlume.joinLines(uncheckedCodeDefaults),
                 "useConservativeDefaultsSource: " + useConservativeDefaultsSource,
                 "useConservativeDefaultsBytecode: " + useConservativeDefaultsBytecode);
     }
@@ -361,6 +363,36 @@ public class QualifierDefaults {
      * @param type the type to annotate
      */
     public void annotate(Element elt, AnnotatedTypeMirror type) {
+        if (elt != null) {
+            switch (elt.getKind()) {
+                case FIELD:
+                case LOCAL_VARIABLE:
+                case PARAMETER:
+                case RESOURCE_VARIABLE:
+                case EXCEPTION_PARAMETER:
+                case ENUM_CONSTANT:
+                    String varName = elt.getSimpleName().toString();
+                    ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                            .getDefaultForTypeAnnotator()
+                            .defaultTypeFromName(type, varName);
+
+                    break;
+
+                case METHOD:
+                    String methodName = elt.getSimpleName().toString();
+                    AnnotatedTypeMirror returnType =
+                            ((AnnotatedExecutableType) type).getReturnType();
+                    ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                            .getDefaultForTypeAnnotator()
+                            .defaultTypeFromName(returnType, methodName);
+
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         applyDefaultsElement(elt, type);
     }
 
@@ -499,7 +531,16 @@ public class QualifierDefaults {
         applyToTypeVar = false;
     }
 
-    // dq must be an AnnotationMirror that represent a @DefaultQualifier
+    /** The default {@code value} element for a @DefaultQualifier annotation. */
+    private static TypeUseLocation[] defaultQualifierValueDefault =
+            new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
+
+    /**
+     * Create a DefaultSet from a @DefaultQualifier annotation.
+     *
+     * @param dq a @DefaultQualifier annotation
+     * @return a DefaultSet corresponding to the @DefaultQualifier annotation
+     */
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
         Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
@@ -514,9 +555,12 @@ public class QualifierDefaults {
         }
 
         if (atypeFactory.isSupportedQualifier(anno)) {
-            List<TypeUseLocation> locations =
+            TypeUseLocation[] locations =
                     AnnotationUtils.getElementValueEnumArray(
-                            dq, "locations", TypeUseLocation.class, true);
+                            dq,
+                            defaultQualifierLocationsElement,
+                            TypeUseLocation.class,
+                            defaultQualifierValueDefault);
             DefaultSet ret = new DefaultSet();
             for (TypeUseLocation loc : locations) {
                 ret.add(new Default(anno, loc));
@@ -539,21 +583,12 @@ public class QualifierDefaults {
             return elementAnnotatedFors.get(elt);
         }
 
-        final AnnotationMirror af = atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
+        final AnnotationMirror annotatedFor =
+                atypeFactory.getDeclAnnotation(elt, AnnotatedFor.class);
 
-        if (af != null) {
-            List<String> checkers =
-                    AnnotationUtils.getElementValueArray(af, "value", String.class, false);
-
-            if (checkers != null) {
-                for (String checker : checkers) {
-                    if (CheckerMain.matchesFullyQualifiedProcessor(
-                            checker, upstreamCheckerNames, true)) {
-                        elementAnnotatedForThisChecker = true;
-                        break;
-                    }
-                }
-            }
+        if (annotatedFor != null) {
+            elementAnnotatedForThisChecker =
+                    atypeFactory.doesAnnotatedForApplyToThisChecker(annotatedFor);
         }
 
         if (!elementAnnotatedForThisChecker) {
@@ -814,21 +849,6 @@ public class QualifierDefaults {
             // annotation is present.
             if (!type.isAnnotatedInHierarchy(qual) && type.getKind() != TypeKind.EXECUTABLE) {
                 type.addAnnotation(qual);
-            }
-
-            /* Intersection types, list the types in the direct supertypes.
-             * Make sure to apply the default there too.
-             */
-            if (type.getKind() == TypeKind.INTERSECTION) {
-                List<AnnotatedDeclaredType> sups =
-                        ((AnnotatedIntersectionType) type).directSuperTypesField();
-                if (sups != null) {
-                    for (AnnotatedTypeMirror sup : sups) {
-                        if (!sup.isAnnotatedInHierarchy(qual)) {
-                            sup.addAnnotation(qual);
-                        }
-                    }
-                }
             }
         }
 
@@ -1169,7 +1189,7 @@ public class QualifierDefaults {
                 }
             } else {
                 throw new BugInCF(
-                        UtilPlume.joinLines(
+                        StringsPlume.joinLines(
                                 "Unexpected tree type for typeVar Element:",
                                 "typeParamElem=" + typeParamElem,
                                 typeParamDecl));

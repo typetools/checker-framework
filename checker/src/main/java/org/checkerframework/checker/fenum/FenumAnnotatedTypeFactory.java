@@ -98,7 +98,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new FenumQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
-    /** Fenum qualifier hierarchy */
+    /** Fenum qualifier hierarchy. */
     protected class FenumQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
         /** QualifierKind for {@link Fenum} qualifier. */
@@ -138,7 +138,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind) {
             if (qualifierKind1 == FENUM_KIND && qualifierKind2 == FENUM_KIND) {
                 if (AnnotationUtils.areSame(a1, a2)) {
                     return a1;
@@ -157,7 +158,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror a1,
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind) {
             if (qualifierKind1 == FENUM_KIND && qualifierKind2 == FENUM_KIND) {
                 return FENUM_BOTTOM;
             } else if (qualifierKind1 == FENUM_KIND) {

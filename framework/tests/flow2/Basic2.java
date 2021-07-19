@@ -1,9 +1,9 @@
 import java.util.List;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.test.*;
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
-class Basic2 {
+public class Basic2 {
 
     // basic tests to make sure everything works
     void t1(@Odd String p1, String p2) {

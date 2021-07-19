@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,7 +33,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.UtilPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -88,7 +87,6 @@ public class AnnotationBuilder {
      * @param env the processing environment
      * @param name the canonical name of the annotation to build
      */
-    //
     public AnnotationBuilder(ProcessingEnvironment env, @FullyQualifiedName CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
@@ -121,6 +119,15 @@ public class AnnotationBuilder {
     }
 
     /**
+     * Returns the type element of the annotation that is being built.
+     *
+     * @return the type element of the annotation that is being built
+     */
+    public TypeElement getAnnotationElt() {
+        return annotationElt;
+    }
+
+    /**
      * Creates a mapping between element/field names and values.
      *
      * @param elementName the name of an element/field to initialize
@@ -144,6 +151,7 @@ public class AnnotationBuilder {
      * @param elements the element utilities to use
      * @param aClass the annotation class
      * @return an {@link AnnotationMirror} of the given type
+     * @throws UserError if the annotation corresponding to the class could not be loaded
      */
     public static AnnotationMirror fromClass(
             Elements elements, Class<? extends Annotation> aClass) {
@@ -196,7 +204,7 @@ public class AnnotationBuilder {
      */
     public static @Nullable AnnotationMirror fromName(
             Elements elements, @FullyQualifiedName CharSequence name) {
-        return fromName(elements, name, new HashMap<>());
+        return fromName(elements, name, Collections.emptyMap());
     }
 
     /**
@@ -230,9 +238,9 @@ public class AnnotationBuilder {
             return null;
         }
 
-        Map<ExecutableElement, AnnotationValue> elementValues = new LinkedHashMap<>();
-        for (ExecutableElement annoElement :
-                ElementFilter.methodsIn(annoElt.getEnclosedElements())) {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(annoElt.getEnclosedElements());
+        Map<ExecutableElement, AnnotationValue> elementValues = new LinkedHashMap<>(methods.size());
+        for (ExecutableElement annoElement : methods) {
             AnnotationValue elementValue =
                     elementNamesValues.get(annoElement.getSimpleName().toString());
             if (elementValue == null) {
@@ -278,15 +286,27 @@ public class AnnotationBuilder {
     public void copyElementValuesFromAnnotation(
             AnnotationMirror valueHolder, String... ignorableElements) {
         Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
+        copyElementValuesFromAnnotation(valueHolder, ignorableElementsSet);
+    }
+
+    /**
+     * Copies every element value from the given annotation. If an element in the given annotation
+     * doesn't exist in the annotation to be built, an error is raised unless the element is
+     * specified in {@code ignorableElements}.
+     *
+     * @param valueHolder the annotation that holds the values to be copied
+     * @param ignorableElements the elements that can be safely dropped
+     */
+    public void copyElementValuesFromAnnotation(
+            AnnotationMirror valueHolder, Set<String> ignorableElements) {
         for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
                 valueHolder.getElementValues().entrySet()) {
             Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-            if (ignorableElementsSet.contains(eltNameToCopy.toString())) {
+            if (ignorableElements.contains(eltNameToCopy.toString())) {
                 continue;
             }
             elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
         }
-        return;
     }
 
     /**
@@ -319,10 +339,15 @@ public class AnnotationBuilder {
         return this;
     }
 
-    /** Set the element/field with the given name, to the given value. */
+    /**
+     * Set the element/field with the given name, to the given value.
+     *
+     * @param elementName the element/field name
+     * @param values the new value for the element/field
+     * @return this
+     */
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
-        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         ExecutableElement var = findElement(elementName);
         TypeMirror expectedType = var.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -330,6 +355,7 @@ public class AnnotationBuilder {
         }
         expectedType = ((ArrayType) expectedType).getComponentType();
 
+        List<AnnotationValue> avalues = new ArrayList<>(values.size());
         for (Object v : values) {
             checkSubtype(expectedType, v);
             avalues.add(createValue(v));
@@ -423,7 +449,7 @@ public class AnnotationBuilder {
      * @return the TypeMirror corresponding to the given class
      */
     private TypeMirror typeFromClass(Class<?> clazz) {
-        return TypesUtils.typeFromClass(clazz, elements, types);
+        return TypesUtils.typeFromClass(clazz, types, elements);
     }
 
     public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
@@ -733,7 +759,7 @@ public class AnnotationBuilder {
                 toStringVal = "\'" + value + "\'";
             } else if (value instanceof List<?>) {
                 List<?> list = (List<?>) value;
-                toStringVal = "{" + UtilPlume.join(", ", list) + "}";
+                toStringVal = "{" + StringsPlume.join(", ", list) + "}";
             } else if (value instanceof VariableElement) {
                 // for Enums
                 VariableElement var = (VariableElement) value;

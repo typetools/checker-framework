@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 // ::error: (bound.type.incompatible)
-class Issue270<@Nullable TypeParam extends @NonNull Object> {
+public class Issue270<@Nullable TypeParam extends @NonNull Object> {
     public static void main() {
 
         // ::error: (type.argument.type.incompatible)

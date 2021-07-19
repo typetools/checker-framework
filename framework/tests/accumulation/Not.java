@@ -1,6 +1,6 @@
-import testaccumulation.qual.*;
+import org.checkerframework.framework.testchecker.testaccumulation.qual.*;
 
-class Not {
+public class Not {
 
     class Foo {
         void a() {}

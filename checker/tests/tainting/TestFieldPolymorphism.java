@@ -4,7 +4,7 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
 
 @HasQualifierParameter(Tainted.class)
-class TestFieldPolymorphism {
+public class TestFieldPolymorphism {
     @PolyTainted String field;
 
     @PolyTainted TestFieldPolymorphism(@PolyTainted String s) {

@@ -4,7 +4,7 @@ import java.util.regex.*;
 // the java.util.regex package.
 
 // :: error: (usage)
-class Package extends PatternSyntaxException {
+public class Package extends PatternSyntaxException {
     public Package(String desc, String regex, int index) {
         // :: error: (usage)
         super(desc, regex, index);

@@ -1,4 +1,4 @@
-import testlib.util.*;
+import org.checkerframework.framework.testchecker.util.*;
 
 // TODO: the output have a "missing return statement"?
 public class DeepOverrideBug {

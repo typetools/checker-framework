@@ -1,4 +1,4 @@
-class CheckNotNull1 {
+public class CheckNotNull1 {
     <T extends Object> T checkNotNull(T ref) {
         return ref;
     }

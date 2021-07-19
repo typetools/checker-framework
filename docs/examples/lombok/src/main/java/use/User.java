@@ -2,7 +2,7 @@ package use;
 
 import lib.Foo;
 
-class User {
+public class User {
     Foo demo() {
         return Foo.builder()
                 .x(null) // ok

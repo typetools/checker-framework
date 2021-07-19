@@ -1,6 +1,6 @@
-import h1h2checker.quals.*;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class Constructors {
+public class Constructors {
     // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
     @H1S2 @H2S2 Constructors() {}
 
@@ -57,10 +57,11 @@ class Constructors {
     }
 
     // :: error: (super.invocation.invalid) :: warning: (inconsistent.constructor.type)
-    @testlib.util.Encrypted @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
+    @org.checkerframework.framework.testchecker.util.Encrypted @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
 
     void test4(@H1S1 @H2S2 String p) {
         @H1S1 @H2S2 Constructors c1 = new Constructors(p, 4);
-        @H1S1 @H2S2 Constructors c2 = new @testlib.util.Encrypted Constructors(p);
+        @H1S1 @H2S2 Constructors c2 =
+                new @org.checkerframework.framework.testchecker.util.Encrypted Constructors(p);
     }
 }

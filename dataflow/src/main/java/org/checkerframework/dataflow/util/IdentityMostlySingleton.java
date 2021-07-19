@@ -22,7 +22,6 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
     public boolean add(@FindDistinct T e) {
         switch (state) {
             case EMPTY:
@@ -33,18 +32,23 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
                 if (value == e) {
                     return false;
                 }
-                state = State.ANY;
-                set = Collections.newSetFromMap(new IdentityHashMap<>());
-                assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
-                set.add(value);
-                value = null;
-                // fallthrough
+                makeNonSingleton();
+                // fall through
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.add(e);
             default:
                 throw new BugInCF("Unhandled state " + state);
         }
+    }
+
+    /** Switch the representation of this from SINGLETON to ANY. */
+    private void makeNonSingleton() {
+        state = State.ANY;
+        set = Collections.newSetFromMap(new IdentityHashMap<>());
+        assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
+        set.add(value);
+        value = null;
     }
 
     @SuppressWarnings("interning:not.interned") // this class uses object identity

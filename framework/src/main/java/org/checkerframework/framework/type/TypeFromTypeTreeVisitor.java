@@ -39,6 +39,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -116,17 +117,17 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         ClassSymbol baseType = (ClassSymbol) TreeUtils.elementFromTree(node.getType());
         updateWildcardBounds(node.getTypeArguments(), baseType.getTypeParameters());
 
-        List<AnnotatedTypeMirror> args = new ArrayList<>(node.getTypeArguments().size());
-        for (Tree t : node.getTypeArguments()) {
-            args.add(visit(t, f));
-        }
+        List<AnnotatedTypeMirror> args =
+                SystemUtil.mapList((Tree t) -> visit(t, f), node.getTypeArguments());
 
         AnnotatedTypeMirror result = f.type(node); // use creator?
         AnnotatedTypeMirror atype = visit(node.getType(), f);
         result.addAnnotations(atype.getAnnotations());
         // new ArrayList<>() type is AnnotatedExecutableType for some reason
 
-        if (result instanceof AnnotatedDeclaredType) {
+        // Don't initialize the type arguments if they are empty. The type arguments might be a
+        // diamond which should be inferred.
+        if (result instanceof AnnotatedDeclaredType && !args.isEmpty()) {
             assert result instanceof AnnotatedDeclaredType : node + " --> " + result;
             ((AnnotatedDeclaredType) result).setTypeArguments(args);
         }
@@ -215,14 +216,10 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 result.setUpperBound(bounds.get(0));
                 break;
             default:
-                AnnotatedIntersectionType upperBound =
+                AnnotatedIntersectionType intersection =
                         (AnnotatedIntersectionType) result.getUpperBound();
-
-                List<AnnotatedDeclaredType> superBounds = new ArrayList<>(bounds.size());
-                for (AnnotatedTypeMirror b : bounds) {
-                    superBounds.add((AnnotatedDeclaredType) b);
-                }
-                upperBound.setDirectSuperTypes(superBounds);
+                intersection.setBounds(bounds);
+                intersection.copyIntersectionBoundAnnotations();
         }
 
         return result;
@@ -341,12 +338,14 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitIntersectionType(
             IntersectionTypeTree node, AnnotatedTypeFactory f) {
-        AnnotatedTypeMirror type = f.type(node);
-
-        if (type.getKind() == TypeKind.TYPEVAR) {
-            return getTypeVariableFromDeclaration((AnnotatedTypeVariable) type, f);
-        }
-
+        // This method is only called for IntersectionTypes in casts.  There is no
+        // IntersectionTypeTree for a type variable bound that is an intersection.  See
+        // #visitTypeParameter.
+        AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(node);
+        List<AnnotatedTypeMirror> bounds =
+                SystemUtil.mapList((Tree boundTree) -> visit(boundTree, f), node.getBounds());
+        type.setBounds(bounds);
+        type.copyIntersectionBoundAnnotations();
         return type;
     }
 }

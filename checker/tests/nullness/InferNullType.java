@@ -1,5 +1,5 @@
 // Version of framework/tests/all-systems/InferNullType.java with expected Nullness Checker warnings
-class InferNullType {
+public class InferNullType {
 
     <T extends Object> T toInfer(T input) {
         return input;

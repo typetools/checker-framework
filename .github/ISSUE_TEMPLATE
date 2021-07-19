@@ -1,10 +1,6 @@
 Thanks for submitting an issue.
-As explained in the instructions for submitting an issue at https://checkerframework.org/manual/#reporting-bugs, please include at least the following information.
-
-The commands you ran, so that we can paste them into a command terminal.  Please don't omit any steps, including installing software or setting environment variables.  Please include `-version -verbose -AprintAllQualifiers` in the `javac` options.  If you ran the Checker Framework from an IDE, reproduce the problem from the command line; if you cannot, report the bug to the IDE integration.
-
-A transcript of all the output (as text, not a screenshot).
-
-What you expected to happen instead.  It can be helpful to explain your reasoning or reference a section of the manual.
-
-Files that are used by the commands you ran.  If you cannot share the code, please create a test case that reproduces the problem.
+As explained in the instructions for submitting an issue at https://checkerframework.org/manual/#reporting-bugs, please include four pieces of information:
+ * commands (that can be cut-and-pasted into a command shell),
+ * inputs,
+ * outputs, and
+ * expectation.

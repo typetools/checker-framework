@@ -1,8 +1,8 @@
 package h1h2checker;
 
-import h1h2checker.quals.*;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class GetClassStubTest {
+public class GetClassStubTest {
 
     // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver
     void context() {

@@ -1,19 +1,20 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Represents an expected error/warning message in a Java test file or an error/warning reported by
- * the Javac compiler. See {@link JavaDiagnosticReader} and {@link TestDiagnosticLine}.
+ * the Javac compiler. By contrast, {@link TestDiagnosticLine} represents a set of TestDiagnostics,
+ * all of which were read from the same line of a file.
+ *
+ * @see JavaDiagnosticReader
  */
 public class TestDiagnostic {
 
+    private final String filename;
     private final long lineNumber;
     private final DiagnosticKind kind;
-    private final String filename;
-
-    /** Whether this diagnostic should no longer be reported after whole program inference. */
-    private final boolean isFixable;
 
     /**
      * An error key or full error message that usually appears between parentheses in diagnostic
@@ -21,8 +22,11 @@ public class TestDiagnostic {
      */
     private final String message;
 
+    /** Whether this diagnostic should no longer be reported after whole program inference. */
+    private final boolean isFixable;
+
     /**
-     * Whether or not String representation methods should omit the parentheses around the message
+     * Whether or not the toString representation should omit the parentheses around the message.
      */
     private final boolean omitParentheses;
 
@@ -54,12 +58,12 @@ public class TestDiagnostic {
         return kind;
     }
 
-    public boolean isFixable() {
-        return isFixable;
-    }
-
     public String getMessage() {
         return message;
+    }
+
+    public boolean isFixable() {
+        return isFixable;
     }
 
     /**
@@ -72,23 +76,10 @@ public class TestDiagnostic {
     }
 
     /**
-     * Returns a String representing the format of this diagnostic as if it appeared in a source
-     * file.
-     *
-     * @return a String representing the format of this diagnostic as if it appeared in a source
-     *     file
-     */
-    public String asSourceString() {
-        if (omitParentheses) {
-            return kind.parseString + " " + message;
-        }
-        return kind.parseString + " (" + message + ")";
-    }
-
-    /**
      * Equality is compared without isFixable/omitParentheses.
      *
-     * @return true if this and otherObj are equal according to lineNumber, kind, and message
+     * @return true if this and otherObj are equal according to filename, lineNumber, kind, and
+     *     message
      */
     @Override
     public boolean equals(@Nullable Object otherObj) {
@@ -97,19 +88,15 @@ public class TestDiagnostic {
         }
 
         final TestDiagnostic other = (TestDiagnostic) otherObj;
-        return other.lineNumber == lineNumber
+        return other.filename.equals(this.filename)
+                && other.lineNumber == lineNumber
                 && other.kind == this.kind
-                && other.message.equals(this.message)
-                && other.filename.equals(this.filename);
+                && other.message.equals(this.message);
     }
 
     @Override
     public int hashCode() {
-        return 331
-                * ((int) lineNumber)
-                * kind.hashCode()
-                * message.hashCode()
-                * filename.hashCode();
+        return Objects.hash(filename, lineNumber, kind, message);
     }
 
     /**
@@ -119,6 +106,9 @@ public class TestDiagnostic {
      */
     @Override
     public String toString() {
+        if (kind == DiagnosticKind.JSpecify) {
+            return filename + ":" + lineNumber + ": " + message;
+        }
         if (omitParentheses) {
             return filename + ":" + lineNumber + ": " + kind.parseString + ": " + message;
         }

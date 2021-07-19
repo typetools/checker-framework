@@ -1,10 +1,10 @@
 // Test case for Issue 1555
 // https://github.com/typetools/checker-framework/issues/1555
 
-import org.checkerframework.checker.nullness.NullnessUtil;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.util.NullnessUtil;
 
-class Issue1555 {
+public class Issue1555 {
 
     private @MonotonicNonNull String x;
 

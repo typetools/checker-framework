@@ -2,7 +2,7 @@ import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
-class ItselfExpressionCases {
+public class ItselfExpressionCases {
     final Object somelock = new Object();
 
     private final @GuardedBy({"<self>"}) MyClass m = new MyClass();
@@ -89,6 +89,8 @@ class ItselfExpressionCases {
             // :: error: (contracts.precondition.not.satisfied)
             o.foo();
             synchronized (somelock) {
+                // o.foo() requires o.somelock is held, not this.somelock.
+                // :: error: (contracts.precondition.not.satisfied)
                 o.foo();
             }
         }

@@ -6,7 +6,7 @@
     String[] value();
 }
 
-class Annotation {
+public class Annotation {
     @A1({"a", "b"})
     void m1() {}
 

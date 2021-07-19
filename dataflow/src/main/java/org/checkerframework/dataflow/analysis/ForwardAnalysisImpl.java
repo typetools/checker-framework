@@ -2,8 +2,7 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -25,8 +23,10 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -66,8 +66,8 @@ public class ForwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      *
      * @param maxCountBeforeWidening number of times a block can be analyzed before widening
      */
@@ -155,8 +155,6 @@ public class ForwardAnalysisImpl<
                     Block succ = eb.getSuccessor();
                     if (succ != null) {
                         currentInput = new TransferInput<>(node, this, transferResult);
-                        // TODO: Variable wasn't used.
-                        // Store.FlowRule storeFlow = eb.getFlowRule();
                         propagateStoresTo(
                                 succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                     }
@@ -228,18 +226,15 @@ public class ForwardAnalysisImpl<
     @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
     @RequiresNonNull("cfg")
     public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-        List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> result = new ArrayList<>();
-        for (ReturnNode returnNode : cfg.getReturnNodes()) {
-            TransferResult<V, S> store = storesAtReturnStatements.get(returnNode);
-            result.add(Pair.of(returnNode, store));
-        }
-        return result;
+        return SystemUtil.<ReturnNode, Pair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
+                returnNode -> Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
+                cfg.getReturnNodes());
     }
 
     @Override
     public S runAnalysisFor(
             @FindDistinct Node node,
-            boolean before,
+            Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
@@ -276,7 +271,7 @@ public class ForwardAnalysisImpl<
                         TransferResult<V, S> transferResult;
                         for (Node n : rb.getNodes()) {
                             setCurrentNode(n);
-                            if (n == node && before) {
+                            if (n == node && preOrPost == Analysis.BeforeOrAfter.BEFORE) {
                                 return store.getRegularStore();
                             }
                             if (cache != null && cache.containsKey(n)) {
@@ -307,14 +302,23 @@ public class ForwardAnalysisImpl<
                                             + "\teb.getNode(): "
                                             + eb.getNode());
                         }
-                        if (before) {
+                        if (preOrPost == Analysis.BeforeOrAfter.BEFORE) {
                             return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);
                         // Copy the store to avoid changing other blocks' transfer inputs in {@link
                         // #inputs}
-                        TransferResult<V, S> transferResult =
-                                callTransferFunction(node, blockTransferInput.copy());
+                        TransferResult<V, S> transferResult;
+                        if (cache != null && cache.containsKey(node)) {
+                            transferResult = cache.get(node);
+                        } else {
+                            // Copy the store to avoid changing other blocks' transfer inputs in
+                            // {@link #inputs}
+                            transferResult = callTransferFunction(node, blockTransferInput.copy());
+                            if (cache != null) {
+                                cache.put(node, transferResult);
+                            }
+                        }
                         return transferResult.getRegularStore();
                     }
                 default:
@@ -344,30 +348,35 @@ public class ForwardAnalysisImpl<
         worklist.process(cfg);
         Block entry = cfg.getEntryBlock();
         worklist.add(entry);
-        List<LocalVariableNode> parameters = null;
         UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-        if (underlyingAST.getKind() == Kind.METHOD) {
-            MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
-            parameters = new ArrayList<>();
-            for (VariableTree p : tree.getParameters()) {
-                LocalVariableNode var = new LocalVariableNode(p);
-                parameters.add(var);
-                // TODO: document that LocalVariableNode has no block that it belongs to
-            }
-        } else if (underlyingAST.getKind() == Kind.LAMBDA) {
-            LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
-            parameters = new ArrayList<>();
-            for (VariableTree p : lambda.getParameters()) {
-                LocalVariableNode var = new LocalVariableNode(p);
-                parameters.add(var);
-                // TODO: document that LocalVariableNode has no block that it belongs to
-            }
-        }
+        List<LocalVariableNode> parameters = getParameters(underlyingAST);
         assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
         S initialStore = transferFunction.initialStore(underlyingAST, parameters);
         thenStores.put(entry, initialStore);
         elseStores.put(entry, initialStore);
         inputs.put(entry, new TransferInput<>(null, this, initialStore));
+    }
+
+    /**
+     * Returns the formal parameters for a method.
+     *
+     * @param underlyingAST the AST for the method
+     * @return the formal parameters for the method
+     */
+    @SideEffectFree
+    private List<LocalVariableNode> getParameters(UnderlyingAST underlyingAST) {
+        switch (underlyingAST.getKind()) {
+            case METHOD:
+                MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
+                // TODO: document that LocalVariableNode has no block that it belongs to
+                return SystemUtil.mapList(LocalVariableNode::new, tree.getParameters());
+            case LAMBDA:
+                LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
+                // TODO: document that LocalVariableNode has no block that it belongs to
+                return SystemUtil.mapList(LocalVariableNode::new, lambda.getParameters());
+            default:
+                return Collections.emptyList();
+        }
     }
 
     @Override

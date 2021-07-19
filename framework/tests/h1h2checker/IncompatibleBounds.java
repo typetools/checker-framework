@@ -1,8 +1,8 @@
 package h1h2checker;
 
-import h1h2checker.quals.*;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
 /**
  * This test is solely to ensure that if bounds in type parameters and wildcards are invalid then

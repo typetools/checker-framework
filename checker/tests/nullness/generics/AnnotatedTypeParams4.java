@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class Test {
+public class AnnotatedTypeParams4 {
 
     class Test1<CONTENT extends @Nullable Object> {
         CONTENT a;

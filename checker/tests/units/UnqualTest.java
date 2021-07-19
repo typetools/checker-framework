@@ -1,4 +1,4 @@
-import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.checker.units.qual.kg;
 
 public class UnqualTest {
     // :: error: (assignment.type.incompatible)

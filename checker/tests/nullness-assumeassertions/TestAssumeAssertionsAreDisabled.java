@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class TestAssumeAssertionsAreDisabled {
+public class TestAssumeAssertionsAreDisabled {
 
     void foo(@Nullable String s1, @Nullable String s2) {
 

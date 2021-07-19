@@ -12,7 +12,6 @@ To report bugs, please see Section~\ref{reporting-bugs}.
 If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it, or select a
 project from the ideas list at
-% \url{https://github.com/typetools/checker-framework/wiki/Ideas}.
 \url{https://rawgit.com/typetools/checker-framework/master/docs/developer/gsoc-ideas.html}.
 \end{sloppypar}
 
@@ -487,6 +486,7 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
 
 
 \item
+\label{false-positive-in-dead-code}
   The Checker Framework can issue false positive warnings in dead code.  An
   example is
 
@@ -501,6 +501,15 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
     }
 \end{Verbatim}
 \end{smaller}
+
+\item
+  If the Checker Framework issues an error or warning that you cannot
+  reproduce using a smaller test case, then try running the Checker
+  Framework with the \<-AatfDoNotCache> command-line argument.  If the
+  Checker Framework behaves differently with and without that command-line
+  argument, then there is a bug related to its internal caches.  Please
+  report that bug at
+  \url{https://github.com/typetools/checker-framework/issues}.
 
 \end{itemize}
 
@@ -532,76 +541,85 @@ please file a bug at
 (First, check whether there is an existing bug report for that issue.)
 If the problem is with an incorrect or missing annotation on a library,
 including the JDK, see Section~\ref{reporting-bugs-annotated-libraries}.
-
-Alternately (especially if your communication is not a bug report), you can
-send mail to checker-framework-dev@googlegroups.com.
-We welcome suggestions, annotated libraries, bug fixes, new
-features, new checkers, and other improvements.
+You can also use the issue tracker to make suggestions and feature
+requests.  We also welcome pull requests with annotated libraries, bug
+fixes, new features, new checkers, and other improvements.
 
 Please ensure that your bug report is clear and that it is complete.
 Otherwise, we may be unable to understand it or to reproduce it, either of
-which would prevent us from helping you.  Your bug report will be most
-helpful if you:
+which would prevent us from helping you.  Your bug report should include at
+least the following 4 parts: commands, inputs, outputs, and expectation.
 
 % If you update this, also update ../../.github/ISSUE_TEMPLATE
-\begin{itemize}
-\item
-  Add \code{-version -AprintGitProperties -verbose -AprintAllQualifiers}
-  to the javac options.  This causes the compiler to output
-  debugging information, including its version number.
-\item
-  Indicate exactly what you did.  Don't skip any steps, and don't merely
-  describe your actions in words.  Show the exact commands by attaching a
-  file or using cut-and-paste from your command shell.  Always include
-  plaintext, not just a screenshot.  Try to reproduce the problem from the
-  command line as well as from an IDE or within a build system; that helps
-  to indicate whether the problem is with the IDE or build system.
-\item
+\begin{description}
+\item[Commands]
+  Provide one or more commands that can be pasted into a command shell to
+  reproduce the problem.
+
+  In the simplest case, you will provide one command of
+  the form \<javac -processor ... MyFile.java>.  In more complex cases, it
+  might be a set of commands clone a repository, check out a branch, and
+  run a build command.  Include commands to install software and set
+  environment variables if necessary.
+
+  If you encountered the problem in an IDE, reproduce it from the command
+  line; if you cannot, report the bug to the IDE integration.
+
+  It can be helpful to add \code{-version -AprintGitProperties -verbose
+    -AprintAllQualifiers} to the javac options.  This causes the compiler
+  to output debugging information, including its version number.
+
+\item[Inputs]
   Include all files that are necessary to reproduce the problem.  This
   includes every file that is used by any of the commands you reported, and
-  possibly other files as well.  Please attach the files, rather than
-  pasting their contents into the body of your bug report or email message,
-  because some mailers mangle formatting of pasted text.
+  possibly other files as well.  This is not necessary if the commands you
+  provided obtain the code that is type-checked.
 
-  If you
-  encountered a problem while using tool integration such as
-  Maven integration, then try to reproduce the problem from the
-  command line as well --- this will indicate whether the problem is with
-  the checker itself or with the tool integration.  If you use an invasive
-  annotation processor such as Lombok, then try to repoduce the problem
-  without it --- this will indicate whether the problem is in the Checker
-  Framework proper or in its interaction with Lombok.
-
-  If you cannot share your code, create a new, small test case.  (This is
-  helpful even if your code is not secret!)  The progress tracing options
+  If you cannot share your code, create a new, small test case.  (A small
+  test case is helpful even if your code is not secret!)  If the Checker
+  Framework crashed, the progress tracing options
   (Section~\ref{creating-debugging-options-progress}) can be helpful in
   determining which file the Checker Framework was processing when it
   crashed.
-\item
+
+  \emph{Minimization:}
+  If your command invokes a build system such as Gradle or Maven, it can be
+  helpful to the maintainers if you are able to reduce it to a single
+  \<javac> invocation on a single file.
+  This also rules out the possibility that the problem is with the build system
+  integration rather than the checker itself.
+  If you use an invasive
+  annotation processor such as Lombok, then try to reproduce the problem
+  without it --- this will indicate whether the problem is in the Checker
+  Framework proper or in its interaction with Lombok.
+
+\item[Output]
   Indicate exactly what the result was by attaching a file or using
-  cut-and-paste from your command shell (don't merely describe it in
-  words, don't use a screenshot, and don't provide just part of the output).
-\item
+  cut-and-paste from your command shell.  Don't merely describe it in
+  words, don't use a screenshot, and don't provide just part of the output.
+
+\item[Expectation]
   If the problem is not a crash, then
   indicate what you expected the result to be, since a bug is a difference
   between desired and actual outcomes.  Also, please indicate \textbf{why}
-  you expected that result --- explaining your reasoning can help you
-  understand how your reasoning is different than the checker's and which
+  you expected that result --- explaining your reasoning can reveal
+  how your reasoning is different than the checker's and which
   one is wrong.  Remember that the checker reasons modularly and
   intraprocedurally:  it examines one method at a time, using only the
   method signatures of other methods.
-\item
-  Indicate what you have already done to try to understand the problem.
-  Did you do any additional experiments?  What parts of the manual did you
-  read, and what else did you search for in the manual?  Without this
-  information, the maintainers may give you redundant suggestions.
-\end{itemize}
 
-A particularly useful format for a test case is as a new file, or a diff to
-an existing file, for the existing Checker Framework test suite.  For
-instance, for the Nullness
-Checker, see directory \<checker-framework/checker/tests/nullness/>.
-But, please report your bug even if you do not report it in this format.
+  It can also be helpful to indicate what you have already done to try to
+  understand the problem.  Did you do any additional experiments?  What
+  parts of the manual did you read, and what else did you search for in the
+  manual?  Without this information, the maintainers may give you redundant
+  suggestions or may waste time re-doing work you have already done.
+\end{description}
+
+% A particularly useful format for a test case is as a new file, or a diff to
+% an existing file, for the existing Checker Framework test suite.  For
+% instance, for the Nullness
+% Checker, see directory \<checker-framework/checker/tests/nullness/>.
+% But, please report your bug even if you do not report it in this format.
 
 When reporting bugs, please focus on realistic scenarios and well-written
 code.  We are sure that you can make up artificial code that stymies the
@@ -653,6 +671,16 @@ Follow the instructions for your operating system.
 If your OS is not listed, adapt the instructions for an existing OS;
 for example, other Linux distributions will be similar to Ubuntu.
 
+% Why is this necessary?  What goes wrong if it is not set?  Can I avoid
+% the need to set it?  It's used for:
+%  * the location of tools.jar, below.
+%  * the default location of CTSYM, in checker/jdk/Makefile.
+Put the setting of the \<JAVA\_HOME> environment variable in a startup file
+such as \<.bash\_profile> or \<.bashrc>, if \<JAVA\_HOME> is not already
+set appropriately.  It must be the location of your JDK 8 or JDK 11
+installation (not the JRE installation, and not JDK 7 or earlier).
+You may need to log out and log back in for the setting to take effect.
+
 \begin{description}
 \item[Ubuntu]
   Run the following commands:
@@ -672,6 +700,20 @@ pip3 install html5validator
 
   You may have to answer questions about which time zone your computer is in.
 
+In a startup file, write:
+% Can someone give a simpler command?
+% Command taken from:
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
 \item[Mac OS]
   If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
   the following commands:
@@ -679,8 +721,9 @@ pip3 install html5validator
 \begin{Verbatim}
 brew update
 brew install git ant hevea maven mercurial librsvg unzip make
-brew cask install java
-brew cask install mactex
+brew tap AdoptOpenJDK/openjdk
+brew install --cask adoptopenjdk11
+brew install --cask mactex
 \end{Verbatim}
 
 Make a \<latex> directory and copy \<hevea.sty> file into it (you may need to update the version number \<2.31>):
@@ -692,11 +735,14 @@ cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/l
 
 Note: If copy permission is denied, try \<sudo>.
 
-Also set the \<JAVA\_HOME> environment variable in your \<.bashrc> file;
-for example,
+In a startup file, write:
 
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_144.jdk/Contents/Home
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.11)
+\end{Verbatim}
+or
+\begin{Verbatim}
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/
 \end{Verbatim}
 
 
@@ -729,43 +775,6 @@ export CHECKERFRAMEWORK=`pwd`/checker-framework
 You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \<.bashrc> file.
 
-% Why is this necessary?  What goes wrong if it is not set?  Can I avoid
-% the need to set it?  It's used for:
-%  * the location of tools.jar, below.
-%  * the default location of CTSYM, in checker/jdk/Makefile.
-Set the \<JAVA\_HOME> environment variable to the location of your JDK
-8 or JDK 11 installation (not the JRE installation, and not JDK 7 or earlier).
-(The \<JAVA\_HOME> environment
-variable might already be set, because it is needed for Ant to work.)
-
-\begin{description}
-\item[Ubuntu]
-If you use the bash shell, put the following command in your
-\code{.bashrc} file.  (This might not work if \<java> refers to an executable
-in the JRE rather than in the JDK, but you need the JDK installed to build
-the Checker Framework anyway.)
-% Can someone give a simpler command?
-% Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-\item[Mac OS X 10.5 or later]
-  Add one of the following two commands in your \code{.bash\_profile} or
-  \code{.profile} file according to the version of your JDK.
-\begin{Verbatim}
-  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-  export JAVA_HOME=$(/usr/libexec/java_home -v 1.9)
-\end{Verbatim}
-
-\end{description}
 
 \subsectionAndLabel{Build the Checker Framework}{building}
 
@@ -813,8 +822,7 @@ a developer version of \<javac> in the \<bin-devel> directory. This
 version will use compiled classes from \<dataflow/build>,
 \<javacutil/build>, \<framework/build>,
 and \<checker/build> in the \<checker-framework> directory instead of
-the compiled jar files, and by default will print stack traces for all
-errors.
+the compiled jar files.
 
 To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
 
@@ -894,12 +902,41 @@ Then, you can run arbitrary commands, including those that appear in the
 CI configuration files.
 
 
-\sectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
+\sectionAndLabel{Contributing}{contributing}
+
+We welcome contributions and pull requests.  Section~\ref{build-source}
+tells you how to set up your development environment to compile the Checker
+Framework, and the
+\href{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker
+  Framework Developer Manual} gives more information.
+
+One good way to contribute is to give feedback about your use of the tool.
+There is a list
+  of potential projects for new contributors at \url{https://rawgit.com/typetools/checker-framework/master/docs/developer/gsoc-ideas.html}.
+Or, you can fix a bug that
+you have encountered during your use of the Checker Framework.
+
+
+\subsectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
 
 Please see the
 \ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#pull-requests}{pull
-  requests} section of the Developer Manual.
+  requests} section of the Checker Framework Developer Manual.
 Thanks in advance for your contributions!
+
+The easiest bugs to fix for a newcomer are
+\ahref{https://github.com/typetools/checker-framework/issues?q=is\%3Aopen+is\%3Aissue+label\%3A\%22help+wanted\%22}{labeled
+  as ``help wanted''}.
+
+Please do not spam the issue tracker with requests to assign an issue to
+you.  If you want to contribute by fixing an issue, just open a pull
+request that fixes it.  You can do that even if the issue is already
+assigned to someone.
+
+Please do not spam the issue tracker asking how to get started fixing a
+bug.  If you have concrete questions, please ask them and we will be happy
+to assist you.  If you don't know how to get started fixing a particular
+bug, then you should contribute to the project in other ways.  Thanks!
 
 
 \sectionAndLabel{Publications}{publications}
@@ -1083,9 +1120,13 @@ For details, see file
 %  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre yml
 %%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted ElementType
 %%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex IGJ
-%%  LocalWords:  JavaUI EnerJ App CCS ReIm ReImInfer Anatoly Kupriyanov
+%%  LocalWords:  JavaUI EnerJ App CCS ReIm ReImInfer Anatoly Kupriyanov ci
 %%  LocalWords:  Asumu Takikawa Brotherston McArthur Luo Bayne Coblenz Lai
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
-%%  LocalWords:  astub homebrew hevea allTests
-%%  LocalWords:  compileJava typedefs LPAR Tunable OIGJ sudo
+%%  LocalWords:  astub homebrew hevea allTests AatfDoNotCache Java''
+%%  LocalWords:  compileJava typedefs LPAR Tunable OIGJ sudo wanted''
+% LocalWords:  addStandardLiteralQualifiers AprintGitProperties checkers''
+% LocalWords:  expressions'' strings'' access'' intents'' ownership''
+% LocalWords:  Computation'' Store'' generics'' immutability'' purity''
+% LocalWords:  comparison''

@@ -1,14 +1,14 @@
 import org.checkerframework.common.aliasing.qual.Unique;
 
-@Unique class Data {
+@Unique class UniqueData {
     @SuppressWarnings("unique.leaked")
-    Data() {} // All objects of Data are now @Unique
+    UniqueData() {} // All objects of UniqueData are now @Unique
 }
 
-class Demo {
-    void check(Data p) { // p is @Unique Data Object
+public class ExplicitAnnotationTest {
+    void check(UniqueData p) { // p is @Unique UniqueData Object
         // :: error: (unique.leaked)
-        Data y = p; // @Unique p is leaked
+        UniqueData y = p; // @Unique p is leaked
         // :: error: (unique.leaked)
         Object z = p; // @Unique p is leaked
     }

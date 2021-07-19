@@ -2,7 +2,7 @@
 
 import org.checkerframework.common.value.qual.StringVal;
 
-class Issue3105FieldInSameClass {
+public class Issue3105FieldInSameClass {
     public static final String FIELD1 = "foo";
 }
 

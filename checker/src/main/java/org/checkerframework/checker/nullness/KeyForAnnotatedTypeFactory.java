@@ -4,19 +4,16 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -29,15 +26,13 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -72,10 +67,15 @@ public class KeyForAnnotatedTypeFactory
         super(checker, true);
 
         // Add compatibility annotations:
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.KeyForDecl", KeyFor.class, true);
-        addAliasedAnnotation(
+        addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.KeyForType", KeyFor.class, true);
+
+        // While strictly required for soundness, this leads to too many false positives.  Printing
+        // a key or putting it in a map erases all knowledge of what maps it was a key for.
+        // TODO: Revisit when side effect annotations are more precise.
+        // sideEffectsUnrefineAliases = true;
 
         this.postInit();
     }
@@ -156,10 +156,13 @@ public class KeyForAnnotatedTypeFactory
         return new KeyForTransfer((KeyForAnalysis) analysis);
     }
 
-    /*
+    /**
      * Given a string array 'values', returns an AnnotationMirror corresponding to @KeyFor(values)
+     *
+     * @param values the values for the {@code @KeyFor} annotation
+     * @return a {@code @KeyFor} annotation with the given values
      */
-    public AnnotationMirror createKeyForAnnotationMirrorWithValue(LinkedHashSet<String> values) {
+    public AnnotationMirror createKeyForAnnotationMirrorWithValue(Set<String> values) {
         // Create an AnnotationBuilder with the ArrayList
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), KeyFor.class);
         builder.setValue("value", values.toArray());
@@ -168,14 +171,14 @@ public class KeyForAnnotatedTypeFactory
         return builder.build();
     }
 
-    /*
+    /**
      * Given a string 'value', returns an AnnotationMirror corresponding to @KeyFor(value)
+     *
+     * @param value the argument to {@code @KeyFor}
+     * @return a {@code @KeyFor} annotation with the given value
      */
     public AnnotationMirror createKeyForAnnotationMirrorWithValue(String value) {
-        // Create an ArrayList with the value
-        LinkedHashSet<String> values = new LinkedHashSet<>();
-        values.add(value);
-        return createKeyForAnnotationMirrorWithValue(values);
+        return createKeyForAnnotationMirrorWithValue(Collections.singleton(value));
     }
 
     /**
@@ -203,94 +206,7 @@ public class KeyForAnnotatedTypeFactory
 
     @Override
     public QualifierHierarchy createQualifierHierarchy() {
-        return new KeyForQualifierHierarchy(getSupportedTypeQualifiers(), elements);
-    }
-
-    /** KeyForQualifierHierarchy */
-    private final class KeyForQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
-
-        /** Qualifier kind for the @{@link KeyFor} annotation. */
-        private final QualifierKind KEYFOR_KIND;
-
-        /**
-         * Creates a KeyForQualifierHierarchy.
-         *
-         * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
-         * @param elements element utils
-         */
-        public KeyForQualifierHierarchy(
-                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-            super(qualifierClasses, elements);
-            this.KEYFOR_KIND = qualifierKindHierarchy.getQualifierKind(KEYFOR_NAME);
-        }
-
-        private List<String> extractValues(AnnotationMirror anno) {
-            Map<? extends ExecutableElement, ? extends AnnotationValue> valMap =
-                    anno.getElementValues();
-
-            List<String> res;
-            if (valMap.isEmpty()) {
-                res = new ArrayList<>();
-            } else {
-                res = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
-            }
-            return res;
-        }
-
-        @Override
-        protected boolean isSubtypeWithElements(
-                AnnotationMirror subAnno,
-                QualifierKind subKind,
-                AnnotationMirror superAnno,
-                QualifierKind superKind) {
-            if (subKind == KEYFOR_KIND && superKind == KEYFOR_KIND) {
-                List<String> lhsValues = extractValues(superAnno);
-                List<String> rhsValues = extractValues(subAnno);
-                return rhsValues.containsAll(lhsValues);
-            }
-            return subKind.isSubtypeOf(superKind);
-        }
-
-        @Override
-        protected AnnotationMirror leastUpperBoundWithElements(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
-            if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
-                List<String> a1Values = extractValues(a1);
-                List<String> a2Values = extractValues(a2);
-                LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
-                set.retainAll(a2Values);
-                return createKeyForAnnotationMirrorWithValue(set);
-            } else if (qualifierKind1 == KEYFOR_KIND) {
-                return a1;
-            } else if (qualifierKind2 == KEYFOR_KIND) {
-                return a2;
-            }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
-        }
-
-        @Override
-        protected AnnotationMirror greatestLowerBoundWithElements(
-                AnnotationMirror a1,
-                QualifierKind qualifierKind1,
-                AnnotationMirror a2,
-                QualifierKind qualifierKind2) {
-            if (qualifierKind1 == KEYFOR_KIND && qualifierKind2 == KEYFOR_KIND) {
-
-                List<String> a1Values = extractValues(a1);
-                List<String> a2Values = extractValues(a2);
-                LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
-                set.addAll(a2Values);
-                return createKeyForAnnotationMirrorWithValue(set);
-            } else if (qualifierKind1 == KEYFOR_KIND) {
-                return a1;
-            } else if (qualifierKind2 == KEYFOR_KIND) {
-                return a2;
-            }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
-        }
+        return new SubtypeIsSupersetQualifierHierarchy(getSupportedTypeQualifiers(), processingEnv);
     }
 
     /** Returns true if the node is an invocation of Map.containsKey. */

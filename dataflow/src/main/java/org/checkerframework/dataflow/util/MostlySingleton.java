@@ -1,12 +1,11 @@
 package org.checkerframework.dataflow.util;
 
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.LinkedHashSet;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A set that is more efficient than HashSet for 0 and 1 elements. Uses {@code Objects.equals} for
- * object comparison and a {@link HashSet} for backing storage.
+ * object comparison and a {@link LinkedHashSet} for backing storage.
  */
 public final class MostlySingleton<T extends Object> extends AbstractMostlySingleton<T> {
 
@@ -21,7 +20,6 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
     }
 
     @Override
-    @SuppressWarnings("fallthrough")
     public boolean add(T e) {
         switch (state) {
             case EMPTY:
@@ -29,18 +27,27 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
                 value = e;
                 return true;
             case SINGLETON:
-                state = State.ANY;
-                set = new HashSet<>();
-                assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
-                set.add(value);
-                value = null;
-                // fallthrough
+                assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
+                if (value.equals(e)) {
+                    return false;
+                }
+                makeNonSingleton();
+                // fall through
             case ANY:
-                assert set != null : "@AssumeAssertion(nullness): set initialized before";
+                assert set != null : "@AssumeAssertion(nullness): ANY => value != null";
                 return set.add(e);
             default:
                 throw new BugInCF("Unhandled state " + state);
         }
+    }
+
+    /** Switch the representation of this from SINGLETON to ANY. */
+    private void makeNonSingleton() {
+        state = State.ANY;
+        set = new LinkedHashSet<>();
+        assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
+        set.add(value);
+        value = null;
     }
 
     @Override
@@ -49,7 +56,8 @@ public final class MostlySingleton<T extends Object> extends AbstractMostlySingl
             case EMPTY:
                 return false;
             case SINGLETON:
-                return Objects.equals(o, value);
+                assert value != null : "@AssumeAssertion(nullness): SINGLETON => value != null";
+                return value.equals(o);
             case ANY:
                 assert set != null : "@AssumeAssertion(nullness): set initialized before";
                 return set.contains(o);

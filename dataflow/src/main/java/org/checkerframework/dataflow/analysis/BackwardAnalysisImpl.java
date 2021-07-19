@@ -51,8 +51,8 @@ public class BackwardAnalysisImpl<
     // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
     /**
      * Construct an object that can perform a org.checkerframework.dataflow backward analysis over a
-     * control flow graph. The transfer function is set by the subclass, e.g., {@code
-     * org.checkerframework.framework.flow.CFAbstractAnalysis}, later.
+     * control flow graph. When using this constructor, the transfer function is set later by the
+     * subclass, e.g., {@code org.checkerframework.framework.flow.CFAbstractAnalysis}.
      */
     public BackwardAnalysisImpl() {
         super(Direction.BACKWARD);
@@ -273,7 +273,7 @@ public class BackwardAnalysisImpl<
                 && node != null) {
             @Nullable Block succBlock = ((ExceptionBlock) pred).getSuccessor();
             @Nullable Block block = node.getBlock();
-            if (succBlock != null && block != null && succBlock.getId() == block.getId()) {
+            if (succBlock != null && block != null && succBlock.getUid() == block.getUid()) {
                 // If the block of passing node is an exceptional successor of Block pred, propagate
                 // store to the exceptionStores. Currently it doesn't track the label of an
                 // exceptional edge from exception block to its exceptional successors in backward
@@ -316,7 +316,7 @@ public class BackwardAnalysisImpl<
     @Override
     public S runAnalysisFor(
             @FindDistinct Node node,
-            boolean before,
+            Analysis.BeforeOrAfter preOrPost,
             TransferInput<V, S> blockTransferInput,
             IdentityHashMap<Node, V> nodeValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
@@ -341,7 +341,7 @@ public class BackwardAnalysisImpl<
                         while (reverseIter.hasPrevious()) {
                             Node n = reverseIter.previous();
                             setCurrentNode(n);
-                            if (n == node && !before) {
+                            if (n == node && preOrPost == Analysis.BeforeOrAfter.AFTER) {
                                 return store.getRegularStore();
                             }
                             // Copy the store to avoid changing other blocks' transfer inputs in
@@ -365,7 +365,7 @@ public class BackwardAnalysisImpl<
                                             + "\teb.getNode(): "
                                             + eb.getNode());
                         }
-                        if (!before) {
+                        if (preOrPost == Analysis.BeforeOrAfter.AFTER) {
                             return blockTransferInput.getRegularStore();
                         }
                         setCurrentNode(node);

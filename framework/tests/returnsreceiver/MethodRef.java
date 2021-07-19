@@ -1,6 +1,6 @@
 import org.checkerframework.common.returnsreceiver.qual.*;
 
-class MethodRef {
+public class MethodRef {
 
     @This MethodRef set(Object o) {
         return this;

@@ -28,8 +28,10 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror, Void> {
 
+    /** Type utilities. */
     private final Types types;
-    private final AnnotatedTypeFactory annotatedTypeFactory;
+    /** The type factory. */
+    private final AnnotatedTypeFactory atypeFactory;
     /**
      * Whether or not the type being visited is an uninferred type argument. If true, then the
      * underlying type may not have the correct relationship with the supertype.
@@ -39,11 +41,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     /**
      * Create a new AsSuperVisitor.
      *
-     * @param annotatedTypeFactory the type factory
+     * @param atypeFactory the type factory
      */
-    public AsSuperVisitor(AnnotatedTypeFactory annotatedTypeFactory) {
-        this.annotatedTypeFactory = annotatedTypeFactory;
-        types = annotatedTypeFactory.types;
+    public AsSuperVisitor(AnnotatedTypeFactory atypeFactory) {
+        this.atypeFactory = atypeFactory;
+        types = atypeFactory.types;
     }
 
     /**
@@ -92,37 +94,19 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visit(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
-        ensurePrimaryIsCorrectForUnionsAndIntersections(type);
+        ensurePrimaryIsCorrectForUnions(type);
         return super.visit(type, superType, p);
     }
 
     /**
      * The code in this class is assuming that the primary annotation of an {@link
-     * AnnotatedIntersectionType} is the greatest lower bound of the annotations on its direct super
-     * types and that the primary annotation of an {@link AnnotatedUnionType} is the least upper
-     * bound of its alternatives. This method makes this assumption true.
+     * AnnotatedUnionType} is the least upper bound of its alternatives. This method makes this
+     * assumption true.
+     *
+     * @param type any kind of {@code AnnotatedTypeMirror}
      */
-    private void ensurePrimaryIsCorrectForUnionsAndIntersections(AnnotatedTypeMirror type) {
-        if (type.getKind() == TypeKind.INTERSECTION) {
-            AnnotatedIntersectionType intersectionType = (AnnotatedIntersectionType) type;
-            Set<AnnotationMirror> glbs = null;
-            for (AnnotatedDeclaredType directST : intersectionType.directSuperTypes()) {
-                if (glbs == null) {
-                    glbs = directST.getAnnotations();
-                } else {
-                    Set<AnnotationMirror> newGlbs = AnnotationUtils.createAnnotationSet();
-                    for (AnnotationMirror glb : glbs) {
-                        AnnotationMirror anno = directST.getAnnotationInHierarchy(glb);
-                        newGlbs.add(
-                                annotatedTypeFactory
-                                        .getQualifierHierarchy()
-                                        .greatestLowerBound(anno, glb));
-                    }
-                    glbs = newGlbs;
-                }
-            }
-            type.replaceAnnotations(glbs);
-        } else if (type.getKind() == TypeKind.UNION) {
+    private void ensurePrimaryIsCorrectForUnions(AnnotatedTypeMirror type) {
+        if (type.getKind() == TypeKind.UNION) {
             AnnotatedUnionType annotatedUnionType = (AnnotatedUnionType) type;
             Set<AnnotationMirror> lubs = null;
             for (AnnotatedDeclaredType altern : annotatedUnionType.getAlternatives()) {
@@ -133,9 +117,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
                     for (AnnotationMirror lub : lubs) {
                         AnnotationMirror anno = altern.getAnnotationInHierarchy(lub);
                         newLubs.add(
-                                annotatedTypeFactory
-                                        .getQualifierHierarchy()
-                                        .leastUpperBound(anno, lub));
+                                atypeFactory.getQualifierHierarchy().leastUpperBound(anno, lub));
                     }
                     lubs = newLubs;
                 }
@@ -156,8 +138,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     private AnnotatedTypeMirror errorTypeNotErasedSubtypeOfSuperType(
             AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
         if (TypesUtils.isString(superType.getUnderlyingType())) {
-            // Any type can be converted to a String
-            return visit(annotatedTypeFactory.getStringType(type), superType, p);
+            // Any type can be converted to String
+            return visit(atypeFactory.getStringType(type), superType, p);
         }
         if (isUninferredTypeArgument) {
             return copyPrimaryAnnos(type, superType);
@@ -218,7 +200,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (lowerBound.getKind() == TypeKind.NULL) {
             Set<AnnotationMirror> typeLowerBound =
                     AnnotatedTypes.findEffectiveLowerBoundAnnotations(
-                            annotatedTypeFactory.getQualifierHierarchy(), type);
+                            atypeFactory.getQualifierHierarchy(), type);
             lowerBound.replaceAnnotations(typeLowerBound);
             return lowerBound;
         }
@@ -231,6 +213,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, lowerBound);
     }
 
+    /**
+     * Returns true if the underlying, erased Java type of {@code subtype} is a subtype of the
+     * underlying, erased Java type of {@code supertype}.
+     *
+     * @param subtype a type
+     * @param supertype a type
+     * @return true if the underlying, erased Java type of {@code subtype} is a subtype of the
+     *     underlying, erased Java type of {@code supertype}
+     */
     private boolean isErasedJavaSubtype(
             AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype) {
         TypeMirror javaSubtype = types.erasure(subtype.getUnderlyingType());
@@ -238,16 +229,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return types.isSubtype(javaSubtype, javaSupertype);
     }
 
-    private boolean isErasedJavaSubtype(
-            AnnotatedDeclaredType subtype, AnnotatedUnionType supertype) {
-        for (AnnotatedDeclaredType alternSuperType : supertype.getAlternatives()) {
-            if (!isErasedJavaSubtype(subtype, alternSuperType)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
+    /**
+     * Returns true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
+     * equivalent.
+     *
+     * @param typeA a type
+     * @param typeB a type
+     * @return true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
+     *     equivalent
+     */
     private boolean areErasedJavaTypesEquivalent(
             AnnotatedTypeMirror typeA, AnnotatedTypeMirror typeB) {
         TypeMirror underlyingTypeA = types.erasure(typeA.getUnderlyingType());
@@ -268,14 +258,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitArray_Intersection(
             AnnotatedArrayType type, AnnotatedIntersectionType superType, Void p) {
-        for (AnnotatedTypeMirror t : superType.directSuperTypes()) {
-            if (!(TypesUtils.isObject(t.getUnderlyingType())
-                    || TypesUtils.isDeclaredOfName(t.getUnderlyingType(), "java.lang.Cloneable")
+        for (AnnotatedTypeMirror bounds : superType.getBounds()) {
+            if (!(TypesUtils.isObject(bounds.getUnderlyingType())
                     || TypesUtils.isDeclaredOfName(
-                            t.getUnderlyingType(), "java.io.Serializable"))) {
+                            bounds.getUnderlyingType(), "java.lang.Cloneable")
+                    || TypesUtils.isDeclaredOfName(
+                            bounds.getUnderlyingType(), "java.io.Serializable"))) {
                 return errorTypeNotErasedSubtypeOfSuperType(type, superType, p);
             }
-            copyPrimaryAnnos(type, t);
+            copyPrimaryAnnos(type, bounds);
         }
         return copyPrimaryAnnos(type, superType);
     }
@@ -335,9 +326,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
 
         // Not same erased Java type.
-        // Walk up the directSuperTypes.
-        // directSuperTypes() annotates type variables correctly and handles substitution.
-        for (AnnotatedDeclaredType dst : type.directSuperTypes()) {
+        // Walk up the directSupertypes.
+        // directSupertypes() annotates type variables correctly and handles substitution.
+        for (AnnotatedDeclaredType dst : type.directSupertypes()) {
             if (isErasedJavaSubtype(dst, superType)) {
                 // If two direct supertypes of type, dst1 and dst2, are subtypes of superType then
                 // asSuper(dst1, superType) and asSuper(dst2, superType) return equivalent ATMs, so
@@ -352,17 +343,17 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitDeclared_Intersection(
             AnnotatedDeclaredType type, AnnotatedIntersectionType superType, Void p) {
-        List<AnnotatedDeclaredType> newDirectSupertypes = new ArrayList<>();
+        List<AnnotatedTypeMirror> newBounds = new ArrayList<>();
         // Each type in the intersection must be a supertype of type, so call asSuper on all types
         // in the intersection.
-        for (AnnotatedDeclaredType superDirect : superType.directSuperTypes()) {
-            if (types.isSubtype(type.getUnderlyingType(), superDirect.getUnderlyingType())) {
-                AnnotatedDeclaredType found = (AnnotatedDeclaredType) visit(type, superDirect, p);
-                newDirectSupertypes.add(found);
+        for (AnnotatedTypeMirror superBound : superType.getBounds()) {
+            if (types.isSubtype(type.getUnderlyingType(), superBound.getUnderlyingType())) {
+                AnnotatedTypeMirror found = visit(type, superBound, p);
+                newBounds.add(found);
             }
         }
         // The ATM for each type in an intersection is stored in the direct super types field.
-        superType.setDirectSuperTypes(newDirectSupertypes);
+        superType.setBounds(newBounds);
         return copyPrimaryAnnos(type, superType);
     }
 
@@ -370,9 +361,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     public AnnotatedTypeMirror visitDeclared_Primitive(
             AnnotatedDeclaredType type, AnnotatedPrimitiveType superType, Void p) {
         if (!TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
-            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a box primitive.");
+            throw new BugInCF("AsSuperVisitor Declared_Primitive: type is not a boxed primitive.");
         }
-        AnnotatedTypeMirror unboxedType = annotatedTypeFactory.getUnboxedType(type);
+        AnnotatedTypeMirror unboxedType = atypeFactory.getUnboxedType(type);
         return copyPrimaryAnnos(unboxedType, superType);
     }
 
@@ -415,26 +406,18 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     // </editor-fold>
 
-    /* The primary annotation on an intersection type should be the GLB of the primary annotations of
-    the alternatives.  #ensurePrimaryIsCorrectForUnionsAndIntersections ensures that this is the case.
-
-    Example (java) subtyping relationship:
-    C <: A & B <: A <:Object, where class C extends A implements B {...}
-
-    Intersection#directSuperType returns a list of the ATM in the intersection.  For example, the
-    direct supertypes of  @NonNull (@Nullable A && @NonNull B) are @Nullable A and @NonNull B.
-     */
     // <editor-fold defaultstate="collapsed" desc="visitIntersection_Other methods">
 
     @Override
     public AnnotatedTypeMirror visitIntersection_Declared(
             AnnotatedIntersectionType type, AnnotatedDeclaredType superType, Void p) {
-        for (AnnotatedDeclaredType typeDirect : type.directSuperTypes()) {
+        for (AnnotatedTypeMirror bound : type.getBounds()) {
             // Find the directSuperType that is a subtype of superType,
             // then recur on that type so that type arguments in superType
             // are annotated correctly
-            if (isErasedJavaSubtype(typeDirect, superType)) {
-                AnnotatedTypeMirror asSuper = visit(typeDirect, superType, p);
+            if (bound.getKind() == TypeKind.DECLARED
+                    && isErasedJavaSubtype((AnnotatedDeclaredType) bound, superType)) {
+                AnnotatedTypeMirror asSuper = visit(bound, superType, p);
 
                 // The directSuperType might have a primary annotation that is a supertype of
                 // primary annotation on type. Copy the primary annotation, because it is more
@@ -448,12 +431,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitIntersection_Intersection(
             AnnotatedIntersectionType type, AnnotatedIntersectionType superType, Void p) {
-        List<AnnotatedDeclaredType> newDirectSupertypes = new ArrayList<>();
-        for (AnnotatedDeclaredType superDirect : superType.directSuperTypes()) {
-            AnnotatedDeclaredType found = null;
-            for (AnnotatedDeclaredType typeDirect : type.directSuperTypes()) {
-                if (isErasedJavaSubtype(typeDirect, superDirect)) {
-                    found = (AnnotatedDeclaredType) visit(typeDirect, superDirect, p);
+        List<AnnotatedTypeMirror> newDirectSupertypes = new ArrayList<>();
+        for (AnnotatedTypeMirror superBound : superType.getBounds()) {
+            AnnotatedTypeMirror found = null;
+            TypeMirror javaSupertype = types.erasure(superBound.getUnderlyingType());
+            for (AnnotatedTypeMirror bound : type.getBounds()) {
+                TypeMirror javaSubtype = types.erasure(bound.getUnderlyingType());
+                if (types.isSubtype(javaSubtype, javaSupertype)) {
+                    found = visit(bound, superBound, p);
                     newDirectSupertypes.add(found);
                     break;
                 }
@@ -464,18 +449,18 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
                         type, superType);
             }
         }
-        superType.setDirectSuperTypes(newDirectSupertypes);
+        superType.setBounds(newDirectSupertypes);
         return copyPrimaryAnnos(type, superType);
     }
 
     @Override
     public AnnotatedTypeMirror visitIntersection_Primitive(
             AnnotatedIntersectionType type, AnnotatedPrimitiveType superType, Void p) {
-        for (AnnotatedDeclaredType typeDirect : type.directSuperTypes()) {
+        for (AnnotatedTypeMirror bound : type.getBounds()) {
             // Find the directSuperType that is a subtype of superType, then recur on that type
             // so that type arguments in superType are annotated correctly
-            if (TypesUtils.isBoxedPrimitive(typeDirect.getUnderlyingType())) {
-                AnnotatedTypeMirror asSuper = visit(typeDirect, superType, p);
+            if (TypesUtils.isBoxedPrimitive(bound.getUnderlyingType())) {
+                AnnotatedTypeMirror asSuper = visit(bound, superType, p);
 
                 // The directSuperType might have a primary annotation that is a supertype of
                 // primary annotation on type. Copy the primary annotation, because it is more
@@ -504,9 +489,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitIntersection_Union(
             AnnotatedIntersectionType type, AnnotatedUnionType superType, Void p) {
-        for (AnnotatedDeclaredType typeDirect : type.directSuperTypes()) {
-            if (isErasedJavaSubtype(typeDirect, superType)) {
-                AnnotatedTypeMirror asSuper = visit(typeDirect, superType, p);
+        TypeMirror javaSupertype = types.erasure(type.getUnderlyingType());
+        for (AnnotatedTypeMirror bound : type.getBounds()) {
+            TypeMirror javaSubtype = types.erasure(superType.getUnderlyingType());
+            if (types.isSubtype(javaSubtype, javaSupertype)) {
+                AnnotatedTypeMirror asSuper = visit(bound, superType, p);
                 return copyPrimaryAnnos(type, asSuper);
             }
         }
@@ -538,9 +525,17 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return copyPrimaryAnnos(type, superType);
     }
 
+    /**
+     * A helper method for visiting a primitive and a non-primitive.
+     *
+     * @param type a primitive type
+     * @param superType some other type
+     * @param p ignore
+     * @return {@code type}, viewed as a {@code superType}
+     */
     private AnnotatedTypeMirror visitPrimitive_Other(
             AnnotatedPrimitiveType type, AnnotatedTypeMirror superType, Void p) {
-        return visit(annotatedTypeFactory.getBoxedType(type), superType, p);
+        return visit(atypeFactory.getBoxedType(type), superType, p);
     }
 
     @Override
@@ -551,7 +546,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             if (unboxedSuper.getKind() != type.getKind()
                     && canBeNarrowingPrimitiveConversion(unboxedSuper)) {
                 AnnotatedPrimitiveType narrowedType =
-                        annotatedTypeFactory.getNarrowedPrimitive(type, unboxedSuper);
+                        atypeFactory.getNarrowedPrimitive(type, unboxedSuper);
                 return visit(narrowedType, superType, p);
             }
         }
@@ -678,8 +673,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
     // </editor-fold>
 
-    /* The primary annotation on a union type is the LUB of the primary annotations on its direct
-    supertypes. #ensurePrimaryIsCorrectForUnionsAndIntersections ensures that this is the case.
+    /* The primary annotation on a union type is the LUB of the primary annotations on its alternatives. #ensurePrimaryIsCorrectForUnions ensures that this is the case.
 
     All the alternatives in a union type must be subtype of Throwable and cannot have type arguments;
     however, a union type can be a subtype of an interface with a type argument. For example:
@@ -743,7 +737,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, p);
         isUninferredTypeArgument = oldIsUninferredTypeArgument;
-        annotatedTypeFactory.addDefaultAnnotations(superType);
+        atypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, asSuper);
     }
@@ -794,7 +788,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setLowerBound(lowerBound);
         isUninferredTypeArgument = oldIsUninferredTypeArgument;
-        annotatedTypeFactory.addDefaultAnnotations(superType);
+        atypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, superType);
     }
@@ -831,7 +825,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             copyPrimaryAnnos(type.getExtendsBound(), superType.getExtendsBound());
 
             // Add defaults in case any locations are missing annotations.
-            annotatedTypeFactory.addDefaultAnnotations(superType.getExtendsBound());
+            atypeFactory.addDefaultAnnotations(superType.getExtendsBound());
         }
 
         AnnotatedTypeMirror lowerBound;
@@ -845,20 +839,19 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
         superType.setSuperBound(lowerBound);
         isUninferredTypeArgument = oldIsUninferredTypeArgument;
-        annotatedTypeFactory.addDefaultAnnotations(superType);
+        atypeFactory.addDefaultAnnotations(superType);
 
         return copyPrimaryAnnos(type, superType);
     }
 
     /**
-     * Returns true if the annotatedTypeFactory for this is the given value.
+     * Returns true if the atypeFactory for this is the given value.
      *
-     * @param annotatedTypeFactory a factory to compare to that of this
-     * @return true if the annotatedTypeFactory for this is the given value
+     * @param atypeFactory a factory to compare to that of this
+     * @return true if the atypeFactory for this is the given value
      */
-    public boolean sameAnnotatedTypeFactory(
-            @FindDistinct AnnotatedTypeFactory annotatedTypeFactory) {
-        return this.annotatedTypeFactory == annotatedTypeFactory;
+    public boolean sameAnnotatedTypeFactory(@FindDistinct AnnotatedTypeFactory atypeFactory) {
+        return this.atypeFactory == atypeFactory;
     }
     // </editor-fold>
 }

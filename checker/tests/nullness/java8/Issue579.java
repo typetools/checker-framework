@@ -3,11 +3,11 @@
 
 import java.util.Comparator;
 
-class Issue570<T> implements Comparator<T> {
+public class Issue579<T> implements Comparator<T> {
     private final Comparator<T> real;
 
     @SuppressWarnings("unchecked")
-    Issue570(Comparator<? super T> real) {
+    Issue579(Comparator<? super T> real) {
         this.real = (Comparator<T>) real;
     }
 
@@ -18,7 +18,7 @@ class Issue570<T> implements Comparator<T> {
 
     @Override
     public Comparator<T> thenComparing(Comparator<? super T> other) {
-        // :: warning: (known.nonnull)
-        return new Issue570<>(real == null ? other : real.thenComparing(other));
+        // :: warning: (nulltest.redundant)
+        return new Issue579<>(real == null ? other : real.thenComparing(other));
     }
 }

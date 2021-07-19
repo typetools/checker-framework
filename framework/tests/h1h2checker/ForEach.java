@@ -1,6 +1,6 @@
-import h1h2checker.quals.*;
+import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
-class ForEach {
+public class ForEach {
 
     Object arrayAccess1(Object[] constants) {
         Object constant = constants[0];

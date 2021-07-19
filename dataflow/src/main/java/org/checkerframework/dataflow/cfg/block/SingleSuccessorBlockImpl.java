@@ -1,11 +1,14 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.analysis.Store.FlowRule;
 
-/** Implementation of a non-special basic block. */
+/**
+ * A basic block that has at most one successor. SpecialBlockImpl extends this, but exit blocks have
+ * no successor.
+ */
 public abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock {
 
     /** Internal representation of the successor. */
@@ -15,8 +18,13 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
      * The initial value for the rule below says that EACH store at the end of a single successor
      * block flows to the corresponding store of the successor.
      */
-    protected Store.FlowRule flowRule = Store.FlowRule.EACH_TO_EACH;
+    protected FlowRule flowRule = FlowRule.EACH_TO_EACH;
 
+    /**
+     * Creates a new SingleSuccessorBlock.
+     *
+     * @param type the type of this basic block
+     */
     protected SingleSuccessorBlockImpl(BlockType type) {
         super(type);
     }
@@ -28,11 +36,11 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
 
     @Override
     public Set<Block> getSuccessors() {
-        Set<Block> result = new LinkedHashSet<>();
-        if (successor != null) {
-            result.add(successor);
+        if (successor == null) {
+            return Collections.emptySet();
+        } else {
+            return Collections.singleton(successor);
         }
-        return result;
     }
 
     /**
@@ -46,12 +54,12 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
     }
 
     @Override
-    public Store.FlowRule getFlowRule() {
+    public FlowRule getFlowRule() {
         return flowRule;
     }
 
     @Override
-    public void setFlowRule(Store.FlowRule rule) {
+    public void setFlowRule(FlowRule rule) {
         flowRule = rule;
     }
 }

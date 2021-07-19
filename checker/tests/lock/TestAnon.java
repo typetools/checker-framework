@@ -1,4 +1,4 @@
-class TestAnon {
+public class TestAnon {
     public void foo() {
         String s = "";
         new Object() {

@@ -1,15 +1,15 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -39,9 +39,9 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         if (factory.isMapContainsKey(node) || factory.isMapPut(node)) {
 
             Node receiver = node.getTarget().getReceiver();
-            Receiver internalReceiver = FlowExpressions.internalReprOf(factory, receiver);
-            String mapName = internalReceiver.toString();
-            Receiver keyReceiver = FlowExpressions.internalReprOf(factory, node.getArgument(0));
+            JavaExpression receiverJe = JavaExpression.fromNode(receiver);
+            String mapName = receiverJe.toString();
+            JavaExpression keyExpr = JavaExpression.fromNode(node.getArgument(0));
 
             LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
             keyForMaps.add(mapName);
@@ -58,23 +58,30 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
             AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
             if (factory.isMapContainsKey(node)) {
-                result.getThenStore().insertValue(keyReceiver, am);
-            } else { // method is Map.put
-                result.getThenStore().insertValue(keyReceiver, am);
-                result.getElseStore().insertValue(keyReceiver, am);
+                // method is Map.containsKey
+                result.getThenStore().insertValue(keyExpr, am);
+            } else {
+                // method is Map.put
+                result.getThenStore().insertValue(keyExpr, am);
+                result.getElseStore().insertValue(keyExpr, am);
             }
         }
 
         return result;
     }
 
-    /** @return the String value of a KeyFor, this will throw an exception */
+    /**
+     * Returns the elements/arguments of a {@code @KeyFor} annotation.
+     *
+     * @param keyFor a {@code @KeyFor} annotation
+     * @return the elements/arguments of a {@code @KeyFor} annotation
+     */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
         if (keyFor.getElementValues().isEmpty()) {
-            return new LinkedHashSet<>();
+            return Collections.emptySet();
         }
 
         return new LinkedHashSet<>(
-                AnnotationUtils.getElementValueArray(keyFor, "value", String.class, true));
+                AnnotationUtils.getElementValueArray(keyFor, "value", String.class, false));
     }
 }

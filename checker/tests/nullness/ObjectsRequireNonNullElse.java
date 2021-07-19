@@ -6,7 +6,7 @@ import static java.util.Objects.requireNonNullElse;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-class ObjectsRequireNonNullElse {
+public class ObjectsRequireNonNullElse {
     public static void main(String[] args) {
         @NonNull String value = requireNonNullElse(null, "Something");
         System.err.println(requireNonNullElse(null, "Something"));

@@ -6,7 +6,7 @@
 import java.util.TreeSet;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class TreeSetTest {
+public class TreeSetTest {
 
     public static void main(String[] args) {
 
