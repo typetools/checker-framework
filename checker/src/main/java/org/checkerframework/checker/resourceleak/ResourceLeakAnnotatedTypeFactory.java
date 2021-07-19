@@ -127,8 +127,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * Returns the {@link MustCall#value} element/argument of the @MustCall annotation on the class
    * type of {@code element}.
    *
-   * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which accounts for flow-sensitive
-   * refinement.
+   * <p>Do not use this method to get the MustCall value of an {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
+   * {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * CFStore)}.
    *
    * @param element an element
    * @return the strings in its must-call type
@@ -192,8 +195,14 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /**
    * Returns true if the type of the tree includes a must-call annotation. Note that this method may
    * not consider dataflow, and is only safe to use when you need the declared, rather than
-   * inferred, type of the tree. Use {@link #getMustCallValue(Set, CFStore)} (and check for
-   * emptiness) if you are trying to determine whether a local variable has must-call obligations.
+   * inferred, type of the tree.
+   *
+   * <p>Do not use this method if you are trying to get the must-call obligations of the resource
+   * aliases of an {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
+   * {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * CFStore)}.
    *
    * @param tree a tree
    * @return whether the tree has declared must-call obligations

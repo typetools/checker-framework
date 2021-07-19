@@ -155,7 +155,7 @@ class MustCallConsistencyAnalyzer {
    * {@link MustCallChecker} and are accessed by looking up the type(s) in its type system of the
    * resource aliases contained in each {@code Obligation}.
    */
-  private static class Obligation {
+  /* package-private */ static class Obligation {
 
     // TODO:  Is there any necessary relationship among their must-call types?  If their types are
     // not guaranteed to be identical, then what does "the required method(s)" in the second
