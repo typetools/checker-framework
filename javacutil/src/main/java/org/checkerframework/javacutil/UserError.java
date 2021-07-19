@@ -6,6 +6,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * Exception type indicating a mistake by an end user in using the Checker Framework, such as
  * incorrect command-line arguments.
+ *
+ * <p>To indicate a bug in the framework, use {@link BugInCF}. To indicate a bug in a checker
+ * implementation, use {@link TypeSystemError}.
  */
 @SuppressWarnings("serial")
 public class UserError extends RuntimeException {
