@@ -21,6 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -90,8 +91,8 @@ public class Java8InferenceContext {
         this.inference = inference;
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         this.types = Types.instance(javacEnv.getContext());
-        this.modelTypes = factory.getContext().getTypeUtils();
-        ClassTree clazz = TreeUtils.enclosingClass(pathToExpression);
+        this.modelTypes = factory.getProcessingEnv().getTypeUtils();
+        ClassTree clazz = TreePathUtil.enclosingClass(pathToExpression);
         this.enclosingType = (DeclaredType) TreeUtils.typeOf(clazz);
         this.maps = new HashMap<>();
         this.runtimeEx =

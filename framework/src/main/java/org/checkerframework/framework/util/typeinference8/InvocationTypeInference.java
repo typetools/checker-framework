@@ -54,6 +54,7 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -141,7 +142,7 @@ public class InvocationTypeInference {
      * @return a list of inference variables that have been instantiated
      */
     public List<Variable> infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
-        Tree assignmentContext = TreeUtils.getAssignmentContext(context.pathToExpression);
+        Tree assignmentContext = TreePathUtil.getAssignmentContext(context.pathToExpression);
         if (!shouldTryInference(assignmentContext, context.pathToExpression)) {
             return null;
         }
@@ -641,7 +642,7 @@ public class InvocationTypeInference {
             case RETURN:
                 HashSet<Tree.Kind> kinds =
                         new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
-                Tree enclosing = TreeP.enclosingOfKind(path, kinds);
+                Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
                 return enclosing.getKind() != Tree.Kind.LAMBDA_EXPRESSION;
             case METHOD_INVOCATION:
                 MethodInvocationTree methodInvocationTree =

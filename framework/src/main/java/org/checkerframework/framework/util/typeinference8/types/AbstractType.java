@@ -422,7 +422,7 @@ public abstract class AbstractType {
         if (type.getKind() == TypeKind.ARRAY) {
             return type;
         } else {
-            for (AnnotatedTypeMirror superType : this.getAnnotatedType().directSuperTypes()) {
+            for (AnnotatedTypeMirror superType : this.getAnnotatedType().directSupertypes()) {
                 AnnotatedTypeMirror arrayType = mostSpecificArrayType(superType);
                 if (arrayType != null) {
                     return arrayType;
@@ -452,7 +452,7 @@ public abstract class AbstractType {
         Iterator<? extends TypeMirror> iter = boundsJava.iterator();
         List<AbstractType> bounds = new ArrayList<>();
         for (AnnotatedTypeMirror bound :
-                ((AnnotatedIntersectionType) getAnnotatedType()).directSuperTypes()) {
+                ((AnnotatedIntersectionType) getAnnotatedType()).directSupertypes()) {
             bounds.add(create(bound, iter.next()));
         }
         return bounds;

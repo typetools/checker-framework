@@ -60,7 +60,7 @@ public class InvocationType {
         AnnotatedTypeMirror returnType;
 
         if (TreeUtils.isDiamondTree(invocation) || TreeUtils.isDiamondMemberReference(invocation)) {
-            Element e = ElementUtils.enclosingClass(TreeUtils.elementFromUse(invocation));
+            Element e = ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse(invocation));
             returnTypeJava = e.asType();
             returnType = typeFactory.getAnnotatedType(e);
         } else if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION

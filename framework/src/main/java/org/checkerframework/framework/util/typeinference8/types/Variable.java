@@ -85,7 +85,7 @@ public class Variable extends AbstractType {
             case INTERSECTION:
                 Iterator<? extends TypeMirror> iter =
                         ((IntersectionType) upperBound).getBounds().iterator();
-                for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSuperTypes()) {
+                for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
                     AbstractType t1 = InferenceType.create(bound, iter.next(), map, context);
                     variableBounds.addBound(BoundKind.UPPER, t1);
                 }

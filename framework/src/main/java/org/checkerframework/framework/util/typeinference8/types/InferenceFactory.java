@@ -59,6 +59,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -85,7 +86,7 @@ public class InferenceFactory {
      */
     private static Pair<AnnotatedTypeMirror, TypeMirror> getTargetType(
             AnnotatedTypeFactory factory, TreePath path, Java8InferenceContext context) {
-        Tree assignmentContext = TreeUtils.getAssignmentContext(path);
+        Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
         if (assignmentContext == null) {
             return null;
         }
@@ -142,7 +143,7 @@ public class InferenceFactory {
             case RETURN:
                 HashSet<Kind> kinds =
                         new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
-                Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
+                Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
                 if (enclosing.getKind() == Tree.Kind.METHOD) {
                     MethodTree methodTree = (MethodTree) enclosing;
                     AnnotatedTypeMirror res = factory.getAnnotatedType(methodTree).getReturnType();
@@ -271,7 +272,7 @@ public class InferenceFactory {
 
         AnnotatedExecutableType methodType =
                 AnnotatedTypes.asMemberOf(
-                        atypeFactory.getContext().getTypeUtils(),
+                        atypeFactory.getProcessingEnv().getTypeUtils(),
                         atypeFactory,
                         receiver,
                         methodElt);
@@ -337,7 +338,7 @@ public class InferenceFactory {
                 if (!typeArgs.isEmpty()) {
                     ExecutableElement e = TreeUtils.constructor(newClassTree);
                     List<? extends TypeParameterElement> typeParams =
-                            ElementUtils.enclosingClass(e).getTypeParameters();
+                            ElementUtils.enclosingTypeElement(e).getTypeParameters();
                     List<TypeVariable> typeVariables = new ArrayList<>();
                     for (TypeParameterElement typeParam : typeParams) {
                         typeVariables.add((TypeVariable) typeParam.asType());
@@ -437,7 +438,7 @@ public class InferenceFactory {
             // If the invocation is a diamondTree, such as new List<>(...), then create variables
             // for the class type parameters, too.
             Element classEle =
-                    ElementUtils.enclosingClass(
+                    ElementUtils.enclosingTypeElement(
                             TreeUtils.elementFromUse((NewClassTree) invocation));
             DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
 
