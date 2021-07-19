@@ -4,12 +4,10 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.Unused;
 
-// TODO: feature request: the Nullness Checker should be aware of
-// the @Unused annotation.
-// This is difficult to implement: one needs to determine the correct
-// AnnotatedTypeFactory for the "when" type system and use it
-// to determine the right annotated type. We currently don't have
-// a mechanism to do this.
+// TODO: feature request: the Nullness Checker should be aware of the @Unused annotation.
+// This is difficult to implement: one needs to determine the correct AnnotatedTypeFactory for the
+// "when" type system and use it to determine the right annotated type. We currently don't have a
+// mechanism to do this.
 //
 // @skip-test
 public class UnusedNullness {
@@ -40,12 +38,12 @@ public class UnusedNullness {
 
   protected void meth() {
     // Otherwise it's not legal.
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     this.ppt = null;
   }
 
   protected void useUnusedField1(@Prototype UnusedNullness this) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object x = this.ppt;
   }
 

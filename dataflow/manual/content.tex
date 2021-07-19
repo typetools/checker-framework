@@ -5,7 +5,8 @@ This document describes a \emph{Dataflow Framework} for the Java
 Programming Language.  The framework is used in the
 \href{https://checkerframework.org/}{Checker Framework},
 \href{http://errorprone.info/}{Error Prone},
-\href{https://github.com/uber/NullAway}{NullAway}, and other contexts.
+\href{https://github.com/uber/NullAway}{NullAway},
+at Facebook, and in other contexts.
 
 The primary purpose of the Dataflow Framework is to estimate values:
 for each line of source code, it determines what
@@ -52,7 +53,26 @@ enhancements.
 \end{workinprogress}
 
 
+\paragraph{Potential version conflicts if you export the Dataflow Framework}
 
+If your tool uses the Dataflow Framework, then \textbf{please shade the
+  Dataflow Framework in your tool}.  You can do this using the Maven Shade
+Plugin, \url{https://maven.apache.org/plugins/maven-shade-plugin/}, or the
+Gradle Shadow Plugin, \url{https://imperceptiblethoughts.com/shadow/}.
+If you cannot shade the Checker Framework and Dataflow Framework classes, then
+please ask the Checker Framework developers to create a shaded artifact
+just for you, every time they release the Checker Framework.
+See \code{dataflow/build.gradle} for instructions.
+
+The reason to shade the Dataflow Framework is to permit users to run multiple tools.
+Suppose that two tools both utilize the Dataflow Framework.
+If the two tools use different versions of the Dataflow Framework,
+then it may be impossible for users to run both tools due to a version conflict.
+The Checker Framework uses an unshaded version the Dataflow Framework,
+since the Dataflow Framework is part of the Checker Framework.
+If you do not shade the Dataflow Framework in your tool, then users will
+not be able to use both your tool and the Checker Framework (or any other
+tool that does not shade the Checker Framework and Dataflow Framework classes).
 
 
 \section{Organization}
@@ -1955,7 +1975,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
 %  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess This
-%  LocalWords:  MethodAccess ExplicitThis ImplicitThis java
+%  LocalWords:  MethodAccess ExplicitThis ImplicitThis NullAway
 %  LocalWords:  LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType
 %  LocalWords:  BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot
 %  LocalWords:  ConditionalOr FloatingDivision FloatingRemainder LeftShift
@@ -1976,6 +1996,6 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
 %  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
 %  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
-%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
+%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
 %  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
 %  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple

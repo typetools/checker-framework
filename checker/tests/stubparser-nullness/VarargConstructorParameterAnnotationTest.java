@@ -10,7 +10,7 @@ public class VarargConstructorParameterAnnotationTest {
   }
 
   public void strArraysNullable(@Nullable String[] parameter) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     new ProcessBuilder(parameter);
   }
 
@@ -19,7 +19,7 @@ public class VarargConstructorParameterAnnotationTest {
   }
 
   public void strVarargNullable(@Nullable String... parameter) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     new ProcessBuilder(parameter);
   }
 }

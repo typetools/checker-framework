@@ -2,7 +2,7 @@ package org.checkerframework.checker.units;
 
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -25,15 +25,17 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
     AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
-    Kind kind = node.getKind();
+    Tree.Kind kind = node.getKind();
 
-    if ((kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT)) {
-      if (!atypeFactory.getTypeHierarchy().isSubtype(exprType, varType)) {
-        checker.reportError(node, "compound.assignment.type.incompatible", varType, exprType);
+    if ((kind == Tree.Kind.PLUS_ASSIGNMENT || kind == Tree.Kind.MINUS_ASSIGNMENT)) {
+      if (!atypeFactory
+          .getQualifierHierarchy()
+          .isSubtype(exprType.getEffectiveAnnotations(), varType.getEffectiveAnnotations())) {
+        checker.reportError(node, "compound.assignment", varType, exprType);
       }
-    } else if (exprType.getAnnotation(UnknownUnits.class) == null) {
+    } else if (!exprType.hasAnnotation(UnknownUnits.class)) {
       // Only allow mul/div with unqualified units
-      checker.reportError(node, "compound.assignment.type.incompatible", varType, exprType);
+      checker.reportError(node, "compound.assignment", varType, exprType);
     }
 
     return null; // super.visitCompoundAssignment(node, p);

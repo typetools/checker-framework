@@ -1,3 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
 ext {
     annotatedJdkHome = '../../jdk'
 }
@@ -18,34 +22,34 @@ sourcesJar {
 
 def versions = [
         autoValue       : "1.7.4",
-        lombok          : "1.18.18",
+        lombok          : "1.18.20",
 ]
 
 
 dependencies {
-    implementation project(':javacutil')
-    implementation project(':dataflow')
-    implementation files("${stubparserJar}")
+    api project(':javacutil')
+    api project(':dataflow')
+    api files("${stubparserJar}")
     // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
-    implementation('org.checkerframework:annotation-file-utilities:*') {
+    api('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
-    implementation project(':checker-qual')
+    api project(':checker-qual')
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages.
     // See the comment in ../build.gradle in the shadowJar block.
-    implementation 'org.plumelib:plume-util:1.4.1'
+    implementation 'org.plumelib:plume-util:1.5.5'
     implementation 'org.plumelib:reflection-util:1.0.3'
-    implementation 'io.github.classgraph:classgraph:4.8.103'
+    implementation 'io.github.classgraph:classgraph:4.8.110'
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
     // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
     // dependencies" section of https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
     // (It isn't at https://mvnrepository.com/artifact/org.checkerframework.annotatedlib/guava/28.2-jre, which is the bug.)
-    implementation 'com.google.errorprone:error_prone_annotations:2.5.1'
-    implementation ('org.checkerframework.annotatedlib:guava:30.1-jre') {
+    implementation 'com.google.errorprone:error_prone_annotations:2.6.0'
+    implementation ('org.checkerframework.annotatedlib:guava:30.1.1-jre') {
         // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
         exclude group: 'org.checkerframework'
     }
@@ -120,11 +124,12 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
         javaexec {
             classpath = sourceSets.main.runtimeClasspath
 
-            main = 'org.checkerframework.framework.stub.JavaStubifier'
+            mainClass = 'org.checkerframework.framework.stub.JavaStubifier'
             args outputDir
         }
     }
 }
+sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
@@ -150,6 +155,7 @@ task allSourcesJar(type: Jar, group: 'Build') {
 task allJavadocJar(type: Jar, group: 'Build') {
     description 'Creates javadoc jar include Javadoc for all of the framework'
     dependsOn rootProject.tasks.allJavadoc
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "framework-javadoc.jar"
     from (project(':framework').tasks.javadoc.destinationDir,

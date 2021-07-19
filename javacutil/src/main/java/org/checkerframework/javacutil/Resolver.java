@@ -73,18 +73,46 @@ public class Resolver {
       FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
       FIND_VAR.setAccessible(true);
 
-      FIND_IDENT =
-          Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, KindSelector.class);
+      Method findIdentMethod;
+      try {
+        findIdentMethod =
+            Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, KindSelector.class);
+      } catch (NoSuchMethodException e) {
+        findIdentMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInternal", Env.class, Name.class, KindSelector.class);
+      }
+      FIND_IDENT = findIdentMethod;
       FIND_IDENT.setAccessible(true);
 
-      FIND_IDENT_IN_TYPE =
-          Resolve.class.getDeclaredMethod(
-              "findIdentInType", Env.class, Type.class, Name.class, KindSelector.class);
+      Method findIdentInTypeMethod;
+      try {
+        findIdentInTypeMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInType", Env.class, Type.class, Name.class, KindSelector.class);
+      } catch (NoSuchMethodException e) {
+        findIdentInTypeMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInTypeInternal", Env.class, Type.class, Name.class, KindSelector.class);
+      }
+      FIND_IDENT_IN_TYPE = findIdentInTypeMethod;
       FIND_IDENT_IN_TYPE.setAccessible(true);
 
-      FIND_IDENT_IN_PACKAGE =
-          Resolve.class.getDeclaredMethod(
-              "findIdentInPackage", Env.class, TypeSymbol.class, Name.class, KindSelector.class);
+      Method findIdentInPackageMethod;
+      try {
+        findIdentInPackageMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInPackage", Env.class, TypeSymbol.class, Name.class, KindSelector.class);
+      } catch (NoSuchMethodException e) {
+        findIdentInPackageMethod =
+            Resolve.class.getDeclaredMethod(
+                "findIdentInPackageInternal",
+                Env.class,
+                TypeSymbol.class,
+                Name.class,
+                KindSelector.class);
+      }
+      FIND_IDENT_IN_PACKAGE = findIdentInPackageMethod;
       FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
       FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
@@ -128,7 +156,7 @@ public class Resolver {
     while (scope == null && iter != null) {
       try {
         scope = (JavacScope) trees.getScope(iter);
-      } catch (Throwable t) {
+      } catch (NullPointerException t) {
         // Work around Issue #1059 by skipping through the TreePath until something
         // doesn't crash. This probably returns the class scope, so users might not
         // get the variables they expect. But that is better than crashing.
@@ -156,9 +184,8 @@ public class Resolver {
       Element res =
           wrapInvocationOnResolveInstance(
               FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
-      // findIdent will return a PackageSymbol even for a symbol that is not a package,
-      // such as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure
-      // that it exists.
+      // findIdent will return a PackageSymbol even for a symbol that is not a package, such as
+      // a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure that it exists.
       if (res.getKind() == ElementKind.PACKAGE) {
         PackageSymbol ps = (PackageSymbol) res;
         return ps.exists() ? ps : null;
@@ -366,8 +393,8 @@ public class Resolver {
    * @throws IllegalAccessException if the field is not accessible
    */
   @SuppressWarnings({
-    "nullness:argument.type.incompatible",
-    "interning:argument.type.incompatible"
+    "nullness:argument",
+    "interning:argument"
   }) // assume that the fields all accept null and uninterned values
   private void setField(Object receiver, String fieldName, @Nullable Object value)
       throws NoSuchFieldException, IllegalAccessException {

@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-@Deprecated // use {@link SuppressWarningsPrefix} instead
+@Deprecated // 2020-06-26
 // In the manual section #suppresswarnings-annotation-syntax, the term checkername is used instead
 // of prefix.
 public @interface SuppressWarningsKeys {

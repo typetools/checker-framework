@@ -9,7 +9,7 @@ public class Options {
     String arg = ""; // interned here
     @Interned String arg2 = arg;
     arg += s; // no longer interned
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     arg2 = arg;
   }
 
@@ -17,14 +17,13 @@ public class Options {
     String arg = ""; // interned here
     @Interned String arg2 = arg;
     arg += c; // no longer interned
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     arg2 = arg;
   }
 
   public String[] otherparse(String args) {
 
-    // Split the args string on whitespace boundaries accounting for quoted
-    // strings.
+    // Split the args string on whitespace boundaries accounting for quoted strings.
     args = args.trim();
     List<String> arg_list = new ArrayList<>();
     String arg = "";
@@ -37,7 +36,7 @@ public class Options {
     arg += ch;
     // }
     // }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Interned String arg2 = arg;
 
     if (!arg.equals("")) {
@@ -50,8 +49,7 @@ public class Options {
 
   public String[] parse(String args) {
 
-    // Split the args string on whitespace boundaries accounting for quoted
-    // strings.
+    // Split the args string on whitespace boundaries accounting for quoted strings.
     args = args.trim();
     List<String> arg_list = new ArrayList<>();
     String arg = "";
@@ -79,7 +77,7 @@ public class Options {
         arg += ch;
       }
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Interned String arg2 = arg;
 
     if (!arg.equals("")) {

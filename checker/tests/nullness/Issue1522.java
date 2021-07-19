@@ -13,25 +13,25 @@ public class Issue1522 {
 
   void copyVector(Vector<String> v, Integer[] intArray, String[] stringArray) {
     // Java types aren't compatible
-    // :: error: (vector.copyinto.type.incompatible)
+    // :: error: (vector.copyinto)
     v.copyInto(intArray);
     v.copyInto(stringArray);
   }
 
   void copyStack(SubClassVector<String> v, Integer[] intArray, String[] stringArray) {
     // Java types aren't compatible
-    // :: error: (vector.copyinto.type.incompatible)
+    // :: error: (vector.copyinto)
     v.copyInto(intArray);
     v.copyInto(stringArray);
   }
 
   void copyVectorErrors(Vector<@Nullable String> v, String[] stringArray) {
-    // :: error: (vector.copyinto.type.incompatible)
+    // :: error: (vector.copyinto)
     v.copyInto(stringArray);
   }
 
   void copyStackErrors(SubClassVector<@Nullable String> v, String[] stringArray) {
-    // :: error: (vector.copyinto.type.incompatible)
+    // :: error: (vector.copyinto)
     v.copyInto(stringArray);
   }
 

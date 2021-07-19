@@ -6,17 +6,18 @@
 # section of the Checker Framework manual:
 # https://checkerframework.org/manual/#whole-program-inference
 
+set -eo pipefail
+# not set -u, because this script checks variables directly
+
 DEBUG=0
 # To enable debugging, uncomment the following line.
 # DEBUG=1
 
-while getopts "o:i:u:t:g:s" opt; do
+while getopts "o:i:t:g:s" opt; do
   case $opt in
     o) OUTDIR="$OPTARG"
        ;;
     i) INLIST="$OPTARG"
-       ;;
-    u) GITHUB_USER="$OPTARG"
        ;;
     t) TIMEOUT="$OPTARG"
        ;;
@@ -32,7 +33,15 @@ done
 # Make $@ be the arguments that should be passed to dljc.
 shift $(( OPTIND - 1 ))
 
-echo "Starting wpi-many.sh. The output of this script is purely informational."
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SCRIPTPATH="${SCRIPTDIR}/wpi-many.sh"
+
+# Report line numbers when the script fails, from
+# https://unix.stackexchange.com/a/522815 .
+trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi-many.sh:";
+         pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
+
+echo "Starting wpi-many.sh."
 
 # check required arguments and environment variables:
 
@@ -42,20 +51,25 @@ else
   has_java_home="yes"
 fi
 
-# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA8_HOME}" = "x" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA11_HOME}" = "x" ]; then
   has_java11="no"
 else
   has_java11="yes"
+fi
+
+# shellcheck disable=SC2153 # testing for JAVA16_HOME, not a typo of JAVA_HOME
+if [ "x${JAVA16_HOME}" = "x" ]; then
+  has_java16="no"
+else
+  has_java16="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
@@ -67,6 +81,10 @@ if [ "${has_java_home}" = "yes" ]; then
     if [ "${has_java11}" = "no" ] && [ "${java_version}" = 11 ]; then
       export JAVA11_HOME="${JAVA_HOME}"
       has_java11="yes"
+    fi
+    if [ "${has_java16}" = "no" ] && [ "${java_version}" = 16 ]; then
+      export JAVA16_HOME="${JAVA_HOME}"
+      has_java16="yes"
     fi
 fi
 
@@ -80,8 +98,13 @@ if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
     exit 1
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ]; then
-    echo "No Java 8 or 11 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, or JAVA11_HOME must be set."
+if [ "${has_java16}" = "yes" ] && [ ! -d "${JAVA16_HOME}" ]; then
+    echo "JAVA16_HOME is set to a non-existent directory ${JAVA16_HOME}"
+    exit 1
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java16}" = "no" ]; then
+    echo "No Java 8, 11, or 16 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA16_HOME must be set."
     exit 1
 fi
 
@@ -105,10 +128,6 @@ if [ "x${INLIST}" = "x" ]; then
     exit 4
 fi
 
-if [ "x${GITHUB_USER}" = "x" ]; then
-    GITHUB_USER="${USER}"
-fi
-
 if [ "x${GRADLECACHEDIR}" = "x" ]; then
   GRADLECACHEDIR=".gradle"
 fi
@@ -123,8 +142,6 @@ export JAVA_HOME="${JAVA11_HOME}"
 ### Script
 
 echo "Finished configuring wpi-many.sh. Results will be placed in ${OUTDIR}-results/."
-
-SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 export PATH="${JAVA_HOME}/bin:${PATH}"
 
@@ -180,27 +197,12 @@ do
            continue
         fi
     else
-        rm -rf "${REPO_NAME}/dljc-out"
+        rm -rf -- "${REPO_NAME}/dljc-out"
     fi
 
     cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
     git checkout "${HASH}"
-
-    OWNER=$(echo "${REPO}" | cut -d / -f 4)
-
-    if [ "${OWNER}" = "${GITHUB_USER}" ]; then
-        ORIGIN=$(echo "${REPOHASH}" | awk '{print $3}')
-        # Piping to /dev/null is usually a bad idea.
-        # However, in this case it is intentional: the goal is to
-        # suppress error output, because there is no real harm done if
-        # the `unannotated` remote is not added - it's just a convenience
-        # for data analysis. But, running this script twice in a row on projects
-        # whose owner is the github user always causes an error on this line,
-        # because the `unannotated` remote is already set. The output is piped
-        # to /dev/null to suppress that error.
-        git remote add unannotated "${ORIGIN}" &> /dev/null
-    fi
 
     REPO_FULLPATH=$(pwd)
 
@@ -215,10 +217,9 @@ do
       fi
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
-      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${RESULT_LOG}" &> "${OUTDIR}-results/wpi-out" || cat "${OUTDIR}-results/wpi-out"
+      # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
+      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
     fi
-
-    rm -f "${OUTDIR}-results/wpi-out"
 
     cd "${OUTDIR}" || exit 5
 
@@ -228,7 +229,7 @@ do
         # delete it right away.
         if [ "${SKIP_OR_DELETE_UNUSABLE}" = "delete" ]; then
           echo "Deleting ${REPO_NAME_HASH} because WPI could not be run."
-          rm -rf "./${REPO_NAME_HASH}"
+          rm -rf -- "./${REPO_NAME_HASH}"
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
@@ -250,17 +251,20 @@ do
 
     cd "${OUTDIR}" || exit 5
 
-done <"${INLIST}"
+done < "${INLIST}"
 
 ## This section is here rather than in wpi-summary.sh because counting lines can be moderately expensive.
 ## wpi-summary.sh is intended to be run while a human waits (unlike this script), so this script
 ## precomputes as much as it can, to make wpi-summary.sh faster.
 
-results_available=$(grep -Zvl -e "no build file found for" \
+# this command is allowed to fail, because if no projects returned results then none
+# of these expressions will match, and we want to enter the special handling for that
+# case that appears below
+results_available=$(grep -vl -e "no build file found for" \
     -e "dljc could not run the Checker Framework" \
     -e "dljc could not run the build successfully" \
     -e "dljc timed out for" \
-    "${OUTDIR}-results/"*.log)
+    "${OUTDIR}-results/"*.log || true)
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
 
@@ -271,12 +275,12 @@ if [ -z "${results_available}" ]; then
   echo "End of log files."
 else
   if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    listpath=$(mktemp /tmp/cloc-file-list-XXX.txt)
+    listpath=$(mktemp "/tmp/cloc-file-list-$(date +%Y%m%d-%H%M%S)-XXX.txt")
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
     # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java".
     # shellcheck disable=SC2046
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | grep -v "^-J" | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
         echo "${listpath} has size zero"
@@ -288,12 +292,13 @@ else
         exit 1
     fi
 
-    cd "${SCRIPTDIR}/.do-like-javac" || exit 5
+    mkdir -p "${SCRIPTDIR}/.scc"
+    cd "${SCRIPTDIR}/.scc" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip"
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
     # shellcheck disable=SC2046
-    "${SCRIPTDIR}/.do-like-javac/scc" --output "${OUTDIR}-results/loc.txt" \
+    "${SCRIPTDIR}/.scc/scc" --output "${OUTDIR}-results/loc.txt" \
         $(< "${listpath}")
 
     rm -f "${listpath}"
@@ -304,4 +309,4 @@ fi
 
 export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
-echo "Exiting wpi-many.sh. The output of this script was purely informational. Results were placed in ${OUTDIR}-results/."
+echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."

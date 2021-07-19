@@ -20,15 +20,15 @@ public class FormatBasic {
     f.format("Duke's Birthday: %2$tm %<te,%<tY (it's the %dth)", 123, new Date());
 
     String s = "%+s%";
-    // :: error: (format.string.invalid)
+    // :: error: (format.string)
     f.format(s, "illegal");
-    // :: error: (format.string.invalid)
+    // :: error: (format.string)
     f.format("%+s%", "illegal");
-    // :: error: (format.string.invalid)
+    // :: error: (format.string)
     f.format("Wrong < indexing: %1$tm %<te,%<$tY", new Date());
-    // :: error: (format.string.invalid)
+    // :: error: (format.string)
     f.format("%t", new Date());
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     f.format("%Td", (int) 231);
 
     f.close();

@@ -8,7 +8,7 @@ public class ConditionalNullness {
       result = true)
   boolean checkNonNull() {
     // don't bother with the implementation
-    // :: error: (contracts.conditional.postcondition.not.satisfied)
+    // :: error: (contracts.conditional.postcondition)
     return true;
   }
 

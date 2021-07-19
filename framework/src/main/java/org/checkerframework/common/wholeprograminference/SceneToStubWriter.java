@@ -46,11 +46,11 @@ import scenelib.annotations.field.AnnotationFieldType;
 // For example, "Outer$Inner" is a base name.
 
 /**
- * SceneToStubWriter provides a static method that writes an {@link AScene} in stub file format to a
- * file {@link #write}. This class is the equivalent of {@code IndexFileWriter} from the Annotation
- * File Utilities, but outputs the results in the stub file format instead of jaif format. This
- * class is not part of the Annotation File Utilities, a library for manipulating .jaif files,
- * because it has nothing to do with .jaif files.
+ * Static method {@link #write} writes an {@link AScene} to a file in stub file format. This class
+ * is the equivalent of {@code IndexFileWriter} from the Annotation File Utilities, but outputs the
+ * results in the stub file format instead of jaif format. This class is not part of the Annotation
+ * File Utilities, a library for manipulating .jaif files, because it has nothing to do with .jaif
+ * files.
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
  * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). {@link
@@ -117,9 +117,7 @@ public final class SceneToStubWriter {
    * @param className a binary name
    * @return the part of the name representing the class's name without its package
    */
-  @SuppressWarnings(
-      "signature:return.type.incompatible") // A binary name without its package is still a
-  // binary name
+  @SuppressWarnings("signature:return") // A binary name without its package is still a binary name
   private static @BinaryName String basenamePart(@BinaryName String className) {
     int lastdot = className.lastIndexOf('.');
     return className.substring(lastdot + 1);
@@ -138,9 +136,14 @@ public final class SceneToStubWriter {
       return "@" + simpleAnnoName;
     }
     StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
-    for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-      AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-      sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+    if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
+      AnnotationFieldType aft = a.def().fieldTypes.get("value");
+      sj.add(aft.format(a.fieldValues.get("value")));
+    } else {
+      for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
+        AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
+        sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+      }
     }
     return sj.toString();
   }
@@ -336,8 +339,7 @@ public final class SceneToStubWriter {
           basetypeToPrint.substring("<anonymous ".length(), basetypeToPrint.length() - 1);
     }
 
-    // fields don't need their generic types, and sometimes they are wrong. Just don't print
-    // them.
+    // fields don't need their generic types, and sometimes they are wrong. Just don't print them.
     while (basetypeToPrint.contains("<")) {
       basetypeToPrint =
           basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'))

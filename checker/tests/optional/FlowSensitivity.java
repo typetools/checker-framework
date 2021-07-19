@@ -5,7 +5,7 @@ import java.util.Optional;
 public class FlowSensitivity {
 
   String noCheck(Optional<String> opt) {
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     return opt.get();
   }
 

@@ -148,13 +148,12 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
 
   @Override
   protected Void scan(AnnotatedTypeMirror type, Void p) {
-    // If the type's fully-qualified name is in the appropriate map, annotate
-    // the type. Do this before looking at kind or class, as this information
-    // is more specific.
+    // If the type's fully-qualified name is in the appropriate map, annotate the type. Do this
+    // before looking at kind or class, as this information is more specific.
 
     String qname;
     if (type.getKind() == TypeKind.DECLARED) {
-      qname = TypesUtils.getQualifiedName((DeclaredType) type.getUnderlyingType()).toString();
+      qname = TypesUtils.getQualifiedName((DeclaredType) type.getUnderlyingType());
     } else if (type.getKind().isPrimitive()) {
       qname = type.getUnderlyingType().toString();
     } else {
@@ -168,8 +167,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
       }
     }
 
-    // If the type's kind or class is in the appropriate map, annotate the
-    // type.
+    // If the type's kind or class is in the appropriate map, annotate the type.
     Set<AnnotationMirror> fromKind = typeKinds.get(type.getKind());
     if (fromKind != null) {
       type.addMissingAnnotations(fromKind);

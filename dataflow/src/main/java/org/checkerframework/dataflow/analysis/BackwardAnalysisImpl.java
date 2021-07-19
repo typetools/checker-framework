@@ -35,16 +35,16 @@ public class BackwardAnalysisImpl<
   // TODO: Add widening support like what the forward analysis does.
 
   /** Out stores after every basic block (assumed to be 'no information' if not present). */
-  protected final IdentityHashMap<Block, S> outStores;
+  protected final IdentityHashMap<Block, S> outStores = new IdentityHashMap<>();
 
   /**
    * Exception store of an exception block, propagated by exceptional successors of its exception
    * block, and merged with the normal {@link TransferResult}.
    */
-  protected final IdentityHashMap<ExceptionBlock, S> exceptionStores;
+  protected final IdentityHashMap<ExceptionBlock, S> exceptionStores = new IdentityHashMap<>();
 
   /** The store right before the entry block. */
-  protected @Nullable S storeAtEntry;
+  protected @Nullable S storeAtEntry = null;
 
   // `@code`, not `@link`, because dataflow module doesn't depend on framework module.
   /**
@@ -54,20 +54,17 @@ public class BackwardAnalysisImpl<
    */
   public BackwardAnalysisImpl() {
     super(Direction.BACKWARD);
-    this.outStores = new IdentityHashMap<>();
-    this.exceptionStores = new IdentityHashMap<>();
-    this.storeAtEntry = null;
   }
 
   /**
    * Construct an object that can perform a org.checkerframework.dataflow backward analysis over a
    * control flow graph given a transfer function.
    *
-   * @param transfer the transfer function
+   * @param transferFunction the transfer function
    */
-  public BackwardAnalysisImpl(@Nullable T transfer) {
+  public BackwardAnalysisImpl(@Nullable T transferFunction) {
     this();
-    this.transferFunction = transfer;
+    this.transferFunction = transferFunction;
   }
 
   @Override
@@ -320,8 +317,7 @@ public class BackwardAnalysisImpl<
         case REGULAR_BLOCK:
           {
             RegularBlock rBlock = (RegularBlock) block;
-            // Apply transfer function to contents until we found the node we are
-            // looking for.
+            // Apply transfer function to contents until we found the node we are looking for.
             TransferInput<V, S> store = blockTransferInput;
             List<Node> nodeList = rBlock.getNodes();
             ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
@@ -355,8 +351,7 @@ public class BackwardAnalysisImpl<
               return blockTransferInput.getRegularStore();
             }
             setCurrentNode(node);
-            // Copy the store to avoid changing other blocks' transfer inputs in {@link
-            // #inputs}
+            // Copy the store to avoid changing other blocks' transfer inputs in {@link #inputs}
             TransferResult<V, S> transferResult =
                 callTransferFunction(node, blockTransferInput.copy());
             // Merge transfer result with the exception store of this exceptional block

@@ -89,8 +89,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * @return true if interning should be verified for the input expression. By default, all classes
-   *     are checked for interning unless {@code -Acheckclass} is specified.
+   * Returns true if interning should be verified for the input expression. By default, all classes
+   * are checked for interning unless {@code -Acheckclass} is specified.
+   *
+   * @return true if interning should be verified for the input expression
    * @see <a href="https://checkerframework.org/manual/#interning-checks">What the Interning Checker
    *     checks</a>
    */
@@ -153,8 +155,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // in order to assume this).
 
     // Now suppose the user passes -AcheckClass=A on the command-line.
-    // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for
-    // I.
+    // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for I.
     // But the interning check must be performed, given the argument above.  Therefore if
     // shouldCheckExpression returns true for either the LHS or the RHS, this method proceeds
     // with the interning check.
@@ -183,14 +184,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     if (!(left.hasEffectiveAnnotation(INTERNED)
         || (leftElt != null
             && atypeFactory.getDeclAnnotation(leftElt, UsesObjectEquals.class) != null))) {
-      checker.reportError(leftOp, "not.interned", left);
+      checker.reportError(leftOp, "not.interned");
     }
 
     Element rightElt = TypesUtils.getTypeElement(right.getUnderlyingType());
     if (!(right.hasEffectiveAnnotation(INTERNED)
         || (rightElt != null
             && atypeFactory.getDeclAnnotation(rightElt, UsesObjectEquals.class) != null))) {
-      checker.reportError(rightOp, "not.interned", right);
+      checker.reportError(rightOp, "not.interned");
     }
     return super.visitBinary(node, p);
   }
@@ -380,8 +381,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       if (parentPath != null && parentPath.getParentPath() != null) {
         Tree parent = parentPath.getParentPath().getLeaf();
         if (parent.getKind() == Tree.Kind.METHOD_INVOCATION) {
-          // Allow new MyInternType().intern(), where "intern" is any method marked
-          // @InternMethod.
+          // Allow new MyInternType().intern(), where "intern" is any method marked @InternMethod.
           ExecutableElement elt = TreeUtils.elementFromUse((MethodInvocationTree) parent);
           if (atypeFactory.getDeclAnnotation(elt, InternMethod.class) != null) {
             return true;
@@ -610,28 +610,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * Returns true if two expressions originating from the same scope are identical, i.e. they are
-   * syntactically represented in the same way (modulo parentheses) and represent the same value.
-   *
-   * <p>For example, given an expression (a == b) || a.equals(b) sameTree can be called to determine
-   * that the first 'a' and second 'a' refer to the same variable, which is the case since both
-   * expressions 'a' originate from the same scope.
-   *
-   * <p>If the expression includes one or more method calls, assumes the method calls are
-   * deterministic.
-   *
-   * @param expr1 the first expression to compare
-   * @param expr2 the second expression to compare - expr2 must originate from the same scope as
-   *     expr1
-   * @return true if the expressions expr1 and expr2 are identical
-   */
-  private static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
-    return TreeUtils.withoutParens(expr1)
-        .toString()
-        .equals(TreeUtils.withoutParens(expr2).toString());
-  }
-
-  /**
    * Pattern matches to prevent false positives of the forms:
    *
    * <pre>{@code
@@ -666,10 +644,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             }
             ExpressionTree neqLeft = ((BinaryTree) e).getLeftOperand();
             ExpressionTree neqRight = ((BinaryTree) e).getRightOperand();
-            return (((sameTree(neqLeft, e1) || sameTree(neqLeft, e2))
+            return (((TreeUtils.sameTree(neqLeft, e1) || TreeUtils.sameTree(neqLeft, e2))
                     && neqRight.getKind() == Tree.Kind.NULL_LITERAL)
                 // also check for "null != e1" and "null != e2"
-                || ((sameTree(neqRight, e1) || sameTree(neqRight, e2))
+                || ((TreeUtils.sameTree(neqRight, e1) || TreeUtils.sameTree(neqRight, e2))
                     && neqLeft.getKind() == Tree.Kind.NULL_LITERAL));
           }
 
@@ -679,10 +657,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             ExpressionTree rightTree = tree.getRightOperand();
 
             if (tree.getKind() == Tree.Kind.CONDITIONAL_OR) {
-              if (sameTree(leftTree, node)) {
+              if (TreeUtils.sameTree(leftTree, node)) {
                 // left is "a==b"
-                // check right, which should be a.equals(b) or b.equals(a) or
-                // similar
+                // check right, which should be a.equals(b) or b.equals(a) or similar
                 return visit(rightTree, p);
               } else {
                 return false;
@@ -743,10 +720,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             //     return false;
             // }
 
-            if (sameTree(receiver, left) && sameTree(arg, right)) {
+            if (TreeUtils.sameTree(receiver, left) && TreeUtils.sameTree(arg, right)) {
               return true;
             }
-            if (sameTree(receiver, right) && sameTree(arg, left)) {
+            if (TreeUtils.sameTree(receiver, right) && TreeUtils.sameTree(arg, left)) {
               return true;
             }
 
@@ -805,7 +782,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
               return visit(leftTree, p);
             } else {
               // a == b || a.compareTo(b) == 0
-              @SuppressWarnings("interning:assignment.type.incompatible" // AST node comparisons
+              @SuppressWarnings("interning:assignment" // AST node comparisons
               )
               @InternedDistinct ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
               ExpressionTree rightTree = tree.getRightOperand(); // looking for a.compareTo(b) == 0
@@ -955,7 +932,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @return the type to check
    */
   DeclaredType typeToCheck() {
-    @SuppressWarnings("signature:assignment.type.incompatible") // user input
+    @SuppressWarnings("signature:assignment") // user input
     @CanonicalName String className = checker.getOption("checkclass");
     if (className == null) {
       return null;

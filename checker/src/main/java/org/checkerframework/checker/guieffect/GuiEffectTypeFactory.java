@@ -134,8 +134,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     // Anon inner classes should not inherit the package annotation, since
-    // they're so often used for closures to run async on background
-    // threads.
+    // they're so often used for closures to run async on background threads.
     if (isAnonymousType(cls)) {
       // However, we need to look into Anonymous class effect inference
       if (uiAnonClasses.contains(cls)) {
@@ -250,10 +249,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       return new Effect(UIEffect.class);
     }
 
-    // Anonymous inner types should just get the effect of the parent by
-    // default, rather than annotating every instance. Unless it's
-    // implementing a polymorphic supertype, in which case we still want the
-    // developer to be explicit.
+    // Anonymous inner types should just get the effect of the parent by default, rather than
+    // annotating every instance. Unless it's implementing a polymorphic supertype, in which case we
+    // still want the developer to be explicit.
     if (isAnonymousType(targetClassElt)) {
       boolean canInheritParentEffects = true; // Refine this for polymorphic parents
       DeclaredType directSuper = (DeclaredType) targetClassElt.getSuperclass();
@@ -453,7 +451,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotatedTypeMirror.AnnotatedExecutableType overriddenMethod =
           AnnotatedTypes.asMemberOf(types, this, overriddenType, pair.getValue());
       ExecutableElement overriddenMethodElt = pair.getValue();
-      if (debugSpew)
+      if (debugSpew) {
         System.err.println(
             "Found "
                 + declaringType
@@ -463,25 +461,26 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 + overriddenType
                 + "::"
                 + overriddenMethod);
+      }
       Effect eff = getDeclaredEffect(overriddenMethodElt);
       if (eff.isSafe()) {
         safeOverriden = overriddenMethodElt;
         if (isUI) {
           checker.reportError(
               errorNode,
-              "override.effect.invalid",
-              overridingMethod,
+              "override.effect",
               declaringType,
-              safeOverriden,
-              overriddenType);
+              overridingMethod,
+              overriddenType,
+              safeOverriden);
         } else if (isPolyUI) {
           checker.reportError(
               errorNode,
-              "override.effect.invalid.polymorphic",
-              overridingMethod,
+              "override.effect.polymorphic",
               declaringType,
-              safeOverriden,
-              overriddenType);
+              overridingMethod,
+              overriddenType,
+              safeOverriden);
         }
       } else if (eff.isUI()) {
         uiOverriden = overriddenMethodElt;
@@ -489,9 +488,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         assert eff.isPoly();
         polyOverriden = overriddenMethodElt;
         if (isUI) {
-          // Need to special case an anonymous class with @UI on
-          // the decl, because "new @UI Runnable {...}" parses as
-          // @UI on an anon class decl extending Runnable
+          // Need to special case an anonymous class with @UI on the decl, because "new @UI Runnable
+          // {...}" parses as @UI on an anon class decl extending Runnable
           boolean isAnonInstantiation =
               isAnonymousType(declaringType)
                   && (fromElement(declaringType).hasAnnotation(UI.class)
@@ -499,11 +497,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
           if (!isAnonInstantiation && !overriddenType.hasAnnotation(UI.class)) {
             checker.reportError(
                 errorNode,
-                "override.effect.invalid.nonui",
-                overridingMethod,
+                "override.effect.nonui",
                 declaringType,
-                polyOverriden,
-                overriddenType);
+                overridingMethod,
+                overriddenType,
+                polyOverriden);
           }
         }
       }
@@ -516,12 +514,12 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       checker.reportWarning(
           errorNode,
           "override.effect.warning.inheritance",
-          overridingMethod,
           declaringType,
-          uiOverriden.toString(),
-          uiOverriden.getEnclosingElement().asType().toString(),
-          safeOverriden.toString(),
-          safeOverriden.getEnclosingElement().asType().toString());
+          overridingMethod,
+          uiOverriden.getEnclosingElement().asType(),
+          uiOverriden,
+          safeOverriden.getEnclosingElement().asType(),
+          safeOverriden);
     }
 
     Effect min =

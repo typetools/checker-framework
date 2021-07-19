@@ -47,7 +47,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
       int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
       if (formatStringIndex == -1) {
-        checker.reportError(node, "format.method.invalid", methodElement.getSimpleName());
+        checker.reportError(node, "format.method", methodElement.getSimpleName());
       }
     }
     return super.visitMethod(node, p);
@@ -68,7 +68,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
           // Nothing to do, because call is legal.
         } else {
           // I.1
-          ftu.failure(errMissingFormat, "format.string.invalid", errMissingFormat.value());
+          ftu.failure(errMissingFormat, "format.string", errMissingFormat.value());
         }
       } else {
         // The string has a @Format annotation.
@@ -80,8 +80,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             int argl = argTypes.length;
             int formatl = formatCats.length;
             if (argl < formatl) {
-              // For assignments, format.missing.arguments is issued
-              // from commonAssignmentCheck.
+              // For assignments, format.missing.arguments is issued from commonAssignmentCheck.
               // II.1
               ftu.failure(invc, "format.missing.arguments", formatl, argl);
             } else {
@@ -115,12 +114,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                       ExecutableElement method = TreeUtils.elementFromUse(node);
                       CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
                       ftu.failure(
-                          arg,
-                          "argument.type.incompatible",
-                          "in varargs position",
-                          methodName,
-                          argType,
-                          formatCat);
+                          arg, "argument", "in varargs position", methodName, argType, formatCat);
                     }
                     break;
                 }

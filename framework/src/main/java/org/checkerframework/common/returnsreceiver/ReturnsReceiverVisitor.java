@@ -47,11 +47,11 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
           grandparent instanceof TypeCastTree
               && parent.equals(((TypeCastTree) grandparent).getType());
       if (!(isReturnAnnot || isReceiverAnnot || isCastAnnot)) {
-        checker.reportError(node, "type.invalid.this.location");
+        checker.reportError(node, "this.location");
       }
       if (isReturnAnnot
           && ElementUtils.isStatic(TreeUtils.elementFromDeclaration((MethodTree) grandparent))) {
-        checker.reportError(node, "type.invalid.this.location");
+        checker.reportError(node, "this.location");
       }
     }
     return super.visitAnnotation(node, p);

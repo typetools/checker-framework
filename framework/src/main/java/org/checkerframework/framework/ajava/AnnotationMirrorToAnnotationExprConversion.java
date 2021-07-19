@@ -24,6 +24,7 @@ import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.AnnotationValueVisitor;
@@ -66,6 +67,22 @@ public class AnnotationMirrorToAnnotationExprConversion {
     }
 
     return new NormalAnnotationExpr(name, convertedValues);
+  }
+
+  /**
+   * Converts a Set of AnnotationMirror into List of JavaParser {@code AnnotationExpr}.
+   *
+   * @param annotationMirrors the annotations to convert
+   * @return a list of JavaParser {@code AnnotationExpr}s representing the same annotations
+   * @see #annotationMirrorToAnnotationExpr
+   */
+  public static NodeList<AnnotationExpr> annotationMirrorSetToAnnotationExprList(
+      Set<AnnotationMirror> annotationMirrors) {
+    NodeList<AnnotationExpr> result = new NodeList<>();
+    for (AnnotationMirror am : annotationMirrors) {
+      result.add(annotationMirrorToAnnotationExpr(am));
+    }
+    return result;
   }
 
   /**
@@ -209,9 +226,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
       DeclaredType type = (DeclaredType) value;
       ClassOrInterfaceType parsedType;
       try {
-        parsedType =
-            StaticJavaParser.parseClassOrInterfaceType(
-                TypesUtils.getQualifiedName(type).toString());
+        parsedType = StaticJavaParser.parseClassOrInterfaceType(TypesUtils.getQualifiedName(type));
       } catch (ParseProblemException e) {
         throw new BugInCF("Invalid class or interface name: " + value, e);
       }

@@ -309,8 +309,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           annotation, valueATF.stringValValueElement, String.class);
     }
 
-    // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
-    // qualifier.
+    // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type qualifier.
     /**
      * Return String representation of class name. This will not return the correct name for
      * anonymous classes.
@@ -326,7 +325,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return getClassNameFromType(classType) + array;
         case DECLARED:
           StringBuilder className =
-              new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType).toString());
+              new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType));
           if (classType.getEnclosingType() != null) {
             while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
               classType = classType.getEnclosingType();

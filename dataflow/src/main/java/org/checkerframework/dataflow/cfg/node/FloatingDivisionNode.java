@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -16,7 +16,7 @@ public class FloatingDivisionNode extends BinaryOperationNode {
 
   public FloatingDivisionNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Kind.DIVIDE;
+    assert tree.getKind() == Tree.Kind.DIVIDE;
   }
 
   @Override

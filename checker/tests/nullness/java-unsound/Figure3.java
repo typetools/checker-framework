@@ -3,11 +3,16 @@ public class Figure3 {
     class Constraint<B extends A> extends Type<B> {}
 
     <B> Constraint<? super B> bad() {
-      // :: error: (return.type.incompatible)
+      // :: error: (return)
       return null;
     }
 
     <B> A coerce(B b) {
+      // type of expression: capture#703[ extends @Initialized @Nullable Object super B[
+      // extends @Initialized @Nullable Object super @Initialized @NonNull Void]]
+      // method return type: A[ extends @Initialized @Nullable Object super @Initialized
+      // @NonNull Void]
+      // ::  error: (return)
       return pair(this.<B>bad(), b).value;
     }
   }

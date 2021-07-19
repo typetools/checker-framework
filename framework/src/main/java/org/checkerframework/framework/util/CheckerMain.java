@@ -22,6 +22,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
@@ -715,7 +716,7 @@ public class CheckerMain {
         }
       }
       List<String> missingAbsoluteFilenames =
-          SystemUtil.mapList(File::getAbsolutePath, missingFiles);
+          CollectionsPlume.mapList(File::getAbsolutePath, missingFiles);
       throw new RuntimeException(
           "The following files could not be located: "
               + String.join(", ", missingAbsoluteFilenames));
@@ -795,8 +796,7 @@ public class CheckerMain {
       ZipEntry entry;
       while ((entry = checkerJarIs.getNextEntry()) != null) {
         final String name = entry.getName();
-        // Checkers ending in "Subchecker" are not included in this list used by
-        // CheckerMain.
+        // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
         if ((name.startsWith(CHECKER_BASE_DIR_NAME) || name.startsWith(COMMON_BASE_DIR_NAME))
             && name.endsWith("Checker.class")) {
           // Forward slash is used instead of File.separator because checker.jar uses / as
@@ -809,7 +809,6 @@ public class CheckerMain {
       }
       checkerJarIs.close();
     } catch (IOException e) {
-      // When using CheckerDevelMain we might not have a checker.jar file built yet.
       // Issue a warning instead of aborting execution.
       System.err.printf(
           "Could not read %s. Shorthand processor names will not work.%n", checkerJar);

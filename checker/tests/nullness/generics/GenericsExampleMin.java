@@ -23,8 +23,7 @@ public class GenericsExampleMin {
 
     // This method works.
     // Note that it fails to work if it is moved after m2() in the syntax tree.
-    // TODO: the above comment seems out-of-date, as method
-    // m3 below works.
+    // TODO: the above comment seems out-of-date, as method m3 below works.
     void m1() {
       t = this.get(0);
       nble = this.get(0);
@@ -33,7 +32,7 @@ public class GenericsExampleMin {
     // When the assignment to nn is added, the assignments to t and nble also fail, which is
     // unexpected.
     void m2() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       nn = null;
       t = this.get(0);
       nble = this.get(0);
@@ -50,9 +49,9 @@ public class GenericsExampleMin {
     @Nullable T nble;
 
     public MyList2(T t, @Nullable T nble) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.t = this.nble; // error
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.t = nble; // error
     }
   }
@@ -63,12 +62,12 @@ public class GenericsExampleMin {
     @NonNull T nn;
 
     public MyList3(T t, @Nullable T nble, @NonNull T nn) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.t = nble;
       this.t = nn;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.nn = t;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.nn = nble;
       this.nn = nn;
     }
@@ -80,11 +79,11 @@ public class GenericsExampleMin {
     @NonNull T nn;
 
     public MyList4(T t, @Nullable T nble, @NonNull T nn) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.t = nble;
       this.t = nn;
       this.nn = t;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       this.nn = nble;
       this.nn = nn;
       this.nn = t;

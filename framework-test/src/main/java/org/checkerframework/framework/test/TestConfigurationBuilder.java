@@ -86,7 +86,7 @@ public class TestConfigurationBuilder {
    *
    * @param testSourcePath the path to the Checker test file sources, usually this is the directory
    *     of Checker's tests
-   * @param testFile a single test java file to compile
+   * @param testFile a single test Java file to compile
    * @param processor a single checker to include in the processors field
    * @param options the options to the compiler/processors
    * @param shouldEmitDebugInfo whether or not debug information should be emitted
@@ -94,8 +94,7 @@ public class TestConfigurationBuilder {
    *     compiler, and file manager used by Checker Framework tests
    */
   @SuppressWarnings(
-      "signature:argument.type.incompatible" // for non-array non-primitive class, getName():
-  // @BinaryName
+      "signature:argument" // for non-array non-primitive class, getName(): @BinaryName
   )
   public static TestConfiguration buildDefaultConfiguration(
       String testSourcePath,
@@ -317,7 +316,13 @@ public class TestConfigurationBuilder {
     return this;
   }
 
-  @SuppressWarnings("nullness:return.type.incompatible") // need @PolyInitialized annotation
+  /**
+   * Adds the given options to this.
+   *
+   * @param options options to add to this
+   * @return this
+   */
+  @SuppressWarnings("nullness:return") // need @PolyInitialized annotation
   @RequiresNonNull("this.options")
   public TestConfigurationBuilder addOptions(
       @UnknownInitialization(TestConfigurationBuilder.class) TestConfigurationBuilder this,

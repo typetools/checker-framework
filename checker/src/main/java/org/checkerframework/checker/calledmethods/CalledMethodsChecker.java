@@ -60,7 +60,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
 
   /**
    * The number of calls to build frameworks supported by this invocation. Incremented only if the
-   * {@link #COUNT_FRAMEWORK_BUILD_CALLS} option was supplied.
+   * {@link #COUNT_FRAMEWORK_BUILD_CALLS} command-line option was supplied.
    */
   int numBuildCalls = 0;
 
@@ -74,14 +74,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
    */
   private boolean isReturnsReceiverDisabled() {
     if (returnsReceiverDisabled == null) {
-      // BaseTypeChecker#hasOption calls getImmediateSubcheckerClasses (so that all
-      // subcheckers' options are considered), so the processingEnvironment must be checked
-      // for options directly, because this method is called from there.
-      returnsReceiverDisabled =
-          this.processingEnv.getOptions().containsKey(DISABLE_RETURNS_RECEIVER)
-              || this.processingEnv
-                  .getOptions()
-                  .containsKey(this.getClass().getSimpleName() + "_" + DISABLE_RETURNS_RECEIVER);
+      returnsReceiverDisabled = hasOptionNoSubcheckers(DISABLE_RETURNS_RECEIVER);
     }
     return returnsReceiverDisabled;
   }

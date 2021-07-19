@@ -11,8 +11,7 @@ public class VoidUse {
     return null;
   }
 
-  // Void is treated as Nullable.  Is there a value on having it be
-  // NonNull?
+  // Void is treated as Nullable.  Is there a value on having it be NonNull?
   public abstract static class VoidTestNode<T extends Object> {}
 
   public static class VoidTestInvNode extends VoidTestNode<@NonNull Void> {}
@@ -21,14 +20,14 @@ public class VoidUse {
     public void scan(Object tree, P p) {}
   }
 
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   class MyScanner extends Scanner<Void> {
     void use(MyScanner ms) {
       ms.scan(new Object(), null);
     }
   }
 
-  // :: error: (type.argument.type.incompatible)
+  // :: error: (type.argument)
   class MyScanner2 extends Scanner<@Nullable Object> {
     void use(MyScanner2 ms) {
       ms.scan(new Object(), null);

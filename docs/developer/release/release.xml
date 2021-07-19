@@ -3,11 +3,11 @@
     <description>
         Ant utilities for releasing the Checker-Framework.  All targets in this file
         are intended to be run much like method calls (i.e. you must specify a certain set of properties
-        as parameters and they do not depend on any other target.
+        as parameters and they do not depend on any other target).
     </description>
 
     <property file="docs/developer/release/release.properties"/>
-    <!-- Todays date -->
+    <!-- Today's date -->
     <tstamp>
         <format property="release.date" pattern="d MMM yyyy"/>
     </tstamp>
@@ -87,9 +87,6 @@
                 with="checker-framework-${release.ver}.zip"/>
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
@@ -116,20 +113,11 @@
                        match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
         <replaceregexp file="${checker}/../build-common.properties" byline="true"
                        match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
-
-        <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checker.tutorial}/webpages/security-error-cmd.html" byline="true"
-                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>
@@ -273,7 +261,7 @@
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 
-        <copy todir="${dest.dir}" file="${checker}/../changelog.txt" />
+        <copy todir="${dest.dir}" file="${checker}/../docs/CHANGELOG.md" />
 
         <copy todir="${dest.dir}/api" flatten="false">
             <fileset dir="${checker}/../docs/api">

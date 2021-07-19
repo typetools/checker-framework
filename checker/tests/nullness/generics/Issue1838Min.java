@@ -7,6 +7,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue1838Min {
   List<List<@Nullable Object>> llno = new ArrayList<>();
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   List<? extends List<Object>> lweo = llno;
 }

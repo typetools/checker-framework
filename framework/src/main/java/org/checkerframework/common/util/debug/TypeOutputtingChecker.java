@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A testing class that can be used to test {@link TypeElement}. In particular it tests that the
- * types read from classfiles are the same to the ones from java files.
+ * types read from classfiles are the same to the ones from Java files.
  *
  * <p>For testing, you need to do the following:
  *
@@ -102,7 +102,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
    *
    * @param args command-line arguments
    */
-  @SuppressWarnings("signature:argument.type.incompatible") // user-supplied input, uncheckable
+  @SuppressWarnings("signature:argument") // user-supplied input, uncheckable
   public static void main(String[] args) {
     new TypeOutputtingChecker().run(args);
   }
@@ -162,12 +162,11 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     @Override
     public void postProcessClassTree(ClassTree tree) {
-      // Do not store the qualifiers determined by this factory.
-      // This factory adds declaration annotations as type annotations,
-      // because TypeFromElement needs to read declaration annotations
-      // and this factory blindly supports all annotations.
-      // When storing those annotation to bytecode, the compiler chokes.
-      // See testcase tests/nullness/GeneralATFStore.java
+      // Do not store the qualifiers determined by this factory.  This factory adds declaration
+      // annotations as type annotations, because TypeFromElement needs to read declaration
+      // annotations and this factory blindly supports all annotations.
+      // When storing those annotation to bytecode, the compiler chokes.  See testcase
+      // tests/nullness/GeneralATFStore.java
     }
 
     /** Return true to support any qualifier. No handling of aliases. */
@@ -218,8 +217,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         throw new BugInCF("GeneralQualifierHierarchy:getTopAnnotations() shouldn't be called");
       }
 
-      // Not needed - should raise error. Unfortunately, in inference we ask for bottom
-      // annotations.
+      // Not needed - should raise error. Unfortunately, in inference we ask for bottom annotations.
       // Return a dummy value that does no harm.
       @Override
       public Set<AnnotationMirror> getBottomAnnotations() {

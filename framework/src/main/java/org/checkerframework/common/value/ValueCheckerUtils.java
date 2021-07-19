@@ -1,13 +1,9 @@
 package org.checkerframework.common.value;
 
-import com.google.common.collect.Comparators;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
@@ -22,8 +18,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** Utility methods for the Value Checker. */
 public class ValueCheckerUtils {
@@ -152,7 +148,7 @@ public class ValueCheckerUtils {
     if (origValues == null) {
       return null;
     }
-    return SystemUtil.mapList(Object::toString, origValues);
+    return CollectionsPlume.mapList(Object::toString, origValues);
   }
 
   /**
@@ -188,7 +184,7 @@ public class ValueCheckerUtils {
       AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
     List<String> strings = atypeFactory.getStringValues(anno);
     if (newClass == char[].class) {
-      return SystemUtil.mapList(String::toCharArray, strings);
+      return CollectionsPlume.mapList(String::toCharArray, strings);
     }
     return strings;
   }
@@ -200,7 +196,7 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(longs);
     } else if (newClass == Character.class || newClass == char.class) {
-      return SystemUtil.mapList((Long l) -> (char) l.longValue(), longs);
+      return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert int to boolean");
@@ -229,36 +225,12 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(doubles);
     } else if (newClass == Character.class || newClass == char.class) {
-      return SystemUtil.mapList((Double l) -> (char) l.doubleValue(), doubles);
+      return CollectionsPlume.mapList((Double l) -> (char) l.doubleValue(), doubles);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert double to boolean");
     }
     return NumberUtils.castNumbers(newType, doubles);
-  }
-
-  /**
-   * Returns a list with the same contents as its argument, but without duplicates. May return its
-   * argument if its argument has no duplicates, but is not guaranteed to do so.
-   *
-   * @param <T> the type of elements in {@code values}
-   * @param values a list of values
-   * @return the values, with duplicates removed
-   * @deprecated use {@link SystemUtil#removeDuplicates}
-   */
-  @Deprecated // 2020-03-31
-  public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
-    // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
-    if (Comparators.isInStrictOrder(values, Comparator.naturalOrder())) {
-      return values;
-    }
-
-    Set<T> set = new TreeSet<>(values);
-    if (values.size() == set.size()) {
-      return values;
-    } else {
-      return new ArrayList<>(set);
-    }
   }
 
   /**
@@ -268,8 +240,8 @@ public class ValueCheckerUtils {
    * @return list of unique lengths of strings in {@code values}
    */
   public static List<Integer> getLengthsForStringValues(List<String> values) {
-    List<Integer> lengths = SystemUtil.mapList(String::length, values);
-    return SystemUtil.removeDuplicates(lengths);
+    List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
+    return CollectionsPlume.withoutDuplicates(lengths);
   }
 
   /**

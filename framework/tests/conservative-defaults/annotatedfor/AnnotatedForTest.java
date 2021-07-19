@@ -45,23 +45,23 @@ public class AnnotatedForTest {
     // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since
     // @SuperQual is annotated with @DefaultQualifierInHierarchy.
     @SuperQual Object o1 = annotatedMethod(new Object());
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SubQual Object o2 = annotatedMethod(new Object());
 
     // When calling unannotatedMethod, we expect the conservative defaults.
     Object o3 = unannotatedMethod(o2);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Object o4 = unannotatedMethod(o1);
 
     // Testing that @AnnotatedFor({}) behaves the same way as not putting an @AnnotatedFor
     // annotation.
     Object o5 = unannotatedMethod(o2);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Object o6 = unannotatedMethod(o1);
 
     // Testing that @AnnotatedFor(a different typesystem) behaves the same way @AnnotatedFor({})
     Object o7 = unannotatedMethod(o2);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Object o8 = unannotatedMethod(o1);
   }
 
@@ -95,7 +95,7 @@ public class AnnotatedForTest {
     // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since
     // @SuperQual is annotated with @DefaultQualifierInHierarchy.
     @SuperQual Object o1 = annotatedMethod(new Object());
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SubQual Object o2 = annotatedMethod(new Object());
   }
 
@@ -130,21 +130,21 @@ public class AnnotatedForTest {
   // Annotated for more than one type system
   @AnnotatedFor({"nullness", "subtyping"})
   void method4() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SubQual Object o2 = new @SuperQual Object();
   }
 
   // Different way of writing the checker name
   @AnnotatedFor("SubtypingChecker")
   void method5() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SubQual Object o2 = new @SuperQual Object();
   }
 
   // Different way of writing the checker name
   @AnnotatedFor("org.checkerframework.common.subtyping.SubtypingChecker")
   void method6() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SubQual Object o2 = new @SuperQual Object();
   }
 
@@ -156,12 +156,12 @@ public class AnnotatedForTest {
     // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since
     // @SuperQual is annotated with @DefaultQualifierInHierarchy.
     @SuperQual Object o1 = annotatedMethod(new Object());
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @SubQual Object o2 = annotatedMethod(new Object());
 
     // When calling unannotatedMethod, we expect the conservative defaults.
     Object o3 = unannotatedMethod(o2);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     Object o4 = unannotatedMethod(o1);
 
     @SuperQual Object o5;
@@ -171,15 +171,15 @@ public class AnnotatedForTest {
     // Test annotated nonstatic initializer block
     {
       o5 = annotatedMethod(new Object());
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       o6 = annotatedMethod(new Object());
       o7 = unannotatedMethod(o6);
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       o8 = unannotatedMethod(o5);
     }
 
     void method1() {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @SubQual Object o2 = new @SuperQual Object();
     }
 
@@ -198,10 +198,10 @@ public class AnnotatedForTest {
     // Test annotated static initializer block
     static {
       so1 = staticAnnotatedMethod(new Object());
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       so2 = staticAnnotatedMethod(new Object());
       so3 = staticUnannotatedMethod(so2);
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       so4 = staticUnannotatedMethod(so1);
     }
   }

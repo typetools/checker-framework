@@ -22,8 +22,9 @@ public class Driver {
 
   private static final PrintStream out = System.out;
 
+  // The argument is in the format expected by Class.forName().
   public static void main(String[] args) throws Exception {
-    if (args.length == 0 || args.length > 1) {
+    if (args.length != 1) {
       throw new IllegalArgumentException("Usage: java Driver <test-name>");
     }
     String name = args[0];
@@ -51,8 +52,17 @@ public class Driver {
         String compact = (String) method.invoke(object);
         String fullFile = PersistUtil.wrap(compact);
         ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
-        List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
-        ReferenceInfoUtil.compare(expected, actual, cf);
+        boolean ignoreConstructors = !clazz.getName().equals("Constructors");
+        List<TypeAnnotation> actual =
+            ReferenceInfoUtil.extendedAnnotationsOf(cf, ignoreConstructors);
+        String diagnostic =
+            String.join(
+                "; ",
+                "Tests for " + clazz.getName(),
+                "compact=" + compact,
+                "fullFile=" + fullFile,
+                "testClass=" + testClass);
+        ReferenceInfoUtil.compare(expected, actual, cf, diagnostic);
         out.println("PASSED:  " + method.getName());
         ++passed;
       } catch (Throwable e) {

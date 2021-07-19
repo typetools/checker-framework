@@ -5,8 +5,7 @@ class Component {}
 
 class Components extends ArrayList {}
 
-// If we include a type parameter in the superclass, then there
-// is no error below.
+// If we include a type parameter in the superclass, then there is no error below.
 // class Components extends ArrayList<Component> {}
 
 public class RawTypeAssignment {
@@ -16,7 +15,7 @@ public class RawTypeAssignment {
 
   static void addTimes(Calendar calendar) {
     // Type systems may issue an error below because of a mismatch between the type arguments.
-    @SuppressWarnings("assignment.type.incompatible")
+    @SuppressWarnings("assignment")
     // :: warning: [unchecked] unchecked conversion
     ArrayList<Component> clist = getComponents();
     clist.get(0);

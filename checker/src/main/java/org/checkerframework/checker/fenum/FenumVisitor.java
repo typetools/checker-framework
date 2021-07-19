@@ -7,6 +7,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -37,7 +38,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
       Set<AnnotationMirror> rhs = rhsAtm.getEffectiveAnnotations();
       QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
       if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
-        checker.reportError(node, "binary.type.incompatible", lhsAtm, rhsAtm);
+        checker.reportError(node, "binary", lhsAtm, rhsAtm);
       }
     }
     return super.visitBinary(node, p);
@@ -49,13 +50,14 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
     for (CaseTree caseExpr : node.getCases()) {
-      ExpressionTree realCaseExpr = caseExpr.getExpression();
-      if (realCaseExpr != null) {
+      List<? extends ExpressionTree> realCaseExprs = TreeUtils.caseTreeGetExpressions(caseExpr);
+      // Check all the case options against the switch expression type:
+      for (ExpressionTree realCaseExpr : realCaseExprs) {
         AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
-        // There is currently no "switch.type.incompatible" message key, so it is treated
+        // There is currently no "switch" message key, so it is treated
         // identically to "type.incompatible".
-        this.commonAssignmentCheck(exprType, caseType, caseExpr, "switch.type.incompatible");
+        this.commonAssignmentCheck(exprType, caseType, caseExpr, "type.incompatible");
       }
     }
     return super.visitSwitch(node, p);
@@ -83,10 +85,9 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
   @Override
   public boolean isValidUse(
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-    // The checker calls this method to compare the annotation used in a
-    // type to the modifier it adds to the class declaration. As our default
-    // modifier is FenumBottom, this results in an error when a non-subtype
-    // is used. Can we use FenumTop as default instead?
+    // The checker calls this method to compare the annotation used in a type to the modifier it
+    // adds to the class declaration. As our default modifier is FenumBottom, this results in an
+    // error when a non-subtype is used. Can we use FenumTop as default instead?
     return true;
   }
 }

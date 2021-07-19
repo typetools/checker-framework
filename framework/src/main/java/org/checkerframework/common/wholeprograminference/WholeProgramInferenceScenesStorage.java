@@ -737,10 +737,9 @@ public class WholeProgramInferenceScenesStorage
       // This if avoids clearing the annotations multiple times in cases
       // of type variables and compound types.
       Set<Annotation> annosToRemove = getSupportedAnnosInSet(typeToUpdate.tlAnnotationsHere);
-      // This method may be called consecutive times for the same ATypeElement.
-      // Each time it is called, the AnnotatedTypeMirror has a better type
-      // estimate for the ATypeElement. Therefore, it is not a problem to remove
-      // all annotations before inserting the new annotations.
+      // This method may be called consecutive times for the same ATypeElement.  Each time it is
+      // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore,
+      // it is not a problem to remove all annotations before inserting the new annotations.
       typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
     }
 

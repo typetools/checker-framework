@@ -45,7 +45,7 @@ public final class IdentityMostlySingleton<T extends Object> extends AbstractMos
   /** Switch the representation of this from SINGLETON to ANY. */
   private void makeNonSingleton() {
     state = State.ANY;
-    set = Collections.newSetFromMap(new IdentityHashMap<>());
+    set = Collections.newSetFromMap(new IdentityHashMap<>(4));
     assert value != null : "@AssumeAssertion(nullness): previous add is non-null";
     set.add(value);
     value = null;

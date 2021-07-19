@@ -4,7 +4,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
 import java.util.List;
@@ -186,9 +185,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     switch (AnnotationUtils.annotationName(anno)) {
       case ValueAnnotatedTypeFactory.INTRANGE_NAME:
         // If there are 2 arguments, issue an error if from.greater.than.to.
-        // If there are fewer than 2 arguments, we needn't worry about this problem because
-        // the other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE
-        // accordingly.
+        // If there are fewer than 2 arguments, we needn't worry about this problem because the
+        // other argument will be defaulted to Long.MIN_VALUE or Long.MAX_VALUE accordingly.
         if (args.size() == 2) {
           long from = getTypeFactory().getIntRangeFromValue(anno);
           long to = getTypeFactory().getIntRangeToValue(anno);
@@ -203,6 +201,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
       case ValueAnnotatedTypeFactory.INTVAL_NAME:
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+        @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> values =
             AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
 
@@ -257,7 +256,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
   @Override
   public Void visitTypeCast(TypeCastTree node, Void p) {
-    if (node.getExpression().getKind() == Kind.NULL_LITERAL) {
+    if (node.getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
       return null;
     }
 

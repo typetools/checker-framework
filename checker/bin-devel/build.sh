@@ -43,16 +43,16 @@ if [ ! -d ../annotation-tools ] ; then
   ln -s "${AT}" ../annotation-tools
 fi
 
-echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
-(cd "${AT}" && ./.travis-build-without-test.sh)
-echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
+echo "Running:  (cd ${AT} && ./.build-without-test.sh)"
+(cd "${AT}" && ./.build-without-test.sh)
+echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 
 
 ## Build stubparser
 "$PLUME_SCRIPTS/git-clone-related" typetools stubparser
-echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
-(cd ../stubparser/ && ./.travis-build-without-test.sh)
-echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
+echo "Running:  (cd ../stubparser/ && ./.build-without-test.sh)"
+(cd ../stubparser/ && ./.build-without-test.sh)
+echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
 
 
 ## Build JSpecify, only for the purpose of using its tests.
@@ -68,8 +68,8 @@ fi
 version=$("$_java" -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
 if [[ "$version" -ge 9 ]]; then
   echo "Running:  (cd ../jspecify/ && ./gradlew build)"
-  ## Try twice in case of network lossage.
-  (cd ../jspecify/ && ./gradlew build) || (sleep 60 && cd ../jspecify/ && ./gradlew build)
+  # If failure, retry in case the failure was due to network lossage.
+  (cd ../jspecify/ && export JDK_JAVA_OPTIONS='--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED' && (./gradlew build || (sleep 60 && ./gradlew build)))
   echo "... done: (cd ../jspecify/ && ./gradlew build)"
 fi
 

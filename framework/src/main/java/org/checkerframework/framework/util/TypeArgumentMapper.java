@@ -173,8 +173,7 @@ public class TypeArgumentMapper {
     final Map<TypeParameterElement, Set<TypeParameterElement>> result =
         new LinkedHashMap<>(subtype.getTypeParameters().size());
 
-    // You can think of the map above as a set of links from SubtypeParameter -> Supertype
-    // Parameter
+    // You can think of the map above as a set of links from SubtypeParameter -> Supertype Parameter
     for (TypeParameterElement subtypeParam : subtype.getTypeParameters()) {
       Set<TypeParameterElement> subtypePath =
           flattenPath(intermediate.get(subtypeParam), intermediate);
@@ -207,12 +206,7 @@ public class TypeArgumentMapper {
       final Map<TypeParameterElement, Set<TypeParameterElement>> setMap,
       final TypeParameterElement element,
       final TypeParameterElement typeParam) {
-    Set<TypeParameterElement> set = setMap.get(element);
-    if (set == null) {
-      set = new HashSet<>();
-      setMap.put(element, set);
-    }
-
+    Set<TypeParameterElement> set = setMap.computeIfAbsent(element, __ -> new HashSet<>());
     set.add(typeParam);
   }
 

@@ -19,6 +19,7 @@ import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
@@ -225,6 +226,17 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
 
+    if (showInferenceSteps) {
+      checker.message(Kind.NOTE, "  results: %s", inferredArgs);
+    }
+    try {
+      return TypeArgInferenceUtil.correctResults(
+          inferredArgs, expressionTree, (ExecutableType) methodElem.asType(), typeFactory);
+    } catch (Throwable ex) {
+      // Ignore any exceptions
+      return inferredArgs;
+    }
+  }
         if (showInferenceSteps) {
             checker.message(Kind.NOTE, "  results: %s", inferredArgs);
         }
@@ -294,91 +306,89 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return false;
     }
 
-    /**
-     * This algorithm works as follows:
-     *
-     * <ul>
-     *   <!-- ul rather than ol because of many cross-references within the text -->
-     *   <li>1. Build Argument Constraints -- create a set of constraints using the arguments to the
-     *       type parameter declarations, the formal parameters, and the arguments to the method
-     *       call
-     *   <li>2. Solve Argument Constraints -- Create two solutions from the arguments.
-     *       <ol>
-     *         <li>Equality Arg Solution: Solution inferred from arguments used in an invariant
-     *             position (i.e. from equality constraints)
-     *         <li>Supertypes Arg Solution: Solution inferred from constraints in which the
-     *             parameter is a supertype of argument types. These are kept separate and merged
-     *             later.
-     *       </ol>
-     *       Note: If there is NO assignment context we just combine the results from 2.a and 2.b,
-     *       giving preference to those in 2.a, and return the result.
-     *   <li>3. Build and Solve Initial Assignment Constraints -- Create a set of constraints from
-     *       the assignment context WITHOUT substituting either solution from step 2.
-     *   <li>4. Combine the solutions from steps 2.b and 3. This handles cases like the following:
-     *       <pre>{@code
-     * <T> List<T> method(T t1) {}
-     * List<@Nullable String> nl = method("");
-     * }</pre>
-     *       If we use just the arguments to infer T we will infer @NonNull String (since the lub of
-     *       all arguments would be @NonNull String). However, this would cause the assignment to
-     *       fail. Instead, since {@literal @NonNull String <: @Nullable String}, we can safely
-     *       infer T to be @Nullable String and both the argument types and the assignment types are
-     *       compatible. In step 4, we combine the results of Step 2.b (which came from lubbing
-     *       argument and argument component types) with the solution from equality constraints via
-     *       the assignment context.
-     *       <p>Note, we always give preference to the results inferred from method arguments if
-     *       there is a conflict between the steps 2 and 4. For example:
-     *       <pre>{@code
-     * <T> List<T> method(T t1) {}
-     * List<@NonNull String> nl = method(null);
-     * }</pre>
-     *       In the above example, the null argument requires that T must be @Nullable String. But
-     *       the assignment context requires that the T must be @NonNull String. But, in this case
-     *       if we use @NonNull String the argument "null" is invalid. In this case, we
-     *       use @Nullable String and report an assignment.type.incompatible because we ALWAYS favor
-     *       the arguments over the assignment context.
-     *   <li>5. Combine the result from 2.a and step 4, if there is a conflict use the result from
-     *       step 2.a
-     *       <p>Suppose we have the following:
-     *       <pre>{@code
-     * <T> void method(List<@NonNull T> t, @Initialized Tt) { ... }
-     * List<@FBCBottom String> lBottom = ...;
-     * method( lbBottom, "nonNullString" );
-     * }</pre>
-     *       From the first argument we can infer that T must be exactly @FBCBottom String but we
-     *       cannot infer anything for the Nullness hierarchy. For the second argument we can infer
-     *       that T is at most @NonNull String but we can infer nothing in the initialization
-     *       hierarchy. In this step we combine these two results, always favoring the equality
-     *       constraints if there is a conflict. For the above example we would infer the following:
-     *       <pre>{@code
-     * T => @FBCBottom @NonNull String
-     * }</pre>
-     *       Another case covered in this step is:
-     *       <pre>{@code
-     * <T> List<T> method(List<T> t1) {}
-     * List<@NonNull String> nonNullList = new ArrayList<>();
-     * List<@Nullable String> nl = method(nonNullList);
-     * }</pre>
-     *       The above assignment should fail because T is forced to be both @NonNull and @Nullable.
-     *       In cases like these, we use @NonNull String becasue we always favor constraints from
-     *       the arguments over the assignment context.
-     *   <li>6. Infer from Assignment Context Finally, the JLS states that we should substitute the
-     *       types we have inferred up until this point back into the original argument constraints.
-     *       We should then combine the constraints we get from the assignment context and solve
-     *       using the greatest lower bounds of all of the constraints of the form: {@literal F :>
-     *       U} (these are referred to as "subtypes" in the ConstraintMap.TargetConstraints).
-     *   <li>7. Merge the result from steps 5 and 6 giving preference to 5 (the argument
-     *       constraints). Return the result.
-     * </ul>
-     */
-    private Map<TypeVariable, AnnotatedTypeMirror> infer(
-            final AnnotatedTypeFactory typeFactory,
-            final List<AnnotatedTypeMirror> argumentTypes,
-            final AnnotatedTypeMirror assignedTo,
-            final ExecutableElement methodElem,
-            final AnnotatedExecutableType methodType,
-            final Set<TypeVariable> targets,
-            final boolean useNullArguments) {
+  /**
+   * This algorithm works as follows:
+   *
+   * <ul>
+   *   <!-- ul rather than ol because of many cross-references within the text -->
+   *   <li>1. Build Argument Constraints -- create a set of constraints using the arguments to the
+   *       type parameter declarations, the formal parameters, and the arguments to the method call
+   *   <li>2. Solve Argument Constraints -- Create two solutions from the arguments.
+   *       <ol>
+   *         <li>Equality Arg Solution: Solution inferred from arguments used in an invariant
+   *             position (i.e. from equality constraints)
+   *         <li>Supertypes Arg Solution: Solution inferred from constraints in which the parameter
+   *             is a supertype of argument types. These are kept separate and merged later.
+   *       </ol>
+   *       Note: If there is NO assignment context we just combine the results from 2.a and 2.b,
+   *       giving preference to those in 2.a, and return the result.
+   *   <li>3. Build and Solve Initial Assignment Constraints -- Create a set of constraints from the
+   *       assignment context WITHOUT substituting either solution from step 2.
+   *   <li>4. Combine the solutions from steps 2.b and 3. This handles cases like the following:
+   *       <pre>{@code
+   * <T> List<T> method(T t1) {}
+   * List<@Nullable String> nl = method("");
+   * }</pre>
+   *       If we use just the arguments to infer T we will infer @NonNull String (since the lub of
+   *       all arguments would be @NonNull String). However, this would cause the assignment to
+   *       fail. Instead, since {@literal @NonNull String <: @Nullable String}, we can safely infer
+   *       T to be @Nullable String and both the argument types and the assignment types are
+   *       compatible. In step 4, we combine the results of Step 2.b (which came from lubbing
+   *       argument and argument component types) with the solution from equality constraints via
+   *       the assignment context.
+   *       <p>Note, we always give preference to the results inferred from method arguments if there
+   *       is a conflict between the steps 2 and 4. For example:
+   *       <pre>{@code
+   * <T> List<T> method(T t1) {}
+   * List<@NonNull String> nl = method(null);
+   * }</pre>
+   *       In the above example, the null argument requires that T must be @Nullable String. But the
+   *       assignment context requires that the T must be @NonNull String. But, in this case if we
+   *       use @NonNull String the argument "null" is invalid. In this case, we use @Nullable String
+   *       and report an assignment because we ALWAYS favor the arguments over the assignment
+   *       context.
+   *   <li>5. Combine the result from 2.a and step 4, if there is a conflict use the result from
+   *       step 2.a
+   *       <p>Suppose we have the following:
+   *       <pre>{@code
+   * <T> void method(List<@NonNull T> t, @Initialized Tt) { ... }
+   * List<@FBCBottom String> lBottom = ...;
+   * method( lbBottom, "nonNullString" );
+   * }</pre>
+   *       From the first argument we can infer that T must be exactly @FBCBottom String but we
+   *       cannot infer anything for the Nullness hierarchy. For the second argument we can infer
+   *       that T is at most @NonNull String but we can infer nothing in the initialization
+   *       hierarchy. In this step we combine these two results, always favoring the equality
+   *       constraints if there is a conflict. For the above example we would infer the following:
+   *       <pre>{@code
+   * T => @FBCBottom @NonNull String
+   * }</pre>
+   *       Another case covered in this step is:
+   *       <pre>{@code
+   * <T> List<T> method(List<T> t1) {}
+   * List<@NonNull String> nonNullList = new ArrayList<>();
+   * List<@Nullable String> nl = method(nonNullList);
+   * }</pre>
+   *       The above assignment should fail because T is forced to be both @NonNull and @Nullable.
+   *       In cases like these, we use @NonNull String becasue we always favor constraints from the
+   *       arguments over the assignment context.
+   *   <li>6. Infer from Assignment Context Finally, the JLS states that we should substitute the
+   *       types we have inferred up until this point back into the original argument constraints.
+   *       We should then combine the constraints we get from the assignment context and solve using
+   *       the greatest lower bounds of all of the constraints of the form: {@literal F :> U} (these
+   *       are referred to as "subtypes" in the ConstraintMap.TargetConstraints).
+   *   <li>7. Merge the result from steps 5 and 6 giving preference to 5 (the argument constraints).
+   *       Return the result.
+   * </ul>
+   */
+  private Map<TypeVariable, AnnotatedTypeMirror> infer(
+      final AnnotatedTypeFactory typeFactory,
+      final List<AnnotatedTypeMirror> argumentTypes,
+      final AnnotatedTypeMirror assignedTo,
+      final ExecutableElement methodElem,
+      final AnnotatedExecutableType methodType,
+      final Set<TypeVariable> targets,
+      final boolean useNullArguments) {
 
         // 1.  Step 1 - Build up argument constraints
         // The AFConstraints for arguments are used also in the
@@ -507,27 +517,27 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
     }
 
-    /**
-     * Step 1: Create a constraint {@code Ai << Fi} for each Argument(Ai) to formal parameter(Fi).
-     * Remove any constraint that does not involve a type parameter to be inferred. Reduce the
-     * remaining constraints so that Fi = Tj where Tj is a type parameter with an argument to be
-     * inferred. Return the resulting constraint set.
-     *
-     * @param typeFactory AnnotatedTypeFactory
-     * @param argTypes list of annotated types corresponding to the arguments to the method
-     * @param methodType annotated type of the method
-     * @param targets type variables to be inferred
-     * @param useNullArguments whether or not null method arguments should be considered
-     * @return a set of argument constraints
-     */
-    protected Set<AFConstraint> createArgumentAFConstraints(
-            final AnnotatedTypeFactory typeFactory,
-            final List<AnnotatedTypeMirror> argTypes,
-            final AnnotatedExecutableType methodType,
-            final Set<TypeVariable> targets,
-            boolean useNullArguments) {
-        final List<AnnotatedTypeMirror> paramTypes =
-                AnnotatedTypes.expandVarArgsFromTypes(methodType, argTypes);
+  /**
+   * Step 1: Create a constraint {@code Ai << Fi} for each Argument(Ai) to formal parameter(Fi).
+   * Remove any constraint that does not involve a type parameter to be inferred. Reduce the
+   * remaining constraints so that Fi = Tj where Tj is a type parameter with an argument to be
+   * inferred. Return the resulting constraint set.
+   *
+   * @param typeFactory AnnotatedTypeFactory
+   * @param argTypes list of annotated types corresponding to the arguments to the method
+   * @param methodType annotated type of the method
+   * @param targets type variables to be inferred
+   * @param useNullArguments whether or not null method arguments should be considered
+   * @return a set of argument constraints
+   */
+  protected Set<AFConstraint> createArgumentAFConstraints(
+      final AnnotatedTypeFactory typeFactory,
+      final List<AnnotatedTypeMirror> argTypes,
+      final AnnotatedExecutableType methodType,
+      final Set<TypeVariable> targets,
+      boolean useNullArguments) {
+    final List<AnnotatedTypeMirror> paramTypes =
+        AnnotatedTypes.expandVarArgsParametersFromTypes(methodType, argTypes);
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(
@@ -912,16 +922,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
     }
 
-    public AnnotatedTypeVariable addOrGetDeclarations(
-            TypeVariable target,
-            AnnotatedTypeFactory typeFactory,
-            Map<TypeVariable, AnnotatedTypeVariable> declarations) {
-        AnnotatedTypeVariable atv = declarations.get(target);
-        if (atv == null) {
-            atv = (AnnotatedTypeVariable) typeFactory.getAnnotatedType(target.asElement());
-            declarations.put(target, atv);
-        }
-
-        return atv;
-    }
+  public AnnotatedTypeVariable addOrGetDeclarations(
+      TypeVariable target,
+      AnnotatedTypeFactory typeFactory,
+      Map<TypeVariable, AnnotatedTypeVariable> declarations) {
+    AnnotatedTypeVariable atv =
+        declarations.computeIfAbsent(
+            target, __ -> (AnnotatedTypeVariable) typeFactory.getAnnotatedType(target.asElement()));
+    return atv;
+  }
 }

@@ -1,5 +1,3 @@
-import org.checkerframework.javacutil.SystemUtil;
-
 /*
  * @test
  * @summary Test that inherited declaration annotations are stored in bytecode.
@@ -24,8 +22,7 @@ public class Extends {
   }
 
   // Issue 342
-  // We do not want that behavior with related annotations. @Pure should
-  // override @SideEffectFree.
+  // We do not want that behavior with related annotations. @Pure should override @SideEffectFree.
   @ADescriptions({
     @ADescription(annotation = "org/checkerframework/dataflow/qual/Pure"),
     @ADescription(annotation = "org/checkerframework/dataflow/qual/SideEffectFree")
@@ -37,7 +34,10 @@ public class Extends {
 
 class TestWrapper {
   public static String wrap(String... method) {
-    return String.join(
-        System.lineSeparator(), SystemUtil.concatenate("class Test extends Super {", method, "}"));
+    return "class Test extends Super {"
+        + System.lineSeparator()
+        + String.join(System.lineSeparator(), method)
+        + System.lineSeparator()
+        + "}";
   }
 }

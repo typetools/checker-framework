@@ -6,11 +6,11 @@ import org.checkerframework.checker.nullness.qual.*;
  */
 public class MethodTypeVars {
   void m() {
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     Object a = A.badMethod(null);
     Object b = A.badMethod(new Object());
 
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     A.goodMethod(null);
     A.goodMethod(new Object());
   }
@@ -33,6 +33,5 @@ class B {
   void call() {
     Integer[] arg = new Integer[] {1, 2, 3, 4};
     indexOf1(arg, Integer.valueOf(5));
-    // indexOf2(arg, new Integer(5));
   }
 }

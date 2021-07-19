@@ -26,7 +26,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -216,10 +216,10 @@ public class ForwardAnalysisImpl<
   }
 
   @Override
-  @SuppressWarnings("nullness:contracts.precondition.override.invalid") // implementation field
+  @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
   public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-    return SystemUtil.<ReturnNode, Pair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
+    return CollectionsPlume.<ReturnNode, Pair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
         returnNode -> Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
         cfg.getReturnNodes());
   }
@@ -238,11 +238,7 @@ public class ForwardAnalysisImpl<
     // Prepare cache
     IdentityHashMap<Node, TransferResult<V, S>> cache;
     if (analysisCaches != null) {
-      cache = analysisCaches.get(blockTransferInput);
-      if (cache == null) {
-        cache = new IdentityHashMap<>();
-        analysisCaches.put(blockTransferInput, cache);
-      }
+      cache = analysisCaches.computeIfAbsent(blockTransferInput, __ -> new IdentityHashMap<>());
     } else {
       cache = null;
     }
@@ -258,8 +254,7 @@ public class ForwardAnalysisImpl<
         case REGULAR_BLOCK:
           {
             RegularBlock rb = (RegularBlock) block;
-            // Apply transfer function to contents until we found the node we are
-            // looking for.
+            // Apply transfer function to contents until we found the node we are looking for.
             TransferInput<V, S> store = blockTransferInput;
             TransferResult<V, S> transferResult;
             for (Node n : rb.getNodes()) {
@@ -270,8 +265,7 @@ public class ForwardAnalysisImpl<
               if (cache != null && cache.containsKey(n)) {
                 transferResult = cache.get(n);
               } else {
-                // Copy the store to avoid changing other blocks' transfer inputs in
-                // {@link #inputs}
+                // Copy the store to avoid changing other blocks' transfer inputs in {@link #inputs}
                 transferResult = callTransferFunction(n, store.copy());
                 if (cache != null) {
                   cache.put(n, transferResult);
@@ -299,14 +293,12 @@ public class ForwardAnalysisImpl<
               return blockTransferInput.getRegularStore();
             }
             setCurrentNode(node);
-            // Copy the store to avoid changing other blocks' transfer inputs in {@link
-            // #inputs}
+            // Copy the store to avoid changing other blocks' transfer inputs in {@link #inputs}
             TransferResult<V, S> transferResult;
             if (cache != null && cache.containsKey(node)) {
               transferResult = cache.get(node);
             } else {
-              // Copy the store to avoid changing other blocks' transfer inputs in
-              // {@link #inputs}
+              // Copy the store to avoid changing other blocks' transfer inputs in {@link #inputs}
               transferResult = callTransferFunction(node, blockTransferInput.copy());
               if (cache != null) {
                 cache.put(node, transferResult);
@@ -362,11 +354,11 @@ public class ForwardAnalysisImpl<
       case METHOD:
         MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
         // TODO: document that LocalVariableNode has no block that it belongs to
-        return SystemUtil.mapList(LocalVariableNode::new, tree.getParameters());
+        return CollectionsPlume.mapList(LocalVariableNode::new, tree.getParameters());
       case LAMBDA:
         LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
         // TODO: document that LocalVariableNode has no block that it belongs to
-        return SystemUtil.mapList(LocalVariableNode::new, lambda.getParameters());
+        return CollectionsPlume.mapList(LocalVariableNode::new, lambda.getParameters());
       default:
         return Collections.emptyList();
     }
@@ -377,8 +369,7 @@ public class ForwardAnalysisImpl<
     TransferResult<V, S> transferResult = super.callTransferFunction(node, input);
 
     if (node instanceof ReturnNode) {
-      // Save a copy of the store to later check if some property holds at a given return
-      // statement
+      // Save a copy of the store to later check if some property holds at a given return statement
       storesAtReturnStatements.put((ReturnNode) node, transferResult);
     }
     return transferResult;
@@ -447,10 +438,7 @@ public class ForwardAnalysisImpl<
     S elseStore = getStoreBefore(b, Store.Kind.ELSE);
     boolean shouldWiden = false;
     if (blockCount != null) {
-      Integer count = blockCount.get(b);
-      if (count == null) {
-        count = 0;
-      }
+      Integer count = blockCount.getOrDefault(b, 0);
       shouldWiden = count >= maxCountBeforeWidening;
       if (shouldWiden) {
         blockCount.put(b, 0);

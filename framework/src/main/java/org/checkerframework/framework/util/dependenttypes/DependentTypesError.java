@@ -111,8 +111,7 @@ public class DependentTypesError {
 
   @Override
   public String toString() {
-    // Empty string concatenation is to maybe work around Error Prone's InlineFormatString.
-    return String.format(FORMAT_STRING + "", expression, error);
+    return String.format(FORMAT_STRING, expression, error);
   }
 
   /**

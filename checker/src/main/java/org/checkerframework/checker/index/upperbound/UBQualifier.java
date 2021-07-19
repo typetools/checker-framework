@@ -13,10 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
-import org.checkerframework.checker.index.qual.PolyUpperBound;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
-import org.checkerframework.checker.index.qual.UpperBoundBottom;
-import org.checkerframework.checker.index.qual.UpperBoundUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
@@ -25,6 +22,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
@@ -59,24 +57,29 @@ public abstract class UBQualifier {
    */
   public static UBQualifier createUBQualifier(
       AnnotationMirror am, String offset, UpperBoundChecker ubChecker) {
-    if (AnnotationUtils.areSameByClass(am, UpperBoundUnknown.class)) {
-      return UpperBoundUnknownQualifier.UNKNOWN;
-    } else if (AnnotationUtils.areSameByClass(am, UpperBoundBottom.class)) {
-      return UpperBoundBottomQualifier.BOTTOM;
-    } else if (AnnotationUtils.areSameByClass(am, LTLengthOf.class)) {
-      return parseLTLengthOf(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByClass(am, SubstringIndexFor.class)) {
-      return parseSubstringIndexFor(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByClass(am, LTEqLengthOf.class)) {
-      return parseLTEqLengthOf(am, offset, ubChecker);
-    } else if (AnnotationUtils.areSameByClass(am, LTOMLengthOf.class)) {
-      return parseLTOMLengthOf(am, offset);
-    } else if (AnnotationUtils.areSameByClass(am, PolyUpperBound.class)) {
-      // TODO:  Ignores offset.  Should we check that offset is not set?
-      return PolyQualifier.POLY;
+    switch (AnnotationUtils.annotationName(am)) {
+      case "org.checkerframework.checker.index.qual.UpperBoundUnknown":
+        return UpperBoundUnknownQualifier.UNKNOWN;
+      case "org.checkerframework.checker.index.qual.UpperBoundBottom":
+        return UpperBoundBottomQualifier.BOTTOM;
+      case "org.checkerframework.checker.index.qual.UpperBoundLiteral":
+        int intValue =
+            AnnotationUtils.getElementValueInt(am, ubChecker.upperBoundLiteralValueElement);
+        return UpperBoundLiteralQualifier.create(intValue);
+      case "org.checkerframework.checker.index.qual.LTLengthOf":
+        return parseLTLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.SubstringIndexFor":
+        return parseSubstringIndexFor(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTEqLengthOf":
+        return parseLTEqLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.LTOMLengthOf":
+        return parseLTOMLengthOf(am, offset, ubChecker);
+      case "org.checkerframework.checker.index.qual.PolyUpperBound":
+        // TODO:  Ignores offset.  Should we check that offset is not set?
+        return PolyQualifier.POLY;
+      default:
+        throw new BugInCF("createUBQualifier(%s, %s, ...)", am, offset);
     }
-    assert false;
-    return UpperBoundUnknownQualifier.UNKNOWN;
   }
 
   /** A cache for the {@link #nCopiesEmptyStringCache} method. */
@@ -178,10 +181,13 @@ public abstract class UBQualifier {
    *
    * @param am a @LTOMLengthOf annotation
    * @param extraOffset offset to add to each element of offsets; may be null
+   * @param ubChecker used for obtaining fields from {@code am}
    * @return a UBQualifier created from the @LTOMLengthOf annotation
    */
-  private static UBQualifier parseLTOMLengthOf(AnnotationMirror am, String extraOffset) {
-    List<String> sequences = AnnotationUtils.getElementValueArray(am, "value", String.class, false);
+  private static UBQualifier parseLTOMLengthOf(
+      AnnotationMirror am, String extraOffset, UpperBoundChecker ubChecker) {
+    List<String> sequences =
+        AnnotationUtils.getElementValueArray(am, ubChecker.ltOMLengthOfValueElement, String.class);
     List<String> offset = Collections.nCopies(sequences.size(), "1");
     return createUBQualifier(sequences, offset, extraOffset);
   }
@@ -274,10 +280,29 @@ public abstract class UBQualifier {
     return false;
   }
 
+  /**
+   * Returns true if this UBQualifier represents a literal integer.
+   *
+   * @return true if this UBQualifier represents a literal integer
+   */
+  public boolean isLiteral() {
+    return false;
+  }
+
+  /**
+   * Returns true if this UBQualifier is the top type.
+   *
+   * @return true if this UBQualifier is the top type
+   */
   public boolean isUnknown() {
     return false;
   }
 
+  /**
+   * Returns true if this UBQualifier is the bottom type.
+   *
+   * @return true if this UBQualifier is the bottom type
+   */
   public boolean isBottom() {
     return false;
   }
@@ -375,15 +400,39 @@ public abstract class UBQualifier {
      * @return a copy of the map
      */
     private Map<String, Set<OffsetEquation>> copyMap() {
-      Map<String, Set<OffsetEquation>> result = new HashMap<>();
+      Map<String, Set<OffsetEquation>> result = new HashMap<>(CollectionsPlume.mapCapacity(map));
       for (String sequenceName : map.keySet()) {
-        Set<OffsetEquation> equations = new HashSet<>();
-        for (OffsetEquation offsetEquation : map.get(sequenceName)) {
-          equations.add(new OffsetEquation(offsetEquation));
+        Set<OffsetEquation> oldEquations = map.get(sequenceName);
+        Set<OffsetEquation> newEquations =
+            new HashSet<>(CollectionsPlume.mapCapacity(oldEquations));
+        for (OffsetEquation offsetEquation : oldEquations) {
+          newEquations.add(new OffsetEquation(offsetEquation));
         }
-        result.put(sequenceName, equations);
+        result.put(sequenceName, newEquations);
       }
       return result;
+    }
+
+    /**
+     * Returns true if the given integer literal is a subtype of this. The literal is a subtype of
+     * this if, for every offset expression, {@code literal + offset <= -1}.
+     *
+     * @param i an integer
+     * @return true if the given integer literal is a subtype of this
+     */
+    /*package-protected*/ boolean literalIsSubtype(int i) {
+      for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
+        for (OffsetEquation equation : entry.getValue()) {
+          if (!equation.isInt()) {
+            return false;
+          }
+          int offset = equation.getInt();
+          if (i + offset > -1) {
+            return false;
+          }
+        }
+      }
+      return true;
     }
 
     /**
@@ -397,11 +446,11 @@ public abstract class UBQualifier {
     private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
         List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
 
-      Map<String, Set<OffsetEquation>> map = new HashMap<>();
+      Map<String, Set<OffsetEquation>> map = new HashMap<>(CollectionsPlume.mapCapacity(sequences));
       if (offsets.isEmpty()) {
         for (String sequence : sequences) {
           // Not `Collections.singleton(extraEq)` because the values get modified
-          Set<OffsetEquation> thisSet = new HashSet<>();
+          Set<OffsetEquation> thisSet = new HashSet<>(1);
           thisSet.add(extraEq);
           map.put(sequence, thisSet);
         }
@@ -410,11 +459,7 @@ public abstract class UBQualifier {
         for (int i = 0; i < sequences.size(); i++) {
           String sequence = sequences.get(i);
           String offset = offsets.get(i);
-          Set<OffsetEquation> set = map.get(sequence);
-          if (set == null) {
-            set = new HashSet<>();
-            map.put(sequence, set);
-          }
+          Set<OffsetEquation> set = map.computeIfAbsent(sequence, __ -> new HashSet<>());
           OffsetEquation eq = OffsetEquation.createOffsetFromJavaExpression(offset);
           if (eq.hasError()) {
             return null;
@@ -702,6 +747,8 @@ public abstract class UBQualifier {
         return true;
       } else if (superType.isBottom()) {
         return false;
+      } else if (superType.isLiteral()) {
+        return false;
       }
 
       LessThanLengthOf superTypeLTL = (LessThanLengthOf) superType;
@@ -764,13 +811,16 @@ public abstract class UBQualifier {
         return other;
       } else if (other.isBottom()) {
         return this;
+      } else if (other.isLiteral()) {
+        return other.lub(this);
       }
       LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
       Set<String> sequences = new HashSet<>(map.keySet());
       sequences.retainAll(otherLtl.map.keySet());
 
-      Map<String, Set<OffsetEquation>> lubMap = new HashMap<>();
+      Map<String, Set<OffsetEquation>> lubMap =
+          new HashMap<>(CollectionsPlume.mapCapacity(sequences));
       for (String sequence : sequences) {
         Set<OffsetEquation> offsets1 = map.get(sequence);
         Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);
@@ -879,6 +929,8 @@ public abstract class UBQualifier {
         return this;
       } else if (other.isBottom()) {
         return other;
+      } else if (other.isLiteral()) {
+        return other.glb(this);
       }
       LessThanLengthOf otherLtl = (LessThanLengthOf) other;
 
@@ -1237,9 +1289,106 @@ public abstract class UBQualifier {
     }
   }
 
+  /** Represents an integer value that is known at compile time. */
+  public static class UpperBoundLiteralQualifier extends UBQualifier {
+
+    /** Represents the value -1. */
+    public static UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
+    /** Represents the value 0. */
+    public static UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
+    /** Represents the value 1. */
+    public static UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
+
+    /**
+     * Creates a new UpperBoundLiteralQualifier, without using cached values.
+     *
+     * @param value the integer value
+     */
+    private UpperBoundLiteralQualifier(int value) {
+      this.value = value;
+    }
+
+    /**
+     * Creates an UpperBoundLiteralQualifier.
+     *
+     * @param value the integer value
+     * @return an UpperBoundLiteralQualifier
+     */
+    public static UpperBoundLiteralQualifier create(int value) {
+      switch (value) {
+        case -1:
+          return NEGATIVEONE;
+        case 0:
+          return ZERO;
+        case 1:
+          return ONE;
+        default:
+          return new UpperBoundLiteralQualifier(value);
+      }
+    }
+
+    /** The integer value. */
+    int value;
+
+    /**
+     * Returns the integer value.
+     *
+     * @return the integer value
+     */
+    int getValue() {
+      return value;
+    }
+
+    @Override
+    public boolean isLiteral() {
+      return true;
+    }
+
+    @Override
+    public boolean isSubtype(UBQualifier superType) {
+      if (superType.isUnknown()) {
+        return true;
+      } else if (superType.isBottom()) {
+        return false;
+      } else if (superType.isLiteral()) {
+        int otherValue = ((UpperBoundLiteralQualifier) superType).value;
+        return value == otherValue;
+      }
+
+      LessThanLengthOf superTypeLTL = (LessThanLengthOf) superType;
+      return superTypeLTL.literalIsSubtype(value);
+    }
+
+    @Override
+    public UBQualifier lub(UBQualifier other) {
+      if (isSubtype(other)) {
+        return other;
+      } else {
+        return UpperBoundUnknownQualifier.UNKNOWN;
+      }
+    }
+
+    @Override
+    public UBQualifier glb(UBQualifier other) {
+      if (isSubtype(other)) {
+        return this;
+      } else {
+        return UpperBoundBottomQualifier.BOTTOM;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Literal(" + value + ")";
+    }
+  }
+
+  /** The top type qualifier. */
   public static class UpperBoundUnknownQualifier extends UBQualifier {
+    /** The canonical representative. */
     static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
+    /** This class is a singleton. */
     private UpperBoundUnknownQualifier() {}
 
     @Override

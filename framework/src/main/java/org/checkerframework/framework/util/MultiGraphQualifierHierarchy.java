@@ -70,22 +70,20 @@ import org.checkerframework.javacutil.TypeSystemError;
  *     <pre>
  * {@code @Override}
  * {@code @SuppressWarnings("deprecation")}
- * <code> public QualifierHierarchy createQualifierHierarchy() {
- *      return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
- *              .createMultiGraphQualifierHierarchy(this);
- *   }
- * </code>
+ * {@code public QualifierHierarchy createQualifierHierarchy() {
+ *     return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
+ *             .createMultiGraphQualifierHierarchy(this);
+ *  }}
  * {@code @Override}
  * {@code @SuppressWarnings("deprecation")}
- * <code> public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
- *          org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
- *                  factory) {
- *      return new YourSubclassQualifierHierarchy(factory);
- *  }
- * </code></pre>
+ * {@code public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+ *         org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
+ *                 factory) {
+ *     return new YourSubclassQualifierHierarchy(factory);
+ *  }}</pre>
  */
 @SuppressWarnings("interning") // Class is deprecated.
-@Deprecated
+@Deprecated // 2020-09-10
 public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
 
   /**
@@ -96,7 +94,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
    * @return qualifier hierarchy
    * @deprecated Use {@link ElementQualifierHierarchy} instead.
    */
-  @Deprecated
+  @Deprecated // 2020-09-10
   public static QualifierHierarchy createMultiGraphQualifierHierarchy(
       AnnotatedTypeFactory annotatedTypeFactory) {
     Set<Class<? extends Annotation>> supportedTypeQualifiers =
@@ -187,7 +185,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
    *
    * @deprecated Use {@link ElementQualifierHierarchy} instead.
    */
-  @Deprecated
+  @Deprecated // 2020-09-10
   public static class MultiGraphFactory {
     /**
      * Map from qualifiers to the direct supertypes of the qualifier. Only the subtype relations
@@ -289,7 +287,10 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
       if (poly == null) {
         return null;
       }
-      // Default value for `PolymorphicQualifier.value` is Annotation.class
+      @SuppressWarnings("deprecation"
+      // It would be possible to use the ExecutableElement for `PolymorphicQualifier.value` rather
+      // than the string "value", but it is not convenient to obtain the ExecutableElement.
+      )
       Name ret = AnnotationUtils.getElementValueClassName(poly, "value", true);
       return ret;
     }

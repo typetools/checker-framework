@@ -52,10 +52,11 @@ changed after creation.  A fixed-size data structure has no \<add> or
 support for other fixed-size data structures (see
 Section~\ref{index-annotating-fixed-size}).
 
-To run the Index Checker, run the command
+To run the Index Checker, run either of these commands:
 
 \begin{alltt}
   javac -processor index \emph{MyJavaFile}.java
+  javac -processor org.checkerframework.checker.index.IndexChecker \emph{MyJavaFile}.java
 \end{alltt}
 
 Recall that in Java, type annotations are written before the type;
@@ -73,6 +74,12 @@ Here is how to declare a length-2 array of length-4 arrays:
 \begin{Verbatim}
   String @ArrayLen(2) [] @ArrayLen(4) []
 \end{Verbatim}
+
+The paper ``Lightweight Verification of Array Indexing'' (ISSTA 2018,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html})
+gives more details about the Index Checker.
+``Enforcing correct array indexes with a type system''~\cite{Santino2016} (FSE 2016) describes
+an earlier version.
 
 
 \sectionAndLabel{Index Checker structure and annotations}{index-annotations}
@@ -236,8 +243,15 @@ qualifiers:
     Checker.  On the left is a type system for lower bounds.  On the right
     is a type system for upper bounds.  Qualifiers written in gray should
     never be written in source code; they are used internally by the type
-    system. \<"myArray"> in the Upper Bound qualifiers is an example of
-    an array's name.}
+    system.
+    % Using "\\" works for some but not all installations of LaTeX.
+    \newline
+    In the Upper Bound type system, subtyping rules depend on both the
+    array name (\<"myArray">, in the figure) and on the offset (which is 0,
+    the default, in the figure).  Another qualifier is
+    \refqualclass{checker/index/qual}{UpperBoundLiteral}, whose subtyping
+    relationships depend on its argument and on offsets for other qualifiers.
+ }
   \label{fig-index-int-types}
 \end{figure}
 
@@ -285,10 +299,9 @@ or \code{@LTOMLengthOf("arr")}.
   \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
   (``\<LTEq>'' stands for ``Less Than or Equal to''.)
 
-\item[\refqualclass{checker/index/qual}{PolyUpperBound}]
-  indicates qualifier polymorphism.
-  For a description of qualifier polymorphism, see
-  Section~\ref{method-qualifier-polymorphism}.
+  \<@LTEqLengthOf(\{"a"\})> = \<@LTLengthOf(value=\{"a"\}, offset=-1)>, and \\
+  \<@LTEqLengthOf(value=\{"a"\}, offset=x)> = \<@LTLengthOf(value=\{"a"\},
+  offset=x-1)> for any x.
 
 \item[\refqualclasswithparams{checker/index/qual}{LTOMLengthOf}{String[] names}]
   An expression with this type
@@ -310,6 +323,21 @@ or \code{@LTOMLengthOf("arr")}.
   \code{@LTOMLengthOf("a")} and \code{@LTOMLengthOf("b")}.
   (``\<LTOM>'' stands for ``Less Than One Minus'', because another way of
   saying ``at least 2 less than \<a.length>'' is ``less than \<a.length-1>''.)
+
+  \<@LTOMLengthOf(\{"a"\})> = \<@LTLengthOf(value=\{"a"\}, offset=1)>, and \\
+  \<@LTOMLengthOf(value=\{"a"\}, offset=x)> = \<@LTLengthOf(value=\{"a"\},
+  offset=x+1)> for any x.
+
+\item[\refqualclass{checker/index/qual}{UpperBoundLiteral}]
+  repesents a constant value, typically a literal written in source code.
+  Its subtyping relationship is:
+  \<@UpperBoundLiteral(lit)> <: \<LTLengthOf(value="myArray", offset=off)>
+  if \<lit>+\<offset> $\le$ -1.
+
+\item[\refqualclass{checker/index/qual}{PolyUpperBound}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
 
 \item[\refqualclass{checker/index/qual}{UpperBoundUnknown}]
   There is no information about the upper bound on the value of an expression with this type.

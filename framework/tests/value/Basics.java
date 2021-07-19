@@ -1,7 +1,7 @@
 import org.checkerframework.common.value.qual.*;
 
 /** Test subtyping, LUB and annotation replacement in special cases. */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "removal"})
 public class Basics {
 
   public void boolTest() {
@@ -11,7 +11,7 @@ public class Basics {
     }
     @BoolVal({true, false}) boolean b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @BoolVal({false}) boolean c = a;
   }
 
@@ -22,7 +22,7 @@ public class Basics {
     }
     @IntVal({'a', 'b'}) Character b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({'a'}) Character c = a;
   }
 
@@ -33,7 +33,7 @@ public class Basics {
     }
     @IntVal({'a', 'b'}) char b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({'a'}) char c = a;
   }
 
@@ -44,7 +44,7 @@ public class Basics {
     }
     @DoubleVal({0, 2}) Double b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DoubleVal({0}) Double c = a;
   }
 
@@ -55,7 +55,7 @@ public class Basics {
     }
     @DoubleVal({0, 2}) double b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DoubleVal({0}) double c = a;
   }
 
@@ -66,7 +66,7 @@ public class Basics {
     }
     @DoubleVal({0, 2}) Float b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DoubleVal({0}) Float c = a;
   }
 
@@ -77,7 +77,7 @@ public class Basics {
     }
     @DoubleVal({0, 2}) float b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DoubleVal({'a'}) float c = a;
   }
 
@@ -86,11 +86,11 @@ public class Basics {
     Integer a;
 
     /* IntVal + IntVal */
-    a = new Integer(0);
+    a = Integer.valueOf(0);
     if (true) {
       a = 2;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({0}) Integer test1 = a;
     @IntVal({0, 2}) Integer test2 = a;
 
@@ -101,24 +101,24 @@ public class Basics {
       a = y;
     }
     @IntRange(from = 15, to = 30)
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Integer test4 = a;
     @IntRange(from = 3, to = 30) Integer test5 = a;
 
     /* IntRange + IntVal */
-    a = new Integer(0);
+    a = Integer.valueOf(0);
     if (true) {
       a = x;
     }
     @IntRange(from = 0, to = 4) Integer test7 = a;
 
     /* IntRange (Wider than 10) + IntVal */
-    a = new Integer(0);
+    a = Integer.valueOf(0);
     if (true) {
       a = y;
     }
     @IntRange(from = 1, to = 30)
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     Integer test8 = a;
     @IntRange(from = 0, to = 30) Integer test9 = a;
   }
@@ -131,7 +131,7 @@ public class Basics {
     if (true) {
       a = 2;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @IntVal({0}) int test1 = a;
     @IntVal({0, 2}) int test2 = a;
 
@@ -142,7 +142,7 @@ public class Basics {
       a = y;
     }
     @IntRange(from = 15, to = 30)
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int test4 = a;
     @IntRange(from = 3, to = 30) int test5 = a;
 
@@ -159,7 +159,7 @@ public class Basics {
       a = y;
     }
     @IntRange(from = 1, to = 30)
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int test8 = a;
     @IntRange(from = 0, to = 30) int test9 = a;
   }
@@ -186,19 +186,19 @@ public class Basics {
     if (true) {
       a = dv1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DoubleVal({4.0, 5.0}) double test1 = a;
     @DoubleVal({0.0, 1.0, 2.0, 3.0, 4.0, 5.0}) double test2 = a;
 
     /* IntRange + DoubleVal */
     a = ir;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DoubleVal({2.0}) double test3 = a;
     @DoubleVal({2.0, 3.0}) double test4 = a;
     if (true) {
       a = dv1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     test1 = a;
     test2 = a;
 
@@ -207,7 +207,7 @@ public class Basics {
     if (true) {
       a = dv1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @DoubleVal({4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0}) double test5 = a;
     @UnknownVal double test6 = a;
   }
@@ -219,7 +219,7 @@ public class Basics {
     }
     @StringVal({"test1", "test2"}) String b = a;
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @StringVal({"test1"}) String c = a;
   }
 
@@ -235,7 +235,7 @@ public class Basics {
 
     // :: warning: (too.many.values.given.int)
     @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int b = 20; // d is @IntRange(from=1, to=12)
 
     @UnknownVal int c = a; // This should always succeed
@@ -244,7 +244,7 @@ public class Basics {
   void fromGreaterThanTo() {
     // :: error: (from.greater.than.to)
     @IntRange(from = 2, to = 0)
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int a = 1; // a should be @BottomVal
 
     @IntRange(from = 1) int b = 2;
@@ -278,7 +278,7 @@ public class Basics {
 
     @UnknownVal String c = "";
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     a = c; // This should not succeed if a is treated as @ArrayLen(1)
 
     @ArrayLen(1) String al = a; // a is @ArrayLen(1)
@@ -286,7 +286,7 @@ public class Basics {
     // :: warning: (too.many.values.given)
     @StringVal({"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"}) String d = "h";
 
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     d = "b" + d; // This should not succeed since d is @ArrayLen(1)
 
     @ArrayLen(1) String dl = d; // d is @ArrayLen(1)

@@ -126,8 +126,7 @@ public class JavaStubifier {
       Optional<CompilationUnit> opt = result.getResult();
       if (opt.isPresent()) {
         CompilationUnit cu = opt.get();
-        // Only remove the "contained" comments so that the copyright comment is not
-        // removed.
+        // Only remove the "contained" comments so that the copyright comment is not removed.
         cu.getAllContainedComments().forEach(Node::remove);
         mv.visit(cu, null);
         if (cu.findAll(ClassOrInterfaceDeclaration.class).isEmpty()
@@ -167,8 +166,7 @@ public class JavaStubifier {
     @Override
     public EnumDeclaration visit(EnumDeclaration ed, Void arg) {
       super.visit(ed, arg);
-      // Enums can't be extended, so it is ok to remove them if they are not externally
-      // visible.
+      // Enums can't be extended, so it is ok to remove them if they are not externally visible.
       removeIfPrivateOrPkgPrivate(ed);
       return ed;
     }

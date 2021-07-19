@@ -141,9 +141,9 @@ A typical invocation of \<wpi.sh> is
 The result is a set of log files placed in the \<dljc-out/> folder of the
 target project. The results of type-checking with each candidate set of
 annotations will be concatenated into the file \<dljc-out/wpi.log>; the final
-results (i.e. those obtained using the most precise, consistent set of annotations)
+results (i.e., those obtained using the most precise, consistent set of annotations)
 will appear at the end of this file.
-The inferred annotations appear in \<.stub> files in a
+The inferred annotations appear in \<.ajava> files in a
 temporary directory whose name appears in the \<dlcj-out/wpi.log> file.
 
 The full syntax for invoking \<wpi.sh> is
@@ -177,7 +177,7 @@ Here is an explanation of the arguments:
   The directory to use for the `-g` option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
-  project (i.e. each target project has its own Gradle home). This default
+  project (i.e., each target project has its own Gradle home). This default
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
@@ -208,12 +208,18 @@ The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
 \begin{itemize}
 \item The project on which inference is run must contain an Ant, Gradle,
   or Maven buildfile that compiles the project.
-\item At least one of the \verb|JAVA_HOME|, \verb|JAVA8_HOME|, or \verb|JAVA_HOME| environment variables
-must be set.
-\item If set, the \verb|JAVA_HOME| environment variable must point to a Java 8 or Java 11 JDK.
+\item At least one of the \verb|JAVA_HOME|,
+  \verb|JAVA8_HOME|, \verb|JAVA11_HOME|, or \verb|JAVA16_HOME|
+  environment variables must be set.
+\item If set, the \verb|JAVA_HOME| environment variable must point to a
+  Java 8, 11, or 16 JDK.
 \item If set, the \verb|JAVA8_HOME| environment variable must point to a Java 8 JDK.
 \item If set, the \verb|JAVA11_HOME| environment variable must point to a Java 11 JDK.
+\item If set, the \verb|JAVA16_HOME| environment variable must point to a Java 16 JDK.
 \item \<CHECKERFRAMEWORK> environment variable must point to a built copy of the Checker Framework.
+\item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
+from \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not
+set, the WPI scripts will download this dependency automatically.)
 \item Other dependencies:
   ant,
   awk,
@@ -221,7 +227,7 @@ must be set.
   git,
   gradle,
   mvn,
-  python2.7 (for dljc),
+  python3 (for dljc),
   wget.
 
   Python2.7 modules:
@@ -260,7 +266,7 @@ Log files are copied into a results directory.
 For a failed run, the log file indicates the reason that WPI could not
 be run to completion on the project.
 For a successful run, the log file indicates whether the project was verified
-(i.e. no errors were reported), or whether the checker issued warnings
+(i.e., no errors were reported), or whether the checker issued warnings
 (which might be true positive or false positive warnings).
 
 \item Use \<wpi-summary.sh> to summarize the logs in the output results directory.
@@ -268,15 +274,30 @@ Use its output to guide your analysis of the results of running \<wpi-many.sh>:
 you should manually examine the log files for the projects that appear in the
 "results available" list it produces. This list is the list of every project
 that the script was able to successfully run WPI on.  (This does not mean
-that the project type-checks without errors afterward.)
+that the project type-checks without errors afterward, or even typechecks at
+all --- just that the Checker Framework attempted to typecheck the project and
+some output was produced.)
 
-\item (Optional) Fork repositories and make changes (e.g., add annotations or fix bugs).
-Modify the input file for \<wpi-many.sh> to remove the line for the original repository,
-but add a new line that indicates the location of both your
-fork and the original repository.
-Then, re-run your experiments, supplying the \<-u "\$yourGithubId"> option to \<wpi-many.sh>.
-\<wpi-many.sh> will perform inference on your forked version rather than
-the original.
+\item (Optional) Add annotations that WPI does not infer, to eliminate
+  false positive warnings. There are three ways you can add annotations to a target
+  program:
+  \begin{itemize}
+  \item
+    Fork the project and add the annotations directly to the project's
+    source code, and add a dependency on
+    \<org.checkerframework:checker-qual> to the project's build
+    system. This approach is the most difficult, but has the advantage that
+    the checker will attempt to verify any annotations you add.
+  \item
+    Add the annotations in an \<.ajava> file. Create the \<.ajava> file
+    as a copy of the \<.java> file, following the instructions in
+    Section~\ref{ajava-files} about directory structure, etc.
+  \item Add the annotations in a stub file, creating the \<.astub> file as
+    a copy of the \<.java> file.  When you run the checker, supply the
+    \<-AmergeStubsWithSource> and \<-Astubs=...> command-line arguments.  This
+    option is similar to option 2, but requires extra command-line options
+    to the checker rather than a specific directory structure.
+  \end{itemize}
 
 \end{enumerate}
 
@@ -303,39 +324,30 @@ An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
   % The need to be an absolute pathname is a bug in wpi-many.sh that should be fixed.
   The file must be specified as an absolute, not relative, path.
   Each line
-  should have 2 or 3 elements, separated by whitespace:
+  should have 2 elements, separated by whitespace:
   \begin{enumerate}
   \item
     The URL of the git repository on GitHub. The URL must be of the form
     https://github.com/username/repository .  The script is reliant on the
     number of slashes, so excluding ``https://'' is an error.
   \item The commit hash to use.
-  \item
-    If the repository's owner is the user specified by the -u flag, the
-    original (upstream) GitHub repository.  Its only use is to be made an
-    upstream named "unannotated".
   \end{enumerate}
 
 \item[-t timeout]
   The timeout for running the checker on each project, in seconds.
 
-\item[-u user]
-  The GitHub owner for repositories that have been forked and
-  modified. These repositories must have a third entry in the infile
-  indicating their origin. Default is "\$USER".
-
 \item[-g GRADLECACHEDIR]
   The directory to use for the `-g` option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
   build with Gradle. The default is `.gradle` relative to the target
-  project (i.e. each target project has its own Gradle home). This default
+  project (i.e., each target project has its own Gradle home). This default
   is motivated by
   \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
 \item[-s]
   If this flag is present, then projects which are not buildable --- for which
   no supported build file is present or for which running the standard build
-  commands fail --- are skipped on future runs but are NOT deleted immediately
+  commands fail --- are skipped on future runs but are \emph{not} deleted immediately
   (such projects are deleted immediately if this flag is not present). This flag is useful
   if you intend to run \<wpi-many.sh> several times on the same set of repositories
   (for example, during checker development), to avoid re-downloading unusable projects.
@@ -438,6 +450,11 @@ non-null arguments, but your program contains an error and one of the calls
 to \<m3> passes \<null> as the argument.  Then the tool will infer that
 \<m3>'s parameter has \<@Nullable> type.
 
+If you run whole-program inference on a library that contains mutually
+recursive routines, and there are no non-recursive calls to the routines,
+then whole-program inference may run a long time and eventually produce
+incorrect results.  In this case, write type annotations on the formal
+parameters of one of the routines.
 
 Whole-program inference is a ``forward analysis''.
 % This might change in the future.
@@ -478,7 +495,7 @@ Annotate the field to be ignored with
 \refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
 
 Whole-program inference, for a type-checker other than the Nullness Checker,
-ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
+ignores assignments and pseudo-assignments where the right-hand-side is the \<null> literal.
 
 
 \subsectionAndLabel{Manually checking whole-program inference results}{whole-program-inference-manual-checking}
@@ -506,18 +523,19 @@ skip this section.
 
 Each script repeatedly runs the checker with an \<-Ainfer=> command-line option to infer
 types for fields and method signatures.  The output of this step
-is a \<.jaif> (for \<infer-and-annotate.sh>) or stub (for \<wpi.sh>) file that records the inferred types.
+is a \<.jaif> (for \<infer-and-annotate.sh>) or \<.ajava> (for \<wpi.sh>) file that records the inferred types.
 Each script adds the inferred annotation to the next run, so that the checker takes them into
-account (and checks them). \<wpi.sh> does this using the \<-AmergeStubsWithSource> command-line
-option to the Checker Framework; \<infer-and-annotate.sh> inserts the inferred annotations in the program using the
+account (and checks them). \<wpi.sh> does this by updating the set of \<.ajava> files that are passed
+to the checker via the \<-Aajava> command-line argument;
+\<infer-and-annotate.sh> inserts the inferred annotations in the program using the
 \ahreforurl{https://checkerframework.org/annotation-file-utilities/}{Annotation File Utilities}.
 
 On each
-iteration through the process, there may be new annotations in the \<.jaif> or \<.astub>
+iteration through the process, there may be new annotations in the \<.jaif> or \<.ajava>
 files, and some type-checking errors may be eliminated (though others might
 be introduced).
 The process halts when there are no more changes to the inference results,
-that is, the \<.jaif> or \<.astub> files are unchanged between two runs.
+that is, the \<.jaif> or \<.ajava> files are unchanged between two runs.
 
 When the type-checker is run on the program with the final annotations
 inserted, there might still be errors.  This may be because the tool did
@@ -573,5 +591,5 @@ some benefits:
 %%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax CFI
 %%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom dljc
 %%  LocalWords:  IgnoreInWholeProgramInference typechecking Inference'' m3
-% LocalWords:  PROJECTDIR awk gradle mvn python2 wget subprocess32 github
+% LocalWords:  PROJECTDIR awk gradle mvn python3 wget subprocess32 github
 % LocalWords:  securerandom astub typecheck

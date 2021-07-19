@@ -9,7 +9,7 @@ public class Creation {
   @Interned Foo[] fa_field2 = new @Interned Foo[22]; // valid
 
   public void test() {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Interned Foo f = new Foo(); // error
     Foo g = new Foo(); // valid
     // :: warning: (cast.unsafe.constructor.invocation)
@@ -22,27 +22,27 @@ public class Creation {
   }
 
   public @Interned Object read_data_0() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return new Object();
   }
 
   public @Interned Object read_data_1() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return Integer.valueOf(22);
   }
 
   public @Interned Integer read_data_2() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return Integer.valueOf(22);
   }
 
   public @Interned Object read_data_3() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return new String("hello");
   }
 
   public @Interned String read_data_4() {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return new String("hello");
   }
 }

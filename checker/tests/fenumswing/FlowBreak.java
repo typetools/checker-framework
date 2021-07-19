@@ -22,10 +22,9 @@ public class FlowBreak {
         break;
       }
       // We can only come here from the then-branch, the else-branch is dead.
-      // Therefore, we only take the annotations at the end of
-      // the then-branch and ignore the results of the else-branch.
-      // Therefore, o is @SwingHorizontalOrientation and the
-      // following is valid:
+      // Therefore, we only take the annotations at the end of the then-branch and ignore the
+      // results of the else-branch.
+      // Therefore, o is @SwingHorizontalOrientation and the following is valid:
       @SwingHorizontalOrientation Object pla = o;
     }
     // Here we have to merge three paths:
@@ -33,7 +32,7 @@ public class FlowBreak {
     // 2. The normal end of the loop body [@SwingHorizontalOrientation]
     // 3. The path from the break to here [@SwingVerticalOrientation]
     // Currently, the third path is ignored and we do not get this error message.
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return o;
   }
 }

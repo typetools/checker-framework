@@ -25,63 +25,63 @@ public class StringPatternsUsage {
     String e = "";
 
     requiresA(a);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresB(a);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresC(a);
     requiresAB(a);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresBC(a);
     requiresAC(a);
     requiresAny(a);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresA(b);
     requiresB(b);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresC(b);
     requiresAB(b);
     requiresBC(b);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresAC(b);
     requiresAny(b);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresA(c);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresB(c);
     requiresC(c);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresAB(c);
     requiresBC(c);
     requiresAC(c);
     requiresAny(c);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresA(d);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresB(d);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresC(d);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresAB(d);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresBC(d);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresAC(d);
     requiresAny(d);
 
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresA(e);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresB(e);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresC(e);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresAB(e);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresBC(e);
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     requiresAC(e);
     requiresAny(e);
   }

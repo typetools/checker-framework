@@ -10,8 +10,10 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,9 +41,14 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
+import org.plumelib.util.StringsPlume;
 
-/** A utility class that helps with {@link TypeMirror}s. */
+/**
+ * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
+ * methods that {@link Types} does not.
+ */
 public final class TypesUtils {
 
     /** Class cannot be instantiated. */
@@ -151,17 +158,19 @@ public final class TypesUtils {
 
     /// Getters
 
-    /**
-     * Gets the fully qualified name for a provided type. It returns an empty name if type is an
-     * anonymous type.
-     *
-     * @param type the declared type
-     * @return the name corresponding to that type
-     */
-    public static @CanonicalNameOrEmpty Name getQualifiedName(DeclaredType type) {
-        TypeElement element = (TypeElement) type.asElement();
-        return element.getQualifiedName();
-    }
+  /**
+   * Gets the fully qualified name for a provided type. It returns an empty name if type is an
+   * anonymous type.
+   *
+   * @param type the declared type
+   * @return the name corresponding to that type
+   */
+  @SuppressWarnings("signature:return") // todo: add fake override of Name.toString.
+  public static @CanonicalNameOrEmpty String getQualifiedName(DeclaredType type) {
+    TypeElement element = (TypeElement) type.asElement();
+    @CanonicalNameOrEmpty Name name = element.getQualifiedName();
+    return name.toString();
+  }
 
     /**
      * Returns the simple type name, without annotations.
@@ -703,21 +712,33 @@ public final class TypesUtils {
         }
     }
 
-    /**
-     * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
-     * (called upperBound there) and jdk8u.
-     */
-    public static Type wildLowerBound(TypeMirror tm, ProcessingEnvironment env) {
-        Type t = (Type) tm;
-        if (t.hasTag(TypeTag.WILDCARD)) {
-            Context context = ((JavacProcessingEnvironment) env).getContext();
-            Symtab syms = Symtab.instance(context);
-            Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
-            return w.isExtendsBound() ? syms.botType : wildLowerBound(w.type, env);
-        } else {
-            return TypeAnnotationUtils.unannotatedType(t);
-        }
+  /**
+   * Returns the {@code DeclaredType} for {@code java.lang.Object}.
+   *
+   * @param env {@link ProcessingEnvironment}
+   * @return the {@code DeclaredType} for {@code java.lang.Object}
+   */
+  public static DeclaredType getObjectTypeMirror(ProcessingEnvironment env) {
+    Context context = ((JavacProcessingEnvironment) env).getContext();
+    Symtab syms = Symtab.instance(context);
+    return (DeclaredType) syms.objectType;
+  }
+
+  /**
+   * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
+   * (called upperBound there) and jdk8u.
+   */
+  public static Type wildLowerBound(TypeMirror tm, ProcessingEnvironment env) {
+    Type t = (Type) tm;
+    if (t.hasTag(TypeTag.WILDCARD)) {
+      Context context = ((JavacProcessingEnvironment) env).getContext();
+      Symtab syms = Symtab.instance(context);
+      Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
+      return w.isExtendsBound() ? syms.botType : wildLowerBound(w.type, env);
+    } else {
+      return TypeAnnotationUtils.unannotatedType(t);
     }
+  }
 
     /**
      * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound. If the
@@ -763,6 +784,7 @@ public final class TypesUtils {
         return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
     }
 
+
     public static boolean isUnboundWildcard(TypeMirror type) {
         return type.getKind() == TypeKind.WILDCARD && ((Type.WildcardType) type).isUnbound();
     }
@@ -779,21 +801,48 @@ public final class TypesUtils {
                 && ((Type.WildcardType) type).isSuperBound();
     }
 
-    /** Returns whether a TypeVariable represents a captured type. */
-    public static boolean isCaptured(TypeMirror typeVar) {
-        if (typeVar.getKind() != TypeKind.TYPEVAR) {
-            return false;
-        }
-        return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
+  /**
+   * Returns true if {@code type} is a type variable created during capture conversion.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a type variable created during capture conversion
+   * @deprecated use {@link #isCapturedTypeVariable(TypeMirror)} instead
+   */
+  @Deprecated // 2021-07-06
+  public static boolean isCaptured(TypeMirror type) {
+    if (type.getKind() != TypeKind.TYPEVAR) {
+      return false;
     }
+    return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
+  }
 
-    /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns {@code null}. */
-    public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
-        if (isCaptured(typeVar)) {
-            return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
-        }
-        return null;
+  /**
+   * Returns true if {@code type} is a type variable created during capture conversion.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a type variable created during capture conversion
+   */
+  public static boolean isCapturedTypeVariable(TypeMirror type) {
+    if (type.getKind() != TypeKind.TYPEVAR) {
+      return false;
     }
+    return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
+  }
+
+  /**
+   * If {@code typeVar} is a captured type variable, then returns its underlying wildcard; otherwise
+   * returns {@code null}.
+   *
+   * @param typeVar a type variable that might be a captured type variable
+   * @return {@code typeVar} is a captured type variable, then returns its underlying wildcard;
+   *     otherwise returns {@code null}
+   */
+  public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
+    if (isCapturedTypeVariable(typeVar)) {
+      return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
+    }
+    return null;
+  }
 
     /// Least upper bound and greatest lower bound
 
@@ -940,17 +989,17 @@ public final class TypesUtils {
         }
     }
 
-    /**
-     * Given a list of TypeMirror, return a list of Type.
-     *
-     * @param typeMirrors a list of TypeMirrors
-     * @return the argument, converted to a javac list
-     */
-    private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
-            List<TypeMirror> typeMirrors) {
-        List<Type> typeList = SystemUtil.mapList(Type.class::cast, typeMirrors);
-        return com.sun.tools.javac.util.List.from(typeList);
-    }
+  /**
+   * Given a list of TypeMirror, return a list of Type.
+   *
+   * @param typeMirrors a list of TypeMirrors
+   * @return the argument, converted to a javac list
+   */
+  private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
+      List<TypeMirror> typeMirrors) {
+    List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
+    return com.sun.tools.javac.util.List.from(typeList);
+  }
 
     /// Substitutions
 
@@ -1043,9 +1092,9 @@ public final class TypesUtils {
             List<? extends TypeMirror> typeArgs,
             ProcessingEnvironment env) {
 
-        List<Type> newP = SystemUtil.mapList(Type.class::cast, typeVariables);
+    List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
 
-        List<Type> newT = SystemUtil.mapList(Type.class::cast, typeArgs);
+    List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
 
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         com.sun.tools.javac.code.Types types =
@@ -1056,21 +1105,85 @@ public final class TypesUtils {
                 com.sun.tools.javac.util.List.from(newT));
     }
 
-    /**
-     * Returns the depth of an array type.
-     *
-     * @param arrayType an array type
-     * @return the depth of {@code arrayType}
-     */
-    public static int getArrayDepth(TypeMirror arrayType) {
-        int counter = 0;
-        TypeMirror type = arrayType;
-        while (type.getKind() == TypeKind.ARRAY) {
-            counter++;
-            type = ((ArrayType) type).getComponentType();
-        }
-        return counter;
+  /**
+   * Returns the depth of an array type.
+   *
+   * @param arrayType an array type
+   * @return the depth of {@code arrayType}
+   */
+  public static int getArrayDepth(TypeMirror arrayType) {
+    int counter = 0;
+    TypeMirror type = arrayType;
+    while (type.getKind() == TypeKind.ARRAY) {
+      counter++;
+      type = ((ArrayType) type).getComponentType();
     }
+    return counter;
+  }
+
+  /**
+   * If {@code typeMirror} is a wildcard, returns a fresh type variable that will be used as a
+   * captured type variable for it. If {@code typeMirror} is not a wildcard, returns {@code
+   * typeMirror}.
+   *
+   * @param typeMirror a type
+   * @param env processing environment
+   * @return a fresh type variable if {@code typeMirror} is a wildcard, otherwise {@code typeMirror}
+   */
+  public static TypeMirror freshTypeVariable(TypeMirror typeMirror, ProcessingEnvironment env) {
+    JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+    com.sun.tools.javac.code.Types types =
+        com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+    return types.freshTypeVariables(com.sun.tools.javac.util.List.of((Type) typeMirror)).head;
+  }
+
+  /**
+   * Returns the list of type variables such that a type variable in the list only references type
+   * variables at a lower index than itself.
+   *
+   * @param collection a collection of type variables
+   * @param types type utilities
+   * @return the type variables ordered so that each type variable only references earlier type
+   *     variables
+   */
+  public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
+    List<TypeVariable> list = new ArrayList<>(collection);
+    List<TypeVariable> ordered = new ArrayList<>();
+    while (!list.isEmpty()) {
+      TypeVariable free = doesNotContainOthers(list, types);
+      list.remove(free);
+      ordered.add(free);
+    }
+    return ordered;
+  }
+
+  /**
+   * Returns the first TypeVariable in {@code collection} that does not contain any other type in
+   * the collection.
+   *
+   * @param collection a collection of type variables
+   * @param types types
+   * @return the first TypeVariable in {@code collection} that does not contain any other type in
+   *     the collection, but maybe itsself
+   */
+  @SuppressWarnings("interning:not.interned") // must be the same object from collection
+  private static TypeVariable doesNotContainOthers(
+      Collection<? extends TypeVariable> collection, Types types) {
+    for (TypeVariable candidate : collection) {
+      boolean doesNotContain = true;
+      for (TypeVariable other : collection) {
+        if (candidate != other && types.contains(candidate, other)) {
+          doesNotContain = false;
+          break;
+        }
+      }
+      if (doesNotContain) {
+        return candidate;
+      }
+    }
+    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+  }
+
     /**
      * This method returns the single abstract method declared by {@code functionalInterfaceType}.
      * (The type of this method is referred to as the function type.)

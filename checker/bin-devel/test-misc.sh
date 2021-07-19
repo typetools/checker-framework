@@ -7,8 +7,7 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-# In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
 source "$SCRIPTDIR"/build.sh
 
 PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
@@ -25,6 +24,9 @@ if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --e
   echo "Don't use static import or wildcard import"
   exit 1
 fi
+make -C checker/bin
+make -C checker/bin-devel
+make -C docs/developer/release
 
 ## HTML legality
 ./gradlew htmlValidate --console=plain --warning-mode=all --no-daemon

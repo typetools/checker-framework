@@ -2,7 +2,6 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import java.util.List;
@@ -189,7 +188,7 @@ public class ElementAnnotationApplier {
 
     if (paramDecl != null) {
       final Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
-      if (parentTree != null && parentTree.getKind() == Kind.LAMBDA_EXPRESSION) {
+      if (parentTree != null && parentTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
         return Pair.of(paramDecl, (LambdaExpressionTree) parentTree);
       }
     }
@@ -223,9 +222,8 @@ public class ElementAnnotationApplier {
         try {
           ElementAnnotationApplier.applyInternal(type, tpelt, factory);
         } catch (UnexpectedAnnotationLocationException e) {
-          // The above is the second call to applyInternal on this type and element, so
-          // any errors were already reported by the first call. (See the only use of this
-          // class.)
+          // The above is the second call to applyInternal on this type and element, so any errors
+          // were already reported by the first call. (See the only use of this class.)
         }
       }
       return super.visitTypeVariable(type, factory);

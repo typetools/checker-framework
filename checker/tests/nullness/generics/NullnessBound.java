@@ -10,7 +10,7 @@ public class NullnessBound {
     t2.add(null);
 
     Gen1<@NonNull String> t3;
-    // :: error: (type.argument.type.incompatible)
+    // :: error: (type.argument)
     Gen2<@NonNull String> t4;
   }
 

@@ -159,8 +159,7 @@ public class TypeAnnotationUtils {
       Object v2 = ((Attribute.Constant) a2).getValue();
       return v1.equals(v2);
     } else if (a1 instanceof Attribute.Compound && a2 instanceof Attribute.Compound) {
-      // The annotation value is another annotation.  `a1` and `a2` implement
-      // AnnotationMirror.
+      // The annotation value is another annotation.  `a1` and `a2` implement AnnotationMirror.
       DeclaredType t1 = ((Attribute.Compound) a1).getAnnotationType();
       DeclaredType t2 = ((Attribute.Compound) a2).getAnnotationType();
       if (!types.isSameType(t1, t2)) {
@@ -174,7 +173,7 @@ public class TypeAnnotationUtils {
       }
       for (Symbol.MethodSymbol key : map1.keySet()) {
         Attribute attr1 = map1.get(key);
-        @SuppressWarnings("nullness:assignment.type.incompatible") // same keys in map1 & map2
+        @SuppressWarnings("nullness:assignment") // same keys in map1 & map2
         @NonNull Attribute attr2 = map2.get(key);
         if (!attributeEquals(attr1, attr2, types)) {
           return false;

@@ -14,9 +14,9 @@ public class AssertIfClient {
 
   void rpcResponseTypestate() {
     Proxy proxy = new Proxy();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object response1 = proxy.rpcResponse();
-    // :: error: (contracts.precondition.not.satisfied)
+    // :: error: (contracts.precondition)
     rpcResponseNonNull(proxy);
     rpcResponseNullable(proxy);
 
@@ -33,7 +33,7 @@ class Proxy {
   // the RPC response, or null if not yet received
   @MonotonicNonNull Object response = null;
 
-  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @SuppressWarnings("contracts.postcondition")
   @EnsuresNonNull({"response", "rpcResponse()"})
   void issueRpc() {
     response = new Object();
@@ -41,7 +41,7 @@ class Proxy {
 
   // If this method returns true,
   // then response is non-null and rpcResponse() returns non-null
-  @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+  @SuppressWarnings("contracts.conditional.postcondition")
   @EnsuresNonNullIf(
       expression = {"response", "rpcResponse()"},
       result = true)
@@ -49,10 +49,9 @@ class Proxy {
     return response != null;
   }
 
-  // Returns non-null if the response has been received, null otherwise;
-  // but an @AssertNonNullIfNonNull annotation would states the converse,
-  // that if the result is non-null then the response hs been received.
-  // See rpcResponseReceived.
+  // Returns non-null if the response has been received, null otherwise; but an
+  // @AssertNonNullIfNonNull annotation would states the converse, that if the result is non-null
+  // then the response hs been received.  See rpcResponseReceived.
   @Pure
   @Nullable Object rpcResponse() {
     return response;

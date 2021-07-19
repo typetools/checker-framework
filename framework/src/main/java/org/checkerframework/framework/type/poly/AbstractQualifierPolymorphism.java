@@ -159,7 +159,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       return;
     }
     List<AnnotatedTypeMirror> parameters =
-        AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
+        AnnotatedTypes.expandVarArgsParameters(atypeFactory, type, tree.getArguments());
     List<AnnotatedTypeMirror> arguments =
         AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
@@ -167,8 +167,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         collector.visit(arguments, parameters);
 
     // For super() and this() method calls, getReceiverType(tree) does not return the correct
-    // type. So, just skip those.  This is consistent with skipping receivers of constructors
-    // below.
+    // type. So, just skip those.  This is consistent with skipping receivers of constructors below.
     if (type.getReceiverType() != null
         && !TreeUtils.isSuperConstructorCall(tree)
         && !TreeUtils.isThisConstructorCall(tree)) {
@@ -192,7 +191,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       return;
     }
     List<AnnotatedTypeMirror> parameters =
-        AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
+        AnnotatedTypes.expandVarArgsParameters(atypeFactory, type, tree.getArguments());
     List<AnnotatedTypeMirror> arguments =
         AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
@@ -271,7 +270,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
     // Deal with varargs
     if (memberReference.isVarArgs() && !functionalInterface.isVarArgs()) {
-      parameters = AnnotatedTypes.expandVarArgsFromTypes(memberReference, args);
+      parameters = AnnotatedTypes.expandVarArgsParametersFromTypes(memberReference, args);
     }
 
     instantiationMapping =

@@ -12,7 +12,7 @@ public class LessThanValue {
   void subtyping(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
     @LessThan("x") int q = a;
     @LessThan({"x", "y"})
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int r = b;
   }
 
@@ -21,7 +21,7 @@ public class LessThanValue {
   void lub(int x, int y, @LessThan({"#1", "#2"}) int a, @LessThan("#1") int b) {
     @LessThan("x") int r = flag ? a : b;
     @LessThan({"x", "y"})
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     int s = flag ? a : b;
   }
 
@@ -79,7 +79,7 @@ public class LessThanValue {
     if (count > maximum) {
       int deleteIndex = count - maximum - 1;
       // TODO: shouldn't error
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       isLessThanOrEqual(0, deleteIndex);
     }
   }
@@ -90,11 +90,11 @@ public class LessThanValue {
 
       } else {
         // TODO: improve value checker
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         @IntRange(from = 0) int countDivMinus = count / 2 - 1;
         // Reasign to update the value in the store.
         countDivMinus = countDivMinus;
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         isLessThan(0, countDivMinus);
         isLessThanOrEqual(0, countDivMinus);
       }

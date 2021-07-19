@@ -13,7 +13,7 @@ public class TestIsRegex {
 
   void test2(String str2) throws Exception {
     if (!RegexUtil.isRegex(str2)) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       Pattern.compile(str2);
     }
   }
@@ -30,7 +30,7 @@ public class TestIsRegex {
     if (RegexUtil.isRegex(str4)) {
       Pattern.compile(str4);
     } else {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       Pattern.compile(str4);
     }
   }
@@ -46,14 +46,14 @@ public class TestIsRegex {
     if (RegexUtil.isRegex(str6, 4)) {
       Pattern.compile(str6).matcher("4kdfj").group(4);
     } else {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       Pattern.compile(str6);
     }
   }
 
   void test7(String str7) throws Exception {
     if (RegexUtil.isRegex(str7, 5)) {
-      // :: error: (group.count.invalid)
+      // :: error: (group.count)
       Pattern.compile(str7).matcher("4kdfj").group(6);
     }
   }
@@ -115,7 +115,7 @@ public class TestIsRegex {
     @Regex(2) String l1 = RegexUtil.asRegex(s, 2);
     @Regex(1) String l2 = RegexUtil.asRegex(s, 2);
     @Regex String l3 = RegexUtil.asRegex(s, 2);
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Regex(3) String l4 = RegexUtil.asRegex(s, 2);
   }
 

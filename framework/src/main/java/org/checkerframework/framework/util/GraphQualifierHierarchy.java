@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
  * @deprecated See notes in {@link MultiGraphQualifierHierarchy} about how to convert existing
  *     subclasses to the new classes.
  */
-@Deprecated
+@Deprecated // 2020-09-10
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
   public GraphQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {

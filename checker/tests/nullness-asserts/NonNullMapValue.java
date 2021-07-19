@@ -20,26 +20,22 @@ public class NonNullMapValue {
   // explicitly because it is the annotation we are talking about.)
   //   HashMap<String,@NonNull String> myMap;
   //
-  // However, the get method's declaration is misleading (in the context of
-  // the nullness type system), since it can always return null no matter
-  // whether the map values are non-null:
+  // However, the get method's declaration is misleading (in the context of the nullness type
+  // system), since it can always return null no matter whether the map values are non-null:
   //   V get(Object key) { ... return null; }
   //
   // Here are potential solutions:
-  //  * Forbid declaring values as non-null.  This is the wrong approach.
-  //    (It would also be hard to express syntactically.)
-  //  * The checker could recognize a special new annotation on the return
-  //    value of get, indicating that its return type isn't merely inferred
-  //    from the generic type, but is always nullable.  (This special new
-  //    annotations could even be "@Nullable".  A different annotation may
-  //    be better, becase in general we would like to issue an error
-  //    message when someone applies an annotation to a generic type
-  //    parameter.)
-  // Additionally, to reduce the number of false positive warnings caused
-  // by the fact that get's return value is nullable:
-  //  * Build a more specialized sophisticated flow analysis that checks
-  //    that the passed key to Map.containsKey() is either checked against
-  //    Map.containsKey() or Map.keySet().
+  //  * Forbid declaring values as non-null.  This is the wrong approach.  (It would also be hard to
+  //    express syntactically.)
+  //  * The checker could recognize a special new annotation on the return value of get, indicating
+  //    that its return type isn't merely inferred from the generic type, but is always nullable.
+  //    (This special new annotations could even be "@Nullable".  A different annotation may be
+  //    better, becase in general we would like to issue an error message when someone applies an
+  //    annotation to a generic type parameter.)
+  // Additionally, to reduce the number of false positive warnings caused by the fact that get's
+  // return value is nullable:
+  //  * Build a more specialized sophisticated flow analysis that checks that the passed key to
+  //    Map.containsKey() is either checked against Map.containsKey() or Map.keySet().
 
   Map<String, @NonNull String> myMap;
 
@@ -49,13 +45,13 @@ public class NonNullMapValue {
 
   void testMyMap(String key) {
     @NonNull String value;
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     value = myMap.get(key); // should issue warning
     if (myMap.containsKey(key)) {
       value = myMap.get(key);
     }
     for (String keyInMap : myMap.keySet()) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       value = myMap.get(key); // should issue warning
     }
     for (String keyInMap : myMap.keySet()) {
@@ -157,7 +153,7 @@ public class NonNullMapValue {
   public void withinElseInvalid(Map<Object, Object> map, Object key) {
     if (map.containsKey(key)) {
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Object v = map.get(key); // should issue warning
     }
   }
@@ -174,7 +170,7 @@ public class NonNullMapValue {
 
     // We get an override warning, because we do not use the annotated JDK in the
     // test suite. Ignore this.
-    @SuppressWarnings("override.return.invalid")
+    @SuppressWarnings("override.return")
     @org.checkerframework.dataflow.qual.Pure
     public @Nullable V get(@Nullable Object o);
   }
@@ -204,11 +200,10 @@ public class NonNullMapValue {
 
   interface MyMap2<K, V> {
     @org.checkerframework.dataflow.qual.Pure
-    // This annotation is not legal on containsKey in general.
-    // If the Map is declared as (say) Map<Object, @Nullable Object>,
-    // then get returns a nullable value.  We really want to say that if
-    // containsKey returns non-null, then get returns V rather than
-    // @Nullable V, but I don't know how to say that.
+    // This annotation is not legal on containsKey in general.  If the Map is declared as (say)
+    // Map<Object, @Nullable Object>, then get returns a nullable value.  We really want to say that
+    // if containsKey returns non-null, then get returns V rather than @Nullable V, but I don't know
+    // how to say that.
     @EnsuresNonNullIf(result = true, expression = "get(#1)")
     public abstract boolean containsKey(@Nullable Object a1);
 

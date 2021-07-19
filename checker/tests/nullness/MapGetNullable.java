@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class MapGetNullable {
 
   void foo0(Map<String, @Nullable Integer> m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key);
   }
 
@@ -26,7 +26,7 @@ public class MapGetNullable {
   }
 
   void foo1(MyMap1<String, @Nullable Integer> m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key);
   }
 
@@ -37,7 +37,7 @@ public class MapGetNullable {
   public static class MyMap2<V, K> extends HashMap<K, V> {}
 
   void foo2(MyMap2<@Nullable Integer, String> m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key);
   }
 
@@ -48,7 +48,7 @@ public class MapGetNullable {
   public static class MyMap3<K> extends HashMap<K, @Nullable Integer> {}
 
   void foo3(MyMap3<String> m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key);
   }
 
@@ -69,7 +69,7 @@ public class MapGetNullable {
   public static class MyMap5<V> extends HashMap<String, V> {}
 
   void foo5(MyMap5<@Nullable Integer> m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key);
   }
 
@@ -97,23 +97,23 @@ public class MapGetNullable {
 
   public static class MyMap7 extends HashMap<String, @Nullable Integer> {
     void useget(@KeyFor("this") String k) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Integer val = get(k);
     }
 
     void useget2(@KeyFor("this") String k) {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       @NonNull Integer val = this.get(k);
     }
   }
 
   void foo7(MyMap7 m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key);
   }
 
   Integer get7(MyMap7 m, @KeyFor("#1") String key) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return m.get(key);
   }
 
@@ -126,12 +126,12 @@ public class MapGetNullable {
   }
 
   void foo9(MyMap9<String, @Nullable Integer> m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key);
   }
 
   void foo9a(MyMap9<String, @Nullable Integer> m, @KeyFor("#1") String key) {
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Integer val = m.get(key, 22);
   }
 
@@ -140,7 +140,7 @@ public class MapGetNullable {
   }
 
   <K, V> V get9a(MyMap9<K, V> m, @KeyFor("#1") String key) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return m.get(key, 22);
   }
 }

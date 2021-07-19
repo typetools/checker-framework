@@ -3,7 +3,7 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -67,7 +67,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     AnnotatedTypeMirror leftOpType = argTypes.first;
     AnnotatedTypeMirror rightOpType = argTypes.second;
 
-    Kind kind = node.getKind();
+    Tree.Kind kind = node.getKind();
 
     switch (kind) {
       case DIVIDE:
@@ -131,8 +131,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     return super.visitBinary(node, p);
   }
 
-  /** @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any */
-  private String kindWithoutAssignment(Kind kind) {
+  /**
+   * Returns a string representation of {@code kind}, with trailing _ASSIGNMENT stripped off if any.
+   *
+   * @param kind a tree kind
+   * @return a string representation of {@code kind}, with trailing _ASSIGNMENT stripped off if any
+   */
+  private String kindWithoutAssignment(Tree.Kind kind) {
     String result = kind.toString();
     if (result.endsWith("_ASSIGNMENT")) {
       return result.substring(0, result.length() - "_ASSIGNMENT".length());
@@ -165,7 +170,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     AnnotatedTypeMirror varType = argTypes.first;
     AnnotatedTypeMirror exprType = argTypes.second;
 
-    Kind kind = node.getKind();
+    Tree.Kind kind = node.getKind();
 
     switch (kind) {
       case DIVIDE_ASSIGNMENT:

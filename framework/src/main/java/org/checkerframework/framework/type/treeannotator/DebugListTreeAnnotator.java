@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type.treeannotator;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,7 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** A ListTreeAnnotator implementation that additionally outputs debugging information. */
 public class DebugListTreeAnnotator extends ListTreeAnnotator {
-  private final Set<Kind> kinds;
+  private final Set<Tree.Kind> kinds;
 
   public DebugListTreeAnnotator(TreeAnnotator... annotators) {
     super(annotators);

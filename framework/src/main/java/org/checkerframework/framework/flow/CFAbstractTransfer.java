@@ -31,7 +31,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -194,9 +193,8 @@ public abstract class CFAbstractTransfer<
     analysis.setCurrentTree(tree);
     // is there an assignment context node available?
     if (node != null && node.getAssignmentContext() != null) {
-      // get the declared type of the assignment context by looking up the
-      // assignment context tree's type in the factory while flow is
-      // disabled.
+      // Get the declared type of the assignment context by looking up the assignment context tree's
+      // type in the factory while flow is disabled.
       Tree contextTree = node.getAssignmentContext().getContextTree();
       AnnotatedTypeMirror assignmentContext = null;
       if (contextTree != null) {
@@ -248,7 +246,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}
    * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
    */
-  @Deprecated // use getWidenedValue() or getNarrowedValue()
+  @Deprecated // 2020-10-02
   protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
     if (annotatedValue == null) {
       return null;
@@ -267,7 +265,8 @@ public abstract class CFAbstractTransfer<
   /** The initial store maps method formal parameters to their currently most refined type. */
   @Override
   public S initialStore(UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
-    if (underlyingAST.getKind() != Kind.LAMBDA && underlyingAST.getKind() != Kind.METHOD) {
+    if (underlyingAST.getKind() != UnderlyingAST.Kind.LAMBDA
+        && underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
       if (fixedInitialStore != null) {
         return fixedInitialStore;
       } else {
@@ -277,7 +276,7 @@ public abstract class CFAbstractTransfer<
 
     S info;
 
-    if (underlyingAST.getKind() == Kind.METHOD) {
+    if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
 
       if (fixedInitialStore != null) {
         // copy knowledge
@@ -325,7 +324,7 @@ public abstract class CFAbstractTransfer<
         }
       }
 
-    } else if (underlyingAST.getKind() == Kind.LAMBDA) {
+    } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
       // Create a copy and keep only the field values (nothing else applies).
       info = analysis.createCopiedStore(fixedInitialStore);
       // Allow that local variables are retained; they are effectively final,
@@ -343,7 +342,7 @@ public abstract class CFAbstractTransfer<
       }
 
       CFGLambda lambda = (CFGLambda) underlyingAST;
-      @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+      @SuppressWarnings("interning:assignment") // used in == tests
       @InternedDistinct Tree enclosingTree =
           TreePathUtil.enclosingOfKind(
               factory.getPath(lambda.getLambdaTree()),
@@ -363,11 +362,11 @@ public abstract class CFAbstractTransfer<
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
-        // Try to find an enclosing initializer block
-        // Would love to know if there was a better way
-        // Find any enclosing element of the lambda (using trees)
-        // Then go up the elements to find an initializer element (which can't be found with
-        // the tree).
+        // Try to find an enclosing initializer block.
+        // Would love to know if there was a better way.
+        // Find any enclosing element of the lambda (using trees).
+        // Then go up the elements to find an initializer element (which can't be found with the
+        // tree).
         TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
         Element anEnclosingElement = null;
         while (loopTree.getLeaf() != enclosingTree) {
@@ -456,10 +455,8 @@ public abstract class CFAbstractTransfer<
           continue;
         }
         if (TreeUtils.isConstructor(methodTree)) {
-          // if we are in a constructor,
-          // then we can still use the static type, but only
-          // if there is also an initializer that already does
-          // some initialization.
+          // If we are in a constructor, then we can still use the static type, but only if there is
+          // also an initializer that already does some initialization.
           boolean found = false;
           for (Pair<VariableElement, V> fieldValue : fieldValues) {
             if (fieldValue.first.equals(element)) {
@@ -491,16 +488,14 @@ public abstract class CFAbstractTransfer<
       // final local values from b() would be visible in the store for c(),
       // even though they should only be visible in b() and in classes
       // defined inside the method body of b().
-      // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis
-      // does not call itself recursively to analyze inner classes, but instead
-      // pops classes off of a queue, and the information about known final local
-      // values is stored by GenericAnnotatedTypeFactory.analyze in
-      // GenericAnnotatedTypeFactory.flowResult, which is visible to all classes
-      // in the queue regardless of their level of recursion.
+      // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis does not call itself
+      // recursively to analyze inner classes, but instead pops classes off of a queue, and the
+      // information about known final local values is stored by GenericAnnotatedTypeFactory.analyze
+      // in GenericAnnotatedTypeFactory.flowResult, which is visible to all classes in the queue
+      // regardless of their level of recursion.
 
-      // We work around this here by ensuring that we only add a final
-      // local value to a method's store if that method is enclosed by
-      // the method where the local variables were declared.
+      // We work around this here by ensuring that we only add a final local value to a method's
+      // store if that method is enclosed by the method where the local variables were declared.
 
       // Find the enclosing method of the element
       Element enclosingMethodOfVariableDeclaration = elem.getEnclosingElement();
@@ -562,9 +557,8 @@ public abstract class CFAbstractTransfer<
               analysis.atypeFactory, stringToJavaExpr, /*errorTree=*/ null);
       JavaExpression exprJe;
       try {
-        // TODO: currently, these expressions are parsed at the
-        // declaration (i.e. here) and for every use. this could
-        // be optimized to store the result the first time.
+        // TODO: currently, these expressions are parsed at the declaration (i.e. here) and for
+        // every use. this could be optimized to store the result the first time.
         // (same for other annotations)
         exprJe = StringToJavaExpression.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
       } catch (JavaExpressionParseException e) {
@@ -664,8 +658,7 @@ public abstract class CFAbstractTransfer<
     S store = p.getRegularStore();
     V storeValue = store.getValue(n);
     // look up value in factory, and take the more specific one
-    // TODO: handle cases, where this is not allowed (e.g. constructors in
-    // non-null type systems)
+    // TODO: handle cases, where this is not allowed (e.g. constructors in non-null type systems)
     V factoryValue = getValueFromFactory(n.getTree(), n);
     V value = moreSpecificValue(factoryValue, storeValue);
     return new RegularTransferResult<>(finishValue(value, store), store);
@@ -843,7 +836,8 @@ public abstract class CFAbstractTransfer<
   /**
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
    * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
-   * the rhs -- that is, the rhs may not appear in the result, but rather its lhs and rhs may).
+   * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
+   * lhs and rhs do).
    *
    * @param node possibly an assignment node
    * @return a list containing all the right- and left-hand sides in the given assignment node; it
@@ -940,8 +934,7 @@ public abstract class CFAbstractTransfer<
     Node lhs = n.getLeftOperand();
     Node rhs = n.getRightOperand();
 
-    // update the results store if the assignment target is something we can
-    // process
+    // update the results store if the assignment target is something we can process
     S info = result.getRegularStore();
     // ResultValue is the type of LHS + RHS
     V resultValue = result.getResultValue();
@@ -993,20 +986,8 @@ public abstract class CFAbstractTransfer<
 
     // Perform WPI before the store has been side-effected.
     if (shouldPerformWholeProgramInference(n.getTree(), method)) {
-      // Finds the receiver's type
-      Tree receiverTree = n.getTarget().getReceiver().getTree();
-      if (receiverTree == null) {
-        // If there is no receiver, then get the class being visited.
-        // This happens when the receiver corresponds to "this".
-        receiverTree = analysis.getContainingClass(n.getTree());
-        // receiverTree could still be null after the call above. That
-        // happens when the method is called from a static context.
-      }
-      // Updates the inferred parameter type of the invoked method
-      analysis
-          .atypeFactory
-          .getWholeProgramInference()
-          .updateFromMethodInvocation(n, receiverTree, method, store);
+      // Updates the inferred parameter types of the invoked method.
+      analysis.atypeFactory.getWholeProgramInference().updateFromMethodInvocation(n, method, store);
     }
 
     Tree invocationTree = n.getTree();
@@ -1208,17 +1189,18 @@ public abstract class CFAbstractTransfer<
         new ConditionalTransferResult<>(
             finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
 
-    V caseValue = in.getValueOfSubNode(n.getCaseOperand());
-    AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
-    V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-    result =
-        strengthenAnnotationOfEqualTo(
-            result, n.getCaseOperand(), assign.getExpression(), caseValue, switchValue, false);
-
-    // Update value of switch temporary variable
-    result =
-        strengthenAnnotationOfEqualTo(
-            result, n.getCaseOperand(), assign.getTarget(), caseValue, switchValue, false);
+    for (Node caseOperand : n.getCaseOperands()) {
+      V caseValue = in.getValueOfSubNode(caseOperand);
+      AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+      V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
+      result =
+          strengthenAnnotationOfEqualTo(
+              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      // Update value of switch temporary variable
+      result =
+          strengthenAnnotationOfEqualTo(
+              result, caseOperand, assign.getTarget(), caseValue, switchValue, false);
+    }
     return result;
   }
 
@@ -1332,5 +1314,23 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitStringConversion(n, p);
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
+  }
+
+  /**
+   * Inserts newAnno as the value into all stores (conditional or not) in the result for node. This
+   * is a utility method for subclasses.
+   *
+   * @param result the TransferResult holding the stores to modify
+   * @param target the receiver whose value should be modified
+   * @param newAnno the new value
+   */
+  public static void insertIntoStores(
+      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
+    if (result.containsTwoStores()) {
+      result.getThenStore().insertValue(target, newAnno);
+      result.getElseStore().insertValue(target, newAnno);
+    } else {
+      result.getRegularStore().insertValue(target, newAnno);
+    }
   }
 }

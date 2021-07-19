@@ -101,9 +101,8 @@ public class CFTreeBuilder extends TreeBuilder {
     java.util.List<? extends AnnotationMirror> annotations = type.getAnnotationMirrors();
     List<JCAnnotation> annotationTrees = convertAnnotationMirrorsToAnnotationTrees(annotations);
 
-    // Convert the underlying type from a TypeMirror to an
-    // ExpressionTree and combine with the AnnotationTrees
-    // to form a ClassTree of kind ANNOTATION_TYPE.
+    // Convert the underlying type from a TypeMirror to an ExpressionTree and combine with the
+    // AnnotationTrees to form a ClassTree of kind ANNOTATION_TYPE.
     JCExpression typeTree;
     switch (type.getKind()) {
       case BYTE:
@@ -140,8 +139,7 @@ public class CFTreeBuilder extends TreeBuilder {
         break;
       case WILDCARD:
         WildcardType wildcardType = (WildcardType) type;
-        boolean visitedBefore = visitedWildcards.contains(wildcardType);
-        visitedWildcards.add(wildcardType);
+        boolean visitedBefore = !visitedWildcards.add(wildcardType);
         if (!visitedBefore && wildcardType.getExtendsBound() != null) {
           Tree annotatedExtendsBound = createAnnotatedType(wildcardType.getExtendsBound());
           typeTree =

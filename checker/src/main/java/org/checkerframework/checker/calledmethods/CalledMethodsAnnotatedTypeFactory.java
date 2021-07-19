@@ -6,10 +6,13 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.builder.AutoValueSupport;
@@ -18,18 +21,23 @@ import org.checkerframework.checker.calledmethods.builder.LombokSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
@@ -52,10 +60,18 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * The {@link java.util.Collections#singletonList} method. It is treated specially by {@link
-   * #adjustMethodNameUsingValueChecker(String, MethodInvocationTree)}.
+   * #adjustMethodNameUsingValueChecker}.
    */
   private final ExecutableElement collectionsSingletonList =
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
+
+  /** The {@link CalledMethods#value} element/argument. */
+  /* package-private */ final ExecutableElement calledMethodsValueElement =
+      TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
+
+  /** The {@link EnsuresCalledMethodsVarArgs#value} element/argument. */
+  /* package-private */ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
 
   /**
    * Create a new CalledMethodsAnnotatedTypeFactory.
@@ -82,7 +98,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     // therefore treat it as top.
     addAliasedTypeAnnotation(
         "org.checkerframework.checker.builder.qual.NotCalledMethods", this.top);
-    this.postInit();
+
+    // Don't call postInit() for subclasses.
+    if (this.getClass() == CalledMethodsAnnotatedTypeFactory.class) {
+      this.postInit();
+    }
   }
 
   /**
@@ -151,6 +171,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition. Otherwise,
    *     return the first argument.
    */
+  // This cannot return a Name because filterTreeToMethodName cannot.
   public String adjustMethodNameUsingValueChecker(
       final String methodName, final MethodInvocationTree tree) {
     if (!useValueChecker) {
@@ -158,12 +179,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
 
     ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
-    if (!"com.amazonaws.services.ec2.model.DescribeImagesRequest"
-        .equals(ElementUtils.enclosingTypeElement(invokedMethod).getQualifiedName().toString())) {
+    if (!ElementUtils.enclosingTypeElement(invokedMethod)
+        .getQualifiedName()
+        .contentEquals("com.amazonaws.services.ec2.model.DescribeImagesRequest")) {
       return methodName;
     }
 
-    if ("withFilters".equals(methodName) || "setFilters".equals(methodName)) {
+    if (methodName.equals("withFilters") || methodName.equals("setFilters")) {
       ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
       for (Tree filterTree : tree.getArguments()) {
         if (TreeUtils.isMethodInvocation(
@@ -200,13 +222,14 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param valueATF the type factory from the Value Checker
    * @return the adjusted method name, or null if the method name should not be adjusted
    */
+  // This cannot return a Name because filterKindToMethodName cannot.
   private @Nullable String filterTreeToMethodName(
       Tree filterTree, ValueAnnotatedTypeFactory valueATF) {
     while (filterTree != null && filterTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
 
       MethodInvocationTree filterTreeAsMethodInvocation = (MethodInvocationTree) filterTree;
       String filterMethodName = TreeUtils.methodName(filterTreeAsMethodInvocation).toString();
-      if ("withName".equals(filterMethodName)
+      if (filterMethodName.contentEquals("withName")
           && filterTreeAsMethodInvocation.getArguments().size() >= 1) {
         Tree withNameArgTree = filterTreeAsMethodInvocation.getArguments().get(0);
         String withNameArg = ValueCheckerUtils.getExactStringValue(withNameArgTree, valueATF);
@@ -215,10 +238,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       // Proceed leftward (toward the receiver) in a fluent call sequence.
       filterTree = TreeUtils.getReceiverTree(filterTreeAsMethodInvocation.getMethodSelect());
     }
-    // The loop has reached the beginning of a fluent sequence of method calls.
-    // If the ultimate receiver at the beginning of that fluent sequence is a
-    // call to the Filter() constructor, then use the first argument to the Filter
-    // constructor, which is the name of the filter.
+    // The loop has reached the beginning of a fluent sequence of method calls.  If the ultimate
+    // receiver at the beginning of that fluent sequence is a call to the Filter() constructor, then
+    // use the first argument to the Filter constructor, which is the name of the filter.
     if (filterTree == null) {
       return null;
     }
@@ -356,5 +378,40 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    */
   /* package-private */ Collection<BuilderFrameworkSupport> getBuilderFrameworkSupports() {
     return builderFrameworkSupports;
+  }
+
+  @Override
+  public List<AnnotationMirror> getPostconditionAnnotation(
+      VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
+    AnnotationMirror cmAnno =
+        AnnotationUtils.getAnnotationByName(
+            fieldAnnos.getAnnotations(),
+            "org.checkerframework.checker.calledmethods.qual.CalledMethods");
+    if (cmAnno != null) {
+      List<String> calledMethods =
+          AnnotationUtils.getElementValueArray(cmAnno, calledMethodsValueElement, String.class);
+      if (!calledMethods.isEmpty()) {
+        return ensuresCMAnno(elt, calledMethods);
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given field.
+   *
+   * @param fieldElement a field
+   * @param calledMethods the methods that were definitely called on the field
+   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given field
+   */
+  private List<AnnotationMirror> ensuresCMAnno(
+      VariableElement fieldElement, List<String> calledMethods) {
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
+    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
+    String expression = receiver + "." + fieldElement.getSimpleName();
+    builder.setValue("value", new String[] {expression});
+    builder.setValue("methods", calledMethods.toArray(new String[0]));
+    AnnotationMirror am = builder.build();
+    return Collections.singletonList(am);
   }
 }

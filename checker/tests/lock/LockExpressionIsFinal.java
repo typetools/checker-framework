@@ -196,7 +196,7 @@ public class LockExpressionIsFinal {
 
     // Test expressions that are not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
     @GuardedBy("java.lang.String.class") Object guarded4;
-    // :: error: (expression.unparsable.type.invalid)
+    // :: error: (expression.unparsable)
     @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)") Object guarded5;
 
     @GuardedBy(
@@ -227,9 +227,9 @@ public class LockExpressionIsFinal {
     // :: error: (lock.expression.not.final)
     Object guarded14 = (@GuardedBy("o2") Object) guarded3;
 
-    Object guarded15[] = new @GuardedBy("o1") MyClass[3];
+    @GuardedBy("o1") Object guarded15[] = new @GuardedBy("o1") MyClass[3];
     // :: error: (lock.expression.not.final)
-    Object guarded16[] = new @GuardedBy("o2") MyClass[3];
+    @GuardedBy("o2") Object guarded16[] = new @GuardedBy("o2") MyClass[3];
 
     // Tests that the location of the @GB annotation inside a VariableTree does not matter (i.e.
     // it does not need to be the leftmost subtree).
@@ -296,7 +296,8 @@ public class LockExpressionIsFinal {
   }
 
   void testItselfFinalLock() {
-    final @GuardedBy("<self>.finalLock") MyClassContainingALock m = new MyClassContainingALock();
+    @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
+    final @GuardedBy("<self>.finalLock") MyClassContainingALock m = someValue();
     // :: error: (lock.not.held)
     m.field = new Object();
     // Ignore this error: it is expected that an error will be issued for dereferencing 'm' in
@@ -311,12 +312,17 @@ public class LockExpressionIsFinal {
   }
 
   void testItselfNonFinalLock() {
-    final @GuardedBy("<self>.nonFinalLock") MyClassContainingALock m = new MyClassContainingALock();
+    @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
+    final @GuardedBy("<self>.nonFinalLock") MyClassContainingALock m = someValue();
     // ::error: (lock.not.held) :: error: (lock.expression.not.final)
     m.field = new Object();
     // ::error: (lock.not.held) :: error: (lock.expression.not.final)
     m.nonFinalLock.lock();
     // :: error: (lock.expression.not.final)
     m.field = new Object();
+  }
+
+  @GuardedByUnknown MyClassContainingALock someValue() {
+    return new MyClassContainingALock();
   }
 }

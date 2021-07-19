@@ -32,8 +32,7 @@ public class UpperBoundRefinement {
 
     for (int i = 0; i <= a_index_max; i++) { // i has the same type as a_index_max
       for (int j = 0; j < sub.length; j++) { // j is @LTL("sub")
-        // i + j is safe here. Because j is LTL("sub"), it should count as ("-1 +
-        // sub.length")
+        // i + j is safe here. Because j is LTL("sub"), it should count as ("-1 + sub.length")
         double d = a[i + j];
       }
     }

@@ -1,6 +1,7 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
 # including building the manual and Javadoc, using JDK 8.
 
+# "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
@@ -35,6 +36,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
+  devscripts \
   dia \
   hevea \
   imagemagick \
@@ -42,13 +44,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   librsvg2-bin \
   pdf2svg \
   rsync \
+  shellcheck \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
   texlive-latex-recommended
 
-RUN pip3 install html5validator
+RUN pip3 install black flake8 html5validator
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get clean \

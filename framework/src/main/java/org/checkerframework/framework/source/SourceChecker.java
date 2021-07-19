@@ -79,6 +79,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
 
@@ -135,9 +136,8 @@ import org.plumelib.util.UtilPlume;
   /// More sound (strict checking): enable errors that are disabled by default
   ///
 
-  // The next ones *increase* rather than *decrease* soundness.
-  // They will eventually be replaced by their complements
-  // (except -AconcurrentSemantics) and moved into the above section.
+  // The next ones *increase* rather than *decrease* soundness.  They will eventually be replaced by
+  // their complements (except -AconcurrentSemantics) and moved into the above section.
 
   // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
   // @Pure methods is temporarily disabled unless -AcheckPurityAnnotations is
@@ -243,17 +243,17 @@ import org.plumelib.util.UtilPlume;
   // that were not found on the class path
   // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
   "stubWarnIfNotFound",
-  // Whether to ignore missing classes even when warnIfNotFound is set to true and
-  // other classes from the same package are present (useful if a package spans more than one
-  // jar).
+  // Whether to ignore missing classes even when warnIfNotFound is set to true and other classes
+  // from the same package are present (useful if a package spans more than one jar).
   // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFoundIgnoresClasses
   "stubWarnIfNotFoundIgnoresClasses",
-  // Whether to print warnings about stub files that overwrite annotations
-  // from bytecode.
+  // Whether to print warnings about stub files that overwrite annotations from bytecode.
   "stubWarnIfOverwritesBytecode",
   // Whether to print warnings about stub files that are redundant with the annotations from
   // bytecode.
   "stubWarnIfRedundantWithBytecode",
+  // Whether to issue a NOTE rather than a WARNING for -AstubWarn* command-line options
+  "stubWarnNote",
   // With this option, annotations in stub files are used EVEN IF THE SOURCE FILE IS
   // PRESENT. Only use this option when you intend to store types in stub files rather than
   // directly in source code, such as during whole-program inference. The annotations in the
@@ -280,7 +280,7 @@ import org.plumelib.util.UtilPlume;
   // Whether to print [] around a set of type parameters in order to clearly see where they end
   // e.g.  <E extends F, F extends Object>
   // without this option the E is printed: E extends F extends Object
-  // with this option:                    E [ extends F [ extends Object super Void ] super Void ]
+  // with this option:                     E [ extends F [ extends Object super Void ] super Void ]
   // when multiple type variables are used this becomes useful very quickly
   "printVerboseGenerics",
 
@@ -344,9 +344,8 @@ import org.plumelib.util.UtilPlume;
   // Mechanism to visualize the control flow graph (CFG).
   // The argument is a sequence of values or key-value pairs.
   // The first argument has to be the fully-qualified name of the
-  // org.checkerframework.dataflow.cfg.CFGVisualizer implementation
-  // that should be used. The remaining values or key-value pairs are
-  // passed to CFGVisualizer.init.
+  // org.checkerframework.dataflow.cfg.CFGVisualizer implementation that should be used. The
+  // remaining values or key-value pairs are passed to CFGVisualizer.init.
   // For example:
   //    -Acfgviz=MyViz,a,b=c,d
   // instantiates class MyViz and calls CFGVisualizer.init
@@ -385,15 +384,19 @@ import org.plumelib.util.UtilPlume;
   // Parse all JDK files at startup rather than as needed.
   "parseAllJdk",
 
+  // Run checks that test ajava files.
+  //
   // Whenever processing a source file, parse it with JavaParser and check that the AST can be
   // matched with javac's tree. Crash if not. For testing the class JointJavacJavaParserVisitor.
-  "checkJavaParserVisitor",
+  //
+  // Also checks that annotations can be inserted. For each Java file, clears all annotations and
+  // reinserts them, then checks if the original and modified ASTs are equivalent.
+  "ajavaChecks",
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
-  // TODO A checker should export itself through a separate interface,
-  // and maybe have an interface for all the methods for which it's safe
-  // to override.
+  // TODO A checker should export itself through a separate interface, and maybe have an interface
+  // for all the methods for which it's safe to override.
 
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
@@ -531,19 +534,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // Keep in sync with check in checker-framework/build.gradle and text in installation
     // section of manual.
     int jreVersion = SystemUtil.getJreVersion();
-    if (jreVersion < 8) {
-      throw new UserError(
-          "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
-          jreVersion);
-    } else if (jreVersion > 12) {
-      throw new UserError(
-          String.format(
-              "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
-              jreVersion));
-    } else if (jreVersion != 8 && jreVersion != 11) {
+    if (jreVersion != 8 && jreVersion != 11 && jreVersion != 16) {
       message(
           Kind.WARNING,
-          "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
+          "Use JDK 8, 11, or 16 to run the Checker Framework.  You are using version %d.",
           jreVersion);
     }
 
@@ -608,7 +602,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param newRoot the new compilation unit root
    */
-  @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+  @SuppressWarnings("interning:assignment") // used in == tests
   protected void setRoot(CompilationUnitTree newRoot) {
     this.currentRoot = newRoot;
     visitor.setRoot(currentRoot);
@@ -723,7 +717,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     for (Class<?> checker : checkers) {
-      messagesProperties.putAll(getProperties(checker, MSGS_FILE));
+      messagesProperties.putAll(getProperties(checker, MSGS_FILE, true));
     }
     return messagesProperties;
   }
@@ -812,9 +806,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * {@inheritDoc}
    *
-   * <p>Type-checkers are not supposed to override this. Instead use initChecker. This allows us to
-   * handle BugInCF only here and doesn't require all overriding implementations to be aware of
-   * BugInCF.
+   * <p>Type-checkers are not supposed to override this. Instead override initChecker. This allows
+   * us to handle BugInCF only here and doesn't require all overriding implementations to be aware
+   * of BugInCF.
    *
    * @see AbstractProcessor#init(ProcessingEnvironment)
    * @see SourceChecker#initChecker()
@@ -905,7 +899,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param p error is reported at the leaf of the path
    */
-  @SuppressWarnings("interning:assignment.type.incompatible") // used in == tests
+  @SuppressWarnings("interning:assignment") // used in == tests
   protected void reportJavacError(TreePath p) {
     // If javac issued any errors, do not type check any file, so that the Checker Framework
     // does not have to deal with error types.
@@ -934,12 +928,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager.printMessage(Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
       return;
     }
-    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage(10) > .25) {
+    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage() > .25) {
+      messager.printMessage(
+          Kind.WARNING, "Garbage collection consumed over 25% of CPU during the past minute.");
       messager.printMessage(
           Kind.WARNING,
           String.format(
-              "Memory constraints are impeding performance; please increase max heap size"
-                  + " (max memory = %d, total memory = %d, free memory = %d)",
+              "Perhaps increase max heap size"
+                  + " (max memory = %d, total memory = %d, free memory = %d).",
               Runtime.getRuntime().maxMemory(),
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
@@ -965,10 +961,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (visitor == null) {
-      // typeProcessingStart invokes initChecker, which should
-      // have set the visitor. If the field is still null, an
-      // exception occurred during initialization, which was already
-      // logged there. Don't also cause a NPE here.
+      // typeProcessingStart invokes initChecker, which should have set the visitor. If the field is
+      // still null, an exception occurred during initialization, which was already logged
+      // there. Don't also cause a NPE here.
       return;
     }
     if (p.getCompilationUnit() != currentRoot) {
@@ -1059,7 +1054,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // Not a format method.  However, messageKey should be either a format string for `args`, or  a
   // property key that maps to a format string for `args`.
   // @FormatMethod
-  @SuppressWarnings("formatter:format.string.invalid") // arg is a format string or a property key
+  @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
   private void report(
       Object source,
       javax.tools.Diagnostic.Kind kind,
@@ -1187,15 +1182,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Stores all messages and sorts them by location before outputting them for compound checkers.
-   * This method is overloaded with an additional stack trace argument. The stack trace is printed
-   * when the dumpOnErrors option is enabled.
+   * Do not call this method. Call {@link #reportError} or {@link #reportWarning} instead.
+   *
+   * <p>This method exists so that the BaseTypeChecker can override it. For compound checkers, it
+   * stores all messages and sorts them by location before outputting them.
    *
    * @param kind the kind of message to print
    * @param message the message text
    * @param source the source code position of the diagnostic message
    * @param root the compilation unit
-   * @param trace the stack trace where the checker encountered an error
+   * @param trace the stack trace where the checker encountered an error. It is printed when the
+   *     dumpOnErrors option is enabled.
    */
   protected void printOrStoreMessage(
       javax.tools.Diagnostic.Kind kind,
@@ -1292,9 +1289,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // (1) error key
     sj.add(defaultFormat);
 
-    // (2) number of additional tokens, and those tokens; this
-    // depends on the error message, and an example is the found
-    // and expected types
+    // (2) number of additional tokens, and those tokens; this depends on the error message, and an
+    // example is the found and expected types
     if (args != null) {
       sj.add(Integer.toString(args.length));
       for (Object arg : args) {
@@ -1539,7 +1535,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Helper method to find the parent of a lint key. The lint hierarchy level is donated by a colon
+   * Helper method to find the parent of a lint key. The lint hierarchy level is denoted by a colon
    * ':'. 'all' is the root for all hierarchy.
    *
    * <pre>
@@ -1555,8 +1551,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private String parentOfOption(String name) {
     if (name.equals("all")) {
       return null;
-    } else if (name.contains(":")) {
-      return name.substring(0, name.lastIndexOf(':'));
+    }
+    int colonIndex = name.lastIndexOf(':');
+    if (colonIndex != -1) {
+      return name.substring(0, colonIndex);
     } else {
       return "all";
     }
@@ -1620,7 +1618,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.emptyMap();
     }
 
-    Map<String, String> activeOpts = new HashMap<>();
+    Map<String, String> activeOpts = new HashMap<>(CollectionsPlume.mapCapacity(options));
 
     for (Map.Entry<String, String> opt : options.entrySet()) {
       String key = opt.getKey();
@@ -1786,9 +1784,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public Set<String> getSupportedOptions() {
     Set<String> options = new HashSet<>();
 
-    // Support all options provided with the standard
-    // {@link javax.annotation.processing.SupportedOptions}
-    // annotation.
+    // Support all options provided with the standard {@link
+    // javax.annotation.processing.SupportedOptions} annotation.
     options.addAll(super.getSupportedOptions());
 
     // For the Checker Framework annotation
@@ -2055,9 +2052,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
 
       if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-        // Return false immediately. Do NOT check for AnnotatedFor in
-        // the enclosing elements, because they may not have an
-        // @AnnotatedFor.
+        // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+        // because they may not have an @AnnotatedFor.
         return false;
       }
     }
@@ -2071,9 +2067,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
 
       if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-        // Return false immediately. Do NOT check for AnnotatedFor in
-        // the enclosing elements, because they may not have an
-        // @AnnotatedFor.
+        // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+        // because they may not have an @AnnotatedFor.
         return false;
       }
     }
@@ -2384,9 +2379,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (typeElement == null) {
       throw new BugInCF("enclosingTypeElement(%s [%s]) => null%n", element, element.getClass());
     }
-    @SuppressWarnings("signature:assignment.type.incompatible" // TypeElement.toString():
-    // @FullyQualifiedName
-    )
+    @SuppressWarnings("signature:assignment") // TypeElement.toString(): @FullyQualifiedName
     @FullyQualifiedName String name = typeElement.toString();
     return shouldSkipUses(name);
   }
@@ -2500,13 +2493,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
           String.format(
-              "The JVM ran out of memory.  Run with a larger max heap size"
-                  + " (max memory = %d, total memory = %d, free memory = %d).",
+              "OutOfMemoryError (max memory = %d, total memory = %d, free memory = %d)",
               Runtime.getRuntime().maxMemory(),
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
     } else {
-
       msg.add(ce.getMessage());
       boolean noPrintErrorStack =
           (processingEnv != null
@@ -2533,22 +2524,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             msg.add(line);
           }
         }
+      }
+    }
 
-        msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
-        boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-        Throwable cause = ce.getCause().getCause();
-        while (cause != null) {
-          msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
-          printClasspath |= cause instanceof NoClassDefFoundError;
-          cause = cause.getCause();
-        }
+    msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
+    boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
+    Throwable cause = ce.getCause().getCause();
+    while (cause != null) {
+      msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
+      printClasspath |= cause instanceof NoClassDefFoundError;
+      cause = cause.getCause();
+    }
 
-        if (printClasspath) {
-          msg.add("Classpath:");
-          for (URI uri : new ClassGraph().getClasspathURIs()) {
-            msg.add(uri.toString());
-          }
-        }
+    if (printClasspath) {
+      msg.add("Classpath:");
+      for (URI uri : new ClassGraph().getClasspathURIs()) {
+        msg.add(uri.toString());
       }
     }
 
@@ -2622,23 +2613,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param cls the class whose location is the base of the file path
    * @param filePath the name/path of the file to be read
+   * @param permitNonExisting if true, return an empty Properties if the file does not exist or
+   *     cannot be parsed; if false, issue an error
    * @return the properties
    */
-  protected Properties getProperties(Class<?> cls, String filePath) {
+  protected Properties getProperties(Class<?> cls, String filePath, boolean permitNonExisting) {
     Properties prop = new Properties();
     try {
       InputStream base = cls.getResourceAsStream(filePath);
 
       if (base == null) {
-        // No message customization file was given
-        return prop;
+        // The property file was not found.
+        if (permitNonExisting) {
+          return prop;
+        } else {
+          throw new BugInCF("Couldn't locate properties file " + filePath);
+        }
       }
 
       prop.load(base);
     } catch (IOException e) {
-      message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
-      // e.printStackTrace();
-      // ignore the possible customization file
+      throw new BugInCF("Couldn't parse properties file: " + filePath, e);
     }
     return prop;
   }
@@ -2675,7 +2670,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the Checker Framework version
    */
   private String getCheckerVersion() {
-    Properties gitProperties = getProperties(getClass(), "/git.properties");
+    Properties gitProperties = getProperties(getClass(), "/git.properties", false);
     String version = gitProperties.getProperty("git.build.version");
     if (version != null) {
       return version;

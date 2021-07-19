@@ -3,9 +3,8 @@
 
 import org.checkerframework.checker.lock.qual.*;
 
-// :: error: (expression.unparsable.type.invalid)
+// :: error: (expression.unparsable)
 @GuardedBy("lock") class ConstructorReturnNPE {
-  // :: error: (expression.unparsable.type.invalid) :: error: (super.invocation.invalid)
-  // :: warning: (inconsistent.constructor.type)
+  // :: error: (expression.unparsable)
   @GuardedBy("lock") ConstructorReturnNPE() {}
 }

@@ -13,7 +13,7 @@ public class NotEqualTransfer {
     if (1 != a.length) {
       int x = 1; // do nothing.
     } else {
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       int @MinLen(2) [] b = a;
     }
   }

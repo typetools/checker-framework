@@ -5,7 +5,7 @@ public class Predicates {
   void testOr1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.c();
   }
 
@@ -26,7 +26,7 @@ public class Predicates {
   void testAnd1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.d();
   }
 
@@ -34,7 +34,7 @@ public class Predicates {
     MyClass m1 = new MyClass();
 
     m1.a();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.d();
   }
 
@@ -42,7 +42,7 @@ public class Predicates {
     MyClass m1 = new MyClass();
 
     m1.b();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.d();
   }
 
@@ -51,7 +51,7 @@ public class Predicates {
 
     m1.a();
     m1.c();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.d();
   }
 
@@ -75,7 +75,7 @@ public class Predicates {
   void testAndOr1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.e();
   }
 
@@ -90,7 +90,7 @@ public class Predicates {
     MyClass m1 = new MyClass();
 
     m1.b();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.e();
   }
 
@@ -115,7 +115,7 @@ public class Predicates {
   void testPrecedence1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.f();
   }
 
@@ -123,7 +123,7 @@ public class Predicates {
     MyClass m1 = new MyClass();
 
     m1.a();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.f();
   }
 
@@ -131,7 +131,7 @@ public class Predicates {
     MyClass m1 = new MyClass();
 
     m1.b();
-    // :: error: method.invocation.invalid
+    // :: error: method.invocation
     m1.f();
   }
 
@@ -201,24 +201,23 @@ public class Predicates {
 
     static void testAssignability1(@TestAccumulationPredicate("a || b") MyClass cAble) {
       cAble.c();
-      // :: error: method.invocation.invalid
+      // :: error: method.invocation
       cAble.d();
-      // :: error: method.invocation.invalid
+      // :: error: method.invocation
       cAble.e();
-      // :: error: method.invocation.invalid
+      // :: error: method.invocation
       cAble.f();
     }
 
     static void testAssignability2(@TestAccumulationPredicate("a && b") MyClass dAble) {
       // These calls would work if subtyping between predicates was by implication. They issue
-      // errors, because
-      // it is not.
-      // :: error: method.invocation.invalid
+      // errors, because it is not.
+      // :: error: method.invocation
       dAble.c();
       dAble.d();
-      // :: error: method.invocation.invalid
+      // :: error: method.invocation
       dAble.e();
-      // :: error: method.invocation.invalid
+      // :: error: method.invocation
       dAble.f();
     }
 
@@ -240,367 +239,367 @@ public class Predicates {
 
       cmALocal = cmA;
       cmALocal = cmpA;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = aOrB;
       cmALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = aAndB;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = bAndCOrA;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = bAndCOrAParens;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = aAndBOrC;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = aAndBOrCParens;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = bOrCAndA;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = bAndC;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmALocal = bAndCParens;
 
       cmpALocal = cmA;
       cmpALocal = cmpA;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = aOrB;
       cmpALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = aAndB;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = bAndCOrA;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = bAndCOrAParens;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = aAndBOrC;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = aAndBOrCParens;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = bOrCAndA;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = bAndC;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       cmpALocal = bAndCParens;
 
       aOrBLocal = cmA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = cmpA;
       aOrBLocal = aOrB;
       aOrBLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = aAndB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = bAndCOrA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = bAndCOrAParens;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = aAndBOrC;
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBLocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = aOrB;
       aBLocal = aB;
       aBLocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = aAndBOrCParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = aOrBAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = bOrCAndA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = bAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aBLocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = aOrB;
       aAndBLocal = aB;
       aAndBLocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = aAndBOrCParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = aOrBAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = bOrCAndA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = bAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBLocal = bAndCParens;
 
       bAndCOrALocal = cmA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrALocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCOrALocal = aOrB;
       bAndCOrALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrALocal = aAndB;
       bAndCOrALocal = bAndCOrA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrALocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCOrALocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCOrALocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrALocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrALocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrALocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrALocal = bAndCParens;
 
       bAndCOrAParensLocal = cmA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrAParensLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCOrAParensLocal = aOrB;
       bAndCOrAParensLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrAParensLocal = aAndB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrAParensLocal = bAndCOrA;
       bAndCOrAParensLocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCOrAParensLocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCOrAParensLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrAParensLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrAParensLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrAParensLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCOrAParensLocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCLocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCLocal = aOrB;
       aAndBOrCLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCLocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCLocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCLocal = bAndCOrAParens;
       aAndBOrCLocal = aAndBOrC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCLocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCParensLocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCParensLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCParensLocal = aOrB;
       aAndBOrCParensLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCParensLocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCParensLocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aAndBOrCParensLocal = bAndCOrAParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCParensLocal = aAndBOrC;
       aAndBOrCParensLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCParensLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCParensLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCParensLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aAndBOrCParensLocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = aOrB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = aB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = aAndBOrCParens;
       aOrBAndCLocal = aOrBAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       aOrBAndCLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBAndCLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       aOrBAndCLocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = aOrB;
       bOrCAndALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bOrCAndALocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = aAndBOrCParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = aOrBAndC;
       bOrCAndALocal = bOrCAndA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = bAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bOrCAndALocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = aOrB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = aB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = aAndBOrCParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = aOrBAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCLocal = bOrCAndA;
       bAndCLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCLocal = bAndCParens;
 
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = cmA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = cmpA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = aOrB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = aB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = aAndB;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = bAndCOrA;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = bAndCOrAParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = aAndBOrC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = aAndBOrCParens;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = aOrBAndC;
-      // :: error: (assignment.type.incompatible)
+      // :: error: (assignment)
       bAndCParensLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment.type.incompatible
+      // :: error: assignment
       bAndCParensLocal = bAndC;
       bAndCParensLocal = bAndCParens;
     }

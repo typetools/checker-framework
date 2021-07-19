@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
@@ -55,21 +54,14 @@ public class InitializationVisitor<
         Store extends InitializationStore<Value, Store>>
     extends BaseTypeVisitor<Factory> {
 
+  /** The annotation formatter. */
   protected final AnnotationFormatter annoFormatter;
 
-  // Error message keys
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_CAST =
-      "initialization.invalid.cast";
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_TYPE =
-      "initialization.invalid.field.type";
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE =
-      "initialization.invalid.constructor.return.type";
-  private static final @CompilerMessageKey String
-      COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION =
-          "initialization.invalid.field.write.unknown";
-  private static final @CompilerMessageKey String COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED =
-      "initialization.invalid.field.write.initialized";
-
+  /**
+   * Creates a new InitializationVisitor.
+   *
+   * @param checker the associated type-checker
+   */
   public InitializationVisitor(BaseTypeChecker checker) {
     super(checker);
     annoFormatter = new DefaultAnnotationFormatter();
@@ -79,8 +71,7 @@ public class InitializationVisitor<
   @Override
   public void setRoot(CompilationUnitTree root) {
     // Clean up the cache of initialized fields once per compilation unit.
-    // Alternatively, but harder to determine, this could be done once per
-    // top-level class.
+    // Alternatively, but harder to determine, this could be done once per top-level class.
     initializedFields.clear();
     super.setRoot(root);
   }
@@ -88,8 +79,7 @@ public class InitializationVisitor<
   @Override
   protected void checkConstructorInvocation(
       AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
-    // receiver annotations for constructors are forbidden, therefore no
-    // check is necessary
+    // Receiver annotations for constructors are forbidden, therefore no check is necessary.
     // TODO: nested constructors can have receivers!
   }
 
@@ -113,8 +103,7 @@ public class InitializationVisitor<
       Object... extraArgs) {
     // field write of the form x.f = y
     if (TreeUtils.isFieldAccess(varTree)) {
-      // cast is safe: a field access can only be an IdentifierTree or
-      // MemberSelectTree
+      // cast is safe: a field access can only be an IdentifierTree or MemberSelectTree
       ExpressionTree lhs = (ExpressionTree) varTree;
       ExpressionTree y = valueExp;
       Element el = TreeUtils.elementFromUse(lhs);
@@ -132,9 +121,9 @@ public class InitializationVisitor<
                 || atypeFactory.isFbcBottom(yType))) {
           @CompilerMessageKey String err;
           if (atypeFactory.isInitialized(xType)) {
-            err = COMMITMENT_INVALID_FIELD_WRITE_INITIALIZED;
+            err = "initialization.field.write.initialized";
           } else {
-            err = COMMITMENT_INVALID_FIELD_WRITE_UNKNOWN_INITIALIZATION;
+            err = "initialization.field.write.unknown";
           }
           checker.reportError(varTree, err, varTree);
           return; // prevent issuing another errow about subtyping
@@ -157,7 +146,7 @@ public class InitializationVisitor<
             continue; // unknown initialization is allowed
           }
           if (atypeFactory.areSameByClass(a, c)) {
-            checker.reportError(node, COMMITMENT_INVALID_FIELD_TYPE, node);
+            checker.reportError(node, "initialization.field.type", node);
             break;
           }
         }
@@ -262,7 +251,7 @@ public class InitializationVisitor<
     if (!isSubtype) {
       checker.reportError(
           node,
-          COMMITMENT_INVALID_CAST,
+          "initialization.cast",
           annoFormatter.formatAnnotationMirror(exprAnno),
           annoFormatter.formatAnnotationMirror(castAnno));
       return p; // suppress cast.unsafe warning
@@ -296,7 +285,7 @@ public class InitializationVisitor<
     super.processClassTree(node);
 
     // Warn about uninitialized static fields.
-    if (node.getKind() == Kind.CLASS) {
+    if (node.getKind() == Tree.Kind.CLASS) {
       boolean isStatic = true;
       // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
       // the regular exit store of the class here.
@@ -320,14 +309,13 @@ public class InitializationVisitor<
           atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
         for (AnnotationMirror a : returnTypeAnnotations) {
           if (atypeFactory.areSameByClass(a, c)) {
-            checker.reportError(node, COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE, node);
+            checker.reportError(node, "initialization.constructor.return.type", node);
             break;
           }
         }
       }
 
-      // Check that all fields have been initialized at the end of the
-      // constructor.
+      // Check that all fields have been initialized at the end of the constructor.
       boolean isStatic = false;
       Store store = atypeFactory.getRegularExitStore(node);
       List<? extends AnnotationMirror> receiverAnnotations = getAllReceiverAnnotations(node);
@@ -340,9 +328,8 @@ public class InitializationVisitor<
   private List<? extends AnnotationMirror> getAllReceiverAnnotations(MethodTree node) {
     // TODO: get access to a Types instance and use it to get receiver type
     // Or, extend ExecutableElement with such a method.
-    // Note that we cannot use the receiver type from AnnotatedExecutableType, because that
-    // would only have the nullness annotations; here we want to see all annotations on the
-    // receiver.
+    // Note that we cannot use the receiver type from AnnotatedExecutableType, because that would
+    // only have the nullness annotations; here we want to see all annotations on the receiver.
     List<? extends AnnotationMirror> rcvannos = null;
     if (TreeUtils.isConstructor(node)) {
       com.sun.tools.javac.code.Symbol meth =
@@ -377,8 +364,7 @@ public class InitializationVisitor<
       boolean staticFields,
       Store store,
       List<? extends AnnotationMirror> receiverAnnotations) {
-    // If the store is null, then the constructor cannot terminate
-    // successfully
+    // If the store is null, then the constructor cannot terminate successfully
     if (store == null) {
       return;
     }

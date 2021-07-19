@@ -172,8 +172,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       return;
     }
 
-    // A list of arrayLens.  arrayLenOfDimensions.get(i) is the array lengths for the ith
-    // dimension.
+    // A list of arrayLens.  arrayLenOfDimensions.get(i) is the array lengths for the ith dimension.
     List<RangeOrListOfValues> arrayLenOfDimensions = new ArrayList<>();
     for (ExpressionTree init : initializers) {
       AnnotatedTypeMirror componentType = atypeFactory.getAnnotatedType(init);
@@ -396,10 +395,6 @@ class ValueTreeAnnotator extends TreeAnnotator {
         .getMethodIdentifier()
         .isArraysCopyOfInvocation(tree, atypeFactory.getProcessingEnv())) {
       List<? extends ExpressionTree> args = tree.getArguments();
-      if (args.size() != 2) {
-        throw new BugInCF(
-            "Arrays.copyOf() should have 2 arguments. This point should not have reached");
-      }
       Range range =
           ValueCheckerUtils.getPossibleValues(
               atypeFactory.getAnnotatedType(args.get(1)), atypeFactory);

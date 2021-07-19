@@ -13,16 +13,15 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -83,7 +82,7 @@ public class ReflectiveEvaluator {
     if (method.isVarArgs()) {
       int numberOfParameters = method.getParameterTypes().length;
       listOfArguments =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (Object[] args) -> normalizeVararg(args, numberOfParameters), listOfArguments);
     }
 
@@ -166,7 +165,7 @@ public class ReflectiveEvaluator {
     final ExecutableElement ele = TreeUtils.elementFromUse(tree);
     List<Class<?>> paramClasses = null;
     try {
-      @CanonicalNameOrEmpty Name className =
+      @CanonicalNameOrEmpty String className =
           TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
       paramClasses = getParameterClasses(ele);
       @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Class.toString
@@ -212,7 +211,7 @@ public class ReflectiveEvaluator {
    * @throws ClassNotFoundException if the class cannot be found
    */
   private List<Class<?>> getParameterClasses(ExecutableElement ele) throws ClassNotFoundException {
-    return SystemUtil.mapList(
+    return CollectionsPlume.mapList(
         (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)), ele.getParameters());
   }
 
@@ -245,7 +244,8 @@ public class ReflectiveEvaluator {
    * @return a depth-2 copy of the given list
    */
   private List<Object[]> copy(List<Object[]> lastTuples) {
-    return SystemUtil.mapList((Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
+    return CollectionsPlume.mapList(
+        (Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
   }
 
   /**

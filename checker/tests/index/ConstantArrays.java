@@ -5,12 +5,12 @@ public class ConstantArrays {
     int[] b = new int[4];
     @LTLengthOf("b") int[] a = {0, 1, 2, 3};
 
-    // :: error: (array.initializer.type.incompatible)::error: (assignment.type.incompatible)
+    // :: error: (array.initializer)::error: (assignment)
     @LTLengthOf("b") int[] a1 = {0, 1, 2, 4};
 
     @LTEqLengthOf("b") int[] c = {-1, 4, 3, 1};
 
-    // :: error: (array.initializer.type.incompatible)::error: (assignment.type.incompatible)
+    // :: error: (array.initializer)::error: (assignment)
     @LTEqLengthOf("b") int[] c2 = {-1, 4, 5, 1};
   }
 
@@ -25,7 +25,7 @@ public class ConstantArrays {
     @LTLengthOf(
         value = {"b", "b2"},
         offset = {"-2", "5"})
-    // :: error: (array.initializer.type.incompatible)::error: (assignment.type.incompatible)
+    // :: error: (array.initializer)::error: (assignment)
     int[] a2 = {2, 3, 5};
 
     // Non-constant offsets don't work correctly. See kelloggm#120.

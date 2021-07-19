@@ -26,9 +26,9 @@ public class AnnotatedGenerics {
     @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<@Odd String>();
 
     // Should error because the RHS isn't annotated as '@Odd'
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd MyClass<@Odd String> innerClass2 = new MyClass<@Odd String>();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd NormalClass<@Odd String> normal2 = new NormalClass<@Odd String>();
 
     // Variant with annotated type parameters
@@ -38,9 +38,9 @@ public class AnnotatedGenerics {
     @Odd NormalClass<String> normal3 = new @Odd NormalClass<String>();
 
     // Should error because the RHS isn't annotated as '@Odd'
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd MyClass<String> innerClass4 = new MyClass<String>();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd NormalClass<String> normal4 = new NormalClass<String>();
   }
 
@@ -53,9 +53,9 @@ public class AnnotatedGenerics {
     @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<>();
 
     // Should error because the RHS isn't annotated as '@Odd'
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd MyClass<@Odd String> innerClass2 = new MyClass<>();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd NormalClass<@Odd String> normal2 = new NormalClass<>();
 
     // :: warning: (cast.unsafe.constructor.invocation)
@@ -64,9 +64,9 @@ public class AnnotatedGenerics {
     @Odd NormalClass<String> normal3 = new @Odd NormalClass<>();
 
     // Should error because the RHS isn't annotated as '@Odd'
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd MyClass<String> innerClass4 = new MyClass<>();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd NormalClass<String> normal4 = new NormalClass<>();
   }
 
@@ -79,9 +79,9 @@ public class AnnotatedGenerics {
     @Odd NormalClass<@Odd String> normal1 = new @Odd NormalClass<@Odd String>() {};
 
     // Should error because the RHS isn't annotated as '@Odd'
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd MyClass<@Odd String> innerClass2 = new MyClass<@Odd String>() {};
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd NormalClass<@Odd String> normal2 = new NormalClass<@Odd String>() {};
 
     // :: warning: (cast.unsafe.constructor.invocation)
@@ -90,9 +90,9 @@ public class AnnotatedGenerics {
     @Odd NormalClass<String> normal3 = new @Odd NormalClass<String>() {};
 
     // Should error because the RHS isn't annotated as '@Odd'
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd MyClass<String> innerClass4 = new MyClass<String>() {};
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @Odd NormalClass<String> normal4 = new NormalClass<String>() {};
   }
 

@@ -8,7 +8,7 @@ public class LombokNoSingularButClearMethodExample {
   // This one should throw an error, because the field isn't
   // automatically initialized.
   public static void testNoItems() {
-    // :: error: finalizer.invocation.invalid
+    // :: error: finalizer.invocation
     LombokNoSingularButClearMethodExample.builder().build();
   }
 

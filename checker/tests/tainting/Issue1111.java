@@ -7,11 +7,12 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class Issue1111 {
   void foo(Box<? super Integer> box, List<Integer> list) {
+    // :: error: (argument)
     bar(box, list);
   }
 
   void foo2(Box<@Untainted ? super Integer> box, List<Integer> list) {
-    // :: error: (argument.type.incompatible)
+    // :: error: (argument)
     bar(box, list);
   }
 

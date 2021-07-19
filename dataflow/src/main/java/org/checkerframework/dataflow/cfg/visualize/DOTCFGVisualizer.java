@@ -94,7 +94,7 @@ public class DOTCFGVisualizer<
     return Collections.singletonMap("dotFileName", dotFileName);
   }
 
-  @SuppressWarnings("keyfor:enhancedfor.type.incompatible")
+  @SuppressWarnings("keyfor:enhancedfor")
   @Override
   public String visualizeNodes(
       Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
@@ -123,13 +123,13 @@ public class DOTCFGVisualizer<
           // The footer of the conditional block.
           sbDotNodes.append("\"];");
         } else {
-          // The footer of the block which has no content and is not a special or
-          // conditional block.
+          // The footer of the block which has no content and is not a special or conditional block.
           sbDotNodes.append("?? empty ??\"];");
         }
       } else {
         sbDotNodes.append(strBlock).append("\"];");
       }
+      sbDotNodes.append(System.lineSeparator());
     }
     return sbDotNodes.toString();
   }
@@ -255,37 +255,37 @@ public class DOTCFGVisualizer<
 
   @Override
   protected String format(Object obj) {
-    return escapeDoubleQuotes(obj);
+    return escapeString(obj);
   }
 
   @Override
   public String visualizeStoreThisVal(V value) {
-    return storeEntryIndent + "this > " + value;
+    return storeEntryIndent + "this > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
-    return storeEntryIndent + localVar + " > " + escapeDoubleQuotes(value);
+    return storeEntryIndent + localVar + " > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreFieldVal(FieldAccess fieldAccess, V value) {
-    return storeEntryIndent + fieldAccess + " > " + escapeDoubleQuotes(value);
+    return storeEntryIndent + fieldAccess + " > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreArrayVal(ArrayAccess arrayValue, V value) {
-    return storeEntryIndent + arrayValue + " > " + escapeDoubleQuotes(value);
+    return storeEntryIndent + arrayValue + " > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreMethodVals(MethodCall methodCall, V value) {
-    return storeEntryIndent + escapeDoubleQuotes(methodCall) + " > " + value;
+    return storeEntryIndent + escapeString(methodCall) + " > " + escapeString(value);
   }
 
   @Override
   public String visualizeStoreClassVals(ClassName className, V value) {
-    return storeEntryIndent + className + " > " + escapeDoubleQuotes(value);
+    return storeEntryIndent + className + " > " + escapeString(value);
   }
 
   @Override
@@ -294,13 +294,13 @@ public class DOTCFGVisualizer<
   }
 
   /**
-   * Escape the double quotes from the input String, replacing {@code "} by {@code \"}.
+   * Escape the input String.
    *
    * @param str the string to be escaped
    * @return the escaped version of the string
    */
-  private static String escapeDoubleQuotes(final String str) {
-    return str.replace("\"", "\\\"");
+  private static String escapeString(final String str) {
+    return str.replace("\"", "\\\"").replace("\r", "\\\\r").replace("\n", "\\\\n");
   }
 
   /**
@@ -309,8 +309,8 @@ public class DOTCFGVisualizer<
    * @param obj an object
    * @return an escaped version of the string representation of the object
    */
-  private static String escapeDoubleQuotes(final Object obj) {
-    return escapeDoubleQuotes(String.valueOf(obj));
+  private static String escapeString(final Object obj) {
+    return escapeString(String.valueOf(obj));
   }
 
   /**

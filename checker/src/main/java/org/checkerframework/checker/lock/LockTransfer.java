@@ -60,9 +60,8 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
   protected void makeLockPossiblyHeld(LockStore store, Node node) {
     JavaExpression internalRepr = JavaExpression.fromNode(node);
 
-    // insertValue cannot change an annotation to a less
-    // specific type (e.g. LockHeld to LockPossiblyHeld),
-    // so insertLockPossiblyHeld is called.
+    // insertValue cannot change an annotation to a less specific type (e.g. LockHeld to
+    // LockPossiblyHeld), so insertLockPossiblyHeld is called.
     store.insertLockPossiblyHeld(internalRepr);
   }
 
@@ -95,29 +94,23 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
 
     Kind astKind = underlyingAST.getKind();
 
-    // Methods with the 'synchronized' modifier are
-    // holding the 'this' lock.
+    // Methods with the 'synchronized' modifier are holding the 'this' lock.
 
-    // There is a subtle difference between synchronized methods
-    // and constructors/initializers. A synchronized method is only
-    // taking the intrinsic lock of the current object. It says nothing
+    // There is a subtle difference between synchronized methods and constructors/initializers. A
+    // synchronized method is only taking the intrinsic lock of the current object. It says nothing
     // about any fields of the current object.
 
-    // Furthermore, since the current object already exists,
-    // other objects may be guarded by the current object. So
-    // a synchronized method can affect the locking behavior of other
-    // objects.
+    // Furthermore, since the current object already exists, other objects may be guarded by the
+    // current object. So a synchronized method can affect the locking behavior of other objects.
 
-    // A constructor/initializer behaves as if the current object
-    // and all its non-static fields were held as locks. But in
-    // reality no locks are held.
+    // A constructor/initializer behaves as if the current object and all its non-static fields were
+    // held as locks. But in reality no locks are held.
 
-    // Furthermore, since the current object is being constructed,
-    // no other object can be guarded by it or any of its non-static
-    // fields.
+    // Furthermore, since the current object is being constructed, no other object can be guarded by
+    // it or any of its non-static fields.
 
     // Handle synchronized methods and constructors.
-    if (astKind == Kind.METHOD) {
+    if (astKind == UnderlyingAST.Kind.METHOD) {
       CFGMethod method = (CFGMethod) underlyingAST;
       MethodTree methodTree = method.getMethod();
 

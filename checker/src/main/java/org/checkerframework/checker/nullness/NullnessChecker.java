@@ -1,7 +1,9 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.SortedSet;
+import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -18,8 +20,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
 @SupportedLintOptions({
   NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
   NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-  // Temporary option to forbid non-null array component types,
-  // which is allowed by default.
+  // Temporary option to forbid non-null array component types, which is allowed by default.
   // Forbidding is sound and will eventually be the default.
   // Allowing is unsound, as described in Section 3.3.4, "Nullness and arrays":
   //     https://checkerframework.org/manual/#nullness-arrays
@@ -30,8 +31,9 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   // Old name for soundArrayCreationNullness, for backward compatibility; remove in January 2021.
   "forbidnonnullarraycomponents",
   NullnessChecker.LINT_TRUSTARRAYLENZERO,
-  NullnessChecker.LINT_PERMITCLEARPROPERTY
+  NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
+@SupportedOptions({"assumeKeyFor"})
 public class NullnessChecker extends InitializationChecker {
 
   /** Should we be strict about initialization of {@link MonotonicNonNull} variables? */
@@ -71,7 +73,9 @@ public class NullnessChecker extends InitializationChecker {
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
         super.getImmediateSubcheckerClasses();
-    checkers.add(KeyForSubchecker.class);
+    if (!hasOptionNoSubcheckers("assumeKeyFor")) {
+      checkers.add(KeyForSubchecker.class);
+    }
     return checkers;
   }
 
@@ -85,5 +89,14 @@ public class NullnessChecker extends InitializationChecker {
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
     return new NullnessVisitor(this);
+  }
+
+  @Override
+  public List<String> getExtraStubFiles() {
+    List<String> result = super.getExtraStubFiles();
+    if (hasOption("assumeKeyFor")) {
+      result.add("map-assumeKeyFor.astub");
+    }
+    return result;
   }
 }

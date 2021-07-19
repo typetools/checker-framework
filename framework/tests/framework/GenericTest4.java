@@ -49,7 +49,7 @@ public class GenericTest4 {
       }
 
       void testWow2(Map<Foo, String> p) {
-        // :: error: (assignment.type.incompatible) :: error: (argument.type.incompatible)
+        // :: error: (assignment) :: error: (argument)
         p = wow(p);
       }
     }

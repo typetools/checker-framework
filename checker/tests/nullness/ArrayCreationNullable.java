@@ -10,13 +10,13 @@ public class ArrayCreationNullable {
 
   void testObjectArray(@NonNull Object @NonNull [] p) {
     @NonNull Object @NonNull [] objs;
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     objs = new Object[10];
     objs[0].toString();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     objs = new @Nullable Object[10];
     objs[0].toString();
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     objs = new @NonNull Object[10];
     objs[0].toString();
     // Allowed.
@@ -29,7 +29,7 @@ public class ArrayCreationNullable {
     Object[] objs;
     // Even if the default qualifier is NonNull, array component
     // types must be Nullable.
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     objs = new Object[10];
     objs[0].toString();
   }
@@ -40,14 +40,14 @@ public class ArrayCreationNullable {
     objs = new Object[] {new Object(), "ha"};
 
     @NonNull Object[] objs2 = {};
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     objs2 = new Integer[] {1, null, 3};
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     objs2 = new Object[] {new Object(), "ha", null};
 
     @NonNull Object[] objs3 = new Integer[] {1, 2, 3};
     objs3 = new Integer[] {1, 2, 3};
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     objs3 = new Integer[] {1, 2, 3, null};
 
     (new Integer[] {1, 2, 3})[0].toString();
@@ -63,13 +63,13 @@ public class ArrayCreationNullable {
 
   void testStringArray(@NonNull String @NonNull [] p) {
     @NonNull String @NonNull [] strs;
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     strs = new String[10];
     strs[0].toString();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     strs = new @Nullable String[10];
     strs[0].toString();
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     strs = new @NonNull String[10];
     strs[0].toString();
     // Allowed.
@@ -79,13 +79,13 @@ public class ArrayCreationNullable {
 
   void testIntegerArray(@NonNull Integer @NonNull [] p) {
     @NonNull Integer @NonNull [] ints;
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     ints = new Integer[10];
     ints[0].toString();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     ints = new @Nullable Integer[10];
     ints[0].toString();
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     ints = new @NonNull Integer[10];
     ints[0].toString();
     // Allowed.
@@ -93,10 +93,8 @@ public class ArrayCreationNullable {
     ints[0].toString();
   }
 
-  // The component type of zero-length arrays can
-  // be non-null - they will always generate
-  // IndexOutOfBoundsExceptions, but are usually just
-  // used for the type, e.g. in List.toArray.
+  // The component type of zero-length arrays can be non-null - they will always generate
+  // IndexOutOfBoundsExceptions, but are usually just used for the type, e.g. in List.toArray.
   void testLengthZero() {
     @NonNull Object @NonNull [] objs;
     objs = new Object[0];
@@ -110,7 +108,7 @@ public class ArrayCreationNullable {
       // Given array is too small -> new one is created.
       nna = nns.toArray(new Object[nns.size()-2]);
       // Padding elements will be null.
-      // TODO:: error: (assignment.type.incompatible)
+      // TODO:: error: (assignment)
       nna = nns.toArray(new Object[nns.size() + 2]);
       @Nullable Object [] nbla = nns.toArray(new Object[nns.size() + 2]);
   }
@@ -118,25 +116,25 @@ public class ArrayCreationNullable {
 
   void testMultiDim() {
     // new double[10][10] has type double @NonNull[] @Nullable[]
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     double @NonNull [] @NonNull [] daa = new double[10][10];
     double @NonNull [] @Nullable [] daa2 = new double[10][10];
 
     // new Object[10][10] has type @Nullable Object @NonNull[] @Nullable[]
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     @Nullable Object @NonNull [] @NonNull [] oaa = new Object[10][10];
     @Nullable Object @NonNull [] @Nullable [] oaa2 = new Object[10][10];
 
     // new Object[10][10] has type @Nullable Object @NonNull[] @Nullable[]
-    // :: error: (new.array.type.invalid)
+    // :: error: (new.array)
     oaa2 = new Object @NonNull [10] @NonNull [10];
 
     @MonotonicNonNull Object @NonNull [] @MonotonicNonNull [] oaa3 =
         new @MonotonicNonNull Object @NonNull [10] @MonotonicNonNull [10];
     oaa3[0] = new @MonotonicNonNull Object[4];
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     oaa3[0] = null;
-    // :: error: (assignment.type.incompatible) :: error: (accessing.nullable)
+    // :: error: (assignment) :: error: (accessing.nullable)
     oaa3[0][0] = null;
   }
 
@@ -147,7 +145,7 @@ public class ArrayCreationNullable {
         out[i] = null;
       } else {
         out[i] = in[i].getClass().toString();
-        // :: error: (assignment.type.incompatible)
+        // :: error: (assignment)
         out[i] = null;
       }
     }
@@ -167,7 +165,7 @@ public class ArrayCreationNullable {
     return new Object[10];
   }
 
-  // :: error: (new.array.type.invalid)
+  // :: error: (new.array)
   @NonNull Object @NonNull [] oa0 = new Object[10];
 
   // OK
@@ -175,7 +173,7 @@ public class ArrayCreationNullable {
 
   Object[] oa1 = new Object[] {new Object()};
 
-  // :: error: (assignment.type.incompatible)
+  // :: error: (assignment)
   Object[] oa2 = new Object[] {new Object(), null};
 
   public static void main(String[] args) {

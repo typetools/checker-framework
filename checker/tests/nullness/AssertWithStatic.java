@@ -47,10 +47,10 @@ public class AssertWithStatic {
   }
 
   @EnsuresNonNull("AssertWithStatic.f")
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   public void sysOutAfter1() {}
 
   @EnsuresNonNull("f")
-  // :: error: (contracts.postcondition.not.satisfied)
+  // :: error: (contracts.postcondition)
   public void sysOutAfter2() {}
 }

@@ -16,6 +16,7 @@ import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -83,18 +84,25 @@ public class NullnessTransfer
           ? extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>>
       nullnessTypeFactory;
 
-  /** The type factory for the map key analysis. */
-  protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
+  /**
+   * The type factory for the map key analysis, or null if the Map Key Checker should not be run.
+   */
+  protected final @Nullable KeyForAnnotatedTypeFactory keyForTypeFactory;
 
   /** Create a new NullnessTransfer for the given analysis. */
   public NullnessTransfer(NullnessAnalysis analysis) {
     super(analysis);
     this.nullnessTypeFactory = analysis.getTypeFactory();
     Elements elements = nullnessTypeFactory.getElementUtils();
-    // It is error-prone to put a type factory in a field.  It is OK here because
-    // keyForTypeFactory is used only to call methods isMapGet() and isKeyForMap().
-    this.keyForTypeFactory =
-        nullnessTypeFactory.getChecker().getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+    BaseTypeChecker checker = nullnessTypeFactory.getChecker();
+    if (checker.hasOption("assumeKeyFor")) {
+      this.keyForTypeFactory = null;
+    } else {
+      // It is error-prone to put a type factory in a field.  It is OK here because
+      // keyForTypeFactory is used only to call methods isMapGet() and isKeyForMap().
+      this.keyForTypeFactory =
+          nullnessTypeFactory.getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+    }
 
     NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
     NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);

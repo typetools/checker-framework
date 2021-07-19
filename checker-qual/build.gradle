@@ -8,6 +8,9 @@ buildscript {
         // Don't add implementation dependencies; checker-qual.jar should have no dependencies.
     }
 }
+plugins {
+    id 'java-library'
+}
 
 apply plugin: 'biz.aQute.bnd.builder'
 

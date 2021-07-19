@@ -8,7 +8,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -16,9 +15,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.CollectionsPlume;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AnnotationDef;
 import scenelib.annotations.field.AnnotationFieldType;
@@ -42,7 +41,7 @@ public class AnnotationConverter {
    * @return the Annotation
    */
   public static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
-    @SuppressWarnings("signature:argument.type.incompatible") // TODO: bug for inner classes
+    @SuppressWarnings("signature:argument") // TODO: bug for inner classes
     AnnotationDef def =
         new AnnotationDef(
             AnnotationUtils.annotationName(am),
@@ -67,7 +66,7 @@ public class AnnotationConverter {
         // Convert each AnnotationValue to its respective Java type.
         @SuppressWarnings("unchecked")
         List<AnnotationValue> valueList = (List<AnnotationValue>) value;
-        value = SystemUtil.mapList(AnnotationValue::getValue, valueList);
+        value = CollectionsPlume.mapList(AnnotationValue::getValue, valueList);
       } else if (value instanceof TypeMirror) {
         try {
           value = Class.forName(TypesUtils.binaryName((TypeMirror) value));
@@ -143,14 +142,14 @@ public class AnnotationConverter {
         return new ArrayAFT((ScalarAFT) componentAFT);
 
       case DECLARED:
-        Name className = TypesUtils.getQualifiedName((DeclaredType) tm);
-        if (className.contentEquals("java.lang.String")) {
+        String className = TypesUtils.getQualifiedName((DeclaredType) tm);
+        if (className.equals("java.lang.String")) {
           return BasicAFT.forType(String.class);
-        } else if (className.contentEquals("java.lang.Class")) {
+        } else if (className.equals("java.lang.Class")) {
           return ClassTokenAFT.ctaft;
         } else {
           // This must be an enum constant.
-          return new EnumAFT(className.toString());
+          return new EnumAFT(className);
         }
 
       default:

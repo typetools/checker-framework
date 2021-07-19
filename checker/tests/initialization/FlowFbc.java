@@ -17,7 +17,7 @@ public class FlowFbc {
     g = arg;
     foo();
     f.toLowerCase();
-    // :: error: (method.invocation.invalid)
+    // :: error: (method.invocation)
     g.toLowerCase();
     f = arg;
   }

@@ -42,6 +42,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -50,8 +51,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * {@link WholeProgramInferenceStorage} to store annotations and to create output files.
  *
  * <p>This class does not perform inference for an element if the element has explicit annotations.
- * That is, calling an update* method on an explicitly annotated field, method return, or method
- * parameter has no effect.
+ * That is, calling an {@code update*} method on an explicitly annotated field, method return, or
+ * method parameter has no effect.
  *
  * <p>In addition, whole program inference ignores inferred types in a few scenarios. When
  * discovering a use, WPI ignores an inferred type if:
@@ -79,15 +80,13 @@ import org.checkerframework.javacutil.TreeUtils;
  * @param <T> the type used by the storage to store annotations. See {@link
  *     WholeProgramInferenceStorage}
  */
-//  TODO: We could add an option to update the type of explicitly annotated
-//  elements, but this currently is not recommended since the
-//  insert-annotations-to-source tool, which adds annotations from .jaif files
-//  into source code, adds annotations on top of existing
-//  annotations. See https://github.com/typetools/annotation-tools/issues/105 .
-//  TODO: Ensure that annotations are inserted deterministically into
-//  files. This is important for debugging and comparison; otherwise running
-//  the whole-program inference on the same set of files can yield different
-//  results (order of annotations).
+// TODO: We could add an option to update the type of explicitly annotated elements, but this
+// currently is not recommended since the insert-annotations-to-source tool, which adds annotations
+// from .jaif files into source code, adds annotations on top of existing annotations. See
+// https://github.com/typetools/annotation-tools/issues/105 .
+// TODO: Ensure that annotations are inserted deterministically into files. This is important for
+// debugging and comparison; otherwise running the whole-program inference on the same set of files
+// can yield different results (order of annotations).
 public class WholeProgramInferenceImplementation<T> implements WholeProgramInference {
 
   /** The type factory associated with this. */
@@ -142,7 +141,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   @Override
   public void updateFromMethodInvocation(
       MethodInvocationNode methodInvNode,
-      Tree receiverTree,
       ExecutableElement methodElt,
       CFAbstractStore<?, ?> store) {
     // Don't infer types for code that isn't presented as source.
@@ -154,9 +152,41 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    // Don't infer formal parameter types from recursive calls.
+    //
+    // When performing WPI on a library, if there are no external calls (only recursive calls), then
+    // each iteration of WPI would make the formal parameter types more restrictive, leading to an
+    // infinite (or very long) loop.
+    //
+    // Consider
+    //   void myMethod(int x) { ... myMethod(x-1) ... }`
+    // On one iteration, if x has type IntRange(to=100), the recursive call's argument has type
+    // IntRange(to=99).  If that is the only call to `MyMethod`, then the formal parameter type
+    // would be updated.  On the next iteration it would be refined again to @IntRange(to=98), and
+    // so forth.  A recursive call should never restrict a formal parameter type.
+    if (isRecursiveCall(methodInvNode)) {
+      return;
+    }
+
     List<Node> arguments = methodInvNode.getArguments();
     updateInferredExecutableParameterTypes(methodElt, arguments);
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
+  }
+
+  /**
+   * Returns true if the given call is a recursive call.
+   *
+   * @param methodInvNode a method invocation
+   * @return true if the given call is a recursive call
+   */
+  private boolean isRecursiveCall(MethodInvocationNode methodInvNode) {
+    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(methodInvNode.getTreePath());
+    if (enclosingMethod == null) {
+      return false;
+    }
+    ExecutableElement methodInvocEle = TreeUtils.elementFromUse(methodInvNode.getTree());
+    ExecutableElement methodDeclEle = TreeUtils.elementFromDeclaration(enclosingMethod);
+    return methodDeclEle.equals(methodInvocEle);
   }
 
   /**
@@ -173,13 +203,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     for (int i = 0; i < arguments.size(); i++) {
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
-      if (argTree == null) {
-        // TODO: Handle variable-length list as parameter.
-        // An ArrayCreationNode with a null tree is created when the
-        // parameter is a variable-length list. We are ignoring it for now.
-        // See Issue 682: https://github.com/typetools/checker-framework/issues/682
-        continue;
-      }
 
       VariableElement ve = methodElt.getParameters().get(i);
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
@@ -372,12 +395,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @return true if an assignment to the given field should be ignored by WPI
    */
   protected boolean ignoreFieldInWPI(Element element, String fieldName) {
-    // Do not attempt to infer types for fields that do not have valid
-    // names. For example, compiler-generated temporary variables will
-    // have invalid names. Recording facts about fields with
-    // invalid names causes jaif-based WPI to crash when reading the .jaif
-    // file, and stub-based WPI to generate unparsable stub files.
-    // See https://github.com/typetools/checker-framework/issues/3442
+    // Do not attempt to infer types for fields that do not have valid names. For example,
+    // compiler-generated temporary variables will have invalid names. Recording facts about fields
+    // with invalid names causes jaif-based WPI to crash when reading the .jaif file, and stub-based
+    // WPI to generate unparsable stub files.  See
+    // https://github.com/typetools/checker-framework/issues/3442
     if (!SourceVersion.isIdentifier(fieldName)) {
       return true;
     }
@@ -504,8 +526,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param defLoc the location where the annotation will be added
    * @param rhsATM the RHS of the annotated type on the source code
    * @param lhsATM the LHS of the annotated type on the source code
-   * @param file path to the annotation file containing the executable; used for marking the scene
-   *     as modified (needing to be written to disk)
+   * @param file the annotation file containing the executable; used for marking the scene as
+   *     modified (needing to be written to disk)
    */
   protected void updateAnnotationSet(
       T annotationsToUpdate,
@@ -532,8 +554,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param defLoc the location where the annotation will be added
    * @param rhsATM the RHS of the annotated type on the source code
    * @param lhsATM the LHS of the annotated type on the source code
-   * @param file path to the annotation file containing the executable; used for marking the scene
-   *     as modified (needing to be written to disk)
+   * @param file annotation file containing the executable; used for marking the scene as modified
+   *     (needing to be written to disk)
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
    */
@@ -570,7 +592,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
    * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
    *
-   * @param sourceCodeATM the annotated type on the source code
+   * @param sourceCodeATM the annotated type on the source code; side effected by this method
    * @param ajavaATM the annotated type on the ajava file
    */
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
@@ -587,9 +609,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       case WILDCARD:
         break;
         // throw new BugInCF("This can't happen");
-        // TODO: this comment is wrong:  This case does get entered.
-        // Because inferring type arguments is not supported, wildcards won't be
-        // encountered.
+        // TODO: This comment is wrong: the wildcard case does get entered.
+        // Because inferring type arguments is not supported, wildcards won't be encountered.
         // updateATMWithLUB(
         //         atf,
         //         ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
@@ -605,10 +626,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             ((AnnotatedArrayType) ajavaATM).getComponentType());
         break;
         // case DECLARED:
-        // Inferring annotations on type arguments is not supported, so no need to recur on
-        // generic types. If this was ever implemented, this method would need a
-        // VisitHistory object to prevent infinite recursion on types such as T extends
-        // List<T>.
+        // Inferring annotations on type arguments is not supported, so no need to recur on generic
+        // types. If this was ever implemented, this method would need a VisitHistory object to
+        // prevent infinite recursion on types such as T extends List<T>.
       default:
         // ATM only has primary annotations
         break;

@@ -76,7 +76,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     if (pause) {
       return null;
     }
-    if (declaredType.wasRaw()) {
+    if (declaredType.isUnderlyingTypeRaw()) {
       // Copy annotations from the declaration to the wildcards.
       AnnotatedDeclaredType declaration =
           (AnnotatedDeclaredType)
@@ -118,11 +118,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
 
     final WildcardType wildcard = (WildcardType) wildcardAtm.getUnderlyingType();
     Element typeParamElement = TypesUtils.wildcardToTypeParam(wildcard);
-    if (typeParamElement == null) {
-      typeParamElement =
-          parents.isEmpty()
-              ? null
-              : getTypeParamFromEnclosingClass(wildcardAtm, parents.peekFirst());
+    if (typeParamElement == null && !parents.isEmpty()) {
+      typeParamElement = getTypeParameterElement(wildcardAtm, parents.peekFirst());
     }
 
     if (typeParamElement != null) {
@@ -197,36 +194,21 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Search parent's type arguments for wildcard. Using the index of wildcard, find the
-   * corresponding type parameter element and return it. Returns null if the wildcard is the result
-   * of substitution and therefore not in the list of type arguments.
+   * Search {@code declaredType}'s type arguments for {@code typeArg}. Using the index of {@code
+   * typeArg}, find the corresponding type parameter element and return it.
    *
-   * @param wildcard the wildcard type whose corresponding type argument to determine
-   * @param parent the type that may have a type argument corresponding to {@code wildcard}
-   * @return the type argument in {@code parent} that corresponds to {@code wildcard}
+   * @param typeArg a typeArg of {@code declaredType}
+   * @param declaredType the type in which {@code typeArg} is a type argument
+   * @return the type parameter in {@code declaredType} that corresponds to {@code typeArg}
    */
-  private Element getTypeParamFromEnclosingClass(
-      final @FindDistinct AnnotatedWildcardType wildcard, final AnnotatedDeclaredType parent) {
-    Integer wildcardIndex = null;
-    int currentIndex = 0;
-    for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {
-      // the only cases in which the wildcard is not one of the type arguments are cases in
-      // which they should have been replaced by capture
-      if (typeArg == wildcard) {
-        wildcardIndex = currentIndex;
-        break;
+  private Element getTypeParameterElement(
+      final @FindDistinct AnnotatedTypeMirror typeArg, final AnnotatedDeclaredType declaredType) {
+    for (int i = 0; i < declaredType.getTypeArguments().size(); i++) {
+      if (declaredType.getTypeArguments().get(i) == typeArg) {
+        TypeElement typeElement = TypesUtils.getTypeElement(declaredType.getUnderlyingType());
+        return typeElement.getTypeParameters().get(i);
       }
-      currentIndex += 1;
     }
-
-    if (wildcardIndex != null) {
-      final TypeElement typeElement =
-          (TypeElement)
-              typeFactory.getProcessingEnv().getTypeUtils().asElement(parent.getUnderlyingType());
-
-      return typeElement.getTypeParameters().get(wildcardIndex);
-    }
-
-    return null;
+    throw new BugInCF("Wildcard %s is not a type argument of %s", typeArg, declaredType);
   }
 }

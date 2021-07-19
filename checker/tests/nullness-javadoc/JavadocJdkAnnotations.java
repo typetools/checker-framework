@@ -2,6 +2,7 @@ import com.sun.javadoc.Doc;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// @above-java11-skip-test com.sun.javadoc.Doc doesn't exist above 11.
 public class JavadocJdkAnnotations {
 
   @Nullable Object f = null;
@@ -12,7 +13,7 @@ public class JavadocJdkAnnotations {
     d.isIncluded();
     @NonNull Object x = f;
     d.tags();
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     @NonNull Object y = f;
   }
 }

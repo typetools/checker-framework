@@ -12,7 +12,7 @@ public class Issue1000 {
   }
 
   String orElseAppliedToNullable(Optional<String> opt) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return opt.orElse(null);
   }
 }

@@ -9,7 +9,7 @@ public class Issue1214 {
     } catch (Exception e) {
       s = null;
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return s;
   }
 
@@ -23,7 +23,7 @@ public class Issue1214 {
       } catch (Exception ee) {
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return s;
   }
 
@@ -39,7 +39,7 @@ public class Issue1214 {
         s = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return s;
   }
 
@@ -50,7 +50,7 @@ public class Issue1214 {
     } catch (Exception e) {
       s = null;
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return s;
   }
 
@@ -64,7 +64,7 @@ public class Issue1214 {
       } catch (Exception ee) {
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return s;
   }
 
@@ -80,7 +80,7 @@ public class Issue1214 {
         s = null;
       }
     }
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return s;
   }
 

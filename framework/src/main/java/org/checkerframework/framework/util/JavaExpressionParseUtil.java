@@ -1,7 +1,7 @@
 package org.checkerframework.framework.util;
 
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
@@ -32,7 +32,6 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -69,9 +68,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Resolver;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -102,10 +102,16 @@ public class JavaExpressionParseUtil {
    * Parsable replacement for formal parameter references. It is parsable because it is a Java
    * identifier.
    */
-  private static final String PARAMETER_REPLACEMENT = "_param_";
+  private static final String PARAMETER_PREFIX = "_param_";
 
-  /** The length of {@link #PARAMETER_REPLACEMENT}. */
-  private static final int PARAMETER_REPLACEMENT_LENGTH = PARAMETER_REPLACEMENT.length();
+  /** The length of {@link #PARAMETER_PREFIX}. */
+  private static final int PARAMETER_PREFIX_LENGTH = PARAMETER_PREFIX.length();
+
+  /** A pattern that matches the start of a formal parameter in "#2" syntax. */
+  private static Pattern FORMAL_PARAMETER = Pattern.compile("#(\\d)");
+
+  /** The replacement for a formal parameter in "#2" syntax. */
+  private static final String PARAMETER_REPLACEMENT = PARAMETER_PREFIX + "$1";
 
   /**
    * Parses a string to a {@link JavaExpression}.
@@ -136,9 +142,14 @@ public class JavaExpressionParseUtil {
       ProcessingEnvironment env)
       throws JavaExpressionParseException {
 
+    // Use the current source version to parse with because a JavaExpression could refer to a
+    // variable named "var", which is a keyword in Java 10 and later.
+    LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
+    String expressionWithParameterNames =
+        StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
     Expression expr;
     try {
-      expr = StaticJavaParser.parseExpression(replaceParameterSyntax(expression));
+      expr = JavaParserUtil.parseExpression(expressionWithParameterNames, currentSourceVersion);
     } catch (ParseProblemException e) {
       String extra = ".";
       if (!e.getProblems().isEmpty()) {
@@ -170,27 +181,6 @@ public class JavaExpressionParseUtil {
               result, result.getClass()));
     }
     return result;
-  }
-
-  /**
-   * Replaces every occurrence of "#NUMBER" with FormalParameter.PARAMETER_REPLACEMENT + "NUMBER"
-   * where NUMBER is the 1-based index of a formal parameter.
-   *
-   * <p>Note that this does replacement even within strings.
-   *
-   * @param expression a Java expression in which to replace
-   * @return the Java expression, with formal parameter references like "#2" replaced by an
-   *     identifier like "_param_2"
-   */
-  private static String replaceParameterSyntax(String expression) {
-    Pattern p = Pattern.compile("#(\\d)");
-    Matcher m = p.matcher(expression);
-    StringBuffer sb = new StringBuffer();
-    while (m.find()) {
-      m.appendReplacement(sb, PARAMETER_REPLACEMENT + m.group(1));
-    }
-    m.appendTail(sb);
-    return sb.toString();
   }
 
   /**
@@ -473,19 +463,19 @@ public class JavaExpressionParseUtil {
      * JavaExpression for the given parameter; that is, returns an element of {@code parameters}.
      * Otherwise, returns {@code null}.
      *
-     * @param s a String that starts with PARAMETER_REPLACEMENT
+     * @param s a String that starts with PARAMETER_PREFIX
      * @return the JavaExpression for the given parameter or {@code null} if {@code s} is not a
      *     parameter
      */
     private @Nullable JavaExpression getParameterJavaExpression(String s) {
-      if (!s.startsWith(PARAMETER_REPLACEMENT)) {
+      if (!s.startsWith(PARAMETER_PREFIX)) {
         return null;
       }
       if (parameters == null) {
         throw new ParseRuntimeException(
             constructJavaExpressionParseError(s, "no parameters found"));
       }
-      int idx = Integer.parseInt(s.substring(PARAMETER_REPLACEMENT_LENGTH));
+      int idx = Integer.parseInt(s.substring(PARAMETER_PREFIX_LENGTH));
 
       if (idx == 0) {
         throw new ParseRuntimeException(
@@ -546,8 +536,7 @@ public class JavaExpressionParseUtil {
      * @return the {@code ClassName} for {@code identifier}, or null if it is not a class name
      */
     protected @Nullable ClassName getIdentifierAsUnqualifiedClassName(String identifier) {
-      // Is identifier an inner class of enclosingType or of any enclosing class of
-      // enclosingType?
+      // Is identifier an inner class of enclosingType or of any enclosing class of enclosingType?
       TypeMirror searchType = enclosingType;
       while (searchType.getKind() == TypeKind.DECLARED) {
         DeclaredType searchDeclaredType = (DeclaredType) searchType;
@@ -695,7 +684,7 @@ public class JavaExpressionParseUtil {
 
       // parse argument list
       List<JavaExpression> arguments =
-          SystemUtil.mapList(argument -> argument.accept(this, null), expr.getArguments());
+          CollectionsPlume.mapList(argument -> argument.accept(this, null), expr.getArguments());
 
       ExecutableElement methodElement;
       try {
@@ -766,7 +755,7 @@ public class JavaExpressionParseUtil {
         Resolver resolver)
         throws JavaExpressionParseException {
 
-      List<TypeMirror> argumentTypes = SystemUtil.mapList(JavaExpression::getType, arguments);
+      List<TypeMirror> argumentTypes = CollectionsPlume.mapList(JavaExpression::getType, arguments);
 
       if (receiverType.getKind() == TypeKind.ARRAY) {
         ExecutableElement element =
@@ -852,7 +841,7 @@ public class JavaExpressionParseUtil {
     @Override
     public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
       List<JavaExpression> dimensions =
-          SystemUtil.mapList(
+          CollectionsPlume.mapList(
               (ArrayCreationLevel dimension) ->
                   dimension.getDimension().isPresent()
                       ? dimension.getDimension().get().accept(this, aVoid)
@@ -862,7 +851,7 @@ public class JavaExpressionParseUtil {
       List<JavaExpression> initializers;
       if (expr.getInitializer().isPresent()) {
         initializers =
-            SystemUtil.mapList(
+            CollectionsPlume.mapList(
                 (Expression initializer) -> initializer.accept(this, null),
                 expr.getInitializer().get().getValues());
       } else {
@@ -1015,8 +1004,11 @@ public class JavaExpressionParseUtil {
      */
     private @Nullable TypeMirror convertTypeToTypeMirror(Type type) {
       if (type.isClassOrInterfaceType()) {
+        LanguageLevel currentSourceVersion = JavaParserUtil.getCurrentSourceVersion(env);
         try {
-          return StaticJavaParser.parseExpression(type.asString()).accept(this, null).getType();
+          return JavaParserUtil.parseExpression(type.asString(), currentSourceVersion)
+              .accept(this, null)
+              .getType();
         } catch (ParseProblemException e) {
           return null;
         }
@@ -1050,25 +1042,6 @@ public class JavaExpressionParseUtil {
       }
       return null;
     }
-  }
-
-  /**
-   * Returns a list of 1-based indices of all formal parameters that occur in {@code s}. Each formal
-   * parameter occurs in s as a string like "#1" or "#4". This routine does not do proper parsing;
-   * for instance, if "#2" appears within a string in s, then 2 is in the result list. The result
-   * may contain duplicates.
-   *
-   * @param s a Java expression
-   * @return a list of 1-based indices of all formal parameters that occur in {@code s}
-   */
-  public static List<Integer> parameterIndices(String s) {
-    List<Integer> result = new ArrayList<>();
-    Matcher matcher = UNANCHORED_PARAMETER_PATTERN.matcher(s);
-    while (matcher.find()) {
-      int idx = Integer.parseInt(matcher.group(1));
-      result.add(idx);
-    }
-    return result;
   }
 
   /**

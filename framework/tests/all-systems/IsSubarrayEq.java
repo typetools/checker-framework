@@ -6,7 +6,7 @@ public class IsSubarrayEq {
   // all-systems.
   // Fenum Checker should not issue a warning.  See issue 789
   // https://github.com/typetools/checker-framework/issues/789
-  @SuppressWarnings({"interning", "fenum:return.type.incompatible"})
+  @SuppressWarnings({"interning", "fenum:return"})
   public static boolean isSubarrayEq(Object @MinLen(1) [] a, List<?> sub) {
     return (sub.get(0) != a[0]);
   }

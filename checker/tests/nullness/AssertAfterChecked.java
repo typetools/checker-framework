@@ -12,7 +12,7 @@ public class AssertAfterChecked {
     }
 
     @EnsuresNonNull("f")
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void initBad() {}
 
     void testInit() {
@@ -35,7 +35,7 @@ public class AssertAfterChecked {
     }
 
     @EnsuresNonNull("f")
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void initBad() {}
 
     void testInit() {
@@ -54,7 +54,7 @@ public class AssertAfterChecked {
     }
 
     @EnsuresNonNull("InitStaticField.f")
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void initBadE() {}
 
     void testInitE() {
@@ -71,7 +71,7 @@ public class AssertAfterChecked {
 
   class TestParams {
     @EnsuresNonNull("get(#1)")
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     void init(final TestParams p) {}
 
     @org.checkerframework.dataflow.qual.Pure
@@ -127,13 +127,13 @@ public class AssertAfterChecked {
     }
 
     @EnsuresNonNull("f")
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     int initBad1() {
       return 0;
     }
 
     @EnsuresNonNull("f")
-    // :: error: (contracts.postcondition.not.satisfied)
+    // :: error: (contracts.postcondition)
     int initBad2() {
       if (5 == 5) {
         return 0;

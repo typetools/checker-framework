@@ -20,7 +20,7 @@ public class IndexOrLowTests {
     if (y < array.length) {
       array[y] = 1;
     }
-    // :: error: (assignment.type.incompatible)
+    // :: error: (assignment)
     index = array.length;
   }
 

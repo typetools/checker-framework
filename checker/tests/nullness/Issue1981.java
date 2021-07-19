@@ -10,12 +10,12 @@ public class Issue1981 {
   }
 
   static <E extends Comparable<? super E>> List<E> func1(Iterable<? extends E> elements) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return null;
   }
 
   static <T> List<List<T>> func2(List<T> list) {
-    // :: error: (return.type.incompatible)
+    // :: error: (return)
     return null;
   }
 }

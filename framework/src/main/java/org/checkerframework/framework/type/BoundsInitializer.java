@@ -58,8 +58,8 @@ public class BoundsInitializer {
    */
   public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
     final DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
-    if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
-      // No type arguments to infer.
+    if (underlyingType.getTypeArguments().isEmpty() && !declaredType.isUnderlyingTypeRaw()) {
+      // No type arguments to initialize.
       return;
     }
 
@@ -73,7 +73,7 @@ public class BoundsInitializer {
     Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>(numTypeParameters);
     for (int i = 0; i < numTypeParameters; i++) {
       TypeMirror javaTypeArg;
-      if (declaredType.wasRaw()) {
+      if (declaredType.isUnderlyingTypeRaw()) {
         TypeVariable typeVariable = (TypeVariable) typeElement.getTypeParameters().get(i).asType();
         javaTypeArg = getUpperBoundAsWildcard(typeVariable, declaredType.atypeFactory);
       } else {
@@ -81,11 +81,12 @@ public class BoundsInitializer {
       }
 
       final AnnotatedTypeMirror typeArg =
-          AnnotatedTypeMirror.createType(javaTypeArg, declaredType.atypeFactory, false);
+          AnnotatedTypeMirror.createType(
+              javaTypeArg, declaredType.atypeFactory, declaredType.isDeclaration());
       if (typeArg.getKind() == TypeKind.WILDCARD) {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) typeArg;
         wildcardType.setTypeVariable(typeElement.getTypeParameters().get(i));
-        if (declaredType.wasRaw()) {
+        if (declaredType.isUnderlyingTypeRaw()) {
           wildcardType.setUninferredTypeArgument();
         }
       }
@@ -194,7 +195,7 @@ public class BoundsInitializer {
   private static Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
     if (!type.getAnnotationsField().isEmpty()) {
       final Set<AnnotationMirror> annos = new HashSet<>(type.getAnnotations());
-      type.clearAnnotations();
+      type.clearPrimaryAnnotations();
       return annos;
     }
 
@@ -413,10 +414,25 @@ public class BoundsInitializer {
       typeVarToStructure.put(type.getUnderlyingType(), typeVarStruct);
       RecursiveTypeStructure parentStructure = this.currentStructure;
 
+      // If type is a captured type variable, then its type variables should be created new, rather
+      // than using one from the rest of the type.  So, clear the typevars map of all but the
+      // mapping with key type.
+      Map<TypeVariable, AnnotatedTypeMirror> hold = new HashMap<>();
+      if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
+        for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
+            new ArrayList<>(typevars.entrySet())) {
+          if (!type.atypeFactory.types.isSameType(
+              entry.getKey(), entry.getValue().underlyingType)) {
+            hold.put(entry.getKey(), entry.getValue());
+            typevars.remove(entry.getKey(), entry.getValue());
+          }
+        }
+      }
       this.currentStructure = typeVarStruct;
       initializeUpperBound(type);
       initializeLowerBound(type);
       this.currentStructure = parentStructure;
+      typevars.putAll(hold);
 
       return null;
     }
@@ -570,15 +586,9 @@ public class BoundsInitializer {
       WildcardType javaWildcardType = wildcard.getUnderlyingType();
       TypeMirror javaExtendsBound;
       if (javaWildcardType.getExtendsBound() != null) {
-        // If the wildcard type has an extends bound, use it.
         javaExtendsBound = javaWildcardType.getExtendsBound();
-      } else if (wildcard.getTypeVariable() != null) {
-        // Otherwise use the upper bound of the type variable associated with this wildcard.
-        javaExtendsBound = wildcard.getTypeVariable().getUpperBound();
       } else {
-        // Otherwise use the upper bound of the java wildcard.
-        javaExtendsBound =
-            TypesUtils.wildUpperBound(javaWildcardType, wildcard.atypeFactory.processingEnv);
+        javaExtendsBound = TypesUtils.getObjectTypeMirror(typeFactory.processingEnv);
       }
 
       if (wildcard.isUninferredTypeArgument()) {
@@ -603,7 +613,7 @@ public class BoundsInitializer {
      */
     private void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
       DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
-      if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
+      if (underlyingType.getTypeArguments().isEmpty() && !declaredType.isUnderlyingTypeRaw()) {
         return;
       }
       TypeElement typeElement =
@@ -617,7 +627,7 @@ public class BoundsInitializer {
           AnnotatedTypeMirror atmArg =
               AnnotatedTypeMirror.createType(javaTypeArg, declaredType.atypeFactory, false);
           typeArgs.add(atmArg);
-          if (atmArg.getKind() == TypeKind.WILDCARD && declaredType.wasRaw()) {
+          if (atmArg.getKind() == TypeKind.WILDCARD && declaredType.isUnderlyingTypeRaw()) {
             ((AnnotatedWildcardType) atmArg).setUninferredTypeArgument();
           }
         }
@@ -651,17 +661,17 @@ public class BoundsInitializer {
     private final Map<TypeVariable, WildcardType> rawTypeWildcards = new HashMap<>();
 
     /**
-     * Returns the underlying java type of the {@code i}-th type argument of {@code type}. If {@code
+     * Returns the underlying Java type of the {@code i}-th type argument of {@code type}. If {@code
      * type} is raw, then a new wildcard is created or returned from {@code rawTypeWildcards}.
      *
      * @param type declared type
      * @param parameters elements of the type parameters
      * @param i index of the type parameter
-     * @return the underlying java type of the {@code i}-th type argument of {@code type}
+     * @return the underlying Java type of the {@code i}-th type argument of {@code type}
      */
     private TypeMirror getJavaType(
         AnnotatedDeclaredType type, List<? extends TypeParameterElement> parameters, int i) {
-      if (type.wasRaw()) {
+      if (type.isUnderlyingTypeRaw()) {
         TypeVariable typeVariable = (TypeVariable) parameters.get(i).asType();
         if (rawTypeWildcards.containsKey(typeVariable)) {
           return rawTypeWildcards.get(typeVariable);

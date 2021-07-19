@@ -203,8 +203,7 @@ public class UnitsRelationsTools {
     // get all of the original Annotations in the Annotated Type
     Set<AnnotationMirror> annos = annoType.getAnnotations();
 
-    // loop through all the Annotations to see if they use Prefix.one, remove Prefix.one if it
-    // does
+    // loop through all the Annotations to see if they use Prefix.one, remove Prefix.one if it does
     for (AnnotationMirror anno : annos) {
       // try to clean the Annotation Mirror of the Prefix
       AnnotationMirror cleanedMirror = removePrefix(elements, anno);
