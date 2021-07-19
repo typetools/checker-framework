@@ -8,10 +8,10 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 
 public class MethodOverrides3 extends PrintWriter {
-    public MethodOverrides3(File file) throws FileNotFoundException {
-        super(file);
-    }
+  public MethodOverrides3(File file) throws FileNotFoundException {
+    super(file);
+  }
 
-    @Override
-    public void write(char[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {}
+  @Override
+  public void write(char[] buf, @IndexFor("#1") int off, @IndexOrHigh("#1") int len) {}
 }

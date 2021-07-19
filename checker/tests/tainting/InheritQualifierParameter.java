@@ -7,10 +7,10 @@ import org.checkerframework.framework.qual.NoQualifierParameter;
 public class InheritQualifierParameter {}
 
 class SubHasQualifierParameter extends InheritQualifierParameter {
-    void test(@Untainted SubHasQualifierParameter arg) {
-        // :: error: (assignment.type.incompatible)
-        @Tainted SubHasQualifierParameter local = arg;
-    }
+  void test(@Untainted SubHasQualifierParameter arg) {
+    // :: error: (assignment.type.incompatible)
+    @Tainted SubHasQualifierParameter local = arg;
+  }
 }
 
 @NoQualifierParameter(Tainted.class)
@@ -21,9 +21,9 @@ class SubHasQualifierParameter1 extends InheritQualifierParameter {}
 class InheritNoQualifierParameter {}
 
 class SubNoQualifierParameter extends InheritNoQualifierParameter {
-    void test(@Untainted SubNoQualifierParameter arg) {
-        @Tainted SubNoQualifierParameter local = arg;
-    }
+  void test(@Untainted SubNoQualifierParameter arg) {
+    @Tainted SubNoQualifierParameter local = arg;
+  }
 }
 
 @HasQualifierParameter(Tainted.class)

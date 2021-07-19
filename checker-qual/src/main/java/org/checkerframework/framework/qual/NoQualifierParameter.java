@@ -32,10 +32,10 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface NoQualifierParameter {
 
-    /**
-     * Class of the top qualifier for the hierarchy for which this class has no qualifier parameter.
-     *
-     * @return the value
-     */
-    Class<? extends Annotation>[] value();
+  /**
+   * Class of the top qualifier for the hierarchy for which this class has no qualifier parameter.
+   *
+   * @return the value
+   */
+  Class<? extends Annotation>[] value();
 }

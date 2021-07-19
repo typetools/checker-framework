@@ -5,11 +5,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class Issue3449 {
 
-    int length;
-    Object[] objs;
+  int length;
+  Object[] objs;
 
-    public Issue3449(Object... args) {
-        length = args.length;
-        objs = args;
-    }
+  public Issue3449(Object... args) {
+    length = args.length;
+    objs = args;
+  }
 }

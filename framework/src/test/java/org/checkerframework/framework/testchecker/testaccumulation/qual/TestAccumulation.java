@@ -13,10 +13,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 public @interface TestAccumulation {
-    /**
-     * Accumulated strings.
-     *
-     * @return the strings
-     */
-    public String[] value() default {};
+  /**
+   * Accumulated strings.
+   *
+   * @return the strings
+   */
+  public String[] value() default {};
 }

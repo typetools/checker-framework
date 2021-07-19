@@ -18,5 +18,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(Angle.class)
 @SuppressWarnings("checkstyle:typename")
 public @interface radians {
-    Prefix value() default Prefix.one;
+  Prefix value() default Prefix.one;
 }

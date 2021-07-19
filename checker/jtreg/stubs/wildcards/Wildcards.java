@@ -7,9 +7,9 @@
  */
 
 public class Wildcards {
-    NonN<?> f = new NonN<Object>();
+  NonN<?> f = new NonN<Object>();
 
-    class LocalNonN<T extends Object> {}
+  class LocalNonN<T extends Object> {}
 
-    LocalNonN<?> g = new LocalNonN<Object>();
+  LocalNonN<?> g = new LocalNonN<Object>();
 }

@@ -8,13 +8,13 @@ import org.checkerframework.checker.lock.qual.GuardSatisfied;
 
 public class GuardSatisfiedArray {
 
-    void foo(@GuardSatisfied Object arg1, @GuardSatisfied Object arg2) {}
+  void foo(@GuardSatisfied Object arg1, @GuardSatisfied Object arg2) {}
 
-    void bar(@GuardSatisfied Object[] args) {
-        foo(args[0], args[1]);
-    }
+  void bar(@GuardSatisfied Object[] args) {
+    foo(args[0], args[1]);
+  }
 
-    void baz(@GuardSatisfied List<@GuardSatisfied Object> args) {
-        foo(args.get(0), args.get(1));
-    }
+  void baz(@GuardSatisfied List<@GuardSatisfied Object> args) {
+    foo(args.get(0), args.get(1));
+  }
 }

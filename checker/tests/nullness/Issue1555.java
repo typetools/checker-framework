@@ -6,9 +6,9 @@ import org.checkerframework.checker.nullness.util.NullnessUtil;
 
 public class Issue1555 {
 
-    private @MonotonicNonNull String x;
+  private @MonotonicNonNull String x;
 
-    String test() {
-        return NullnessUtil.castNonNull(x);
-    }
+  String test() {
+    return NullnessUtil.castNonNull(x);
+  }
 }

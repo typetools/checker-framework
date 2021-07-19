@@ -6,10 +6,10 @@ import java.util.Map;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
 
 public class Issue372 {
-    private final Map<String, String> labels = new HashMap<>();
+  private final Map<String, String> labels = new HashMap<>();
 
-    @EnsuresKeyFor(value = "#1", map = "labels")
-    void foo(String v) {
-        labels.put(v, "");
-    }
+  @EnsuresKeyFor(value = "#1", map = "labels")
+  void foo(String v) {
+    labels.put(v, "");
+  }
 }

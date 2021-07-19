@@ -12,16 +12,16 @@ import org.checkerframework.common.value.ValueChecker;
  */
 public class WholeProgramInferenceTestChecker extends BaseTypeChecker {
 
-    @Override
-    protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new WholeProgramInferenceTestVisitor(this);
-    }
+  @Override
+  protected BaseTypeVisitor<?> createSourceVisitor() {
+    return new WholeProgramInferenceTestVisitor(this);
+  }
 
-    @Override
-    protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-                super.getImmediateSubcheckerClasses();
-        checkers.add(ValueChecker.class);
-        return checkers;
-    }
+  @Override
+  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
+        super.getImmediateSubcheckerClasses();
+    checkers.add(ValueChecker.class);
+    return checkers;
+  }
 }

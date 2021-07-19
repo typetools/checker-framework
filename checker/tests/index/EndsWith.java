@@ -5,9 +5,9 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class EndsWith {
 
-    void testEndsWith(String arg) {
-        if (arg.endsWith("[]")) {
-            @MinLen(2) String arg2 = arg;
-        }
+  void testEndsWith(String arg) {
+    if (arg.endsWith("[]")) {
+      @MinLen(2) String arg2 = arg;
     }
+  }
 }

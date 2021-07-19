@@ -28,15 +28,14 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface FieldInvariant {
 
-    /**
-     * The qualifier on the field. Must be a subtype of the qualifier on the declaration of the
-     * field.
-     */
-    Class<? extends Annotation>[] qualifier();
+  /**
+   * The qualifier on the field. Must be a subtype of the qualifier on the declaration of the field.
+   */
+  Class<? extends Annotation>[] qualifier();
 
-    /**
-     * The field that has a more precise type, in the class on which the {@code FieldInvariant}
-     * annotation is written. The field must be declared in a superclass and must be {@code final}.
-     */
-    String[] field();
+  /**
+   * The field that has a more precise type, in the class on which the {@code FieldInvariant}
+   * annotation is written. The field must be declared in a superclass and must be {@code final}.
+   */
+  String[] field();
 }

@@ -2,9 +2,9 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class ArrayInitBug {
 
-    @Nullable Object @Nullable [] aa;
+  @Nullable Object @Nullable [] aa;
 
-    public ArrayInitBug() {
-        aa = null;
-    }
+  public ArrayInitBug() {
+    aa = null;
+  }
 }

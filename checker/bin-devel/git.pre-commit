@@ -19,7 +19,7 @@ if [ -n "$CHANGED_JAVA_FILES" ]; then
     # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
 
     # shellcheck disable=SC2086
-    python3 checker/bin-devel/.run-google-java-format/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES} || (echo "Problem in pre-commit.  Try running: ./gradlew reformat" && /bin/false)
+    python3 checker/bin-devel/.run-google-java-format/check-google-java-format.py ${CHANGED_JAVA_FILES} || (echo "Problem in pre-commit.  Try running: ./gradlew reformat" && /bin/false)
 
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
     if [ "$BRANCH" = "master" ]; then

@@ -6,54 +6,54 @@ import org.checkerframework.framework.testchecker.util.*;
 // Handling of generics from different enclosing classes.
 
 public class GenericTest4 {
-    public interface Foo {}
+  public interface Foo {}
 
-    class Outer<O> {
-        O getOuter() {
-            return null;
-        }
-
-        class Inner<I> {
-            O getInner() {
-                return null;
-            }
-
-            I setter1(O p) {
-                return null;
-            }
-
-            O setter2(I p) {
-                return null;
-            }
-
-            Map<O, I> wow(Map<O, I> p) {
-                return null;
-            }
-        }
+  class Outer<O> {
+    O getOuter() {
+      return null;
     }
 
-    class OuterImpl extends Outer<Foo> {
-        void test() {
-            Foo foo = getOuter();
-        }
+    class Inner<I> {
+      O getInner() {
+        return null;
+      }
 
-        class InnerImpl extends Inner<@Odd String> {
-            void test() {
-                Foo foo = getInner();
-                String s = setter1(foo);
-                foo = setter2(s);
-            }
+      I setter1(O p) {
+        return null;
+      }
 
-            void testWow(Map<Foo, @Odd String> p) {
-                p = wow(p);
-            }
+      O setter2(I p) {
+        return null;
+      }
 
-            void testWow2(Map<Foo, String> p) {
-                // :: error: (assignment.type.incompatible) :: error: (argument.type.incompatible)
-                p = wow(p);
-            }
-        }
+      Map<O, I> wow(Map<O, I> p) {
+        return null;
+      }
+    }
+  }
+
+  class OuterImpl extends Outer<Foo> {
+    void test() {
+      Foo foo = getOuter();
     }
 
-    // Add uses from outside of both classes.
+    class InnerImpl extends Inner<@Odd String> {
+      void test() {
+        Foo foo = getInner();
+        String s = setter1(foo);
+        foo = setter2(s);
+      }
+
+      void testWow(Map<Foo, @Odd String> p) {
+        p = wow(p);
+      }
+
+      void testWow2(Map<Foo, String> p) {
+        // :: error: (assignment.type.incompatible) :: error: (argument.type.incompatible)
+        p = wow(p);
+      }
+    }
+  }
+
+  // Add uses from outside of both classes.
 }

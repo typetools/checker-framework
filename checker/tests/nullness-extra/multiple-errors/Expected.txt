@@ -1,14 +1,14 @@
 C1.java:2: error: [initialization.field.uninitialized] the default constructor does not initialize field o
-    Object o;
-           ^
+  Object o;
+         ^
 C2.java:2: error: [assignment.type.incompatible] incompatible types in assignment.
-    Object o = null;
-               ^
+  Object o = null;
+             ^
   found   : null (NullType)
   required: @Initialized @NonNull Object
 C3.java:4: error: cannot find symbol
-            void bad(XXX p) {
-                     ^
+      void bad(XXX p) {
+               ^
   symbol:   class XXX
   location: class C3b
 C3.java:1: error: [type.checking.not.run] NullnessChecker did not run because of a previous error issued by javac

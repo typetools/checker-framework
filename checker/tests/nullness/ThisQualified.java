@@ -4,9 +4,9 @@
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
 public class ThisQualified {
-    public ThisQualified() {
-        super();
-        @UnderInitialization ThisQualified a = this;
-        @UnderInitialization ThisQualified b = ThisQualified.this;
-    }
+  public ThisQualified() {
+    super();
+    @UnderInitialization ThisQualified a = this;
+    @UnderInitialization ThisQualified b = ThisQualified.this;
+  }
 }

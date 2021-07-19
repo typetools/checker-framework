@@ -2,19 +2,19 @@ import org.checkerframework.common.value.qual.IntVal;
 
 public class ClassInitializer2 {
 
-    @IntVal(1) int x;
+  @IntVal(1) int x;
 
-    @IntVal(2) int y;
+  @IntVal(2) int y;
 
-    int z;
+  int z;
 
-    {
-        x = 1;
-    }
+  {
+    x = 1;
+  }
 
-    {
-        y = 2;
-    }
+  {
+    y = 2;
+  }
 
-    ClassInitializer2() {}
+  ClassInitializer2() {}
 }

@@ -3,15 +3,15 @@ import org.checkerframework.checker.guieffect.qual.UIType;
 
 @UIType
 public class UIParent {
-    protected UIElement thingy;
+  protected UIElement thingy;
 
-    @SafeEffect // Making this ctor safe to allow easy safe subclasses
-    public UIParent() {}
+  @SafeEffect // Making this ctor safe to allow easy safe subclasses
+  public UIParent() {}
 
-    public void doingUIStuff() {
-        thingy.dangerous();
-    } // should have UI effect
+  public void doingUIStuff() {
+    thingy.dangerous();
+  } // should have UI effect
 
-    @SafeEffect
-    public void doingSafeStuff() {} // non-UI
+  @SafeEffect
+  public void doingSafeStuff() {} // non-UI
 }

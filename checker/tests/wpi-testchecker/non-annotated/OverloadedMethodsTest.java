@@ -4,17 +4,17 @@ import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibli
 
 public class OverloadedMethodsTest {
 
-    String f;
+  String f;
 
-    String m1() {
-        return this.f;
-    }
+  String m1() {
+    return this.f;
+  }
 
-    String m1(String x) {
-        return getSibling1();
-    }
+  String m1(String x) {
+    return getSibling1();
+  }
 
-    @Sibling1 String getSibling1() {
-        return null;
-    }
+  @Sibling1 String getSibling1() {
+    return null;
+  }
 }

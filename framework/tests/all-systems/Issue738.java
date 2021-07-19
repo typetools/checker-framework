@@ -3,12 +3,12 @@
 // Also, see checker/tests/nullness/Issue738.java
 @SuppressWarnings("all") // This testcase is checking for crashes.
 public class Issue738 {
-    public static void methodA() {
-        methodB(0, new Object()); // This compiles fine.
-        methodB(new int[0], new Object[0]); // This crashes.
-    }
+  public static void methodA() {
+    methodB(0, new Object()); // This compiles fine.
+    methodB(new int[0], new Object[0]); // This crashes.
+  }
 
-    private static <T> void methodB(T paramA, T paramB) {
-        // Do nothing.
-    }
+  private static <T> void methodB(T paramA, T paramB) {
+    // Do nothing.
+  }
 }
