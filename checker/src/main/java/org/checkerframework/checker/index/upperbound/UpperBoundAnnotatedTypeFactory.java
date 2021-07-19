@@ -75,9 +75,9 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Implements the introduction rules for the Upper Bound Checker.
@@ -336,7 +336,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
   AnnotationMirror createLTLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
-      throw new BugInCF("createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
+      throw new TypeSystemError(
+          "createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
     }
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTLengthOf.class);
     builder.setValue("value", names);
@@ -345,7 +346,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
   AnnotationMirror createLTEqLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
-      throw new BugInCF("createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
+      throw new TypeSystemError(
+          "createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
     }
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTEqLengthOf.class);
     builder.setValue("value", names);

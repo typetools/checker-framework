@@ -9,7 +9,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -78,7 +78,7 @@ public class FluentAPIGenerator {
         if (inAutoValueBuilder) {
           AnnotatedTypeMirror returnType = t.getReturnType();
           if (returnType == null) {
-            throw new BugInCF("Return type cannot be null: " + t);
+            throw new TypeSystemError("Return type cannot be null: " + t);
           }
           return enclosingElement.equals(TypesUtils.getTypeElement(returnType.getUnderlyingType()));
         }
@@ -115,7 +115,7 @@ public class FluentAPIGenerator {
         if (inLombokBuilder) {
           AnnotatedTypeMirror returnType = t.getReturnType();
           if (returnType == null) {
-            throw new BugInCF("Return type cannot be null: " + t);
+            throw new TypeSystemError("Return type cannot be null: " + t);
           }
           return enclosingElement.equals(TypesUtils.getTypeElement(returnType.getUnderlyingType()));
         }
