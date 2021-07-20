@@ -334,6 +334,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return imf.isRandomNextInt(methodTree, processingEnv);
   }
 
+  /**
+   * Creates a new @LTLengthOf annotation.
+   *
+   * @param names the arguments to @LTLengthOf
+   * @return a new @LTLengthOf annotation with the given arguments
+   */
   AnnotationMirror createLTLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
       throw new TypeSystemError(
@@ -344,6 +350,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return builder.build();
   }
 
+  /**
+   * Creates a new @LTEqLengthOf annotation.
+   *
+   * @param names the arguments to @LTEqLengthOf
+   * @return a new @LTEqLengthOf annotation with the given arguments
+   */
   AnnotationMirror createLTEqLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
       throw new TypeSystemError(

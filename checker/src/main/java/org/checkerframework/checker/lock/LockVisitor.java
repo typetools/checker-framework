@@ -1096,6 +1096,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     checkLockOfThisOrTree(tree, false, gbAnno);
   }
 
+  /**
+   * Helper method tat checks the lock of either the implicit {@code this} or the given tree.
+   *
+   * @param tree a tree whose lock to check
+   * @param implicitThis true if checking the lock of the implicit {@code this}
+   * @param gbAnno a @GuardedBy annotation
+   */
   private void checkLockOfThisOrTree(Tree tree, boolean implicitThis, AnnotationMirror gbAnno) {
     if (gbAnno == null) {
       throw new TypeSystemError("LockVisitor.checkLock: gbAnno cannot be null");
