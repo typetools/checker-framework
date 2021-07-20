@@ -282,6 +282,8 @@ rm -f -- "${DIR}/.cannot-run-wpi"
 cd "${DIR}" || exit 5
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
+# For the first run, use the Java versions in ascending order: 8 if its available, then
+# 11, then 16.
 if [ "${has_java8}" = "yes" ]; then
   export JAVA_HOME="${JAVA8_HOME}"
 elif [ "${has_java11}" = "yes" ]; then
@@ -291,18 +293,17 @@ elif [ "${has_java16}" = "yes" ]; then
 fi
 configure_and_exec_dljc "$@"
 
-if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-    # If running under Java 11 fails, try Java 8.
-    if [ "${has_java8}" = "yes" ]; then
-      export JAVA_HOME="${JAVA8_HOME}"
-      echo "couldn't build using Java 11; trying Java 8"
-      configure_and_exec_dljc "$@"
-    fi
+# If running under Java 8 failed and Java 11 is also available, then try running again under Java 11.
+if [ "${has_java11}" = "yes" ] && [ "${has_java8}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+    export JAVA_HOME="${JAVA11_HOME}"
+    echo "couldn't build using Java 8; trying Java 11"
+    configure_and_exec_dljc "$@"
 fi
 
-if [ "${has_java11}" = "yes" ] && [ "${has_java8}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-    # If running under Java 11 and Java 8 fails, try Java 16.
-    if [ "${has_java16}" = "yes" ]; then
+# If running under Java 8 and/or 11 failed and Java 16 is available, then try Java 16.
+if [ "${has_java16}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+  # If only Java 16 was available, then the first run would have used Java 16, so there's no reason to run again.
+  if [ "${has_java11}" = "yes" ] || [ "${has_java8}" = "yes" ]; then
       export JAVA_HOME="${JAVA16_HOME}"
       echo "couldn't build using Java 11 or Java 8; trying Java 16"
       configure_and_exec_dljc "$@"
@@ -317,6 +318,11 @@ if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
     echo "${WPI_RESULTS_AVAILABLE}" > "${DIR}/.cannot-run-wpi"
 fi
 
-export JAVA_HOME="${JAVA_HOME_BACKUP}"
+# reset JAVA_HOME to its initial value, which could be unset
+if [ "${has_java_home}" = "yes" ]; then
+  export JAVA_HOME="${JAVA_HOME_BACKUP}"
+else
+  unset JAVA_HOME
+fi
 
 echo "Exiting wpi.sh."
