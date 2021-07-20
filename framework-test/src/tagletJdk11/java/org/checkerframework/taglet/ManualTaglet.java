@@ -8,12 +8,15 @@ import com.sun.source.doctree.TextTree;
 import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.util.SimpleDocTreeVisitor;
+
+import jdk.javadoc.doclet.Taglet;
+
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+
 import javax.lang.model.element.Element;
-import jdk.javadoc.doclet.Taglet;
 
 /**
  * A taglet for processing the {@code @checker_framework.manual} javadoc block tag, which inserts

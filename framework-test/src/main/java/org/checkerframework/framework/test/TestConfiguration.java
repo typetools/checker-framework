@@ -1,10 +1,11 @@
 package org.checkerframework.framework.test;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
+
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.BinaryName;
 
 /** A configuration for running CheckerFrameworkTests or running the TypecheckExecutor. */
 public interface TestConfiguration {

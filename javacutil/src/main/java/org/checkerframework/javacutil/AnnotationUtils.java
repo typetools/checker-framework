@@ -6,6 +6,18 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
+
+import org.checkerframework.checker.interning.qual.CompareToMethod;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -26,6 +38,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ElementKind;
@@ -35,16 +48,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.checker.interning.qual.CompareToMethod;
-import org.checkerframework.checker.interning.qual.EqualsMethod;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
-import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 
 /** A utility class for working with annotations. */
 public class AnnotationUtils {
@@ -699,7 +702,8 @@ public class AnnotationUtils {
         }
         throw new NoSuchElementException(
                 String.format(
-                        "No element with name \'%s\' in annotation %s; useDefaults=%s, valmap.keySet()=%s",
+                        "No element with name \'%s\' in annotation %s; useDefaults=%s,"
+                                + " valmap.keySet()=%s",
                         elementName, anno, useDefaults, valmap.keySet()));
     }
 
@@ -834,11 +838,16 @@ public class AnnotationUtils {
             } catch (Throwable t) {
                 String err1 =
                         String.format(
-                                "getElementValueArray(%n  anno=%s,%n  elementName=%s,%n  expectedType=%s,%n  useDefaults=%s)%n",
+                                "getElementValueArray(%n"
+                                        + "  anno=%s,%n"
+                                        + "  elementName=%s,%n"
+                                        + "  expectedType=%s,%n"
+                                        + "  useDefaults=%s)%n",
                                 anno, elementName, expectedType, useDefaults);
                 String err2 =
                         String.format(
-                                "Error in cast:%n  expectedType=%s%n  a=%s [%s]%n  a.getValue()=%s [%s]",
+                                "Error in cast:%n  expectedType=%s%n  a=%s [%s]%n  a.getValue()=%s"
+                                        + " [%s]",
                                 expectedType,
                                 a,
                                 a.getClass(),

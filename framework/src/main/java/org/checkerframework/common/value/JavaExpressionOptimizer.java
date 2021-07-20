@@ -1,8 +1,5 @@
 package org.checkerframework.common.value;
 
-import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
@@ -10,6 +7,11 @@ import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+
+import java.util.List;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 
 /**
  * Optimize the given JavaExpression. If the supplied factory is a {@code

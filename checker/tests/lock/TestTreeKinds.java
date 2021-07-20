@@ -1,7 +1,8 @@
-import java.util.Random;
-import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+
+import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TestTreeKinds {
     class MyClass {

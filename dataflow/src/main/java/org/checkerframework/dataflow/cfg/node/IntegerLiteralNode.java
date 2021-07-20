@@ -2,9 +2,11 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.Collection;
 import java.util.Collections;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for an integer literal. For example:

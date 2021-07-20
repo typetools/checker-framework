@@ -1,9 +1,10 @@
 package org.checkerframework.framework.test.junit;
 
-import java.io.File;
-import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
+import java.util.List;
 
 /** Test suite for the Subtyping Checker, using a simple {@link Encrypted} annotation. */
 public class SubtypingEncryptedTest extends CheckerFrameworkPerDirectoryTest {

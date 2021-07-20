@@ -3,10 +3,12 @@ package org.checkerframework.checker.initialization;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+
+import org.checkerframework.common.basetype.BaseTypeChecker;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
  * Tracks whether a value is initialized (all its fields are set), and checks that values are

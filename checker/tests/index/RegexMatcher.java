@@ -1,9 +1,10 @@
 // Test case for Issue panacekcz#8:
 // https://github.com/panacekcz/checker-framework/issues/8
 
+import org.checkerframework.checker.index.qual.NonNegative;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.index.qual.NonNegative;
 
 public class RegexMatcher {
     static void m(String p, String s) {

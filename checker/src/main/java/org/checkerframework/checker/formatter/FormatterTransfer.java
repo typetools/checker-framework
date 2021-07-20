@@ -1,6 +1,5 @@
 package org.checkerframework.checker.formatter;
 
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.util.FormatUtil;
@@ -12,6 +11,8 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+
+import javax.lang.model.element.AnnotationMirror;
 
 public class FormatterTransfer extends CFTransfer {
 

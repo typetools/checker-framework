@@ -15,7 +15,33 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+
 import io.github.classgraph.ClassGraph;
+
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.CheckerMain;
+import org.checkerframework.framework.util.OptionConfiguration;
+import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.SystemPlume;
+import org.plumelib.util.UtilPlume;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +71,7 @@ import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -58,29 +85,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CheckerMain;
-import org.checkerframework.framework.util.OptionConfiguration;
-import org.checkerframework.javacutil.AbstractTypeProcessor;
-import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
-import org.checkerframework.javacutil.TreePathUtil;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeSystemError;
-import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.SystemPlume;
-import org.plumelib.util.UtilPlume;
 
 /**
  * An abstract annotation processor designed for implementing a source-file checker as an annotation
@@ -534,17 +538,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         int jreVersion = SystemUtil.getJreVersion();
         if (jreVersion < 8) {
             throw new UserError(
-                    "The Checker Framework must be run under at least JDK 8.  You are using version %d.  Please use JDK 8 or JDK 11.",
+                    "The Checker Framework must be run under at least JDK 8.  You are using version"
+                            + " %d.  Please use JDK 8 or JDK 11.",
                     jreVersion);
         } else if (jreVersion > 14) {
             throw new UserError(
                     String.format(
-                            "The Checker Framework cannot be run with JDK 15+.  You are using version %d. Please use JDK 8 or JDK 11.",
+                            "The Checker Framework cannot be run with JDK 15+.  You are using"
+                                    + " version %d. Please use JDK 8 or JDK 11.",
                             jreVersion));
         } else if (jreVersion != 8 && jreVersion != 11) {
             message(
                     Kind.WARNING,
-                    "The Checker Framework is only tested with JDK 8 and JDK 11. You are using version %d. Please use JDK 8 or JDK 11.",
+                    "The Checker Framework is only tested with JDK 8 and JDK 11. You are using"
+                            + " version %d. Please use JDK 8 or JDK 11.",
                     jreVersion);
         }
 
@@ -562,7 +569,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                         Pattern.compile(warnUnneededSuppressionsExceptionsString);
             } catch (PatternSyntaxException e) {
                 throw new UserError(
-                        "Argument to -AwarnUnneededSuppressionsExceptions is not a regular expression: "
+                        "Argument to -AwarnUnneededSuppressionsExceptions is not a regular"
+                                + " expression: "
                                 + e.getMessage());
             }
         }
@@ -942,7 +950,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             messager.printMessage(
                     Kind.WARNING,
                     String.format(
-                            "Memory constraints are impeding performance; please increase max heap size (max memory = %d, total memory = %d, free memory = %d)",
+                            "Memory constraints are impeding performance; please increase max heap"
+                                + " size (max memory = %d, total memory = %d, free memory = %d)",
                             Runtime.getRuntime().maxMemory(),
                             Runtime.getRuntime().totalMemory(),
                             Runtime.getRuntime().freeMemory()));
@@ -2045,7 +2054,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         if (prefixes.isEmpty()
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
             throw new BugInCF(
-                    "Checker must provide a SuppressWarnings prefix. SourceChecker#getSuppressWarningsPrefixes was not overridden correctly.");
+                    "Checker must provide a SuppressWarnings prefix."
+                            + " SourceChecker#getSuppressWarningsPrefixes was not overridden"
+                            + " correctly.");
         }
         if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
             return true;
@@ -2525,7 +2536,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
             msg.add(
                     String.format(
-                            "The JVM ran out of memory.  Run with a larger max heap size (max memory = %d, total memory = %d, free memory = %d).",
+                            "The JVM ran out of memory.  Run with a larger max heap size"
+                                    + " (max memory = %d, total memory = %d, free memory = %d).",
                             Runtime.getRuntime().maxMemory(),
                             Runtime.getRuntime().totalMemory(),
                             Runtime.getRuntime().freeMemory()));
@@ -2540,7 +2552,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             msg.add("; The Checker Framework crashed.  Please report the crash.");
             if (noPrintErrorStack) {
                 msg.add(
-                        " To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
+                        " To see the full stack trace, don't invoke the compiler with"
+                                + " -AnoPrintErrorStack");
             } else {
                 if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                     msg.add("Compilation unit: " + this.currentRoot.getSourceFile().getName());

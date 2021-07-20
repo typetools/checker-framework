@@ -1,6 +1,7 @@
-import java.util.Comparator;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
+
+import java.util.Comparator;
 
 public class HeuristicsTest implements Comparable<HeuristicsTest> {
 

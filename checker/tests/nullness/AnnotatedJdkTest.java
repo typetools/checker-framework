@@ -1,8 +1,9 @@
 // Test case for issue 370: https://github.com/typetools/checker-framework/issues/370
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class AnnotatedJdkTest {
     // This code should type-check because of the annotated JDK, which contains:

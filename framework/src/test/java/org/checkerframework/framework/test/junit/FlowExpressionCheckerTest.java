@@ -1,10 +1,11 @@
 package org.checkerframework.framework.test.junit;
 
-import java.io.File;
-import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.checkerframework.framework.testchecker.flowexpression.FlowExpressionChecker;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
+import java.util.List;
 
 public class FlowExpressionCheckerTest extends CheckerFrameworkPerDirectoryTest {
 

@@ -1,8 +1,9 @@
 package com.example.mypackage;
 
+import org.checkerframework.checker.lock.qual.GuardedBy;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class FullyQualified {
     public static final @GuardedBy("<self>") List<Object> all_classes = new ArrayList<>();

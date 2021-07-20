@@ -1,9 +1,10 @@
 // Test case for issue #4248: https://github.com/typetools/checker-framework/issues/4248
 
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
+
+import java.util.List;
 
 class DefaultForEach {
     @DefaultQualifier(Nullable.class)

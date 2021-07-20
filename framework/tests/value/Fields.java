@@ -1,5 +1,6 @@
-import javax.swing.plaf.BorderUIResource;
 import org.checkerframework.common.value.qual.*;
+
+import javax.swing.plaf.BorderUIResource;
 
 public class Fields {
 

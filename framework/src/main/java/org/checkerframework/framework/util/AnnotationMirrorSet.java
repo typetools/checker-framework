@@ -1,11 +1,13 @@
 package org.checkerframework.framework.util;
 
+import org.checkerframework.javacutil.AnnotationUtils;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The Set interface defines many methods with respect to the equals method. This implementation of

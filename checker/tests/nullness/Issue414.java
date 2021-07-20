@@ -1,11 +1,12 @@
 // Test case for Issue 414.
 // https://github.com/typetools/checker-framework/issues/414
 
+import org.checkerframework.checker.nullness.qual.KeyFor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 
 public class Issue414 {
 

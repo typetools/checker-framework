@@ -1,9 +1,10 @@
 // Test for Issue 289:
 // https://github.com/typetools/checker-framework/issues/289
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue289 {
     void simple() {

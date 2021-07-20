@@ -4,10 +4,12 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import java.util.concurrent.atomic.AtomicLong;
+
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.plumelib.util.StringsPlume;
 import org.plumelib.util.UniqueId;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a given control flow

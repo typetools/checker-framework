@@ -1,8 +1,9 @@
-import java.util.List;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.value.qual.IntRange;
+
+import java.util.List;
 
 public class GenericAssignment {
     public void assignNonNegativeList(List<@NonNegative Integer> l) {

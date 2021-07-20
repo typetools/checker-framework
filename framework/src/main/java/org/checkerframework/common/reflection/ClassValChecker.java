@@ -1,10 +1,11 @@
 package org.checkerframework.common.reflection;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
+
+import java.util.LinkedHashSet;
 
 /**
  * The ClassVal Checker provides a sound estimate of the binary name of Class objects.

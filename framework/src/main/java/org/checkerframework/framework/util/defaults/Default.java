@@ -1,10 +1,12 @@
 package org.checkerframework.framework.util.defaults;
 
-import java.util.Objects;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.util.Objects;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * Represents a mapping from an Annotation to a TypeUseLocation it should be applied to during

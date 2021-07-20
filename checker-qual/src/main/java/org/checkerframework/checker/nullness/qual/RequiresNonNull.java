@@ -1,11 +1,12 @@
 package org.checkerframework.checker.nullness.qual;
 
+import org.checkerframework.framework.qual.PreconditionAnnotation;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 // TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:
 // Every prefix expression must also be non-null; for example, {@code

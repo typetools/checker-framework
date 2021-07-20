@@ -11,12 +11,14 @@
  * https://groups.google.com/d/msg/checker-framework-dev/FvWmCxB8OpE/Cgp1DsPwnWwJ
  */
 
+import org.checkerframework.checker.regex.RegexChecker;
+
 import java.io.File;
 import java.util.Arrays;
+
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import org.checkerframework.checker.regex.RegexChecker;
 
 public class Main {
 

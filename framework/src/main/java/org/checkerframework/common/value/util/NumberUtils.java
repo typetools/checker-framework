@@ -1,10 +1,12 @@
 package org.checkerframework.common.value.util;
 
-import java.util.List;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
+
+import java.util.List;
+
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /** Utility routines for manipulating numbers. */
 public class NumberUtils {

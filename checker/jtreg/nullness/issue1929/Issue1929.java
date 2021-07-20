@@ -6,8 +6,9 @@
  * @compile/fail/ref=Issue1929-trust.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint=trustArrayLenZero Issue1929.java
  */
 
-import java.util.Collection;
 import org.checkerframework.common.value.qual.ArrayLen;
+
+import java.util.Collection;
 
 public class Issue1929 {
 

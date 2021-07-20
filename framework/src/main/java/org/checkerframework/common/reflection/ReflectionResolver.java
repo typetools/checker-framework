@@ -1,12 +1,14 @@
 package org.checkerframework.common.reflection;
 
 import com.sun.source.tree.MethodInvocationTree;
+
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 
 /**
  * Interface for reflection resolvers that handle reflective method calls such as {@link

@@ -1,9 +1,10 @@
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.dataflow.qual.*;
+
 import java.io.*;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 public class GenericArgs {

@@ -1,10 +1,11 @@
 // Test case for Issue 500:
 // https://github.com/typetools/checker-framework/issues/500
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue500<M> {
     // Tests GLB

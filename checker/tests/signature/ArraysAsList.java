@@ -1,6 +1,7 @@
+import org.checkerframework.checker.signature.qual.*;
+
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.checker.signature.qual.*;
 
 public class ArraysAsList {
 

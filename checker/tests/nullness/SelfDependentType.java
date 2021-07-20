@@ -2,9 +2,10 @@
 
 // @skip-test until the issue is fixed
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.HashMap;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class SelfDependentType {
 

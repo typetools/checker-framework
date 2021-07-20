@@ -1,9 +1,10 @@
 package org.checkerframework.checker.testchecker.wholeprograminference;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
+
+import java.util.LinkedHashSet;
 
 /**
  * Checker for a simple type system to test whole-program inference. Uses the Value Checker as a

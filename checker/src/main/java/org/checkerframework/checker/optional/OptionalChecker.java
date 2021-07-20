@@ -1,8 +1,9 @@
 package org.checkerframework.checker.optional;
 
-import java.util.Optional;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+
+import java.util.Optional;
 
 /**
  * A type-checker that prevents misuse of the {@link java.util.Optional} class.

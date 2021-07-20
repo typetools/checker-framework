@@ -1,10 +1,11 @@
 package org.checkerframework.common.value.qual;
 
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * An expression with this type is exactly the same as an {@link IntRange} annotation whose {@code

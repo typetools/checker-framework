@@ -1,12 +1,13 @@
 package org.checkerframework.checker.initialization.qual;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * This type qualifier indicates that an object is (definitely) in the process of being

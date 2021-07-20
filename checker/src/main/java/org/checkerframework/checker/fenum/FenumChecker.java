@@ -1,10 +1,12 @@
 package org.checkerframework.checker.fenum;
 
-import java.util.SortedSet;
-import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.framework.qual.StubFiles;
+
+import java.util.SortedSet;
+
+import javax.annotation.processing.SupportedOptions;
 
 /**
  * The main checker class for the Fake Enum Checker.

@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
+
 import javax.annotation.processing.ProcessingEnvironment;
 
 /** Miscellaneous static utility methods. */

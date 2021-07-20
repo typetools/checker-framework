@@ -1,9 +1,10 @@
 package org.checkerframework.dataflow.cfg.builder;
 
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
+
+import javax.lang.model.type.TypeMirror;
 
 /* --------------------------------------------------------- */
 /* Phase Two */

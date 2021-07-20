@@ -3,8 +3,9 @@
 // before it was modified to avoid missing standardization. See DaikonEnhancedFor.java
 // for the "fixed" version. There are no longer expected errors in this test.
 
-import java.util.*;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.*;
 
 class DaikonEnhancedForNoThis {
 

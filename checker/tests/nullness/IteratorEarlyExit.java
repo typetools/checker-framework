@@ -1,7 +1,8 @@
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class IteratorEarlyExit {
     public static void m1() {

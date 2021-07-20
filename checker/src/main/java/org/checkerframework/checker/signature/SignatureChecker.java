@@ -1,6 +1,7 @@
 package org.checkerframework.checker.signature;
 
 import com.sun.source.tree.CompilationUnitTree;
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 

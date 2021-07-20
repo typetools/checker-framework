@@ -1,11 +1,12 @@
 package org.checkerframework.checker.test.junit.wpirunners;
 
-import java.io.File;
-import java.util.List;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Tests whole-program type inference with the aid of .jaif files. This test is the second pass,

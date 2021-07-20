@@ -1,5 +1,6 @@
-import java.lang.reflect.Method;
 import org.checkerframework.common.reflection.qual.MethodVal;
+
+import java.lang.reflect.Method;
 
 public class MethodValLUBTest {
     Object unknown = null;

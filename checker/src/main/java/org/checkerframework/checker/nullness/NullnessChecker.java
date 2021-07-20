@@ -1,12 +1,13 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.LinkedHashSet;
-import java.util.SortedSet;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SupportedLintOptions;
+
+import java.util.LinkedHashSet;
+import java.util.SortedSet;
 
 /**
  * An implementation of the nullness type-system, parameterized by an initialization type-system for

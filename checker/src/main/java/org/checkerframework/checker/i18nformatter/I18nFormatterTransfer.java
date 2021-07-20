@@ -1,6 +1,5 @@
 package org.checkerframework.checker.i18nformatter;
 
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
@@ -15,6 +14,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationBuilder;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * The transfer function for the Internationalization Format String Checker.

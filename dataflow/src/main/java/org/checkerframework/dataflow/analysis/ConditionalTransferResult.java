@@ -1,10 +1,12 @@
 package org.checkerframework.dataflow.analysis;
 
-import java.util.Map;
-import java.util.StringJoiner;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.StringsPlume;
+
+import java.util.Map;
+import java.util.StringJoiner;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Implementation of a {@link TransferResult} with two non-exceptional stores. The 'then' store

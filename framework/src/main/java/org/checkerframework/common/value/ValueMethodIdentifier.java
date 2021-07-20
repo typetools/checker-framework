@@ -1,10 +1,13 @@
 package org.checkerframework.common.value;
 
 import com.sun.source.tree.Tree;
+
+import org.checkerframework.javacutil.TreeUtils;
+
 import java.util.List;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.javacutil.TreeUtils;
 
 /** Stores methods that have special handling in the value checker. */
 class ValueMethodIdentifier {

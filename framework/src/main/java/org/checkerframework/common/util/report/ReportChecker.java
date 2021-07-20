@@ -1,7 +1,8 @@
 package org.checkerframework.common.util.report;
 
-import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+
+import javax.annotation.processing.SupportedOptions;
 
 /**
  * The Report Checker for semantic searches.

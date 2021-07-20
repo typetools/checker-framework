@@ -1,9 +1,11 @@
 package org.checkerframework.checker.i18n;
 
+import org.checkerframework.checker.propkey.PropertyKeyChecker;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.annotation.processing.SupportedOptions;
-import org.checkerframework.checker.propkey.PropertyKeyChecker;
 
 /**
  * A type-checker that checks that only valid localizable keys are used when using localizing

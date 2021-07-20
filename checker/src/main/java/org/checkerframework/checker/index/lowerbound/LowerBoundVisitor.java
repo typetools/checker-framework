@@ -4,7 +4,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import javax.lang.model.element.AnnotationMirror;
+
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.index.Subsequence;
 import org.checkerframework.checker.index.qual.NonNegative;
@@ -13,6 +13,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * Implements the actual checks to make sure that array accesses aren't too low. Will issue a

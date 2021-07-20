@@ -1,14 +1,5 @@
 package org.checkerframework.checker.testchecker.wholeprograminference;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.DefaultType;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.ImplicitAnno;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Parent;
@@ -30,6 +21,17 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 /**
  * AnnotatedTypeFactory to test whole-program inference using .jaif files.

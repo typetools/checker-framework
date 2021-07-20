@@ -1,9 +1,10 @@
 // Test case that was submitted in Issue 953, but was combined with Issue 979
 // https://github.com/typetools/checker-framework/issues/979
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.util.*;
 import java.util.function.Function;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class Issue953bInference {
     private static List<List<?>> strs = new ArrayList<>();

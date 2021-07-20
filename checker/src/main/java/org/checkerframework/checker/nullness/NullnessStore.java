@@ -1,6 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.InitializationStore;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -9,6 +8,8 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.plumelib.util.UniqueId;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Behaves like {@link InitializationStore}, but additionally tracks whether {@link PolyNull} is

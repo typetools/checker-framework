@@ -7,7 +7,7 @@ public class Issue400 {
         T first;
         // :: error: (initialization.field.uninitialized)
         V second;
-    };
+    }
 
     class YY {
         public Collection<YYPair<String, String>> getX() {

@@ -1,8 +1,9 @@
 // Test case for Issue 185:
 // https://github.com/typetools/kelloggm/issues/185
 
-import java.util.BitSet;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
+
+import java.util.BitSet;
 
 public class BitSetLowerBound {
 

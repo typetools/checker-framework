@@ -1,10 +1,11 @@
 package org.checkerframework.framework.type.typeannotator;
 
-import javax.lang.model.element.Element;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+
+import javax.lang.model.element.Element;
 
 /**
  * {@link TypeAnnotator} is an abstract AnnotatedTypeScanner to be used with {@link

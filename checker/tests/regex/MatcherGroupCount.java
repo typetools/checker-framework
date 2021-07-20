@@ -1,8 +1,9 @@
 // Test case for Issue 291
 // https://github.com/typetools/checker-framework/issues/291
 
-import java.util.regex.*;
 import org.checkerframework.checker.regex.util.RegexUtil;
+
+import java.util.regex.*;
 
 public class MatcherGroupCount {
     public static void main(String[] args) {

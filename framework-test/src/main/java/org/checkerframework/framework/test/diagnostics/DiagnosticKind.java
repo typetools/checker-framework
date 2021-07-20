@@ -1,8 +1,9 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** The kinds of errors that can be encountered during typechecking. */
 public enum DiagnosticKind {

@@ -236,7 +236,7 @@ public class GuardSatisfiedTest {
         void testGuardSatisfiedOnArrayComponentOfParameterizedType(
                 // :: error: (guardsatisfied.location.disallowed)
                 @GuardSatisfied MyParameterizedClass1<T>[] array) {}
-    };
+    }
 
     void testGuardSatisfiedOnWildCardExtendsBound(
             // :: error: (guardsatisfied.location.disallowed)

@@ -4,12 +4,6 @@ package org.checkerframework.checker.testchecker.lubglb;
 // https://github.com/typetools/checker-framework/issues/691
 // https://github.com/typetools/checker-framework/issues/756
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.formatter.FormatterAnnotatedTypeFactory;
 import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.formatter.FormatterTreeUtil;
@@ -24,6 +18,14 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 /**
  * This class tests the implementation of GLB computation in the Formatter Checker, but it does not
@@ -353,7 +355,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(formatCharAndIntAnno, formatCharAndIntAnno),
                         formatCharAndIntAnno)
-                : "GLB of @Format(CHAR_AND_INT) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
+                : "GLB of @Format(CHAR_AND_INT) and @Format(CHAR_AND_INT) is not"
+                        + " @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(formatCharAndIntAnno, formatIntAndTimeAnno),
                         formatIntAnno)
@@ -394,7 +397,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(formatIntAndTimeAnno, formatIntAndTimeAnno),
                         formatIntAndTimeAnno)
-                : "GLB of @Format(INT_AND_TIME) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
+                : "GLB of @Format(INT_AND_TIME) and @Format(INT_AND_TIME) is not"
+                        + " @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(formatIntAndTimeAnno, formatNullAnno),
                         formatIntAndTimeAnno)
@@ -449,7 +453,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(formatTwoConvCat1, formatTwoConvCat2),
                         formatTwoConvCat3)
-                : "GLB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not @Format([INT,GENERAL])!";
+                : "GLB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not"
+                        + " @Format([INT,GENERAL])!";
 
         // Test that the GLB of two ConversionCategory arrays of different sizes is an array of the
         // smallest size of the two:
@@ -457,7 +462,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(formatGeneralAnno, formatTwoConvCat1),
                         formatGeneralAnno)
-                : "GLB of @I18nFormat(GENERAL) and @I18nFormat([CHAR_AND_INT,FLOAT]) is not @I18nFormat(GENERAL)!";
+                : "GLB of @I18nFormat(GENERAL) and @I18nFormat([CHAR_AND_INT,FLOAT]) is not"
+                        + " @I18nFormat(GENERAL)!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(formatTwoConvCat2, formatNullAnno), formatIntAnno)
                 : "GLB of @I18nFormat([INT,CHAR]) and @I18nFormat(NULL) is not @I18nFormat(INT)!";
@@ -478,7 +484,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(UNKNOWNFORMAT, invalidFormatWithMessage),
                         invalidFormatWithMessage)
-                : "GLB of @UnknownFormat and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
+                : "GLB of @UnknownFormat and @InvalidFormat(\"Message\") is not"
+                        + " @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(UNKNOWNFORMAT, FORMATBOTTOM), FORMATBOTTOM)
                 : "GLB of @UnknownFormat and @FormatBottom is not @FormatBottom!";
@@ -539,7 +546,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(invalidFormatWithMessage, UNKNOWNFORMAT),
                         invalidFormatWithMessage)
-                : "GLB of @InvalidFormat(\"Message\") and @UnknownFormat is not @InvalidFormat(\"Message\")!";
+                : "GLB of @InvalidFormat(\"Message\") and @UnknownFormat is not"
+                        + " @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(invalidFormatWithMessage, FORMAT), FORMATBOTTOM)
                 : "GLB of @InvalidFormat(\"Message\") and @Format(null) is not @FormatBottom!";
@@ -550,11 +558,13 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(invalidFormatWithMessage, invalidFormatWithMessage),
                         invalidFormatWithMessage)
-                : "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
+                : "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not"
+                        + " @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(invalidFormatWithMessage, invalidFormatWithMessage2),
                         invalidFormatWithMessagesAnded)
-                : "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not @InvalidFormat(\"(\"Message\" and \"Message2\")\")!";
+                : "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not"
+                        + " @InvalidFormat(\"(\"Message\" and \"Message2\")\")!";
         assert AnnotationUtils.areSame(
                         qh.greatestLowerBound(invalidFormatWithMessage, FORMATBOTTOM), FORMATBOTTOM)
                 : "GLB of @InvalidFormat(\"Message\") and @FormatBottom is not @FormatBottom!";
@@ -796,7 +806,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(formatCharAndIntAnno, formatCharAndIntAnno),
                         formatCharAndIntAnno)
-                : "LUB of @Format(CHAR_AND_INT) and @Format(CHAR_AND_INT) is not @Format(CHAR_AND_INT)!";
+                : "LUB of @Format(CHAR_AND_INT) and @Format(CHAR_AND_INT) is not"
+                        + " @Format(CHAR_AND_INT)!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(formatCharAndIntAnno, formatIntAndTimeAnno),
                         formatNullAnno)
@@ -836,7 +847,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(formatIntAndTimeAnno, formatIntAndTimeAnno),
                         formatIntAndTimeAnno)
-                : "LUB of @Format(INT_AND_TIME) and @Format(INT_AND_TIME) is not @Format(INT_AND_TIME)!";
+                : "LUB of @Format(INT_AND_TIME) and @Format(INT_AND_TIME) is not"
+                        + " @Format(INT_AND_TIME)!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(formatIntAndTimeAnno, formatNullAnno), formatNullAnno)
                 : "LUB of @Format(INT_AND_TIME) and @Format(NULL) is not @Format(NULL)!";
@@ -882,17 +894,20 @@ public class FormatterLubGlbChecker extends FormatterChecker {
 
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(formatTwoConvCat1, formatTwoConvCat2), formatTwoConvCat4)
-                : "LUB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not @Format([CHAR_AND_INT,NULL])!";
+                : "LUB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not"
+                        + " @Format([CHAR_AND_INT,NULL])!";
 
         // Test that the LUB of two ConversionCategory arrays of different sizes is an array of the
         // largest size of the two:
 
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(formatGeneralAnno, formatTwoConvCat1), formatTwoConvCat1)
-                : "LUB of @I18nFormat(GENERAL) and @I18nFormat([CHAR_AND_INT,FLOAT]) is not @I18nFormat([CHAR_AND_INT,FLOAT])!";
+                : "LUB of @I18nFormat(GENERAL) and @I18nFormat([CHAR_AND_INT,FLOAT]) is not"
+                        + " @I18nFormat([CHAR_AND_INT,FLOAT])!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(formatTwoConvCat2, formatNullAnno), formatTwoConvCat5)
-                : "LUB of @I18nFormat([INT,CHAR]) and @I18nFormat(NULL) is not @I18nFormat([NULL,CHAR])!";
+                : "LUB of @I18nFormat([INT,CHAR]) and @I18nFormat(NULL) is not"
+                        + " @I18nFormat([NULL,CHAR])!";
 
         // LUB of @UnknownFormat and others
 
@@ -980,15 +995,18 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(invalidFormatWithMessage, invalidFormatWithMessage),
                         invalidFormatWithMessage)
-                : "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
+                : "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not"
+                        + " @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(invalidFormatWithMessage, invalidFormatWithMessage2),
                         invalidFormatWithMessagesOred)
-                : "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not @InvalidFormat(\"(\"Message\" or \"Message2\")\")!";
+                : "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not"
+                        + " @InvalidFormat(\"(\"Message\" or \"Message2\")\")!";
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(invalidFormatWithMessage, FORMATBOTTOM),
                         invalidFormatWithMessage)
-                : "LUB of @InvalidFormat(\"Message\") and @FormatBottom is not @InvalidFormat(\"Message\")!";
+                : "LUB of @InvalidFormat(\"Message\") and @FormatBottom is not"
+                        + " @InvalidFormat(\"Message\")!";
 
         // LUB of @FormatBottom and others
 
@@ -1006,7 +1024,8 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(
                         qh.leastUpperBound(FORMATBOTTOM, invalidFormatWithMessage),
                         invalidFormatWithMessage)
-                : "LUB of @FormatBottom and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
+                : "LUB of @FormatBottom and @InvalidFormat(\"Message\") is not"
+                        + " @InvalidFormat(\"Message\")!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(FORMATBOTTOM, FORMATBOTTOM), FORMATBOTTOM)
                 : "LUB of @FormatBottom and @FormatBottom is not @FormatBottom!";
     }

@@ -1,10 +1,11 @@
 package org.checkerframework.checker.testchecker.wholeprograminference.qual;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.SubtypeOf;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
  * Toy type system for testing field inference.

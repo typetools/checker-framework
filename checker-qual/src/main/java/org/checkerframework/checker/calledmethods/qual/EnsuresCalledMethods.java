@@ -1,9 +1,10 @@
 package org.checkerframework.checker.calledmethods.qual;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
  * Indicates that the method, if it terminates successfully, always invokes the given methods on the

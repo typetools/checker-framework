@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.searchindex;
 
-import java.util.List;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexFor;
@@ -13,6 +11,10 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * The transfer function for the SearchIndexFor checker. Allows {@link SearchIndexFor} to be refined

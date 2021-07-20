@@ -145,11 +145,13 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+
+import org.checkerframework.javacutil.BugInCF;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A visitor that processes javac trees and JavaParser nodes simultaneously, matching corresponding

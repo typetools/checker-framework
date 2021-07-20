@@ -1,12 +1,13 @@
 package org.checkerframework.checker.nullness.qual;
 
+import org.checkerframework.framework.qual.JavaExpression;
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.JavaExpression;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Indicates that the value assigned to the annotated variable is a key for at least the given

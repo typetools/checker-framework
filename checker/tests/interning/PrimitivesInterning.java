@@ -1,6 +1,7 @@
+import org.checkerframework.checker.interning.qual.*;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.interning.qual.*;
 
 public class PrimitivesInterning {
 

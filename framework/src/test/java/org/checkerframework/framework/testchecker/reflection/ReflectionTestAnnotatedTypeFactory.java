@@ -1,6 +1,5 @@
 package org.checkerframework.framework.testchecker.reflection;
 
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -10,6 +9,8 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * AnnotatedTypeFactory with reflection resolution enabled. The used qualifier hierarchy is

@@ -1,12 +1,13 @@
 package org.checkerframework.framework.util;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.AnnotatedFor;
+
+import java.lang.annotation.Annotation;
+import java.util.Set;
 
 /**
  * Represents a kind of qualifier, which is an annotation class. If two qualifiers use the same

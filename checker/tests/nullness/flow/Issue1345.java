@@ -3,10 +3,11 @@
 
 // @skip-test until the issue is resolved
 
-import java.math.BigDecimal;
-import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.util.Opt;
+
+import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 public class Issue1345 {
 

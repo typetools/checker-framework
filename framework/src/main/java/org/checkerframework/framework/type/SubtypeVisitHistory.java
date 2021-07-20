@@ -1,11 +1,13 @@
 package org.checkerframework.framework.type;
 
+import org.checkerframework.javacutil.Pair;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and

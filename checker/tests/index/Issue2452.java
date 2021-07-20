@@ -1,12 +1,13 @@
 // Test case for https://github.com/typetools/checker-framework/issues/2452
 
-import java.lang.reflect.Array;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.value.qual.MinLen;
+
+import java.lang.reflect.Array;
 
 class Issue2452 {
     Object m1(Object[] a1) {

@@ -1,6 +1,7 @@
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.*;
 
 // See issue 241: https://github.com/typetools/checker-framework/issues/241
 

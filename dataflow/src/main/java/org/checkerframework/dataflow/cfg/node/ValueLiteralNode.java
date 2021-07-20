@@ -1,11 +1,13 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.LiteralTree;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.TreeUtils;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a literals that have some form of value:

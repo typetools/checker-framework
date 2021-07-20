@@ -1,10 +1,11 @@
 package org.checkerframework.common.value;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.SupportedOptions;
+
+import java.util.LinkedHashSet;
 
 /**
  * The Constant Value Checker is a constant propagation analysis: for each variable, it determines

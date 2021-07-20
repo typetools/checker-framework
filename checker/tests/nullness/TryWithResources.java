@@ -1,6 +1,7 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.io.*;
 import java.util.zip.ZipFile;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class TryWithResources {
     void m1(InputStream stream) {

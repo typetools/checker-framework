@@ -1,5 +1,6 @@
-import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.function.Function;
 
 public class Issue3217<ModelA, ModelB, Value> {
     private final Function<Function<ModelA, @Nullable Value>, Function<ModelB, @Nullable Value>>

@@ -1,4 +1,4 @@
-UseTest.java:8:21: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter arg0 of method.
+UseTest.java:9:21: compiler.err.proc.messager: [argument.type.incompatible] incompatible argument for parameter arg0 of method.
 found   : @VariableNameDefaultTop int
 required: @VariableNameDefaultMiddle int
 1 error

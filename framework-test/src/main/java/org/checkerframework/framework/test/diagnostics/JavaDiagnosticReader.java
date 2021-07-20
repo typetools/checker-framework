@@ -1,5 +1,12 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import org.checkerframework.checker.index.qual.GTENegativeOne;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.javacutil.SystemUtil;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,13 +15,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import javax.tools.JavaFileObject;
-import org.checkerframework.checker.index.qual.GTENegativeOne;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * This class reads expected javac diagnostics from a single file. Its implementation is as an

@@ -1,5 +1,6 @@
-import java.util.Arrays;
 import org.checkerframework.checker.index.qual.*;
+
+import java.util.Arrays;
 
 public class BinarySearchTest {
 

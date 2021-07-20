@@ -1,10 +1,12 @@
 package org.checkerframework.framework.util.typeinference.solver;
 
-import java.util.Collection;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
+
+import java.util.Collection;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeVariable;
 
 /**
  * When one of the constraint solvers infers that a the target has a given type/target in ALL

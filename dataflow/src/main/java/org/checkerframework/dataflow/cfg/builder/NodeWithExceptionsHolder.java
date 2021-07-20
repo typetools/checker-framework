@@ -1,11 +1,13 @@
 package org.checkerframework.dataflow.cfg.builder;
 
+import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
+import org.checkerframework.dataflow.cfg.node.Node;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
-import org.checkerframework.dataflow.cfg.node.Node;
 
 /** An extended node of type {@code EXCEPTION_NODE}. */
 class NodeWithExceptionsHolder extends ExtendedNode {

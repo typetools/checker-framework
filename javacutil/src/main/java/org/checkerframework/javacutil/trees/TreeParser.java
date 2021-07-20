@@ -8,9 +8,12 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
-import java.util.StringTokenizer;
-import javax.annotation.processing.ProcessingEnvironment;
+
 import org.checkerframework.javacutil.Pair;
+
+import java.util.StringTokenizer;
+
+import javax.annotation.processing.ProcessingEnvironment;
 
 /**
  * A utility class for parsing Java expression snippets, and converting them to proper Javac AST

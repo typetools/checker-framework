@@ -1,9 +1,10 @@
 package org.checkerframework.checker.test.junit;
 
-import java.io.File;
-import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
+import java.util.List;
 
 /** JUnit tests for the Compiler Messages Checker. Depends on the compiler.properties file. */
 public class CompilerMessagesTest extends CheckerFrameworkPerDirectoryTest {

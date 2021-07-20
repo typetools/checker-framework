@@ -1,8 +1,7 @@
 package org.checkerframework.common.reflection;
 
 import com.sun.source.tree.Tree;
-import java.util.List;
-import javax.lang.model.element.AnnotationMirror;
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -10,6 +9,10 @@ import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
 
 public class MethodValVisitor extends BaseTypeVisitor<MethodValAnnotatedTypeFactory> {
 

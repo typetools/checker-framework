@@ -2,14 +2,17 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * A node for the instanceof operator:

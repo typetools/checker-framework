@@ -1,8 +1,9 @@
 // Test case for Issue 1218:
 // https://github.com/typetools/checker-framework/issues/1218
 
-import java.io.Serializable;
 import org.checkerframework.common.value.qual.*;
+
+import java.io.Serializable;
 
 public class Issue1218 {
 

@@ -1,7 +1,8 @@
 package org.checkerframework.framework.testchecker.testaccumulation;
 
-import java.util.EnumSet;
 import org.checkerframework.common.accumulation.AccumulationChecker;
+
+import java.util.EnumSet;
 
 /**
  * A test accumulation checker that implements a basic version of called-methods accumulation,

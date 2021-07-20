@@ -1,9 +1,10 @@
-import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 public class LockExpressionIsFinal {
 
@@ -202,7 +203,8 @@ public class LockExpressionIsFinal {
         @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)") Object guarded5;
 
         @GuardedBy(
-                "c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field")
+                "c1.field.field.field.getFieldPure"
+                        + "(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field")
         Object guarded6;
 
         @GuardedBy("c1.field.field.field.getFieldPure2().getFieldDeterministic().field") Object guarded7;
@@ -280,7 +282,7 @@ public class LockExpressionIsFinal {
         return t;
     }
 
-    class MyParameterizedClass1<T extends @GuardedByUnknown Object> {};
+    class MyParameterizedClass1<T extends @GuardedByUnknown Object> {}
 
     MyParameterizedClass1<? super @GuardedBy("finalField") Object> m1;
     // :: error: (lock.expression.not.final)

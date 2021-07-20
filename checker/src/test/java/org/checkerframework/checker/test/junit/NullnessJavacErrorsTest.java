@@ -1,9 +1,10 @@
 package org.checkerframework.checker.test.junit;
 
-import java.io.File;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
 
 /** JUnit tests for the Nullness checker that issue javac errors. */
 public class NullnessJavacErrorsTest extends CheckerFrameworkPerFileTest {

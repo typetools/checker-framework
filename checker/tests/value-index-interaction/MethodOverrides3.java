@@ -1,11 +1,12 @@
 // This class should not issues any errors, since these annotations are identical to the ones
 // on java.io.PrintWriter in the Index JDK.
 
+import org.checkerframework.checker.index.qual.IndexFor;
+import org.checkerframework.checker.index.qual.IndexOrHigh;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import org.checkerframework.checker.index.qual.IndexFor;
-import org.checkerframework.checker.index.qual.IndexOrHigh;
 
 public class MethodOverrides3 extends PrintWriter {
     public MethodOverrides3(File file) throws FileNotFoundException {

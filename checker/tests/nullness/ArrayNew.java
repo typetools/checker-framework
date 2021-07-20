@@ -1,5 +1,6 @@
-import java.util.Collection;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Collection;
 
 public class ArrayNew {
     void m(Collection<? extends @NonNull Integer> seq1) {

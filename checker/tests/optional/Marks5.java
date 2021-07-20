@@ -1,7 +1,8 @@
+import org.checkerframework.checker.optional.qual.Present;
+
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.checkerframework.checker.optional.qual.Present;
 
 /**
  * Test case for rule #5: "If an Optional chain has a nested Optional chain, or has an intermediate

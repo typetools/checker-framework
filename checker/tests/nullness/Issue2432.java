@@ -1,10 +1,11 @@
 // Test case for issue 2432:
 // https://github.com/typetools/checker-framework/issues/2432
 
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+
+import java.util.List;
 
 public class Issue2432 {
 

@@ -8,10 +8,12 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import javax.annotation.processing.ProcessingEnvironment;
+
 import org.checkerframework.javacutil.trees.TreeParser;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.annotation.processing.ProcessingEnvironment;
 
 public class TreeParserTest {
     private final ProcessingEnvironment env;

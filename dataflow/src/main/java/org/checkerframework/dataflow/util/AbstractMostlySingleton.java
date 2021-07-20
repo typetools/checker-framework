@@ -1,13 +1,14 @@
 package org.checkerframework.dataflow.util;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.javacutil.BugInCF;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Base class for arbitrary-size sets that very efficient (more efficient than HashSet) for 0 and 1

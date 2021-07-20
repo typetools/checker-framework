@@ -1,8 +1,9 @@
 // Test case for issue 557:
 // https://github.com/typetools/checker-framework/issues/557
 
-import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Optional;
 
 @SuppressWarnings("nullness")
 class MyOpt<T> {

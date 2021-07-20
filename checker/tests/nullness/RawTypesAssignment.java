@@ -1,7 +1,8 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class RawTypesAssignment {
     Map rawMap = new HashMap();

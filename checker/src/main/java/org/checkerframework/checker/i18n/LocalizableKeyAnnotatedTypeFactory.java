@@ -1,9 +1,5 @@
 package org.checkerframework.checker.i18n;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.i18n.qual.LocalizableKeyBottom;
 import org.checkerframework.checker.i18n.qual.UnknownLocalizableKey;
@@ -11,6 +7,11 @@ import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /** A PropertyKeyATF that uses LocalizableKey to annotate the keys. */
 public class LocalizableKeyAnnotatedTypeFactory extends PropertyKeyAnnotatedTypeFactory {

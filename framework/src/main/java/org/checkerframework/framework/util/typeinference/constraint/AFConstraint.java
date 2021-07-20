@@ -1,12 +1,14 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.lang.model.type.TypeVariable;
 
 /**
  * AFConstraint represent the initial constraints used to infer type arguments for method

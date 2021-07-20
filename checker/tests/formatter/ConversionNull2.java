@@ -1,5 +1,6 @@
-import java.util.Formatter;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+
+import java.util.Formatter;
 
 public class ConversionNull2 {
     void foo(Formatter f1, MyFormatter f2) {

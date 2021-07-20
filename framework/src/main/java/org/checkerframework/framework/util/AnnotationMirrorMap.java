@@ -1,11 +1,13 @@
 package org.checkerframework.framework.util;
 
+import org.checkerframework.javacutil.AnnotationUtils;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The Map interface defines some of its methods with respect to the equals method. This

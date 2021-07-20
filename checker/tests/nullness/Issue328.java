@@ -1,5 +1,6 @@
-import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Map;
 
 public class Issue328 {
     public static void m(Map<Object, Object> a, Map<Object, Object> b, Object ka, Object kb) {

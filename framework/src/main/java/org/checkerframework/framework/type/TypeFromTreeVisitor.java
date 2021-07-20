@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SimpleTreeVisitor;
+
 import org.checkerframework.javacutil.BugInCF;
 
 /**

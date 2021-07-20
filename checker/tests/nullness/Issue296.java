@@ -1,9 +1,10 @@
 // Test case for Issue 296:
 // https://github.com/typetools/checker-framework/issues/296
 
-import java.util.Arrays;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Arrays;
 
 // Note that with -AinvariantArrays we would get additional errors.
 public class Issue296 {

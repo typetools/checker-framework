@@ -1,14 +1,16 @@
 package org.checkerframework.dataflow.expression;
 
-import java.util.List;
-import java.util.Objects;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
+
+import java.util.List;
+import java.util.Objects;
+
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /** JavaExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {

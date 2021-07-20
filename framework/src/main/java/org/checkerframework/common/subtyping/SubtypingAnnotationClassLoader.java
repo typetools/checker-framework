@@ -1,9 +1,10 @@
 package org.checkerframework.common.subtyping;
 
-import java.lang.annotation.Annotation;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotationClassLoader;
+
+import java.lang.annotation.Annotation;
 
 public class SubtypingAnnotationClassLoader extends AnnotationClassLoader {
 

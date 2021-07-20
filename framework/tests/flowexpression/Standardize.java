@@ -1,10 +1,11 @@
 package flowexpression;
 
+import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
+
 import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
 public class Standardize {
     Object field;

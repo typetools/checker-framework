@@ -1,10 +1,11 @@
 // Test case for Issue 989:
 // https://github.com/typetools/checker-framework/issues/989
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 interface ListWrapper989a<E> extends List<@NonNull E> {}
 

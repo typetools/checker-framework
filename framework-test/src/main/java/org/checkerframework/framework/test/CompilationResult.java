@@ -2,6 +2,7 @@ package org.checkerframework.framework.test;
 
 import java.util.Collections;
 import java.util.List;
+
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 

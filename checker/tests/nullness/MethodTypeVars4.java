@@ -1,7 +1,8 @@
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
+
+import java.util.List;
 
 public class MethodTypeVars4 {
     @DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.IMPLICIT_UPPER_BOUND)

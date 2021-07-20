@@ -1,7 +1,5 @@
 package org.checkerframework.dataflow.constantpropagation;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
@@ -9,6 +7,9 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 

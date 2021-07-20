@@ -8,6 +8,7 @@
 package issue1456;
 
 import issue1456lib.Lib;
+
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class Main {

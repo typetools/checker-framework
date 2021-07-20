@@ -1,5 +1,6 @@
-import java.util.*;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+
+import java.util.*;
 
 public class KeyForDiamond {
     private final Map<Integer, Double> map = new HashMap<>();

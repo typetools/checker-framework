@@ -1,10 +1,13 @@
 package org.checkerframework.framework.util.element;
 
 import com.sun.tools.javac.code.Attribute;
+
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+
 import java.util.List;
 import java.util.Map;
+
 import javax.lang.model.element.Element;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * Some Elements are members of a list (formal method parameters and type parameters). This class

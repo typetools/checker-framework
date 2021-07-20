@@ -1,8 +1,9 @@
 // @skip-test until Issue 979 is fixed.
 
-import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.function.Supplier;
 
 public class SimpleLambda {
     <T> T perform(Supplier<T> p) {

@@ -1,12 +1,13 @@
 package org.checkerframework.dataflow.analysis;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.plumelib.util.StringsPlume;
 import org.plumelib.util.UniqueId;
+
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer functions of a {@link

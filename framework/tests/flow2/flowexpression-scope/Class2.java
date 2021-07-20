@@ -3,6 +3,7 @@ package pkg2;
 import org.checkerframework.framework.testchecker.util.EnsuresOdd;
 import org.checkerframework.framework.testchecker.util.Odd;
 import org.checkerframework.framework.testchecker.util.RequiresOdd;
+
 import pkg1.Class1;
 
 public class Class2 {

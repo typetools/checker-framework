@@ -1,7 +1,9 @@
 import com.google.auto.value.AutoValue;
-import java.util.Optional;
+
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Optional;
 
 /**
  * Adapted from the standard AutoValue example code:

@@ -140,7 +140,7 @@ public class Defaulting {
             value = H1S1.class,
             locations = {TypeUseLocation.RECEIVER})
     public class ReceiverDefaulting {
-        public ReceiverDefaulting() {};
+        public ReceiverDefaulting() {}
 
         public void m() {}
     }

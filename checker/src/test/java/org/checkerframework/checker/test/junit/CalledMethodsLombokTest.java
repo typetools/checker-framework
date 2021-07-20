@@ -1,10 +1,11 @@
 package org.checkerframework.checker.test.junit;
 
-import java.io.File;
-import java.util.List;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
+import java.util.List;
 
 /** Test that the Called Methods Checker's support for Lombok works correctly. */
 public class CalledMethodsLombokTest extends CheckerFrameworkPerDirectoryTest {

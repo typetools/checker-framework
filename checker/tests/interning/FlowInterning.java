@@ -16,7 +16,7 @@ public class FlowInterning {
         arg += ' ';
 
         // Interning Checker should NOT suggest == here.
-        if (!arg.equals("")) ;
+        if (!arg.equals("")) {}
     }
 
     public String[] parse(String args) {

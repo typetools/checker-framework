@@ -1,7 +1,8 @@
 package org.checkerframework.dataflow.expression;
 
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.List;
 
 /**
  * This class has methods to viewpoint-adapt {@link JavaExpression} by replacing {@link

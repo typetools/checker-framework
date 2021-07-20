@@ -243,6 +243,7 @@ public class Fields {
                 genericLocation = {3, 0, 2, 0, 3, 0, 0, 0}),
     })
     public String wildcards2() {
-        return "java.util.List<? extends java.util.List<String[]>> f = new java.util.ArrayList<>();";
+        return "java.util.List<? extends java.util.List<String[]>> f = new"
+                + " java.util.ArrayList<>();";
     }
 }

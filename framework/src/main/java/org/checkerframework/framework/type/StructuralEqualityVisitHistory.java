@@ -1,7 +1,8 @@
 package org.checkerframework.framework.type;
 
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * Stores the result of {@link StructuralEqualityComparer} for type arguments.

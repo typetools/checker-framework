@@ -1,5 +1,6 @@
-import java.util.Map;
 import org.checkerframework.framework.testchecker.util.*;
+
+import java.util.Map;
 
 // Test case for Issue 134:
 // https://github.com/typetools/checker-framework/issues/134

@@ -1,9 +1,10 @@
 package org.checkerframework.javacutil;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class that helps with {@link TypeKind}s. */
 public final class TypeKindUtils {

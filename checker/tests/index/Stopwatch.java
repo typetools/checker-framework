@@ -1,5 +1,6 @@
-import java.text.DecimalFormat;
 import org.checkerframework.checker.index.qual.IndexFor;
+
+import java.text.DecimalFormat;
 
 public final class Stopwatch {
     private static final DecimalFormat[] timeFormat = {

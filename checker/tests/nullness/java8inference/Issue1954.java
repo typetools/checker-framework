@@ -1,6 +1,7 @@
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.function.*;
 import java.util.stream.*;
-import org.checkerframework.checker.nullness.qual.*;
 
 // @skip-test
 public class Issue1954 {

@@ -1,8 +1,9 @@
 // Test case for Issue 1500:
 // https://github.com/typetools/checker-framework/issues/1500
 
-import java.io.InputStream;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.io.InputStream;
 
 public class TryFinally2 {
 

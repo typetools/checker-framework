@@ -1,11 +1,12 @@
 package org.checkerframework.common.reflection.qual;
 
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * This represents a {@link java.lang.Class Class&lt;T&gt;} object where the set of possible values

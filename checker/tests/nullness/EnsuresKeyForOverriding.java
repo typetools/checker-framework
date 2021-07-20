@@ -1,5 +1,6 @@
-import java.util.Map;
 import org.checkerframework.checker.nullness.qual.EnsuresKeyFor;
+
+import java.util.Map;
 
 public class EnsuresKeyForOverriding {
     static class MyClass {

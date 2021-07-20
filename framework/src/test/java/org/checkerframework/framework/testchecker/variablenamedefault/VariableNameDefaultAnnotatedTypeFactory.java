@@ -1,15 +1,16 @@
 package org.checkerframework.framework.testchecker.variablenamedefault;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.testchecker.variablenamedefault.quals.PolyVariableNameDefault;
 import org.checkerframework.framework.testchecker.variablenamedefault.quals.VariableNameDefaultBottom;
 import org.checkerframework.framework.testchecker.variablenamedefault.quals.VariableNameDefaultMiddle;
 import org.checkerframework.framework.testchecker.variablenamedefault.quals.VariableNameDefaultTop;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class VariableNameDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public VariableNameDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {

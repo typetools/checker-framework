@@ -45,7 +45,6 @@ public class MultidimentionalArrayAnnotationTest {
         obj6 = method1();
         obj7 = method1();
         obj8 = method1();
-        ;
     }
 
     /*
@@ -185,33 +184,33 @@ public class MultidimentionalArrayAnnotationTest {
 
     Object[][][] method1() {
         return new Object[numb][numb][numb];
-    };
+    }
 
     Object @Nullable [][][] method2() {
         return new Object[numb][numb][numb];
-    };
+    }
 
     Object[] @Nullable [][] method3() {
         return new Object[numb][numb][numb];
-    };
+    }
 
     Object[][] @Nullable [] method4() {
         return new Object[numb][numb][numb];
-    };
+    }
 
     Object @Nullable [] @Nullable [][] method5() {
         return new Object[numb][numb][numb];
-    };
+    }
 
     Object @Nullable [][] @Nullable [] method6() {
         return new Object[numb][numb][numb];
-    };
+    }
 
     Object[] @Nullable [] @Nullable [] method7() {
         return new Object[numb][numb][numb];
-    };
+    }
 
     Object @Nullable [] @Nullable [] @Nullable [] method8() {
         return new Object[numb][numb][numb];
-    };
+    }
 }

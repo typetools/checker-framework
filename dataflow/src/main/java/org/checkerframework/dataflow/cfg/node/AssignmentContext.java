@@ -4,10 +4,12 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * An assignment context is the left-hand side of an assignment or pseudo-assignment.

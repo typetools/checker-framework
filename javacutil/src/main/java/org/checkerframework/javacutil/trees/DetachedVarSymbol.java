@@ -4,6 +4,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.util.Name;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**

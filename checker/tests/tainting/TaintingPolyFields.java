@@ -1,7 +1,8 @@
-import java.util.List;
 import org.checkerframework.checker.tainting.qual.PolyTainted;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
+
+import java.util.List;
 
 public class TaintingPolyFields {
     // :: error: (invalid.polymorphic.qualifier.use)

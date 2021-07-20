@@ -1,14 +1,16 @@
 package org.checkerframework.dataflow.expression;
 
-import java.math.BigInteger;
-import java.util.Objects;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
+
+import java.math.BigInteger;
+import java.util.Objects;
+
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /** JavaExpression for literals. */
 public class ValueLiteral extends JavaExpression {

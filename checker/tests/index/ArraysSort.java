@@ -1,5 +1,6 @@
-import java.util.Arrays;
 import org.checkerframework.common.value.qual.MinLen;
+
+import java.util.Arrays;
 
 public class ArraysSort {
 

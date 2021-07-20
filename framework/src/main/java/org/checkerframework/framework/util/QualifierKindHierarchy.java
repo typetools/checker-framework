@@ -1,9 +1,5 @@
 package org.checkerframework.framework.util;
 
-import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -11,6 +7,12 @@ import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.type.NoElementQualifierHierarchy;
 import org.checkerframework.javacutil.TypeSystemError;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * This interface holds information about the subtyping relationships between kinds of qualifiers. A

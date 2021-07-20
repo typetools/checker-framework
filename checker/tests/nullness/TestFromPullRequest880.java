@@ -5,9 +5,10 @@
 // Also note a test that uses multiple compilation units at:
 //   checker/jtreg/nullness/annotationsOnExtends/
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.io.Serializable;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 class TFPR880Test implements Serializable {}
 

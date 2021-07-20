@@ -1,7 +1,8 @@
 package org.checkerframework.framework.type;
 
-import java.util.IdentityHashMap;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+
+import java.util.IdentityHashMap;
 
 /** Duplicates annotated types and replaces components according to a replacement map. */
 public class AnnotatedTypeCopierWithReplacement {

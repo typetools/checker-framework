@@ -1,8 +1,9 @@
-import java.util.Iterator;
-import java.util.Set;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.IntVal;
+
+import java.util.Iterator;
+import java.util.Set;
 
 public class Loop {
     void test1(final double @ArrayLen(20) [] f2) {

@@ -1,14 +1,16 @@
 package org.checkerframework.framework.util.typeinference.solver;
 
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
+import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
+
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
-import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 
 /**
  * Represents the result from inferring type arguments. InferenceResult is a map from: target type

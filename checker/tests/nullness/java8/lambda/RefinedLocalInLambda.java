@@ -1,9 +1,10 @@
 // Test case for issue #1248:
 // https://github.com/typetools/checker-framework/issues/1248
 
-import java.util.function.Predicate;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.function.Predicate;
 
 public class RefinedLocalInLambda {
 

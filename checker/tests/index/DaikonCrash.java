@@ -1,5 +1,6 @@
-import java.util.Arrays;
 import org.checkerframework.dataflow.qual.Pure;
+
+import java.util.Arrays;
 
 public class DaikonCrash {
     void method(Object[] a1) {

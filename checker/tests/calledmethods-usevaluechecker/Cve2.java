@@ -2,6 +2,7 @@ import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.Filter;
+
 import java.util.Collections;
 
 // https://nvd.nist.gov/vuln/detail/CVE-2018-15869

@@ -6,9 +6,7 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.framework.testchecker.util.AnnoWithStringArg;
 import org.checkerframework.framework.testchecker.util.Encrypted;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -16,6 +14,10 @@ import org.checkerframework.javacutil.BugInCF;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 
 public class AnnotationBuilderTest {
 
@@ -281,7 +283,8 @@ public class AnnotationBuilderTest {
         builder.setValue("value", "m");
         builder.setValue("can", new Object[] {1});
         Assert.assertEquals(
-                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno(value=\"m\", can={1})",
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno"
+                        + "(value=\"m\", can={1})",
                 builder.build().toString());
     }
 
@@ -291,7 +294,8 @@ public class AnnotationBuilderTest {
         builder.setValue("can", new Object[] {1});
         builder.setValue("value", "m");
         Assert.assertEquals(
-                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno(can={1}, value=\"m\")",
+                "@org.checkerframework.framework.test.junit.AnnotationBuilderTest.Anno"
+                        + "(can={1}, value=\"m\")",
                 builder.build().toString());
     }
 

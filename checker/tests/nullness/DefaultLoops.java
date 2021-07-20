@@ -1,5 +1,6 @@
-import java.util.LinkedList;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.LinkedList;
 
 class MyTS extends LinkedList {}
 

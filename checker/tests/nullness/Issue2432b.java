@@ -1,9 +1,10 @@
 // Ensure correct handling of type parameters and arrays.
 // https://github.com/typetools/checker-framework/issues/2432
 
+import org.checkerframework.checker.nullness.qual.PolyNull;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 
 public class Issue2432b {
     void objectAsTypeArg() {

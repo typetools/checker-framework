@@ -9,10 +9,12 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
-import java.util.ArrayDeque;
-import java.util.Arrays;
+
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.ArrayDeque;
+import java.util.Arrays;
 
 /**
  * Utilities for determining tree-based heuristics.

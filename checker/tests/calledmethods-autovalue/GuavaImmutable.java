@@ -1,5 +1,6 @@
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
+
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 

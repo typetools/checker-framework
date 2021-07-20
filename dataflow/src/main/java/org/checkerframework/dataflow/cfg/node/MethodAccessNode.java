@@ -2,12 +2,15 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.TreeUtils;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a method access, including a method accesses:

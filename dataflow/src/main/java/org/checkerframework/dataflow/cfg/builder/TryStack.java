@@ -1,10 +1,12 @@
 package org.checkerframework.dataflow.cfg.builder;
 
+import org.checkerframework.dataflow.util.MostlySingleton;
+
 import java.util.ArrayDeque;
 import java.util.Set;
 import java.util.StringJoiner;
+
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.MostlySingleton;
 
 /**
  * An exception stack represents the set of all try-catch blocks in effect at a given point in a

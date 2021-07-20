@@ -1,12 +1,14 @@
 package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.Tree;
-import java.util.IdentityHashMap;
-import java.util.Map;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.Node;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * This interface defines a dataflow analysis, given a control flow graph and a transfer function. A

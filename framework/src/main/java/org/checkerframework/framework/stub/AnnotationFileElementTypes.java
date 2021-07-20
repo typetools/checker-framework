@@ -1,7 +1,23 @@
 package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
+
 import io.github.classgraph.ClassGraph;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
+import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TypesUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,6 +40,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -33,19 +50,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
-import org.checkerframework.framework.qual.StubFiles;
-import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -453,7 +457,8 @@ public class AnnotationFileElementTypes {
             StringJoiner message = new StringJoiner(System.lineSeparator());
             message.add(
                     String.format(
-                            "No most specific fake override found for %s with receiver %s.  These fake overrides are applicable:",
+                            "No most specific fake override found for %s with receiver %s."
+                                    + " These fake overrides are applicable:",
                             elt, receiverTypeMirror));
             for (TypeMirror candidate : applicableClasses) {
                 message.add("  class candidate: " + candidate);

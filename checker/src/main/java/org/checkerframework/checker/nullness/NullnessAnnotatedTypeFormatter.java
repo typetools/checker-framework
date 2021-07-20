@@ -1,11 +1,12 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.Set;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+
+import java.util.Set;
 
 /** A DefaultAnnotatedTypeFormatter that prints null literals without their annotations. */
 public class NullnessAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {

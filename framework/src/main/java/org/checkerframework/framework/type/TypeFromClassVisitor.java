@@ -1,8 +1,10 @@
 package org.checkerframework.framework.type;
 
 import com.sun.source.tree.ClassTree;
-import javax.lang.model.element.TypeElement;
+
 import org.checkerframework.javacutil.TreeUtils;
+
+import javax.lang.model.element.TypeElement;
 
 /**
  * Converts ClassTrees into AnnotatedDeclaredType.

@@ -1,10 +1,13 @@
 package org.checkerframework.javacutil;
 
 import com.sun.source.tree.Tree;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.annotation.Annotation;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 // This class exists to break a circular dependency between the dataflow framework and
 // type-checkers.

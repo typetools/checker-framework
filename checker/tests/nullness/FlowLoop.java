@@ -112,14 +112,14 @@ public class FlowLoop {
 
     void testSimpleNull() {
         String r1 = null;
-        while (r1 != null) ;
+        while (r1 != null) {}
         // :: error: (dereference.of.nullable)
         r1.toString(); // error
     }
 
     void testMulticheckNull() {
         String r1 = null;
-        while (r1 != null && r1.equals("m")) ;
+        while (r1 != null && r1.equals("m")) {}
         // :: error: (dereference.of.nullable)
         r1.toString(); // error
     }

@@ -1,9 +1,10 @@
 // Test case for Issue 355:
 // https://github.com/typetools/checker-framework/issues/355
 
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.List;
 
 public class Issue355 {
     static <T extends @Nullable Object> @NonNull T checkNotNull(@Nullable T sample) {

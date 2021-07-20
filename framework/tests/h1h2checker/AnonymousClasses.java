@@ -1,6 +1,7 @@
-import java.util.Comparator;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1;
 import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S2;
+
+import java.util.Comparator;
 
 public class AnonymousClasses {
     private <@H1S1 T extends @H1S1 Comparator<T>> void testGenericAnonymous() {

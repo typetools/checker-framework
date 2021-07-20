@@ -1,7 +1,8 @@
-import java.util.List;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUIType;
 import org.checkerframework.checker.guieffect.qual.UI;
+
+import java.util.List;
 
 public class ThrowCatchTest {
     // Default type of List's type parameter is below @UI so these

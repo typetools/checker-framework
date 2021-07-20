@@ -1,10 +1,11 @@
 package org.checkerframework.checker.index.inequality;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
+
+import java.util.LinkedHashSet;
 
 /**
  * An internal checker that estimates which expression's values are less than other expressions'

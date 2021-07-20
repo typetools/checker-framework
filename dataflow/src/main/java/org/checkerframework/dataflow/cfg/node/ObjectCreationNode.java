@@ -1,14 +1,17 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.NewClassTree;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.StringsPlume;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.StringsPlume;
 
 /**
  * A node for new object creation.

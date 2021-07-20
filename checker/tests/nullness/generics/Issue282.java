@@ -1,10 +1,11 @@
 // Test case for Issue 282
 // https://github.com/typetools/checker-framework/issues/282
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
 
 @SuppressWarnings("nullness")
 abstract class ImmutableSortedSet<E extends @NonNull Object> implements Set<E> {

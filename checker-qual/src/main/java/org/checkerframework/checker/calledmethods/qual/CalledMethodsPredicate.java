@@ -1,10 +1,11 @@
 package org.checkerframework.checker.calledmethods.qual;
 
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * This annotation represents a predicate on {@code @}{@link CalledMethods} annotations. If method

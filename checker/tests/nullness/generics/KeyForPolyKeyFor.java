@@ -1,9 +1,10 @@
 package nullness.generics;
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
 
 // test related to issue 429: https://github.com/typetools/checker-framework/issues/429
 public class KeyForPolyKeyFor {

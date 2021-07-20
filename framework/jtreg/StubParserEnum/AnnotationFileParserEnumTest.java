@@ -9,8 +9,9 @@
 
 import static java.util.concurrent.TimeUnit.*;
 
-import java.util.concurrent.TimeUnit;
 import org.checkerframework.common.util.report.qual.*;
+
+import java.util.concurrent.TimeUnit;
 
 public class AnnotationFileParserEnumTest {
 

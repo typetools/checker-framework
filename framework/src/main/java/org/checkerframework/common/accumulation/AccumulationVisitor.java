@@ -1,10 +1,12 @@
 package org.checkerframework.common.accumulation;
 
 import com.sun.source.tree.AnnotationTree;
-import javax.lang.model.element.AnnotationMirror;
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.javacutil.TreeUtils;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * The visitor for an accumulation checker. Issues predicate.invalid errors if the user writes an

@@ -1,6 +1,7 @@
 package org.checkerframework.framework.testchecker.nontopdefault;
 
 import com.sun.source.tree.Tree;
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.testchecker.nontopdefault.qual.NTDBottom;

@@ -4,15 +4,17 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
+import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.StringsPlume;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
-import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.StringsPlume;
 
 /**
  * A node for method invocation.

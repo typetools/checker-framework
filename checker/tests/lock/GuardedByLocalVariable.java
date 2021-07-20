@@ -1,9 +1,10 @@
 // Test for Checker Framework issue 795
 // https://github.com/typetools/checker-framework/issues/795
 
+import org.checkerframework.checker.lock.qual.*;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.lock.qual.*;
 
 public class GuardedByLocalVariable {
 

@@ -1,3 +1,5 @@
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
@@ -5,7 +7,6 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class MisuseProperties {
 

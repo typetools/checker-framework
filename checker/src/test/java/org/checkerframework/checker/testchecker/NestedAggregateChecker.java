@@ -3,14 +3,15 @@ package org.checkerframework.checker.testchecker;
 // Test case for Issue 343
 // https://github.com/typetools/checker-framework/issues/343
 
-import java.util.ArrayList;
-import java.util.Collection;
 import org.checkerframework.checker.fenum.FenumChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class NestedAggregateChecker extends AggregateChecker {
     @Override

@@ -1,11 +1,12 @@
 package org.checkerframework.checker.test.junit;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * JUnit tests for the Nullness Checker -- testing type-checking of code that uses Javadoc classes.

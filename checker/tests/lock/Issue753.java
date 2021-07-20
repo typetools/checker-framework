@@ -1,9 +1,10 @@
 // Test case for Issue 753:
 // https://github.com/typetools/checker-framework/issues/753
 
-import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.*;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings({
     "purity",

@@ -1,6 +1,7 @@
-import java.math.BigInteger;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.PolyValue;
+
+import java.math.BigInteger;
 
 public class BigIntegerTest {
     void construct1(@IntRange(from = -1, to = 1) int signum, byte[] magnitude) {

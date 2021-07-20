@@ -1,10 +1,11 @@
 package org.checkerframework.dataflow.expression;
 
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
+
+import javax.lang.model.type.TypeMirror;
 
 public class ThisReference extends JavaExpression {
     public ThisReference(TypeMirror type) {

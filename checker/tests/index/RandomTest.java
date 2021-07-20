@@ -1,5 +1,6 @@
-import java.util.Random;
 import org.checkerframework.checker.index.qual.LTLengthOf;
+
+import java.util.Random;
 
 public class RandomTest {
     void test() {

@@ -1,10 +1,11 @@
 // Test case that was submitted in Issue 402, but was combined with Issue 979
 // https://github.com/typetools/checker-framework/issues/979
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue980 {
 

@@ -1,7 +1,8 @@
-import java.text.MessageFormat;
-import java.util.Date;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.util.I18nFormatUtil;
+
+import java.text.MessageFormat;
+import java.util.Date;
 
 public class HasFormat {
 

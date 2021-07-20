@@ -1,5 +1,6 @@
-import java.util.Properties;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Properties;
 
 public class GetProperty {
 

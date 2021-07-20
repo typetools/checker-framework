@@ -1,11 +1,12 @@
 // Test case for Issue 1633:
 // https://github.com/typetools/checker-framework/issues/1633
 
-import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.Covariant;
+
+import java.util.function.Supplier;
 
 public class Issue1633 {
 

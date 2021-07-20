@@ -3,13 +3,16 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Objects;
-import javax.lang.model.element.VariableElement;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
+
+import javax.lang.model.element.VariableElement;
 
 /**
  * A node for a field access, including a method accesses:

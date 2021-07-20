@@ -1,9 +1,10 @@
 package org.checkerframework.dataflow.cfg.block;
 
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {

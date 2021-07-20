@@ -1,9 +1,10 @@
-import java.util.ArrayList;
-import java.util.List;
 import org.checkerframework.checker.tainting.qual.PolyTainted;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 import org.checkerframework.framework.qual.HasQualifierParameter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HasQualParamDefaults {
     @HasQualifierParameter(Tainted.class)

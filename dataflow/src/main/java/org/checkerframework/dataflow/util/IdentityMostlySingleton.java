@@ -1,9 +1,10 @@
 package org.checkerframework.dataflow.util;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.javacutil.BugInCF;
+
+import java.util.Collections;
+import java.util.IdentityHashMap;
 
 /**
  * An arbitrary-size set that is very efficient (more efficient than HashSet) for 0 and 1 elements.

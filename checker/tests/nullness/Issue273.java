@@ -1,9 +1,10 @@
 // Test case for issue #273:
 // https://github.com/typetools/checker-framework/issues/273
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue273 {
     public static void main(String... p) {

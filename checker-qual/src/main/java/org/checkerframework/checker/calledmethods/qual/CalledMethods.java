@@ -1,11 +1,12 @@
 package org.checkerframework.checker.calledmethods.qual;
 
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * If an expression has type {@code @CalledMethods({"m1", "m2"})}, then methods {@code m1} and

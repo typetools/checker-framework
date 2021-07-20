@@ -1,13 +1,15 @@
 package org.checkerframework.framework.type;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 /**
  * A {@link org.checkerframework.framework.type.QualifierHierarchy} where qualifiers may be

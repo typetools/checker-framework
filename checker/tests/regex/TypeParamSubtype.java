@@ -1,5 +1,6 @@
-import java.util.Collection;
 import org.checkerframework.checker.regex.qual.Regex;
+
+import java.util.Collection;
 
 public class TypeParamSubtype {
     // These are legal because null has type @Regex String

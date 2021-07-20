@@ -1,9 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
+
+import org.checkerframework.javacutil.TreeUtils;
+
 import java.util.Arrays;
 import java.util.Collection;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a binary expression.

@@ -1,9 +1,10 @@
+import org.checkerframework.checker.calledmethods.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
-import org.checkerframework.checker.calledmethods.qual.*;
-import org.checkerframework.common.returnsreceiver.qual.*;
 
 public class Generics {
 

@@ -1,12 +1,14 @@
 package org.checkerframework.framework.util;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /**
  * Represents the type qualifier hierarchy of a type system.

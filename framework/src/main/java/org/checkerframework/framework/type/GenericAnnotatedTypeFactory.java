@@ -15,29 +15,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.lang.annotation.Annotation;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.StringJoiner;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
+
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -120,8 +98,34 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.SystemPlume;
+
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -812,9 +816,9 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
         if (!defs.hasDefaultsForCheckedCode()) {
             throw new BugInCF(
-                    "GenericAnnotatedTypeFactory.createQualifierDefaults: "
-                            + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
-                            + "Every checker must specify a default qualifier. "
+                    "GenericAnnotatedTypeFactory.createQualifierDefaults:"
+                        + " @DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE)"
+                        + " not found. Every checker must specify a default qualifier. "
                             + getSortedQualifierNames());
         }
 
@@ -1615,8 +1619,8 @@ public abstract class GenericAnnotatedTypeFactory<
                     res = getAnnotatedType(lhsTree);
                 } else {
                     throw new BugInCF(
-                            "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
-                                    + "lhsTree: "
+                            "GenericAnnotatedTypeFactory: Unexpected tree passed to"
+                                    + " getAnnotatedTypeLhs. lhsTree: "
                                     + lhsTree
                                     + " Tree.Kind: "
                                     + lhsTree.getKind());
@@ -2079,7 +2083,8 @@ public abstract class GenericAnnotatedTypeFactory<
             String cfgviz = checker.getOption("cfgviz");
             if (cfgviz == null) {
                 throw new UserError(
-                        "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
+                        "-Acfgviz specified without arguments, should be"
+                                + " -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
             String vizClassName = opts[0];
@@ -2516,7 +2521,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
                 if (declaredAm == null) {
                     throw new BugInCF(
-                            "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s  [%s %s]%n  inferredType=%s  [%s %s]%n",
+                            "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n "
+                                    + " declaredType=%s  [%s %s]%n  inferredType=%s  [%s %s]%n",
                             elt,
                             inferredType,
                             declaredType.toString(true),
@@ -2673,8 +2679,8 @@ public abstract class GenericAnnotatedTypeFactory<
                 // It's the framework annotation @EnsuresQualifierIf
                 return AnnotationUtils.getElementValueBoolean(
                         contractAnnotation,
-                        ensuresQualifierIfResultElement,
-                        /*default is irrelevant*/ false);
+                        ensuresQualifierIfResultElement, /*default is irrelevant*/
+                        false);
             } else {
                 // It's a checker-specific annotation such as @EnsuresMinLenIf
                 return AnnotationUtils.getElementValue(

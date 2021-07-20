@@ -1,5 +1,6 @@
-import java.util.Comparator;
 import org.checkerframework.checker.interning.qual.Interned;
+
+import java.util.Comparator;
 
 public class ComplexComparison {
 

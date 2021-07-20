@@ -1,5 +1,6 @@
-import java.util.List;
 import org.checkerframework.checker.tainting.qual.Untainted;
+
+import java.util.List;
 
 public class Issue1942 {
     public interface LoadableExpression<EXPRESSION> {}

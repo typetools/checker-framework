@@ -1,8 +1,5 @@
 package org.checkerframework.checker.index.upperbound;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
@@ -18,6 +15,11 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * A type-checker for preventing arrays from being accessed with values that are too high.

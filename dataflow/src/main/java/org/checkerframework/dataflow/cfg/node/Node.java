@@ -1,17 +1,20 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.StringJoiner;
-import java.util.concurrent.atomic.AtomicLong;
-import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
 import org.checkerframework.dataflow.qual.Pure;
 import org.plumelib.util.UniqueId;
+
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * A node in the abstract representation used for Java code inside a basic block.

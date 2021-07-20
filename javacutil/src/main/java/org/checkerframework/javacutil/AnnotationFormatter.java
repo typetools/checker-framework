@@ -1,8 +1,10 @@
 package org.checkerframework.framework.util;
 
-import java.util.Collection;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+
+import java.util.Collection;
+
+import javax.lang.model.element.AnnotationMirror;
 
 /** Converts AnnotationMirrors to Strings. Used when converting AnnotatedTypeMirrors to Strings. */
 public interface AnnotationFormatter {

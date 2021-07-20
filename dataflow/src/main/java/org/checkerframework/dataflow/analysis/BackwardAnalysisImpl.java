@@ -1,9 +1,5 @@
 package org.checkerframework.dataflow.analysis;
 
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -19,6 +15,11 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.javacutil.BugInCF;
+
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 
 /**
  * An implementation of a backward analysis to solve a org.checkerframework.dataflow problem given a
@@ -212,7 +213,8 @@ public class BackwardAnalysisImpl<
         if (worklist.depthFirstOrder.get(regularExitBlock) == null
                 && worklist.depthFirstOrder.get(exceptionExitBlock) == null) {
             throw new BugInCF(
-                    "regularExitBlock and exceptionExitBlock should never both be null at the same time.");
+                    "regularExitBlock and exceptionExitBlock should never both be null at the same"
+                            + " time.");
         }
         UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
         List<ReturnNode> returnNodes = cfg.getReturnNodes();
@@ -249,7 +251,8 @@ public class BackwardAnalysisImpl<
             boolean addToWorklistAgain) {
         if (flowRule != FlowRule.EACH_TO_EACH) {
             throw new BugInCF(
-                    "Backward analysis always propagates EACH to EACH, because there is no control flow.");
+                    "Backward analysis always propagates EACH to EACH, because there is no control"
+                            + " flow.");
         }
 
         addStoreAfter(pred, node, currentInput.getRegularStore(), addToWorklistAgain);

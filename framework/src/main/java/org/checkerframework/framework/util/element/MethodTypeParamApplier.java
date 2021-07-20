@@ -3,13 +3,15 @@ package org.checkerframework.framework.util.element;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
+
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 
 /** Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable. */
 public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {

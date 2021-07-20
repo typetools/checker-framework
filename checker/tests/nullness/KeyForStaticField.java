@@ -2,9 +2,10 @@
 // https://github.com/typetools/checker-framework/issues/877
 // @skip-test until the issue is fixed.
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class KeyForStaticField {
     @SuppressWarnings("keyfor")

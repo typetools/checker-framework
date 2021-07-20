@@ -1,6 +1,7 @@
+import org.checkerframework.framework.testchecker.util.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.framework.testchecker.util.*;
 
 public class Supertypes {
     static interface Inter<E> {}
@@ -71,16 +72,16 @@ public class Supertypes {
     }
 
     void ListIterable() {
-        for (String s : a1) ;
-        for (String s : a2) ;
-        for (String s : b1) ;
-        for (String s : b2) ;
+        for (String s : a1) {}
+        for (String s : a2) {}
+        for (String s : b1) {}
+        for (String s : b2) {}
 
         // :: error: (enhancedfor.type.incompatible)
-        for (@Odd String s : a1) ; // should emit error
+        for (@Odd String s : a1) {}
         // :: error: (enhancedfor.type.incompatible)
-        for (@Odd String s : a2) ; // should emit error
-        for (@Odd String s : b1) ;
-        for (@Odd String s : b2) ;
+        for (@Odd String s : a2) {}
+        for (@Odd String s : b1) {}
+        for (@Odd String s : b2) {}
     }
 }

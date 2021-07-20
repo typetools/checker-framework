@@ -32,23 +32,7 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
+
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -72,6 +56,25 @@ import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
 
 /**
  * Helper methods to parse a string that represents a restricted Java expression.
@@ -167,7 +170,8 @@ public class JavaExpressionParseUtil {
             throw constructJavaExpressionParseError(
                     expression,
                     String.format(
-                            "a class name cannot terminate a Java expression string, where result=%s [%s]",
+                            "a class name cannot terminate a Java expression string, where"
+                                    + " result=%s [%s]",
                             result, result.getClass()));
         }
         return result;
@@ -504,7 +508,8 @@ public class JavaExpressionParseUtil {
                 throw new ParseRuntimeException(
                         constructJavaExpressionParseError(
                                 "#0",
-                                "\"this\" should be used for the receiver or \"#1\" for the first formal parameter"));
+                                "Use \"this\" for the receiver or \"#1\" for the first formal"
+                                        + " parameter"));
             }
             if (idx > parameters.size()) {
                 throw new ParseRuntimeException(
@@ -685,7 +690,8 @@ public class JavaExpressionParseUtil {
                 if (!(receiverExpr instanceof ThisReference)) {
                     String msg =
                             String.format(
-                                    "%s is declared in an outer type of the type of the receiver expression, %s.",
+                                    "%s is declared in an outer type of the type of the receiver"
+                                            + " expression, %s.",
                                     identifier, receiverExpr);
                     throw new ParseRuntimeException(
                             constructJavaExpressionParseError(identifier, msg));
@@ -773,7 +779,8 @@ public class JavaExpressionParseUtil {
                     throw new ParseRuntimeException(
                             constructJavaExpressionParseError(
                                     expr.toString(),
-                                    "a non-static method call cannot have a class name as a receiver"));
+                                    "a non-static method call cannot have a class name as a"
+                                            + " receiver"));
                 }
                 TypeMirror methodType =
                         TypesUtils.substituteMethodReturnType(

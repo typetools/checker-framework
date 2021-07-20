@@ -1,9 +1,10 @@
 // Test case for Issue 1983:
 // https://github.com/typetools/checker-framework/issues/1983
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.List;
 import java.util.function.Function;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue1983 {
 

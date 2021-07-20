@@ -1,7 +1,8 @@
-import java.lang.reflect.Method;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.reflection.qual.MethodVal;
+
+import java.lang.reflect.Method;
 
 /** Testing that reflection resolution uses more precise annotations for the Nullness Checker. */
 public class NullnessReflectionResolutionTest {

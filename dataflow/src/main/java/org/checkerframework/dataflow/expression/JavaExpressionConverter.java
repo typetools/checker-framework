@@ -1,9 +1,10 @@
 package org.checkerframework.dataflow.expression;
 
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.javacutil.SystemUtil;
+
+import java.util.List;
 
 /**
  * This class calls {@link #convert(JavaExpression)} on each subexpression of the {@link

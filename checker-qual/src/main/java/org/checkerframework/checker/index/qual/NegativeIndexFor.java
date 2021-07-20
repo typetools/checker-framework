@@ -1,12 +1,13 @@
 package org.checkerframework.checker.index.qual;
 
+import org.checkerframework.framework.qual.JavaExpression;
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.JavaExpression;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The annotated expression is between {@code -1} and {@code -a.length - 1}, inclusive, for each

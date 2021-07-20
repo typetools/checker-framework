@@ -1,5 +1,5 @@
-AnnotationFileParserEnumTest.java:33:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.SECONDS
-AnnotationFileParserEnumTest.java:34:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.MILLISECONDS
-AnnotationFileParserEnumTest.java:37:47: compiler.err.proc.messager: [methodcall] Method call of AnnotationFileParserEnumTest.MyTimeUnit.toMicros(long)
-AnnotationFileParserEnumTest.java:37:30: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.SECONDS
+AnnotationFileParserEnumTest.java:34:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.SECONDS
+AnnotationFileParserEnumTest.java:35:35: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.MILLISECONDS
+AnnotationFileParserEnumTest.java:38:47: compiler.err.proc.messager: [methodcall] Method call of AnnotationFileParserEnumTest.MyTimeUnit.toMicros(long)
+AnnotationFileParserEnumTest.java:38:30: compiler.err.proc.messager: [fieldreadwrite] Field read/write of AnnotationFileParserEnumTest.MyTimeUnit.SECONDS
 4 errors

@@ -1,16 +1,18 @@
 package org.checkerframework.framework.type;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 
 /**
  * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
@@ -237,7 +239,8 @@ public interface QualifierHierarchy {
         AnnotationMirror widenUpperBound = leastUpperBound(newQualifier, previousQualifier);
         if (widenUpperBound == null) {
             throw new BugInCF(
-                    "Passed two unrelated qualifiers to QualifierHierarchy#widenedUpperBound. %s %s.",
+                    "Passed two unrelated qualifiers to QualifierHierarchy#widenedUpperBound. %s"
+                            + " %s.",
                     newQualifier, previousQualifier);
         }
         return widenUpperBound;
@@ -270,7 +273,8 @@ public interface QualifierHierarchy {
         assertSameSize(qualifiers1, qualifiers2);
         if (qualifiers1.isEmpty()) {
             throw new BugInCF(
-                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
+                    "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty"
+                            + " sets");
         }
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();

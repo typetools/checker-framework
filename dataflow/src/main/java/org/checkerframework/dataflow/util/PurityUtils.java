@@ -1,9 +1,7 @@
 package org.checkerframework.dataflow.util;
 
 import com.sun.source.tree.MethodTree;
-import java.util.EnumSet;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
+
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
@@ -11,6 +9,11 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.EnumSet;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
 /**
  * A utility class for working with the {@link SideEffectFree}, {@link Deterministic}, and {@link

@@ -1,8 +1,9 @@
 // Test case for issue #234.
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.Iterator;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class Wildcards {
 

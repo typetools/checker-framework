@@ -1,6 +1,7 @@
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+
+import java.util.List;
 
 public class NegatingConditionalNullness {
     public @MonotonicNonNull List<Object> splitters = null;

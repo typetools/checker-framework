@@ -1,14 +1,16 @@
 package org.checkerframework.framework.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic.Kind;
 
 /**
  * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of

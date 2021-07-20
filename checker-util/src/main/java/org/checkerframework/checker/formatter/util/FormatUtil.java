@@ -1,5 +1,10 @@
 package org.checkerframework.checker.formatter.util;
 
+import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import org.checkerframework.checker.formatter.qual.ReturnsFormat;
+import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.framework.qual.AnnotatedFor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
@@ -8,10 +13,6 @@ import java.util.Map;
 import java.util.MissingFormatArgumentException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.formatter.qual.ConversionCategory;
-import org.checkerframework.checker.formatter.qual.ReturnsFormat;
-import org.checkerframework.checker.regex.qual.Regex;
-import org.checkerframework.framework.qual.AnnotatedFor;
 
 /** This class provides a collection of utilities to ease working with format strings. */
 @AnnotatedFor("nullness")

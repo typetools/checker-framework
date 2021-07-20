@@ -1,5 +1,6 @@
-import java.util.List;
 import org.checkerframework.common.value.qual.IntRange;
+
+import java.util.List;
 
 // Because the analysis of loops isn't precise enough, the Value Checker issues
 // warnings on this test case. So, suppress those warnings, but run the tests

@@ -1,12 +1,14 @@
 package org.checkerframework.checker.units;
 
-import java.lang.annotation.Annotation;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.units.qual.UnitsMultiple;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.lang.annotation.Annotation;
+
+import javax.lang.model.element.AnnotationMirror;
 
 public class UnitsAnnotationClassLoader extends AnnotationClassLoader {
 

@@ -4,10 +4,13 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
-import java.util.List;
-import javax.lang.model.element.TypeElement;
+
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
+
+import java.util.List;
+
+import javax.lang.model.element.TypeElement;
 
 /**
  * When discovering supertypes of an AnnotatedTypeMirror we want to annotate each supertype with the

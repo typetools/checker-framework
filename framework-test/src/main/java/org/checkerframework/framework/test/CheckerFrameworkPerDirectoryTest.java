@@ -1,14 +1,16 @@
 package org.checkerframework.framework.test;
 
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import javax.annotation.processing.AbstractProcessor;
-import org.checkerframework.checker.signature.qual.BinaryName;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Compiles all test files in a test directory together. Use {@link CheckerFrameworkPerFileTest} to

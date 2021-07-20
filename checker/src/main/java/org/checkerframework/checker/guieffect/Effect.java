@@ -1,12 +1,13 @@
 package org.checkerframework.checker.guieffect;
 
-import java.lang.annotation.Annotation;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
 import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+
+import java.lang.annotation.Annotation;
 
 /** An effect -- either UIEffect, PolyUIEffect, or SafeEffect. */
 public final class Effect {

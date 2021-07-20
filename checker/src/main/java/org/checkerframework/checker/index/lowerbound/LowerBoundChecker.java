@@ -1,7 +1,5 @@
 package org.checkerframework.checker.index.lowerbound;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -9,6 +7,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
+
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 /**
  * A type-checker for preventing fixed-length sequences such as arrays or strings from being

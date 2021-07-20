@@ -1,6 +1,5 @@
 package org.checkerframework.checker.calledmethods;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.accumulation.AccumulationChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -9,6 +8,8 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
+
+import java.util.LinkedHashSet;
 
 /**
  * The Called Methods Checker tracks the methods that have definitely been called on an object. One

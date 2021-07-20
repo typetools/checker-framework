@@ -3,8 +3,9 @@
 
 // We need to add a warning when an @AssumeAssertion is missing its @ symbol (as below).
 
-import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Map;
 
 public class Issue427 {
 

@@ -1,11 +1,12 @@
 // Tests suport for index annotations applied to CharSequence and related indices.
 
-import java.io.IOException;
-import java.io.StringWriter;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.common.value.qual.MinLen;
 import org.checkerframework.common.value.qual.StringVal;
+
+import java.io.IOException;
+import java.io.StringWriter;
 
 public class CharSequenceTest {
     // Tests that minlen is correctly applied to CharSequence assigned from String, but not

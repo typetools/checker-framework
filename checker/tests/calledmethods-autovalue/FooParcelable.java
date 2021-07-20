@@ -1,4 +1,5 @@
 import android.os.Parcelable;
+
 import com.google.auto.value.AutoValue;
 
 /**

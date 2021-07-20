@@ -6,8 +6,9 @@
  * @compile/fail/ref=NPE2Test.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker NPE2Test.java -Anomsgtext
  */
 
-import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.function.Supplier;
 
 public class SupplierDefs {
     public abstract static class Supplier<R> {

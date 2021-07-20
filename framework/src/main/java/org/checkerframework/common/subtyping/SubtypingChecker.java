@@ -1,13 +1,15 @@
 package org.checkerframework.common.subtyping;
 
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.source.SourceVisitor;
+
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
 import javax.annotation.processing.SupportedOptions;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.SourceVisitor;
 
 /**
  * A checker for type qualifier systems that only checks subtyping relationships.

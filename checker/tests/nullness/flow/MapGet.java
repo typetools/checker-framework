@@ -3,10 +3,11 @@
 
 // @skip-test until the issue is fixed
 
-import java.util.HashMap;
-import java.util.Map;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapGet {
     private final Map<String, String> labels = new HashMap<>();

@@ -1,8 +1,9 @@
 // Based on a false positive encountered in Daikon related to common CFGs
 // by the KeyFor checker.
 
-import java.util.*;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.*;
 
 class DaikonEnhancedFor {
 

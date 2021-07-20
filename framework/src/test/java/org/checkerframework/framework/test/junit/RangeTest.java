@@ -1,15 +1,17 @@
 package org.checkerframework.framework.test.junit;
 
+import org.checkerframework.common.value.util.Range;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.common.value.util.Range;
-import org.junit.Assert;
-import org.junit.Test;
 
 /** This class tests the Range class, independent of the Value Checker. */
 public class RangeTest {
@@ -491,7 +493,8 @@ public class RangeTest {
                 Range result = re1.range.signedShiftRight(re2.range);
                 assert result.contains(re1.element >> re2.element)
                         : String.format(
-                                "Range.signedShiftRight failure: %s %s => %s; witnesses %s >> %s => %s",
+                                "Range.signedShiftRight failure: %s %s => %s; witnesses %s >> %s =>"
+                                        + " %s",
                                 re1.range,
                                 re2.range,
                                 result,
@@ -510,7 +513,8 @@ public class RangeTest {
                 if (re1.range.from >= 0) {
                     assert result.contains(re1.element >>> re2.element)
                             : String.format(
-                                    "Range.unsignedShiftRight failure: %s %s => %s; witnesses %s >> %s => %s",
+                                    "Range.unsignedShiftRight failure: %s %s => %s; witnesses %s >>"
+                                            + " %s => %s",
                                     re1.range,
                                     re2.range,
                                     result,
@@ -569,7 +573,8 @@ public class RangeTest {
                     assert result1.to == result2.to;
                     assert result1.contains(witness)
                             : String.format(
-                                    "Range.bitwiseAnd failure: %s %s => %s; witnesses %s & %s => %s",
+                                    "Range.bitwiseAnd failure: %s %s => %s; witnesses %s & %s =>"
+                                            + " %s",
                                     re1.range,
                                     re2.range,
                                     result1,

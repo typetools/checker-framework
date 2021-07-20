@@ -1,14 +1,15 @@
 package org.checkerframework.framework.testchecker.supportedquals;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.testchecker.supportedquals.qual.BottomQualifier;
 import org.checkerframework.framework.testchecker.supportedquals.qual.Qualifier;
+
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Tests that annotations that have @Target(TYPE_USE, OTHER) (where OTHER is not TYPE_PARAMETER) may

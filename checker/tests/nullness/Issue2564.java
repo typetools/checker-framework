@@ -1,6 +1,7 @@
+import org.checkerframework.checker.nullness.qual.KeyFor;
+
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 
 public abstract class Issue2564 {
     public enum EnumType {

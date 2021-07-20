@@ -1,9 +1,10 @@
 package org.checkerframework.javacutil;
 
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+
+import java.util.Objects;
 
 /** Simple pair class for multiple returns. */
 // TODO: as class is immutable, use @Covariant annotation.

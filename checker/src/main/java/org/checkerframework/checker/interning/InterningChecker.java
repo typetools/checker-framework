@@ -1,10 +1,11 @@
 package org.checkerframework.checker.interning;
 
-import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedLintOptions;
+
+import javax.annotation.processing.SupportedOptions;
 
 /**
  * A type-checker plug-in for the {@link Interned} qualifier that finds (and verifies the absence

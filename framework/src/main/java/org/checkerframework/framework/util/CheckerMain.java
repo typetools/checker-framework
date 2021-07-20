@@ -1,5 +1,10 @@
 package org.checkerframework.framework.util;
 
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.UserError;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,10 +23,6 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
-import org.checkerframework.javacutil.UserError;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
@@ -671,14 +672,17 @@ public class CheckerMain {
             throw new IllegalStateException(
                     "This class has been loaded remotely via the "
                             + protocol
-                            + " protocol. Only loading from a jar on the local file system is supported.");
+                            + " protocol. Only loading from a jar on the local file system is"
+                            + " supported.");
         }
 
         int idx = uri.indexOf('!');
         // Sanity check
         if (idx == -1) {
             throw new IllegalStateException(
-                    "You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
+                    "You appear to have loaded this class from a local jar file, but URI has no"
+                            + " \"!\": "
+                            + uri);
         }
 
         try {
@@ -716,7 +720,8 @@ public class CheckerMain {
                     throw new UserError(
                             "Could not find "
                                     + missingFile.getAbsolutePath()
-                                    + ". This may be because you built the Checker Framework under Java 11 but are running it under Java 8.");
+                                    + ". This may be because you built the Checker Framework under"
+                                    + " Java 11 but are running it under Java 8.");
                 }
             }
             List<String> missingAbsoluteFilenames =

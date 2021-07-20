@@ -1,4 +1,5 @@
 import com.google.auto.value.AutoValue;
+
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.common.returnsreceiver.qual.This;
 

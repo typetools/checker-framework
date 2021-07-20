@@ -1,10 +1,11 @@
 package org.checkerframework.checker.index.searchindex;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
+
+import java.util.LinkedHashSet;
 
 /**
  * An internal checker that assists the Index Checker in typing the results of calls to the JDK's

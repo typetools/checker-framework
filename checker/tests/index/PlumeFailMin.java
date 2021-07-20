@@ -15,8 +15,9 @@ abstract class PlumeFailMin {
     abstract String @MinLen(1) [] getArrayOk();
 
     void fail() {
+        // Workaround by casting.
         @SuppressWarnings({"index", "value"})
-        String @MinLen(1) [] args = getArrayFail();
+        String @MinLen(1) [] args = (String @MinLen(1) []) getArrayFail();
         @IndexOrHigh("args") int x = 1;
     }
 

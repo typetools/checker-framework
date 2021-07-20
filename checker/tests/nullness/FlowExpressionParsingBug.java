@@ -1,6 +1,7 @@
-import javax.swing.JMenuBar;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+
+import javax.swing.JMenuBar;
 
 public abstract class FlowExpressionParsingBug {
 

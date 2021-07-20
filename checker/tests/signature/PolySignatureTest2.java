@@ -1,9 +1,10 @@
 // Test for stub files and https://tinyurl.com/cfissue/658 .
 // Commented in part because that issue is not yet fixed.
 
+import org.checkerframework.checker.signature.qual.*;
+
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import org.checkerframework.checker.signature.qual.*;
 
 public class PolySignatureTest2 {
 

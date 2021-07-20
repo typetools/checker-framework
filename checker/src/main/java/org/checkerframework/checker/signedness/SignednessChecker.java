@@ -1,9 +1,10 @@
 package org.checkerframework.checker.signedness;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+
+import java.util.LinkedHashSet;
 
 /**
  * A type-checker that prevents mixing of unsigned and signed values, and prevents meaningless

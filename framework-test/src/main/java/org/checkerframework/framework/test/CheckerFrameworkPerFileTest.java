@@ -1,13 +1,15 @@
 package org.checkerframework.framework.test;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import javax.annotation.processing.AbstractProcessor;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Compiles all test files individually. Use {@link CheckerFrameworkPerDirectoryTest} to compile all

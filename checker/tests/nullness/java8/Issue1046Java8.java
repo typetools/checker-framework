@@ -2,9 +2,10 @@
 // https://github.com/typetools/checker-framework/issues/1046
 // Additonal test case: checker/tests/nullness/Issue1046.java
 
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
+
 import java.util.List;
 import java.util.function.Function;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
 public class Issue1046Java8 {
     interface EnumMarker {}

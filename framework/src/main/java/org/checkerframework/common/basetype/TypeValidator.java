@@ -1,6 +1,7 @@
 package org.checkerframework.common.basetype;
 
 import com.sun.source.tree.Tree;
+
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**

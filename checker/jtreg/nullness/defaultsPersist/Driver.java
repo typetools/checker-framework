@@ -8,6 +8,9 @@
 import com.sun.tools.classfile.ClassFile;
 import com.sun.tools.classfile.TypeAnnotation;
 import com.sun.tools.classfile.TypeAnnotation.TargetType;
+
+import org.checkerframework.javacutil.Pair;
+
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,7 +19,6 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.javacutil.Pair;
 
 public class Driver {
 

@@ -1,8 +1,9 @@
 package org.checkerframework.checker.i18nformatter;
 
-import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+
+import javax.annotation.processing.SupportedOptions;
 
 /**
  * A type-checker plug-in for the qualifier that finds syntactically invalid i18n-formatter calls

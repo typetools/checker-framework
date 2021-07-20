@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/979
 
 import java.util.Comparator;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 

@@ -1,11 +1,12 @@
 package org.checkerframework.framework.test;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * SimpleOptionMap is a very basic Option container. The keys of the Option container are the set of

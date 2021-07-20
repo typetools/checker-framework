@@ -1,5 +1,6 @@
-import java.util.function.Function;
 import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
+
+import java.util.function.Function;
 
 public class LambdaParameter {
 

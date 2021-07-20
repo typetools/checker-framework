@@ -1,18 +1,5 @@
 package org.checkerframework.framework.util;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.KeyFor;
@@ -27,6 +14,20 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.StringsPlume;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * This is the default implementation of {@link QualifierKindHierarchy}.
@@ -196,18 +197,20 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                 throw new TypeSystemError(
                         "AnnotatedTypeFactory: "
                                 + qualifierKind
-                                + " is polymorphic and specifies super qualifiers.%n"
-                                + "Remove the @PolymorphicQualifier or @SubtypeOf annotation from it.");
+                                + " is polymorphic and specifies super qualifiers.%nRemove the"
+                                + " @PolymorphicQualifier or @SubtypeOf annotation from it.");
             } else if (!isPoly && !hasSubtypeOfAnno) {
                 throw new TypeSystemError(
-                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%n"
-                                + "Add an @SubtypeOf or @PolymorphicQualifier annotation to it,%n"
-                                + "or if it is an alias, exclude it from `createSupportedTypeQualifiers()`.",
+                        "AnnotatedTypeFactory: %s does not specify its super qualifiers.%nAdd an"
+                            + " @SubtypeOf or @PolymorphicQualifier annotation to it,%nor if it is"
+                            + " an alias, exclude it from `createSupportedTypeQualifiers()`.",
                         qualifierKind);
             } else if (isPoly) {
                 if (qualifierKind.top == null) {
                     throw new TypeSystemError(
-                            "PolymorphicQualifier, %s, has to specify a type hierarchy in its @PolymorphicQualifier meta-annotation, if more than one exists; top types: [%s].",
+                            "PolymorphicQualifier, %s, has to specify a type hierarchy in its"
+                                + " @PolymorphicQualifier meta-annotation, if more than one exists;"
+                                + " top types: [%s].",
                             qualifierKind, StringsPlume.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
                     throw new TypeSystemError(
@@ -397,7 +400,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
                     qualifierKind.top = tops.iterator().next();
                 } else {
                     throw new TypeSystemError(
-                            "Polymorphic qualifier %s did not specify a top annotation class. Tops: [%s]",
+                            "Polymorphic qualifier %s did not specify a top annotation class. Tops:"
+                                    + " [%s]",
                             qualifierKind, StringsPlume.join(", ", tops));
                 }
             } else {
@@ -751,7 +755,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         public QualifierKind getTop() {
             if (top == null) {
                 throw new BugInCF(
-                        "DefaultQualifierKindHierarchy#getTop: Top is null for QualifierKind %s. Don't call this method during initialization of DefaultQualifierKindHierarchy.",
+                        "DefaultQualifierKindHierarchy#getTop: Top is null for QualifierKind %s."
+                                + " Don't call this method during initialization of"
+                                + " DefaultQualifierKindHierarchy.",
                         name);
             }
             return top;
@@ -766,7 +772,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         public QualifierKind getBottom() {
             if (bottom == null) {
                 throw new BugInCF(
-                        "DefaultQualifierKind#getBottom:Bottom is null for QualifierKind %s. Don't call this method during initialization of DefaultQualifierKindHierarchy.",
+                        "DefaultQualifierKind#getBottom:Bottom is null for QualifierKind %s. Don't"
+                                + " call this method during initialization of"
+                                + " DefaultQualifierKindHierarchy.",
                         name);
             }
             return bottom;
@@ -797,7 +805,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         public Set<? extends QualifierKind> getStrictSuperTypes() {
             if (strictSuperTypes == null) {
                 throw new BugInCF(
-                        "DefaultQualifierKind#getStrictSuperTypes: strictSuperTypes was null. Don't call this method during initialization of DefaultQualifierKindHierarchy.");
+                        "DefaultQualifierKind#getStrictSuperTypes: strictSuperTypes was null. Don't"
+                                + " call this method during initialization of"
+                                + " DefaultQualifierKindHierarchy.");
             }
             return strictSuperTypes;
         }
@@ -811,7 +821,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         public boolean isSubtypeOf(QualifierKind superQualKind) {
             if (strictSuperTypes == null) {
                 throw new BugInCF(
-                        "DefaultQualifierKind#isSubtypeOf: strictSuperTypes was null. Don't call this method during initialization of DefaultQualifierKindHierarchy.");
+                        "DefaultQualifierKind#isSubtypeOf: strictSuperTypes was null. Don't call"
+                                + " this method during initialization of"
+                                + " DefaultQualifierKindHierarchy.");
             }
             return this == superQualKind || strictSuperTypes.contains(superQualKind);
         }

@@ -1,12 +1,13 @@
 // Test case for Issue 415
 // https://github.com/typetools/checker-framework/issues/415
 
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.dataflow.qual.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.*;
 
 public final class Issue415 {
 

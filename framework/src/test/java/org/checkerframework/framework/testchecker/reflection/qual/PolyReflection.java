@@ -1,8 +1,9 @@
 package org.checkerframework.framework.testchecker.reflection.qual;
 
+import org.checkerframework.framework.qual.PolymorphicQualifier;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
  * Toy type system for testing reflection resolution. Uses

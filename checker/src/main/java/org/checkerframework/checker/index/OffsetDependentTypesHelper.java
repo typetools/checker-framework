@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MemberSelectTree;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.JavaExpression;

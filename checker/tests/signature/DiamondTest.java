@@ -1,5 +1,6 @@
-import java.util.ArrayList;
 import org.checkerframework.checker.signature.qual.*;
+
+import java.util.ArrayList;
 
 public class DiamondTest {
 

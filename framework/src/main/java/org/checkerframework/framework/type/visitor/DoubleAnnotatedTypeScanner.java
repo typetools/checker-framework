@@ -1,6 +1,5 @@
 package org.checkerframework.framework.type.visitor;
 
-import java.util.Iterator;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -10,6 +9,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.BugInCF;
+
+import java.util.Iterator;
 
 /**
  * An {@link AnnotatedTypeScanner} that scans two {@link AnnotatedTypeMirror}s simultaneously and

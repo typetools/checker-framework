@@ -3,10 +3,11 @@
 
 // @skip-test until the issue is fixed
 
-import java.util.ArrayList;
-import java.util.Queue;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.ArrayList;
+import java.util.Queue;
 
 public final class IsEmptyPoll extends ArrayList<String> {
 

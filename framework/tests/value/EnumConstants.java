@@ -4,11 +4,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 
+import org.checkerframework.common.value.qual.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import org.checkerframework.common.value.qual.*;
 
 public class EnumConstants {
     enum MyEnum {

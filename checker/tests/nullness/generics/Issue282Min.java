@@ -1,10 +1,11 @@
 // Test case for Issue 282 (minimized)
 // https://github.com/typetools/checker-framework/issues/282
 
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue282Min {
     static <M> Set<M> copyOf(Comparator<? super M> comparator, Collection<? extends M> elements) {

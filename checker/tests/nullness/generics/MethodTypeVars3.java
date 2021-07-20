@@ -1,10 +1,11 @@
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.*;
 
 public class MethodTypeVars3 {
     public static <@KeyFor("#1") T extends @KeyFor("#1") Object> Map<T, List<T>> dominators(

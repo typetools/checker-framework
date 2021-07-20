@@ -1,9 +1,10 @@
 // Test case for Issue 1705
 // https://github.com/typetools/checker-framework/issues/1705
 
-import java.util.function.Function;
 import org.checkerframework.checker.tainting.qual.PolyTainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
+
+import java.util.function.Function;
 
 public class Issue1705 {
     static class MySecondClass<X> {

@@ -20,19 +20,22 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class to find symbols corresponding to string references (identifiers). */
 // This class reflectively accesses jdk.compiler/com.sun.tools.javac.comp.
@@ -352,7 +355,8 @@ public class Resolver {
                 Error err =
                         new AssertionError(
                                 String.format(
-                                        "Unexpected reflection error in findMethod(%s, %s, ..., %s)",
+                                        "Unexpected reflection error in findMethod(%s, %s, ...,"
+                                                + " %s)",
                                         methodName,
                                         receiverType,
                                         // path

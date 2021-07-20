@@ -1,16 +1,18 @@
 package org.checkerframework.checker.units;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
     protected final BaseTypeChecker checker;

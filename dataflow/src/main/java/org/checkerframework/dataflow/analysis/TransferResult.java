@@ -1,8 +1,10 @@
 package org.checkerframework.dataflow.analysis;
 
-import java.util.Map;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Map;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * {@code TransferResult} is used as the result type of the individual transfer functions of a

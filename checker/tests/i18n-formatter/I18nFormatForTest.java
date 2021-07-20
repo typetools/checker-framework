@@ -1,6 +1,7 @@
+import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
+
 import java.text.MessageFormat;
 import java.util.Date;
-import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 
 public class I18nFormatForTest {
 

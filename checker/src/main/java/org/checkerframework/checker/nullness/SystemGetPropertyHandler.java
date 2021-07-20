@@ -1,14 +1,17 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.MethodInvocationTree;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
+
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * Utility class for handling {@link java.lang.System#getProperty(String)} and related invocations.

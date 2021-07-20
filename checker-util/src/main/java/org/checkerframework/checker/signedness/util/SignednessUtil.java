@@ -1,12 +1,13 @@
 package org.checkerframework.checker.signedness.util;
 
+import org.checkerframework.checker.signedness.qual.Unsigned;
+import org.checkerframework.framework.qual.AnnotatedFor;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import org.checkerframework.checker.signedness.qual.Unsigned;
-import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Provides static utility methods for unsigned values, beyond what is available in the JDK's

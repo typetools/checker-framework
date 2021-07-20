@@ -1,6 +1,5 @@
 package org.checkerframework.checker.signature;
 
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -16,6 +15,8 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
+
+import javax.lang.model.element.ExecutableElement;
 
 /** The transfer function for the Signature Checker. */
 public class SignatureTransfer extends CFTransfer {

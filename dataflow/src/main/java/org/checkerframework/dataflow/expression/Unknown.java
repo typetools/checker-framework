@@ -1,13 +1,15 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.Tree;
-import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TreeUtils;
+
+import javax.lang.model.type.TypeMirror;
 
 /** Stands for any expression that the Dataflow Framework lacks explicit support for. */
 @UsesObjectEquals

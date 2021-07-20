@@ -1,7 +1,8 @@
 package org.checkerframework.framework.test.diagnostics;
 
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Objects;
 
 /**
  * Represents an expected error/warning message in a Java test file or an error/warning reported by

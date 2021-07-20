@@ -1,8 +1,5 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
-import java.util.List;
-import java.util.Set;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -16,6 +13,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.plumelib.util.StringsPlume;
+
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.type.TypeKind;
 
 /**
  * FIsAReducer takes an FIsA constraint that is not irreducible (@see AFConstraint.isIrreducible)

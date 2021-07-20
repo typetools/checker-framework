@@ -1,6 +1,7 @@
-import java.io.Serializable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.io.Serializable;
 
 public class AnnotatedSupertype {
 

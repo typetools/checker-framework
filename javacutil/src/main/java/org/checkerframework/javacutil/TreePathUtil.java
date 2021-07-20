@@ -9,12 +9,15 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.StringJoiner;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Utility methods for obtaining or analyzing a javac {@code TreePath}.

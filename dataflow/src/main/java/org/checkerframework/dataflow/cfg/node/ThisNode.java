@@ -1,10 +1,12 @@
 package org.checkerframework.dataflow.cfg.node;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a reference to 'this', either implicit or explicit.

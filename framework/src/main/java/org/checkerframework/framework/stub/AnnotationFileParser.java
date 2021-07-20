@@ -54,34 +54,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
-import java.io.File;
-import java.io.InputStream;
-import java.lang.annotation.Target;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
+
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -105,6 +78,36 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -915,7 +918,9 @@ public class AnnotationFileParser {
             if (numParams != numArgs) {
                 stubDebug(
                         String.format(
-                                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
+                                "parseType:  mismatched sizes for typeParameters=%s (size %d) and"
+                                    + " typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s"
+                                    + " (%s); typeBeingParsed=%s",
                                 typeParameters,
                                 numParams,
                                 typeArguments,
@@ -1074,7 +1079,8 @@ public class AnnotationFileParser {
                 if (decl.isConstructorDeclaration()) {
                     warn(
                             receiverParameter,
-                            "parseParameter: constructor %s of a top-level class cannot have receiver annotations %s",
+                            "parseParameter: constructor %s of a top-level class cannot have"
+                                    + " receiver annotations %s",
                             methodType,
                             decl.getReceiverParameter().get().getAnnotations());
                 } else {
@@ -1302,7 +1308,8 @@ public class AnnotationFileParser {
                         warn(
                                 astNode,
                                 String.format(
-                                        "Mismatch in type argument size between %s (%d) and %s (%d)",
+                                        "Mismatch in type argument size between %s (%d) and %s"
+                                                + " (%d)",
                                         declType,
                                         declType.getTypeArguments().get().size(),
                                         adeclType,
@@ -1537,7 +1544,8 @@ public class AnnotationFileParser {
         if (typeParameters.size() != typeArguments.size()) {
             String msg =
                     String.format(
-                            "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).",
+                            "annotateTypeParameters: mismatched sizes:  typeParameters (size"
+                                + " %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).",
                             typeParameters.size(),
                             typeParameters,
                             typeArguments.size(),
@@ -2023,7 +2031,9 @@ public class AnnotationFileParser {
                                 + " not found in type "
                                 + typeElt
                                 + System.lineSeparator()
-                                + "If the method is not package-private, add an access specifier in the stub file and use pass -AstubDebug to receive a more useful error message.");
+                                + "If the method is not package-private, add an access specifier in"
+                                + " the stub file and use pass -AstubDebug to receive a more useful"
+                                + " error message.");
             } else {
                 stubWarnNotFound(
                         methodDecl,

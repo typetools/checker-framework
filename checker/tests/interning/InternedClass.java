@@ -1,10 +1,11 @@
+import org.checkerframework.checker.interning.qual.InternMethod;
+import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.interning.qual.UnknownInterned;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
-import org.checkerframework.checker.interning.qual.InternMethod;
-import org.checkerframework.checker.interning.qual.Interned;
-import org.checkerframework.checker.interning.qual.UnknownInterned;
 
 // The @Interned annotation indicates that much like an enum, all variables
 // declared of this type are interned (except the constructor return value).
@@ -151,6 +152,6 @@ public @Interned class InternedClass {
 
     void testCast(Object o) {
         Object i = (InternedClass) o;
-        if (i == this) ;
+        if (i == this) {}
     }
 }

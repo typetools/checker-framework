@@ -1,7 +1,8 @@
 import static java.util.Arrays.asList;
 
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.List;
 
 public class Issue2719 {
     public static void main(String[] args) {

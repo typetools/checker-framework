@@ -1,10 +1,11 @@
 // Test case for Issue 1406
 // https://github.com/typetools/checker-framework/issues/1406
 
-import java.util.ArrayList;
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"purity", "contracts.postcondition.not.satisfied"}) // Only test parsing
 public class Issue1406 {

@@ -4,12 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -21,6 +16,14 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BasicAnnotationProvider;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Builds the control flow graph of some Java code (either a method, or an arbitrary statement).

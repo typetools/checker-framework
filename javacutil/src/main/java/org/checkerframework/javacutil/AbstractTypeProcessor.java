@@ -11,8 +11,12 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Log;
+
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
@@ -20,7 +24,6 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * This class is an abstract annotation processor designed to be a convenient superclass for

@@ -1,8 +1,9 @@
 // Test case for https://tinyurl.com/cfissue/3224
 
-import java.util.Arrays;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.MinLen;
+
+import java.util.Arrays;
 
 public class Issue3224 {
     static class Arrays {

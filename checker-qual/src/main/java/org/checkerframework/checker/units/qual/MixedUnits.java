@@ -1,10 +1,11 @@
 package org.checkerframework.checker.units.qual;
 
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * MixedUnits is the result of multiplying or dividing units, where no more specific unit is known

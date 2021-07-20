@@ -1,7 +1,8 @@
-import java.util.Optional;
 import org.checkerframework.checker.optional.qual.MaybePresent;
 import org.checkerframework.checker.optional.qual.OptionalBottom;
 import org.checkerframework.checker.optional.qual.Present;
+
+import java.util.Optional;
 
 /** Basic test of subtyping. */
 public class SubtypeCheck {

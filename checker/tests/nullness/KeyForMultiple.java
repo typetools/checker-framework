@@ -2,10 +2,11 @@
 
 // @skip-test until the bug is fixed.
 
+import org.checkerframework.checker.nullness.qual.KeyFor;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 
 public class KeyForMultiple {
 

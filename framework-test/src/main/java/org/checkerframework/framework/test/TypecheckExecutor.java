@@ -1,18 +1,20 @@
 package org.checkerframework.framework.test;
 
+import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
+import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
+import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.StringsPlume;
+
 import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
-import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
-import org.checkerframework.javacutil.SystemUtil;
-import org.plumelib.util.StringsPlume;
 
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {

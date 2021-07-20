@@ -1,10 +1,11 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
+
+import java.util.Objects;
 
 /**
  * Subclasses of TUConstraint represent constraints between a type parameter, whose type arguments

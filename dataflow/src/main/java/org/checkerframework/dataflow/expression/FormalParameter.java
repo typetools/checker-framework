@@ -1,12 +1,15 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.Objects;
-import javax.lang.model.element.VariableElement;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
+
+import java.util.Objects;
+
+import javax.lang.model.element.VariableElement;
 
 /**
  * A formal parameter, represented by its 1-based index.

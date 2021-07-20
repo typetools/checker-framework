@@ -1,7 +1,8 @@
 // @skip-tests Failing, but commented out to avoid breaking the build
 
-import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Map;
 
 public class Stats {
 

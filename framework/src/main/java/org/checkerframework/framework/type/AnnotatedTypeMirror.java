@@ -1,11 +1,26 @@
 package org.checkerframework.framework.type;
 
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
+import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
+import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.javacutil.TypeKindUtils;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -25,18 +40,6 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
-import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * Represents an annotated type in the Java programming language. Types include primitive types,
@@ -77,7 +80,8 @@ public abstract class AnnotatedTypeMirror {
                 break;
             case ERROR:
                 throw new BugInCF(
-                        "AnnotatedTypeMirror.createType: input is not compilable. Found error type: "
+                        "AnnotatedTypeMirror.createType: input is not compilable. Found error type:"
+                                + " "
                                 + type);
 
             case EXECUTABLE:
@@ -1181,7 +1185,8 @@ public abstract class AnnotatedTypeMirror {
                     aret = element.getEnclosingElement().asType();
                     if (aret.getKind() == TypeKind.ERROR) {
                         throw new ErrorTypeKindException(
-                                "Input is not compilable; problem with constructor %s return type: %s [%s %s] (enclosing element = %s [%s])",
+                                "Input is not compilable; problem with constructor %s return type:"
+                                        + " %s [%s %s] (enclosing element = %s [%s])",
                                 element,
                                 aret,
                                 aret.getKind(),
@@ -1445,7 +1450,8 @@ public abstract class AnnotatedTypeMirror {
             String boundDescription, AnnotatedTypeMirror boundType, AnnotatedTypeMirror thisType) {
         if (boundType == null || boundType.isDeclaration()) {
             throw new BugInCF(
-                    "%s bounds should never be null or a declaration.%n  new bound = %s%n  type = %s",
+                    "%s bounds should never be null or a declaration.%n  new bound = %s%n  type ="
+                            + " %s",
                     boundDescription, boundType, thisType);
         }
     }

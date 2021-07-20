@@ -1,12 +1,15 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.Tree;
-import java.util.Objects;
-import javax.lang.model.type.TypeMirror;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+
+import java.util.Objects;
+
+import javax.lang.model.type.TypeMirror;
 
 /** JavaExpression for binary operations. */
 public class BinaryOperation extends JavaExpression {

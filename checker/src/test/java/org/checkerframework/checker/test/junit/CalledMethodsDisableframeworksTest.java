@@ -1,12 +1,13 @@
 package org.checkerframework.checker.test.junit;
 
+import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.junit.runners.Parameterized.Parameters;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
-import org.junit.runners.Parameterized.Parameters;
 
 public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirectoryTest {
 

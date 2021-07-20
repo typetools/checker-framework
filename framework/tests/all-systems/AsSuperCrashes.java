@@ -1,10 +1,11 @@
 package assuper;
 
+import org.checkerframework.dataflow.qual.Pure;
+
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
-import org.checkerframework.dataflow.qual.Pure;
 
 // This class has code that used to cause AsSuper to crash
 @SuppressWarnings("all")

@@ -2,9 +2,10 @@
 
 // @skip-test until the issue is fixed
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import java.util.List;
 import java.util.Optional;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 final class Issue4007 {
     Optional<String> m1(List<String> list) {
