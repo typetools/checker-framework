@@ -928,18 +928,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager.printMessage(Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
       return;
     }
-    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage() > .30) {
-      messager.printMessage(
-          Kind.WARNING, "Garbage collection consumed over 30% of CPU during the past minute.");
-      messager.printMessage(
-          Kind.WARNING,
-          String.format(
-              "Perhaps increase max heap size"
-                  + " (max memory = %d, total memory = %d, free memory = %d).",
-              Runtime.getRuntime().maxMemory(),
-              Runtime.getRuntime().totalMemory(),
-              Runtime.getRuntime().freeMemory()));
-      warnedAboutGarbageCollection = true;
+
+    if (!warnedAboutGarbageCollection) {
+      double gcPercentage = SystemPlume.gcPercentage();
+      if (gcPercentage > .30) {
+        messager.printMessage(
+            Kind.WARNING,
+            "Garbage collection consumed "
+                + Math.round(gcPercentage * 100)
+                + "% of CPU during the past minute.");
+        messager.printMessage(Kind.WARNING, "  max memory = " + Runtime.getRuntime().maxMemory());
+        messager.printMessage(Kind.WARNING, "total memory = " + Runtime.getRuntime().totalMemory());
+        messager.printMessage(Kind.WARNING, " free memory = " + Runtime.getRuntime().freeMemory());
+        warnedAboutGarbageCollection = true;
+      }
     }
 
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
