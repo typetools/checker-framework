@@ -213,7 +213,7 @@ public class Expression extends Constraint {
     // to false; otherwise, the constraint reduces to <R' -> R>.
     return ReductionResultPair.of(
         new ConstraintSet(
-            new Typing(compileTimeReturn.capture(), r, Constraint.Kind.TYPE_COMPATIBILITY)),
+            new Typing(compileTimeReturn.capture(context), r, Constraint.Kind.TYPE_COMPATIBILITY)),
         new BoundSet(context));
   }
 

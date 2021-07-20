@@ -63,12 +63,12 @@ public class ContainsInferenceVariable {
 
     @Override
     public Boolean visit(TypeMirror t, Void aVoid) {
-      return t == null ? false : t.accept(this, aVoid);
+      return t != null && t.accept(this, aVoid);
     }
 
     @Override
     public Boolean visit(TypeMirror t) {
-      return t == null ? false : t.accept(this, null);
+      return t != null && t.accept(this, null);
     }
 
     @Override

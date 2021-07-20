@@ -374,7 +374,7 @@ public class InvocationTypeInference {
       }
       if (compatibility) {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
-        ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture();
+        ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
         ConstraintSet constraintSet =
             new ConstraintSet(new Typing(u, target, Kind.TYPE_COMPATIBILITY));
         BoundSet newBounds = constraintSet.reduce(context);

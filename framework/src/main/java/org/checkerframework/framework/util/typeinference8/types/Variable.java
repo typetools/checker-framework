@@ -69,6 +69,7 @@ public class Variable extends AbstractType {
   public VariableBounds getBounds() {
     return variableBounds;
   }
+
   /**
    * Adds the initial bounds to this variable. These are the bounds implied by the upper bounds of
    * the type variable. See end of JLS 18.1.3.
@@ -114,7 +115,7 @@ public class Variable extends AbstractType {
   }
 
   @Override
-  public Variable capture() {
+  public Variable capture(Java8InferenceContext context) {
     return this;
   }
 

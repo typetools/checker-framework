@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -70,7 +69,7 @@ public class ProperType extends AbstractType {
     if (atm.getKind() == TypeKind.WILDCARD) {
       AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
       if (TypesUtils.isCapturedTypeVariable(typeMirror)) {
-        atm = ((AnnotatedWildcardType) atm).capture((TypeVariable) typeMirror);
+        throw new CantCompute();
       } else if (wildcardType.isUninferredTypeArgument()) {
         // TODO: Should be removed when inference is corrected
         throw new CantCompute();

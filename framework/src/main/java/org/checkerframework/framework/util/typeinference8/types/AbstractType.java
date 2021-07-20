@@ -181,20 +181,10 @@ public abstract class AbstractType {
    *
    * @return a new type that is the capture of this type
    */
-  public AbstractType capture() {
-    TypeMirror capture;
-    if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      capture =
-          context.types.freshTypeVariables(com.sun.tools.javac.util.List.of((Type) getJavaType()))
-              .head;
-      AnnotatedTypeMirror captureATM =
-          ((AnnotatedWildcardType) getAnnotatedType()).capture((TypeVariable) capture);
-      return create(captureATM, capture);
-    } else {
-      capture = context.env.getTypeUtils().capture(getJavaType());
-      // The annotated type will be captured later if needed.
-      return create(getAnnotatedType(), capture);
-    }
+  public AbstractType capture(Java8InferenceContext context) {
+    AnnotatedTypeMirror capturedType =
+        context.typeFactory.applyCaptureConversion(getAnnotatedType());
+    return create(capturedType, capturedType.getUnderlyingType());
   }
 
   /**
@@ -224,10 +214,6 @@ public abstract class AbstractType {
     AnnotatedTypeMirror superAnnotatedType =
         AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
     AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
-
-    if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
-      return create(asSuper, asSuperJava).capture();
-    }
     return create(asSuper, asSuperJava);
   }
 
