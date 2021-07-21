@@ -412,17 +412,20 @@ public abstract class CFAbstractTransfer<
 
     // Add knowledge about final fields, or values of non-final fields
     // if we are inside a constructor (information about initializers)
+    boolean isConstructor = TreeUtils.isConstructor(methodTree);
     TypeMirror classType = TreeUtils.typeOf(classTree);
+    JavaExpression className = new ClassName(classType);
+    JavaExpression thisReference = new ThisReference(classType);
     List<Pair<VariableElement, V>> fieldValues = analysis.getFieldValues();
     for (Pair<VariableElement, V> p : fieldValues) {
       VariableElement element = p.first;
       V value = p.second;
-      if (ElementUtils.isFinal(element) || TreeUtils.isConstructor(methodTree)) {
+      if (isConstructor || ElementUtils.isFinal(element)) {
         JavaExpression receiver;
         if (ElementUtils.isStatic(element)) {
-          receiver = new ClassName(classType);
+          receiver = className;
         } else {
-          receiver = new ThisReference(classType);
+          receiver = thisReference;
         }
         TypeMirror fieldType = ElementUtils.getType(element);
         JavaExpression field = new FieldAccess(receiver, fieldType, element);
@@ -439,37 +442,37 @@ public abstract class CFAbstractTransfer<
     }
     for (Tree member : classTree.getMembers()) {
       if (member instanceof VariableTree) {
+        V value = null;
         VariableTree vt = (VariableTree) member;
         final VariableElement element = TreeUtils.elementFromDeclaration(vt);
-        AnnotatedTypeMirror type =
-            ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory).getAnnotatedTypeLhs(vt);
-        TypeMirror fieldType = ElementUtils.getType(element);
-        JavaExpression receiver;
-        if (ElementUtils.isStatic(element)) {
-          receiver = new ClassName(classType);
-        } else {
-          receiver = new ThisReference(classType);
-        }
-        V value = analysis.createAbstractValue(type);
-        if (value == null) {
-          continue;
-        }
-        if (TreeUtils.isConstructor(methodTree)) {
+        if (isConstructor) {
           // If we are in a constructor, then we can still use the static type, but only if there is
           // also an initializer that already does some initialization.
-          boolean found = false;
           for (Pair<VariableElement, V> fieldValue : fieldValues) {
             if (fieldValue.first.equals(element)) {
-              value = value.leastUpperBound(fieldValue.second);
-              found = true;
+              value = fieldValue.second;
               break;
             }
           }
-          if (!found) {
+          if (value == null) {
             // no initializer found, cannot use static type
             continue;
           }
         }
+
+        AnnotatedTypeMirror type =
+            ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory).getAnnotatedTypeLhs(vt);
+        V staticValue = analysis.createAbstractValue(type);
+        if (value != null) {
+          value = value.leastUpperBound(staticValue);
+        } else if (staticValue != null) {
+          value = staticValue;
+        } else {
+          // no information about this field.
+          continue;
+        }
+        TypeMirror fieldType = ElementUtils.getType(element);
+        JavaExpression receiver = ElementUtils.isStatic(element) ? className : thisReference;
         JavaExpression field = new FieldAccess(receiver, fieldType, element);
         info.insertValue(field, value);
       }
