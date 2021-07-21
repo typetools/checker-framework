@@ -383,7 +383,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 classname,
                 unitsRelationsClass.getDeclaredConstructor().newInstance().init(processingEnv));
           } catch (Throwable e) {
-            throw new BugInCF("Throwable when instantiating UnitsRelations", e);
+            throw new TypeSystemError("Throwable when instantiating UnitsRelations", e);
           }
         }
       }
@@ -604,7 +604,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return lub;
         }
       }
-      throw new BugInCF("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
+      throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
     @Override
@@ -685,7 +685,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         superQuals.removeAll(lowest);
       }
-      throw new BugInCF("No direct super qualifier found for %s", qualifierKind);
+      throw new TypeSystemError("No direct super qualifier found for %s", qualifierKind);
     }
   }
 
