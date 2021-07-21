@@ -282,7 +282,7 @@ rm -f -- "${DIR}/.cannot-run-wpi"
 cd "${DIR}" || exit 5
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
-# For the first run, use the Java versions in ascending order: 8 if its available, then
+# For the first run, use the Java versions in ascending priority order: 8 if its available, then
 # 11, then 16.
 if [ "${has_java8}" = "yes" ]; then
   export JAVA_HOME="${JAVA8_HOME}"
@@ -293,10 +293,10 @@ elif [ "${has_java16}" = "yes" ]; then
 fi
 configure_and_exec_dljc "$@"
 
-# If running under Java 8 failed and Java 11 is also available, then try running again under Java 11.
-if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-  # If Java 8 was not available, then the first run already would have used Java 11, so
-  # there's no reason to run again.
+# If results aren't available after the first run, then re-run with Java 11 if
+# it is available and the first run used Java 8 (since Java 8 has the highest priority,
+# the first run using Java 8 is equivalent to Java 8 being available).
+if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java11}" = "yes" ]; then
   if [ "${has_java8}" = "yes" ]; then
     export JAVA_HOME="${JAVA11_HOME}"
     echo "couldn't build using Java 8; trying Java 11"
@@ -304,10 +304,10 @@ if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
   fi
 fi
 
-# If running under Java 8 and/or 11 failed and Java 16 is available, then try Java 16.
-if [ "${has_java16}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-  # If neither Java 8 nor Java 11 were available, then the first run would have used
-  # Java 16, so there's no reason to run again.
+# If results still aren't available and Java 16 is available, then Java 16 has not yet
+# been tried if either Java 8 or Java 11 are available, because those have higher
+# priority. If that's the case, then re-try using Java 16.
+if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java16}" = "yes" ]; then
   if [ "${has_java11}" = "yes" ] || [ "${has_java8}" = "yes" ]; then
     export JAVA_HOME="${JAVA16_HOME}"
     echo "couldn't build using Java 11 or Java 8; trying Java 16"
