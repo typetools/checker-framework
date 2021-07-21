@@ -19,8 +19,7 @@ import java.util.SortedSet;
 @SupportedLintOptions({
     NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
     NullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-    // Temporary option to forbid non-null array component types,
-    // which is allowed by default.
+    // Temporary option to forbid non-null array component types, which is allowed by default.
     // Forbidding is sound and will eventually be the default.
     // Allowing is unsound, as described in Section 3.3.4, "Nullness and arrays":
     //     https://checkerframework.org/manual/#nullness-arrays

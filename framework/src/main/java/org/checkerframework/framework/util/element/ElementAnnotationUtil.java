@@ -403,8 +403,8 @@ public class ElementAnnotationUtil {
         if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {
             // An annotation with an empty type path on a declared type applies to the outermost
             // enclosing type. This logic is handled together with non-empty type paths in
-            // getLocationTypeADT. For other kinds of types, no work is required for an empty
-            // type path.
+            // getLocationTypeADT.
+            // For other kinds of types, no work is required for an empty type path.
             return type;
         }
         switch (type.getKind()) {

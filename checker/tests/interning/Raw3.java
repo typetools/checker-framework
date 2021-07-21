@@ -76,9 +76,9 @@ public class Raw3 {
         class DuoList<S, T> extends ArrayList<S> {}
 
         List<String> bar4(List<String> sl) {
-            // This line was previously failing because we couldn't adequately infer the
-            // type of DuoList as a List; it works now, though the future checking of rawtypes
-            // may be more strict
+            // This line was previously failing because we couldn't adequately infer the type of
+            // DuoList as a List; it works now, though the future checking of rawtypes may be more
+            // strict.
             // :: warning: [unchecked] unchecked conversion
             return (DuoList) sl;
         }

@@ -35,6 +35,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -84,9 +85,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 // If offsets are provided, there must be the same number of them as there are
                 // arrays.
                 List<String> sequences =
-                        AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+                        AnnotationUtils.getElementValueArray(
+                                anno, atypeFactory.ltLengthOfValueElement, String.class);
                 List<String> offsets =
-                        AnnotationUtils.getElementValueArray(anno, "offset", String.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                anno,
+                                atypeFactory.ltLengthOfOffsetElement,
+                                String.class,
+                                Collections.emptyList());
                 if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
                     checker.reportError(
                             node,
@@ -415,9 +421,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
         // Take advantage of information available on a HasSubsequence(a, from, to) annotation
         // on the lhs qualifier (varLtlQual):
-        // this allows us to show that iff varLtlQual includes LTL(b),
-        // b has HSS, and expQual includes LTL(a, -from), then the LTL(b) can be removed from
-        // varLtlQual.
+        // this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual
+        // includes LTL(a, -from), then the LTL(b) can be removed from varLtlQual.
 
         UBQualifier newLHS = processSubsequenceForLHS(varLtlQual, expQual);
         if (newLHS.isUnknown()) {

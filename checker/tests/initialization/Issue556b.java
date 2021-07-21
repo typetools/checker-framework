@@ -3,17 +3,16 @@
 // To reproduce the problem, run:
 //   javac -processor nullness Issue556b.java
 //   java Issue556b
-// and observe that the javac execution issues no warnings but the java
-// execution suffers a null pointer exception.
+// and observe that the javac execution issues no warnings but the java execution suffers a null
+// pointer exception.
 
-// Before the constructor is invoked, static initializers and static blocks
-// are executed.  This suggests that the Initialization Checker can assume
-// that static fields are initialized in the constructor.
+// Before the constructor is invoked, static initializers and static blocks are executed.  This
+// suggests that the Initialization Checker can assume that static fields are initialized in the
+// constructor.
 //
-// However, if any user-defined code -- including callbacks such as
-// executions of equals() and hashCode() -- appears in a static initializer
-// or static block, then static fields cannot be assumed to be
-// initialized within the constructor.
+// However, if any user-defined code -- including callbacks such as executions of equals() and
+// hashCode() -- appears in a static initializer or static block, then static fields cannot be
+// assumed to be initialized within the constructor.
 
 public class Issue556b {
     static class Parent {
@@ -34,10 +33,9 @@ public class Issue556b {
         private static final Object OBJ = new Object();
 
         private Child() {
-            // This call should not be legal, because at the time that the
-            // call occurs, the static initializers of Child have not yet
-            // finished executing and therefore CHILD and OBJ are not
-            // necessarily initialized and are not necessarily non-null.
+            // This call should not be legal, because at the time that the call occurs, the static
+            // initializers of Child have not yet finished executing and therefore CHILD and OBJ are
+            // not necessarily initialized and are not necessarily non-null.
             // :: error: (method.invocation.invalid)
             super(OBJ);
         }
@@ -53,17 +51,15 @@ public class Issue556b {
         }
 
         private Child2() {
-            // This call should not be legal, because at the time that the
-            // call occurs, the static initializers of Child have not yet
-            // finished executing and therefore CHILD and OBJ are not
-            // necessarily initialized and are not necessarily non-null.
+            // This call should not be legal, because at the time that the call occurs, the static
+            // initializers of Child have not yet finished executing and therefore CHILD and OBJ are
+            // not necessarily initialized and are not necessarily non-null.
             // :: error: (method.invocation.invalid)
             super(OBJ);
         }
     }
 
-    // Changing the order of the OBJ and CHILD fields prevents a null pointer
-    // exception.
+    // Changing the order of the OBJ and CHILD fields prevents a null pointer exception.
     static class ChildOk1 extends Parent {
         private static final Object OBJ = new Object();
         public static final Child CHILD = new Child();
@@ -76,8 +72,7 @@ public class Issue556b {
         }
     }
 
-    // Changing the order of the OBJ and CHILD field assignments prevents a
-    // null pointer exception.
+    // Changing the order of the OBJ and CHILD field assignments prevents a null pointer exception.
     static class ChildOk2 extends Parent {
         public static final ChildOk2 CHILD;
         private static final Object OBJ;

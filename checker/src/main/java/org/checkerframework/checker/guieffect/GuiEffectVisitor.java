@@ -257,6 +257,11 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // Skip this check.
     }
 
+    @Override
+    protected void checkForPolymorphicQualifiers(ClassTree classTree) {
+        // Polymorphic qualifiers are legal on classes, so skip this check.
+    }
+
     // Check that the invoked effect is <= permitted effect (effStack.peek())
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -383,9 +388,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // subclasses a Safe instantiation, all is well.  If it subclasses a UI instantiation, then
         // the receivers should probably be @UI in both new and override methods, so calls to
         // polymorphic methods of the parent class will work correctly.  In which case for proving
-        // anything, the qualifier on sublasses of UI instantiations would always have to be
-        // @UI... Need to write down |- t for this system!  And the judgments for method overrides
-        // and inheritance!  Those are actually the hardest part of the system.
+        // anything, the qualifier on sublasses of UI instantiations would always have to be @UI...
+        // Need to write down |- t for this system!  And the judgments for method overrides and
+        // inheritance!  Those are actually the hardest part of the system.
 
         ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
         if (debugSpew) {
@@ -419,8 +424,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 atypeFactory.findInheritedEffectRange(
                         ((TypeElement) methElt.getEnclosingElement()), methElt, true, node);
         // if (targetUIP == null && targetSafeP == null && targetPolyP == null) {
-        // implicitly annotate this method with the LUB of the effects of the methods it
-        // overrides
+        // implicitly annotate this method with the LUB of the effects of the methods it overrides
         // atypeFactory.fromElement(methElt).addAnnotation(range != null ? range.min.getAnnot()
         // : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? UI.class :
         // AlwaysSafe.class));
@@ -590,7 +594,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // Push a null method and UI effect onto the stack for static field initialization
     // TODO: Figure out if this is safe! For static data, almost certainly,
     // but for statically initialized instance fields, I'm assuming those
-    // are implicitly moved into each constructor, which must then be @UI
+    // are implicitly moved into each constructor, which must then be @UI.
     // currentMethods.addFirst(null);
     // effStack.addFirst(new Effect(UIEffect.class));
     // super.processClassTree(node);

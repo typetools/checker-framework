@@ -69,8 +69,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                         int formatl = formatCats.length;
 
                         // For assignments, i18nformat.missing.arguments and
-                        // i18nformat.excess.arguments are issued
-                        // from commonAssignmentCheck.
+                        // i18nformat.excess.arguments are
+                        // issued from commonAssignmentCheck.
                         if (paraml < formatl) {
                             tu.warning(invc, "i18nformat.missing.arguments", formatl, paraml);
                         }
@@ -157,9 +157,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                         varType.toString(),
                         valueType.toString());
             } else if (rhsArgTypes.length > lhsArgTypes.length) {
-                // Since it is known that too many conversion categories were provided,
-                // issue a more specific error message to that effect than
-                // assignment.type.incompatible.
+                // Since it is known that too many conversion categories were provided, issue a more
+                // specific error message to that effect than assignment.type.incompatible.
                 checker.reportError(
                         valueTree,
                         "i18nformat.excess.arguments",
@@ -170,7 +169,7 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
 
         // By calling super.commonAssignmentCheck last, any i18nformat.excess.arguments message
         // issued for a given line of code will take precedence over the
-        // assignment.type.incompatible
+        //   assignment.type.incompatible
         // issued by super.commonAssignmentCheck.
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
     }

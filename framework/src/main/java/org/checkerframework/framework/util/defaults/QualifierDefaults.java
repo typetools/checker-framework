@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -84,8 +85,12 @@ public class QualifierDefaults {
     /** Element utilities to use. */
     private final Elements elements;
 
+    /** The value() element/field of a @DefaultQualifier annotation. */
+    protected final ExecutableElement defaultQualifierValueElement;
     /** The locations() element/field of a @DefaultQualifier annotation. */
     protected final ExecutableElement defaultQualifierLocationsElement;
+    /** The value() element/field of a @DefaultQualifier.List annotation. */
+    protected final ExecutableElement defaultQualifierListValueElement;
 
     /** AnnotatedTypeFactory to use. */
     private final AnnotatedTypeFactory atypeFactory;
@@ -181,12 +186,13 @@ public class QualifierDefaults {
                 atypeFactory.getChecker().useConservativeDefault("bytecode");
         this.useConservativeDefaultsSource =
                 atypeFactory.getChecker().useConservativeDefault("source");
+        ProcessingEnvironment processingEnv = atypeFactory.getProcessingEnv();
+        this.defaultQualifierValueElement =
+                TreeUtils.getMethod(DefaultQualifier.class, "value", 0, processingEnv);
         this.defaultQualifierLocationsElement =
-                TreeUtils.getMethod(
-                        "org.checkerframework.framework.qual.DefaultQualifier",
-                        "locations",
-                        0,
-                        atypeFactory.getProcessingEnv());
+                TreeUtils.getMethod(DefaultQualifier.class, "locations", 0, processingEnv);
+        this.defaultQualifierListValueElement =
+                TreeUtils.getMethod(DefaultQualifier.List.class, "value", 0, processingEnv);
     }
 
     @Override
@@ -513,8 +519,7 @@ public class QualifierDefaults {
                 // scope of the declaration of the array.  Is that right?  -MDE)
 
             default:
-                // If no associated symbol was found, use the tree's (lexical)
-                // scope.
+                // If no associated symbol was found, use the tree's (lexical) scope.
                 elt = nearestEnclosingExceptLocal(tree);
                 // elt = nearestEnclosing(tree);
         }
@@ -546,7 +551,7 @@ public class QualifierDefaults {
      */
     private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
         @SuppressWarnings("unchecked")
-        Name cls = AnnotationUtils.getElementValueClassName(dq, "value", false);
+        Name cls = AnnotationUtils.getElementValueClassName(dq, defaultQualifierValueElement);
         AnnotationMirror anno = AnnotationBuilder.fromName(elements, cls);
 
         if (anno == null) {
@@ -626,11 +631,11 @@ public class QualifierDefaults {
         DefaultSet qualifiers = null;
 
         {
-            AnnotationMirror d = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+            AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
 
-            if (d != null) {
+            if (dqAnno != null) {
                 qualifiers = new DefaultSet();
-                Set<Default> p = fromDefaultQualifier(d);
+                Set<Default> p = fromDefaultQualifier(dqAnno);
 
                 if (p != null) {
                     qualifiers.addAll(p);
@@ -639,16 +644,18 @@ public class QualifierDefaults {
         }
 
         {
-            AnnotationMirror ds = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
-            if (ds != null) {
+            AnnotationMirror dqListAnno =
+                    atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
+            if (dqListAnno != null) {
                 if (qualifiers == null) {
                     qualifiers = new DefaultSet();
                 }
-                @SuppressWarnings("unchecked") // unchecked conversion to generic type
+                @SuppressWarnings("unchecked")
                 List<AnnotationMirror> values =
-                        AnnotationUtils.getElementValue(ds, "value", List.class, false);
-                for (AnnotationMirror d : values) {
-                    Set<Default> p = fromDefaultQualifier(d);
+                        AnnotationUtils.getElementValue(
+                                dqListAnno, defaultQualifierListValueElement, List.class);
+                for (AnnotationMirror dqAnno : values) {
+                    Set<Default> p = fromDefaultQualifier(dqAnno);
                     if (p != null) {
                         qualifiers.addAll(p);
                     }
@@ -713,8 +720,7 @@ public class QualifierDefaults {
             // treated as unchecked bytecode.   For now, all types in stub files are treated as
             // checked code. Eventually, @AnnotateFor(checker) will be programmatically added
             // to methods in stub files supplied via the @Stubfile annotation.  Stub files will
-            // be treated like unchecked code except for methods in the scope for an
-            // @AnnotatedFor.
+            // be treated like unchecked code except for methods in the scope for an @AnnotatedFor.
             return false;
         } else if (useConservativeDefaultsSource) {
             return !isElementAnnotatedForThisChecker(annotationScope);
@@ -878,8 +884,7 @@ public class QualifierDefaults {
                         if (scope != null
                                 && scope.getKind() == ElementKind.LOCAL_VARIABLE
                                 && isTopLevelType) {
-                            // TODO: how do we determine that we are in a cast or instanceof
-                            // type?
+                            // TODO: how do we determine that we are in a cast or instanceof type?
                             addAnnotation(t, qual);
                         }
                         break;

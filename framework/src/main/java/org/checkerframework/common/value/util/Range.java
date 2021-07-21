@@ -717,7 +717,7 @@ public class Range {
                 } else { // (to > Long.MIN_VALUE)
                     // When this range contains Long.MIN_VALUE, which would have a remainder of 0 if
                     // divided by Long.MIN_VALUE, the result range is {0} unioned with [from + 1,
-                    // to]
+                    // to].
                     range = create(from + 1, to).union(create(0, 0));
                 }
             } else { // (from > Long.MIN_VALUE)

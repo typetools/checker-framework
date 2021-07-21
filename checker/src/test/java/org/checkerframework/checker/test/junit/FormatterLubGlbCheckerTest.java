@@ -2,7 +2,7 @@ package org.checkerframework.checker.test.junit;
 
 // Test case for issue 691.
 // https://github.com/typetools/checker-framework/issues/691
-// This exists to just run the FormatterLubGlbChecker
+// This exists to just run the FormatterLubGlbChecker.
 
 import org.checkerframework.checker.testchecker.lubglb.FormatterLubGlbChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;

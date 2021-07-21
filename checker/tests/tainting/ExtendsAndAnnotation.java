@@ -13,6 +13,7 @@ public class ExtendsAndAnnotation extends @Tainted Object {
     }
 
     @HasQualifierParameter(Tainted.class)
+    // :: error: (invalid.polymorphic.qualifier)
     // :: error: (declaration.inconsistent.with.extends.clause)
     static class Banana extends @PolyTainted Object {}
 }

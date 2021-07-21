@@ -27,7 +27,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.reflect.ClassPath;
 
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -422,7 +422,7 @@ public class RemoveAnnotationsForInference {
             return false;
         }
         List<String> checkerNames =
-                SystemUtil.mapList(
+                CollectionsPlume.mapList(
                         RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
         // "allcheckers" suppresses all warnings.
         if (checkerNames.contains("allcheckers")) {

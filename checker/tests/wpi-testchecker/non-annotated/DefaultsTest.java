@@ -1,10 +1,9 @@
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.DefaultType;
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.WholeProgramInferenceBottom;
 
-// The @DefaultType annotation, which is the default for every location, is forbidden
-// to be written anywhere. This class attempts to infer @DefaultType in several
-// locations, and the annotated version of this class (in the annotated folder)
-// should have no explicit @DefaultType annotations.
+// The @DefaultType annotation, which is the default for every location, is forbidden to be written
+// anywhere. This class attempts to infer @DefaultType in several locations, and the annotated
+// version of this class (in the annotated folder) should have no explicit @DefaultType annotations.
 public class DefaultsTest {
     String defaultField = "";
     String defaultField2;

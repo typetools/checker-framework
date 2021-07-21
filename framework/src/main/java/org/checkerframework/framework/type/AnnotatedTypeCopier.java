@@ -11,7 +11,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -122,7 +122,7 @@ public class AnnotatedTypeCopier
 
         if (original.typeArgs != null) {
             final List<AnnotatedTypeMirror> copyTypeArgs =
-                    SystemUtil.mapList(
+                    CollectionsPlume.mapList(
                             (AnnotatedTypeMirror typeArg) -> visit(typeArg, originalToCopy),
                             original.getTypeArguments());
             copy.setTypeArguments(copyTypeArgs);
@@ -143,7 +143,7 @@ public class AnnotatedTypeCopier
 
         if (original.bounds != null) {
             List<AnnotatedTypeMirror> copySupertypes =
-                    SystemUtil.mapList(
+                    CollectionsPlume.mapList(
                             (AnnotatedTypeMirror bound) -> visit(bound, originalToCopy),
                             original.bounds);
             copy.bounds = Collections.unmodifiableList(copySupertypes);
@@ -164,7 +164,7 @@ public class AnnotatedTypeCopier
 
         if (original.alternatives != null) {
             final List<AnnotatedDeclaredType> copyAlternatives =
-                    SystemUtil.mapList(
+                    CollectionsPlume.mapList(
                             (AnnotatedDeclaredType supertype) ->
                                     (AnnotatedDeclaredType) visit(supertype, originalToCopy),
                             original.alternatives);

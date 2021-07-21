@@ -194,8 +194,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             }
             // else do nothing.
         } else {
-            // Use effective annotations from the expression, to get upper bound
-            // of type variables.
+            // Use effective annotations from the expression, to get upper bound of type variables.
             Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
 
             TypeKind castKind = type.getPrimitiveKind();

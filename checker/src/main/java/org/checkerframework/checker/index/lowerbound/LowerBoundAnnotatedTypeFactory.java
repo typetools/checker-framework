@@ -107,14 +107,19 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     public final AnnotationMirror POLY =
             AnnotationBuilder.fromClass(elements, PolyLowerBound.class);
 
+    /** Predicates about method calls. */
     private final IndexMethodIdentifier imf;
 
+    /**
+     * Create a new LowerBoundAnnotatedTypeFactory.
+     *
+     * @param checker the type-checker
+     */
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        // Any annotations that are aliased to @NonNegative, @Positive,
-        // or @GTENegativeOne must also be aliased in the constructor of
-        // ValueAnnotatedTypeFactory to the appropriate @IntRangeFrom*
-        // annotation.
+        // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also
+        // be aliased in the constructor of ValueAnnotatedTypeFactory to the appropriate
+        // @IntRangeFrom* annotation.
         addAliasedTypeAnnotation(IndexFor.class, NN);
         addAliasedTypeAnnotation(IndexOrLow.class, GTEN1);
         addAliasedTypeAnnotation(IndexOrHigh.class, NN);

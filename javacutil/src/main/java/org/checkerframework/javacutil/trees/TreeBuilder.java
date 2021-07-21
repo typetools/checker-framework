@@ -24,9 +24,9 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
 
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.List;
 
@@ -676,7 +676,7 @@ public class TreeBuilder {
      * @return a NewArrayTree to create a new array with initializers
      */
     public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
-        List<JCExpression> exprs = SystemUtil.mapList(JCExpression.class::cast, elems);
+        List<JCExpression> exprs = CollectionsPlume.mapList(JCExpression.class::cast, elems);
 
         JCTree.JCNewArray newArray =
                 maker.NewArray(

@@ -941,9 +941,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     // ------------------------------------------------------------------------
-    // These "visit" methods are utility methods that aren't part of the visit
-    // interface but that handle cases that more than one visit method shares
-    // in common
+    // These "visit" methods are utility methods that aren't part of the visit interface
+    // but that handle cases that more than one visit method shares in common.
 
     /**
      * An intersection is a supertype if all of its bounds are a supertype of subtype.

@@ -10,10 +10,10 @@ import javax.lang.model.type.TypeMirror;
  * {@code TransferResult} is used as the result type of the individual transfer functions of a
  * {@link TransferFunction}. It always belongs to the result of the individual transfer function for
  * a particular {@link org.checkerframework.dataflow.cfg.node.Node}, even though that {@code
- * org.checkerframework.dataflow.cfg.node.Node} is not explicitly store in {@code TransferResult}.
+ * org.checkerframework.dataflow.cfg.node.Node} is not explicitly stored in {@code TransferResult}.
  *
- * <p>A {@code TransferResult} contains one or two stores (for 'then' and 'else'), and zero or more
- * stores with a cause ({@link TypeMirror}).
+ * <p>A {@code TransferResult} consists of a result value, plus one or more stores. It contains one
+ * or two stores (for 'then' and 'else'), and zero or more stores with a cause ({@link TypeMirror}).
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis

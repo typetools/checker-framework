@@ -83,21 +83,22 @@ public class GuardSatisfiedTest {
 
         // Test the receiver type matching a parameter
 
-        // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q')
+        // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q').
         // :: error: (guardsatisfied.parameters.must.match)
         methodToCall3(q);
 
         // :: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
         methodToCall3(p);
         synchronized (lock1) {
-            // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q')
+            // Two @GS parameters with no index are incomparable (as is the case for 'this' and
+            // 'q').
             // :: error: (guardsatisfied.parameters.must.match)
             methodToCall3(q);
             // :: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
             methodToCall3(p);
             synchronized (lock2) {
                 // Two @GS parameters with no index are incomparable (as is the case for 'this' and
-                // 'q')
+                // 'q').
                 // :: error: (guardsatisfied.parameters.must.match)
                 methodToCall3(q);
                 // :: error: (guardsatisfied.parameters.must.match)
@@ -205,13 +206,11 @@ public class GuardSatisfiedTest {
     }
 
     // Test disallowed @GuardSatisfied locations.
-    // Whenever a disallowed location can be located within a method return type,
-    // receiver or parameter, test it there, because it's important to check
-    // that those are not mistakenly allowed, since annotations
-    // on method return types, receivers and parameters are allowed.
-    // By definition, fields and non-parameter local variables cannot be
-    // in one of these locations on a method declaration, but other
-    // locations can be.
+    // Whenever a disallowed location can be located within a method return type, receiver or
+    // parameter, test it there, because it's important to check that those are not mistakenly
+    // allowed, since annotations on method return types, receivers and parameters are allowed.  By
+    // definition, fields and non-parameter local variables cannot be in one of these locations on a
+    // method declaration, but other locations can be.
 
     // :: error: (guardsatisfied.location.disallowed)
     @GuardSatisfied Object field;

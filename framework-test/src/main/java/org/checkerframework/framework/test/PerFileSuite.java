@@ -1,7 +1,6 @@
 package org.checkerframework.framework.test;
 
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -11,6 +10,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
+import org.plumelib.util.CollectionsPlume;
 
 import java.io.File;
 import java.lang.annotation.ElementType;
@@ -86,7 +86,7 @@ public class PerFileSuite extends Suite {
         }
 
         List<Object[]> argumentLists =
-                SystemUtil.mapList((File javaFile) -> new Object[] {javaFile}, javaFiles);
+                CollectionsPlume.mapList((File javaFile) -> new Object[] {javaFile}, javaFiles);
 
         return argumentLists;
     }

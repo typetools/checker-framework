@@ -62,7 +62,11 @@ public class KeyForAnnotatedTypeFactory
     /** The Map.put method. */
     private final ExecutableElement mapPut =
             TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
+    /** The KeyFor.value field/element. */
+    protected final ExecutableElement keyForValueElement =
+            TreeUtils.getMethod(KeyFor.class, "value", 0, processingEnv);
 
+    /** Moves annotations from one side of a pseudo-assignment to the other. */
     private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
     /** Create a new KeyForAnnotatedTypeFactory. */
@@ -196,7 +200,9 @@ public class KeyForAnnotatedTypeFactory
         AnnotatedTypeMirror type = getAnnotatedType(tree);
         AnnotationMirror keyForAnno = type.getAnnotation(KeyFor.class);
         if (keyForAnno != null) {
-            maps = AnnotationUtils.getElementValueArray(keyForAnno, "value", String.class, false);
+            maps =
+                    AnnotationUtils.getElementValueArray(
+                            keyForAnno, keyForValueElement, String.class);
         } else {
             KeyForValue value = getInferredValueFor(tree);
             if (value != null) {

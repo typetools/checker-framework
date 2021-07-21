@@ -17,13 +17,13 @@ public class LockTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
-        // For any binary operation whose LHS or RHS can be a non-boolean type,
-        // and whose resulting type is necessarily boolean, the resulting annotation
-        // on the boolean type must be @GuardedBy({}).
+        // For any binary operation whose LHS or RHS can be a non-boolean type, and whose resulting
+        // type is necessarily boolean, the resulting annotation on the boolean type must be
+        // @GuardedBy({}).
 
-        // There is no need to enforce that the annotation on the result of &&, ||, etc.
-        // is @GuardedBy({}) since for such operators, both operands are of type
-        // @GuardedBy({}) boolean to begin with.
+        // There is no need to enforce that the annotation on the result of &&, ||, etc.  is
+        // @GuardedBy({}) since for such operators, both operands are of type @GuardedBy({}) boolean
+        // to begin with.
 
         if (isBinaryComparisonOrInstanceOfOperator(node.getKind())
                 || TypesUtils.isString(type.getUnderlyingType())) {

@@ -1,8 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 // @skip-test
-// This test is broken as it uses multiple classes.  Javac halts
-// when seeing the first error
+// This test is broken as it uses multiple classes.  Javac halts when seeing the first error
 public class RawSuper {
 
     class A {

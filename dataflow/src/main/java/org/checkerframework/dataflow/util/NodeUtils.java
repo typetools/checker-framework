@@ -33,8 +33,7 @@ public class NodeUtils {
             return true;
         }
 
-        // not all nodes have an associated tree, but those are all not of a
-        // boolean type.
+        // not all nodes have an associated tree, but those are all not of a boolean type.
         Tree tree = node.getTree();
         if (tree == null) {
             return false;

@@ -21,6 +21,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 
 /**
@@ -46,6 +48,13 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
             new AnnotationBuilder(processingEnv, WholeProgramInferenceBottom.class).build();
     private final AnnotationMirror IMPLICIT_ANNO =
             new AnnotationBuilder(processingEnv, ImplicitAnno.class).build();
+
+    /** The SiblingWithFields.value field/element. */
+    private final ExecutableElement siblingWithFieldsValueElement =
+            TreeUtils.getMethod(SiblingWithFields.class, "value", 0, processingEnv);
+    /** The SiblingWithFields.value2 field/element. */
+    private final ExecutableElement siblingWithFieldsValue2Element =
+            TreeUtils.getMethod(SiblingWithFields.class, "value2", 0, processingEnv);
 
     public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -162,14 +171,23 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                 QualifierKind superKind) {
             if (subKind == SIBLING_WITH_FIELDS_KIND && superKind == SIBLING_WITH_FIELDS_KIND) {
                 List<String> subVal1 =
-                        AnnotationUtils.getElementValueArray(subAnno, "value", String.class, true);
+                        AnnotationUtils.getElementValueArray(
+                                subAnno,
+                                siblingWithFieldsValueElement,
+                                String.class,
+                                Collections.emptyList());
                 List<String> supVal1 =
                         AnnotationUtils.getElementValueArray(
-                                superAnno, "value", String.class, true);
+                                superAnno,
+                                siblingWithFieldsValueElement,
+                                String.class,
+                                Collections.emptyList());
                 String subVal2 =
-                        AnnotationUtils.getElementValue(subAnno, "value2", String.class, true);
+                        AnnotationUtils.getElementValue(
+                                subAnno, siblingWithFieldsValue2Element, String.class, "");
                 String supVal2 =
-                        AnnotationUtils.getElementValue(superAnno, "value2", String.class, true);
+                        AnnotationUtils.getElementValue(
+                                superAnno, siblingWithFieldsValue2Element, String.class, "");
                 return subVal1.equals(supVal1) && subVal2.equals(supVal2);
             }
             throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);

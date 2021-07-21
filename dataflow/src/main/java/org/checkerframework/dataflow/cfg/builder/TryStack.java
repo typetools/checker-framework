@@ -46,10 +46,12 @@ class TryStack {
     /**
      * Returns the set of possible {@link Label}s where control may transfer when an exception of
      * the given type is thrown.
+     *
+     * @param thrown an exception
+     * @return where control may transfer when {@code thrown} is thrown
      */
     public Set<Label> possibleLabels(TypeMirror thrown) {
-        // Work up from the innermost frame until the exception is known to
-        // be caught.
+        // Work up from the innermost frame until the exception is known to be caught.
         Set<Label> labels = new MostlySingleton<>();
         for (TryFrame frame : frames) {
             if (frame.possibleLabels(thrown, labels)) {

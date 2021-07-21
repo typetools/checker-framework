@@ -13,6 +13,7 @@ public final class Bug102 {
         m(c);
     }
 
+    // :: error: (invalid.polymorphic.qualifier)
     <@org.checkerframework.checker.nullness.qual.PolyNull S> void m(
             final C<@org.checkerframework.checker.nullness.qual.PolyNull String> a) {}
 }

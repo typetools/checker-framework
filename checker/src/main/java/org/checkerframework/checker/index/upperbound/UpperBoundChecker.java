@@ -4,6 +4,7 @@ import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
 import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
+import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.samelen.SameLenChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
@@ -51,6 +52,8 @@ public class UpperBoundChecker extends BaseTypeChecker {
     public @MonotonicNonNull ExecutableElement ltLengthOfOffsetElement;
     /** The LTEqLengthOf.value argument/element. */
     public @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
+    /** The LTOMLengthOf.value argument/element. */
+    public @MonotonicNonNull ExecutableElement ltOMLengthOfValueElement;
 
     /**
      * These collection classes have some subtypes whose length can change and some subtypes whose
@@ -81,6 +84,8 @@ public class UpperBoundChecker extends BaseTypeChecker {
         ltLengthOfOffsetElement = TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
         ltEqLengthOfValueElement =
                 TreeUtils.getMethod(LTEqLengthOf.class, "value", 0, processingEnv);
+        ltOMLengthOfValueElement =
+                TreeUtils.getMethod(LTOMLengthOf.class, "value", 0, processingEnv);
     }
 
     @Override

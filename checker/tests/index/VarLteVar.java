@@ -2,7 +2,7 @@
 // It is easy to see that:
 //   * i is an index for intermediate
 //   * length <= i (or, at least length <= i+1)
-// but I don't see how to verif that length is an index for intermediate.
+// but I don't see how to verify that length is an index for intermediate.
 
 // @skip-test
 

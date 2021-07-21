@@ -27,8 +27,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 import java.util.ArrayDeque;
@@ -231,7 +231,7 @@ public class AnnotatedTypes {
         if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
             List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
             List<AnnotatedTypeMirror> newTypeArgs =
-                    SystemUtil.mapList(
+                    CollectionsPlume.mapList(
                             mapping -> subTypeArgs.get(mapping.first).deepCopy(),
                             orderedByDestination);
             declaredAsSuper.setTypeArguments(newTypeArgs);
@@ -555,7 +555,7 @@ public class AnnotatedTypes {
         if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
             // If base type was raw and the type arguments are missing, set them to the erased
             // type of the type variable (which is the erased type of the upper bound).
-            baseParams = SystemUtil.mapList(AnnotatedTypeVariable::getErased, ownerParams);
+            baseParams = CollectionsPlume.mapList(AnnotatedTypeVariable::getErased, ownerParams);
         }
 
         for (int i = 0; i < ownerParams.size(); ++i) {

@@ -1,8 +1,7 @@
 import java.util.Iterator;
 
-// If quals are configured incorrectly, there will be an
-// incompatible assignment error; this ensures that Void
-// is given the Positive type.
+// If quals are configured incorrectly, there will be an incompatible assignment error; this ensures
+// that Void is given the Positive type.
 
 public class IteratorVoid<T> {
     T next1;

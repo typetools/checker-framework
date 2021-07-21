@@ -70,10 +70,9 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
             if (flagParam.getKind() == Kind.MEMBER_SELECT) {
                 MemberSelectTree memSelect = (MemberSelectTree) flagParam;
                 if (TreeUtils.isSpecificFieldAccess(memSelect, patternLiteral)) {
-                    // This is a call to Pattern.compile with the Pattern.LITERAL
-                    // flag so the first parameter doesn't need to be a
-                    // @Regex String. Don't call the super method to skip checking
-                    // if the first parameter is a @Regex String, but make sure to
+                    // This is a call to Pattern.compile with the Pattern.LITERAL flag so the first
+                    // parameter doesn't need to be a @Regex String. Don't call the super method to
+                    // skip checking if the first parameter is a @Regex String, but make sure to
                     // still recurse on all of the different parts of the method call.
                     Void r = scan(node.getTypeArguments(), p);
                     r = reduce(scan(node.getMethodSelect(), p), r);
@@ -96,8 +95,9 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
                 if (receiver == null) {
                     // When checking implementations of java.util.regex.MatcherResult, calls to
                     // group (and other methods) don't have a receiver tree.  So, just do the
-                    // regular checking. Verifying an implemenation of a subclass of MatcherResult
-                    // is out of the scope of this checker.
+                    // regular checking.
+                    // Verifying an implemenation of a subclass of MatcherResult is out of the scope
+                    // of this checker.
                     return super.visitMethodInvocation(node, p);
                 }
                 int annoGroups = 0;

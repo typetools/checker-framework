@@ -12,8 +12,8 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.plumelib.util.CollectionsPlume;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -145,8 +145,7 @@ public abstract class AnnotatedTypeMirror {
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
     // the class name of Annotation instead.
-    // Caution: Assumes that a type can have at most one AnnotationMirror for
-    // any Annotation type.
+    // Caution: Assumes that a type can have at most one AnnotationMirror for any Annotation type.
     protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
 
     /** The explicitly written annotations on this type. */
@@ -957,7 +956,7 @@ public abstract class AnnotatedTypeMirror {
                     typeArgs = Collections.unmodifiableList(ts);
                 } else {
                     List<AnnotatedTypeMirror> uses =
-                            SystemUtil.mapList(AnnotatedTypeMirror::asUse, ts);
+                            CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
                     typeArgs = Collections.unmodifiableList(uses);
                 }
             }
@@ -1347,7 +1346,7 @@ public abstract class AnnotatedTypeMirror {
          * @return erased annotated type mirrors
          */
         private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
-            return SystemUtil.mapList(AnnotatedTypeMirror::getErased, lst);
+            return CollectionsPlume.mapList(AnnotatedTypeMirror::getErased, lst);
         }
     }
 
@@ -1560,17 +1559,14 @@ public abstract class AnnotatedTypeMirror {
             return lowerBound;
         }
 
-        // If the lower bound was not present in underlyingType, then its
-        // annotation was defaulted from the AnnotatedTypeFactory.  If the
-        // lower bound annotation is a supertype of the upper bound
-        // annotation, then the type is ill-formed.  In that case, change
-        // the defaulted lower bound to be consistent with the
-        // explicitly-written upper bound.
+        // If the lower bound was not present in underlyingType, then its annotation was defaulted
+        // from the AnnotatedTypeFactory.  If the lower bound annotation is a supertype of the upper
+        // bound annotation, then the type is ill-formed.  In that case, change the defaulted lower
+        // bound to be consistent with the explicitly-written upper bound.
         //
-        // As a concrete example, if the default annotation is @Nullable,
-        // then the type "X extends @NonNull Y" should not be converted
-        // into "X extends @NonNull Y super @Nullable bottomtype" but be
-        // converted into "X extends @NonNull Y super @NonNull bottomtype".
+        // As a concrete example, if the default annotation is @Nullable, then the type "X extends
+        // @NonNull Y" should not be converted into "X extends @NonNull Y super @Nullable
+        // bottomtype" but be converted into "X extends @NonNull Y super @NonNull bottomtype".
         //
         // In addition, ensure consistency of annotations on type variables
         // and the upper bound. Assume class C<X extends @Nullable Object>.
@@ -1586,10 +1582,10 @@ public abstract class AnnotatedTypeMirror {
                 // Note:
                 // if the lower bound is a type variable
                 // then when we place annotations on the primary annotation
-                //   this will actually cause the type variable to be exact and
-                //   propagate the primary annotation to the type variable because
-                //   primary annotations overwrite the upper and lower bounds of type variables
-                //   when getUpperBound/getLowerBound is called
+                //   this will actually cause the type variable to be exact and propagate the
+                //   primary annotation to the type variable because primary annotations overwrite
+                //   the upper and lower bounds of type variables when getUpperBound/getLowerBound
+                //   is called
                 if (lowerBound != null) {
                     lowerBound.replaceAnnotations(newAnnos);
                 }
@@ -2162,7 +2158,7 @@ public abstract class AnnotatedTypeMirror {
                 List<? extends TypeMirror> ubounds =
                         ((IntersectionType) underlyingType).getBounds();
                 List<AnnotatedTypeMirror> res =
-                        SystemUtil.mapList(
+                        CollectionsPlume.mapList(
                                 (TypeMirror bnd) -> createType(bnd, atypeFactory, false), ubounds);
                 bounds = Collections.unmodifiableList(res);
                 fixupBoundAnnotations();
@@ -2258,7 +2254,7 @@ public abstract class AnnotatedTypeMirror {
             if (alternatives == null) {
                 List<? extends TypeMirror> ualts = ((UnionType) underlyingType).getAlternatives();
                 List<AnnotatedDeclaredType> res =
-                        SystemUtil.mapList(
+                        CollectionsPlume.mapList(
                                 (TypeMirror alt) ->
                                         (AnnotatedDeclaredType)
                                                 createType(alt, atypeFactory, false),

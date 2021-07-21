@@ -41,8 +41,7 @@ public class MisuseProperties {
 
         System.clearProperty("foo.bar"); // OK
 
-        // Each of the following should cause an error, because it leaves
-        // line.separator null.
+        // Each of the following should cause an error, because it leaves line.separator null.
 
         // These first few need to be special-cased, I think:
 

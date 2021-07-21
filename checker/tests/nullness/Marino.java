@@ -32,13 +32,11 @@ public class Marino {
             a = null;
         }
         // Checker doesn't catch that m_str not initialized.
-        // This is Caveat 2 in the manual, but note that it
-        // is not limited to contructors.
+        // This is Caveat 2 in the manual, but note that it is not limited to contructors.
         System.out.println("Member string has length: " + m_str.length());
 
         // Dereference of any static field is allowed.
-        // I suppose this is a design decision
-        // for practicality in interacting with libraries...?
+        // I suppose this is a design decision for practicality in interacting with libraries...?
         // :: error: (dereference.of.nullable)
         System.out.println("Member string has length: " + ms_str.length());
         System.out.println(

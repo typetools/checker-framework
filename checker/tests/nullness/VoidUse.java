@@ -11,8 +11,7 @@ public class VoidUse {
         return null;
     }
 
-    // Void is treated as Nullable.  Is there a value on having it be
-    // NonNull?
+    // Void is treated as Nullable.  Is there a value on having it be NonNull?
     public abstract static class VoidTestNode<T extends Object> {}
 
     public static class VoidTestInvNode extends VoidTestNode<@NonNull Void> {}

@@ -1,8 +1,7 @@
 // Test case for Issue 292:
 // https://github.com/typetools/checker-framework/issues/292
 
-// TODO: ensure that type validation is consistently performed for each
-// possible tree.
+// TODO: ensure that type validation is consistently performed for each possible tree.
 // We should also add a jtreg version of this test to
 // ensure that each error is only output once and in the right place.
 

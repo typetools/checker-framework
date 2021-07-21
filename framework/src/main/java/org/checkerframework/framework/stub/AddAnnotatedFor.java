@@ -96,9 +96,8 @@ public class AddAnnotatedFor {
             Set<String> annotatedFor = new HashSet<>(2); // usually few @AnnotatedFor are applicable
             clazz.accept(annotatedForVisitor, annotatedFor);
             if (!annotatedFor.isEmpty()) {
-                // Set eliminates duplicates, but it must be converted to List;
-                // for whatever reason, IndexFileWriter recognizes array
-                // arguments only in List form.
+                // Set eliminates duplicates, but it must be converted to List; for whatever reason,
+                // IndexFileWriter recognizes array arguments only in List form.
                 List<String> annotatedForList = new ArrayList<>(annotatedFor);
                 clazz.tlAnnotationsHere.add(
                         new Annotation(

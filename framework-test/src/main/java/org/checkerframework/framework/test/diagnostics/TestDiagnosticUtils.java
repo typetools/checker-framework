@@ -3,7 +3,7 @@ package org.checkerframework.framework.test.diagnostics;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 import java.io.File;
 import java.util.Arrays;
@@ -317,7 +317,7 @@ public class TestDiagnosticUtils {
             String restOfLine = trimmedLine.substring(5); // drop the "// ::"
             String[] diagnosticStrs = restOfLine.split("::");
             List<TestDiagnostic> diagnostics =
-                    SystemUtil.mapList(
+                    CollectionsPlume.mapList(
                             (String diagnostic) ->
                                     fromJavaFileComment(filename, errorLine, diagnostic),
                             diagnosticStrs);
@@ -396,7 +396,7 @@ public class TestDiagnosticUtils {
      * @return a list of the diagnastics as they would appear in a source file
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
-        return SystemUtil.mapList(TestDiagnostic::toString, diagnostics);
+        return CollectionsPlume.mapList(TestDiagnostic::toString, diagnostics);
     }
 
     public static void removeDiagnosticsOfKind(

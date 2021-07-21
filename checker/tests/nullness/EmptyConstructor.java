@@ -16,9 +16,8 @@ public class SuperClass {
 // side-effect-free method
 //     public EmptyConstructor() {}
 //                               ^
-// because there's no obvious call.  The message key should be changed to
-// one whose message is "call to non-side-effect-free superclass
-// constructor not allowed in side-effect-free constructor"
+// because there's no obvious call.  The message key should be changed to one whose message is "call
+// to non-side-effect-free superclass constructor not allowed in side-effect-free constructor"
 
 public class EmptyConstructor extends SuperClass {
     @SideEffectFree

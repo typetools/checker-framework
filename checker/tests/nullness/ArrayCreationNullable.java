@@ -93,10 +93,8 @@ public class ArrayCreationNullable {
         ints[0].toString();
     }
 
-    // The component type of zero-length arrays can
-    // be non-null - they will always generate
-    // IndexOutOfBoundsExceptions, but are usually just
-    // used for the type, e.g. in List.toArray.
+    // The component type of zero-length arrays can be non-null - they will always generate
+    // IndexOutOfBoundsExceptions, but are usually just used for the type, e.g. in List.toArray.
     void testLengthZero() {
         @NonNull Object @NonNull [] objs;
         objs = new Object[0];

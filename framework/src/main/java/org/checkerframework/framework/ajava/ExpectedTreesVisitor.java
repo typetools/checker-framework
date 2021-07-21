@@ -39,9 +39,8 @@ import java.util.Set;
  * a corresponding JavaParser node. These trees are excluded.
  *
  * <p>The primary purpose is to test the {@link JointJavacJavaParserVisitor} class when the
- * -AcheckJavaParserVisitor flag is used. That class traverses a javac tree and JavaParser AST
- * simultaneously, so the trees this class stores can be used to test if the entirety of the javac
- * tree was visited.
+ * -AajavaChecks flag is used. That class traverses a javac tree and JavaParser AST simultaneously,
+ * so the trees this class stores can be used to test if the entirety of the javac tree was visited.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     /** The set of trees that should be matched to a JavaParser node when visiting both. */

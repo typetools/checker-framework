@@ -278,8 +278,7 @@ public class FlowNullness {
 
     void while_set_and_test(@Nullable String s) {
         String line;
-        // imagine "s" is "reader.readLine()" (but avoid use of libraries
-        // in unit tests)
+        // imagine "s" is "reader.readLine()" (but avoid use of libraries in unit tests)
         while ((line = s) != null) {
             line.trim();
         }

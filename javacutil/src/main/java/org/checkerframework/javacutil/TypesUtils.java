@@ -15,6 +15,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
 
 import java.util.Arrays;
@@ -931,7 +932,7 @@ public final class TypesUtils {
      */
     private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
             List<TypeMirror> typeMirrors) {
-        List<Type> typeList = SystemUtil.mapList(Type.class::cast, typeMirrors);
+        List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
         return com.sun.tools.javac.util.List.from(typeList);
     }
 
@@ -1026,9 +1027,9 @@ public final class TypesUtils {
             List<? extends TypeMirror> typeArgs,
             ProcessingEnvironment env) {
 
-        List<Type> newP = SystemUtil.mapList(Type.class::cast, typeVariables);
+        List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
 
-        List<Type> newT = SystemUtil.mapList(Type.class::cast, typeArgs);
+        List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
 
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
         com.sun.tools.javac.code.Types types =

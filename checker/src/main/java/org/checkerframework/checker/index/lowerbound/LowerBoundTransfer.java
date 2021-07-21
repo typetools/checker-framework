@@ -244,10 +244,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             return result;
         }
 
-        // There is also special processing to look
-        // for literals on one side of the equals and a GTEN1 or NN on the other, so that
-        // those types can be promoted in the branch where their values are not equal to certain
-        // literals.
+        // There is also special processing to look for literals on one side of the equals and a
+        // GTEN1 or NN on the other, so that those types can be promoted in the branch where their
+        // values are not equal to certain literals.
         CFStore notEqualsStore = notEqualTo ? rfi.thenStore : rfi.elseStore;
         notEqualToValue(rfi.left, rfi.right, rfi.rightAnno, notEqualsStore);
         notEqualToValue(rfi.right, rfi.left, rfi.leftAnno, notEqualsStore);
@@ -490,9 +489,8 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
             Tree leftExpr = minusNode.getLeftOperand().getTree();
             Integer minLen = null;
-            // Check if the left side is a field access of an array's length,
-            // or invocation of String.length. If so,
-            // try to look up the MinLen of the array, and potentially keep
+            // Check if the left side is a field access of an array's length, or invocation of
+            // String.length. If so, try to look up the MinLen of the array, and potentially keep
             // this either NN or POS instead of GTEN1 or LBU.
             if (leftExpr.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree mstree = (MemberSelectTree) leftExpr;

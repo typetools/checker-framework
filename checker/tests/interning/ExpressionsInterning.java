@@ -44,10 +44,9 @@ public class ExpressionsInterning {
         return THEONE.equals(f);
     }
 
-    // A warning when interned objects are compared via .equals helps me in
-    // determining whether it is a good idea to convert a given class or
-    // reference to @Interned -- I can see whether there are places that it
-    // is compared with .equals, which I might need to examine.
+    // A warning when interned objects are compared via .equals helps me in determining whether it
+    // is a good idea to convert a given class or reference to @Interned -- I can see whether there
+    // are places that it is compared with .equals, which I might need to examine.
     public boolean dontUseEqualsMethod(@Interned Foo f1, @Interned Foo f2) {
         // :: warning: (unnecessary.equals)
         return f1.equals(f2);

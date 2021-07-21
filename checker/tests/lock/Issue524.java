@@ -5,9 +5,8 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-// WARNING: this test is nondeterministic, and has already been
-// minimized - if you modify it by removing what appears to be
-// redundant code, it may no longer reproduce the issue or provide
+// WARNING: this test is nondeterministic, and has already been minimized - if you modify it by
+// removing what appears to be redundant code, it may no longer reproduce the issue or provide
 // coverage for the issue after a fix for the issue has been made.
 
 // About the nondeterminism:

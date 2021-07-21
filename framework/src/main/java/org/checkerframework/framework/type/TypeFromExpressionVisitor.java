@@ -245,8 +245,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitNewArray(NewArrayTree node, AnnotatedTypeFactory f) {
 
-        // Don't use fromTypeTree here, because node.getType() is not an
-        // array type!
+        // Don't use fromTypeTree here, because node.getType() is not an array type!
         AnnotatedArrayType result = (AnnotatedArrayType) f.type(node);
 
         if (node.getType() == null) { // e.g., byte[] b = {(byte)1, (byte)2};

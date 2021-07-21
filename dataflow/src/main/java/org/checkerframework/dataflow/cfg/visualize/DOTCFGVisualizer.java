@@ -134,6 +134,7 @@ public class DOTCFGVisualizer<
             } else {
                 sbDotNodes.append(strBlock).append("\"];");
             }
+            sbDotNodes.append(System.lineSeparator());
         }
         return sbDotNodes.toString();
     }
@@ -264,7 +265,7 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreThisVal(V value) {
-        return storeEntryIndent + "this > " + value;
+        return storeEntryIndent + "this > " + escapeDoubleQuotes(value);
     }
 
     @Override
@@ -284,7 +285,10 @@ public class DOTCFGVisualizer<
 
     @Override
     public String visualizeStoreMethodVals(MethodCall methodCall, V value) {
-        return storeEntryIndent + escapeDoubleQuotes(methodCall) + " > " + value;
+        return storeEntryIndent
+                + escapeDoubleQuotes(methodCall)
+                + " > "
+                + escapeDoubleQuotes(value);
     }
 
     @Override

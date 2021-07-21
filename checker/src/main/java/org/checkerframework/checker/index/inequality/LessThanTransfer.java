@@ -14,7 +14,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +65,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             }
             String leftString = leftJe.toString();
             if (!lessThanExpressions.contains(leftString)) {
-                lessThanExpressions = SystemUtil.append(lessThanExpressions, leftString);
+                lessThanExpressions = CollectionsPlume.append(lessThanExpressions, leftString);
                 JavaExpression rightJe = JavaExpression.fromNode(right);
                 store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
             }
@@ -100,7 +100,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
             }
             String leftIncremented = incrementedExpression(leftJe);
             if (!lessThanExpressions.contains(leftIncremented)) {
-                lessThanExpressions = SystemUtil.append(lessThanExpressions, leftIncremented);
+                lessThanExpressions = CollectionsPlume.append(lessThanExpressions, leftIncremented);
                 JavaExpression rightJe = JavaExpression.fromNode(right);
                 store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
             }
@@ -124,7 +124,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
                     if (expressions == null) {
                         expressions = Collections.singletonList(leftJe.toString());
                     } else {
-                        expressions = SystemUtil.append(expressions, leftJe.toString());
+                        expressions = CollectionsPlume.append(expressions, leftJe.toString());
                     }
                 }
                 AnnotationMirror refine = factory.createLessThanQualifier(expressions);

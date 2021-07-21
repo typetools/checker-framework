@@ -1,7 +1,5 @@
-// This test ensures that enums with inner classes are
-// printed properly to avoid crashing the stub parser,
-// which was a problem with an earlier version of stub-based
-// WPI.
+// This test ensures that enums with inner classes are printed properly to avoid crashing the stub
+// parser, which was a problem with an earlier version of stub-based WPI.
 
 import org.checkerframework.checker.testchecker.wholeprograminference.qual.Sibling1;
 

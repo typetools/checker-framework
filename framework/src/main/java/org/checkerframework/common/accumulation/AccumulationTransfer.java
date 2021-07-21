@@ -13,7 +13,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -86,12 +85,11 @@ public class AccumulationTransfer extends CFTransfer {
                 assert flowAnnos.size() <= 1;
                 for (AnnotationMirror anno : flowAnnos) {
                     if (atypeFactory.isAccumulatorAnnotation(anno)) {
-                        List<String> oldFlowValues =
-                                AnnotationUtils.getElementValueArrayOrNull(
-                                        anno, "value", String.class, false);
-                        if (oldFlowValues != null) {
+                        List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
+                        if (!oldFlowValues.isEmpty()) {
                             // valuesAsList cannot have its length changed -- it is backed by an
-                            // array -- but oldFlowValues is a new, modifiable list.
+                            // array -- but if oldFlowValues is not empty, it is a new, modifiable
+                            // list.
                             oldFlowValues.addAll(valuesAsList);
                             valuesAsList = oldFlowValues;
                         }

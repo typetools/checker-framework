@@ -11,7 +11,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.List;
 
@@ -74,8 +74,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
             Object... extraArgs) {
         // If value is less than all expressions in the annotation in varType,
         // using the Value Checker, then skip the common assignment check.
-        // Also skip the check if the only expression is "a + 1" and the valueTree
-        // is "a".
+        // Also skip the check if the only expression is "a + 1" and the valueTree is "a".
         List<String> expressions =
                 getTypeFactory()
                         .getLessThanExpressions(
@@ -125,7 +124,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
 
             if (initialAnnotations != null) {
                 List<String> updatedAnnotations =
-                        SystemUtil.mapList(
+                        CollectionsPlume.mapList(
                                 annotation ->
                                         OffsetEquation.createOffsetFromJavaExpression(annotation)
                                                 .toString(),

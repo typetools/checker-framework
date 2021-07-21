@@ -5,7 +5,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
+import org.plumelib.util.SystemPlume;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -142,7 +144,7 @@ public class TestUtilities {
      * @return the file names, each with {@code parent} prepended
      */
     public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
-        return SystemUtil.mapList(
+        return CollectionsPlume.mapList(
                 (String fileName) -> new Object[] {new File(parent, fileName)}, fileNames);
     }
 
@@ -492,6 +494,6 @@ public class TestUtilities {
      * @return the value of system property "emit.test.debug"
      */
     public static boolean getShouldEmitDebugInfo() {
-        return SystemUtil.getBooleanSystemProperty("emit.test.debug");
+        return SystemPlume.getBooleanSystemProperty("emit.test.debug");
     }
 }

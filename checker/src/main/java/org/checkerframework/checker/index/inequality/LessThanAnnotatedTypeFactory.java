@@ -350,9 +350,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
      * @return the list of expressions in the annotation
      */
     public List<String> getLessThanExpressions(AnnotationMirror annotation) {
-        if (AnnotationUtils.areSameByClass(annotation, LessThanBottom.class)) {
+        if (AnnotationUtils.areSameByName(
+                annotation, "org.checkerframework.checker.index.qual.LessThanBottom")) {
             return null;
-        } else if (AnnotationUtils.areSameByClass(annotation, LessThanUnknown.class)) {
+        } else if (AnnotationUtils.areSameByName(
+                annotation, "org.checkerframework.checker.index.qual.LessThanUnknown")) {
             return Collections.emptyList();
         } else {
             // The annotation is @LessThan.

@@ -26,9 +26,9 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 import java.lang.reflect.Constructor;
@@ -205,11 +205,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return new LinkedHashSet<>();
     }
 
-    /** Returns whether or not reflection should be resolved. */
+    /**
+     * Returns whether or not reflection should be resolved.
+     *
+     * @return true if reflection should be resolved
+     */
     public boolean shouldResolveReflection() {
-        // Because this method is indirectly called by getSubcheckers and
-        // this.getOptions or this.hasOption
-        // also call getSubcheckers, super.getOptions is called here.
+        // Because this method is indirectly called by getSubcheckers and this.getOptions or
+        // this.hasOption also call getSubcheckers, super.getOptions is called here.
         return super.getOptions().containsKey("resolveReflection");
     }
 
@@ -520,14 +523,14 @@ public abstract class BaseTypeChecker extends SourceChecker {
         }
 
         // Errors (or other messages) issued via
-        // SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
+        //   SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
         // are stored in messageStore until all checkers have processed this compilation unit.
         // All other messages are printed immediately.  This includes errors issued because the
         // checker threw an exception.
 
-        // In order to run the next checker on this compilation unit even if the previous
-        // issued errors, the next checker's errsOnLastExit needs to include all errors
-        // issued by previous checkers.
+        // In order to run the next checker on this compilation unit even if the previous issued
+        // errors, the next checker's errsOnLastExit needs to include all errors issued by previous
+        // checkers.
 
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         Log log = Log.instance(context);
@@ -834,7 +837,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     protected Object processArg(Object arg) {
         if (arg instanceof Collection) {
             Collection<?> carg = (Collection<?>) arg;
-            return SystemUtil.mapList(this::processArg, carg);
+            return CollectionsPlume.mapList(this::processArg, carg);
         } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
             return getTypeFactory()
                     .getAnnotationFormatter()

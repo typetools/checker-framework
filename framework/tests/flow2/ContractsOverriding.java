@@ -48,8 +48,7 @@ public class ContractsOverriding {
         void m3b() {}
 
         @Override
-        // use different string to refer to 'f' and RequiresQualifier instead
-        // of RequiresOdd
+        // use different string to refer to 'f' and RequiresQualifier instead of RequiresOdd
         @RequiresQualifier(expression = "this.f", qualifier = Odd.class)
         void m4() {}
     }

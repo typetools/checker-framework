@@ -262,10 +262,10 @@ public class PurityChecker {
             //     * need to check every containing try statement, not just the nearest enclosing
             //       one.
 
-            // Object creation is usually prohibited, but permit "throw new SomeException();"
-            // if it is not contained within any try statement that has a catch clause.
-            // (There is no need to check the latter condition, because the Purity Checker
-            // forbids all catch statements.)
+            // Object creation is usually prohibited, but permit "throw new SomeException();" if it
+            // is not contained within any try statement that has a catch clause.  (There is no need
+            // to check the latter condition, because the Purity Checker forbids all catch
+            // statements.)
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
@@ -274,8 +274,8 @@ public class PurityChecker {
             boolean sideEffectFree =
                     assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
             // This does not use "addNotBothReason" because the reasons are different:  one is
-            // because the constructor is called at all, and the other is because the constuctor
-            // is not side-effect-free.
+            // because the constructor is called at all, and the other is because the constuctor is
+            // not side-effect-free.
             if (!deterministic) {
                 purityResult.addNotDetReason(node, "object.creation");
             }

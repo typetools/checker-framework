@@ -1,7 +1,6 @@
 public class Enumerations {
 
-    // All enumeration instances are interned; there should be no need for
-    // an annotation.
+    // All enumeration instances are interned; there should be no need for an annotation.
     enum StudentYear {
         FRESHMAN,
         SOPHOMORE,

@@ -488,9 +488,8 @@ public class NullnessAnnotatedTypeFactory
             assert elt != null;
 
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
-                // TODO: It's surprising that we have to do this in
-                // both visitVariable and visitIdentifier. This should
-                // already be handled by applying the defaults anyway.
+                // TODO: It's surprising that we have to do this in both visitVariable and
+                // visitIdentifier. This should already be handled by applying the defaults anyway.
                 // case 9. exception parameter
                 type.replaceAnnotation(NONNULL);
             }

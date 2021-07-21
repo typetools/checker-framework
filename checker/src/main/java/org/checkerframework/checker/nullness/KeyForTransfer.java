@@ -8,12 +8,15 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * KeyForTransfer ensures that java.util.Map.put and containsKey cause the appropriate @KeyFor
@@ -21,8 +24,20 @@ import javax.lang.model.element.AnnotationMirror;
  */
 public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore, KeyForTransfer> {
 
+    /** The KeyFor.value element/field. */
+    ExecutableElement keyForValueElement;
+
+    /**
+     * Creates a new KeyForTransfer.
+     *
+     * @param analysis the analysis
+     */
     public KeyForTransfer(KeyForAnalysis analysis) {
         super(analysis);
+
+        ProcessingEnvironment processingEnv =
+                ((KeyForAnnotatedTypeFactory) analysis.getTypeFactory()).getProcessingEnv();
+        keyForValueElement = TreeUtils.getMethod(KeyFor.class, "value", 0, processingEnv);
     }
 
     /*
@@ -84,6 +99,6 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
         }
 
         return new LinkedHashSet<>(
-                AnnotationUtils.getElementValueArray(keyFor, "value", String.class, false));
+                AnnotationUtils.getElementValueArray(keyFor, keyForValueElement, String.class));
     }
 }

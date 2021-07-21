@@ -620,13 +620,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
                                 UpperBoundVisitor.parseJavaExpressionString(
                                         b, atypeFactory, currentPath);
                     } catch (NullPointerException npe) {
-                        // I have no idea why this seems to happen only on a few JDK classes.
-                        // It appears to only happen during the preprocessing step - the NPE
-                        // is thrown while trying to find the enclosing class of a class tree,
-                        // which is null. I can't find a reproducible
-                        // test case that's smaller than the size of DualPivotQuicksort.
-                        // Since this refinement is optional, but useful elsewhere, catching this
-                        // NPE here and returning is always safe.
+                        // I have no idea why this seems to happen only on a few JDK classes.  It
+                        // appears to only happen during the preprocessing step - the NPE is thrown
+                        // while trying to find the enclosing class of a class tree, which is null.
+                        // I can't find a reproducible test case that's smaller than the size of
+                        // DualPivotQuicksort.  Since this refinement is optional, but useful
+                        // elsewhere, catching this NPE here and returning is always safe.
                         return createTransferResult(n, in, leftWithOffset);
                     }
 
@@ -813,8 +812,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier qualifier = getUBQualifier(hierarchy, value);
         if (qualifier.isUnknown()) {
             // The qualifier from the store or analysis might be UNKNOWN if there was some error.
-            //  For example,
-            // @LTLength("a") int i = 4;  // error
+            // For example,
+            //   @LTLength("a") int i = 4;  // error
             // The type of i in the store is @UpperBoundUnknown, but the type of i as computed by
             // the type factory is @LTLength("a"), so use that type.
             CFValue valueFromFactory = getValueFromFactory(n.getTree(), n);
@@ -847,8 +846,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
             CaseNode n, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
         // Refines subtrahend in the switch expression
-        // TODO: this cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
-        // transfer input
+        // TODO: This cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
+        // transfer input.
         Node caseNode = n.getCaseOperand();
         AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
         Node switchNode = assign.getExpression();

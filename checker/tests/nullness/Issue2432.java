@@ -89,8 +89,7 @@ public class Issue2432 {
         pc.tripleAdd(no, nno, nno);
     }
 
-    // ensure poly annotations from declaration is handled separately from poly from other
-    // context
+    // ensure poly annotations from declaration is handled separately from poly from other context
     void declarationPolyInParameter(
             TypeArgClass<@PolyNull Object> pc, @Nullable Object no, @NonNull Object nno) {
         // No error

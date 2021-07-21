@@ -35,10 +35,10 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -106,9 +107,11 @@ public class DependentTypesHelper {
     /** AnnotatedTypeFactory */
     protected final AnnotatedTypeFactory factory;
 
-    // TODO: Using strings is inefficient.  This should probably map to ExecutableElement instead.
-    /** Maps from an annotation name to the names of its elements that are Java expressions. */
-    private final Map<String, List<String>> annoToElements;
+    /**
+     * Maps from an annotation name, the fully-qualified name of its class, to its elements that are
+     * Java expressions.
+     */
+    private final Map<String, List<ExecutableElement>> annoToElements;
 
     /** This scans an annotated type and returns a list of {@link DependentTypesError}. */
     private final ExpressionErrorCollector expressionErrorCollector =
@@ -139,7 +142,8 @@ public class DependentTypesHelper {
 
         this.annoToElements = new HashMap<>();
         for (Class<? extends Annotation> expressionAnno : factory.getSupportedTypeQualifiers()) {
-            List<String> elementList = getExpressionElementNames(expressionAnno);
+            List<ExecutableElement> elementList =
+                    getExpressionElements(expressionAnno, factory.getProcessingEnv());
             if (!elementList.isEmpty()) {
                 annoToElements.put(expressionAnno.getCanonicalName(), elementList);
             }
@@ -159,24 +163,28 @@ public class DependentTypesHelper {
     }
 
     /**
-     * Returns a list of the names of elements in the annotation class that should be interpreted as
-     * Java expressions, namely those annotated with {@code @}{@link JavaExpression}.
+     * Returns a list of the elements in the annotation class that should be interpreted as Java
+     * expressions, namely those annotated with {@code @}{@link JavaExpression}.
      *
      * @param clazz annotation class
-     * @return a list of the names of elements in the annotation class that should be interpreted as
-     *     Java expressions
+     * @param env processing environment for getting the ExecutableElement
+     * @return a list of the elements in the annotation class that should be interpreted as Java
+     *     expressions
      */
-    private static List<String> getExpressionElementNames(Class<? extends Annotation> clazz) {
+    private static List<ExecutableElement> getExpressionElements(
+            Class<? extends Annotation> clazz, ProcessingEnvironment env) {
         Method[] methods = clazz.getMethods();
         if (methods == null) {
             return Collections.emptyList();
         }
-        List<String> elements = new ArrayList<>();
+        List<ExecutableElement> elements = new ArrayList<>();
         for (Method method : methods) {
             org.checkerframework.framework.qual.JavaExpression javaExpressionAnno =
                     method.getAnnotation(org.checkerframework.framework.qual.JavaExpression.class);
             if (javaExpressionAnno != null) {
-                elements.add(method.getName());
+                elements.add(
+                        TreeUtils.getMethod(
+                                clazz, method.getName(), method.getParameterCount(), env));
             }
         }
         return elements;
@@ -188,7 +196,7 @@ public class DependentTypesHelper {
      * @param am AnnotationMirror
      * @return the elements of the annotation that are Java expressions
      */
-    private List<String> getListOfExpressionElements(AnnotationMirror am) {
+    private List<ExecutableElement> getListOfExpressionElements(AnnotationMirror am) {
         return annoToElements.getOrDefault(
                 AnnotationUtils.annotationName(am), Collections.emptyList());
     }
@@ -504,16 +512,14 @@ public class DependentTypesHelper {
                 if (declarationTree == null) {
                     if (elt.getKind() == ElementKind.PARAMETER) {
                         // The tree might be null when
-                        // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
-                        // gets the assignment context for a pseudo assignment of an argument to
-                        // a method parameter.
+                        // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory() gets the assignment context for a pseudo assignment of an argument to a method parameter.
                         return;
                     }
                     throw new BugInCF(this.getClass() + ": tree not found");
                 } else if (TreeUtils.typeOf(declarationTree) == null) {
                     // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
-                    // gets the assignment context for a pseudo assignment of an argument to
-                    // a method parameter.
+                    // gets the assignment context for a pseudo assignment of an argument to a
+                    // method parameter.
                     return;
                 }
 
@@ -635,12 +641,13 @@ public class DependentTypesHelper {
             return null;
         }
 
-        Map<String, List<JavaExpression>> newElements = new HashMap<>();
-        for (String elementName : getListOfExpressionElements(anno)) {
+        Map<ExecutableElement, List<JavaExpression>> newElements = new HashMap<>();
+        for (ExecutableElement element : getListOfExpressionElements(anno)) {
             List<String> expressionStrings =
-                    AnnotationUtils.getElementValueArray(anno, elementName, String.class, true);
+                    AnnotationUtils.getElementValueArray(
+                            anno, element, String.class, Collections.emptyList());
             List<JavaExpression> javaExprs = new ArrayList<>(expressionStrings.size());
-            newElements.put(elementName, javaExprs);
+            newElements.put(element, javaExprs);
             for (String expression : expressionStrings) {
                 JavaExpression result;
                 if (shouldPassThroughExpression(expression)) {
@@ -702,20 +709,20 @@ public class DependentTypesHelper {
      *     #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} (this method is a
      *     helper method for {@link #convertAnnotationMirror(StringToJavaExpression,
      *     AnnotationMirror)})
-     * @param elementMap a mapping from element names of {@code originalAnno} to {@code
-     *     JavaExpression}s
+     * @param elementMap a mapping from element of {@code originalAnno} to {@code JavaExpression}s
      * @return an annotation created from {@code elementMap}
      */
     protected AnnotationMirror buildAnnotation(
-            AnnotationMirror originalAnno, Map<String, List<JavaExpression>> elementMap) {
+            AnnotationMirror originalAnno,
+            Map<ExecutableElement, List<JavaExpression>> elementMap) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(
                         factory.getProcessingEnv(), AnnotationUtils.annotationName(originalAnno));
         builder.copyElementValuesFromAnnotation(originalAnno, elementMap.keySet());
-        for (Map.Entry<String, List<JavaExpression>> entry : elementMap.entrySet()) {
-            String value = entry.getKey();
-            List<String> strings = SystemUtil.mapList(JavaExpression::toString, entry.getValue());
-            builder.setValue(value, strings);
+        for (Map.Entry<ExecutableElement, List<JavaExpression>> entry : elementMap.entrySet()) {
+            List<String> strings =
+                    CollectionsPlume.mapList(JavaExpression::toString, entry.getValue());
+            builder.setValue(entry.getKey(), strings);
         }
         return builder.build();
     }
@@ -892,11 +899,12 @@ public class DependentTypesHelper {
 
         List<DependentTypesError> errors = new ArrayList<>();
 
-        for (String element : getListOfExpressionElements(am)) {
+        for (ExecutableElement element : getListOfExpressionElements(am)) {
             // It's always an array, not a single value, because @JavaExpression may only be written
             // on an annotation element of type String[].
             List<String> value =
-                    AnnotationUtils.getElementValueArray(am, element, String.class, false);
+                    AnnotationUtils.getElementValueArray(
+                            am, element, String.class, Collections.emptyList());
             for (String v : value) {
                 if (DependentTypesError.isExpressionError(v)) {
                     errors.add(DependentTypesError.unparse(v));

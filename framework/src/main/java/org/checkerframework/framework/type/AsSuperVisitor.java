@@ -414,9 +414,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     public AnnotatedTypeMirror visitIntersection_Declared(
             AnnotatedIntersectionType type, AnnotatedDeclaredType superType, Void p) {
         for (AnnotatedTypeMirror bound : type.getBounds()) {
-            // Find the directSuperType that is a subtype of superType,
-            // then recur on that type so that type arguments in superType
-            // are annotated correctly
+            // Find the directSuperType that is a subtype of superType, then recur on that type so
+            // that type arguments in superType are annotated correctly.
             if (bound.getKind() == TypeKind.DECLARED
                     && isErasedJavaSubtype((AnnotatedDeclaredType) bound, superType)) {
                 AnnotatedTypeMirror asSuper = visit(bound, superType, p);

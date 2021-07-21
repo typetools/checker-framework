@@ -1,7 +1,7 @@
 package org.checkerframework.common.value.util;
 
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.List;
 
@@ -23,19 +23,19 @@ public class NumberUtils {
         }
         switch (typeKind) {
             case BYTE:
-                return SystemUtil.mapList(Number::byteValue, numbers);
+                return CollectionsPlume.mapList(Number::byteValue, numbers);
             case CHAR:
-                return SystemUtil.mapList(Number::intValue, numbers);
+                return CollectionsPlume.mapList(Number::intValue, numbers);
             case DOUBLE:
-                return SystemUtil.mapList(Number::doubleValue, numbers);
+                return CollectionsPlume.mapList(Number::doubleValue, numbers);
             case FLOAT:
-                return SystemUtil.mapList(Number::floatValue, numbers);
+                return CollectionsPlume.mapList(Number::floatValue, numbers);
             case INT:
-                return SystemUtil.mapList(Number::intValue, numbers);
+                return CollectionsPlume.mapList(Number::intValue, numbers);
             case LONG:
-                return SystemUtil.mapList(Number::longValue, numbers);
+                return CollectionsPlume.mapList(Number::longValue, numbers);
             case SHORT:
-                return SystemUtil.mapList(Number::shortValue, numbers);
+                return CollectionsPlume.mapList(Number::shortValue, numbers);
             default:
                 throw new UnsupportedOperationException(typeKind + ": " + type);
         }

@@ -1,6 +1,7 @@
 package org.checkerframework.javacutil;
 
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -10,13 +11,12 @@ import org.plumelib.util.StringsPlume;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -282,13 +282,21 @@ public class AnnotationBuilder {
      * doesn't exist in the annotation to be built, an error is raised unless the element is
      * specified in {@code ignorableElements}.
      *
-     * @param valueHolder the annotation that holds the values to be copied
-     * @param ignorableElements the elements that can be safely dropped
+     * @param other the annotation that holds the values to be copied; need not be an annotation of
+     *     the same type of the one being built
+     * @param ignorableElements the names of elements of {@code other} that can be safely dropped
      */
     public void copyElementValuesFromAnnotation(
-            AnnotationMirror valueHolder, String... ignorableElements) {
-        Set<String> ignorableElementsSet = new HashSet<>(Arrays.asList(ignorableElements));
-        copyElementValuesFromAnnotation(valueHolder, ignorableElementsSet);
+            AnnotationMirror other, String... ignorableElements) {
+        List<String> ignorableElementsList = Arrays.asList(ignorableElements);
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+                other.getElementValues().entrySet()) {
+            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
+            if (ignorableElementsList.contains(eltNameToCopy.toString())) {
+                continue;
+            }
+            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
+        }
     }
 
     /**
@@ -296,18 +304,18 @@ public class AnnotationBuilder {
      * doesn't exist in the annotation to be built, an error is raised unless the element is
      * specified in {@code ignorableElements}.
      *
-     * @param valueHolder the annotation that holds the values to be copied
+     * @param valueHolder the annotation that holds the values to be copied; must be the same type
+     *     as the annotation being built
      * @param ignorableElements the elements that can be safely dropped
      */
     public void copyElementValuesFromAnnotation(
-            AnnotationMirror valueHolder, Set<String> ignorableElements) {
-        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> eltValToCopy :
+            AnnotationMirror valueHolder, Collection<ExecutableElement> ignorableElements) {
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                 valueHolder.getElementValues().entrySet()) {
-            Name eltNameToCopy = eltValToCopy.getKey().getSimpleName();
-            if (ignorableElements.contains(eltNameToCopy.toString())) {
+            if (ignorableElements.contains(entry.getKey())) {
                 continue;
             }
-            elementValues.put(findElement(eltNameToCopy), eltValToCopy.getValue());
+            elementValues.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -351,7 +359,20 @@ public class AnnotationBuilder {
     public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
         assertNotBuilt();
         ExecutableElement var = findElement(elementName);
-        TypeMirror expectedType = var.getReturnType();
+        return setValue(var, values);
+    }
+
+    /**
+     * Set the element to the given value.
+     *
+     * @param element the element
+     * @param values the new value for the element
+     * @return this
+     */
+    public AnnotationBuilder setValue(
+            ExecutableElement element, List<? extends @NonNull Object> values) {
+        assertNotBuilt();
+        TypeMirror expectedType = element.getReturnType();
         if (expectedType.getKind() != TypeKind.ARRAY) {
             throw new BugInCF("value is an array while expected type is not");
         }
@@ -363,7 +384,7 @@ public class AnnotationBuilder {
             avalues.add(createValue(v));
         }
         AnnotationValue aval = createValue(avalues);
-        elementValues.put(var, aval);
+        elementValues.put(element, aval);
         return this;
     }
 

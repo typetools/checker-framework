@@ -24,7 +24,9 @@ public class BasicAnnotationProvider implements AnnotationProvider {
 
         // Then look at the real annotations.
         for (AnnotationMirror am : annotationMirrors) {
-            if (AnnotationUtils.areSameByClass(am, anno)) {
+            @SuppressWarnings("deprecation") // method intended for use by the hierarchy
+            boolean found = AnnotationUtils.areSameByClass(am, anno);
+            if (found) {
                 return am;
             }
         }

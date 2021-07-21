@@ -10,10 +10,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:
-// Every prefix expression is also non-null; for example,
-// {@code @EnsuresNonNullIf(expression="a.b.c", results=true)} implies that both {@code a.b} and
-// {@code a.b.c} are non-null if the method returns {@code true}.
+// TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:  Every prefix expression is
+// also non-null; for example, {@code @EnsuresNonNullIf(expression="a.b.c", results=true)} implies
+// that both {@code a.b} and {@code a.b.c} are non-null if the method returns {@code true}.
 /**
  * Indicates that the given expressions are non-null, if the method returns the given result (either
  * true or false).

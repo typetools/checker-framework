@@ -1,9 +1,8 @@
 public class CompoundAssignments {
     static final int SIZE = 4;
 
-    // There used to be a bug creating the LeftShiftAssignmentNode
-    // where the target (e.g. pow) was replaced by the shift amount
-    // (e.g. 1).
+    // There used to be a bug creating the LeftShiftAssignmentNode where the target (e.g. pow) was
+    // replaced by the shift amount (e.g. 1).
     static void left_shift_assign() {
         for (int i = 0, pow = 1; i <= SIZE; i++) {
             pow <<= 1;

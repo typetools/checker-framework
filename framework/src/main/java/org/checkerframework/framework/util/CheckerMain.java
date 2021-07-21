@@ -4,6 +4,7 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -725,7 +726,7 @@ public class CheckerMain {
                 }
             }
             List<String> missingAbsoluteFilenames =
-                    SystemUtil.mapList(File::getAbsolutePath, missingFiles);
+                    CollectionsPlume.mapList(File::getAbsolutePath, missingFiles);
             throw new RuntimeException(
                     "The following files could not be located: "
                             + String.join(", ", missingAbsoluteFilenames));

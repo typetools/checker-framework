@@ -97,9 +97,8 @@ public class GlbUtil {
             index += 1;
         }
 
-        // if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise
-        // there are two types  in glbTypes that are incomparable and we need to use bottom
-        // (AnnotatedNullType)
+        // if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise there are
+        // two types in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
         boolean incomparable = false;
         for (final AnnotatedTypeMirror type : glbTypes) {
             if (!incomparable

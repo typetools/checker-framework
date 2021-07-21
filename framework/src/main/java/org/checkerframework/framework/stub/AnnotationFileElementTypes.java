@@ -313,8 +313,8 @@ public class AnnotationFileElementTypes {
                             currentChecker = currentChecker.getParentChecker();
                         }
                     }
-                    // If there exists one parent checker that can find this file, don't
-                    // report an warning.
+                    // If there exists one parent checker that can find this file, don't report a
+                    // warning.
                     if (!findByParentCheckers) {
                         File parentPath = new File(path).getParentFile();
                         String parentPathDescription =
