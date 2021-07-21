@@ -282,8 +282,9 @@ rm -f -- "${DIR}/.cannot-run-wpi"
 cd "${DIR}" || exit 5
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
-# For the first run, use the Java versions in ascending priority order: 8 if its available, then
-# 11, then 16.
+
+# For the first run, use the Java versions in ascending priority order: 8 if
+# its available, otherwise 11, otherwise 16.
 if [ "${has_java8}" = "yes" ]; then
   export JAVA_HOME="${JAVA8_HOME}"
 elif [ "${has_java11}" = "yes" ]; then
