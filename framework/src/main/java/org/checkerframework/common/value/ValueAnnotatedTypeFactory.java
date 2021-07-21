@@ -66,10 +66,10 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -494,7 +494,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (typeKind != null && TypeKindUtils.isIntegral(typeKind)) {
       return typeKind;
     }
-    throw new BugInCF(type.toString() + " expected to be an integral type.");
+    throw new TypeSystemError(type.toString() + " expected to be an integral type.");
   }
 
   /**

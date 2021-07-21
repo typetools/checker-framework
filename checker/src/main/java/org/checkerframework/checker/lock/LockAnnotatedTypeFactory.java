@@ -61,10 +61,10 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -359,7 +359,7 @@ public class LockAnnotatedTypeFactory
       } else if (qualifierKind2 == NEWOBJECT_KIND) {
         return a1;
       }
-      throw new BugInCF(
+      throw new TypeSystemError(
           "leastUpperBoundWithElements(%s, %s, %s, %s, %s)",
           a1, qualifierKind1, a2, qualifierKind2, lubKind);
     }
@@ -396,7 +396,7 @@ public class LockAnnotatedTypeFactory
       } else if (qualifierKind2 == GUARDEDBYUNKNOWN_KIND) {
         return a1;
       }
-      throw new BugInCF(
+      throw new TypeSystemError(
           "greatestLowerBoundWithElements(%s, %s, %s, %s, %s)",
           a1, qualifierKind1, a2, qualifierKind2, glbKind);
     }

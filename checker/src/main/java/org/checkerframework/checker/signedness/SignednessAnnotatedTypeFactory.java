@@ -39,11 +39,11 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -420,7 +420,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       // Check that the shiftAmount most significant bits of the mask were 1.
       return mask == (1 << shiftAmount) - 1;
     } else {
-      throw new BugInCF("Invalid Masking Operation");
+      throw new TypeSystemError("Invalid Masking Operation");
     }
   }
 
@@ -466,7 +466,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         shiftAmount = 0x3F & getLong(shiftAmountLit.getValue());
         break;
       default:
-        throw new BugInCF("Invalid shift type");
+        throw new TypeSystemError("Invalid shift type");
     }
 
     // Determine number of bits in the cast type
@@ -488,7 +488,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         castBits = 64;
         break;
       default:
-        throw new BugInCF("Invalid cast target");
+        throw new TypeSystemError("Invalid cast target");
     }
 
     long bitsDiscarded = shiftBits - castBits;
