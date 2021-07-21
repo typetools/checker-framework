@@ -949,12 +949,7 @@ subprojects {
         tasks.create(name: 'inferenceTests', group: 'Verification') {
             description 'Run inference tests.'
             if (project.name.is('checker')) {
-                // TODO JDK16: Use this line instead of the following lines.
-                // dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
-                dependsOn('ainferTest', 'wpiPlumeLibTest')
-                if (!isJava16) {
-                    dependsOn('wpiManyTest')
-                }
+                dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
             }
         }
 

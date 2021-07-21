@@ -758,6 +758,8 @@ task wpiManyTest(group: "Verification") {
                         || line.startsWith("warning: [options] bootstrap")
                         // Ignore warnings about illegal access:
                         || line.contains("Option --illegal-access is deprecated")
+                        // Ignore the warnings about --add-opens arguments to the JVM
+                        || line.contains("warning: [options] --add-opens has no effect at compile time")
                         // Ignore the summary line that reports the total number of warnings (which can be single or plural).
                         || line.endsWith("warning")
                         || line.endsWith("warnings")) {
