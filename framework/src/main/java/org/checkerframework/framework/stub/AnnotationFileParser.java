@@ -287,6 +287,12 @@ public class AnnotationFileParser {
      */
     public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
         new HashMap<>(1);
+
+    /**
+     * Maps fully qualified record component name (fully-qualified-record-type.component-name) to an
+     * annotated type found in the stubs file.
+     */
+    public final Map<String, AnnotatedTypeMirror> recordComponents = new HashMap<>();
   }
 
   /**
@@ -1444,6 +1450,7 @@ public class AnnotationFileParser {
 
     annotate(fieldType, decl.getType(), decl.getAnnotations(), decl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
+    annotationFileAnnos.recordComponents.put(ElementUtils.getQualifiedName(elt), fieldType);
   }
 
   /**

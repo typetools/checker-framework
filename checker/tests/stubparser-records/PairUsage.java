@@ -4,7 +4,7 @@ class PairUsage {
   public void makePairs() {
     PairRecord a = new PairRecord("key", "value");
     PairRecord b = new PairRecord(null);
-    // :: error : assignment
+    // :: error: (assignment)
     @NonNull Object o = a.value();
     PairRecord p = new PairRecord("key", null);
   }

@@ -2219,6 +2219,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         getAnnotatedType(methodElt); // get unsubstituted type
     AnnotatedExecutableType memberTypeWithOverrides =
         applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+    memberTypeWithOverrides = applyRecordTypesToAccessors(methodElt, memberTypeWithOverrides);
     methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
 
     AnnotatedExecutableType methodType =
@@ -2338,6 +2339,33 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       methodType = memberType;
     }
     return methodType;
+  }
+
+  /**
+   * Given a method, checks if there is: a record component with the same name AND the record
+   * component has an annotation AND the method has no-arguments. If so, replaces the annotations on
+   * the method return type with those from the record type in the same hierarchy.
+   *
+   * @param member The class/record that this method is a member of.
+   * @param memberType The type of the method.
+   * @return The memberType parameter with the annotations replaced if applicable.
+   */
+  private AnnotatedExecutableType applyRecordTypesToAccessors(
+      Element member, AnnotatedExecutableType memberType) {
+    if (memberType.getKind() != TypeKind.EXECUTABLE) {
+      return memberType;
+    }
+
+    AnnotatedTypeMirror recordComponentType = stubTypes.getRecordComponentType(member);
+    if (recordComponentType != null) {
+      // If the record component has an annotation, it replaces any
+      // from the same hierarchy on the method:
+      for (AnnotationMirror annotation : recordComponentType.getAnnotations()) {
+        memberType.getReturnType().removeAnnotationInHierarchy(annotation);
+      }
+      memberType.getReturnType().addAnnotations(recordComponentType.getAnnotations());
+    }
+    return memberType;
   }
 
   /**

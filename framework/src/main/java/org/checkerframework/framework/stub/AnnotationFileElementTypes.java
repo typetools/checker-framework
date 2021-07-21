@@ -393,6 +393,34 @@ public class AnnotationFileElementTypes {
   }
 
   /**
+   * Gets the annotation of the record type that corresponds to the given accessor method.
+   *
+   * @param elt An element that may be a member of a record
+   * @return null if this element is not a method OR not a member of a record OR is not zero-args OR
+   *     does not have a corresponding field of the same name in the record OR the corresponding
+   *     field does not have an annotation. Returns non-null with the annotated record component
+   *     type otherwise.
+   */
+  public @Nullable AnnotatedTypeMirror getRecordComponentType(Element elt) {
+    if (parsing) {
+      throw new BugInCF("parsing while calling getFakeOverride");
+    }
+
+    if (elt.getKind() != ElementKind.METHOD) {
+      return null;
+    }
+    String eltName = ElementUtils.getQualifiedName(elt);
+    if (eltName.endsWith("()")) {
+      // Change from no-arg method into a field of the same name:
+      eltName = eltName.substring(0, eltName.length() - 2);
+      if (annotationFileAnnos.recordComponents.containsKey(eltName)) {
+        return annotationFileAnnos.recordComponents.get(eltName);
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the method type of the most specific fake override for the given element, when used as
    * a member of the given type.
    *
@@ -722,5 +750,16 @@ public class AnnotationFileElementTypes {
     } catch (IOException e) {
       throw new BugInCF("cannot open the Jar file " + resourceURL.getFile(), e);
     }
+  }
+
+  public AnnotatedTypeMirror getAnnotationForRecordComponent(Element enclosing, String name) {
+    return annotationFileAnnos.atypes.entrySet().stream()
+        .filter(
+            e ->
+                e.getKey().getEnclosingElement().toString().equals(enclosing.toString())
+                    && e.getKey().getSimpleName().toString().equals(name))
+        .map(e -> e.getValue())
+        .findFirst()
+        .orElse(null);
   }
 }
