@@ -629,7 +629,7 @@ task ainferNullnessGenerateJaifs(type: Test) {
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
-            args = ['-cp', "${sourceSets.test.output.asPath}"]
+            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}"]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]

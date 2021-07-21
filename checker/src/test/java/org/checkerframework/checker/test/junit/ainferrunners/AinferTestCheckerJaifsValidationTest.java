@@ -20,6 +20,8 @@ public class AinferTestCheckerJaifsValidationTest extends CheckerFrameworkPerDir
         AinferTestChecker.class,
         "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
+        // IndexFileWriter doesn't emit annotations in any particular order.
+        "-AsuppressWarnings=type.anno.before.decl.anno",
         "-Awarns");
   }
 
