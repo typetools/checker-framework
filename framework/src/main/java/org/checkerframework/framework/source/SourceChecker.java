@@ -930,16 +930,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (!warnedAboutGarbageCollection) {
-      double gcPercentage = SystemPlume.gcPercentage();
-      if (gcPercentage > .30) {
-        messager.printMessage(
-            Kind.WARNING,
-            "Garbage collection consumed "
-                + Math.round(gcPercentage * 100)
-                + "% of CPU during the past minute.");
-        messager.printMessage(Kind.WARNING, "  max memory = " + Runtime.getRuntime().maxMemory());
-        messager.printMessage(Kind.WARNING, "total memory = " + Runtime.getRuntime().totalMemory());
-        messager.printMessage(Kind.WARNING, " free memory = " + Runtime.getRuntime().freeMemory());
+      String gcUsageMessage = SystemPlume.gcUsageMessage(.30, 60);
+      if (gcUsageMessage != null) {
+        messager.printMessage(Kind.WARNING, gcUsageMessage);
         warnedAboutGarbageCollection = true;
       }
     }
