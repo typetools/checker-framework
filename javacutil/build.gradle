@@ -11,7 +11,7 @@ dependencies {
 
     // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
     // https://mvnrepository.com/artifact/org.plumelib/plume-util
-    implementation 'org.plumelib:plume-util:1.5.5'
+    implementation 'org.plumelib:plume-util:1.5.8'
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages both in checker.jar and
