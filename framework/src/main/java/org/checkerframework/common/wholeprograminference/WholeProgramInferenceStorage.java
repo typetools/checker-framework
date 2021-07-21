@@ -117,7 +117,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param atypeFactory the type factory
    * @return the pre- or postcondition annotations for a field
    */
-  public @Nullable T getPreOrPostconditionsForExpression(
+  public @Nullable T getPreOrPostconditions(
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,

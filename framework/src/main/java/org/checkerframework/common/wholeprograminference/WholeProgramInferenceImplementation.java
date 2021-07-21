@@ -266,7 +266,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         inferredType = fieldDeclType;
       }
       T preOrPostConditionAnnos =
-          storage.getPreOrPostconditionsForExpression(
+          storage.getPreOrPostconditions(
               preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
@@ -297,8 +297,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         continue;
       }
       T preOrPostConditionAnnos =
-          storage.getPreOrPostconditionsForExpression(
-              preOrPost, methodElt, "#" + index, declType, atypeFactory);
+          storage.getPreOrPostconditions(preOrPost, methodElt, "#" + index, declType, atypeFactory);
       if (preOrPostConditionAnnos != null) {
         String file = storage.getFileForElement(methodElt);
         updateAnnotationSet(
@@ -327,7 +326,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         inferredType.replaceAnnotations(v.getAnnotations());
         atypeFactory.wpiAdjustForUpdateNonField(inferredType);
         T preOrPostConditionAnnos =
-            storage.getPreOrPostconditionsForExpression(
+            storage.getPreOrPostconditions(
                 preOrPost, methodElt, "this", declaredType, atypeFactory);
         if (preOrPostConditionAnnos != null) {
           String file = storage.getFileForElement(methodElt);

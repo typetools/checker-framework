@@ -186,7 +186,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public AnnotatedTypeMirror getPreOrPostconditionsForExpression(
+  public AnnotatedTypeMirror getPreOrPostconditions(
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,

@@ -247,7 +247,7 @@ public class WholeProgramInferenceScenesStorage
   }
 
   @Override
-  public ATypeElement getPreOrPostconditionsForExpression(
+  public ATypeElement getPreOrPostconditions(
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,
