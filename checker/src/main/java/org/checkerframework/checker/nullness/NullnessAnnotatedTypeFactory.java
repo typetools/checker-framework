@@ -70,10 +70,10 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the nullness type-system. */
@@ -639,7 +639,8 @@ public class NullnessAnnotatedTypeFactory
       if (!subKind.isInSameHierarchyAs(NULLABLE) || !superKind.isInSameHierarchyAs(NULLABLE)) {
         return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
       }
-      throw new BugInCF("Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
+      throw new TypeSystemError(
+          "Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
     }
 
     @Override
@@ -653,7 +654,8 @@ public class NullnessAnnotatedTypeFactory
           || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
         return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
       }
-      throw new BugInCF("Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
+      throw new TypeSystemError(
+          "Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
     }
 
     @Override
@@ -667,7 +669,8 @@ public class NullnessAnnotatedTypeFactory
           || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
         return this.greatestLowerBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
       }
-      throw new BugInCF("Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
+      throw new TypeSystemError(
+          "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
     }
   }
 

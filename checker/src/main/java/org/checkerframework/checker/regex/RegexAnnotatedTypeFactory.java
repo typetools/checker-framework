@@ -42,8 +42,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Adds {@link Regex} to the type of tree, in the following cases:
@@ -188,7 +188,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (subKind == PARTIALREGEX_KIND && superKind == PARTIALREGEX_KIND) {
         return AnnotationUtils.areSame(subAnno, superAnno);
       }
-      throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);
+      throw new TypeSystemError("Unexpected qualifiers: %s %s", subAnno, superAnno);
     }
 
     @Override
@@ -217,7 +217,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (qualifierKind2 == PARTIALREGEX_KIND || qualifierKind2 == REGEX_KIND) {
         return a2;
       }
-      throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+      throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
     }
 
     @Override
@@ -246,7 +246,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (qualifierKind2 == PARTIALREGEX_KIND || qualifierKind2 == REGEX_KIND) {
         return a2;
       }
-      throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+      throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
     }
 
     /**
