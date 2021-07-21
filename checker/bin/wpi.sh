@@ -294,20 +294,25 @@ fi
 configure_and_exec_dljc "$@"
 
 # If running under Java 8 failed and Java 11 is also available, then try running again under Java 11.
-if [ "${has_java11}" = "yes" ] && [ "${has_java8}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+  # If Java 8 was not available, then the first run already would have used Java 11, so
+  # there's no reason to run again.
+  if [ "${has_java8}" = "yes" ]; then
     export JAVA_HOME="${JAVA11_HOME}"
     echo "couldn't build using Java 8; trying Java 11"
     configure_and_exec_dljc "$@"
+  fi
 fi
 
 # If running under Java 8 and/or 11 failed and Java 16 is available, then try Java 16.
 if [ "${has_java16}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-  # If only Java 16 was available, then the first run would have used Java 16, so there's no reason to run again.
+  # If neither Java 8 nor Java 11 were available, then the first run would have used
+  # Java 16, so there's no reason to run again.
   if [ "${has_java11}" = "yes" ] || [ "${has_java8}" = "yes" ]; then
-      export JAVA_HOME="${JAVA16_HOME}"
-      echo "couldn't build using Java 11 or Java 8; trying Java 16"
-      configure_and_exec_dljc "$@"
-    fi
+    export JAVA_HOME="${JAVA16_HOME}"
+    echo "couldn't build using Java 11 or Java 8; trying Java 16"
+    configure_and_exec_dljc "$@"
+  fi
 fi
 
 # support wpi-many.sh's ability to delete projects without usable results
