@@ -152,17 +152,17 @@ class MustCallConsistencyAnalyzer {
    * the set of resource aliases through which that obligation can be fulfilled. This dataflow
    * analysis (and therefore this class) tracks only the latter; the former are tracked by the
    * {@link MustCallChecker} and are accessed by looking up the type(s) in its type system of the
-   * resource aliases contained in each {@code Obligation}.
+   * resource aliases contained in each {@code Obligation} using {@link
+   * #getMustCallMethods(ResourceLeakAnnotatedTypeFactory, CFStore)}.
    */
   /* package-private */ static class Obligation {
 
-    // TODO:  Is there any necessary relationship among their must-call types?  If their types are
-    // not guaranteed to be identical, then what does "the required method(s)" in the second
-    // sentence below mean?
     /**
      * The set of resource aliases through which this must-call obligation can be satisfied. Calling
-     * the required method(s) through any of them satisfies the obligation. The required methods can
-     * be determined by calling
+     * the required method(s) in the must-call obligation through any of them satisfies the
+     * obligation: if the called-methods type of any alias contains the required method(s), then the
+     * obligation is satisfied. See {@link #getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+     * CFStore)}.
      *
      * <p>{@code Obligation} is deeply immutable. If some code were to accidentally mutate a {@code
      * resourceAliases} set it could be really nasty to debug, so this set is always immutable.
@@ -190,6 +190,23 @@ class MustCallConsistencyAnalyzer {
       Element element = localVariableNode.getElement();
       for (ResourceAlias alias : resourceAliases) {
         if (alias.reference.getElement().equals(element)) {
+          return alias;
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Returns the resource alias in this obligation's resource alias set corresponding to {@code
+     * expression} if one is present. Otherwise, returns null.
+     *
+     * @param expression a Java expression
+     * @return the resource alias corresponding to {@code expression} if one is present; otherwise,
+     *     null
+     */
+    private @Nullable ResourceAlias getResourceAlias(JavaExpression expression) {
+      for (ResourceAlias alias : resourceAliases) {
+        if (alias.reference.equals(expression)) {
           return alias;
         }
       }
@@ -526,18 +543,15 @@ class MustCallConsistencyAnalyzer {
         Obligation toRemove = null;
         Obligation toAdd = null;
         for (Obligation obligation : obligations) {
-          // It seems that this predicate could be made into a method in the `Obligation` class,
-          // which would make the code slightly shorter and -- more importantly -- clearer.
-          for (ResourceAlias alias : obligation.resourceAliases) {
-            if (expression.equals(alias.reference)) {
-              // This satisfies case 2 above. Remove all its aliases, then return below.
-              if (toRemove != null) {
-                throw new TypeSystemError(
-                    "tried to remove multiple sets containing a reset expression at once");
-              }
-              toRemove = obligation;
-              toAdd = new Obligation(ImmutableSet.of(alias));
+          ResourceAlias alias = obligation.getResourceAlias(expression);
+          if (alias != null) {
+            // This satisfies case 2 above. Remove all its aliases, then return below.
+            if (toRemove != null) {
+              throw new TypeSystemError(
+                  "tried to remove multiple sets containing a reset expression at once");
             }
+            toRemove = obligation;
+            toAdd = new Obligation(ImmutableSet.of(alias));
           }
         }
 
