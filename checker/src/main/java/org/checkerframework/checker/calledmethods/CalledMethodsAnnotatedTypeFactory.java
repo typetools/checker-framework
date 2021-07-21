@@ -380,7 +380,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   @Override
-  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
+  protected @Nullable AnnotationMirror createRequiresOrEnsuresQualifier(
       String expression,
       AnnotationMirror qualifier,
       AnnotatedTypeMirror declaredType,
@@ -395,7 +395,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       }
     }
 
-    return super.requiresOrEnsuresQualifierAnnoForExpression(
+    return super.createRequiresOrEnsuresQualifier(
         expression, qualifier, declaredType, preOrPost, preconds);
   }
 

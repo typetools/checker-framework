@@ -805,7 +805,7 @@ public class NullnessAnnotatedTypeFactory
   //  * check for @MonotonicNonNull
   //  * output @RequiresNonNull rather than @RequiresQualifier.
   @Override
-  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
+  protected @Nullable AnnotationMirror createRequiresOrEnsuresQualifier(
       String expression,
       AnnotationMirror qualifier,
       AnnotatedTypeMirror declaredType,
@@ -835,7 +835,7 @@ public class NullnessAnnotatedTypeFactory
             qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
       return ensuresNonNullAnno(expression);
     }
-    return super.requiresOrEnsuresQualifierAnnoForExpression(
+    return super.createRequiresOrEnsuresQualifier(
         expression, qualifier, declaredType, preOrPost, preconds);
   }
 

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -2396,9 +2397,7 @@ public abstract class GenericAnnotatedTypeFactory<
       AnnotatedTypeMirror declaredType = storage.getPreconditionDeclaredType(m, entry.getKey());
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
-      result.addAll(
-          getPreOrPostconditionAnnotation(
-              entry.getKey(), inferredType, declaredType, BeforeOrAfter.BEFORE, null));
+      result.addAll(getPreconditionAnnotations(entry.getKey(), inferredType, declaredType));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
@@ -2432,8 +2431,7 @@ public abstract class GenericAnnotatedTypeFactory<
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
       result.addAll(
-          getPreOrPostconditionAnnotation(
-              entry.getKey(), inferredType, declaredType, BeforeOrAfter.AFTER, preconds));
+          getPostconditionAnnotations(entry.getKey(), inferredType, declaredType, preconds));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
@@ -2468,12 +2466,8 @@ public abstract class GenericAnnotatedTypeFactory<
     for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         methodAnnos.getPreconditions().entrySet()) {
       result.addAll(
-          getPreOrPostconditionAnnotation(
-              entry.getKey(),
-              entry.getValue().first,
-              entry.getValue().second,
-              BeforeOrAfter.BEFORE,
-              null));
+          getPreconditionAnnotations(
+              entry.getKey(), entry.getValue().first, entry.getValue().second));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
@@ -2495,15 +2489,61 @@ public abstract class GenericAnnotatedTypeFactory<
     for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         methodAnnos.getPostconditions().entrySet()) {
       result.addAll(
-          getPreOrPostconditionAnnotation(
-              entry.getKey(),
-              entry.getValue().first,
-              entry.getValue().second,
-              BeforeOrAfter.AFTER,
-              preconds));
+          getPostconditionAnnotations(
+              entry.getKey(), entry.getValue().first, entry.getValue().second, preconds));
     }
     Collections.sort(result, Ordering.usingToString());
     return result;
+  }
+
+  /**
+   * Returns an {@code @RequiresQualifier} annotation for the given expression. Returns an empty
+   * list if none can be created, because the qualifier has elements/arguments, which
+   * {@code @RequiresQualifier} does not support (subclasses are permitted to remove this
+   * restriction).
+   *
+   * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
+   * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
+   * {@code @B} which is a sub-qualifier of {@code @A}.
+   *
+   * @param expression an expression
+   * @param inferredType the type of the expression, on method exit
+   * @param declaredType the declared type of the expression
+   * @return precondition annotations for the element (possibly an empty list)
+   */
+  public List<AnnotationMirror> getPreconditionAnnotations(
+      String expression, AnnotatedTypeMirror inferredType, AnnotatedTypeMirror declaredType) {
+    return getPreOrPostconditionAnnotations(
+        expression, inferredType, declaredType, BeforeOrAfter.BEFORE, null);
+  }
+
+  /**
+   * Returns an {@code @EnsuresQualifier} annotation for the given expression. Returns an empty list
+   * if none can be created, because the qualifier has elements/arguments, which
+   * {@code @EnsuresQualifier} does not support (subclasses are permitted to remove this
+   * restriction).
+   *
+   * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
+   * subclasses may do so.
+   *
+   * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt", qualifier=MyQual.class)}
+   * when elt is declared as {@code @A} or {@code @Poly*} and f contains {@code @B} which is a
+   * sub-qualifier of {@code @A}.
+   *
+   * @param expression an expression
+   * @param inferredType the type of the expression, on method exit
+   * @param declaredType the declared type of the expression
+   * @param preconds the precondition annotations for the method; used to suppress redundant
+   *     postconditions
+   * @return postcondition annotations for the element (possibly an empty list)
+   */
+  public List<AnnotationMirror> getPostconditionAnnotations(
+      String expression,
+      AnnotatedTypeMirror inferredType,
+      AnnotatedTypeMirror declaredType,
+      List<AnnotationMirror> preconds) {
+    return getPreOrPostconditionAnnotations(
+        expression, inferredType, declaredType, BeforeOrAfter.AFTER, preconds);
   }
 
   /**
@@ -2528,7 +2568,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
    * @return precondition or postcondition annotations for the element (possibly an empty list)
    */
-  protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
+  protected List<AnnotationMirror> getPreOrPostconditionAnnotations(
       String expression,
       AnnotatedTypeMirror inferredType,
       AnnotatedTypeMirror declaredType,
@@ -2552,7 +2592,7 @@ public abstract class GenericAnnotatedTypeFactory<
         continue;
       }
       AnnotationMirror anno =
-          requiresOrEnsuresQualifierAnnoForExpression(
+          createRequiresOrEnsuresQualifier(
               expression, inferredAm, declaredType, preOrPost, preconds);
       if (anno != null) {
         result.add(anno);
@@ -2563,7 +2603,13 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
+   * Matches parameter expressions as they appear in {@link EnsuresQualifier} and {@link
+   * RequiresQualifier} annotations, e.g. "#1", "#2", etc.
+   */
+  protected static final Pattern formalParameterPattern = Pattern.compile("^#[0-9]+$");
+
+  /**
+   * Creates a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    * the given expression. Returns null if none can be created, because the qualifier has
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
    * support. Also returns null if the expression is invalid when combined with the kind of
@@ -2575,6 +2621,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
    * {@code @B} which is a sub-qualifier of {@code @A}.
    *
+   * <p>Subclasses may override this method to return qualifiers that do have arguments instead of
+   * returning null.
+   *
    * @param expression the expression to which the qualifier applies
    * @param qualifier the qualifier that must be present
    * @param declaredType the declared type of the expression, which is used to avoid inferring
@@ -2585,7 +2634,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    *     the given field, or null
    */
-  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnnoForExpression(
+  protected @Nullable AnnotationMirror createRequiresOrEnsuresQualifier(
       String expression,
       AnnotationMirror qualifier,
       AnnotatedTypeMirror declaredType,
@@ -2594,7 +2643,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // Do not generate RequiresQualifier annotations for "this" or parameter expressions.
     if (preOrPost == BeforeOrAfter.BEFORE
-        && ("this".equals(expression) || expression.startsWith("#"))) {
+        && ("this".equals(expression) || formalParameterPattern.matcher(expression).matches())) {
       return null;
     }
 
