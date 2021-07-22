@@ -45,6 +45,7 @@ echo "Starting wpi-many.sh."
 
 # check required arguments and environment variables:
 
+# shellcheck disable=SC2153 # testing for JAVA_HOME, not a typo of JAVA8_HOME
 if [ "${JAVA_HOME}" = "" ]; then
   has_java_home="no"
 else
@@ -135,9 +136,6 @@ fi
 if [ "${SKIP_OR_DELETE_UNUSABLE}" = "" ]; then
   SKIP_OR_DELETE_UNUSABLE="delete"
 fi
-
-JAVA_HOME_BACKUP="${JAVA_HOME}"
-export JAVA_HOME="${JAVA11_HOME}"
 
 ### Script
 
@@ -306,7 +304,5 @@ else
     echo "skipping computation of lines of code because the operating system is not linux: ${OSTYPE}}"
   fi
 fi
-
-export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
 echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."
