@@ -37,6 +37,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -939,10 +940,10 @@ public class ElementUtils {
    * @return the return value of calling getRecordComponents, or empty list if the method is not
    *     available.
    */
-  @SuppressWarnings("unchecked") // because of cast from reflection
+  @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
   public static List<? extends Element> getRecordComponents(TypeElement element) {
     try {
-      return (List<? extends Element>)
+      return (@NonNull List<? extends Element>)
           TypeElement.class.getMethod("getRecordComponents").invoke(element);
     } catch (NoSuchMethodException e) {
       return Collections.emptyList();
