@@ -8,6 +8,7 @@ Version 3.17.0 (August 3, 2021)
 Method renamings in `GenericAnnotatedTypeFactory`:
 * `getPreconditionAnnotation` => `getPreconditionAnnotations`
 * `getPostconditionAnnotation` => `getPostconditionAnnotations`
+* `getPreOrPostconditionAnnotation` => `getPreOrPostconditionAnnotations`
 
 **Closed issues:**
 

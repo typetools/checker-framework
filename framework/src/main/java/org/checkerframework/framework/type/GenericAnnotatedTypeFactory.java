@@ -2491,7 +2491,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public List<AnnotationMirror> getPreconditionAnnotations(
       VariableElement elt, AnnotatedTypeMirror inferredType) {
-    return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.BEFORE, null);
+    return getPreOrPostconditionAnnotations(elt, inferredType, BeforeOrAfter.BEFORE, null);
   }
 
   /**
@@ -2514,7 +2514,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public List<AnnotationMirror> getPostconditionAnnotations(
       VariableElement elt, AnnotatedTypeMirror inferredType, List<AnnotationMirror> preconds) {
-    return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.AFTER, preconds);
+    return getPreOrPostconditionAnnotations(elt, inferredType, BeforeOrAfter.AFTER, preconds);
   }
 
   /**
@@ -2536,7 +2536,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
    * @return precondition or postcondition annotations for the element (possibly an empty list)
    */
-  protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
+  protected List<AnnotationMirror> getPreOrPostconditionAnnotations(
       VariableElement elt,
       AnnotatedTypeMirror inferredType,
       Analysis.BeforeOrAfter preOrPost,
@@ -2564,7 +2564,7 @@ public abstract class GenericAnnotatedTypeFactory<
         declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
         if (declaredAm == null) {
           throw new BugInCF(
-              "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s"
+              "getPreOrPostconditionAnnotations(%s, %s): no defaulted annotation%n  declaredType=%s"
                   + "  [%s %s]%n  inferredType=%s  [%s %s]%n",
               elt,
               inferredType,
