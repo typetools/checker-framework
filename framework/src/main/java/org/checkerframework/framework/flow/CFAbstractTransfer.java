@@ -254,7 +254,7 @@ public abstract class CFAbstractTransfer<
      *     annotatedValue}
      * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
      */
-    @Deprecated // use getWidenedValue() or getNarrowedValue()
+    @Deprecated // 2020-10-02
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
         if (annotatedValue == null) {
             return null;
@@ -1355,5 +1355,25 @@ public abstract class CFAbstractTransfer<
         TransferResult<V, S> result = super.visitStringConversion(n, p);
         result.setResultValue(p.getValueOfSubNode(n.getOperand()));
         return result;
+    }
+
+    /**
+     * Inserts newAnno as the value into all stores (conditional or not) in the result for node.
+     * This is a utility method for subclasses.
+     *
+     * @param result the TransferResult holding the stores to modify
+     * @param target the receiver whose value should be modified
+     * @param newAnno the new value
+     */
+    public static void insertIntoStores(
+            TransferResult<CFValue, CFStore> result,
+            JavaExpression target,
+            AnnotationMirror newAnno) {
+        if (result.containsTwoStores()) {
+            result.getThenStore().insertValue(target, newAnno);
+            result.getElseStore().insertValue(target, newAnno);
+        } else {
+            result.getRegularStore().insertValue(target, newAnno);
+        }
     }
 }

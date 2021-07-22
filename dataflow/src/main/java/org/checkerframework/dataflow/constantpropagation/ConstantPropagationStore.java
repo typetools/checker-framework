@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -147,7 +147,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     public String toString() {
         // only output local variable information
         Map<Node, Constant> contentsWithoutLocalVars =
-                new LinkedHashMap<>(SystemUtil.mapCapacity(contents));
+                new LinkedHashMap<>(CollectionsPlume.mapCapacity(contents));
         for (Map.Entry<Node, Constant> e : contents.entrySet()) {
             if (e.getKey() instanceof LocalVariableNode) {
                 contentsWithoutLocalVars.put(e.getKey(), e.getValue());

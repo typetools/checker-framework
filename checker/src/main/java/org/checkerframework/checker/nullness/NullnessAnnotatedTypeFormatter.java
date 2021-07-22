@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
@@ -30,11 +31,14 @@ public class NullnessAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatte
 
         @Override
         public String visitNull(AnnotatedNullType type, Set<AnnotatedTypeMirror> visiting) {
-            // The null type will be understood as nullable by readers (I hope), therefore omit the
-            // annotations.
-            // Note: The visitTypeVariable will still print lower bounds with Null kind as "Void"
-            if (!currentPrintInvisibleSetting) {
-                return "null (NullType)";
+            if (type.getAnnotation(Nullable.class) != null) {
+                // The null type will be understood as nullable by readers (I hope), therefore omit
+                // the annotations if they are @Nullable.
+                // Note: The visitTypeVariable will still print lower bounds with Null kind as
+                // "Void"
+                if (!currentPrintInvisibleSetting) {
+                    return "null (NullType)";
+                }
             }
 
             return super.visitNull(type, visiting);

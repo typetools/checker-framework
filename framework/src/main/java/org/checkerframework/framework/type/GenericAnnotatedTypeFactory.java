@@ -90,7 +90,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -361,7 +360,7 @@ public abstract class GenericAnnotatedTypeFactory<
             Types types = getChecker().getTypeUtils();
             Elements elements = getElementUtils();
             Class<?>[] classes = relevantJavaTypesAnno.value();
-            this.relevantJavaTypes = new HashSet<>(SystemUtil.mapCapacity(classes.length));
+            this.relevantJavaTypes = new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
             this.arraysAreRelevant = false;
             for (Class<?> clazz : classes) {
                 if (clazz == Object[].class) {

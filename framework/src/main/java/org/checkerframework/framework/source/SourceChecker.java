@@ -39,6 +39,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
 
@@ -736,7 +737,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
 
         for (Class<?> checker : checkers) {
-            messagesProperties.putAll(getProperties(checker, MSGS_FILE));
+            messagesProperties.putAll(getProperties(checker, MSGS_FILE, true));
         }
         return messagesProperties;
     }
@@ -1650,7 +1651,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             return Collections.emptyMap();
         }
 
-        Map<String, String> activeOpts = new HashMap<>(SystemUtil.mapCapacity(options));
+        Map<String, String> activeOpts = new HashMap<>(CollectionsPlume.mapCapacity(options));
 
         for (Map.Entry<String, String> opt : options.entrySet()) {
             String key = opt.getKey();
@@ -2667,23 +2668,27 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      *
      * @param cls the class whose location is the base of the file path
      * @param filePath the name/path of the file to be read
+     * @param permitNonExisting if true, return an empty Properties if the file does not exist or
+     *     cannot be parsed; if false, issue an error
      * @return the properties
      */
-    protected Properties getProperties(Class<?> cls, String filePath) {
+    protected Properties getProperties(Class<?> cls, String filePath, boolean permitNonExisting) {
         Properties prop = new Properties();
         try {
             InputStream base = cls.getResourceAsStream(filePath);
 
             if (base == null) {
-                // No message customization file was given
-                return prop;
+                // The property file was not found.
+                if (permitNonExisting) {
+                    return prop;
+                } else {
+                    throw new BugInCF("Couldn't locate properties file " + filePath);
+                }
             }
 
             prop.load(base);
         } catch (IOException e) {
-            message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
-            // e.printStackTrace();
-            // ignore the possible customization file
+            throw new BugInCF("Couldn't parse properties file: " + filePath, e);
         }
         return prop;
     }
@@ -2720,7 +2725,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @return the Checker Framework version
      */
     private String getCheckerVersion() {
-        Properties gitProperties = getProperties(getClass(), "/git.properties");
+        Properties gitProperties = getProperties(getClass(), "/git.properties", false);
         String version = gitProperties.getProperty("git.build.version");
         if (version != null) {
             return version;

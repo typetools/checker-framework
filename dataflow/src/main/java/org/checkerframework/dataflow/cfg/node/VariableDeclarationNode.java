@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 /**
- * A node for a local variable declaration:
+ * A node for a variable declaration, including local variables and fields:
  *
  * <pre>
  *   <em>modifier</em> <em>type</em> <em>identifier</em>;

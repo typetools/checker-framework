@@ -14,14 +14,30 @@ import java.util.Objects;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
+/**
+ * A FieldAccess represents a field access. It does not represent a class literal such as {@code
+ * SomeClass.class} or {@code int[].class}.
+ */
 public class FieldAccess extends JavaExpression {
+    /** The receiver of the field access. */
     protected final JavaExpression receiver;
+    /** The field being accessed. */
     protected final VariableElement field;
 
+    /**
+     * Returns the receiver.
+     *
+     * @return the receiver
+     */
     public JavaExpression getReceiver() {
         return receiver;
     }
 
+    /**
+     * Returns the field.
+     *
+     * @return the field
+     */
     public VariableElement getField() {
         return field;
     }
@@ -57,6 +73,17 @@ public class FieldAccess extends JavaExpression {
         super(type);
         this.receiver = receiver;
         this.field = fieldElement;
+        String fieldName = fieldElement.toString();
+        if (fieldName.equals("class") || fieldName.equals("this")) {
+            Error e =
+                    new Error(
+                            String.format(
+                                    "bad field name \"%s\" in new FieldAccess(%s, %s, %s)%n",
+                                    fieldName, receiver, type, fieldElement));
+            e.printStackTrace(System.out);
+            e.printStackTrace(System.err);
+            throw e;
+        }
     }
 
     public boolean isFinal() {

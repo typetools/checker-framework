@@ -15,7 +15,7 @@ public interface RegularBlock extends SingleSuccessorBlock {
      * @return the unmodifiable sequence of {@link Node}s
      * @deprecated use {@link #getNodes} instead
      */
-    @Deprecated // use getNodes instead
+    @Deprecated // 2020-08-05
     @Pure
     List<Node> getContents();
 

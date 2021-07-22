@@ -918,7 +918,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     NoElementQualifierHierarchy}, or {@link MostlyNoElementQualifierHierarchy} instead. This
      *     method will be removed in a future release.
      */
-    @Deprecated
+    @Deprecated // 2020-09-10
     public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
             org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory
                     factory) {
@@ -3064,7 +3064,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the canonical annotation
      * @deprecated use {@code addAliasedTypeAnnotation}
      */
-    @Deprecated // use addAliasedTypeAnnotation
+    @Deprecated // 2020-12-15
     protected void addAliasedAnnotation(Class<?> aliasClass, AnnotationMirror type) {
         addAliasedTypeAnnotation(aliasClass, type);
     }
@@ -3101,11 +3101,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param aliasName the canonical name of the aliased annotation
      * @param canonicalAnno the canonical annotation
-     * @deprecated use {@code addAliasedTypeAnnotation}
+     * @deprecated use {@link #addAliasedTypeAnnotation}
      */
     // aliasName is annotated as @FullyQualifiedName because there is no way to confirm that the
     // name of an external annotation is a canoncal name.
-    @Deprecated // use addAliasedTypeAnnotation
+    @Deprecated // 2020-12-15
     protected void addAliasedAnnotation(
             @FullyQualifiedName String aliasName, AnnotationMirror canonicalAnno) {
         addAliasedTypeAnnotation(aliasName, canonicalAnno);
@@ -3159,7 +3159,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     being copied over
      * @deprecated use {@code addAliasedTypeAnnotation}
      */
-    @Deprecated // use addAliasedTypeAnnotation
+    @Deprecated // 2020-12-15
     protected void addAliasedAnnotation(
             Class<?> aliasClass,
             Class<?> canonical,

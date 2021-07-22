@@ -87,7 +87,7 @@ import javax.lang.model.element.Name;
  * </code></pre>
  */
 @SuppressWarnings("interning") // Class is deprecated.
-@Deprecated
+@Deprecated // 2020-09-10
 public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
 
     /**
@@ -98,7 +98,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
      * @return qualifier hierarchy
      * @deprecated Use {@link ElementQualifierHierarchy} instead.
      */
-    @Deprecated
+    @Deprecated // 2020-09-10
     public static QualifierHierarchy createMultiGraphQualifierHierarchy(
             AnnotatedTypeFactory annotatedTypeFactory) {
         Set<Class<? extends Annotation>> supportedTypeQualifiers =
@@ -192,7 +192,7 @@ public class MultiGraphQualifierHierarchy implements QualifierHierarchy {
      *
      * @deprecated Use {@link ElementQualifierHierarchy} instead.
      */
-    @Deprecated
+    @Deprecated // 2020-09-10
     public static class MultiGraphFactory {
         /**
          * Map from qualifiers to the direct supertypes of the qualifier. Only the subtype relations

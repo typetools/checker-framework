@@ -21,8 +21,11 @@ public class NullnessStubfileTest extends CheckerFrameworkPerDirectoryTest {
                 "-Anomsgtext",
                 "-AstubWarnIfNotFound",
                 "-Astubs="
-                        + "tests/nullness-stubfile/stubfile1.astub:"
-                        + "tests/nullness-stubfile/stubfile2.astub");
+                        + String.join(
+                                ":",
+                                "tests/nullness-stubfile/stubfile1.astub",
+                                "tests/nullness-stubfile/stubfile2.astub",
+                                "tests/nullness-stubfile/requireNonNull.astub"));
     }
 
     @Parameters

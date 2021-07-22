@@ -102,7 +102,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.13.0'
+    version '3.14.0'
 
     repositories {
         mavenCentral()
@@ -114,7 +114,7 @@ allprojects {
         // Holds the combined classpath of all subprojects including the subprojects themselves.
         allProjects
 
-        // Exclude checker-qual dependency added by ErrorProne to avoid a circular dependency.
+        // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
@@ -215,7 +215,7 @@ allprojects {
                     '-Werror',
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-                    // are suppressible warns with a "// fall through" comment.
+                    // warnings are suppressible with a "// fall through" comment.
                     "-Xlint:-options,-fallthrough",
                     "-Xlint",
             ]
@@ -226,7 +226,7 @@ allprojects {
                 options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()]
             }
 
-            // Error prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
+            // Error Prone depends on checker-qual.jar, so don't run it on that project to avoid a circular dependency.
             // TODO: enable Error Prone on test classes.
             if (compilationTask.name.equals('compileJava') && !project.name.startsWith('checker-qual')) {
                 // Error Prone must be available in the annotation processor path
@@ -249,6 +249,8 @@ allprojects {
                         '-Xep:AnnotateFormatMethod:OFF',
                         // Warns for every use of "@checker_framework.manual"
                         '-Xep:InvalidBlockTag:OFF',
+                        // Recommends writing @InlineMe which is an Error-Prone-specific annotation
+                        '-Xep:InlineMeSuggester:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -289,11 +291,18 @@ task maybeCloneAndBuildDependencies() {
                 executable "${stubparser}/.travis-build-without-test.sh"
             }
         } else {
-            executable 'checker/bin-devel/build.sh'
+            exec {
+                executable 'checker/bin-devel/build.sh'
+            }
         }
     }
     doLast {
         if (!file(stubparserJar).exists()) {
+            exec {
+                workingDir ${stubparser}/javaparser-core/target
+                executable 'ls'
+                ignoreExitValue = true
+            }
             throw new RuntimeException("Can't find stubparser jar: " + stubparserJar)
         }
     }
@@ -409,6 +418,7 @@ task htmlValidate(type: Exec, group: 'Format') {
             "/api/",
             "/build/",
             "/docs/manual/manual.html",
+            "/docs/manual/plume-bib/docs/index.html",
             "/checker/jdk/nullness/src/java/lang/ref/package.html"
     ]
 }
@@ -459,7 +469,7 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.1"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.2"
 }
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
@@ -639,7 +649,7 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.6.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.7.1'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -910,7 +920,7 @@ subprojects {
         tasks.create(name: 'inferenceTests', group: 'Verification') {
             description 'Run inference tests.'
             if (project.name.is('checker')) {
-//                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
         }
 

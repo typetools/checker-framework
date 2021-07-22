@@ -161,7 +161,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
 
         String qname;
         if (type.getKind() == TypeKind.DECLARED) {
-            qname = TypesUtils.getQualifiedName((DeclaredType) type.getUnderlyingType()).toString();
+            qname = TypesUtils.getQualifiedName((DeclaredType) type.getUnderlyingType());
         } else if (type.getKind().isPrimitive()) {
             qname = type.getUnderlyingType().toString();
         } else {

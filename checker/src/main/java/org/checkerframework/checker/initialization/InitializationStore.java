@@ -130,6 +130,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
      * Mark the field identified by the element {@code field} as initialized if it belongs to the
      * current class, or is static (in which case there is no aliasing issue and we can just add all
      * static fields).
+     *
+     * @param field a field that is initialized
      */
     public void addInitializedField(FieldAccess field) {
         boolean fieldOnThisReference = field.getReceiver() instanceof ThisReference;
@@ -142,6 +144,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     /**
      * Mark the field identified by the element {@code f} as initialized (the caller needs to ensure
      * that the field belongs to the current class, or is a static field).
+     *
+     * @param f a field that is initialized
      */
     public void addInitializedField(VariableElement f) {
         initializedFields.add(f);
@@ -159,6 +163,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         }
         @SuppressWarnings("unchecked")
         S other = (S) o;
+
         for (Element field : other.initializedFields) {
             if (!initializedFields.contains(field)) {
                 return false;
@@ -234,9 +239,11 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
         String superVisualize = super.internalVisualize(viz);
+
         String initializedVisualize =
                 viz.visualizeStoreKeyVal(
                         "initialized fields", ToStringComparator.sorted(initializedFields));
+
         List<VariableElement> invariantVars =
                 CollectionsPlume.mapList(FieldAccess::getField, invariantFields.keySet());
         String invariantVisualize =

@@ -12,7 +12,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.CollectionsPlume;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -411,11 +411,12 @@ public abstract class UBQualifier {
          * @return a copy of the map
          */
         private Map<String, Set<OffsetEquation>> copyMap() {
-            Map<String, Set<OffsetEquation>> result = new HashMap<>(SystemUtil.mapCapacity(map));
+            Map<String, Set<OffsetEquation>> result =
+                    new HashMap<>(CollectionsPlume.mapCapacity(map));
             for (String sequenceName : map.keySet()) {
                 Set<OffsetEquation> oldEquations = map.get(sequenceName);
                 Set<OffsetEquation> newEquations =
-                        new HashSet<>(SystemUtil.mapCapacity(oldEquations));
+                        new HashSet<>(CollectionsPlume.mapCapacity(oldEquations));
                 for (OffsetEquation offsetEquation : oldEquations) {
                     newEquations.add(new OffsetEquation(offsetEquation));
                 }
@@ -457,7 +458,8 @@ public abstract class UBQualifier {
         private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
                 List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
 
-            Map<String, Set<OffsetEquation>> map = new HashMap<>(SystemUtil.mapCapacity(sequences));
+            Map<String, Set<OffsetEquation>> map =
+                    new HashMap<>(CollectionsPlume.mapCapacity(sequences));
             if (offsets.isEmpty()) {
                 for (String sequence : sequences) {
                     // Not `Collections.singleton(extraEq)` because the values get modified
@@ -835,7 +837,7 @@ public abstract class UBQualifier {
             sequences.retainAll(otherLtl.map.keySet());
 
             Map<String, Set<OffsetEquation>> lubMap =
-                    new HashMap<>(SystemUtil.mapCapacity(sequences));
+                    new HashMap<>(CollectionsPlume.mapCapacity(sequences));
             for (String sequence : sequences) {
                 Set<OffsetEquation> offsets1 = map.get(sequence);
                 Set<OffsetEquation> offsets2 = otherLtl.map.get(sequence);

@@ -217,7 +217,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
             try {
                 parsedType =
                         StaticJavaParser.parseClassOrInterfaceType(
-                                TypesUtils.getQualifiedName(type).toString());
+                                TypesUtils.getQualifiedName(type));
             } catch (ParseProblemException e) {
                 throw new BugInCF("Invalid class or interface name: " + value, e);
             }

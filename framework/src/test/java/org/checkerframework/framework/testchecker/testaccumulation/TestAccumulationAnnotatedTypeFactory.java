@@ -65,7 +65,7 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
             // returns receiver methods; it does not support automatically accumulating at the same
             // time.
             if (returnsThis(tree)) {
-                String methodName = TreeUtils.getMethodName(tree.getMethodSelect()).toString();
+                String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
                 AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);
                 type.replaceAnnotation(
                         qualHierarchy.greatestLowerBound(

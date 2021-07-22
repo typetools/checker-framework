@@ -477,7 +477,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
         JavaExpression receiver = null;
         if (NodeUtils.isArrayLengthFieldAccess(lengthAccess)) {
-            FieldAccess fa = JavaExpression.fromNodeFieldAccess((FieldAccessNode) lengthAccess);
+            FieldAccess fa =
+                    (FieldAccess)
+                            JavaExpression.fromNodeFieldAccess((FieldAccessNode) lengthAccess);
             receiver = fa.getReceiver();
 
         } else if (atypeFactory.getMethodIdentifier().isLengthOfMethodInvocation(lengthAccess)) {
@@ -724,7 +726,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode n, TransferInput<CFValue, CFStore> in) {
         if (NodeUtils.isArrayLengthFieldAccess(n)) {
-            FieldAccess arrayLength = JavaExpression.fromNodeFieldAccess(n);
+            FieldAccess arrayLength = (FieldAccess) JavaExpression.fromNodeFieldAccess(n);
             JavaExpression arrayJe = arrayLength.getReceiver();
             Tree arrayTree = n.getReceiver().getTree();
             TransferResult<CFValue, CFStore> result = visitLengthAccess(n, in, arrayJe, arrayTree);

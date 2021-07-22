@@ -434,7 +434,7 @@ public interface QualifierHierarchy {
      *     the subtype relationship between "no qualifier" and a qualifier. Use {@link
      *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default boolean isSubtypeTypeVariable(
             @Nullable AnnotationMirror subQualifier, @Nullable AnnotationMirror superQualifier) {
         if (subQualifier == null) {
@@ -498,7 +498,7 @@ public interface QualifierHierarchy {
      *     the subtype relationship between "no qualifier" and a qualifier. Use {@link
      *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default boolean isSubtype(
             AnnotatedTypeMirror subType,
             AnnotatedTypeMirror superType,
@@ -527,7 +527,7 @@ public interface QualifierHierarchy {
      *     TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
     // This method requires more revision.
-    @Deprecated
+    @Deprecated // 2020-07-29
     default boolean isSubtypeTypeVariable(
             Collection<? extends AnnotationMirror> subAnnos,
             Collection<? extends AnnotationMirror> superAnnos) {
@@ -562,7 +562,7 @@ public interface QualifierHierarchy {
      *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
      *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default @Nullable AnnotationMirror leastUpperBoundTypeVariable(
             AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == null || a2 == null) {
@@ -596,7 +596,7 @@ public interface QualifierHierarchy {
      *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
      *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default @Nullable AnnotationMirror leastUpperBound(
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2,
@@ -627,7 +627,7 @@ public interface QualifierHierarchy {
      *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
      *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     @SuppressWarnings("nullness") // Don't check deprecated method.
     default Set<? extends AnnotationMirror> leastUpperBoundsTypeVariable(
             Collection<? extends AnnotationMirror> annos1,
@@ -675,7 +675,7 @@ public interface QualifierHierarchy {
      *     org.checkerframework.framework.util.AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
      *     AnnotatedTypeMirror, AnnotatedTypeMirror)}.
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default Set<? extends AnnotationMirror> leastUpperBounds(
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2,
@@ -701,7 +701,7 @@ public interface QualifierHierarchy {
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the relationship between "no qualifier" and a qualifier
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default @Nullable AnnotationMirror greatestLowerBoundTypeVariable(
             AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 == null) {
@@ -728,7 +728,7 @@ public interface QualifierHierarchy {
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the relationship between "no qualifier" and a qualifier
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     @SuppressWarnings("nullness") // Don't check deprecated method.
     default Set<? extends AnnotationMirror> greatestLowerBoundsTypeVariable(
             Collection<? extends AnnotationMirror> annos1,
@@ -771,7 +771,7 @@ public interface QualifierHierarchy {
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the relationship between "no qualifier" and a qualifier
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default @Nullable AnnotationMirror greatestLowerBound(
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2,
@@ -800,7 +800,7 @@ public interface QualifierHierarchy {
      * @deprecated Without the bounds of the type variable, it is not possible to correctly compute
      *     the relationship between "no qualifier" and a qualifier
      */
-    @Deprecated
+    @Deprecated // 2020-07-29
     default Set<? extends AnnotationMirror> greatestLowerBounds(
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2,

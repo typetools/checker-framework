@@ -223,8 +223,9 @@ The nullness hierarchy contains these qualifiers:
   arbitrary external method calls that have access to the given field.
   By contrast, for a \<@Nullable> field, the Nullness Checker assumes that
   most method calls might set it to \<null>. (Exceptions are calls to
-  methods that are \<@SideEffectFree> or that have an \<@EnsuresNonNull> or
-  \<@EnsuresNonNullIf> annotation.)
+  methods that are \refqualclass{dataflow/qual}{SideEffectFree} or that
+  have an \refqualclass{checker/nullness/qual}{EnsuresNonNull} or
+  \refqualclass{checker/nullness/qual}{EnsuresNonNullIf} annotation.)
   \end{sloppypar}
 
   A \<@MonotonicNonNull> field may be initialized to null, but the
@@ -237,6 +238,9 @@ The nullness hierarchy contains these qualifiers:
   Use of \<@MonotonicNonNull> on a \emph{static} field is a code smell:  it may
   indicate poor design.  You should consider whether it is possible to make
   the field a member field that is set in the constructor.
+
+  In the type system, \<@MonotonicNonNull> is a supertype of \<@NonNull>
+  and a subtype of \<@Nullable>.
 
 \end{description}
 

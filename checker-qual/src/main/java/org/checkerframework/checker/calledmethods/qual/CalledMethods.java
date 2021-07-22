@@ -11,7 +11,8 @@ import java.lang.annotation.Target;
 /**
  * If an expression has type {@code @CalledMethods({"m1", "m2"})}, then methods {@code m1} and
  * {@code m2} have definitely been called on its value. Other methods might or might not have been
- * called.
+ * called. "Been called" is defined as having been invoked: a method has "been called" even if it
+ * might never return or might throw an exception.
  *
  * <p>The subtyping relationship is:
  *
@@ -25,7 +26,7 @@ import java.lang.annotation.Target;
 @DefaultQualifierInHierarchy
 public @interface CalledMethods {
     /**
-     * Methods that have definitely been called, on any expression whose type is annotated.
+     * Methods that have definitely been called on the expression whose type is annotated.
      *
      * @return methods that have definitely been called
      */

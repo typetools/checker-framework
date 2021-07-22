@@ -118,22 +118,36 @@ import javax.tools.Diagnostic;
  * This class has three static methods. Each method parses an annotation file and adds annotations
  * to the {@link AnnotationFileAnnotations} passed as an argument.
  *
- * <p>The first main entry point is {@link AnnotationFileParser#parseStubFile(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, which side-effects its
- * last argument. It operates in two steps. First, it calls the Annotation File Parser to parse an
- * annotation file. Then, it walks the AST to create/collect types and declaration annotations.
+ * <p>The first main entry point is {@link #parseStubFile(String, InputStream, AnnotatedTypeFactory,
+ * ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileUtil.AnnotationFileType)}, which
+ * side-effects its last argument. It operates in two steps. First, it calls the Annotation File
+ * Parser to parse an annotation file. Then, it walks the AST to create/collect types and
+ * declaration annotations.
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
  * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
  * This behaves the same as {@link AnnotationFileParser#parseStubFile(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}, but takes an ajava file
- * instead.
+ * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations,
+ * AnnotationFileUtil.AnnotationFileType)}, but takes an ajava file instead.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
 public class AnnotationFileParser {
 
-    /** The type of file being parsed: stub file or ajava file. */
+    /**
+     * The type of file being parsed: stub file or ajava file. Also indicates its source, such as
+     * from the JDK, built in, or from the command line.
+     *
+     * <p>Non-JDK stub files override JDK stub files. (Ordinarily, if two stubs are provided, they
+     * are merged.)
+     *
+     * <p>For a built-in stub file,
+     *
+     * <ul>
+     *   <li>private declarations are ignored,
+     *   <li>some warning messages are not issued, and
+     * </ul>
+     */
     private final AnnotationFileType fileType;
 
     /**
@@ -241,14 +255,6 @@ public class AnnotationFileParser {
     /** The line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
 
-    /**
-     * Whether or not the file is a stub file that's part of the JDK.
-     *
-     * <p>Two differences are that in the JDK, private declarations are ignored and some warning
-     * messages are not issued.
-     */
-    private final boolean isJdkAsStub;
-
     /** Whether or not the {@code -AmergeStubsWithSource} command-line argument was passed. */
     private final boolean mergeStubsWithSource;
 
@@ -292,14 +298,12 @@ public class AnnotationFileParser {
      * @param filename name of annotation file, used only for diagnostic messages
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
-     * @param isJdkAsStub whether or not this is a stub file that's part of the JDK
-     * @param fileType the type of file being parsed (stub file or ajava file)
+     * @param fileType the type of file being parsed (stub file or ajava file) and its source
      */
     private AnnotationFileParser(
             String filename,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            boolean isJdkAsStub,
             AnnotationFileType fileType) {
         this.filename = filename;
         this.atypeFactory = atypeFactory;
@@ -311,7 +315,7 @@ public class AnnotationFileParser {
         // TODO: This should use SourceChecker.getOptions() to allow
         // setting these flags per checker.
         Map<String, String> options = processingEnv.getOptions();
-        this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
+        this.warnIfNotFound = fileType.isCommandLine() || options.containsKey("stubWarnIfNotFound");
         this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
         this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
         this.warnIfStubRedundantWithBytecode =
@@ -325,7 +329,6 @@ public class AnnotationFileParser {
 
         this.fromStubFileAnno = AnnotationBuilder.fromClass(elements, FromStubFile.class);
 
-        this.isJdkAsStub = isJdkAsStub;
         this.mergeStubsWithSource = atypeFactory.getChecker().hasOption("mergeStubsWithSource");
     }
 
@@ -531,22 +534,33 @@ public class AnnotationFileParser {
     }
 
     /**
-     * The main entry point. Parse a stub file and side-effects the last argument.
+     * The main entry point. Parse a stub file and side-effects the {@code annotationFileAnnos}
+     * argument.
      *
      * @param filename name of stub file, used only for diagnostic messages
      * @param inputStream of stub file to parse
      * @param atypeFactory AnnotatedTypeFactory to use
      * @param processingEnv ProcessingEnvironment to use
      * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
+     * @param fileType the annotation file type and source
      */
     public static void parseStubFile(
             String filename,
             InputStream inputStream,
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
-            AnnotationFileAnnotations annotationFileAnnos) {
-        parseStubFile(
-                filename, inputStream, atypeFactory, processingEnv, annotationFileAnnos, false);
+            AnnotationFileAnnotations annotationFileAnnos,
+            AnnotationFileType fileType) {
+        AnnotationFileParser afp =
+                new AnnotationFileParser(filename, atypeFactory, processingEnv, fileType);
+        try {
+            afp.parseStubUnit(inputStream);
+            afp.process(annotationFileAnnos);
+        } catch (ParseProblemException e) {
+            for (Problem p : e.getProblems()) {
+                afp.warn(null, p.getVerboseMessage());
+            }
+        }
     }
 
     /**
@@ -569,7 +583,7 @@ public class AnnotationFileParser {
             AnnotationFileAnnotations ajavaAnnos) {
         AnnotationFileParser afp =
                 new AnnotationFileParser(
-                        filename, atypeFactory, processingEnv, false, AnnotationFileType.AJAVA);
+                        filename, atypeFactory, processingEnv, AnnotationFileType.AJAVA);
         try {
             afp.parseStubUnit(inputStream);
             JavaParserUtil.concatenateAddedStringLiterals(afp.stubUnit);
@@ -583,8 +597,8 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Parse a stub file that is a part of the annotated JDK and side-effects the last two
-     * arguments.
+     * Parse a stub file that is a part of the annotated JDK and side-effects the {@code stubAnnos}
+     * argument.
      *
      * @param filename name of stub file, used only for diagnostic messages
      * @param inputStream of stub file to parse
@@ -598,46 +612,19 @@ public class AnnotationFileParser {
             AnnotatedTypeFactory atypeFactory,
             ProcessingEnvironment processingEnv,
             AnnotationFileAnnotations stubAnnos) {
-        parseStubFile(filename, inputStream, atypeFactory, processingEnv, stubAnnos, true);
-    }
-
-    /**
-     * Parse a stub file and adds annotations to {@code annotationFileAnnos}.
-     *
-     * @param filename name of stub file, used only for diagnostic messages
-     * @param inputStream of stub file to parse
-     * @param atypeFactory AnnotatedTypeFactory to use
-     * @param processingEnv ProcessingEnvironment to use
-     * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
-     * @param isJdkAsStub whether or not the stub file is a part of the annotated JDK
-     */
-    private static void parseStubFile(
-            String filename,
-            InputStream inputStream,
-            AnnotatedTypeFactory atypeFactory,
-            ProcessingEnvironment processingEnv,
-            AnnotationFileAnnotations annotationFileAnnos,
-            boolean isJdkAsStub) {
-        AnnotationFileParser afp =
-                new AnnotationFileParser(
-                        filename,
-                        atypeFactory,
-                        processingEnv,
-                        isJdkAsStub,
-                        AnnotationFileType.STUB);
-        try {
-            afp.parseStubUnit(inputStream);
-            afp.process(annotationFileAnnos);
-        } catch (ParseProblemException e) {
-            for (Problem p : e.getProblems()) {
-                afp.warn(null, p.getVerboseMessage());
-            }
-        }
+        parseStubFile(
+                filename,
+                inputStream,
+                atypeFactory,
+                processingEnv,
+                stubAnnos,
+                AnnotationFileType.JDK_STUB);
     }
 
     /**
      * Delegate to the Stub Parser to parse the annotation file to an AST, and save it in {@link
-     * #stubUnit}. Also modifies other fields of this.
+     * #stubUnit}. Also sets {@link #allAnnotations}. Does not copy annotations out of {@link
+     * #stubUnit}; that is done by the {@code process*} methods.
      *
      * <p>Subsequently, all work uses the AST.
      *
@@ -652,7 +639,9 @@ public class AnnotationFileParser {
         // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
         // be refactored to be nicer.
         allAnnotations = getImportedAnnotations();
-        if (allAnnotations.isEmpty()) {
+        if (allAnnotations.isEmpty()
+                && fileType.isStub()
+                && fileType != AnnotationFileType.AJAVA_AS_STUB) {
             // Issue a warning if the stub file contains no import statements.  The warning is
             // incorrect if the stub file contains fully-qualified annotations.
             stubWarnNotFound(
@@ -667,7 +656,7 @@ public class AnnotationFileParser {
 
     /**
      * Process {@link #stubUnit}, which is the AST produced by {@link #parseStubUnit}. Processing
-     * means copying annotations from Stub Parser data structures to {@code annotationFileAnnos}.
+     * means copying annotations from Stub Parser data structures to {@code #annotationFileAnnos}.
      *
      * @param annotationFileAnnos annotations from the file; side-effected by this method
      */
@@ -704,7 +693,7 @@ public class AnnotationFileParser {
             processPackage(pDecl);
         }
 
-        if (fileType == AnnotationFileType.STUB) {
+        if (fileType.isStub()) {
             if (cu.getTypes() != null) {
                 for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
                     // Not processing an ajava file, so ignore the return value.
@@ -763,7 +752,8 @@ public class AnnotationFileParser {
         // public.
         // Must include protected JDK methods.  For example, Object.clone is protected, but it
         // contains annotations that apply to calls like `super.clone()` and `myArray.clone()`.
-        return (isJdkAsStub || (fileType == AnnotationFileType.STUB && !mergeStubsWithSource))
+        return (fileType == AnnotationFileType.BUILTIN_STUB
+                        || (fileType.isStub() && !mergeStubsWithSource))
                 && node.getModifiers().contains(Modifier.privateModifier());
     }
 
@@ -811,9 +801,9 @@ public class AnnotationFileParser {
         }
         if (typeElt == null) {
             if (debugAnnotationFileParser
-                    || (!hasNoAnnotationFileParserWarning(typeDecl.getAnnotations())
-                            && !hasNoAnnotationFileParserWarning(packageAnnos)
-                            && !warnIfNotFoundIgnoresClasses)) {
+                    || (!warnIfNotFoundIgnoresClasses
+                            && !hasNoAnnotationFileParserWarning(typeDecl.getAnnotations())
+                            && !hasNoAnnotationFileParserWarning(packageAnnos))) {
                 if (elements.getAllTypeElements(fqTypeName).isEmpty()) {
                     stubWarnNotFound(typeDecl, "Type not found: " + fqTypeName);
                 } else {
@@ -1093,7 +1083,7 @@ public class AnnotationFileParser {
             // annotations.
             recordDeclAnnotation(elt, ((MethodDeclaration) decl).getType().getAnnotations(), decl);
         }
-        recordDeclAnnotationFromAnnotationFile(elt);
+        markAsFromStubFile(elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         AnnotatedExecutableType origMethodType =
@@ -1157,7 +1147,7 @@ public class AnnotationFileParser {
 
         if (warnIfStubRedundantWithBytecode
                 && methodType.toString().equals(origMethodType.toString())
-                && !isJdkAsStub) {
+                && fileType != AnnotationFileType.BUILTIN_STUB) {
             warn(
                     decl,
                     String.format(
@@ -1167,7 +1157,7 @@ public class AnnotationFileParser {
 
         // Store the type.
         putMerge(annotationFileAnnos.atypes, elt, methodType);
-        if (fileType == AnnotationFileType.STUB) {
+        if (fileType.isStub()) {
             typeParameters.removeAll(methodType.getTypeVariables());
         }
 
@@ -1444,7 +1434,7 @@ public class AnnotationFileParser {
             // and might refer to types that are not accessible.
             return;
         }
-        recordDeclAnnotationFromAnnotationFile(elt);
+        markAsFromStubFile(elt);
         recordDeclAnnotation(elt, decl.getAnnotations(), decl);
         // AnnotationFileParser parses all annotations in type annotation position as type
         // annotations
@@ -1472,7 +1462,7 @@ public class AnnotationFileParser {
      * @param elt the enum constant declaration, as an element (the destination for annotations)
      */
     private void processEnumConstant(EnumConstantDeclaration decl, VariableElement elt) {
-        recordDeclAnnotationFromAnnotationFile(elt);
+        markAsFromStubFile(elt);
         recordDeclAnnotation(elt, decl.getAnnotations(), decl);
         AnnotatedTypeMirror enumConstType = atypeFactory.fromElement(elt);
         annotate(enumConstType, decl.getAnnotations(), decl);
@@ -1541,7 +1531,7 @@ public class AnnotationFileParser {
      */
     private void recordDeclAnnotation(
             Element elt, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
-        if (annotations == null) {
+        if (annotations == null || annotations.isEmpty()) {
             return;
         }
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
@@ -1563,7 +1553,7 @@ public class AnnotationFileParser {
             }
         }
         String eltName = ElementUtils.getQualifiedName(elt);
-        putOrAddToMap(annotationFileAnnos.declAnnos, eltName, annos);
+        putOrAddToDeclAnnos(eltName, annos);
     }
 
     /**
@@ -1572,14 +1562,12 @@ public class AnnotationFileParser {
      *
      * @param elt an element to be annotated as {@code @FromStubFile}
      */
-    private void recordDeclAnnotationFromAnnotationFile(Element elt) {
-        if (fileType == AnnotationFileType.AJAVA || isJdkAsStub) {
+    private void markAsFromStubFile(Element elt) {
+        if (fileType == AnnotationFileType.AJAVA || fileType == AnnotationFileType.JDK_STUB) {
             return;
         }
-        putOrAddToMap(
-                annotationFileAnnos.declAnnos,
-                ElementUtils.getQualifiedName(elt),
-                Collections.singleton(fromStubFileAnno));
+        putOrAddToDeclAnnos(
+                ElementUtils.getQualifiedName(elt), Collections.singleton(fromStubFileAnno));
     }
 
     private void annotateTypeParameters(
@@ -2231,7 +2219,7 @@ public class AnnotationFileParser {
      *     not contain this checker
      */
     private boolean isAnnotatedForThisChecker(List<AnnotationExpr> annotations) {
-        if (isJdkAsStub) {
+        if (fileType == AnnotationFileType.JDK_STUB) {
             // The JDK stubs have purity annotations that should be read for all checkers.
             // TODO: Parse the JDK stubs, but only save the declaration annotations.
             return true;
@@ -2711,15 +2699,28 @@ public class AnnotationFileParser {
     }
 
     /**
-     * If the key is already in the map, then add the annos to the list. Otherwise put the key and
-     * the annos in the map
+     * If the key is already in the {@code annotationFileAnnos.declAnnos} map, then add the annos to
+     * the map value. Otherwise put the key and the annos in the map.
+     *
+     * @param key a name (actually declaration element string)
+     * @param annos the the set of declaration annotations on it, as written in the annotation file
      */
-    private static void putOrAddToMap(
-            Map<String, Set<AnnotationMirror>> map, String key, Set<AnnotationMirror> annos) {
-        if (map.containsKey(key)) {
-            map.get(key).addAll(annos);
+    private void putOrAddToDeclAnnos(String key, Set<AnnotationMirror> annos) {
+        Set<AnnotationMirror> stored = annotationFileAnnos.declAnnos.get(key);
+        if (stored == null) {
+            annotationFileAnnos.declAnnos.put(key, new HashSet<>(annos));
         } else {
-            map.put(key, new HashSet<>(annos));
+            if (fileType != AnnotationFileType.JDK_STUB) {
+                stored.addAll(annos);
+            } else {
+                // JDK annotations should not replace any annotation of the same type.
+                List<AnnotationMirror> origStored = new ArrayList<>(stored);
+                for (AnnotationMirror anno : annos) {
+                    if (!AnnotationUtils.containsSameByName(origStored, anno)) {
+                        stored.add(anno);
+                    }
+                }
+            }
         }
     }
 
@@ -2744,7 +2745,7 @@ public class AnnotationFileParser {
             // way user-supplied stub files override JDK stub files.
             // This works because the JDK is always parsed last, on demand, after all other stub
             // files.
-            if (!isJdkAsStub) {
+            if (fileType != AnnotationFileType.JDK_STUB) {
                 atypeFactory.replaceAnnotations(newType, existingType);
             }
             m.put(key, existingType);
@@ -2796,7 +2797,7 @@ public class AnnotationFileParser {
      */
     private void stubWarnNotFound(
             NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
-        if ((!isJdkAsStub && warnIfNotFound) || debugAnnotationFileParser) {
+        if ((fileType.isCommandLine() || warnIfNotFound) || debugAnnotationFileParser) {
             warn(astNode, warning);
         }
     }
@@ -2824,7 +2825,7 @@ public class AnnotationFileParser {
      */
     @FormatMethod
     private void warn(@Nullable NodeWithRange<?> astNode, String warning, Object... args) {
-        if (!isJdkAsStub) {
+        if (!fileType.isBuiltIn()) {
             warn(astNode, String.format(warning, args));
         }
     }
@@ -2836,7 +2837,7 @@ public class AnnotationFileParser {
      * @param warning a warning message
      */
     private void warn(@Nullable NodeWithRange<?> astNode, String warning) {
-        if (!isJdkAsStub) {
+        if (fileType != AnnotationFileType.JDK_STUB) {
             if (warnings.add(warning)) {
                 processingEnv
                         .getMessager()
@@ -2852,7 +2853,7 @@ public class AnnotationFileParser {
      * @param warning warning to print
      */
     private void stubDebug(String warning) {
-        if (warnings.add(warning) && debugAnnotationFileParser) {
+        if (debugAnnotationFileParser && warnings.add(warning)) {
             processingEnv
                     .getMessager()
                     .printMessage(

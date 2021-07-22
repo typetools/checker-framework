@@ -468,7 +468,7 @@ public class TestUtilities {
      *     not set or is set to "false". Otherwise, errs.
      * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String)} instead.
      */
-    @Deprecated
+    @Deprecated // 2020-04-30
     public static boolean testBooleanProperty(String key) {
         return testBooleanProperty(key, false);
     }

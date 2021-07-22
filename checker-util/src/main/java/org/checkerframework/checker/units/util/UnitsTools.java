@@ -3,24 +3,30 @@ package org.checkerframework.checker.units.util;
 import org.checkerframework.checker.units.qual.A;
 import org.checkerframework.checker.units.qual.C;
 import org.checkerframework.checker.units.qual.K;
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.cd;
 import org.checkerframework.checker.units.qual.degrees;
 import org.checkerframework.checker.units.qual.g;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kN;
 import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.min;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 // TODO: add fromTo methods for all useful unit combinations.
@@ -48,6 +54,11 @@ public class UnitsTools {
     public static final @mm2 int mm2 = 1;
     public static final @m2 int m2 = 1;
     public static final @km2 int km2 = 1;
+
+    // Volume
+    public static final @mm3 int mm3 = 1;
+    public static final @m3 int m3 = 1;
+    public static final @km3 int km3 = 1;
 
     // Current
     public static final @A int A = 1;
@@ -79,6 +90,7 @@ public class UnitsTools {
     // Mass
     public static final @g int g = 1;
     public static final @kg int kg = 1;
+    public static final @t int t = 1;
 
     public static @kg int fromGramToKiloGram(@g int g) {
         return g / 1000;
@@ -86,6 +98,26 @@ public class UnitsTools {
 
     public static @g int fromKiloGramToGram(@kg int kg) {
         return kg * 1000;
+    }
+
+    public static @t int fromKiloGramToMetricTon(@kg int kg) {
+        return kg / 1000;
+    }
+
+    public static @kg int fromMetricTonToKiloGram(@t int t) {
+        return t * 1000;
+    }
+
+    // Force
+    public static final @N int N = 1;
+    public static final @kN int kN = 1;
+
+    public static @kN int fromNewtonToKiloNewton(@N int N) {
+        return N / 1000;
+    }
+
+    public static @N int fromKiloNewtonToNewton(@kN int kN) {
+        return kN * 1000;
     }
 
     // Speed

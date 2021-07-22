@@ -179,7 +179,9 @@ split your files and methods into smaller ones, or both.
 
 \item
 Versions of \ahref{https://errorprone.info/}{Error Prone} before 2.4.0 are
-incompatible with the Checker Framework.  Those versions of Error Prone
+incompatible with the Checker Framework.  (More precisely, each version of
+Error Prone before 2.4.0 is compatible with only one specific version of
+the Checker Framework.)  Those versions of Error Prone
 use an outdated version of the Checker Framework's dataflow analysis
 library, which conflicts with the Checker Framework itself.
 
@@ -190,6 +192,14 @@ still use both tools.  The
 \ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin\#incompatibility-with-error-prone}{Gradle
   plugin documentation} shows how to do so if you use the Gradle build
 system.
+
+\item
+Versions 0.9.0 and 0.9.1 of
+\ahref{https://github.com/uber/NullAway}{NullAway} are compatible
+only with Checker Framework version 3.6.0 through 3.8.0.  Those versions of
+Error Prone use version 3.6.0 of the Checker Framework's dataflow analysis
+without shading it.  If you want to use a newer version of the Checker
+Framework, then use an older or newer version of NullAway.
 
 \end{itemize}
 
@@ -824,26 +834,6 @@ identical to the javac Java compiler.
 
 Putting the Checker Framework's \<javac> earlier in your \<PATH> will
 ensure that the Checker Framework's version is used.
-
-\item
-If you are developing a checker within the Checker Framework, there is
-a developer version of \<javac> in the \<bin-devel> directory. This
-version will use compiled classes from \<dataflow/build>,
-\<javacutil/build>, \<framework/build>,
-and \<checker/build> in the \<checker-framework> directory instead of
-the compiled jar files.
-
-To use it, set your \<PATH> to use \<javac> in the \<bin-devel> directory:
-
-\begin{Verbatim}
-export PATH=$CHECKERFRAMEWORK/checker/bin-devel:${PATH}
-\end{Verbatim}
-
-The developer version of \<javac> allows you to not have to rebuild
-the jar files after every code change, in turn allowing you to test
-your changes faster. Source files can be compiled using command \<./gradlew
-compileJava>, or can be automatically compiled by
-an IDE such as Eclipse.
 
 \item Test that everything works:
 

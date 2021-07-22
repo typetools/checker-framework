@@ -1,3 +1,31 @@
+Version 3.14.0 (June 1, 2021)
+----------------------------
+
+**User-visible changes:**
+
+The Units Checker supports new qualifiers (thanks to Rene Kraneis):
+ * `@Volume`, `@m3`, `@mm3`, `@km3`
+ * `@Force`, `@N`, `@kN`
+ * `@t` (metric ton, a unit of mass)
+
+Stub files can now override declaration annotations in the annotated JDK.
+Previously, stub files only overrode type annotations in the annotated JDK.
+
+Command-line argument `-AstubWarnIfNotFound` is treated as true for stub
+files provided on the command line.
+
+**Implementation details:**
+
+Method `SourceChecker.getProperties` takes a third formal parameter `permitNonExisting`.
+
+Method `TreeUtils.getMethodName()` returns a `String` rather than a `Name`.
+
+Removed CheckerDevelMain.
+
+**Closed issues:**
+#3993, #4116, #4586, #4598, #4612, #4614.
+
+
 Version 3.13.0 (May 3, 2021)
 ----------------------------
 

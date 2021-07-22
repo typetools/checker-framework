@@ -25,7 +25,7 @@ public class Issue1929 {
     private static final String[] EMPTY_STRING_ARRAY_3 = new String[0];
 
     String[] fails3(Collection<String> c) {
-        // We don't determine field types from initializition expressions.
+        // We don't determine field types from initialization expressions.
         // :: error: (return.type.incompatible)
         return c.toArray(EMPTY_STRING_ARRAY_3);
     }

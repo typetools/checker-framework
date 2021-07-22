@@ -625,28 +625,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Returns true if two expressions originating from the same scope are identical, i.e. they are
-     * syntactically represented in the same way (modulo parentheses) and represent the same value.
-     *
-     * <p>For example, given an expression (a == b) || a.equals(b) sameTree can be called to
-     * determine that the first 'a' and second 'a' refer to the same variable, which is the case
-     * since both expressions 'a' originate from the same scope.
-     *
-     * <p>If the expression includes one or more method calls, assumes the method calls are
-     * deterministic.
-     *
-     * @param expr1 the first expression to compare
-     * @param expr2 the second expression to compare - expr2 must originate from the same scope as
-     *     expr1
-     * @return true if the expressions expr1 and expr2 are identical
-     */
-    private static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
-        return TreeUtils.withoutParens(expr1)
-                .toString()
-                .equals(TreeUtils.withoutParens(expr2).toString());
-    }
-
-    /**
      * Pattern matches to prevent false positives of the forms:
      *
      * <pre>{@code
@@ -682,10 +660,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         }
                         ExpressionTree neqLeft = ((BinaryTree) e).getLeftOperand();
                         ExpressionTree neqRight = ((BinaryTree) e).getRightOperand();
-                        return (((sameTree(neqLeft, e1) || sameTree(neqLeft, e2))
+                        return (((TreeUtils.sameTree(neqLeft, e1)
+                                                || TreeUtils.sameTree(neqLeft, e2))
                                         && neqRight.getKind() == Tree.Kind.NULL_LITERAL)
                                 // also check for "null != e1" and "null != e2"
-                                || ((sameTree(neqRight, e1) || sameTree(neqRight, e2))
+                                || ((TreeUtils.sameTree(neqRight, e1)
+                                                || TreeUtils.sameTree(neqRight, e2))
                                         && neqLeft.getKind() == Tree.Kind.NULL_LITERAL));
                     }
 
@@ -695,7 +675,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         ExpressionTree rightTree = tree.getRightOperand();
 
                         if (tree.getKind() == Tree.Kind.CONDITIONAL_OR) {
-                            if (sameTree(leftTree, node)) {
+                            if (TreeUtils.sameTree(leftTree, node)) {
                                 // left is "a==b"
                                 // check right, which should be a.equals(b) or b.equals(a) or
                                 // similar
@@ -760,10 +740,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         //     return false;
                         // }
 
-                        if (sameTree(receiver, left) && sameTree(arg, right)) {
+                        if (TreeUtils.sameTree(receiver, left) && TreeUtils.sameTree(arg, right)) {
                             return true;
                         }
-                        if (sameTree(receiver, right) && sameTree(arg, left)) {
+                        if (TreeUtils.sameTree(receiver, right) && TreeUtils.sameTree(arg, left)) {
                             return true;
                         }
 

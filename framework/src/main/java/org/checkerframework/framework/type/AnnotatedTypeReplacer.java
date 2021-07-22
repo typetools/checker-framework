@@ -34,7 +34,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
      * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
      *     AnnotatedTypeMirror)} instead.
      */
-    @Deprecated
+    @Deprecated // 2021-03-25
     @SuppressWarnings("interning:not.interned") // assertion
     public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
         if (from == to) {

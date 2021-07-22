@@ -902,19 +902,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
         if (javaParserNode instanceof MethodDeclaration) {
             visitMethodForMethodDeclaration(javacTree, (MethodDeclaration) javaParserNode);
-            return null;
         } else if (javaParserNode instanceof ConstructorDeclaration) {
             visitMethodForConstructorDeclaration(
                     javacTree, (ConstructorDeclaration) javaParserNode);
-            return null;
         } else if (javaParserNode instanceof AnnotationMemberDeclaration) {
             visitMethodForAnnotationMemberDeclaration(
                     javacTree, (AnnotationMemberDeclaration) javaParserNode);
-            return null;
         } else {
             throwUnexpectedNodeType(javacTree, javaParserNode);
             throw new BugInCF("unreachable");
         }
+        return null;
     }
 
     /**

@@ -154,7 +154,8 @@ public class AnnotationFileElementTypes {
                         jdkStubIn,
                         factory,
                         processingEnv,
-                        annotationFileAnnos);
+                        annotationFileAnnos,
+                        AnnotationFileType.BUILTIN_STUB);
             }
             String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
             InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub);
@@ -164,7 +165,8 @@ public class AnnotationFileElementTypes {
                         jdkVersionStubIn,
                         factory,
                         processingEnv,
-                        annotationFileAnnos);
+                        annotationFileAnnos,
+                        AnnotationFileType.BUILTIN_STUB);
             }
 
             // 2. Annotated JDK
@@ -181,17 +183,18 @@ public class AnnotationFileElementTypes {
         StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
         if (stubFilesAnnotation != null) {
             parseAnnotationFiles(
-                    Arrays.asList(stubFilesAnnotation.value()), AnnotationFileType.STUB);
+                    Arrays.asList(stubFilesAnnotation.value()), AnnotationFileType.BUILTIN_STUB);
         }
 
         // 4. Stub files returned by the `getExtraStubFiles()` method
-        parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.STUB);
+        parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.BUILTIN_STUB);
 
         // 5. Stub files provided via -Astubs command-line option
         String stubsOption = checker.getOption("stubs");
         if (stubsOption != null) {
             parseAnnotationFiles(
-                    Arrays.asList(stubsOption.split(File.pathSeparator)), AnnotationFileType.STUB);
+                    Arrays.asList(stubsOption.split(File.pathSeparator)),
+                    AnnotationFileType.COMMAND_LINE_STUB);
         }
 
         parsing = false;
@@ -273,7 +276,10 @@ public class AnnotationFileElementTypes {
                             annotationFileStream,
                             factory,
                             processingEnv,
-                            annotationFileAnnos);
+                            annotationFileAnnos,
+                            fileType == AnnotationFileType.AJAVA
+                                    ? AnnotationFileType.AJAVA_AS_STUB
+                                    : fileType);
                 }
             } else {
                 // We didn't find the files.
@@ -285,7 +291,7 @@ public class AnnotationFileElementTypes {
                 InputStream in = checker.getClass().getResourceAsStream(path);
                 if (in != null) {
                     AnnotationFileParser.parseStubFile(
-                            path, in, factory, processingEnv, annotationFileAnnos);
+                            path, in, factory, processingEnv, annotationFileAnnos, fileType);
                 } else {
                     // Didn't find the file.  Issue a warning.
 
@@ -321,7 +327,7 @@ public class AnnotationFileElementTypes {
                                         : "directory " + parentPath.getAbsolutePath());
                         String msg =
                                 checker.getClass().getSimpleName()
-                                        + " did not find annotation file "
+                                        + " did not find annotation file or directory "
                                         + path
                                         + " on classpath or within "
                                         + parentPathDescription

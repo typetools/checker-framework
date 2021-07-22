@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -110,11 +110,8 @@ public class QualifierUpperBounds {
         String qname;
         if (type.getKind() == TypeKind.DECLARED) {
             DeclaredType declaredType = (DeclaredType) type;
-            bounds.addAll(
-                    atypeFactory
-                            .fromElement((TypeElement) declaredType.asElement())
-                            .getAnnotations());
-            qname = TypesUtils.getQualifiedName(declaredType).toString();
+            bounds.addAll(getAnnotationFromElement(declaredType.asElement()));
+            qname = TypesUtils.getQualifiedName(declaredType);
         } else if (type.getKind().isPrimitive()) {
             qname = type.toString();
         } else {
@@ -135,6 +132,17 @@ public class QualifierUpperBounds {
 
         addMissingAnnotations(bounds, atypeFactory.getDefaultTypeDeclarationBounds());
         return bounds;
+    }
+
+    /**
+     * Returns the explicit annotations on the element. Subclass can override this behavior to add
+     * annotations.
+     *
+     * @param element element whose annotations to return
+     * @return the explicit annotations on the element
+     */
+    protected Set<AnnotationMirror> getAnnotationFromElement(Element element) {
+        return atypeFactory.fromElement(element).getAnnotations();
     }
 
     /**

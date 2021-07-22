@@ -1,14 +1,21 @@
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.checker.units.qual.h;
+import org.checkerframework.checker.units.qual.kN;
+import org.checkerframework.checker.units.qual.kg;
 import org.checkerframework.checker.units.qual.km;
 import org.checkerframework.checker.units.qual.km2;
+import org.checkerframework.checker.units.qual.km3;
 import org.checkerframework.checker.units.qual.kmPERh;
 import org.checkerframework.checker.units.qual.m;
 import org.checkerframework.checker.units.qual.m2;
+import org.checkerframework.checker.units.qual.m3;
 import org.checkerframework.checker.units.qual.mPERs;
 import org.checkerframework.checker.units.qual.mPERs2;
 import org.checkerframework.checker.units.qual.mm;
 import org.checkerframework.checker.units.qual.mm2;
+import org.checkerframework.checker.units.qual.mm3;
 import org.checkerframework.checker.units.qual.s;
+import org.checkerframework.checker.units.qual.t;
 import org.checkerframework.checker.units.util.UnitsTools;
 
 public class Division {
@@ -37,6 +44,13 @@ public class Division {
         @mPERs int mPERs = 20 * UnitsTools.mPERs;
         @kmPERh int kmPERh = 2 * UnitsTools.kmPERh;
         @mPERs2 int mPERs2 = 30 * UnitsTools.mPERs2;
+        @m3 int m3 = 125 * UnitsTools.m3;
+        @km3 int km3 = 27 * UnitsTools.km3;
+        @mm3 int mm3 = 64 * UnitsTools.mm3;
+        @kg int kg = 11 * UnitsTools.kg;
+        @t int t = 19 * UnitsTools.t;
+        @N int N = 7 * UnitsTools.N;
+        @kN int kN = 13 * UnitsTools.kN;
 
         // m / s = mPERs
         @mPERs int velocitym = m / s;
@@ -63,6 +77,21 @@ public class Division {
         // :: error: (assignment.type.incompatible)
         distancemm = km2 / mm;
 
+        // m3 / m2 = m
+        distancem = m3 / m2;
+        // :: error: (assignment)
+        distancem = m3 / km2;
+
+        // km3 / km2 = km
+        distancekm = km3 / km2;
+        // :: error: (assignment)
+        distancekm = km3 / m2;
+
+        // mm3 / mm2 = mm
+        distancemm = mm3 / mm2;
+        // :: error: (assignment)
+        distancemm = km3 / mm2;
+
         // m / mPERs = s
         @s int times = m / mPERs;
         // :: error: (assignment.type.incompatible)
@@ -82,6 +111,26 @@ public class Division {
         @s int times2 = mPERs / mPERs2;
         // :: error: (assignment.type.incompatible)
         times2 = kmPERh / mPERs2;
+
+        // mPERs2 = N / kg
+        @mPERs2 int accel2 = N / kg;
+        // :: error: (assignment)
+        accel2 = N / km;
+
+        // mPERs2 = kN / t
+        @mPERs2 int accel3 = kN / t;
+        // :: error: (assignment)
+        accel3 = N / t;
+
+        // kg = N / mPERs2
+        @kg int mass = N / mPERs2;
+        // :: error: (assignment)
+        mass = s / mPERs2;
+
+        // t = kN / mPERs2
+        @t int mass2 = kN / mPERs2;
+        // :: error: (assignment)
+        mass2 = N / mPERs2;
     }
 
     void SpeedOfSoundTests() {

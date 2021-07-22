@@ -352,6 +352,7 @@ public final class SignednessUtil {
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
      */
+    // TODO: deprecate when we require Java 9, which defines Short.compareUnsigned()
     // * @deprecated use Short.compareUnsigned
     // @Deprecated // use Short.compareUnsigned
     @SuppressWarnings("signedness")
@@ -369,6 +370,7 @@ public final class SignednessUtil {
      * @return a negative number iff x {@literal <} y, a positive number iff x {@literal >} y, and
      *     zero iff x == y.
      */
+    // TODO: deprecate when we require Java 9, which defines Byte.compareUnsigned()
     // * @deprecated use Byte.compareUnsigned
     // @Deprecated // use Byte.compareUnsigned
     @SuppressWarnings("signedness")

@@ -1,6 +1,5 @@
 package org.checkerframework.common.value;
 
-import com.google.common.collect.Comparators;
 import com.sun.source.tree.Tree;
 
 import org.checkerframework.common.value.qual.IntRange;
@@ -19,10 +18,7 @@ import org.plumelib.util.CollectionsPlume;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -239,30 +235,6 @@ public class ValueCheckerUtils {
                     "ValueAnnotatedTypeFactory: can't convert double to boolean");
         }
         return NumberUtils.castNumbers(newType, doubles);
-    }
-
-    /**
-     * Returns a list with the same contents as its argument, but without duplicates. May return its
-     * argument if its argument has no duplicates, but is not guaranteed to do so.
-     *
-     * @param <T> the type of elements in {@code values}
-     * @param values a list of values
-     * @return the values, with duplicates removed
-     * @deprecated use {@code CollectionsPlume.withoutDuplicates}
-     */
-    @Deprecated // 2020-03-31
-    public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
-        // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
-        if (Comparators.isInStrictOrder(values, Comparator.naturalOrder())) {
-            return values;
-        }
-
-        Set<T> set = new TreeSet<>(values);
-        if (values.size() == set.size()) {
-            return values;
-        } else {
-            return new ArrayList<>(set);
-        }
     }
 
     /**
