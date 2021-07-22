@@ -39,28 +39,28 @@ echo "Starting wpi.sh."
 
 # check required arguments and environment variables:
 
-if [ "x${JAVA_HOME}" = "x" ]; then
+if [ "${JAVA_HOME}" = "" ]; then
   has_java_home="no"
 else
   has_java_home="yes"
 fi
 
 # shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
-if [ "x${JAVA8_HOME}" = "x" ]; then
+if [ "${JAVA8_HOME}" = "" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
 # shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
-if [ "x${JAVA11_HOME}" = "x" ]; then
+if [ "${JAVA11_HOME}" = "" ]; then
   has_java11="no"
 else
   has_java11="yes"
 fi
 
 # shellcheck disable=SC2153 # testing for JAVA16_HOME, not a typo of JAVA_HOME
-if [ "x${JAVA16_HOME}" = "x" ]; then
+if [ "${JAVA16_HOME}" = "" ]; then
   has_java16="no"
 else
   has_java16="yes"
@@ -102,7 +102,7 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java16}" 
     exit 8
 fi
 
-if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
+if [ "${CHECKERFRAMEWORK}" = "" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
     exit 2
 fi
@@ -112,7 +112,7 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
     exit 9
 fi
 
-if [ "x${DIR}" = "x" ]; then
+if [ "${DIR}" = "" ]; then
     # echo "wpi.sh: no -d argument supplied, using the current directory."
     DIR=$(pwd)
 fi
@@ -122,11 +122,11 @@ if [ ! -d "${DIR}" ]; then
     exit 4
 fi
 
-if [ "x${EXTRA_BUILD_ARGS}" = "x" ]; then
+if [ "${EXTRA_BUILD_ARGS}" = "" ]; then
   EXTRA_BUILD_ARGS=""
 fi
 
-if [ "x${GRADLECACHEDIR}" = "x" ]; then
+if [ "${GRADLECACHEDIR}" = "" ]; then
   # Assume that each project should use its own gradle cache. This is more expensive,
   # but prevents crashes on distributed file systems, such as the UW CSE machines.
   GRADLECACHEDIR=".gradle"
@@ -189,7 +189,7 @@ function configure_and_exec_dljc {
   # This command also includes "clean"; I'm not sure why it is necessary.
   DLJC_CMD="${DLJC} -t wpi ${JDK_VERSION_ARG} ${QUOTED_ARGS} -- ${BUILD_CMD}"
 
-  if [ ! "x${TIMEOUT}" = "x" ]; then
+  if [ ! "${TIMEOUT}" = "" ]; then
       TMP="${DLJC_CMD}"
       DLJC_CMD="timeout ${TIMEOUT} ${TMP}"
   fi
@@ -256,7 +256,7 @@ function configure_and_exec_dljc {
 #### Check and setup dependencies
 
 # Clone or update DLJC
-if [ "${DLJC}x" = "x" ]; then
+if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
   (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
   "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
