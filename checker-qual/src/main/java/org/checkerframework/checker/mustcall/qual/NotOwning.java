@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * <p>When the -AnoLightweightOwnership command-line argument is passed to the checker, this
  * annotation and {@link Owning} are ignored.
  *
- * @checker_framework.manual #must-call-checker Must Call Checker
+ * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})

@@ -1,10 +1,11 @@
 \htmlhr
-\chapterAndLabel{Called Methods Checker}{called-methods-checker}
+\chapterAndLabel{Called Methods Checker for the builder pattern and more}{called-methods-checker}
 
 The Called Methods Checker tracks the names of methods that have definitely
 been called on an object. This checker is useful for checking any property
 of the form ``call method A before method B''. For the purpose of this
-section, a method has ``definitely been called'' if it is \emph{invoked}:
+checker, a method has ``definitely been called'' if it is \emph{invoked}:
+a method that might never return or that might throw an exception has
 a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
 
@@ -23,7 +24,7 @@ Section~\ref{called-methods-lombok}) and
 \href{https://github.com/google/auto/blob/master/value/userguide/index.md}{AutoValue}.
 
 You can verify other builders, or verify other properties of the form
-``foo() must be called before bar()'', by writing method specifications.
+``\<foo()> must be called before \<bar()>'', by writing method specifications.
 Section~\ref{called-methods-other} describes another example related to a
 security property.
 
@@ -38,7 +39,8 @@ discover this.
 \sectionAndLabel{How to run the Called Methods Checker}{called-methods-run-checker}
 
 \begin{Verbatim}
-javac -processor CalledMethods MyFile.java ...
+javac -processor calledmethods MyFile.java ...
+javac -processor org.checkerframework.checker.calledmethods.CalledMethods MyFile.java ...
 \end{Verbatim}
 
 The Called Methods Checker supports the following optional command-line arguments:
@@ -154,6 +156,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
 There are also method annotations:
 
 \begin{description}
+\label{called-methods-ensurescalledmethods}
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
   guarantees to be called.
@@ -168,6 +171,32 @@ There are also method annotations:
   guarantees that \<p.x()> and \<p.y()> will always be called before \<m> returns.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
 
+  Sometimes, you need to provide information to enable the Called Methods
+  Checker to verify the property.
+  Consider this example:
+  \begin{Verbatim}
+  @EnsuresCalledMethods(value="#1", methods="close")
+  public void closeSocket(Socket sock) throws IOException {
+      sock.close();
+      m();
+  }
+  \end{Verbatim}
+
+  If \<m()> might have side-effects (i.e., it is not annotated as
+  \refqualclass{dataflow/qual}{SideEffectFree} or \refqualclass{dataflow/qual}{Pure}),
+  then the Called Methods Checker issues an error because
+  it cannot make any assumptions about the call to \<m()>, and therefore assumes
+  the worst: that all information it knows about in-scope variables (including
+  that \<close()> was called on \<sock>) is stale and must be discarded.
+  There are two possible fixes:
+
+  \begin{itemize}
+  \item add a \<@SideEffectFree> or \<@Pure> annotation to \<m()>, if \<m()> is
+    in fact side-effect free or pure; or
+  \item re-order the calls to \<sock.close()> and \<m()> so that the call
+    to \<sock.close()> appears last in \<closeSocket()>.
+  \end{itemize}
+
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsIf}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
   guarantees to be called if it returns a given result.
@@ -181,6 +210,22 @@ There are also method annotations:
 
   guarantees that \<p.x()> and \<p.y()> will always be called if \<m> returns \<true>.
   The body of \<m> must satisfy that property, and clients of \<m> can depend on the property.
+
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsVarArgs}]
+  This version of \<@EnsuresCalledMethods> always applies to the varargs parameter of the
+  annotated method. It has only one argument, which is the list of methods that are guaranteed
+  to be called on the varargs parameter's elements before the method returns. This annotation
+  currently cannot be verified, and a \<ensuresvarargs.unverified> error is always issued
+  when it is used. When annotating a method as \<@EnsuresCalledMethodsVarArgs>, you should verify
+  that the named methods are actually called on every element of the varargs parameter via some
+  other method (such as manual inspection) and then suppress the warning.
+
+\item[\refqualclass{checker/calledmethods/qual}{RequiresCalledMethods}]
+  This declaration annotation specifies a pre-condition on a method, indicating that the expressions
+  in its \<value> argument must have called-methods types that include all the methods named
+  in its \<methods> argument. If the expression is a parameter of the annotated method, you should
+  use an \<@CalledMethods> annotation on the parameter instead.
+
 \end{description}
 
 \sectionAndLabel{Default handling for Lombok and AutoValue}{called-methods-framework-details}

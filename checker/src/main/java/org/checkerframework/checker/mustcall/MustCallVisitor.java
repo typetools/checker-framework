@@ -109,13 +109,19 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        // MustCallAlias annotations are always permitted on type uses, because these will be
-        // validated by the Object Construction Checker's -AcheckMustCall algorithm.
-        AnnotatedDeclaredType useTypeCopy = useType.deepCopy();
-        if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
-            useTypeCopy.removeAnnotationByClass(MustCallAlias.class);
+        // MustCallAlias annotations are always permitted on type uses, despite not technically
+        // being a
+        // part of the type hierarchy. It's necessary to get the annotation from the
+        // element because MustCallAlias is aliased to PolyMustCall, which is what useType
+        // would contain. Note that isValidUse does not need to consider component types,
+        // on which it should be called separately.
+        Element elt = TreeUtils.elementFromTree(tree);
+        if (elt != null
+                && AnnotationUtils.containsSameByClass(
+                        elt.getAnnotationMirrors(), MustCallAlias.class)) {
+            return true;
         }
-        return super.isValidUse(declarationType, useTypeCopy, tree);
+        return super.isValidUse(declarationType, useType, tree);
     }
 
     @Override

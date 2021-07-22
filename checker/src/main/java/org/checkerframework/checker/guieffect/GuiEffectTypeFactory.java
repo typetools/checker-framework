@@ -461,7 +461,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror.AnnotatedExecutableType overriddenMethod =
                     AnnotatedTypes.asMemberOf(types, this, overriddenType, pair.getValue());
             ExecutableElement overriddenMethodElt = pair.getValue();
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println(
                         "Found "
                                 + declaringType
@@ -471,6 +471,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                                 + overriddenType
                                 + "::"
                                 + overriddenMethod);
+            }
             Effect eff = getDeclaredEffect(overriddenMethodElt);
             if (eff.isSafe()) {
                 safeOverriden = overriddenMethodElt;

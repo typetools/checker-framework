@@ -143,7 +143,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         return super.visitBinary(node, p);
     }
 
-    /** @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any */
+    /**
+     * Returns a string representation of {@code kind}, with trailing _ASSIGNMENT stripped off if
+     * any.
+     *
+     * @param kind a tree kind
+     * @return a string representation of {@code kind}, with trailing _ASSIGNMENT stripped off if
+     *     any
+     */
     private String kindWithoutAssignment(Kind kind) {
         String result = kind.toString();
         if (result.endsWith("_ASSIGNMENT")) {

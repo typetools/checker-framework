@@ -10,8 +10,6 @@ plugins {
     id "net.ltgt.errorprone" version "2.0.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
-    // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 apply plugin: "de.undercouch.download"
 
@@ -20,11 +18,6 @@ import org.ajoberstar.grgit.Grgit
 repositories {
     jcenter()
     mavenCentral()
-}
-
-gitProperties {
-    // logically belongs in framework, but only checker resources are copied to .jar file
-    gitPropertiesResourceDir = file("${project.rootDir}/checker/src/main/resources")
 }
 
 ext {
@@ -102,7 +95,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.14.0'
+    version '3.15.0'
 
     repositories {
         mavenCentral()
@@ -174,8 +167,10 @@ allprojects {
         // Add standard javac options
         tasks.withType(JavaCompile) { compilationTask ->
             dependsOn(':installGitHooks')
-            // Put source files in deterministic order, for debugging.
-            compilationTask.source = compilationTask.source.sort()
+            // Sorting is commented out because it disables incremental compilation.
+            // Uncomment when needed.
+            // // Put source files in deterministic order, for debugging.
+            // compilationTask.source = compilationTask.source.sort()
             sourceCompatibility = 8
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
@@ -288,7 +283,7 @@ task maybeCloneAndBuildDependencies() {
             }
             exec {
                 workingDir stubparser
-                executable "${stubparser}/.travis-build-without-test.sh"
+                executable "${stubparser}/.build-without-test.sh"
             }
         } else {
             exec {
@@ -475,7 +470,7 @@ task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
     main = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
-    args "checker/src/main/java", "dataflow/src/main/java", "framework-test/src/main/java", "framework/src/main/java", "javacutil/src/main/java"
+    args "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
 }
 
 
@@ -659,6 +654,10 @@ subprojects {
         executable 'python3'
 
         doFirst {
+            if (isJava8) {
+                println 'The checkFormat task cannot be run on Java 8.  Please use Java 11+.'
+                return
+            }
             args += "${formatScriptsHome}/check-google-java-format.py"
             args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)
@@ -677,6 +676,10 @@ subprojects {
         onlyIf {!project.name.startsWith('checker-qual-android') }
         executable 'python3'
         doFirst {
+            if (isJava8) {
+                println 'The reformat task cannot be run on Java 8.  Please use Java 11+.'
+                return
+            }
             args += "${formatScriptsHome}/run-google-java-format.py"
             args += "--aosp" // 4 space indentation
             args += getJavaFilesToFormat(project.name)

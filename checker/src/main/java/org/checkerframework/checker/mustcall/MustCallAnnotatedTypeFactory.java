@@ -8,7 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 
-import org.checkerframework.checker.mustcall.qual.CreatesObligation;
+import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -58,7 +58,7 @@ import javax.lang.model.element.ExecutableElement;
  * rules between @MustCall annotations.
  */
 public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
-        implements CreatesObligationElementSupplier {
+        implements CreatesMustCallForElementSupplier {
 
     /** The {@code @}{@link MustCallUnknown} annotation. */
     public final AnnotationMirror TOP;
@@ -102,13 +102,13 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     final ExecutableElement inheritableMustCallValueElement =
             TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
 
-    /** The CreatesObligation.List.value field/element. */
-    private final ExecutableElement createsObligationListValueElement =
-            TreeUtils.getMethod(CreatesObligation.List.class, "value", 0, processingEnv);
+    /** The CreatesMustCallFor.List.value field/element. */
+    private final ExecutableElement createsMustCallForListValueElement =
+            TreeUtils.getMethod(CreatesMustCallFor.List.class, "value", 0, processingEnv);
 
-    /** The CreatesObligation.value field/element. */
-    private final ExecutableElement createsObligationValueElement =
-            TreeUtils.getMethod(CreatesObligation.class, "value", 0, processingEnv);
+    /** The CreatesMustCallFor.value field/element. */
+    private final ExecutableElement createsMustCallForValueElement =
+            TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
     /**
      * Creates a MustCallAnnotatedTypeFactory.
@@ -189,7 +189,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      * @param elt an element; may be null, in which case this method always returns false
      * @return true iff the given element represents a resource variable
      */
-    private boolean isResourceVariable(@Nullable Element elt) {
+    /* package-private*/ boolean isResourceVariable(@Nullable Element elt) {
         return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
     }
 
@@ -252,6 +252,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
         return new MustCallDefaultQualifierForUseTypeAnnotator();
+    }
+
+    /**
+     * Returns the {@link MustCall#value} element. For use with {@link
+     * AnnotationUtils#getElementValueArray}.
+     *
+     * @return the {@link MustCall#value} element
+     */
+    public ExecutableElement getMustCallValueElement() {
+        return mustCallValueElement;
     }
 
     /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
@@ -370,23 +380,23 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     /**
-     * Returns the CreatesObligation.value field/element.
+     * Returns the CreatesMustCallFor.value field/element.
      *
-     * @return the CreatesObligation.value field/element
+     * @return the CreatesMustCallFor.value field/element
      */
     @Override
-    public ExecutableElement getCreatesObligationValueElement() {
-        return createsObligationValueElement;
+    public ExecutableElement getCreatesMustCallForValueElement() {
+        return createsMustCallForValueElement;
     }
 
     /**
-     * Returns the CreatesObligation.List.value field/element.
+     * Returns the CreatesMustCallFor.List.value field/element.
      *
-     * @return the CreatesObligation.List.value field/element
+     * @return the CreatesMustCallFor.List.value field/element
      */
     @Override
-    public ExecutableElement getCreatesObligationListValueElement() {
-        return createsObligationListValueElement;
+    public ExecutableElement getCreatesMustCallForListValueElement() {
+        return createsMustCallForListValueElement;
     }
 
     /**

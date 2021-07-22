@@ -1,11 +1,13 @@
 package org.checkerframework.checker.calledmethods;
 
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -13,7 +15,10 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 /** A transfer function that accumulates the names of methods called. */
@@ -41,12 +48,20 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
 
     /**
+     * The element for the CalledMethods annotation's value element. Stored in a field in this class
+     * to prevent the need to cast to CalledMethods ATF every time it's used.
+     */
+    private final ExecutableElement calledMethodsValueElement;
+
+    /**
      * Create a new CalledMethodsTransfer.
      *
      * @param analysis the analysis
      */
     public CalledMethodsTransfer(final CFAnalysis analysis) {
         super(analysis);
+        calledMethodsValueElement =
+                ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
     }
 
     @Override
@@ -54,6 +69,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
             final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
         exceptionalStores = makeExceptionalStores(node, input);
         TransferResult<CFValue, CFStore> superResult = super.visitMethodInvocation(node, input);
+        handleEnsuresCalledMethodsVarArgs(node, superResult);
         Node receiver = node.getTarget().getReceiver();
         if (receiver != null) {
             String methodName = node.getTarget().getMethod().getSimpleName().toString();
@@ -92,10 +108,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
                     if (atypeFactory.isAccumulatorAnnotation(anno)) {
                         List<String> oldFlowValues =
                                 AnnotationUtils.getElementValueArray(
-                                        anno,
-                                        ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
-                                                .calledMethodsValueElement,
-                                        String.class);
+                                        anno, calledMethodsValueElement, String.class);
                         // valuesAsList cannot have its length changed -- it is backed by an
                         // array.  getElementValueArray returns a new, modifiable list.
                         oldFlowValues.addAll(valuesAsList);
@@ -131,5 +144,90 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         block.getExceptionalSuccessors()
                 .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
         return result;
+    }
+
+    /**
+     * Update the types of varargs parameters passed to a method with an {@link
+     * EnsuresCalledMethodsVarArgs} annotation. This method is a no-op if no such annotation is
+     * present.
+     *
+     * @param node the method invocation node
+     * @param result the current result
+     */
+    private void handleEnsuresCalledMethodsVarArgs(
+            MethodInvocationNode node, TransferResult<CFValue, CFStore> result) {
+        ExecutableElement elt = TreeUtils.elementFromUse(node.getTree());
+        AnnotationMirror annot =
+                atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
+        if (annot == null) {
+            return;
+        }
+        List<String> ensuredMethodNames =
+                AnnotationUtils.getElementValueArray(
+                        annot,
+                        ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
+                                .ensuresCalledMethodsVarArgsValueElement,
+                        String.class);
+        List<? extends VariableElement> parameters = elt.getParameters();
+        int varArgsPos = parameters.size() - 1;
+        Node varArgActual = node.getArguments().get(varArgsPos);
+        // In the CFG, explicit passing of multiple arguments in the varargs position is represented
+        // via an ArrayCreationNode.  This is the only case we handle for now.
+        if (varArgActual instanceof ArrayCreationNode) {
+            ArrayCreationNode arrayCreationNode = (ArrayCreationNode) varArgActual;
+            // add in the called method to all the vararg arguments
+            CFStore thenStore = result.getThenStore();
+            CFStore elseStore = result.getElseStore();
+            for (Node arg : arrayCreationNode.getInitializers()) {
+                AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arg.getTree());
+                AnnotationMirror newType =
+                        getUpdatedCalledMethodsType(currentType, ensuredMethodNames);
+                if (newType == null) {
+                    continue;
+                }
+
+                JavaExpression receiverReceiver = JavaExpression.fromNode(arg);
+                thenStore.insertValue(receiverReceiver, newType);
+                elseStore.insertValue(receiverReceiver, newType);
+            }
+        }
+    }
+
+    /**
+     * Extract the current called-methods type from {@code currentType}, and then add each element
+     * of {@code methodNames} to it, and return the result. This method is similar to GLB, but
+     * should be used when the new methods come from a source other than an {@code CalledMethods}
+     * annotation.
+     *
+     * @param currentType the current type in the called-methods hierarchy
+     * @param methodNames the names of the new methods to add to the type
+     * @return the new annotation to be added to the type, or null if the current type cannot be
+     *     converted to an accumulator annotation
+     */
+    private @Nullable AnnotationMirror getUpdatedCalledMethodsType(
+            AnnotatedTypeMirror currentType, List<String> methodNames) {
+        AnnotationMirror type;
+        if (currentType == null || !currentType.isAnnotatedInHierarchy(atypeFactory.top)) {
+            type = atypeFactory.top;
+        } else {
+            type = currentType.getAnnotationInHierarchy(atypeFactory.top);
+        }
+
+        // Don't attempt to strengthen @CalledMethodsPredicate annotations, because that would
+        // require reasoning about the predicate itself. Instead, start over from top.
+        if (AnnotationUtils.areSameByName(
+                type, "org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate")) {
+            type = atypeFactory.top;
+        }
+
+        if (AnnotationUtils.areSame(type, atypeFactory.bottom)) {
+            return null;
+        }
+
+        List<String> currentMethods =
+                AnnotationUtils.getElementValueArray(type, calledMethodsValueElement, String.class);
+        List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
+
+        return atypeFactory.createAccumulatorAnnotation(newList);
     }
 }

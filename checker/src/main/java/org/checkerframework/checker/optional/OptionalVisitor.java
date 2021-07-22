@@ -90,7 +90,12 @@ public class OptionalVisitor
         return new OptionalTypeValidator(checker, this, atypeFactory);
     }
 
-    /** @return true iff expression is a call to java.util.Optional.get */
+    /**
+     * Returns true iff {@code expression} is a call to java.util.Optional.get.
+     *
+     * @param expression an expression
+     * @return true iff {@code expression} is a call to java.util.Optional.get
+     */
     private boolean isCallToGet(ExpressionTree expression) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         return TreeUtils.isMethodInvocation(expression, optionalGet, env);
@@ -134,7 +139,12 @@ public class OptionalVisitor
         }
     }
 
-    /** @return true iff expression is a call to Optional creation: of, ofNullable. */
+    /**
+     * Returns true iff the method being callid is Optional creation: of, ofNullable.
+     *
+     * @param methInvok a method invocation
+     * @return true iff the method being called is Optional creation: of, ofNullable
+     */
     private boolean isOptionalCreation(MethodInvocationTree methInvok) {
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         return TreeUtils.isMethodInvocation(methInvok, optionalOf, env)
@@ -142,7 +152,11 @@ public class OptionalVisitor
     }
 
     /**
-     * @return true iff expression is a call to Optional elimination: get, orElse, orElseGet,
+     * Returns true iff the method being called is Optional elimination: get, orElse, orElseGet,
+     * orElseThrow.
+     *
+     * @param methInvok a method invocation
+     * @return true iff the method being called is Optional elimination: get, orElse, orElseGet,
      *     orElseThrow
      */
     private boolean isOptionalElimation(MethodInvocationTree methInvok) {

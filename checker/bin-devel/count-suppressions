@@ -5,9 +5,18 @@
 # To invoke it, pass a type system name; for example:
 #   count-suppressions nullness
 
+# The "reason" for a warning suppression is the Java line comment after it:
+#   @SuppressWarnings("nullness") // here is the reason
 # If warning suppression text contains a colon, this script prints only
 # the text before the colon, under the assumption that the initial text
-# is a category name.
+# is a category name.  For example:
+#   @SuppressWarnings("nullness") // short reason: here is a longer explanation
+# The script also works when there are multiple warning suppression
+# strings on different lines, or when there is an error key:
+#   @SuppressWarnings({
+#     "nullness:dereference", // reason for nullness suppression
+#     "interning:type.incompatible" // reason for interning suppression
+#   })
 
 # This script is useful to determine the most frequent reasons for warning
 # suppressions, to help checker developers decide what featuers to add to
@@ -45,6 +54,9 @@ fi
 if [ "$regex" = "index" ]; then
     regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
 fi
+if [ "$regex" = "resourceleak" ]; then
+  regex="\(mustcall\|objectconstruction\|resourceleak\)"
+fi
 
 # Diagnostics
 # echo "regex=${regex}"
@@ -58,10 +70,10 @@ countedreasons=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d-%H%M%S)"-XXX)
 #    include "@SuppressWarnings" because it might appear on the previous line.
 #  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
-# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", and "true positive".
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "// TP" (as an alias for "true positive"), and "count-suppressions-ignore".
 ${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" \
     | grep -v "@AnnotatedFor" | grep -v "/tests/" \
-    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" > "${greplines}"
+    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" | grep -v "// TP" | grep -v "count-suppressions-ignore" > "${greplines}"
 
 total=$(wc -l < "${greplines}")
 ## Don't output a total, to avoid people using this approximate count.

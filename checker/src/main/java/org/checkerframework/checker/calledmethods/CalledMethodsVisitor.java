@@ -1,12 +1,17 @@
 package org.checkerframework.checker.calledmethods;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 
 import org.checkerframework.checker.calledmethods.builder.BuilderFrameworkSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Collections;
@@ -17,6 +22,7 @@ import java.util.StringJoiner;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.tools.Diagnostic;
 
 /**
  * This visitor implements the custom error message finalizer.invocation.invalid. It also supports
@@ -31,6 +37,36 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
      */
     public CalledMethodsVisitor(final BaseTypeChecker checker) {
         super(checker);
+    }
+
+    /**
+     * Issue an error at every EnsuresCalledMethodsVarArgs annotation, because using it is unsound.
+     */
+    @Override
+    public Void visitAnnotation(final AnnotationTree node, final Void p) {
+        AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
+        if (AnnotationUtils.areSameByName(
+                anno,
+                "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
+            // We can't verify these yet.  Emit an error (which will have to be suppressed) for now.
+            checker.report(
+                    node, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.unverified"));
+        }
+        return super.visitAnnotation(node, p);
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
+        AnnotationMirror ecmva =
+                atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
+        if (ecmva != null) {
+            if (!elt.isVarArgs()) {
+                checker.report(
+                        node, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
+            }
+        }
+        return super.visitMethod(node, p);
     }
 
     @Override

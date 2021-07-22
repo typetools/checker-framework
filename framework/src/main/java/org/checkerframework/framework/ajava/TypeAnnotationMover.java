@@ -48,7 +48,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
      * @param allAnnotations the annotations imported by the file, as a mapping from annotation name
      *     to TypeElement. There should be two entries for each annotation: the annotation's simple
      *     name and its fully-qualified name both mapped to its TypeElement.
-     * @param elements Element utilities
+     * @param elements the Element utilities
      */
     public TypeAnnotationMover(Map<String, TypeElement> allAnnotations, Elements elements) {
         this.allAnnotations = new HashMap<>(allAnnotations);

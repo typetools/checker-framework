@@ -209,7 +209,7 @@ public class AnnotatedTypes {
         final AnnotatedDeclaredType declaredAsSuper = (AnnotatedDeclaredType) asSuperType;
         final AnnotatedDeclaredType declaredSubtype = (AnnotatedDeclaredType) originalSubtype;
 
-        if (!declaredAsSuper.wasRaw()
+        if (!declaredAsSuper.isUnderlyingTypeRaw()
                 || !declaredAsSuper.getTypeArguments().isEmpty()
                 || declaredSubtype.getTypeArguments().isEmpty()) {
             return;
@@ -545,14 +545,14 @@ public class AnnotatedTypes {
         }
 
         List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
-        if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
+        if (ownerParams.size() != baseParams.size() && !base.isUnderlyingTypeRaw()) {
             throw new BugInCF(
                     StringsPlume.joinLines(
                             "Unexpected number of parameters.",
                             "enclosingType=" + enclosingType,
                             "baseType=" + base));
         }
-        if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
+        if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.isUnderlyingTypeRaw()) {
             // If base type was raw and the type arguments are missing, set them to the erased
             // type of the type variable (which is the erased type of the upper bound).
             baseParams = CollectionsPlume.mapList(AnnotatedTypeVariable::getErased, ownerParams);

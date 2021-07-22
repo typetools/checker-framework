@@ -43,16 +43,16 @@ if [ ! -d ../annotation-tools ] ; then
   ln -s "${AT}" ../annotation-tools
 fi
 
-echo "Running:  (cd ${AT} && ./.travis-build-without-test.sh)"
-(cd "${AT}" && ./.travis-build-without-test.sh)
-echo "... done: (cd ${AT} && ./.travis-build-without-test.sh)"
+echo "Running:  (cd ${AT} && ./.build-without-test.sh)"
+(cd "${AT}" && ./.build-without-test.sh)
+echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 
 
 ## Build stubparser
 "$PLUME_SCRIPTS/git-clone-related" typetools stubparser
-echo "Running:  (cd ../stubparser/ && ./.travis-build-without-test.sh)"
-(cd ../stubparser/ && ./.travis-build-without-test.sh)
-echo "... done: (cd ../stubparser/ && ./.travis-build-without-test.sh)"
+echo "Running:  (cd ../stubparser/ && ./.build-without-test.sh)"
+(cd ../stubparser/ && ./.build-without-test.sh)
+echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
 
 
 ## Build JSpecify, only for the purpose of using its tests.

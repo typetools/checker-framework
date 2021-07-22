@@ -61,7 +61,7 @@ public class BoundsInitializer {
      */
     public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
         final DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
-        if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
+        if (underlyingType.getTypeArguments().isEmpty() && !declaredType.isUnderlyingTypeRaw()) {
             // No type arguments to infer.
             return;
         }
@@ -76,7 +76,7 @@ public class BoundsInitializer {
         Map<TypeVariable, AnnotatedTypeMirror> typeArgMap = new HashMap<>(numTypeParameters);
         for (int i = 0; i < numTypeParameters; i++) {
             TypeMirror javaTypeArg;
-            if (declaredType.wasRaw()) {
+            if (declaredType.isUnderlyingTypeRaw()) {
                 TypeVariable typeVariable =
                         (TypeVariable) typeElement.getTypeParameters().get(i).asType();
                 javaTypeArg = getUpperBoundAsWildcard(typeVariable, declaredType.atypeFactory);
@@ -89,7 +89,7 @@ public class BoundsInitializer {
             if (typeArg.getKind() == TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) typeArg;
                 wildcardType.setTypeVariable(typeElement.getTypeParameters().get(i));
-                if (declaredType.wasRaw()) {
+                if (declaredType.isUnderlyingTypeRaw()) {
                     wildcardType.setUninferredTypeArgument();
                 }
             }
@@ -617,7 +617,8 @@ public class BoundsInitializer {
          */
         private void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
             DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
-            if (underlyingType.getTypeArguments().isEmpty() && !declaredType.wasRaw()) {
+            if (underlyingType.getTypeArguments().isEmpty()
+                    && !declaredType.isUnderlyingTypeRaw()) {
                 return;
             }
             TypeElement typeElement =
@@ -633,7 +634,8 @@ public class BoundsInitializer {
                             AnnotatedTypeMirror.createType(
                                     javaTypeArg, declaredType.atypeFactory, false);
                     typeArgs.add(atmArg);
-                    if (atmArg.getKind() == TypeKind.WILDCARD && declaredType.wasRaw()) {
+                    if (atmArg.getKind() == TypeKind.WILDCARD
+                            && declaredType.isUnderlyingTypeRaw()) {
                         ((AnnotatedWildcardType) atmArg).setUninferredTypeArgument();
                     }
                 }
@@ -682,7 +684,7 @@ public class BoundsInitializer {
                 AnnotatedDeclaredType type,
                 List<? extends TypeParameterElement> parameters,
                 int i) {
-            if (type.wasRaw()) {
+            if (type.isUnderlyingTypeRaw()) {
                 TypeVariable typeVariable = (TypeVariable) parameters.get(i).asType();
                 if (rawTypeWildcards.containsKey(typeVariable)) {
                     return rawTypeWildcards.get(typeVariable);

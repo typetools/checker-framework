@@ -111,8 +111,8 @@ public class AnnotatedTypeCopier
 
         final AnnotatedDeclaredType copy = makeOrReturnCopy(original, originalToCopy);
 
-        if (original.wasRaw()) {
-            copy.setWasRaw();
+        if (original.isUnderlyingTypeRaw()) {
+            copy.setIsUnderlyingTypeRaw();
         }
 
         if (original.enclosingType != null) {
