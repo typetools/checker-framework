@@ -381,7 +381,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   @Override
-  public List<AnnotationMirror> getPostconditionAnnotation(
+  public List<AnnotationMirror> getPostconditionAnnotations(
       VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
     AnnotationMirror cmAnno =
         AnnotationUtils.getAnnotationByName(
