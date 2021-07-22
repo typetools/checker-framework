@@ -385,8 +385,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       AnnotationMirror qualifier,
       AnnotatedTypeMirror declaredType,
       Analysis.BeforeOrAfter preOrPost,
-      List<AnnotationMirror> preconds) {
-    // Special handling to generate @EnsuresCalledMethods annotations.
+      @Nullable List<AnnotationMirror> preconds) {
     if (preOrPost == BeforeOrAfter.AFTER && isAccumulatorAnnotation(qualifier)) {
       List<String> calledMethods =
           AnnotationUtils.getElementValueArray(qualifier, calledMethodsValueElement, String.class);

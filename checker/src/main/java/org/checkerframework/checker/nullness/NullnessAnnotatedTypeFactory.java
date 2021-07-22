@@ -810,7 +810,7 @@ public class NullnessAnnotatedTypeFactory
       AnnotationMirror qualifier,
       AnnotatedTypeMirror declaredType,
       Analysis.BeforeOrAfter preOrPost,
-      List<AnnotationMirror> preconds) {
+      @Nullable List<AnnotationMirror> preconds) {
     // TODO: This does not handle the possibility that the user set a different default annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
