@@ -105,17 +105,20 @@ public interface WholeProgramInferenceStorage<T> {
    * Returns the pre- or postcondition annotations for an expression. The format of the expression
    * is the same as a programmer would write in a {@link
    * org.checkerframework.framework.qual.RequiresQualifier} or {@link
-   * org.checkerframework.framework.qual.EnsuresQualifier} annotation. This method may return null
-   * if the given expression is not a supported expression type. Currently, the supported expression
-   * types are: fields of "this" (e.g. "this.f", pre- and postconditions), "this" (postconditions
-   * only), and method parameters (e.g. "#1", "#2", etc., postconditions only).
+   * org.checkerframework.framework.qual.EnsuresQualifier} annotation.
+   *
+   * <p>This method may return null if the given expression is not a supported expression type.
+   * Currently, the supported expression types are: fields of "this" (e.g. "this.f", pre- and
+   * postconditions), "this" (postconditions only), and method parameters (e.g. "#1", "#2",
+   * postconditions only).
    *
    * @param preOrPost whether to get the precondition or postcondition
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
    * @param atypeFactory the type factory
-   * @return the pre- or postcondition annotations for a field
+   * @return the pre- or postcondition annotations for an expression, or null if the given
+   *     expression is not a supported expression type
    */
   public @Nullable T getPreOrPostconditions(
       Analysis.BeforeOrAfter preOrPost,

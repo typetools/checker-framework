@@ -2610,19 +2610,21 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Creates a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
-   * the given expression. Returns null if none can be created, because the qualifier has
-   * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
-   * support. Also returns null if the expression is invalid when combined with the kind of
-   * annotation: for example, precondition annotations on "this" and parameters ("#1", etc.) are not
-   * supported, because receiver/parameter annotations should be inferred instead.
+   * the given expression.
    *
    * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
    * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="this.elt",
    * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
    * {@code @B} which is a sub-qualifier of {@code @A}.
    *
-   * <p>Subclasses may override this method to return qualifiers that do have arguments instead of
-   * returning null.
+   * <p>Returns null if the expression is invalid when combined with the kind of annotation: for
+   * example, precondition annotations on "this" and parameters ("#1", etc.) are not supported,
+   * because receiver/parameter annotations should be inferred instead.
+   *
+   * <p>This implementation returns null if no annotation can be created, because the qualifier has
+   * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
+   * support. Subclasses may override this method to return qualifiers that do have arguments
+   * instead of returning null.
    *
    * @param expression the expression to which the qualifier applies
    * @param qualifier the qualifier that must be present
