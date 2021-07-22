@@ -911,4 +911,21 @@ public class ElementUtils {
   public static boolean inSameClass(Element e1, Element e2) {
     return e1.getEnclosingElement().equals(e2.getEnclosingElement());
   }
+
+  /**
+   * Calls getKind() on the given Element, but if the ElementKind is RECORD, CLASS is returned
+   * instead. This is needed because the checker framework runs on JDKs before the RECORD item was
+   * added, so RECORD can't be used in case statements, and usually we want to treat them the same
+   * as classes.
+   *
+   * @param elt the element to get the kind for
+   * @return the kind of the element, but CLASS if the kind was RECORD
+   */
+  public static ElementKind getKindRecordAsClass(Element elt) {
+    ElementKind kind = elt.getKind();
+    if (kind.name().equals("RECORD")) {
+      kind = ElementKind.CLASS;
+    }
+    return kind;
+  }
 }

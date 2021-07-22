@@ -22,6 +22,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -43,6 +44,7 @@ import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
@@ -285,6 +287,12 @@ public class AnnotationFileParser {
      */
     public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
         new HashMap<>(1);
+
+    /**
+     * Maps fully qualified record component name (fully-qualified-record-type.component-name) to an
+     * annotated type found in the stubs file.
+     */
+    public final Map<String, AnnotatedTypeMirror> recordComponents = new HashMap<>();
   }
 
   /**
@@ -829,7 +837,10 @@ public class AnnotationFileParser {
                 + "...");
         return null;
       }
-      typeDeclTypeParameters = processType((ClassOrInterfaceDeclaration) typeDecl, typeElt);
+      typeDeclTypeParameters = processType(typeDecl, typeElt);
+      typeParameters.addAll(typeDeclTypeParameters);
+    } else if (typeDecl instanceof RecordDeclaration) {
+      typeDeclTypeParameters = processType(typeDecl, typeElt);
       typeParameters.addAll(typeDeclTypeParameters);
     } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
     // annotations, right?
@@ -838,6 +849,14 @@ public class AnnotationFileParser {
     // of this method.
     if (fileType == AnnotationFileType.AJAVA) {
       return typeDeclTypeParameters;
+    }
+
+    if (typeDecl instanceof RecordDeclaration) {
+      NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
+      for (Parameter recordMember : recordMembers) {
+        processRecordField(
+            recordMember, findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
+      }
     }
 
     Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
@@ -850,7 +869,10 @@ public class AnnotationFileParser {
           processField((FieldDeclaration) decl, (VariableElement) elt);
           break;
         case ENUM_CONSTANT:
-          processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
+          if (decl instanceof FieldDeclaration)
+            processField((FieldDeclaration) decl, (VariableElement) elt);
+          else if (decl instanceof EnumConstantDeclaration)
+            processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
           break;
         case CONSTRUCTOR:
         case METHOD:
@@ -912,15 +934,17 @@ public class AnnotationFileParser {
    * @param elt the type's element
    * @return the type's type parameter declarations
    */
-  private List<AnnotatedTypeVariable> processType(
-      ClassOrInterfaceDeclaration decl, TypeElement elt) {
+  private List<AnnotatedTypeVariable> processType(TypeDeclaration<?> decl, TypeElement elt) {
 
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
     annotate(type, decl.getAnnotations(), decl);
 
     final List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
-    final List<TypeParameter> typeParameters = decl.getTypeParameters();
+    final List<TypeParameter> typeParameters;
+    if (decl instanceof NodeWithTypeParameters)
+      typeParameters = ((NodeWithTypeParameters<?>) decl).getTypeParameters();
+    else typeParameters = Collections.emptyList();
 
     // It can be the case that args=[] and params=null, so don't crash in that case.
     // if ((typeParameters == null) != (typeArguments == null)) {
@@ -951,7 +975,8 @@ public class AnnotationFileParser {
     }
 
     annotateTypeParameters(decl, elt, typeArguments, typeParameters);
-    annotateSupertypes(decl, type);
+    if (decl instanceof ClassOrInterfaceDeclaration)
+      annotateSupertypes((ClassOrInterfaceDeclaration) decl, type);
     putMerge(annotationFileAnnos.atypes, elt, type);
     List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
     for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
@@ -1408,6 +1433,24 @@ public class AnnotationFileParser {
     assert fieldVarDecl != null;
     annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations(), fieldVarDecl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
+  }
+
+  /**
+   * Processes a parameter to a record (i.e. a record component).
+   *
+   * @param decl the parameter in the record header
+   * @param elt the corresponding variable declaration element
+   */
+  private void processRecordField(Parameter decl, VariableElement elt) {
+    markAsFromStubFile(elt);
+    recordDeclAnnotation(elt, decl.getAnnotations(), decl);
+    // AnnotationFileParser parses all annotations in type annotation position as type annotations
+    recordDeclAnnotation(elt, decl.getType().getAnnotations(), decl);
+    AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
+
+    annotate(fieldType, decl.getType(), decl.getAnnotations(), decl);
+    putMerge(annotationFileAnnos.atypes, elt, fieldType);
+    annotationFileAnnos.recordComponents.put(ElementUtils.getQualifiedName(elt), fieldType);
   }
 
   /**

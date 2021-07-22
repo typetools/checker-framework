@@ -10,6 +10,7 @@ import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -18,6 +19,7 @@ import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.comments.BlockComment;
 import com.github.javaparser.ast.comments.JavadocComment;
@@ -78,6 +80,7 @@ import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
+import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
@@ -687,6 +690,24 @@ public abstract class VoidVisitorWithDefaultAction extends VoidVisitorAdapter<Vo
 
   @Override
   public void visit(YieldStmt n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(RecordDeclaration n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(LocalRecordDeclarationStmt n, Void p) {
+    super.visit(n, p);
+    defaultAction(n);
+  }
+
+  @Override
+  public void visit(CompactConstructorDeclaration n, Void p) {
     super.visit(n, p);
     defaultAction(n);
   }
