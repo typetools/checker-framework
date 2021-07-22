@@ -2356,15 +2356,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return memberType;
     }
 
-    AnnotatedTypeMirror recordComponentType = stubTypes.getRecordComponentType(member);
-    if (recordComponentType != null) {
-      // If the record component has an annotation, it replaces any
-      // from the same hierarchy on the method:
-      for (AnnotationMirror annotation : recordComponentType.getAnnotations()) {
-        memberType.getReturnType().removeAnnotationInHierarchy(annotation);
-      }
-      memberType.getReturnType().addAnnotations(recordComponentType.getAnnotations());
-    }
+    stubTypes.injectRecordComponentType(types, member, memberType);
+
     return memberType;
   }
 
@@ -2562,6 +2555,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               con.getTypeVariables());
       con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
     }
+
+    stubTypes.injectRecordComponentType(types, ctor, con);
 
     return new ParameterizedExecutableType(con, typeargs);
   }

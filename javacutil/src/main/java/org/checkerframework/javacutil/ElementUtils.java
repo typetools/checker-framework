@@ -8,6 +8,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -927,5 +928,26 @@ public class ElementUtils {
       kind = ElementKind.CLASS;
     }
     return kind;
+  }
+
+  /**
+   * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is not
+   * available before JDK 16. On earlier JDKs, which don't support records anyway, an empty list is
+   * returned.
+   *
+   * @param element the type element to call getRecordComponents on
+   * @return the return value of calling getRecordComponents, or empty list if the method is not
+   *     available.
+   */
+  @SuppressWarnings("unchecked") // because of cast from reflection
+  public static List<? extends Element> getRecordComponents(TypeElement element) {
+    try {
+      return (List<? extends Element>)
+          TypeElement.class.getMethod("getRecordComponents").invoke(element);
+    } catch (NoSuchMethodException e) {
+      return Collections.emptyList();
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      throw new Error("Cannot access TypeElement.getRecordComponents", e);
+    }
   }
 }

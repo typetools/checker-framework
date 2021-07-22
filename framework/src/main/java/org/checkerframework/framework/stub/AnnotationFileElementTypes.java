@@ -33,6 +33,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
@@ -393,31 +394,77 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Gets the annotation of the record type that corresponds to the given accessor method.
+   * Checks the given constructor/method, and if appropriate, adds annotations from the
+   * corresponding record components (if it is the canonical constructor or a record accessor) that
+   * are given in the stub files. Such transfer is automatically done by javac usually, but not if
+   * the stubs were used instead.
    *
-   * @param elt An element that may be a member of a record
-   * @return null if this element is not a method OR not a member of a record OR is not zero-args OR
-   *     does not have a corresponding field of the same name in the record OR the corresponding
-   *     field does not have an annotation. Returns non-null with the annotated record component
-   *     type otherwise.
+   * @param types a Types instance used for checking type equivalence.
+   * @param elt a method or constructor element (method does nothing if it's neither of these)
+   * @param memberType the type corresponding to the element elt.
    */
-  public @Nullable AnnotatedTypeMirror getRecordComponentType(Element elt) {
+  public void injectRecordComponentType(
+      Types types, Element elt, AnnotatedExecutableType memberType) {
     if (parsing) {
-      throw new BugInCF("parsing while calling getFakeOverride");
+      throw new BugInCF("parsing while calling injectRecordComponentType");
     }
 
-    if (elt.getKind() != ElementKind.METHOD) {
-      return null;
-    }
-    String eltName = ElementUtils.getQualifiedName(elt);
-    if (eltName.endsWith("()")) {
-      // Change from no-arg method into a field of the same name:
-      eltName = eltName.substring(0, eltName.length() - 2);
-      if (annotationFileAnnos.recordComponents.containsKey(eltName)) {
-        return annotationFileAnnos.recordComponents.get(eltName);
+    if (elt.getKind() == ElementKind.METHOD) {
+      String eltName = ElementUtils.getQualifiedName(elt);
+      if (eltName.endsWith("()")) {
+        // Change from no-arg method into a field of the same name:
+        eltName = eltName.substring(0, eltName.length() - 2);
+        if (annotationFileAnnos.recordComponents.containsKey(eltName)) {
+          AnnotatedTypeMirror recordComponentType =
+              annotationFileAnnos.recordComponents.get(eltName);
+          // If the record component has an annotation, it replaces any
+          // from the same hierarchy on the method:
+
+          replaceAnnotations(memberType.getReturnType(), recordComponentType);
+        }
+      }
+    } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
+      ExecutableElement constructor = (ExecutableElement) elt;
+      Element enclosing = elt.getEnclosingElement();
+      if (enclosing.getKind().name().equals("RECORD")) {
+        // The annotations only transfer if this constructor has
+        // the same signature as the canonical constructor
+        List<? extends Element> recordComponents =
+            ElementUtils.getRecordComponents((TypeElement) enclosing);
+        if (recordComponents.size() == constructor.getParameters().size()) {
+          // First check that it is actually the canonical constructor:
+          for (int i = 0; i < recordComponents.size(); i++) {
+            if (!types.isSameType(
+                recordComponents.get(i).asType(),
+                memberType.getParameterTypes().get(i).getUnderlyingType())) {
+              return;
+            }
+          }
+          for (int i = 0; i < recordComponents.size(); i++) {
+            AnnotatedTypeMirror recordComponentType =
+                annotationFileAnnos.recordComponents.get(
+                    ((TypeElement) enclosing).getQualifiedName()
+                        + "."
+                        + recordComponents.get(i).getSimpleName().toString());
+            replaceAnnotations(memberType.getParameterTypes().get(i), recordComponentType);
+          }
+        }
       }
     }
-    return null;
+  }
+
+  /**
+   * Replace annotations on destType with those from srcType, first removing any annotations on
+   * destType that are in the same hierarchy as any on srcType.
+   *
+   * @param destType the type to remove/replace the annotations on.
+   * @param srcType the type to take the annotations from.
+   */
+  private void replaceAnnotations(AnnotatedTypeMirror destType, AnnotatedTypeMirror srcType) {
+    for (AnnotationMirror annotation : srcType.getAnnotations()) {
+      destType.removeAnnotationInHierarchy(annotation);
+    }
+    destType.addAnnotations(srcType.getAnnotations());
   }
 
   /**
