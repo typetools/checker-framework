@@ -1,8 +1,10 @@
-Version 3.17.0 (August ?, 2021)
-------------------------------
+Version 3.17.0 (August 3, 2021)
+-------------------------------
+
+**User-visible changes:**
 
 `-Ainfer` can now infer postcondition annotations that reference formal parameters
-(e.g. `"#1"`, `"#2"`, etc.) and the receiver (`"this"`).
+(e.g. `"#1"`, `"#2"`) and the receiver (`"this"`).
 
 **Implementation details:**
 
@@ -12,8 +14,11 @@ Method renamings and signature changes (old methods are removed) in `GenericAnno
 * `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
 * `requiresOrEnsuresQualifierAnno(VariableElement, AnnotationMirror, Analysis.BeforeOrAfter)` => `createRequiresOrEnsuresQualifier(String, AnnotationMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
 
-Method renamings and signature changes (old method are removed) in `WholeProgramInferenceStorage`:
+Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
 * `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
+
+**Closed issues:**
+
 
 Version 3.16.0 (July 13, 2021)
 ------------------------------

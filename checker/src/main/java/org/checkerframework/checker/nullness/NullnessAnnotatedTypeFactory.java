@@ -842,7 +842,7 @@ public class NullnessAnnotatedTypeFactory
   /**
    * Returns a {@code RequiresNonNull("...")} annotation for the given expression.
    *
-   * @param expression expression
+   * @param expression an expression
    * @return a {@code RequiresNonNull("...")} annotation for the given expression
    */
   private AnnotationMirror requiresNonNullAnno(String expression) {
@@ -855,7 +855,7 @@ public class NullnessAnnotatedTypeFactory
   /**
    * Returns a {@code EnsuresNonNull("...")} annotation for the given expression.
    *
-   * @param expression expression
+   * @param expression an expression
    * @return a {@code EnsuresNonNull("...")} annotation for the given expression
    */
   private AnnotationMirror ensuresNonNullAnno(String expression) {
