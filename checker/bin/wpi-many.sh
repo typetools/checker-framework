@@ -46,28 +46,28 @@ echo "Starting wpi-many.sh."
 # check required arguments and environment variables:
 
 # shellcheck disable=SC2153 # testing for JAVA_HOME, not a typo of JAVA8_HOME
-if [ "x${JAVA_HOME}" = "x" ]; then
+if [ "${JAVA_HOME}" = "" ]; then
   has_java_home="no"
 else
   has_java_home="yes"
 fi
 
 # shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
-if [ "x${JAVA8_HOME}" = "x" ]; then
+if [ "${JAVA8_HOME}" = "" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
 # shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
-if [ "x${JAVA11_HOME}" = "x" ]; then
+if [ "${JAVA11_HOME}" = "" ]; then
   has_java11="no"
 else
   has_java11="yes"
 fi
 
 # shellcheck disable=SC2153 # testing for JAVA16_HOME, not a typo of JAVA_HOME
-if [ "x${JAVA16_HOME}" = "x" ]; then
+if [ "${JAVA16_HOME}" = "" ]; then
   has_java16="no"
 else
   has_java16="yes"
@@ -109,7 +109,7 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java16}" 
     exit 1
 fi
 
-if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
+if [ "${CHECKERFRAMEWORK}" = "" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
     exit 2
 fi
@@ -119,21 +119,21 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
     exit 2
 fi
 
-if [ "x${OUTDIR}" = "x" ]; then
+if [ "${OUTDIR}" = "" ]; then
     echo "You must specify an output directory using the -o argument."
     exit 3
 fi
 
-if [ "x${INLIST}" = "x" ]; then
+if [ "${INLIST}" = "" ]; then
     echo "You must specify an input file using the -i argument."
     exit 4
 fi
 
-if [ "x${GRADLECACHEDIR}" = "x" ]; then
+if [ "${GRADLECACHEDIR}" = "" ]; then
   GRADLECACHEDIR=".gradle"
 fi
 
-if [ "x${SKIP_OR_DELETE_UNUSABLE}" = "x" ]; then
+if [ "${SKIP_OR_DELETE_UNUSABLE}" = "" ]; then
   SKIP_OR_DELETE_UNUSABLE="delete"
 fi
 
