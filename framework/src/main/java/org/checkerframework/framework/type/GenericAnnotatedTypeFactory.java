@@ -2507,7 +2507,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code @B} which is a sub-qualifier of {@code @A}.
    *
    * @param expression an expression
-   * @param inferredType the type of the expression, on method exit
+   * @param inferredType the type of the expression, on method entry
    * @param declaredType the declared type of the expression
    * @return precondition annotations for the element (possibly an empty list)
    */
@@ -2547,7 +2547,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Helper method for creating actual pre- and postcondtion annotations.
+   * Creates pre- and postcondtion annotations. Helper method for {@link
+   * #getPreconditionAnnotations} and {@link #getPostconditionAnnotations}.
    *
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
    * element. Returns an empty list if none can be created, because the qualifier has
@@ -2557,12 +2558,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
    * subclasses may do so.
    *
-   * @param expression the expression to which the annotation applies
-   * @param inferredType the type of the field or parameter, on method entry or exit (depending on
-   *     the value of {@code preOrPost})
-   * @param declaredType the declared type of the expression, which is used to determine if the
-   *     inferredType is redundant or if a pre- or postcondition annotation should be inferred for
-   *     it
+   * @param expression an expression whose type annotations to return
+   * @param inferredType the type of the expression, on method entry or exit (depending on the value
+   *     of {@code preOrPost})
+   * @param declaredType the declared type of the expression, which is used to determine whether the
+   *     inferredType is redundant
    * @param preOrPost whether to return preconditions or postconditions
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
@@ -2629,8 +2629,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param declaredType the declared type of the expression, which is used to avoid inferring
    *     redundant pre- or postcondition annotations
    * @param preOrPost whether to return a precondition or postcondition annotation
-   * @param preconds the list of precondition annotations; always null if {@code preOrPost} is
-   *     {@code BeforeOrAfter.BEFORE}
+   * @param preconds the list of precondition annotations; used to suppress redundant - *
+   *     postconditions; always null if {@code preOrPost} is {@code BeforeOrAfter.BEFORE}
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    *     the given field, or null
    */
