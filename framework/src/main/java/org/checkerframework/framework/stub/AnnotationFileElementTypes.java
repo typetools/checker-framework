@@ -415,12 +415,13 @@ public class AnnotationFileElementTypes {
         // Change from no-arg method into a field of the same name:
         eltName = eltName.substring(0, eltName.length() - 2);
         if (annotationFileAnnos.recordComponents.containsKey(eltName)) {
-          AnnotatedTypeMirror recordComponentType =
+          AnnotationFileParser.RecordComponentAnnotation recordComponentType =
               annotationFileAnnos.recordComponents.get(eltName);
           // If the record component has an annotation, it replaces any
-          // from the same hierarchy on the method:
-
-          replaceAnnotations(memberType.getReturnType(), recordComponentType);
+          // from the same hierarchy on the method, unless there is
+          // a specific annotation on the accessor in the stubs file:
+          if (!recordComponentType.hasMoreSpecificAccessorInStubs())
+            replaceAnnotations(memberType.getReturnType(), recordComponentType.type);
         }
       }
     } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
@@ -441,12 +442,13 @@ public class AnnotationFileElementTypes {
             }
           }
           for (int i = 0; i < recordComponents.size(); i++) {
-            AnnotatedTypeMirror recordComponentType =
+            AnnotationFileParser.RecordComponentAnnotation recordComponentType =
                 annotationFileAnnos.recordComponents.get(
                     ((TypeElement) enclosing).getQualifiedName()
                         + "."
                         + recordComponents.get(i).getSimpleName().toString());
-            replaceAnnotations(memberType.getParameterTypes().get(i), recordComponentType);
+            if (!recordComponentType.hasMoreSpecificConstructorInStubs())
+              replaceAnnotations(memberType.getParameterTypes().get(i), recordComponentType.type);
           }
         }
       }

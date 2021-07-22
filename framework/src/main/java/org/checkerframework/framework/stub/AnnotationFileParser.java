@@ -290,9 +290,39 @@ public class AnnotationFileParser {
 
     /**
      * Maps fully qualified record component name (fully-qualified-record-type.component-name) to an
-     * annotated type found in the stubs file.
+     * annotated type found in the stubs file, plus info on whether the constructor/accessor had a
+     * specific annotation in the stubs.
      */
-    public final Map<String, AnnotatedTypeMirror> recordComponents = new HashMap<>();
+    public final Map<String, RecordComponentAnnotation> recordComponents = new HashMap<>();
+  }
+
+  /**
+   * Information on a record component: its type, and whether there was then a specific annotation
+   * on the canonical constructor and/or accessor.
+   */
+  public static class RecordComponentAnnotation {
+    public final AnnotatedTypeMirror type;
+    private boolean moreSpecificConstructorInStubs = false;
+    private boolean moreSpecificAccessorInStubs = false;
+
+    /**
+     * Makes a new instance with the given type
+     *
+     * @param type the type of the record component
+     */
+    public RecordComponentAnnotation(AnnotatedTypeMirror type) {
+      this.type = type;
+    }
+
+    /** @return whether there is a specifically annotated canonical constructor in the record */
+    public boolean hasMoreSpecificConstructorInStubs() {
+      return moreSpecificConstructorInStubs;
+    }
+
+    /** @return whether there is a specifically annotated accessor in the stubs. */
+    public boolean hasMoreSpecificAccessorInStubs() {
+      return moreSpecificAccessorInStubs;
+    }
   }
 
   /**
@@ -1095,17 +1125,54 @@ public class AnnotationFileParser {
 
     // Return type, from declaration annotations on the method or constructor
     if (decl.isMethodDeclaration()) {
+      MethodDeclaration methodDeclaration = (MethodDeclaration) decl;
+      if (methodDeclaration.getParameters().isEmpty()) {
+        String qualFieldName =
+            ElementUtils.getQualifiedName(elt.getEnclosingElement())
+                + "."
+                + methodDeclaration.getNameAsString();
+        if (annotationFileAnnos.recordComponents.containsKey(qualFieldName)) {
+          annotationFileAnnos.recordComponents.get(qualFieldName).moreSpecificAccessorInStubs =
+              true;
+        }
+      }
+
       try {
+
         annotate(
-            methodType.getReturnType(),
-            ((MethodDeclaration) decl).getType(),
-            decl.getAnnotations(),
-            decl);
+            methodType.getReturnType(), methodDeclaration.getType(), decl.getAnnotations(), decl);
       } catch (ErrorTypeKindException e) {
         // Do nothing, per Issue #244.
       }
     } else {
       assert decl.isConstructorDeclaration();
+      if (elt.getEnclosingElement().getKind().name().equals("RECORD")) {
+        // If this is the canonical constructor, record that the component
+        // annotations should not be automatically transferred:
+        List<? extends Element> components =
+            ElementUtils.getRecordComponents((TypeElement) elt.getEnclosingElement());
+        if (decl.getParameters().size() == components.size()) {
+          boolean mismatch = false;
+          for (int i = 0; i < decl.getParameters().size(); i++) {
+            if (!sameType(components.get(i).asType(), decl.getParameter(i).getType())) {
+              mismatch = true;
+            }
+          }
+          if (!mismatch) {
+            for (Element component : components) {
+              String qualFieldName =
+                  ElementUtils.getQualifiedName(elt.getEnclosingElement())
+                      + "."
+                      + component.getSimpleName().toString();
+              if (annotationFileAnnos.recordComponents.containsKey(qualFieldName)) {
+                annotationFileAnnos.recordComponents.get(qualFieldName)
+                        .moreSpecificConstructorInStubs =
+                    true;
+              }
+            }
+          }
+        }
+      }
       annotate(methodType.getReturnType(), decl.getAnnotations(), decl);
     }
 
@@ -1450,7 +1517,8 @@ public class AnnotationFileParser {
 
     annotate(fieldType, decl.getType(), decl.getAnnotations(), decl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
-    annotationFileAnnos.recordComponents.put(ElementUtils.getQualifiedName(elt), fieldType);
+    annotationFileAnnos.recordComponents.put(
+        ElementUtils.getQualifiedName(elt), new RecordComponentAnnotation(fieldType));
   }
 
   /**

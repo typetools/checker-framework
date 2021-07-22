@@ -10,7 +10,8 @@ class PairUsage {
   }
 
   public void makeStubbed() {
-    RecordStubbed r = new RecordStubbed("a", "b", null);
+    RecordStubbed r = new RecordStubbed("a", "b", 7);
+    RecordStubbed r1 = new RecordStubbed("a", "b", null);
     // :: error: (argument)
     RecordStubbed r2 = new RecordStubbed((String) null, "b", null);
     // :: error: (argument)
