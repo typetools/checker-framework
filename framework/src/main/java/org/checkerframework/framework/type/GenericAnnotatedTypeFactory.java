@@ -2511,7 +2511,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param declaredType the declared type of the expression
    * @return precondition annotations for the element (possibly an empty list)
    */
-  public List<AnnotationMirror> getPreconditionAnnotations(
+  public final List<AnnotationMirror> getPreconditionAnnotations(
       String expression, AnnotatedTypeMirror inferredType, AnnotatedTypeMirror declaredType) {
     return getPreOrPostconditionAnnotations(
         expression, inferredType, declaredType, BeforeOrAfter.BEFORE, null);
@@ -2537,7 +2537,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *     postconditions
    * @return postcondition annotations for the element (possibly an empty list)
    */
-  public List<AnnotationMirror> getPostconditionAnnotations(
+  public final List<AnnotationMirror> getPostconditionAnnotations(
       String expression,
       AnnotatedTypeMirror inferredType,
       AnnotatedTypeMirror declaredType,
@@ -2551,7 +2551,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * #getPreconditionAnnotations} and {@link #getPostconditionAnnotations}.
    *
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
-   * element. Returns an empty list if none can be created, because the qualifier has
+   * expression. Returns an empty list if none can be created, because the qualifier has
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
    * support.
    *
@@ -2631,7 +2631,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param declaredType the declared type of the expression, which is used to avoid inferring
    *     redundant pre- or postcondition annotations
    * @param preOrPost whether to return a precondition or postcondition annotation
-   * @param preconds the list of precondition annotations; used to suppress redundant - *
+   * @param preconds the list of precondition annotations; used to suppress redundant
    *     postconditions; always null if {@code preOrPost} is {@code BeforeOrAfter.BEFORE}
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    *     the given field, or null

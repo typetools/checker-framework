@@ -810,7 +810,7 @@ public class NullnessAnnotatedTypeFactory
       AnnotationMirror qualifier,
       AnnotatedTypeMirror declaredType,
       Analysis.BeforeOrAfter preOrPost,
-      List<AnnotationMirror> preconds) {
+      @Nullable List<AnnotationMirror> preconds) {
     // TODO: This does not handle the possibility that the user set a different default annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
@@ -825,15 +825,13 @@ public class NullnessAnnotatedTypeFactory
       return null;
     }
 
-    if (preOrPost == BeforeOrAfter.BEFORE
-        && AnnotationUtils.areSameByName(
-            qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
-      return requiresNonNullAnno(expression);
-    }
-    if (preOrPost == BeforeOrAfter.AFTER
-        && AnnotationUtils.areSameByName(
-            qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
-      return ensuresNonNullAnno(expression);
+    if (AnnotationUtils.areSameByName(
+        qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
+      if (preOrPost == BeforeOrAfter.BEFORE) {
+        return requiresNonNullAnno(expression);
+      } else {
+        return ensuresNonNullAnno(expression);
+      }
     }
     return super.createRequiresOrEnsuresQualifier(
         expression, qualifier, declaredType, preOrPost, preconds);
