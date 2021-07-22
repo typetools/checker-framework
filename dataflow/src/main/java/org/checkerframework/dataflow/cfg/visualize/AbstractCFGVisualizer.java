@@ -187,8 +187,7 @@ public abstract class AbstractCFGVisualizer<
      * @param workList the queue of blocks to be processed
      */
     protected void addBlock(Block b, Set<Block> visited, Queue<Block> workList) {
-        if (!visited.contains(b)) {
-            visited.add(b);
+        if (visited.add(b)) {
             workList.add(b);
         }
     }

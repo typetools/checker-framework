@@ -1012,19 +1012,10 @@ public abstract class CFAbstractTransfer<
 
         // Perform WPI before the store has been side-effected.
         if (shouldPerformWholeProgramInference(n.getTree(), method)) {
-            // Finds the receiver's type
-            Tree receiverTree = n.getTarget().getReceiver().getTree();
-            if (receiverTree == null) {
-                // If there is no receiver, then get the class being visited.
-                // This happens when the receiver corresponds to "this".
-                receiverTree = analysis.getContainingClass(n.getTree());
-                // receiverTree could still be null after the call above. That
-                // happens when the method is called from a static context.
-            }
-            // Updates the inferred parameter type of the invoked method
+            // Updates the inferred parameter types of the invoked method.
             analysis.atypeFactory
                     .getWholeProgramInference()
-                    .updateFromMethodInvocation(n, receiverTree, method, store);
+                    .updateFromMethodInvocation(n, method, store);
         }
 
         Tree invocationTree = n.getTree();

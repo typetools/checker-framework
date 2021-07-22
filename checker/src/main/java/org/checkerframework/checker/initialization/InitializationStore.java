@@ -12,6 +12,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ToStringComparator;
 
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -39,10 +39,16 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     /** The set of fields that have the 'invariant' annotation, and their value. */
     protected final Map<FieldAccess, V> invariantFields;
 
+    /**
+     * Creates a new InitializationStore.
+     *
+     * @param analysis the analysis class this store belongs to
+     * @param sequentialSemantics should the analysis use sequential Java semantics?
+     */
     public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
-        initializedFields = new HashSet<>();
-        invariantFields = new HashMap<>();
+        initializedFields = new HashSet<>(4);
+        invariantFields = new HashMap<>(4);
     }
 
     /**
@@ -212,8 +218,11 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
         // Set intersection for invariantFields.
         for (Map.Entry<FieldAccess, V> e : invariantFields.entrySet()) {
-            if (other.invariantFields.containsKey(e.getKey())) {
-                result.invariantFields.put(e.getKey(), e.getValue());
+            FieldAccess key = e.getKey();
+            if (other.invariantFields.containsKey(key)) {
+                // TODO: Is the value other.invariantFields.get(key) the same as e.getValue()?
+                // Should the two values be lubbed?
+                result.invariantFields.put(key, e.getValue());
             }
         }
         // Add invariant annotation.
@@ -229,9 +238,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
                 viz.visualizeStoreKeyVal(
                         "initialized fields", ToStringComparator.sorted(initializedFields));
         List<VariableElement> invariantVars =
-                invariantFields.keySet().stream()
-                        .map(FieldAccess::getField)
-                        .collect(Collectors.toList());
+                CollectionsPlume.mapList(FieldAccess::getField, invariantFields.keySet());
         String invariantVisualize =
                 viz.visualizeStoreKeyVal(
                         "invariant fields", ToStringComparator.sorted(invariantVars));

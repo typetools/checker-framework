@@ -24,7 +24,10 @@ To verify that you are using the compiler you think you are, you can add
 \code{-version} to the command line.  For instance, instead of running
 \code{javac -g MyFile.java}, you can run \code{javac \underline{-version} -g
   MyFile.java}.  Then, javac will print out its version number in addition
-to doing its normal processing.
+to doing its normal processing.  Note that if you are running under Java 8,
+\<\$CHECKERFRAMEWORK/bin/javac -version> prints ``javac (version info
+not available)'' because it uses the Error Prone compiler which does not
+provide version information.
 
 \end{itemize}
 
@@ -273,15 +276,20 @@ give unexpected results.
   expressive, or suppress the warning.
 
   If you are able to express your entire proof as annotations, then look at
-  the Checker Framework error messages.  One possibility is that the errors
-  indicate that your proof was incomplete or incorrect.  Maybe your proof
-  implicitly depended on some fact you didn't write down, such as ``method
-  \<m> has no side effects.''  In this case, you should revise your proof
-  and add more annotations to your Java code.  Another possibility is that
-  your proof is incorrect, and the errors indicate where.  Another
-  possibility is that there is a bug in the type-checker.  In this case,
-  you should report it to the maintainers, giving your proof and explaining
-  why the type-checker should be able to make the same inferences that you did.
+  the Checker Framework error messages.
+  \begin{itemize}
+  \item
+    Perhaps your proof was incomplete or incorrect.  Your proof might
+    depend on some fact you didn't write down, such as ``method
+    \<m> has no side effects.''  In this case, you should revise your proof
+    and add more annotations to your Java code.
+  \item
+    Perhaps your proof is incorrect, and the errors indicate where.
+  \item
+    Perhaps there is a bug in the type-checker.  In this case,
+    you should report it to the maintainers, giving your proof and explaining
+    why the type-checker should be able to make the same inferences that you did.
+  \end{itemize}
 
   Recall that the Checker Framework does modular verification,
   one procedure at a time; it observes the specifications, but not the
@@ -565,9 +573,10 @@ least the following 4 parts: commands, inputs, outputs, and expectation.
   If you encountered the problem in an IDE, reproduce it from the command
   line; if you cannot, report the bug to the IDE integration.
 
-  It can be helpful to add \code{-version -AprintGitProperties -verbose
-    -AprintAllQualifiers} to the javac options.  This causes the compiler
-  to output debugging information, including its version number.
+  It can be helpful to add \\
+  \code{-version -Aversion -AprintGitProperties -verbose -AprintVerboseGenerics} \\
+  to the javac options.  This causes the
+  compiler to output debugging information, including its version number.
 
 \item[Inputs]
   Include all files that are necessary to reproduce the problem.  This
@@ -880,11 +889,6 @@ your fork of the projects, so that you learn quickly about errors.  See the
 \ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html\#ci}{CI
   instructions} in the Checker Framework Developer Manual.
 
-If you make a change to the
-annotated JDK, you need to upload a JDK artifact.
-Follow the instructions at
-\url{https://github.com/typetools/annotated-libraries}.
-
 
 \subsubsectionAndLabel{Debugging continuous integration builds}{building-ci-debug}
 
@@ -1074,9 +1078,9 @@ the Checker Framework developers so we can add it.)
 \sectionAndLabel{Credits and changelog}{credits}
 
 Differences from previous versions of the checkers and framework can be found
-in the \code{changelog.txt} file.  This file is included in the
+in the \code{docs/CHANGELOG.md} file.  This file is included in the
 Checker Framework distribution and is also available on the web at
-\myurl{https://checkerframework.org/changelog.txt}.
+\myurl{https://checkerframework.org/CHANGELOG.md}.
 
 Developers who have contributed code to the Checker Framework include
 \input{contributors.tex}
@@ -1113,7 +1117,7 @@ For details, see file
 % LocalWords:  jsr unsetting plugins langtools zipfile cp plugin Nullness txt
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
-% LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
+% LocalWords:  MyFile buildfiles ClassName JRE java bootclasspath
 %  LocalWords:  extJavac ZipFile AnoPrintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
 %  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs

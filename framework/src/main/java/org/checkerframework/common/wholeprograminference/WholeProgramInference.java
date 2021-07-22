@@ -77,13 +77,11 @@ public interface WholeProgramInference {
      * </ul>
      *
      * @param methodInvNode the node representing a method invocation
-     * @param receiverTree the Tree of the class that contains the method being invoked
      * @param methodElt the element of the method being invoked
      * @param store the store before the method call, used for inferring method preconditions
      */
     void updateFromMethodInvocation(
             MethodInvocationNode methodInvNode,
-            Tree receiverTree,
             ExecutableElement methodElt,
             CFAbstractStore<?, ?> store);
 

@@ -1,7 +1,7 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 import qual.MyFenum;
 
-@SuppressWarnings("fenum:assignmenTestStatic.type.incompatible") // initialization of fake enums
+@SuppressWarnings("fenum:assignment.type.incompatible") // initialization of fake enums
 class TestStatic {
     public static final @Fenum("A") int ACONST1 = 1;
     public static final @Fenum("A") int ACONST2 = 2;

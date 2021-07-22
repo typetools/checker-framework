@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# This script test-cftests-all.sh = tests-cftests-junit.sh + tests-cftests-nonjunit.sh .
-
 set -e
 set -o verbose
 set -o xtrace

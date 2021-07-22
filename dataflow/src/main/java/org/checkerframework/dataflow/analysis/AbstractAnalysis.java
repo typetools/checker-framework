@@ -61,16 +61,16 @@ public abstract class AbstractAnalysis<
      * The transfer inputs of every basic block (assumed to be 'no information' if not present,
      * inputs before blocks in forward analysis, after blocks in backward analysis).
      */
-    protected final IdentityHashMap<Block, TransferInput<V, S>> inputs;
+    protected final IdentityHashMap<Block, TransferInput<V, S>> inputs = new IdentityHashMap<>();
 
     /** The worklist used for the fix-point iteration. */
     protected final Worklist worklist;
 
     /** Abstract values of nodes. */
-    protected final IdentityHashMap<Node, V> nodeValues;
+    protected final IdentityHashMap<Node, V> nodeValues = new IdentityHashMap<>();
 
     /** Map from (effectively final) local variable elements to their abstract value. */
-    protected final HashMap<Element, V> finalLocalValues;
+    protected final HashMap<Element, V> finalLocalValues = new HashMap<>();
 
     /**
      * The node that is currently handled in the analysis (if it is running). The following
@@ -129,10 +129,7 @@ public abstract class AbstractAnalysis<
      */
     protected AbstractAnalysis(Direction direction) {
         this.direction = direction;
-        this.inputs = new IdentityHashMap<>();
         this.worklist = new Worklist(this.direction);
-        this.nodeValues = new IdentityHashMap<>();
-        this.finalLocalValues = new HashMap<>();
     }
 
     /** Initialize the transfer inputs of every basic block before performing the analysis. */
@@ -438,7 +435,7 @@ public abstract class AbstractAnalysis<
     protected static class Worklist {
 
         /** Map all blocks in the CFG to their depth-first order. */
-        protected final IdentityHashMap<Block, Integer> depthFirstOrder;
+        protected final IdentityHashMap<Block, Integer> depthFirstOrder = new IdentityHashMap<>();
 
         /**
          * Comparators to allow priority queue to order blocks by their depth-first order, using by
@@ -473,8 +470,6 @@ public abstract class AbstractAnalysis<
          * @param direction the direction (forward or backward)
          */
         public Worklist(Direction direction) {
-            depthFirstOrder = new IdentityHashMap<>();
-
             if (direction == Direction.FORWARD) {
                 queue = new PriorityQueue<>(new ForwardDFOComparator());
             } else if (direction == Direction.BACKWARD) {
@@ -523,7 +518,8 @@ public abstract class AbstractAnalysis<
         }
 
         /**
-         * Add the given block to {@link #queue}.
+         * Add the given block to {@link #queue}. Adds unconditionally: does not check containment
+         * first.
          *
          * @param block the block to add to {@link #queue}
          */

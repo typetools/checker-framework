@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -11,6 +12,7 @@ import com.sun.tools.javac.util.Context;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -23,9 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -190,9 +192,11 @@ public class ElementUtils {
         // TODO: verify and see whether the change is worth it.
         String fqnstart = elem.getQualifiedName().toString();
         String fqn = fqnstart;
-        if (fqn != null && !fqn.isEmpty() && fqn.contains(".")) {
-            fqn = fqn.substring(0, fqn.lastIndexOf('.'));
-            return e.getPackageElement(fqn);
+        if (fqn != null && !fqn.isEmpty()) {
+            int dotPos = fqn.lastIndexOf('.');
+            if (dotPos != -1) {
+                return e.getPackageElement(fqn.substring(0, dotPos));
+            }
         }
         return null;
     }
@@ -787,6 +791,19 @@ public class ElementUtils {
     }
 
     /**
+     * Return true if the element is a binding variable.
+     *
+     * <p>Note: This is to conditionally support Java 15 instanceof pattern matching. When
+     * available, this should use {@code ElementKind.BINDING_VARIABLE} directly.
+     *
+     * @param element the element to test
+     * @return true if the element is a binding variable
+     */
+    public static boolean isBindingVariable(Element element) {
+        return "BINDING_VARIABLE".equals(element.getKind().name());
+    }
+
+    /**
      * Check that a method Element matches a signature.
      *
      * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is
@@ -838,8 +855,12 @@ public class ElementUtils {
      * @return true if the element has the annotation of that name
      */
     public static boolean hasAnnotation(Element element, String annotName) {
-        return element.getAnnotationMirrors().stream()
-                .anyMatch(anm -> AnnotationUtils.areSameByName(anm, annotName));
+        for (AnnotationMirror anm : element.getAnnotationMirrors()) {
+            if (AnnotationUtils.areSameByName(anm, annotName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -870,9 +891,8 @@ public class ElementUtils {
     public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
         Context ctx = ((JavacProcessingEnvironment) env).getContext();
         com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-        return javacTypes.closure(((Symbol) type).type).stream()
-                .map(t -> (TypeElement) t.tsym)
-                .collect(Collectors.toList());
+        return CollectionsPlume.<Type, TypeElement>mapList(
+                t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
     }
 
     /**

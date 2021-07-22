@@ -20,6 +20,7 @@ public class PuritySuggestionsClass {
 
     // class with a pure constructor
     private static class PureClass {
+        // :: warning: (purity.more.sideeffectfree)
         public PureClass() {}
     }
 

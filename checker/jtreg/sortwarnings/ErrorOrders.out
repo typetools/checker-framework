@@ -20,7 +20,7 @@ ErrorOrders.java:13:11: compiler.err.proc.messager: [array.access.unsafe.high] P
 found   : @UpperBoundUnknown int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:23:33: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
-found   : @UpperBoundUnknown int
+found   : @UpperBoundLiteral(0) int
 required: @LTLengthOf("p2") int
 ErrorOrders.java:24:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
 ErrorOrders.java:24:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
@@ -70,7 +70,7 @@ found   : @UnknownVal int
 required: int
 ErrorOrders.java:33:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
 ErrorOrders.java:33:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
-found   : @UpperBoundUnknown int
+found   : @UpperBoundLiteral(0) int
 required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
 ErrorOrders.java:36:15: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
 found   : @LowerBoundUnknown int
@@ -80,7 +80,7 @@ found   : @UpperBoundUnknown int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:42:43: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
 ErrorOrders.java:42:51: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
-found   : @UpperBoundUnknown int
+found   : @UpperBoundLiteral(0) int
 required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
 ErrorOrders.java:45:11: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
 found   : @LowerBoundUnknown int
@@ -89,7 +89,7 @@ ErrorOrders.java:45:11: compiler.err.proc.messager: [array.access.unsafe.high] P
 found   : @UpperBoundUnknown int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:55:33: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.
-found   : @UpperBoundUnknown int
+found   : @UpperBoundLiteral(0) int
 required: @LTLengthOf("p2") int
 ErrorOrders.java:56:47: compiler.err.proc.messager: [expression.unparsable.type.invalid] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
 ErrorOrders.java:56:55: compiler.err.proc.messager: [assignment.type.incompatible] incompatible types in assignment.

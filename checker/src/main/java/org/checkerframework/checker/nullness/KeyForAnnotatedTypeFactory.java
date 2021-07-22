@@ -69,9 +69,22 @@ public class KeyForAnnotatedTypeFactory
     /** Moves annotations from one side of a pseudo-assignment to the other. */
     private final KeyForPropagator keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
-    /** Create a new KeyForAnnotatedTypeFactory. */
+    /**
+     * If true, assume the argument to Map.get is always a key for the receiver map. This is set by
+     * the `-AassumeKeyFor` command-line argument. However, if the Nullness Checker is being run,
+     * then `-AassumeKeyFor` disables the Map Key Checker.
+     */
+    private final boolean assumeKeyFor;
+
+    /**
+     * Creates a new KeyForAnnotatedTypeFactory.
+     *
+     * @param checker the associated checker
+     */
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
+
+        assumeKeyFor = checker.hasOption("assumeKeyFor");
 
         // Add compatibility annotations:
         addAliasedTypeAnnotation(
@@ -196,6 +209,11 @@ public class KeyForAnnotatedTypeFactory
      * @return whether or not the expression is a key for the map
      */
     public boolean isKeyForMap(String mapExpression, ExpressionTree tree) {
+        // This test only has an effect if the Map Key Checker is being run on its own.  If the
+        // Nullness Checker is being run, then -AassumeKeyFor disables the Map Key Checker.
+        if (assumeKeyFor) {
+            return true;
+        }
         Collection<String> maps = null;
         AnnotatedTypeMirror type = getAnnotatedType(tree);
         AnnotationMirror keyForAnno = type.getAnnotation(KeyFor.class);

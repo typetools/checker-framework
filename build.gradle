@@ -11,7 +11,7 @@ plugins {
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.2.4"
+    id "com.gorylenko.gradle-git-properties" version "2.3.1"
 }
 apply plugin: "de.undercouch.download"
 
@@ -24,7 +24,7 @@ repositories {
 
 gitProperties {
     // logically belongs in framework, but only checker resources are copied to .jar file
-    gitPropertiesResourceDir = "${project.rootDir}/checker/src/main/resources"
+    gitPropertiesResourceDir = file("${project.rootDir}/checker/src/main/resources")
 }
 
 ext {
@@ -42,7 +42,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.18.0.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.1.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -102,7 +102,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.12.0'
+    version '3.13.0'
 
     repositories {
         mavenCentral()
@@ -114,12 +114,7 @@ allprojects {
         // Holds the combined classpath of all subprojects including the subprojects themselves.
         allProjects
 
-        // There's a bug in IntelliJ that adds the processor path to the classpath when building
-        // a Gradle project.  Because ErrorProne uses old versions of some of our jars, IntelliJ uses
-        // those jars instead of the source code. The next 3 lines exclude Checker Framework from the
-        // processor path as a work around for this problem.
-        annotationProcessor.exclude group:'org.checkerframework', module:'javacutil'
-        annotationProcessor.exclude group:'org.checkerframework', module:'dataflow'
+        // Exclude checker-qual dependency added by ErrorProne to avoid a circular dependency.
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
@@ -380,21 +375,21 @@ List<String> getJavaFilesToFormat(projectName) {
         if (!details.path.contains("nullness-javac-errors")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
-                && details.name.endsWith('java')) {
+                && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
     // Collect all java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
     // Collect all java files in jtregJdk11 directory
     fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('java')) {
+        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
@@ -644,7 +639,7 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.5.1'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.6.0'
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -750,7 +745,7 @@ subprojects {
         }
 
         // Add tasks to run various checkers on all the main source sets.
-        // These pass and are run by nonJunitTests.
+        // These pass and are run by typecheckTests.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
@@ -763,7 +758,8 @@ subprojects {
             'org.checkerframework.framework.util.PurityChecker')
         createCheckTypeTask(project.name, 'Signature',
             'org.checkerframework.checker.signature.SignatureChecker')
-        // These pass on some subprojects, which nonJunitTests runs.  TODO: Incrementally add @AnnotatedFor on classes.
+        // These pass on some subprojects, which the `typecheck` task runs.
+        // TODO: Incrementally add @AnnotatedFor on more classes.
         createCheckTypeTask(project.name, 'Nullness',
             'org.checkerframework.checker.nullness.NullnessChecker',
             ['-AskipUses=com.sun.*'])
@@ -889,7 +885,7 @@ subprojects {
 
         // Create a nonJunitTests task per project
         tasks.create(name: 'nonJunitTests', group: 'Verification') {
-            description 'Run all Checker Framework tests except for the Junit tests.'
+            description 'Run all Checker Framework tests except for the Junit tests and inference tests.'
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('jtregTests')
             }
@@ -901,13 +897,20 @@ subprojects {
                 if (!isJava8) {
                     dependsOn('jtregJdk11Tests')
                 }
-                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests',
-                          'wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                dependsOn('nullnessExtraTests', 'commandLineTests', 'tutorialTests')
             }
 
             if (project.name.is('dataflow')) {
                 dependsOn('liveVariableTest')
                 dependsOn('issue3447Test')
+            }
+        }
+
+        // Create an inferenceTests task per project
+        tasks.create(name: 'inferenceTests', group: 'Verification') {
+            description 'Run inference tests.'
+            if (project.name.is('checker')) {
+//                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
             }
         }
 
@@ -925,11 +928,11 @@ subprojects {
         }
 
         // Create an allTests task per project.
-        // allTests = test + nonJunitTests + typecheck
+        // allTests = test + nonJunitTests + inferenceTests + typecheck
         tasks.create(name: 'allTests', group: 'Verification') {
             description 'Run all Checker Framework tests'
             // The 'test' target is just the JUnit tests.
-            dependsOn('nonJunitTests', 'test', 'typecheck')
+            dependsOn('test', 'nonJunitTests', 'inferenceTests', 'typecheck')
         }
 
         task javadocPrivate(dependsOn: javadoc) {

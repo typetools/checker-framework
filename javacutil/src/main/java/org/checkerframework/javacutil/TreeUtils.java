@@ -136,7 +136,7 @@ public final class TreeUtils {
      * @return true iff tree is a call to the given method
      */
     private static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
-        return getMethodName(tree.getMethodSelect()).equals(name);
+        return getMethodName(tree.getMethodSelect()).contentEquals(name);
     }
 
     /**
@@ -542,7 +542,8 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns true if the given method is synthetic.
+     * Returns true if the given method is synthetic. Also returns true if the method is a generated
+     * default constructor, which does not appear in source code but is not considered synthetic.
      *
      * @param ee a method or constructor element
      * @return true iff the given method is synthetic
@@ -550,7 +551,7 @@ public final class TreeUtils {
     public static boolean isSynthetic(ExecutableElement ee) {
         MethodSymbol ms = (MethodSymbol) ee;
         long mod = ms.flags();
-        // GENERATEDCONSTR is for generated constructors, which seem not to have SYNTHETIC set.
+        // GENERATEDCONSTR is for generated constructors, which do not have SYNTHETIC set.
         return (mod & (Flags.SYNTHETIC | Flags.GENERATEDCONSTR)) != 0;
     }
 
@@ -1058,14 +1059,14 @@ public final class TreeUtils {
      * @param tree a method access tree
      * @return the name of the method accessed by {@code tree}
      */
-    public static String getMethodName(Tree tree) {
+    public static Name getMethodName(Tree tree) {
         assert isMethodAccess(tree);
         if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             MemberSelectTree mtree = (MemberSelectTree) tree;
-            return mtree.getIdentifier().toString();
+            return mtree.getIdentifier();
         } else {
             IdentifierTree itree = (IdentifierTree) tree;
-            return itree.getName().toString();
+            return itree.getName();
         }
     }
 

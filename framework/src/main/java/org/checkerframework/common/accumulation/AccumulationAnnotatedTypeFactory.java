@@ -418,7 +418,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             if (a2Val.containsAll(a1Val)) {
                 return a2;
             }
-            a1Val.addAll(a2Val);
+            a1Val.addAll(a2Val); // union
             return createAccumulatorAnnotation(a1Val);
         }
 
@@ -464,7 +464,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             if (a2Val.containsAll(a1Val)) {
                 return a1;
             }
-            a1Val.retainAll(a2Val);
+            a1Val.retainAll(a2Val); // intersection
             return createAccumulatorAnnotation(a1Val);
         }
 

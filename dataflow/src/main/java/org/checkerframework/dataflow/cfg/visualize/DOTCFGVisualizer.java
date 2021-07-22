@@ -260,40 +260,37 @@ public class DOTCFGVisualizer<
 
     @Override
     protected String format(Object obj) {
-        return escapeDoubleQuotes(obj);
+        return escapeString(obj);
     }
 
     @Override
     public String visualizeStoreThisVal(V value) {
-        return storeEntryIndent + "this > " + escapeDoubleQuotes(value);
+        return storeEntryIndent + "this > " + escapeString(value);
     }
 
     @Override
     public String visualizeStoreLocalVar(LocalVariable localVar, V value) {
-        return storeEntryIndent + localVar + " > " + escapeDoubleQuotes(value);
+        return storeEntryIndent + localVar + " > " + escapeString(value);
     }
 
     @Override
     public String visualizeStoreFieldVal(FieldAccess fieldAccess, V value) {
-        return storeEntryIndent + fieldAccess + " > " + escapeDoubleQuotes(value);
+        return storeEntryIndent + fieldAccess + " > " + escapeString(value);
     }
 
     @Override
     public String visualizeStoreArrayVal(ArrayAccess arrayValue, V value) {
-        return storeEntryIndent + arrayValue + " > " + escapeDoubleQuotes(value);
+        return storeEntryIndent + arrayValue + " > " + escapeString(value);
     }
 
     @Override
     public String visualizeStoreMethodVals(MethodCall methodCall, V value) {
-        return storeEntryIndent
-                + escapeDoubleQuotes(methodCall)
-                + " > "
-                + escapeDoubleQuotes(value);
+        return storeEntryIndent + escapeString(methodCall) + " > " + escapeString(value);
     }
 
     @Override
     public String visualizeStoreClassVals(ClassName className, V value) {
-        return storeEntryIndent + className + " > " + escapeDoubleQuotes(value);
+        return storeEntryIndent + className + " > " + escapeString(value);
     }
 
     @Override
@@ -302,13 +299,13 @@ public class DOTCFGVisualizer<
     }
 
     /**
-     * Escape the double quotes from the input String, replacing {@code "} by {@code \"}.
+     * Escape the input String.
      *
      * @param str the string to be escaped
      * @return the escaped version of the string
      */
-    private static String escapeDoubleQuotes(final String str) {
-        return str.replace("\"", "\\\"");
+    private static String escapeString(final String str) {
+        return str.replace("\"", "\\\"").replace("\r", "\\\\r").replace("\n", "\\\\n");
     }
 
     /**
@@ -317,8 +314,8 @@ public class DOTCFGVisualizer<
      * @param obj an object
      * @return an escaped version of the string representation of the object
      */
-    private static String escapeDoubleQuotes(final Object obj) {
-        return escapeDoubleQuotes(String.valueOf(obj));
+    private static String escapeString(final Object obj) {
+        return escapeString(String.valueOf(obj));
     }
 
     /**

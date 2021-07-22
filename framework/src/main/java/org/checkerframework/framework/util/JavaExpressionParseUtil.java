@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util;
 
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.ArrayCreationLevel;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.ArrayCreationExpr;
@@ -149,7 +148,7 @@ public class JavaExpressionParseUtil {
                 StringsPlume.replaceAll(expression, FORMAL_PARAMETER, PARAMETER_REPLACEMENT);
         Expression expr;
         try {
-            expr = StaticJavaParser.parseExpression(expressionWithParameterNames);
+            expr = JavaParserUtil.parseExpression(expressionWithParameterNames);
         } catch (ParseProblemException e) {
             String extra = ".";
             if (!e.getProblems().isEmpty()) {
@@ -1053,7 +1052,7 @@ public class JavaExpressionParseUtil {
         private @Nullable TypeMirror convertTypeToTypeMirror(Type type) {
             if (type.isClassOrInterfaceType()) {
                 try {
-                    return StaticJavaParser.parseExpression(type.asString())
+                    return JavaParserUtil.parseExpression(type.asString())
                             .accept(this, null)
                             .getType();
                 } catch (ParseProblemException e) {

@@ -477,18 +477,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             checker.reportError(
                     overriderTree,
                     messageKey,
-                    overriderMeth,
                     overriderTyp,
-                    overriddenMeth,
-                    overriddenTyp);
+                    overriderMeth,
+                    overriddenTyp,
+                    overriddenMeth);
         } else {
             checker.reportError(
                     overriderTree,
                     messageKey,
-                    overriderMeth,
                     overriderTyp,
-                    overriddenMeth,
+                    overriderMeth,
                     overriddenTyp,
+                    overriddenMeth,
                     overriderLocks,
                     overriddenLocks);
         }

@@ -319,12 +319,8 @@ public class ElementAnnotationUtil {
             final AnnotatedWildcardType wildcard,
             final TypeCompound anno,
             final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos) {
-        WildcardBoundAnnos boundAnnos = wildcardToAnnos.get(wildcard);
-        if (boundAnnos == null) {
-            boundAnnos = new WildcardBoundAnnos(wildcard);
-            wildcardToAnnos.put(wildcard, boundAnnos);
-        }
-
+        WildcardBoundAnnos boundAnnos =
+                wildcardToAnnos.computeIfAbsent(wildcard, WildcardBoundAnnos::new);
         boundAnnos.addAnnotation(anno);
     }
 

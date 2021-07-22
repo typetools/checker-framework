@@ -41,7 +41,10 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-/** A utility class that helps with {@link TypeMirror}s. */
+/**
+ * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
+ * methods that {@link Types} does not.
+ */
 public final class TypesUtils {
 
     /** Class cannot be instantiated. */

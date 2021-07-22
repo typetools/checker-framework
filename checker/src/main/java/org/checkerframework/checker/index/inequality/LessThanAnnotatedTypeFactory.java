@@ -27,10 +27,10 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -129,10 +129,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
             List<String> a1List = getLessThanExpressions(a1);
             List<String> a2List = getLessThanExpressions(a2);
-            List<String> lub = new ArrayList<>(a1List);
-            lub.retainAll(a2List);
-
-            return createLessThanQualifier(lub);
+            a1List.retainAll(a2List); // intersection
+            return createLessThanQualifier(a1List);
         }
 
         @Override
@@ -145,10 +143,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
             List<String> a1List = getLessThanExpressions(a1);
             List<String> a2List = getLessThanExpressions(a2);
-            List<String> glb = new ArrayList<>(a1List);
-            glb.addAll(a2List);
-
-            return createLessThanQualifier(glb);
+            SystemUtil.addWithoutDuplicates(a1List, a2List); // union
+            return createLessThanQualifier(a1List);
         }
     }
 

@@ -9,6 +9,8 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 
+import javax.lang.model.element.Name;
+
 /** A transfer function that accumulates the names of methods called. */
 public class CalledMethodsTransfer extends AccumulationTransfer {
 
@@ -27,11 +29,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
         Node receiver = node.getTarget().getReceiver();
         if (receiver != null) {
-            String methodName = node.getTarget().getMethod().getSimpleName().toString();
-            methodName =
+            Name methodName = node.getTarget().getMethod().getSimpleName();
+            String methodNameString =
                     ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
                             .adjustMethodNameUsingValueChecker(methodName, node.getTree());
-            accumulate(receiver, result, methodName);
+            accumulate(receiver, result, methodNameString);
         }
         return result;
     }

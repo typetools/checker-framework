@@ -20,6 +20,10 @@ import java.lang.annotation.Target;
  *
  * <p>In the annotation's name, "LTOM" stands for "less than one minus".
  *
+ * <p>{@code @LTOMLengthOf({"a"})} = {@code @LTLengthOf(value={"a"}, offset=1)}, and<br>
+ * {@code @LTOMLengthOf(value={"a"}, offset=x)} = {@code @LTLengthOf(value={"a"}, offset=x+1)} for
+ * any x.
+ *
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented

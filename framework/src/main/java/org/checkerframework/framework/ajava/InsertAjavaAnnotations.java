@@ -12,7 +12,7 @@ import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
-import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.github.javaparser.utils.Pair;
 import com.sun.source.util.JavacTask;
 
@@ -165,7 +165,7 @@ public class InsertAjavaAnnotations {
         /** The annotation insertions seen so far. */
         public List<Insertion> insertions;
         /** A printer for annotations. */
-        private PrettyPrinter printer;
+        private DefaultPrettyPrinter printer;
         /** The lines of the String representation of the second AST. */
         private List<String> lines;
         /** The line separator used in the text the second AST was parsed from */
@@ -189,7 +189,7 @@ public class InsertAjavaAnnotations {
         public BuildInsertionsVisitor(String destFileContents, String lineSeparator) {
             allAnnotations = null;
             insertions = new ArrayList<>();
-            printer = new PrettyPrinter();
+            printer = new DefaultPrettyPrinter();
             String[] lines = destFileContents.split(lineSeparator);
             this.lines = Arrays.asList(lines);
             this.lineSeparator = lineSeparator;
@@ -591,7 +591,7 @@ public class InsertAjavaAnnotations {
 
                         Set<String> annotationFilesForRoot = new LinkedHashSet<>();
                         for (TypeDeclaration<?> type : root.getTypes()) {
-                            String name = JavaParserUtils.getFullyQualifiedName(type, root);
+                            String name = JavaParserUtil.getFullyQualifiedName(type, root);
                             annotationFilesForRoot.addAll(
                                     annotationFiles.getAnnotationFileForType(name));
                         }

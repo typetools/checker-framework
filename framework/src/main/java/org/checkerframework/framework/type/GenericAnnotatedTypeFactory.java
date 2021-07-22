@@ -90,6 +90,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -126,6 +127,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -177,12 +180,18 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * The Java types on which users may write this type system's type annotations. null means no
      * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
+     *
+     * <p>If the relevant type is generic, this contains its erasure.
+     *
+     * <p>Although a {@code Class<?>} object exists for every element, this does not contain those
+     * {@code Class<?>} objects because the elements will be compared to TypeMirrors for which Class
+     * objects may not exist (they might not be on the classpath).
      */
     public @Nullable Set<TypeMirror> relevantJavaTypes;
 
     /**
-     * Whether users may write type annotations on arrays. Ignored unless relevantJavaTypes is
-     * non-null.
+     * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
+     * is non-null.
      */
     boolean arraysAreRelevant = false;
 
@@ -349,9 +358,12 @@ public abstract class GenericAnnotatedTypeFactory<
             this.relevantJavaTypes = null;
             this.arraysAreRelevant = true;
         } else {
-            this.relevantJavaTypes = new HashSet<TypeMirror>();
+            Types types = getChecker().getTypeUtils();
+            Elements elements = getElementUtils();
+            Class<?>[] classes = relevantJavaTypesAnno.value();
+            this.relevantJavaTypes = new HashSet<>(SystemUtil.mapCapacity(classes.length));
             this.arraysAreRelevant = false;
-            for (Class<?> clazz : relevantJavaTypesAnno.value()) {
+            for (Class<?> clazz : classes) {
                 if (clazz == Object[].class) {
                     arraysAreRelevant = true;
                 } else if (clazz.isArray()) {
@@ -359,9 +371,8 @@ public abstract class GenericAnnotatedTypeFactory<
                             "Don't use arrays other than Object[] in @RelevantJavaTypes on "
                                     + this.getClass().getSimpleName());
                 } else {
-                    relevantJavaTypes.add(
-                            TypesUtils.typeFromClass(
-                                    clazz, getChecker().getTypeUtils(), getElementUtils()));
+                    TypeMirror relevantType = TypesUtils.typeFromClass(clazz, types, elements);
+                    relevantJavaTypes.add(types.erasure(relevantType));
                 }
             }
         }
@@ -904,8 +915,9 @@ public abstract class GenericAnnotatedTypeFactory<
         JavaExpression expressionObj = parseJavaExpressionString(expression, path);
         return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
     }
+
     /**
-     * Returns the primary annotation on an expression.
+     * Returns the primary annotation on an expression, at a particular location.
      *
      * @param expr the expression for which the annotation is returned
      * @param tree current tree
@@ -914,31 +926,47 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public AnnotationMirror getAnnotationFromJavaExpression(
             JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
+        return getAnnotationByClass(getAnnotationsFromJavaExpression(expr, tree), clazz);
+    }
 
-        AnnotationMirror annotationMirror = null;
+    /**
+     * Returns the primary annotations on an expression, at a particular location.
+     *
+     * @param expr the expression for which the annotation is returned
+     * @param tree current tree
+     * @return the annotation on expression or null if one does not exist
+     */
+    public Set<AnnotationMirror> getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
+
+        // Look in the store
         if (CFAbstractStore.canInsertJavaExpression(expr)) {
             Store store = getStoreBefore(tree);
-            Value value = store.getValue(expr);
-            if (value != null) {
-                annotationMirror = getAnnotationByClass(value.getAnnotations(), clazz);
+            // `store` can be null if the tree is in a field initializer.
+            if (store != null) {
+                Value value = store.getValue(expr);
+                if (value != null) {
+                    // Is it possible that this lacks some annotations that appear in the type
+                    // factory?
+                    return value.getAnnotations();
+                }
             }
         }
-        // If the specific annotation wasn't in the store, look in the type factory.
-        if (annotationMirror == null) {
-            if (expr instanceof LocalVariable) {
-                Element ele = ((LocalVariable) expr).getElement();
-                // Because of
-                // https://github.com/eisop/checker-framework/issues/14
-                // and the workaround in
-                // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
-                // The annotationMirror may not contain all explicitly written annotations.
-                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
-            } else if (expr instanceof FieldAccess) {
-                Element ele = ((FieldAccess) expr).getField();
-                annotationMirror = getAnnotatedType(ele).getAnnotation(clazz);
-            }
+
+        // Look in the type factory, if not found in the store.
+        if (expr instanceof LocalVariable) {
+            Element ele = ((LocalVariable) expr).getElement();
+            // Because of
+            // https://github.com/eisop/checker-framework/issues/14
+            // and the workaround in
+            // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
+            // The annotationMirror may not contain all explicitly written annotations.
+            return getAnnotatedType(ele).getAnnotations();
+        } else if (expr instanceof FieldAccess) {
+            Element ele = ((FieldAccess) expr).getField();
+            return getAnnotatedType(ele).getAnnotations();
+        } else {
+            return Collections.emptySet();
         }
-        return annotationMirror;
     }
 
     /**
@@ -1692,7 +1720,7 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
-        dependentTypesHelper.atReturnType(returnType, m);
+        dependentTypesHelper.atMethodBody(returnType, m);
         return returnType;
     }
 
@@ -2227,6 +2255,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return true if users can write type annotations from this type system on the given Java type
      */
     public boolean isRelevant(TypeMirror tm) {
+        tm = types.erasure(tm);
         Boolean cachedResult = allFoundRelevantTypes.get(tm);
         if (cachedResult != null) {
             return cachedResult;

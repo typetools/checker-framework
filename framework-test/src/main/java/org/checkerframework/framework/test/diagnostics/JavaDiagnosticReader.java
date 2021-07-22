@@ -27,7 +27,7 @@ import javax.tools.JavaFileObject;
 public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     ///
-    /// This class begins with the publc static methods that clients use to read diagnostics.
+    /// This class begins with the public static methods that clients use to read diagnostics.
     ///
 
     /**

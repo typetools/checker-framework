@@ -234,7 +234,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
 
                 Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
-                lubSigs.addAll(a2Sigs);
+                lubSigs.addAll(a2Sigs); // union
 
                 AnnotationMirror result = createMethodVal(lubSigs);
                 return result;
@@ -256,7 +256,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
 
                 Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
-                lubSigs.retainAll(a2Sigs);
+                lubSigs.retainAll(a2Sigs); // intersection
 
                 AnnotationMirror result = createMethodVal(lubSigs);
                 return result;

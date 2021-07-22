@@ -2,7 +2,7 @@ package org.checkerframework.common.basetype;
 
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -65,7 +65,6 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
-import org.checkerframework.framework.ajava.JavaParserUtils;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -344,7 +343,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
         try (InputStream reader = root.getSourceFile().openInputStream()) {
             CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader);
-            JavaParserUtils.concatenateAddedStringLiterals(javaParserRoot);
+            JavaParserUtil.concatenateAddedStringLiterals(javaParserRoot);
             new JointVisitorWithDefaultAction() {
                 @Override
                 public void defaultAction(
@@ -392,8 +391,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         CompilationUnit astWithoutAnnotations = originalAst.clone();
-        JavaParserUtils.clearAnnotations(astWithoutAnnotations);
-        String withoutAnnotations = new PrettyPrinter().print(astWithoutAnnotations);
+        JavaParserUtil.clearAnnotations(astWithoutAnnotations);
+        String withoutAnnotations = new DefaultPrettyPrinter().print(astWithoutAnnotations);
 
         String withAnnotations;
         try (InputStream annotationInputStream = root.getSourceFile().openInputStream()) {
@@ -1009,7 +1008,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             reportPurityErrors(r, node, kinds);
         }
 
-        if (suggestPureMethods) {
+        if (suggestPureMethods && !TreeUtils.isSynthetic(node)) {
             // Issue a warning if the method is pure, but not annotated as such.
             EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
             additionalKinds.removeAll(kinds);
@@ -3851,10 +3850,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.reportError(
                         overriderTree,
                         msgKey,
-                        overrider,
                         overriderType,
-                        overridden,
+                        overrider,
                         overriddenType,
+                        overridden,
                         subPurity,
                         superPurity);
             }
@@ -3951,10 +3950,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             "methodref.receiver.invalid",
                             overriderReceiver,
                             overriddenReceiver,
-                            overrider,
                             overriderType,
-                            overridden,
-                            overriddenType);
+                            overrider,
+                            overriddenType,
+                            overridden);
                 }
                 return success;
             }
@@ -4014,8 +4013,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         receiverArg,
                         receiverDecl,
                         receiverArg,
-                        overrider,
-                        overriderType);
+                        overriderType,
+                        overrider);
             }
 
             return success;
@@ -4053,10 +4052,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         "override.receiver.invalid",
                         pair.found,
                         pair.required,
-                        overrider,
                         overriderType,
-                        overridden,
-                        overriddenType);
+                        overrider,
+                        overriddenType,
+                        overridden);
                 return false;
             }
             return true;
@@ -4152,10 +4151,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         overrider.getElement().getParameters().get(index).toString(),
                         pair.found,
                         pair.required,
-                        overrider,
                         overriderType,
-                        overridden,
-                        overriddenType);
+                        overrider,
+                        overriddenType,
+                        overridden);
             }
         }
 
@@ -4249,10 +4248,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         msgKey,
                         pair.found,
                         pair.required,
-                        overrider,
                         overriderType,
-                        overridden,
-                        overriddenType);
+                        overrider,
+                        overriddenType,
+                        overridden);
             }
         }
     }

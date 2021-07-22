@@ -175,7 +175,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
             List<String> arrayIntersection = getValueElement(a1);
-            arrayIntersection.retainAll(getValueElement(a2));
+            arrayIntersection.retainAll(getValueElement(a2)); // intersection
 
             if (arrayIntersection.isEmpty()) {
                 return UNKNOWN;
@@ -183,11 +183,9 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             if (areSameByClass(a1, SearchIndexFor.class)
                     || areSameByClass(a2, SearchIndexFor.class)) {
-                return createSearchIndexFor(
-                        Arrays.asList(arrayIntersection.toArray(new String[0])));
+                return createSearchIndexFor(arrayIntersection);
             } else {
-                return createNegativeIndexFor(
-                        Arrays.asList(arrayIntersection.toArray(new String[0])));
+                return createNegativeIndexFor(arrayIntersection);
             }
         }
 

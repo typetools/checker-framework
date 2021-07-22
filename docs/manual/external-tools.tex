@@ -118,7 +118,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.12.0'
+    ext.checkerFrameworkVersion = '3.13.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -191,7 +191,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.12.0'
+    ext.checkerFrameworkVersion = '3.13.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -217,7 +217,7 @@ that your Ant file already contains a compilation target that uses the
 
 \begin{enumerate}
 \item
-Set the \code{jsr308javac} property:
+Set the \code{cfJavac} property:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -228,7 +228,7 @@ Set the \code{jsr308javac} property:
   <condition property="cfJavac" value="javac.bat" else="javac">
     <os family="windows" />
   </condition>
-  <presetdef name="jsr308.javac">
+  <presetdef name="cf.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
       <compilerarg value="-implicit:class"/>
@@ -249,15 +249,15 @@ indicated in this example:
   <target name="check-nullness"
           description="Check for null pointer dereferences"
           depends="clean,...">
-    <!-- use jsr308.javac instead of javac -->
-    <jsr308.javac ... >
+    <!-- use cf.javac instead of javac -->
+    <cf.javac ... >
       <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
       <!-- optional, to not check uses of library methods:
         <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/>
       -->
       <compilerarg line="-Xmaxerrs 10000"/>
       ...
-    </jsr308.javac>
+    </cf.javac>
   </target>
 \end{Verbatim}
 %BEGIN LATEX
@@ -268,6 +268,9 @@ Fill in each ellipsis (\ldots) from the original compilation target.
 However, do not copy any \<fork=> setting from the original \code{<javac>}
 task invocation.
 
+If your original compilation target set the classpath or bootclasspath,
+then you will need to adjust it; see Section~\ref{javac-jdk8}.
+
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
 \end{enumerate}
@@ -277,7 +280,7 @@ name it whatever you like.
 This section explains each part of the Ant task.
 
 \begin{enumerate}
-\item Definition of \code{jsr308.javac}:
+\item Definition of \code{cf.javac}:
 
 The \code{fork} field of the \code{javac} task
 ensures that an external \code{javac} program is called.  Otherwise, Ant will run
@@ -339,13 +342,13 @@ file showing how to enable Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.12.0.jar',
+    binary_jar = 'checker-3.13.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.12.0.jar',
+    binary_jar = 'checker-qual-3.13.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -377,21 +380,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.12.0/>.
+other than \<\${HOME}/checker-framework-3.13.0/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.12.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.13.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.12.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.13.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -412,7 +415,7 @@ other than \<\${HOME}/checker-framework-3.12.0/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.12.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.13.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -434,11 +437,11 @@ other than \<\${HOME}/checker-framework-3.12.0/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.12.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.13.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.12.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.13.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -517,9 +520,9 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.12.0/checker-qual-3.12.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.12.0/checker-util-3.12.0.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.12.0/checker-3.12.0-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.13.0/checker-qual-3.13.0.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.13.0/checker-util-3.13.0.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.13.0/checker-3.13.0-all.jar}
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
@@ -1177,7 +1180,7 @@ annotation processor output will appear in the editor.
 
 \begin{enumerate}
 \item
-Set the \code{jsr308javac} property:
+Set the \code{cfJavac} property:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -1188,7 +1191,7 @@ Set the \code{jsr308javac} property:
   <condition property="cfJavac" value="javac.bat" else="javac">
     <os family="windows" />
   </condition>
-  <presetdef name="jsr308.javac">
+  <presetdef name="cf.javac">
     <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
       <compilerarg value="-version"/>
       <compilerarg value="-implicit:class"/>
@@ -1201,7 +1204,7 @@ Set the \code{jsr308javac} property:
 
 \item
 Override the \code{-init-macrodef-javac-with-processors} target to
-use \code{jsr308.javac} instead of \code{javac} and to run the checker.
+use \code{cf.javac} instead of \code{javac} and to run the checker.
 In this example, a nullness checker is run:
 
 %BEGIN LATEX
@@ -1227,7 +1230,7 @@ In this example, a nullness checker is run:
             <property location="${build.dir}/empty" name="empty.dir"/>
             <mkdir dir="${empty.dir}"/>
             <mkdir dir="@{apgeneratedsrcdir}"/>
-            <jsr308.javac debug="@{debug}" deprecation="${javac.deprecation}"
+            <cf.javac debug="@{debug}" deprecation="${javac.deprecation}"
                     destdir="@{destdir}" encoding="${source.encoding}"
                     excludes="@{excludes}" fork="${javac.fork}"
                     includeantruntime="false" includes="@{includes}"
@@ -1256,7 +1259,7 @@ In this example, a nullness checker is run:
                 <compilerarg line="-Xmaxerrs 10000"/>
                 <compilerarg line="-Xmaxwarns 10000"/>
                 <customize/>
-            </jsr308.javac>
+            </cf.javac>
         </sequential>
     </macrodef>
   </target>
@@ -1340,7 +1343,7 @@ lists type inference tools.
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle cp
-% LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
+% LocalWords:  compilerArgs Xbootclasspath mvn
 % LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
 % LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk

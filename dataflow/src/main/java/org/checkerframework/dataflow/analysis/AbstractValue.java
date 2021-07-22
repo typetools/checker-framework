@@ -4,7 +4,7 @@ package org.checkerframework.dataflow.analysis;
 public interface AbstractValue<V extends AbstractValue<V>> {
 
     /**
-     * Compute the least upper bound of two stores.
+     * Compute the least upper bound of two values.
      *
      * <p><em>Important</em>: This method must fulfill the following contract:
      *

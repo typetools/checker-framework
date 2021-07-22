@@ -1155,8 +1155,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // **********************************************************************
 
     /**
-     * Returns the int supplied to the checker via the atfCacheSize option or the default cache
-     * size.
+     * Returns the size for LRU caches. It is either the value supplied via the {@code
+     * -AatfCacheSize} option or the default cache size.
      *
      * @return cache size passed as argument to checker or DEFAULT_CACHE_SIZE
      */
@@ -2020,7 +2020,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the innermost enclosing method or class tree of {@code tree}, or {@code null} if
      *     {@code tree} is inside an annotation
      */
-    protected @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
+    public @Nullable Tree getEnclosingClassOrMethod(Tree tree) {
         TreePath path = getPath(tree);
         Tree enclosing = TreePathUtil.enclosingOfKind(path, classMethodAnnotationKinds);
         if (enclosing != null) {
@@ -3628,10 +3628,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *       exists and ignorejdkastub option is not supplied <br>
      *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
      *       the checker<br>
-     *   <li>Stub files provide via stubs system property <br>
-     *   <li>Stub files provide via stubs environment variable <br>
-     *   <li>Stub files provide via stubs compiler option
-     *   <li>Ajava files provided via ajava compiler option
+     *   <li>Stub files provided via -Astubs compiler option
+     *   <li>Ajava files provided via -Aajava compiler option
      * </ol>
      *
      * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub
@@ -4767,6 +4765,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Matches subtraction of a constant. */
     static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
+    /** Matches a string whose only parens are at the beginning and end of the string. */
+    private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+
     /**
      * Given an expression, split it into a subexpression and a constant offset. For example:
      *
@@ -4793,10 +4794,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         String offset = "0";
 
         // Is this normalization necessary?
-        // Remove surrrounding whitespace.
+        // Remove surrounding whitespace.
         expr = expr.trim();
         // Remove surrounding parentheses.
-        if (expr.matches("^\\([^()]\\)")) {
+        if (surroundingParensPattern.matcher(expr).matches()) {
             expr = expr.substring(1, expr.length() - 2).trim();
         }
 
@@ -4875,12 +4876,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!shouldCache) {
             return AnnotationUtils.areSameByName(am, annoClass.getCanonicalName());
         }
-        String canonicalName = annotationClassNames.get(annoClass);
-        if (canonicalName == null) {
-            canonicalName = annoClass.getCanonicalName();
-            assert canonicalName != null : "@AssumeAssertion(nullness): assumption";
-            annotationClassNames.put(annoClass, canonicalName);
-        }
+        @SuppressWarnings("nullness") // assume getCanonicalName returns non-null
+        String canonicalName =
+                annotationClassNames.computeIfAbsent(annoClass, Class::getCanonicalName);
         return AnnotationUtils.areSameByName(am, canonicalName);
     }
 

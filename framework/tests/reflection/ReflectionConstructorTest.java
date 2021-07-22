@@ -49,7 +49,7 @@ public class ReflectionConstructorTest {
         try {
             Class<?> c = ReflectionConstructorTest.class;
             Constructor<?> init = c.getConstructor(new Class<?>[] {Integer.class});
-            // :: error: (assignment.type.incompatible)
+            // :: error: (argument.type.incompatible) :: error: (assignment.type.incompatible)
             @Sibling1 Object o = init.newInstance(new Object[] {sibling2});
         } catch (Exception ignore) {
         }

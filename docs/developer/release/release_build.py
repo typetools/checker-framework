@@ -10,8 +10,50 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 
 # See README-release-process.html for more information
 
-from release_vars import *
-from release_utils import *
+from release_vars import ANNO_FILE_UTILITIES
+from release_vars import ANNO_TOOLS
+from release_vars import BUILD_REPOS
+from release_vars import CF_VERSION
+from release_vars import CHECKER_FRAMEWORK
+from release_vars import CHECKER_FRAMEWORK_RELEASE
+from release_vars import CHECKLINK
+from release_vars import CHECKLINK_REPO
+from release_vars import DEV_SITE_DIR
+from release_vars import INTERM_REPOS
+from release_vars import INTERM_TO_BUILD_REPOS
+from release_vars import LIVE_SITE_URL
+from release_vars import LIVE_TO_INTERM_REPOS
+from release_vars import PLUME_BIB
+from release_vars import PLUME_BIB_REPO
+from release_vars import PLUME_SCRIPTS
+from release_vars import PLUME_SCRIPTS_REPO
+from release_vars import RELEASE_BUILD_COMPLETED_FLAG_FILE
+from release_vars import STUBPARSER
+from release_vars import STUBPARSER_REPO
+from release_vars import TOOLS
+
+from release_vars import execute
+
+from release_utils import check_repos
+from release_utils import check_tools
+from release_utils import clone_from_scratch_or_update
+from release_utils import commit_tag_and_push
+from release_utils import continue_or_exit
+from release_utils import create_empty_file
+from release_utils import current_distribution_by_website
+from release_utils import delete_if_exists
+from release_utils import delete_path_if_exists
+from release_utils import ensure_group_access
+from release_utils import increment_version
+from release_utils import os
+from release_utils import print_step
+from release_utils import prompt_to_continue
+from release_utils import prompt_w_default
+from release_utils import prompt_yes_no
+from release_utils import read_command_line_option
+from release_utils import set_umask
+from release_utils import sys
+
 from distutils.dir_util import copy_tree
 import datetime
 
@@ -393,8 +435,6 @@ def main(argv):
         )
         prompt_to_continue()
 
-    AFU_MANUAL = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
-
     print_step(
         "Build Step 4: Create directories for the current release on the dev site."
     )  # AUTO
@@ -433,7 +473,7 @@ def main(argv):
     # Each project has a set of files that are updated for release. Usually these updates include new
     # release date and version information. All changed files are committed and pushed to the intermediate
     # repositories. Keep this in mind if you have any changed files from steps 1d, 4, or 5. Edits to the
-    # scripts in the jsr308-release/scripts directory will never be checked in.
+    # scripts in the cf-release/scripts directory will never be checked in.
 
     print_step("Build Step 7: Commit projects to intermediate repos.")  # AUTO
     commit_to_interm_projects(cf_version)

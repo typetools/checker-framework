@@ -76,7 +76,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
      * such Tree is available and that method returns null). See the code in {@link
      * #getLombokRequiredProperties(Element)} that handles fields.
      */
-    private final Map<Element, Name> defaultedElements = new HashMap<>();
+    private final Map<Element, Name> defaultedElements = new HashMap<>(2);
 
     @Override
     public boolean isBuilderBuildMethod(ExecutableElement candidateBuildElement) {

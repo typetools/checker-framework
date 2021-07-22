@@ -249,13 +249,15 @@ public class TestUtilities {
             // and should be printed in full.
             if (!result.contains("unexpected Throwable")) {
                 String firstLine;
-                if (result.contains(System.lineSeparator())) {
-                    firstLine = result.substring(0, result.indexOf(System.lineSeparator()));
+                int lineSepPos = result.indexOf(System.lineSeparator());
+                if (lineSepPos != -1) {
+                    firstLine = result.substring(0, lineSepPos);
                 } else {
                     firstLine = result;
                 }
-                if (firstLine.contains(".java:")) {
-                    firstLine = firstLine.substring(firstLine.indexOf(".java:") + 5).trim();
+                int javaPos = firstLine.indexOf(".java:");
+                if (javaPos != -1) {
+                    firstLine = firstLine.substring(javaPos + 5).trim();
                 }
                 result = firstLine;
             }
@@ -423,11 +425,8 @@ public class TestUtilities {
     }
 
     /**
-     * TODO: REDO COMMENT Compares the result of the compiler against an array of Strings.
-     *
-     * <p>In a checker, a more specific error message is subsumed by a general one. For example,
-     * "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the test
-     * framework, which must use the exact error message key.
+     * If the given TypecheckResult has unexpected or missing diagnostics, fail the running JUnit
+     * test.
      *
      * @param testResult the result of type-checking
      */

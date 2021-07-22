@@ -14,7 +14,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,6 +165,65 @@ public class SystemUtil {
     ///
 
     /**
+     * Returns a list that contains all the distinct elements of the two lists: that is, the union
+     * of the two arguments.
+     *
+     * <p>For very short lists, this is likely more efficient than creating a set and converting
+     * back to a list.
+     *
+     * @param <T> the type of the list elements
+     * @param list1 a list
+     * @param list2 a list
+     * @return a list that contains all the distinct elements of the two lists
+     */
+    public static <T> List<T> union(List<T> list1, List<T> list2) {
+        List<T> result = new ArrayList<>(list1.size() + list2.size());
+        addWithoutDuplicates(result, list1);
+        addWithoutDuplicates(result, list2);
+        return result;
+    }
+
+    /**
+     * Adds, to dest, all the elements of source that are not already in dest.
+     *
+     * <p>For very short lists, this is likely more efficient than creating a set and converting
+     * back to a list.
+     *
+     * @param <T> the type of the list elements
+     * @param dest a list to add to
+     * @param source a list of elements to add
+     */
+    @SuppressWarnings(
+            "nullness:argument.type.incompatible" // true positive:  `dest` might be incompatible
+    // with null and `source` might contain null.
+    )
+    public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {
+        for (T elt : source) {
+            if (!dest.contains(elt)) {
+                dest.add(elt);
+            }
+        }
+    }
+
+    /**
+     * Returns a list that contains all the elements that are in both lists: that is, the set
+     * difference of the two arguments.
+     *
+     * <p>For very short lists, this is likely more efficient than creating a set and converting
+     * back to a list.
+     *
+     * @param <T> the type of the list elements
+     * @param list1 a list
+     * @param list2 a list
+     * @return a list that contains all the elements of {@code list1} that are not in {@code list2}
+     */
+    public static <T> List<T> intersection(List<? extends T> list1, List<? extends T> list2) {
+        List<T> result = new ArrayList<>(list1);
+        result.retainAll(list2);
+        return result;
+    }
+
+    /**
      * Concatenates two arrays. Can be invoked varargs-style.
      *
      * @param <T> the type of the array elements
@@ -177,6 +239,52 @@ public class SystemUtil {
         T[] result = Arrays.copyOf(array1, array1.length + array2.length);
         System.arraycopy(array2, 0, result, array1.length, array2.length);
         return result;
+    }
+
+    /**
+     * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+     * or HashSet constructor, so that the set or map will not resize.
+     *
+     * @param numElements the maximum expected number of elements in the map or set
+     * @return the initial capacity to pass to a HashMap or HashSet constructor
+     */
+    public static int mapCapacity(int numElements) {
+        // Equivalent to: (int) (numElements / 0.75) + 1
+        // where 0.75 is the default load factor.
+        return (numElements * 4 / 3) + 1;
+    }
+
+    /**
+     * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+     * or HashSet constructor, so that the set or map will not resize.
+     *
+     * @param c a collection whose size is the maximum expected number of elements in the map or set
+     * @return the initial capacity to pass to a HashMap or HashSet constructor
+     */
+    public static int mapCapacity(Collection<?> c) {
+        return mapCapacity(c.size());
+    }
+
+    /**
+     * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+     * or HashSet constructor, so that the set or map will not resize.
+     *
+     * @param m a map whose size is the maximum expected number of elements in the map or set
+     * @return the initial capacity to pass to a HashMap or HashSet constructor
+     */
+    public static int mapCapacity(Map<?, ?> m) {
+        return mapCapacity(m.size());
+    }
+
+    /**
+     * Given an expected number of elements, returns the capacity that should be passed to a HashMap
+     * or HashSet constructor, so that the set or map will not resize.
+     *
+     * @param s a set whose size is the maximum expected number of elements in the map or set
+     * @return the initial capacity to pass to a HashMap or HashSet constructor
+     */
+    public static int mapCapacity(Set<?> s) {
+        return mapCapacity(s.size());
     }
 
     ///

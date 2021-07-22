@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * An offset equation is 2 sets of Java expression strings, one set of added terms and one set of
@@ -362,8 +363,17 @@ public class OffsetEquation {
         return equation;
     }
 
+    /** A regular expression that matches an integer literal. */
+    private static Pattern intPattern = Pattern.compile("[-+]?[0-9]+");
+
+    /**
+     * Returns true if the given string is an integer literal
+     *
+     * @param string a string
+     * @return true if the given string is an integer literal
+     */
     private static boolean isInt(String string) {
-        return string.isEmpty() || string.matches("[-+]?[0-9]+");
+        return intPattern.matcher(string).matches();
     }
 
     private static int parseInt(String intLiteral) {

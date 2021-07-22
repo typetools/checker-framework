@@ -25,7 +25,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
     /** Create an empty exceptional block. */
     public ExceptionBlockImpl() {
         super(BlockType.EXCEPTION_BLOCK);
-        exceptionalSuccessors = new LinkedHashMap<>();
+        exceptionalSuccessors = new LinkedHashMap<>(2);
     }
 
     /** Set the node. */
@@ -64,11 +64,8 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
      * @param cause the exception type that leads to the given block
      */
     public void addExceptionalSuccessor(BlockImpl b, TypeMirror cause) {
-        Set<Block> blocks = exceptionalSuccessors.get(cause);
-        if (blocks == null) {
-            blocks = new LinkedHashSet<>();
-            exceptionalSuccessors.put(cause, blocks);
-        }
+        Set<Block> blocks =
+                exceptionalSuccessors.computeIfAbsent(cause, __ -> new LinkedHashSet<>());
         blocks.add(b);
         b.addPredecessor(this);
     }

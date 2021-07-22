@@ -880,12 +880,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             TypeVariable target,
             AnnotatedTypeFactory typeFactory,
             Map<TypeVariable, AnnotatedTypeVariable> declarations) {
-        AnnotatedTypeVariable atv = declarations.get(target);
-        if (atv == null) {
-            atv = (AnnotatedTypeVariable) typeFactory.getAnnotatedType(target.asElement());
-            declarations.put(target, atv);
-        }
-
+        AnnotatedTypeVariable atv =
+                declarations.computeIfAbsent(
+                        target,
+                        __ ->
+                                (AnnotatedTypeVariable)
+                                        typeFactory.getAnnotatedType(target.asElement()));
         return atv;
     }
 }
