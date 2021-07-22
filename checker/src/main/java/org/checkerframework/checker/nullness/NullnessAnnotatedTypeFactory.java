@@ -804,7 +804,7 @@ public class NullnessAnnotatedTypeFactory
   //  * check for @MonotonicNonNull
   //  * output @RequiresNonNull rather than @RequiresQualifier.
   @Override
-  public List<AnnotationMirror> getPreconditionAnnotation(
+  public List<AnnotationMirror> getPreconditionAnnotations(
       VariableElement elt, AnnotatedTypeMirror fieldType) {
     AnnotatedTypeMirror declaredType = fromElement(elt);
     // TODO: This does not handle the possibility that the user set a different default annotation.
@@ -837,7 +837,7 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public List<AnnotationMirror> getPostconditionAnnotation(
+  public List<AnnotationMirror> getPostconditionAnnotations(
       VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
     AnnotatedTypeMirror declaredType = fromElement(elt);
     // TODO: This does not handle the possibility that the user set a different default annotation.

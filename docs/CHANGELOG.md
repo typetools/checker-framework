@@ -1,3 +1,17 @@
+Version 3.17.0 (August 3, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Method renamings in `GenericAnnotatedTypeFactory`:
+* `getPreconditionAnnotation` => `getPreconditionAnnotations`
+* `getPostconditionAnnotation` => `getPostconditionAnnotations`
+
+**Closed issues:**
+
+
 Version 3.16.0 (July 13, 2021)
 ------------------------------
 
