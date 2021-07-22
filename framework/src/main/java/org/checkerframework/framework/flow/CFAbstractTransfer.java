@@ -4,7 +4,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -54,11 +54,9 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
-import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -297,8 +295,7 @@ public abstract class CFAbstractTransfer<
       ExecutableElement methodElem = TreeUtils.elementFromDeclaration(methodDeclTree);
       addInformationFromPreconditions(info, factory, method, methodDeclTree, methodElem);
 
-      final ClassTree classTree = method.getClassTree();
-      addFieldValues(info, factory, classTree, methodDeclTree);
+      addFieldValues(info, methodDeclTree);
 
       addFinalLocalValues(info, methodElem);
 
@@ -407,71 +404,32 @@ public abstract class CFAbstractTransfer<
     return info;
   }
 
-  private void addFieldValues(
-      S info, AnnotatedTypeFactory factory, ClassTree classTree, MethodTree methodTree) {
+  /**
+   * Add field values to the initial store before {@code methodTree}.
+   *
+   * @param info initial store
+   * @param methodTree the method or constructor tree
+   */
+  private void addFieldValues(S info, MethodTree methodTree) {
+    boolean constructor = TreeUtils.isConstructor(methodTree);
+    List<Pair<FieldAccess, Pair<V, V>>> fields = analysis.getFieldValues();
 
-    // Add knowledge about final fields, or values of non-final fields
-    // if we are inside a constructor (information about initializers)
-    TypeMirror classType = TreeUtils.typeOf(classTree);
-    List<Pair<VariableElement, V>> fieldValues = analysis.getFieldValues();
-    for (Pair<VariableElement, V> p : fieldValues) {
-      VariableElement element = p.first;
-      V value = p.second;
-      if (ElementUtils.isFinal(element) || TreeUtils.isConstructor(methodTree)) {
-        JavaExpression receiver;
-        if (ElementUtils.isStatic(element)) {
-          receiver = new ClassName(classType);
-        } else {
-          receiver = new ThisReference(classType);
-        }
-        TypeMirror fieldType = ElementUtils.getType(element);
-        JavaExpression field = new FieldAccess(receiver, fieldType, element);
-        info.insertValue(field, value);
+    for (Pair<FieldAccess, Pair<V, V>> p : fields) {
+      FieldAccess field = p.first;
+      VariableElement varEle = p.first.getField();
+      V declared = p.second.first;
+      V init = p.second.second;
+      if (init != null
+          && varEle.getModifiers().contains(Modifier.PRIVATE)
+          && ElementUtils.isFinal(varEle)) {
+        // Insert the value from the initializer of private final fields.
+        info.insertValue(field, init);
       }
-    }
-
-    // add properties about fields (static information from type)
-    boolean isNotFullyInitializedReceiver = isNotFullyInitializedReceiver(methodTree);
-    if (isNotFullyInitializedReceiver && !TreeUtils.isConstructor(methodTree)) {
-      // cannot add information about fields if the receiver isn't initialized
-      // and the method isn't a constructor
-      return;
-    }
-    for (Tree member : classTree.getMembers()) {
-      if (member instanceof VariableTree) {
-        VariableTree vt = (VariableTree) member;
-        final VariableElement element = TreeUtils.elementFromDeclaration(vt);
-        AnnotatedTypeMirror type =
-            ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory).getAnnotatedTypeLhs(vt);
-        TypeMirror fieldType = ElementUtils.getType(element);
-        JavaExpression receiver;
-        if (ElementUtils.isStatic(element)) {
-          receiver = new ClassName(classType);
-        } else {
-          receiver = new ThisReference(classType);
-        }
-        V value = analysis.createAbstractValue(type);
-        if (value == null) {
-          continue;
-        }
-        if (TreeUtils.isConstructor(methodTree)) {
-          // If we are in a constructor, then we can still use the static type, but only if there is
-          // also an initializer that already does some initialization.
-          boolean found = false;
-          for (Pair<VariableElement, V> fieldValue : fieldValues) {
-            if (fieldValue.first.equals(element)) {
-              value = value.leastUpperBound(fieldValue.second);
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            // no initializer found, cannot use static type
-            continue;
-          }
-        }
-        JavaExpression field = new FieldAccess(receiver, fieldType, element);
-        info.insertValue(field, value);
+      if (!constructor || init != null) {
+        // If it's not a constructor, use the declared type.
+        // If it is a constructor, then only use the declared type if the field has been
+        // initialized.
+        info.insertValue(field, declared);
       }
     }
   }

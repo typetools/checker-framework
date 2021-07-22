@@ -393,7 +393,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     this.poly = createQualifierPolymorphism();
 
-    this.analysis = createFlowAnalysis(new ArrayList<>());
+    this.analysis = createFlowAnalysis();
     this.transfer = analysis.getTransferFunction();
     this.emptyStore = analysis.createEmptyStore(transfer.usesSequentialSemantics());
 
@@ -592,7 +592,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * follow the checker naming convention.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  protected FlowAnalysis createFlowAnalysis(List<Pair<VariableElement, Value>> fieldValues) {
+  protected FlowAnalysis createFlowAnalysis() {
 
     // Try to reflectively load the visitor.
     Class<?> checkerClass = checker.getClass();
@@ -602,7 +602,7 @@ public abstract class GenericAnnotatedTypeFactory<
           BaseTypeChecker.invokeConstructorFor(
               BaseTypeChecker.getRelatedClassName(checkerClass, "Analysis"),
               new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
-              new Object[] {checker, this, fieldValues});
+              new Object[] {checker, this});
       if (result != null) {
         return result;
       }
@@ -610,12 +610,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     // If an analysis couldn't be loaded reflectively, return the default.
-    List<Pair<VariableElement, CFValue>> tmp =
-        CollectionsPlume.mapList(
-            (Pair<VariableElement, Value> fieldVal) ->
-                Pair.of(fieldVal.first, (CFValue) fieldVal.second),
-            fieldValues);
-    return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
+    return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this);
   }
 
   /**
@@ -1280,7 +1275,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
-    List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
+    List<Pair<FieldAccess, Pair<Value, Value>>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
     queue.add(Pair.of(classTree, null));
@@ -1343,6 +1338,9 @@ public abstract class GenericAnnotatedTypeFactory<
             case VARIABLE:
               VariableTree vt = (VariableTree) m;
               ExpressionTree initializer = vt.getInitializer();
+              AnnotatedTypeMirror declaredType = getAnnotatedTypeLhs(vt);
+              Value declaredValue = analysis.createAbstractValue(declaredType);
+              FieldAccess fieldExpr = (FieldAccess) JavaExpression.fromVariableTree(vt);
               // analyze initializer if present
               if (initializer != null) {
                 boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
@@ -1358,11 +1356,11 @@ public abstract class GenericAnnotatedTypeFactory<
                     capturedStore);
                 Value value = flowResult.getValue(initializer);
                 if (value != null) {
-                  // Store the abstract value for the field.
-                  VariableElement element = TreeUtils.elementFromDeclaration(vt);
-                  fieldValues.add(Pair.of(element, value));
+                  fieldValues.add(Pair.of(fieldExpr, Pair.of(declaredValue, value)));
+                  break;
                 }
               }
+              fieldValues.add(Pair.of(fieldExpr, Pair.of(declaredValue, null)));
               break;
             case CLASS:
             case ANNOTATION_TYPE:
@@ -1481,7 +1479,7 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<Pair<ClassTree, Store>> queue,
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
-      List<Pair<VariableElement, Value>> fieldValues,
+      List<Pair<FieldAccess, Pair<Value, Value>>> fieldValues,
       ClassTree currentClass,
       boolean isInitializationCode,
       boolean updateInitializationStore,

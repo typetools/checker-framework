@@ -1,10 +1,10 @@
 package org.checkerframework.framework.flow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -12,6 +12,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -61,7 +62,7 @@ public abstract class CFAbstractAnalysis<
   protected final SourceChecker checker;
 
   /** Initial abstract types for fields. */
-  protected final List<Pair<VariableElement, V>> fieldValues;
+  protected final List<Pair<FieldAccess, Pair<V, V>>> fieldValues;
 
   /** The associated processing environment. */
   protected final ProcessingEnvironment env;
@@ -74,13 +75,11 @@ public abstract class CFAbstractAnalysis<
    *
    * @param checker a checker that contains command-line arguments and other information
    * @param factory an annotated type factory to introduce type and dataflow rules
-   * @param fieldValues initial abstract types for fields
    * @param maxCountBeforeWidening number of times a block can be analyzed before widening
    */
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-      List<Pair<VariableElement, V>> fieldValues,
       int maxCountBeforeWidening) {
     super(maxCountBeforeWidening);
     env = checker.getProcessingEnvironment();
@@ -91,28 +90,23 @@ public abstract class CFAbstractAnalysis<
     this.atypeFactory = factory;
     this.checker = checker;
     this.transferFunction = createTransferFunction();
-    // TODO: remove parameter and set to empty list.
-    this.fieldValues = fieldValues;
+    this.fieldValues = new ArrayList<>();
   }
 
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
-      GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-      List<Pair<VariableElement, V>> fieldValues) {
-    this(
-        checker,
-        factory,
-        fieldValues,
-        factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
+      GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory) {
+    this(checker, factory, factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
   }
 
-  public void performAnalysis(ControlFlowGraph cfg, List<Pair<VariableElement, V>> fieldValues) {
+  public void performAnalysis(
+      ControlFlowGraph cfg, List<Pair<FieldAccess, Pair<V, V>>> fieldValues) {
     this.fieldValues.clear();
     this.fieldValues.addAll(fieldValues);
     super.performAnalysis(cfg);
   }
 
-  public List<Pair<VariableElement, V>> getFieldValues() {
+  public List<Pair<FieldAccess, Pair<V, V>>> getFieldValues() {
     return fieldValues;
   }
 

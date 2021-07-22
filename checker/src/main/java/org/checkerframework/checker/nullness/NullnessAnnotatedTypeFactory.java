@@ -311,9 +311,8 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  protected NullnessAnalysis createFlowAnalysis(
-      List<Pair<VariableElement, NullnessValue>> fieldValues) {
-    return new NullnessAnalysis(checker, this, fieldValues);
+  protected NullnessAnalysis createFlowAnalysis() {
+    return new NullnessAnalysis(checker, this);
   }
 
   @Override

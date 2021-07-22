@@ -20,7 +20,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -273,8 +272,10 @@ public class InitializationVisitor<
         Store store = atypeFactory.getRegularExitStore(block);
 
         // Add field values for fields with an initializer.
-        for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-          store.addInitializedField(t.first);
+        for (Pair<FieldAccess, Pair<Value, Value>> t : store.getAnalysis().getFieldValues()) {
+          if (t.second.second != null) {
+            store.addInitializedField(t.first.getField());
+          }
         }
         final List<VariableTree> init =
             atypeFactory.getInitializedInvariantFields(store, getCurrentPath());
@@ -294,9 +295,12 @@ public class InitializationVisitor<
       // the regular exit store of the class here.
       Store store = atypeFactory.getRegularExitStore(node);
       // Add field values for fields with an initializer.
-      for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-        store.addInitializedField(t.first);
+      for (Pair<FieldAccess, Pair<Value, Value>> t : store.getAnalysis().getFieldValues()) {
+        if (t.second.second != null) {
+          store.addInitializedField(t.first.getField());
+        }
       }
+
       List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
       checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
     }
