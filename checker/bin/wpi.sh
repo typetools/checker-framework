@@ -305,9 +305,10 @@ if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java11}" = "yes" ]; then
   fi
 fi
 
-# If results still aren't available and Java 16 is available, then Java 16 has not yet
-# been tried if either Java 8 or Java 11 are available, because those have higher
-# priority. If that's the case, then re-try using Java 16.
+# If results still aren't available, then re-run with Java 16 if it is available
+# and the first run used Java 8 or Java 11 (since Java 16 has the lowest priority,
+# the first run using Java 8 or Java 11 is equivalent to either of these being
+# available).
 if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java16}" = "yes" ]; then
   if [ "${has_java11}" = "yes" ] || [ "${has_java8}" = "yes" ]; then
     export JAVA_HOME="${JAVA16_HOME}"
