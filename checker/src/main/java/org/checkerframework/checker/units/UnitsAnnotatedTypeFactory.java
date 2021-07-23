@@ -608,6 +608,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    @SuppressWarnings("nullness:return") // This class is annotated for nullness, but not
+    // UnitsAnnotatedTypeFactory, so the type of fields is @Nullable.
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,
