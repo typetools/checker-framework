@@ -268,6 +268,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       T preOrPostConditionAnnos =
           storage.getPreOrPostconditions(
               preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
+      if (preOrPostConditionAnnos == null) {
+        continue;
+      }
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
           preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
