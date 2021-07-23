@@ -26,8 +26,8 @@ public class ConstantsInterning {
     is = A + E;
     // :: error: (assignment)
     is = is + is;
-    // :: error: (assignment)
     is = Constants2.E;
+    // :: error: (assignment)
     is = (String) F;
   }
 }
