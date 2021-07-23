@@ -10,6 +10,12 @@ Method renamings in `GenericAnnotatedTypeFactory`:
 * `getPostconditionAnnotation` => `getPostconditionAnnotations`
 * `getPreOrPostconditionAnnotation` => `getPreOrPostconditionAnnotations`
 
+The following methods no longer take a fieldValues parameter:
+ * `GenericAnnotatedTypeFactory#createFlowAnalysis`
+ * `CFAnalysis` construtor
+ * `CFAbstractAnalysis#performAnalysis`
+ * `CFAbstractAnalysis` constructors
+
 **Closed issues:**
 
 
