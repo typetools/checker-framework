@@ -42,7 +42,7 @@ public interface CreatesMustCallForElementSupplier {
     ExecutableElement getCreatesMustCallForListValueElement();
 
     /**
-     * Returns the arguments of the @CreatesMustCallFor annotation on the invoked method, as
+     * Returns the elements of the @CreatesMustCallFor annotation on the invoked method, as
      * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
      * annotation.
      *

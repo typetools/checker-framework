@@ -16,7 +16,7 @@ class RequiresCalledMethodsTest {
 
     void test_bad() {
         // foo.toString();
-        // :: error: contracts.precondition
+        // :: error: contracts.precondition.not.satisfied
         afterFooToString();
     }
 }

@@ -39,8 +39,12 @@ import javax.tools.ToolProvider;
 /** Utilities for testing. */
 public class TestUtilities {
 
+    /** True if the JVM is version 9 or above. */
     public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.getJreVersion() >= 9;
+    /** True if the JVM is version 11 or above. */
     public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
+    /** True if the JVM is version 11 or lower. */
+    public static final boolean IS_AT_MOST_11_JVM = SystemUtil.getJreVersion() <= 11;
 
     static {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -162,7 +166,12 @@ public class TestUtilities {
         return arguments;
     }
 
-    /** Returns all the java files that are descendants of the given directory. */
+    /**
+     * Returns all the Java files that are descendants of the given directory.
+     *
+     * @param directory a directory
+     * @return all the Java files that are descendants of the given directory
+     */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
         if (!directory.exists()) {
             throw new IllegalArgumentException(
@@ -221,7 +230,8 @@ public class TestUtilities {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test")
                     || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
-                    || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))) {
+                    || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
+                    || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))) {
                 in.close();
                 return false;
             }
@@ -482,7 +492,7 @@ public class TestUtilities {
      * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
      * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String, boolean)} instead.
      */
-    @Deprecated
+    @Deprecated // 2020-04-30
     public static boolean testBooleanProperty(String key, boolean defaultValue) {
         return SystemUtil.getBooleanSystemProperty(key, defaultValue);
     }

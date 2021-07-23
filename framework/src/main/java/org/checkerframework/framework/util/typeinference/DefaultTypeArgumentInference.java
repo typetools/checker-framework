@@ -56,6 +56,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
@@ -194,7 +195,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
         try {
             return TypeArgInferenceUtil.correctResults(
-                    inferredArgs, expressionTree, methodType.getUnderlyingType(), typeFactory);
+                    inferredArgs,
+                    expressionTree,
+                    (ExecutableType) methodElem.asType(),
+                    typeFactory);
         } catch (Throwable ex) {
             // Ignore any exceptions
             return inferredArgs;
@@ -491,7 +495,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final Set<TypeVariable> targets,
             boolean useNullArguments) {
         final List<AnnotatedTypeMirror> paramTypes =
-                AnnotatedTypes.expandVarArgsFromTypes(methodType, argTypes);
+                AnnotatedTypes.expandVarArgsParametersFromTypes(methodType, argTypes);
 
         if (argTypes.size() != paramTypes.size()) {
             throw new BugInCF(

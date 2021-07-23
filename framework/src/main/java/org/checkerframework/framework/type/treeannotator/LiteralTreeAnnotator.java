@@ -2,7 +2,6 @@ package org.checkerframework.framework.type.treeannotator;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
@@ -46,7 +45,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
      * For type systems with single top qualifiers, the sets will always contain
      * at most one element.
      */
-    private final Map<Kind, Set<AnnotationMirror>> treeKinds;
+    private final Map<Tree.Kind, Set<AnnotationMirror>> treeKinds;
     private final Map<Class<?>, Set<AnnotationMirror>> treeClasses;
     private final IdentityHashMap<Pattern, Set<AnnotationMirror>> stringPatterns;
 
@@ -61,20 +60,20 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
             new EnumMap<>(LiteralKind.class);
 
     static {
-        literalKindToTreeKind.put(LiteralKind.BOOLEAN, Kind.BOOLEAN_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.CHAR, Kind.CHAR_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.DOUBLE, Kind.DOUBLE_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.FLOAT, Kind.FLOAT_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.INT, Kind.INT_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.LONG, Kind.LONG_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.NULL, Kind.NULL_LITERAL);
-        literalKindToTreeKind.put(LiteralKind.STRING, Kind.STRING_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.BOOLEAN, Tree.Kind.BOOLEAN_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.CHAR, Tree.Kind.CHAR_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.DOUBLE, Tree.Kind.DOUBLE_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.FLOAT, Tree.Kind.FLOAT_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.INT, Tree.Kind.INT_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.LONG, Tree.Kind.LONG_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.NULL, Tree.Kind.NULL_LITERAL);
+        literalKindToTreeKind.put(LiteralKind.STRING, Tree.Kind.STRING_LITERAL);
     }
 
     /** Creates a {@link LiteralTreeAnnotator} for the given {@code atypeFactory}. */
     public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
-        this.treeKinds = new EnumMap<>(Kind.class);
+        this.treeKinds = new EnumMap<>(Tree.Kind.class);
         this.treeClasses = new HashMap<>();
         this.stringPatterns = new IdentityHashMap<>();
 
@@ -116,14 +115,14 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
      */
     public LiteralTreeAnnotator addStandardLiteralQualifiers() {
         // Set null to bottom if no other qualifier is given.
-        if (!treeKinds.containsKey(Kind.NULL_LITERAL)) {
+        if (!treeKinds.containsKey(Tree.Kind.NULL_LITERAL)) {
             for (AnnotationMirror bottom : qualHierarchy.getBottomAnnotations()) {
                 addLiteralKind(LiteralKind.NULL, bottom);
             }
             return this;
         }
         Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
-        Set<AnnotationMirror> defaultForNull = treeKinds.get(Kind.NULL_LITERAL);
+        Set<AnnotationMirror> defaultForNull = treeKinds.get(Tree.Kind.NULL_LITERAL);
         if (tops.size() == defaultForNull.size()) {
             return this;
         }
@@ -166,7 +165,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
      * @param treeKind {@code Tree.Kind} that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeKind}
      */
-    private void addTreeKind(Kind treeKind, AnnotationMirror theQual) {
+    private void addTreeKind(Tree.Kind treeKind, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
             throw new BugInCF(
@@ -229,7 +228,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     /** Go through the string patterns and add the greatest lower bound of all matching patterns. */
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-        if (!stringPatterns.isEmpty() && tree.getKind() == Kind.STRING_LITERAL) {
+        if (!stringPatterns.isEmpty() && tree.getKind() == Tree.Kind.STRING_LITERAL) {
             List<Set<? extends AnnotationMirror>> matches = new ArrayList<>();
             List<Set<? extends AnnotationMirror>> nonMatches = new ArrayList<>();
 

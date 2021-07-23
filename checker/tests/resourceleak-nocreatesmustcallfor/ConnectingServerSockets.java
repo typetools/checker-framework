@@ -12,25 +12,25 @@ import java.net.*;
 class ConnectingServerSockets {
 
     static void simple_ss_test(SocketAddress sa) throws Exception {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         ServerSocket s = new ServerSocket();
         s.bind(sa);
     }
 
     static void simple_ss_test2(SocketAddress sa) throws Exception {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         ServerSocket s = new ServerSocket();
         // s.bind(sa);
     }
 
     static void simple_ss_test4(SocketAddress sa, int to) throws Exception {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         ServerSocket s = new ServerSocket();
         s.bind(sa, to);
     }
 
     static @MustCall({}) ServerSocket makeUnconnected() throws Exception {
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return new ServerSocket();
     }
 

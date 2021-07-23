@@ -24,11 +24,11 @@ import org.checkerframework.checker.mustcall.qual.*;
         @MustCall({}) CreatesMustCallForRepeat a2 = cos2;
         cos2.a();
         cos1.reset(cos2);
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @CalledMethods({"reset"}) CreatesMustCallForRepeat b = cos1;
         @CalledMethods({}) CreatesMustCallForRepeat c = cos1;
         @CalledMethods({}) CreatesMustCallForRepeat d = cos2;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @CalledMethods({"a"}) CreatesMustCallForRepeat e = cos2;
     }
 

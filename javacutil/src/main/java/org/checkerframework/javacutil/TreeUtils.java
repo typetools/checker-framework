@@ -6,6 +6,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -22,7 +23,6 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -64,6 +64,8 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,6 +80,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -447,7 +450,7 @@ public final class TreeUtils {
             return false;
         }
         for (Tree member : tree.getClassBody().getMembers()) {
-            if (member.getKind() == Kind.METHOD && isConstructor((MethodTree) member)) {
+            if (member.getKind() == Tree.Kind.METHOD && isConstructor((MethodTree) member)) {
                 MethodTree methodTree = (MethodTree) member;
                 StatementTree f = methodTree.getBody().getStatements().get(0);
                 return TreeUtils.getReceiverTree(((ExpressionStatementTree) f).getExpression())
@@ -1182,7 +1185,7 @@ public final class TreeUtils {
      * @return true if tree is an access of array length
      */
     public static boolean isArrayLengthAccess(Tree tree) {
-        if (tree.getKind() == Kind.MEMBER_SELECT
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT
                 && isFieldAccess(tree)
                 && getFieldName(tree).equals("length")) {
             ExpressionTree expressionTree = ((MemberSelectTree) tree).getExpression();
@@ -1202,15 +1205,11 @@ public final class TreeUtils {
      */
     public static boolean isAnonymousConstructor(final MethodTree method) {
         @Nullable Element e = elementFromTree(method);
-        if (!(e instanceof Symbol)) {
+        if (e == null || e.getKind() != ElementKind.CONSTRUCTOR) {
             return false;
         }
-
-        if ((((@NonNull Symbol) e).flags() & Flags.ANONCONSTR) != 0) {
-            return true;
-        }
-
-        return false;
+        TypeElement typeElement = (TypeElement) e.getEnclosingElement();
+        return typeElement.getNestingKind() == NestingKind.ANONYMOUS;
     }
 
     /**
@@ -1285,10 +1284,10 @@ public final class TreeUtils {
      * @return true if the tree is the declaration or use of a local variable
      */
     public static boolean isLocalVariable(Tree tree) {
-        if (tree.getKind() == Kind.VARIABLE) {
+        if (tree.getKind() == Tree.Kind.VARIABLE) {
             return elementFromDeclaration((VariableTree) tree).getKind()
                     == ElementKind.LOCAL_VARIABLE;
-        } else if (tree.getKind() == Kind.IDENTIFIER) {
+        } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
             ExpressionTree etree = (ExpressionTree) tree;
             assert isUseOfElement(etree) : "@AssumeAssertion(nullness): tree kind";
             return elementFromUse(etree).getKind() == ElementKind.LOCAL_VARIABLE;
@@ -1331,7 +1330,7 @@ public final class TreeUtils {
      * @return true iff {@code tree} is an implicitly typed lambda
      */
     public static boolean isImplicitlyTypedLambda(Tree tree) {
-        return tree.getKind() == Kind.LAMBDA_EXPRESSION
+        return tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
                 && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
     }
 
@@ -1620,5 +1619,99 @@ public final class TreeUtils {
         // Converting to a string in order to compare is somewhat inefficient, and it doesn't handle
         // internal parentheses.  We could create a visitor instead.
         return expr1.getKind() == expr2.getKind() && expr1.toString().equals(expr2.toString());
+    }
+
+    /**
+     * Get the list of expressions from a case expression. In JDK 11 and earlier, this is a
+     * singleton list. In JDK 12 onwards, there can be multiple expressions per case.
+     *
+     * @param caseTree the case expression to get the expressions from
+     * @return the list of expressions in the case
+     */
+    public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
+        try {
+            Method method = CaseTree.class.getDeclaredMethod("getExpressions");
+            @SuppressWarnings({"unchecked", "nullness"})
+            @NonNull List<? extends ExpressionTree> result =
+                    (List<? extends ExpressionTree>) method.invoke(caseTree);
+            return result;
+        } catch (NoSuchMethodException e) {
+            // Must be on JDK 11 or earlier
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            // May as well fall back to old method
+        }
+
+        // Need to suppress deprecation on JDK 12 and later:
+        @SuppressWarnings("deprecation")
+        ExpressionTree expression = caseTree.getExpression();
+        if (expression == null) return Collections.emptyList();
+        else return Collections.singletonList(expression);
+    }
+
+    /**
+     * Returns true if the given method/constructor invocation is a varargs invocation.
+     *
+     * @param tree a method/constructor invocation
+     * @return true if the given method/constructor invocation is a varargs invocation
+     */
+    public static boolean isVarArgs(Tree tree) {
+        switch (tree.getKind()) {
+            case METHOD_INVOCATION:
+                return isVarArgs((MethodInvocationTree) tree);
+            case NEW_CLASS:
+                return isVarArgs((NewClassTree) tree);
+            default:
+                throw new BugInCF("Unexpected kind of tree: " + tree);
+        }
+    }
+
+    /**
+     * Returns true if the given method invocation is a varargs invocation.
+     *
+     * @param invok the method invocation
+     * @return true if the given method invocation is a varargs invocation
+     */
+    public static boolean isVarArgs(MethodInvocationTree invok) {
+        return isVarArgs(elementFromUse(invok), invok.getArguments());
+    }
+
+    /**
+     * Returns true if the given constructor invocation is a varargs invocation.
+     *
+     * @param newClassTree the constructor invocation
+     * @return true if the given method invocation is a varargs invocation
+     */
+    public static boolean isVarArgs(NewClassTree newClassTree) {
+        return isVarArgs(elementFromUse(newClassTree), newClassTree.getArguments());
+    }
+
+    /**
+     * Returns true if a method/constructor invocation is a varargs invocation.
+     *
+     * @param method the method or constructor
+     * @param args the arguments passed at the invocation
+     * @return true if the given method/constructor invocation is a varargs invocation
+     */
+    private static boolean isVarArgs(
+            ExecutableElement method, List<? extends ExpressionTree> args) {
+        if (!method.isVarArgs()) {
+            return false;
+        }
+
+        List<? extends VariableElement> parameters = method.getParameters();
+        if (parameters.size() != args.size()) {
+            return true;
+        }
+
+        TypeMirror lastArgType = typeOf(args.get(args.size() - 1));
+        if (lastArgType.getKind() == TypeKind.NULL) {
+            return false;
+        }
+        if (lastArgType.getKind() != TypeKind.ARRAY) {
+            return true;
+        }
+
+        TypeMirror varargsParamType = parameters.get(parameters.size() - 1).asType();
+        return TypesUtils.getArrayDepth(varargsParamType) != TypesUtils.getArrayDepth(lastArgType);
     }
 }

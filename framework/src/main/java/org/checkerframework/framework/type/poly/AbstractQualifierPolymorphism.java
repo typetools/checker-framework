@@ -167,7 +167,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return;
         }
         List<AnnotatedTypeMirror> parameters =
-                AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
+                AnnotatedTypes.expandVarArgsParameters(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
                 AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
@@ -201,7 +201,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
             return;
         }
         List<AnnotatedTypeMirror> parameters =
-                AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
+                AnnotatedTypes.expandVarArgsParameters(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
                 AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
 
@@ -283,7 +283,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         }
         // Deal with varargs
         if (memberReference.isVarArgs() && !functionalInterface.isVarArgs()) {
-            parameters = AnnotatedTypes.expandVarArgsFromTypes(memberReference, args);
+            parameters = AnnotatedTypes.expandVarArgsParametersFromTypes(memberReference, args);
         }
 
         instantiationMapping =

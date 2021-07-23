@@ -189,18 +189,18 @@ public class DefaultReflectionResolver implements ReflectionResolver {
          */
 
         // return value
-        origResult.executableType.getReturnType().clearAnnotations();
+        origResult.executableType.getReturnType().clearPrimaryAnnotations();
         origResult.executableType.getReturnType().addAnnotations(returnLub);
 
         // receiver type
-        origResult.executableType.getParameterTypes().get(0).clearAnnotations();
+        origResult.executableType.getParameterTypes().get(0).clearPrimaryAnnotations();
         origResult.executableType.getParameterTypes().get(0).addAnnotations(receiverGlb);
 
         // parameter types
         if (paramsGlb != null) {
             AnnotatedArrayType origArrayType =
                     (AnnotatedArrayType) origResult.executableType.getParameterTypes().get(1);
-            origArrayType.getComponentType().clearAnnotations();
+            origArrayType.getComponentType().clearPrimaryAnnotations();
             origArrayType.getComponentType().addAnnotations(paramsGlb);
         }
 
@@ -318,14 +318,14 @@ public class DefaultReflectionResolver implements ReflectionResolver {
          */
 
         // return value
-        origResult.executableType.getReturnType().clearAnnotations();
+        origResult.executableType.getReturnType().clearPrimaryAnnotations();
         origResult.executableType.getReturnType().addAnnotations(returnLub);
 
         // parameter types
         if (paramsGlb != null) {
             AnnotatedArrayType origArrayType =
                     (AnnotatedArrayType) origResult.executableType.getParameterTypes().get(0);
-            origArrayType.getComponentType().clearAnnotations();
+            origArrayType.getComponentType().clearPrimaryAnnotations();
             origArrayType.getComponentType().addAnnotations(paramsGlb);
         }
 

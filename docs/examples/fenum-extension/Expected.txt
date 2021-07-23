@@ -1,33 +1,3 @@
-FenumDemo.java:6: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("A") int ACONST1 = 1;
-                                                  ^
-  found   : @FenumUnqualified int
-  required: @Fenum("A") int
-FenumDemo.java:7: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("A") int ACONST2 = 2;
-                                                  ^
-  found   : @FenumUnqualified int
-  required: @Fenum("A") int
-FenumDemo.java:9: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("B") int BCONST1 = 4;
-                                                  ^
-  found   : @FenumUnqualified int
-  required: @Fenum("B") int
-FenumDemo.java:10: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @Fenum("B") int BCONST2 = 5;
-                                                  ^
-  found   : @FenumUnqualified int
-  required: @Fenum("B") int
-FenumDemo.java:12: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @MyFenum int CCONST1 = 5;
-                                               ^
-  found   : @FenumUnqualified int
-  required: @MyFenum int
-FenumDemo.java:13: error: [assignment.type.incompatible] incompatible types in assignment.
-    public static final @MyFenum int CCONST2 = 6;
-                                               ^
-  found   : @FenumUnqualified int
-  required: @MyFenum int
 FenumDemo.java:19: error: [assignment.type.incompatible] incompatible types in assignment.
     @Fenum("B") int state2 = TestStatic.ACONST1; // Incompatible fenums forbidden!
                                        ^
@@ -91,4 +61,4 @@ FenumDemo.java:63: error: [binary.type.incompatible] binary operation between in
 FenumDemo.java:65: error: [binary.type.incompatible] binary operation between incompatible fenums: @MyFenum int and @FenumUnqualified int
         if (TestStatic.CCONST1 == 5) {}
                                ^
-21 errors
+15 errors

@@ -22,7 +22,7 @@ import org.checkerframework.checker.mustcall.qual.*;
         CreatesMustCallForSimpler cos = makeNoMC();
         @MustCall({}) CreatesMustCallForSimpler a = cos;
         cos.reset();
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @CalledMethods({"reset"}) CreatesMustCallForSimpler b = cos;
         @CalledMethods({}) CreatesMustCallForSimpler c = cos;
     }

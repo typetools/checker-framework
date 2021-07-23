@@ -1,4 +1,5 @@
 import org.checkerframework.checker.lock.qual.GuardedBy;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 
 public class SimpleLockTest {
     final Object lock1 = new Object(), lock2 = new Object();
@@ -17,12 +18,20 @@ public class SimpleLockTest {
         synchronized (this.lock2) {
         }
 
-        final @GuardedBy("myClass.field") MyClass myClass = new MyClass();
+        @SuppressWarnings({
+            "assignment",
+            "method.invocation"
+        }) // prevent flow-sensitive type refinement
+        final @GuardedBy("myClass.field") MyClass myClass = someValue();
         // :: error: (lock.not.held)
         synchronized (myClass.field) {
         }
         synchronized (myClass) {
         }
+    }
+
+    @GuardedByUnknown MyClass someValue() {
+        return new MyClass();
     }
 
     class MyClass {

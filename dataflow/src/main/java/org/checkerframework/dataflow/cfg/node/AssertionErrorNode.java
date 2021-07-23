@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -28,7 +27,7 @@ public class AssertionErrorNode extends Node {
         // TODO: Find out the correct "type" for statements.
         // Is it TypeKind.NONE?
         super(type);
-        assert tree.getKind() == Kind.ASSERT;
+        assert tree.getKind() == Tree.Kind.ASSERT;
         this.tree = tree;
         this.condition = condition;
         this.detail = detail;

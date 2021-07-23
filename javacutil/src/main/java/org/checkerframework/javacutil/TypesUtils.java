@@ -17,8 +17,11 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
+import org.plumelib.util.StringsPlume;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -709,6 +712,18 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns the {@code DeclaredType} for {@code java.lang.Object}.
+     *
+     * @param env {@link ProcessingEnvironment}
+     * @return the {@code DeclaredType} for {@code java.lang.Object}
+     */
+    public static DeclaredType getObjectTypeMirror(ProcessingEnvironment env) {
+        Context context = ((JavacProcessingEnvironment) env).getContext();
+        Symtab syms = Symtab.instance(context);
+        return (DeclaredType) syms.objectType;
+    }
+
+    /**
      * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
      * (called upperBound there) and jdk8u.
      */
@@ -768,17 +783,44 @@ public final class TypesUtils {
         return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
     }
 
-    /** Returns whether a TypeVariable represents a captured type. */
-    public static boolean isCaptured(TypeMirror typeVar) {
-        if (typeVar.getKind() != TypeKind.TYPEVAR) {
+    /**
+     * Returns true if {@code type} is a type variable created during capture conversion.
+     *
+     * @param type a type mirror
+     * @return true if {@code type} is a type variable created during capture conversion
+     * @deprecated use {@link #isCapturedTypeVariable(TypeMirror)} instead
+     */
+    @Deprecated // 2021-07-06
+    public static boolean isCaptured(TypeMirror type) {
+        if (type.getKind() != TypeKind.TYPEVAR) {
             return false;
         }
-        return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(typeVar)).isCaptured();
+        return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
     }
 
-    /** If typeVar is a captured wildcard, returns that wildcard; otherwise returns {@code null}. */
+    /**
+     * Returns true if {@code type} is a type variable created during capture conversion.
+     *
+     * @param type a type mirror
+     * @return true if {@code type} is a type variable created during capture conversion
+     */
+    public static boolean isCapturedTypeVariable(TypeMirror type) {
+        if (type.getKind() != TypeKind.TYPEVAR) {
+            return false;
+        }
+        return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
+    }
+
+    /**
+     * If {@code typeVar} is a captured type variable, then returns its underlying wildcard;
+     * otherwise returns {@code null}.
+     *
+     * @param typeVar a type variable that might be a captured type variable
+     * @return {@code typeVar} is a captured type variable, then returns its underlying wildcard;
+     *     otherwise returns {@code null}
+     */
     public static @Nullable WildcardType getCapturedWildcard(TypeVariable typeVar) {
-        if (isCaptured(typeVar)) {
+        if (isCapturedTypeVariable(typeVar)) {
             return ((CapturedType) TypeAnnotationUtils.unannotatedType(typeVar)).wildcard;
         }
         return null;
@@ -1059,5 +1101,69 @@ public final class TypesUtils {
             type = ((ArrayType) type).getComponentType();
         }
         return counter;
+    }
+
+    /**
+     * If {@code typeMirror} is a wildcard, returns a fresh type variable that will be used as a
+     * captured type variable for it. If {@code typeMirror} is not a wildcard, returns {@code
+     * typeMirror}.
+     *
+     * @param typeMirror a type
+     * @param env processing environment
+     * @return a fresh type variable if {@code typeMirror} is a wildcard, otherwise {@code
+     *     typeMirror}
+     */
+    public static TypeMirror freshTypeVariable(TypeMirror typeMirror, ProcessingEnvironment env) {
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+        com.sun.tools.javac.code.Types types =
+                com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
+        return types.freshTypeVariables(com.sun.tools.javac.util.List.of((Type) typeMirror)).head;
+    }
+
+    /**
+     * Returns the list of type variables such that a type variable in the list only references type
+     * variables at a lower index than itself.
+     *
+     * @param collection a collection of type variables
+     * @param types type utilities
+     * @return the type variables ordered so that each type variable only references earlier type
+     *     variables
+     */
+    public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
+        List<TypeVariable> list = new ArrayList<>(collection);
+        List<TypeVariable> ordered = new ArrayList<>();
+        while (!list.isEmpty()) {
+            TypeVariable free = doesNotContainOthers(list, types);
+            list.remove(free);
+            ordered.add(free);
+        }
+        return ordered;
+    }
+
+    /**
+     * Returns the first TypeVariable in {@code collection} that does not contain any other type in
+     * the collection.
+     *
+     * @param collection a collection of type variables
+     * @param types types
+     * @return the first TypeVariable in {@code collection} that does not contain any other type in
+     *     the collection, but maybe itsself
+     */
+    @SuppressWarnings("interning:not.interned") // must be the same object from collection
+    private static TypeVariable doesNotContainOthers(
+            Collection<? extends TypeVariable> collection, Types types) {
+        for (TypeVariable candidate : collection) {
+            boolean doesNotContain = true;
+            for (TypeVariable other : collection) {
+                if (candidate != other && types.contains(candidate, other)) {
+                    doesNotContain = false;
+                    break;
+                }
+            }
+            if (doesNotContain) {
+                return candidate;
+            }
+        }
+        throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
     }
 }

@@ -1,3 +1,44 @@
+Version 3.16.0 (July 13, 2021)
+------------------------------
+
+**User-visible changes:**
+
+You can run the Checker Framework on a JDK 16 JVM.  You can pass the `--release
+16` command-line argument to the compiler.  New syntax, such as records and
+switch expressions, is not yet supported or type-checked; that will be added in
+a future release.  Thanks to Neil Brown for the JDK 16 support.
+
+The Lock Checker supports a new type, `@NewObject`, for the result of a
+constructor invocation.
+
+The `-Ainfer` command-line argument now outputs purity annotations even if
+neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is supplied
+on the command line.
+
+**Implementation details:**
+
+Method renamings (the old methods remain but are deprecated):
+ * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
+
+Method renamings (the old methods were removed):
+ * `AnnotatedTypeMirror.clearAnnotations => `clearPrimaryAnnotations`
+
+Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
+ * `visitIntersectionSupertype` => `visitIntersectionSupertype`
+ * `visitIntersectionSubtype` => `visitIntersection_Type`
+ * `visitUnionSubtype` => `visitUnion_Type`
+ * `visitTypevarSubtype` => `visitTypevar_Type`
+ * `visitTypevarSupertype` => `visitType_Typevar`
+ * `visitWildcardSubtype` => `visitWildcard_Type`
+ * `visitWildcardSupertype` => `visitType_Wildcard`
+
+Method renamings in `AnnotatedTypes` (the old methods were removed):
+ * `expandVarArgs` => `expandVarArgsParameters`
+ * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
+
+**Closed issues:**
+#3013, #3754, #3791, #3845, #4523, #4767.
+
 Version 3.15.0 (June 18, 2021)
 ----------------------------
 
@@ -15,6 +56,7 @@ Method renamings (the old methods remain but are deprecated):
 
 **Closed issues:**
 #4549, #4646, #4684, and #4699.
+
 
 Version 3.14.0 (June 1, 2021)
 ----------------------------

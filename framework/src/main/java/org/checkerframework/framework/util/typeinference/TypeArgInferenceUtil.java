@@ -12,7 +12,6 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
@@ -83,10 +82,10 @@ public class TypeArgInferenceUtil {
             final ExpressionTree methodInvocation, final AnnotatedTypeFactory typeFactory) {
         final List<? extends ExpressionTree> argTrees;
 
-        if (methodInvocation.getKind() == Kind.METHOD_INVOCATION) {
+        if (methodInvocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
             argTrees = ((MethodInvocationTree) methodInvocation).getArguments();
 
-        } else if (methodInvocation.getKind() == Kind.NEW_CLASS) {
+        } else if (methodInvocation.getKind() == Tree.Kind.NEW_CLASS) {
             argTrees = ((NewClassTree) methodInvocation).getArguments();
 
         } else {
@@ -204,10 +203,11 @@ public class TypeArgInferenceUtil {
                             receiver,
                             newClassTree.getArguments());
         } else if (assignmentContext instanceof ReturnTree) {
-            HashSet<Kind> kinds = new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
+            HashSet<Tree.Kind> kinds =
+                    new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
             Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
 
-            if (enclosing.getKind() == Kind.METHOD) {
+            if (enclosing.getKind() == Tree.Kind.METHOD) {
                 res = atypeFactory.getAnnotatedType((MethodTree) enclosing).getReturnType();
             } else {
                 AnnotatedExecutableType fninf =
@@ -285,7 +285,7 @@ public class TypeArgInferenceUtil {
         argumentTree = TreeUtils.withoutParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;
-        } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+        } else if (argumentTree.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION) {
             ConditionalExpressionTree conditionalExpressionTree =
                     (ConditionalExpressionTree) argumentTree;
             return isArgument(path, conditionalExpressionTree.getTrueExpression())
@@ -545,7 +545,7 @@ public class TypeArgInferenceUtil {
             TypeMirror correctType = fromReturn.get(typeVariable);
             TypeMirror inferredType = entry.getValue().getUnderlyingType();
             if (types.isSameType(types.erasure(correctType), types.erasure(inferredType))) {
-                if (areSameCapture(correctType, inferredType, types)) {
+                if (areSameCapture(correctType, inferredType)) {
                     continue;
                 }
             }
@@ -565,12 +565,16 @@ public class TypeArgInferenceUtil {
     /**
      * Returns true if actual and inferred are captures of the same wildcard or declared type.
      *
+     * @param actual the actual type
+     * @param inferred the inferred type
      * @return true if actual and inferred are captures of the same wildcard or declared type
      */
-    private static boolean areSameCapture(TypeMirror actual, TypeMirror inferred, Types types) {
-        if (TypesUtils.isCaptured(actual) && TypesUtils.isCaptured(inferred)) {
+    private static boolean areSameCapture(TypeMirror actual, TypeMirror inferred) {
+        if (TypesUtils.isCapturedTypeVariable(actual)
+                && TypesUtils.isCapturedTypeVariable(inferred)) {
             return true;
-        } else if (TypesUtils.isCaptured(actual) && inferred.getKind() == TypeKind.WILDCARD) {
+        } else if (TypesUtils.isCapturedTypeVariable(actual)
+                && inferred.getKind() == TypeKind.WILDCARD) {
             return true;
         } else if (actual.getKind() == TypeKind.DECLARED
                 && inferred.getKind() == TypeKind.DECLARED) {
@@ -580,8 +584,7 @@ public class TypeArgInferenceUtil {
                 for (int i = 0; i < actualDT.getTypeArguments().size(); i++) {
                     if (!areSameCapture(
                             actualDT.getTypeArguments().get(i),
-                            inferredDT.getTypeArguments().get(i),
-                            types)) {
+                            inferredDT.getTypeArguments().get(i))) {
                         return false;
                     }
                 }

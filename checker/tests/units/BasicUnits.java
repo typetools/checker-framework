@@ -68,10 +68,10 @@ public class BasicUnits {
         @Volume int vol = m * m * m;
         @m3 int gvol = m * m * m;
 
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @Volume int bvol = m * m * m * m;
 
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @km3 int bvol1 = m * m * m;
 
         @radians double rad = 20.0d * UnitsTools.rad;

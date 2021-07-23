@@ -8,6 +8,7 @@ import java.util.List;
 
 public class Issue1111 {
     void foo(Box<? super Integer> box, List<Integer> list) {
+        // :: error: (argument.type.incompatible)
         bar(box, list);
     }
 

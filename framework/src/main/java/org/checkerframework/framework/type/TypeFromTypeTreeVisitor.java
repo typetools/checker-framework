@@ -11,7 +11,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.WildcardTree;
@@ -79,13 +78,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             final AnnotatedWildcardType wctype = ((AnnotatedWildcardType) type);
             final ExpressionTree underlyingTree = node.getUnderlyingType();
 
-            if (underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
+            if (underlyingTree.getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
                 // primary annotations on unbounded wildcard types apply to both bounds
                 wctype.getExtendsBound().addAnnotations(annos);
                 wctype.getSuperBound().addAnnotations(annos);
-            } else if (underlyingTree.getKind() == Kind.EXTENDS_WILDCARD) {
+            } else if (underlyingTree.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
                 wctype.getSuperBound().addAnnotations(annos);
-            } else if (underlyingTree.getKind() == Kind.SUPER_WILDCARD) {
+            } else if (underlyingTree.getKind() == Tree.Kind.SUPER_WILDCARD) {
                 wctype.getExtendsBound().addAnnotations(annos);
             } else {
                 throw new BugInCF(
@@ -294,8 +293,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                     visitTypeParameter(meth.getTypeParameters().get(idx), f).shallowCopy();
             result.setDeclaration(false);
             return result;
-        } else if (TypesUtils.isCaptured(typeVar)) {
-            // Captured types can have a generic element (owner) that is
+        } else if (TypesUtils.isCapturedTypeVariable(typeVar)) {
+            // Captured type variables can have a generic element (owner) that is
             // not an element at all, namely Symtab.noSymbol.
             return type.asUse();
         } else {

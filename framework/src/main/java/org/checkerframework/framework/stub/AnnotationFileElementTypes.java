@@ -51,7 +51,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 
@@ -372,8 +371,24 @@ public class AnnotationFileElementTypes {
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
      *     in the annotation file and in the element. {@code null} is returned if {@code element}
      *     does not appear in an annotation file.
+     * @deprecated use {@link #getDeclAnnotations}
      */
+    @Deprecated // 2021-06-26
     public Set<AnnotationMirror> getDeclAnnotation(Element elt) {
+        return getDeclAnnotations(elt);
+    }
+
+    /**
+     * Returns the set of declaration annotations for {@code e} containing only annotations
+     * explicitly written in an annotation file or the empty set if {@code e} does not appear in an
+     * annotation file.
+     *
+     * @param elt element for which annotations are returned
+     * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
+     *     in the annotation file and in the element. {@code null} is returned if {@code element}
+     *     does not appear in an annotation file.
+     */
+    public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         if (parsing) {
             return Collections.emptySet();
         }
@@ -407,15 +422,10 @@ public class AnnotationFileElementTypes {
 
         ExecutableElement method = (ExecutableElement) elt;
 
-        TypeMirror methodReceiverType = method.getReceiverType();
-        if (methodReceiverType != null && methodReceiverType.getKind() == TypeKind.NONE) {
-            return null;
-        }
-
         // This is a list of pairs of (where defined, method type) for fake overrides.  The second
         // element of each pair is currently always an AnnotatedExecutableType.
         List<Pair<TypeMirror, AnnotatedTypeMirror>> candidates =
-                annotationFileAnnos.fakeOverrides.get(elt);
+                annotationFileAnnos.fakeOverrides.get(method);
 
         if (candidates == null || candidates.isEmpty()) {
             return null;

@@ -162,6 +162,17 @@ public class PurityChecker {
             kinds.remove(Kind.DETERMINISTIC);
             kinds.remove(Kind.SIDE_EFFECT_FREE);
         }
+
+        @Override
+        public String toString() {
+            return String.join(
+                    System.lineSeparator(),
+                    "PurityResult{",
+                    "  notSEF: " + notSEFreeReasons,
+                    "  notDet: " + notDetReasons,
+                    "  notBoth: " + notBothReasons,
+                    "}");
+        }
     }
 
     // TODO: It would be possible to improve efficiency by visiting fewer nodes.  This would require

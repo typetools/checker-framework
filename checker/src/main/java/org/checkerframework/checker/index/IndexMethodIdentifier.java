@@ -2,7 +2,6 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
@@ -94,7 +93,7 @@ public class IndexMethodIdentifier {
      *     this}
      */
     public boolean isLengthOfMethodInvocation(Tree tree) {
-        if (tree.getKind() != Kind.METHOD_INVOCATION) {
+        if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
             return false;
         }
         return isLengthOfMethodInvocation(TreeUtils.elementFromUse((MethodInvocationTree) tree));

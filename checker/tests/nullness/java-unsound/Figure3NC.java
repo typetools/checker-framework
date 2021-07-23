@@ -11,6 +11,7 @@ public class Figure3NC {
         }
 
         <B> A coerce(B b) {
+            // :: error: (return.type.incompatible)
             return pair(this.<B>bad(), b).value;
         }
     }

@@ -112,7 +112,6 @@ public abstract class JavaExpression {
      * @param provider an annotation provider (a type factory)
      * @return true if all the expressions in the list are deterministic
      */
-    @SuppressWarnings("nullness:dereference.of.nullable") // flow within a lambda
     public static boolean listIsDeterministic(
             List<? extends @Nullable JavaExpression> list, AnnotationProvider provider) {
         return list.stream().allMatch(je -> je == null || je.isDeterministic(provider));
@@ -198,7 +197,6 @@ public abstract class JavaExpression {
      * @return true if and only if the list contains a JavaExpression that is syntactically equal to
      *     {@code other}
      */
-    @SuppressWarnings("nullness:dereference.of.nullable") // flow within a lambda
     public static boolean listContainsSyntacticEqualJavaExpression(
             List<? extends @Nullable JavaExpression> list, JavaExpression other) {
         return list.stream()

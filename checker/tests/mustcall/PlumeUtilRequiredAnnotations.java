@@ -18,13 +18,13 @@ class PlumeUtilRequiredAnnotations {
     // must be explicit rather than implicit (see that the eqR field never issue errors,
     // just like the eqS fields).
     class MultiRandSelector<T, S extends @Nullable @MustCall Object, R extends Object> {
-        // :: error: type.argument
+        // :: error: type.argument.type.incompatible
         private Partitioner<T, T> eqT;
         private Partitioner<S, S> eqS;
         private Partitioner<R, R> eqR;
 
         // Adding annotations to the definition of Partitioner doesn't fix this problem:
-        // :: error: type.argument
+        // :: error: type.argument.type.incompatible
         private Partitioner2<T, T> eqT2;
         private Partitioner2<S, S> eqS2;
         private Partitioner2<R, R> eqR2;

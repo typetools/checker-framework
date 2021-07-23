@@ -16,7 +16,7 @@ public class ZookeeperByteBufferInputStream extends InputStream {
 
     ByteBuffer bb;
 
-    // :: error: super.invocation
+    // :: error: super.invocation.invalid
     public ZookeeperByteBufferInputStream(ByteBuffer bb) {
         this.bb = bb;
     }

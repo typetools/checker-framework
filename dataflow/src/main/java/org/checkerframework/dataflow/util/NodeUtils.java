@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -88,5 +89,19 @@ public class NodeUtils {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Remove any {@link TypeCastNode}s wrapping a node, returning the operand nested within the
+     * type casts.
+     *
+     * @param node a node
+     * @return node, but with any surrounding typecasts removed
+     */
+    public static Node removeCasts(Node node) {
+        while (node instanceof TypeCastNode) {
+            node = ((TypeCastNode) node).getOperand();
+        }
+        return node;
     }
 }

@@ -13,9 +13,9 @@ class MustCallAliasLayeredStreams {
             // sense...
             // TODO we shouldn't report a warning here and the code is okay because the cache is
             // non-owning, and the caller of createInputStream is the owner of all of these streams.
-            // :: error: required.method.not.called
             cache =
                     new DataInputStream(
+                            // :: error: required.method.not.called
                             new BufferedInputStream(new FileInputStream(new File(filename))));
         }
         return cache;

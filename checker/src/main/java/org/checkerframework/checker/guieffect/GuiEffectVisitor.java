@@ -513,14 +513,14 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 ExecutableElement method = invokedMethod.getElement();
                 CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
                 List<? extends VariableElement> methodParams = method.getParameters();
-                List<AnnotatedTypeMirror> argsTypes =
-                        AnnotatedTypes.expandVarArgs(
+                List<AnnotatedTypeMirror> paramTypes =
+                        AnnotatedTypes.expandVarArgsParameters(
                                 atypeFactory, invokedMethod, invocationTree.getArguments());
                 for (int i = 0; i < args.size(); ++i) {
                     if (args.get(i).getKind() == Tree.Kind.NEW_CLASS
                             || args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
                         commonAssignmentCheck(
-                                argsTypes.get(i),
+                                paramTypes.get(i),
                                 atypeFactory.getAnnotatedType(args.get(i)),
                                 args.get(i),
                                 "argument.type.incompatible",

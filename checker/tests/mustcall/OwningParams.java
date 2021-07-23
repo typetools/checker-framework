@@ -8,7 +8,7 @@ class OwningParams {
     void o2(@Owning OwningParams this) {}
 
     void test(@Owning @MustCall({"a"}) OwningParams o, @Owning OwningParams p) {
-        // :: error: argument
+        // :: error: argument.type.incompatible
         o1(o);
         // TODO: this error doesn't show up! See MustCallVisitor#skipReceiverSubtypeCheck
         //  error: method.invocation

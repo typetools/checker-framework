@@ -7,7 +7,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 
@@ -329,9 +328,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return true iff node is a mask operation (&amp; or |)
      */
     private boolean isMask(Tree node) {
-        Kind kind = node.getKind();
+        Tree.Kind kind = node.getKind();
 
-        return kind == Kind.AND || kind == Kind.OR;
+        return kind == Tree.Kind.AND || kind == Tree.Kind.OR;
     }
 
     // TODO: Return a TypeKind rather than a PrimitiveTypeTree?
@@ -342,7 +341,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return type of a primitive cast, or null if not a cast to a primitive
      */
     private PrimitiveTypeTree primitiveTypeCast(Tree node) {
-        if (node.getKind() != Kind.TYPE_CAST) {
+        if (node.getKind() != Tree.Kind.TYPE_CAST) {
             return null;
         }
 
@@ -350,13 +349,13 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Tree castType = cast.getType();
 
         Tree underlyingType;
-        if (castType.getKind() == Kind.ANNOTATED_TYPE) {
+        if (castType.getKind() == Tree.Kind.ANNOTATED_TYPE) {
             underlyingType = ((AnnotatedTypeTree) castType).getUnderlyingType();
         } else {
             underlyingType = castType;
         }
 
-        if (underlyingType.getKind() != Kind.PRIMITIVE_TYPE) {
+        if (underlyingType.getKind() != Tree.Kind.PRIMITIVE_TYPE) {
             return null;
         }
 
@@ -401,7 +400,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return true iff the shiftAmount most significant bits of mask are 0 for AND, and 1 for OR
      */
     private boolean maskIgnoresMSB(
-            Kind maskKind,
+            Tree.Kind maskKind,
             LiteralTree shiftAmountLit,
             LiteralTree maskLit,
             TypeKind shiftedTypeKind) {
@@ -420,10 +419,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         mask >>>= (64 - shiftAmount);
 
-        if (maskKind == Kind.AND) {
+        if (maskKind == Tree.Kind.AND) {
             // Check that the shiftAmount most significant bits of the mask were 0.
             return mask == 0;
-        } else if (maskKind == Kind.OR) {
+        } else if (maskKind == Tree.Kind.OR) {
             // Check that the shiftAmount most significant bits of the mask were 1.
             return mask == (1 << shiftAmount) - 1;
         } else {

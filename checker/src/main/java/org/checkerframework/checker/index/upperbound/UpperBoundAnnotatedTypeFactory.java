@@ -6,7 +6,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 
@@ -307,7 +306,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                         && !offsets.isEmpty()) {
                     // Cannot use type.replaceAnnotation because it will call isSubtype, which will
                     // try to process the annotation and throw an error.
-                    type.clearAnnotations();
+                    type.clearPrimaryAnnotations();
                     type.addAnnotation(BOTTOM);
                 }
             }
@@ -511,7 +510,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             // Dataflow refines this type if possible
-            if (node.getKind() == Kind.BITWISE_COMPLEMENT) {
+            if (node.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
                 addAnnotationForBitwiseComplement(
                         getSearchIndexAnnotatedTypeFactory().getAnnotatedType(node.getExpression()),
                         type);
@@ -754,7 +753,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
          */
         private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
             numeratorTree = TreeUtils.withoutParens(numeratorTree);
-            if (divisor < 2 || numeratorTree.getKind() != Kind.PLUS) {
+            if (divisor < 2 || numeratorTree.getKind() != Tree.Kind.PLUS) {
                 return UpperBoundUnknownQualifier.UNKNOWN;
             }
             BinaryTree plusTree = (BinaryTree) numeratorTree;

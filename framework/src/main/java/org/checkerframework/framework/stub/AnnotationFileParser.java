@@ -753,7 +753,9 @@ public class AnnotationFileParser {
         // Must include protected JDK methods.  For example, Object.clone is protected, but it
         // contains annotations that apply to calls like `super.clone()` and `myArray.clone()`.
         return (fileType == AnnotationFileType.BUILTIN_STUB
-                        || (fileType.isStub() && !mergeStubsWithSource))
+                        || (fileType.isStub()
+                                && fileType != AnnotationFileType.AJAVA_AS_STUB
+                                && !mergeStubsWithSource))
                 && node.getModifiers().contains(Modifier.privateModifier());
     }
 
@@ -1233,7 +1235,7 @@ public class AnnotationFileParser {
         */
         // Clear existing annotations, which only makes a difference for
         // type variables, but doesn't hurt in other cases.
-        atype.clearAnnotations();
+        atype.clearPrimaryAnnotations();
     }
 
     /**

@@ -242,7 +242,7 @@ public class Addition {
         @Time int sTime = aArea + bTime;
 
         // Force
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         sMass = aForce + bForce;
 
         // Units
@@ -412,15 +412,15 @@ public class Addition {
         @s int sSecond = aSecond + bSquareKilometer;
 
         // Newton
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         sKilogram = aNewton + bNewton;
 
         // Kilonewton
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @kN int sKilonewton = aKilonewton + bNewton;
 
         // Metric Ton
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @N int sNewton = aNewton + bMetricTon;
     }
 }

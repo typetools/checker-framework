@@ -28,7 +28,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -252,7 +251,7 @@ public class NullnessVisitor
                 checker.reportError(node, "nullness.on.outer");
             }
         } else if (!(TreeUtils.isSelfAccess(node)
-                || node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE
+                || node.getExpression().getKind() == Tree.Kind.PARAMETERIZED_TYPE
                 // case 8. static member access
                 || ElementUtils.isStatic(e))) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
@@ -412,7 +411,7 @@ public class NullnessVisitor
     public Void visitInstanceOf(InstanceOfTree node, Void p) {
         // The "reference type" is the type after "instanceof".
         Tree refTypeTree = node.getType();
-        if (refTypeTree.getKind() == Kind.ANNOTATED_TYPE) {
+        if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
             List<? extends AnnotationMirror> annotations =
                     TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
             if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
@@ -635,6 +634,11 @@ public class NullnessVisitor
     @Override
     protected void checkMethodInvocability(
             AnnotatedExecutableType method, MethodInvocationTree node) {
+        if (method.getReceiverType() == null) {
+            // Static methods don't have a receiver to check.
+            return;
+        }
+
         if (!TreeUtils.isSelfAccess(node)
                 &&
                 // Static methods don't have a receiver

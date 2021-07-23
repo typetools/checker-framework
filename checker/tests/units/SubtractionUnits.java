@@ -247,11 +247,11 @@ public class SubtractionUnits {
         @Time int sTime = aArea - bTime;
 
         // Volume
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @Volume int sVolume = aVolume - bArea;
 
         // Force
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         sMass = aForce - bForce;
 
         // Units
@@ -393,7 +393,7 @@ public class SubtractionUnits {
         @km2 int sSquareKilometer = aSquareKilometer - bAmpere;
 
         // Cubic kilometer
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @km3 int sCubicKilometer = aCubicKilometer - bAmpere;
 
         // Kilometer per hour
@@ -409,7 +409,7 @@ public class SubtractionUnits {
         @m2 int sSquareMeter = aSquareMeter - bGram;
 
         // Cubic meter
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @m3 int sCubicMeter = aCubicMeter - bGram;
 
         // Meter per second
@@ -441,15 +441,15 @@ public class SubtractionUnits {
         @s int sSecond = aSecond - bSquareKilometer;
 
         // Newton
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         sKilogram = aNewton - bNewton;
 
         // Kilonewton
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @kN int sKilonewton = aKilonewton - bNewton;
 
         // Metric Ton
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @N int sNewton = aNewton - bMetricTon;
     }
 }

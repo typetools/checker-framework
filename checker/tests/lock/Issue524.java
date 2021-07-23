@@ -2,6 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/524
 
 import org.checkerframework.checker.lock.qual.GuardedBy;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,12 +22,17 @@ public class Issue524 {
         public Object field;
     }
 
+    @GuardedByUnknown MyClass someValue() {
+        return new MyClass();
+    }
+
     void testLocalVariables() {
         @GuardedBy({}) ReentrantLock localLock = new ReentrantLock();
 
         {
+            @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
             // :: error: (lock.expression.not.final)
-            @GuardedBy("localLock") MyClass q = new MyClass();
+            @GuardedBy("localLock") MyClass q = someValue();
             localLock.lock();
             localLock.lock();
             // Without a fix for issue 524 in place, the error lock.not.held

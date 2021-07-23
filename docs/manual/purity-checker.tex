@@ -12,6 +12,13 @@ However you may run just the Purity Checker by
 supplying the following command-line options to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
 
+The Checker Framework can infer purity annotations.
+If you supply the command-line option \<-AsuggestPureMethods>, then the
+Checker Framework will suggest methods that can be marked as
+\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
+In addition, such suggestions are output by \<-Ainfer> and when using
+whole-program inference.
+
 
 \sectionAndLabel{Purity annotations}{purity-annotations}
 
@@ -30,14 +37,10 @@ supplying the following command-line options to javac:
 
 \end{description}
 
-If you supply the command-line option \<-AsuggestPureMethods>, then the
-Checker Framework will suggest methods that can be marked as
-\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
-
 
 \sectionAndLabel{Purity annotations are trusted}{purity-trusted}
 
-Currently, purity annotations are trusted.  Purity annotations on called
+By default, purity annotations are trusted.  Purity annotations on called
 methods affect type-checking of client code.  However, you can make a
 mistake by writing \<@SideEffectFree> on the declaration of a method that
 is not actually side-effect-free or by writing \<@Deterministic> on the

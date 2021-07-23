@@ -6,7 +6,6 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -30,10 +29,10 @@ import javax.lang.model.util.ElementFilter;
  * the {@code -proc:only} javac option to stop compilation after annotation processing. (But, in
  * general {@code -proc:only} causes type annotation processors not to be run.)
  *
- * <p>The utility will display the {@link Kind} of each node it encounters while scanning the AST,
- * indented according to its depth in the tree. Additionally, the names of identifiers and member
- * selection trees are displayed (since these names are not tree nodes and therefore not directly
- * visited during AST traversal).
+ * <p>The utility will display the {@link Tree.Kind} of each node it encounters while scanning the
+ * AST, indented according to its depth in the tree. Additionally, the names of identifiers and
+ * member selection trees are displayed (since these names are not tree nodes and therefore not
+ * directly visited during AST traversal).
  *
  * @see org.checkerframework.common.util.debug.TreePrinter
  */

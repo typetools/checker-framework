@@ -79,17 +79,17 @@ public class Division {
 
         // m3 / m2 = m
         distancem = m3 / m2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         distancem = m3 / km2;
 
         // km3 / km2 = km
         distancekm = km3 / km2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         distancekm = km3 / m2;
 
         // mm3 / mm2 = mm
         distancemm = mm3 / mm2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         distancemm = km3 / mm2;
 
         // m / mPERs = s
@@ -114,22 +114,22 @@ public class Division {
 
         // mPERs2 = N / kg
         @mPERs2 int accel2 = N / kg;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         accel2 = N / km;
 
         // mPERs2 = kN / t
         @mPERs2 int accel3 = kN / t;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         accel3 = N / t;
 
         // kg = N / mPERs2
         @kg int mass = N / mPERs2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         mass = s / mPERs2;
 
         // t = kN / mPERs2
         @t int mass2 = kN / mPERs2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         mass2 = N / mPERs2;
     }
 

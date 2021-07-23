@@ -31,7 +31,7 @@ import javax.lang.model.util.Elements;
 
 /**
  * A testing class that can be used to test {@link TypeElement}. In particular it tests that the
- * types read from classfiles are the same to the ones from java files.
+ * types read from classfiles are the same to the ones from Java files.
  *
  * <p>For testing, you need to do the following:
  *

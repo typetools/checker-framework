@@ -9,19 +9,19 @@ class BorrowOnReturn {
 
     @Owning
     Object getOwnedFoo() {
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return new Foo();
     }
 
     Object getNoAnnoFoo() {
         // Treat as owning, so warn
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return new Foo();
     }
 
     @NotOwning
     Object getNotOwningFooWrong() {
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return new Foo();
     }
 
@@ -30,7 +30,7 @@ class BorrowOnReturn {
         f.a();
         // This is still an error for now, because it's treated as an owning pointer. TODO: fix this
         // kind of FP?
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return f;
     }
 
@@ -38,7 +38,7 @@ class BorrowOnReturn {
     Object getNotOwningFooRight() {
         Foo f = new Foo();
         f.a();
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return f;
     }
 

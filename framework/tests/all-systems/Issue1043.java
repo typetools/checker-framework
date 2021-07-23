@@ -8,6 +8,7 @@ public class Issue1043 {
 
     void bar(Object p) {}
 
+    @SuppressWarnings("keyfor:type.argument")
     void baz() {
         bar(foo(this.getClass()) ? "a" : "b");
     }

@@ -30,7 +30,7 @@ public class RequiresCalledMethodsTest {
 
         @CreatesMustCallFor("this")
         void overwriteFooWithoutReleasing() {
-            // :: error: contracts.precondition
+            // :: error: contracts.precondition.not.satisfied
             overwriteFooCorrect();
         }
 

@@ -18,7 +18,7 @@ import org.checkerframework.checker.mustcall.qual.*;
         CreatesMustCallForSimple cos = makeNoMC();
         @MustCall({}) CreatesMustCallForSimple a = cos;
         cos.reset();
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @MustCall({}) CreatesMustCallForSimple b = cos;
         @MustCall("a") CreatesMustCallForSimple c = cos;
     }
@@ -27,7 +27,7 @@ import org.checkerframework.checker.mustcall.qual.*;
         CreatesMustCallForSimple cos = makeNoMC();
         @MustCall({}) CreatesMustCallForSimple a = cos;
         cos.resetThis();
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @MustCall({}) CreatesMustCallForSimple b = cos;
         @MustCall("a") CreatesMustCallForSimple c = cos;
     }
@@ -49,7 +49,7 @@ import org.checkerframework.checker.mustcall.qual.*;
         @MustCall({}) Object a = cos;
         CreatesMustCallForSimple r = ((CreatesMustCallForSimple) cos);
         r.reset();
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @MustCall({}) Object b = r;
         @MustCall("a") Object c = r;
     }

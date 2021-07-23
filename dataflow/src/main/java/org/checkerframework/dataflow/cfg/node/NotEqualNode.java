@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -18,7 +18,7 @@ public class NotEqualNode extends BinaryOperationNode {
 
     public NotEqualNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind() == Kind.NOT_EQUAL_TO;
+        assert tree.getKind() == Tree.Kind.NOT_EQUAL_TO;
     }
 
     @Override

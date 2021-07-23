@@ -190,10 +190,16 @@ public class GuardSatisfiedTest {
         return this;
     }
 
-    final Object lock1 = new Object(), lock2 = new Object();
+    final Object lock1 = new Object();
+    final Object lock2 = new Object();
+
+    // This method exists to prevent flow-sensitive refinement.
+    @GuardedBy({"lock1", "lock2"}) Object guardedByLock1Lock2() {
+        return new Object();
+    }
 
     void testAssignment(@GuardSatisfied Object o) {
-        @GuardedBy({"lock1", "lock2"}) Object p = new Object();
+        @GuardedBy({"lock1", "lock2"}) Object p = guardedByLock1Lock2();
         // :: error: (lock.not.held)
         o = p;
         synchronized (lock1) {

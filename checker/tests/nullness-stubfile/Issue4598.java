@@ -10,7 +10,7 @@ public class Issue4598 {
 
     public Object foo() {
         Objects.requireNonNull(d, "destination");
-        // :: error: (return)
+        // :: error: (return.type.incompatible)
         return d;
     }
 }

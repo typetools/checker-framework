@@ -168,8 +168,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     }
 
     /**
-     * Iff the LHS is a resource variable, then {@link #commonAssignmentCheckOnResourceVariable}
-     * will be true. This method guarantees that {@link #commonAssignmentCheckOnResourceVariable}
+     * Iff the LHS is a resource variable, then {@code #commonAssignmentCheckOnResourceVariable}
+     * will be true. This method guarantees that {@code #commonAssignmentCheckOnResourceVariable}
      * will be false when it returns.
      */
     @Override

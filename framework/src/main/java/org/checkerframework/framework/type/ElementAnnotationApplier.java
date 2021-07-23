@@ -2,7 +2,6 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 
@@ -196,7 +195,7 @@ public class ElementAnnotationApplier {
 
         if (paramDecl != null) {
             final Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
-            if (parentTree != null && parentTree.getKind() == Kind.LAMBDA_EXPRESSION) {
+            if (parentTree != null && parentTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
                 return Pair.of(paramDecl, (LambdaExpressionTree) parentTree);
             }
         }

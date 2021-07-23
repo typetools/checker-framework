@@ -426,10 +426,12 @@ public class ChapterExamples {
 
     private @GuardedBy({}) MyClass myField;
 
+    int someInt = 1;
+
     // TODO: For now, boxed types are treated as primitive types. This may change in the future.
-    @SuppressWarnings("deprecation") // new Integer
+    @SuppressWarnings({"deprecation", "removal"}) // new Integer
     void unboxing() {
-        int a = 1;
+        int a = someInt;
         // :: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer c;
         synchronized (lock) {
@@ -442,24 +444,19 @@ public class ChapterExamples {
         int d;
         synchronized (lock) {
             d = b;
-
-            // Expected, since b cannot be @GuardedBy("lock") since it is a boxed primitive.
-            // :: error: (method.invocation.invalid)
-            d = b.intValue(); // The de-sugared version does not issue an error.
+            d = b.intValue(); // The de-sugared version
         }
 
-        c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
+        c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()).
 
-        // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
-        // :: error: (method.invocation.invalid)
         c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+        c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
 
         synchronized (lock) {
-            c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()).
+            c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()).
 
-            // Expected, since b and c cannot be @GuardedBy("lock") since they are boxed primitives.
-            // :: error: (method.invocation.invalid)
             c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+            c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
         }
 
         a = b;
@@ -483,13 +480,13 @@ public class ChapterExamples {
       }
 
       // TODO re-enable this error (lock.not.held)
-      c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()), hence 'lock' must be held.
+      c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()), hence 'lock' must be held.
       // TODO re-enable this error (lock.not.held)
-      c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+      c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
 
       synchronized(lock) {
-        c = c + b; // Syntactic sugar for c = new Integer(c.intValue() + b.intValue()), hence 'lock' must be held.
-        c = new Integer(c.intValue() + b.intValue()); // The de-sugared version
+        c = c + b; // Syntactic sugar for c = Integer.valueOf(c.intValue() + b.intValue()), hence 'lock' must be held.
+        c = Integer.valueOf(c.intValue() + b.intValue()); // The de-sugared version
       }
 
       // TODO re-enable this error (lock.not.held)

@@ -43,7 +43,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
 
 /**
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
@@ -64,7 +63,7 @@ public class ElementUtils {
      * @return the innermost type element, or null if no type element encloses {@code elem}
      * @deprecated use {@link #enclosingTypeElement}
      */
-    @Deprecated // use enclosingTypeElement
+    @Deprecated // 2021-01-16
     public static @Nullable TypeElement enclosingClass(final Element elem) {
         return enclosingTypeElement(elem);
     }
@@ -442,7 +441,7 @@ public class ElementUtils {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
                 // The class file could be a .java file
-                return clss.classfile.getKind() == Kind.CLASS;
+                return clss.classfile.getKind() == JavaFileObject.Kind.CLASS;
             } else {
                 return elt.asType().getKind().isPrimitive();
             }
@@ -744,7 +743,7 @@ public class ElementUtils {
      * @return the set of kinds that represent classes
      * @deprecated use {@link #typeElementKinds()}
      */
-    @Deprecated // use typeElementKinds
+    @Deprecated // 2020-12-11
     public static Set<ElementKind> classElementKinds() {
         return typeElementKinds();
     }
@@ -765,7 +764,7 @@ public class ElementUtils {
      * @return true, iff the given kind is a class kind
      * @deprecated use {@link #isTypeElement}
      */
-    @Deprecated // use isTypeElement
+    @Deprecated // 2020-12-11
     public static boolean isClassElement(Element element) {
         return isTypeElement(element);
     }
@@ -849,6 +848,12 @@ public class ElementUtils {
 
     /**
      * Given an annotation name, return true if the element has the annotation of that name.
+     *
+     * <p>It is more efficient to use {@code Element#getAnnotation(Class)}, but note that both
+     * methods ignore types from annotation files, such as stub or ajava files.
+     *
+     * <p>To include types from annotation files, use {@code AnnotatedTypeFactory#fromElement} or
+     * {@code AnnotatedTypeFactory#getDeclAnnotations}.
      *
      * @param element the element
      * @param annotName name of the annotation

@@ -4,6 +4,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.StubUnit;
@@ -24,11 +25,19 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import javax.annotation.processing.ProcessingEnvironment;
+
 /**
  * Utility methods for working with JavaParser. It is a replacement for StaticJavaParser that does
  * not leak memory, and it provides some other methods.
  */
 public class JavaParserUtil {
+
+    /**
+     * The Language Level to use when parsing if a specific level isn't applied. This should be the
+     * highest version of Java that the Checker Framework can process. Currently, Java 11.
+     */
+    public static LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_11;
 
     ///
     /// Replacements for StaticJavaParser
@@ -47,7 +56,9 @@ public class JavaParserUtil {
      * @throws ParseProblemException if the source code has parser errors
      */
     public static CompilationUnit parseCompilationUnit(InputStream inputStream) {
-        JavaParser javaParser = new JavaParser(new ParserConfiguration());
+        ParserConfiguration parserConfiguration = new ParserConfiguration();
+        parserConfiguration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
+        JavaParser javaParser = new JavaParser(parserConfiguration);
         ParseResult<CompilationUnit> parseResult = javaParser.parse(inputStream);
         if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
             return parseResult.getResult().get();
@@ -70,7 +81,9 @@ public class JavaParserUtil {
      * @throws FileNotFoundException if the file was not found
      */
     public static CompilationUnit parseCompilationUnit(File file) throws FileNotFoundException {
-        JavaParser javaParser = new JavaParser(new ParserConfiguration());
+        ParserConfiguration configuration = new ParserConfiguration();
+        configuration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
+        JavaParser javaParser = new JavaParser(configuration);
         ParseResult<CompilationUnit> parseResult = javaParser.parse(file);
         if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
             return parseResult.getResult().get();
@@ -92,7 +105,9 @@ public class JavaParserUtil {
      * @throws ParseProblemException if the source code has parser errors
      */
     public static CompilationUnit parseCompilationUnit(String javaSource) {
-        JavaParser javaParser = new JavaParser(new ParserConfiguration());
+        ParserConfiguration parserConfiguration = new ParserConfiguration();
+        parserConfiguration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
+        JavaParser javaParser = new JavaParser(parserConfiguration);
         ParseResult<CompilationUnit> parseResult = javaParser.parse(javaSource);
         if (parseResult.isSuccessful() && parseResult.getResult().isPresent()) {
             return parseResult.getResult().get();
@@ -118,6 +133,7 @@ public class JavaParserUtil {
         // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
         // JavaParser has to be created each time.
         ParserConfiguration configuration = new ParserConfiguration();
+        configuration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
         // Store the tokens so that errors have line and column numbers.
         // configuration.setStoreTokens(false);
         configuration.setLexicalPreservationEnabled(false);
@@ -144,10 +160,27 @@ public class JavaParserUtil {
      * @throws ParseProblemException if the expression has parser errors
      */
     public static Expression parseExpression(String expression) {
+        return parseExpression(expression, DEFAULT_LANGUAGE_LEVEL);
+    }
+
+    /**
+     * Parses the {@code expression} and returns an {@code Expression} that represents it.
+     *
+     * <p>This is like {@code StaticJavaParser.parseExpression}, but it does not lead to memory
+     * leaks because it creates a new instance of JavaParser each time it is invoked. Re-using
+     * {@code StaticJavaParser} causes memory problems because it retains too much memory.
+     *
+     * @param expression the expression string
+     * @param languageLevel the language level to use when parsing the Java source
+     * @return the parsed expression
+     * @throws ParseProblemException if the expression has parser errors
+     */
+    public static Expression parseExpression(String expression, LanguageLevel languageLevel) {
         // The ParserConfiguration accumulates data each time parse is called, so create a new one
         // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
         // JavaParser has to be created each time.
         ParserConfiguration configuration = new ParserConfiguration();
+        configuration.setLanguageLevel(languageLevel);
         configuration.setStoreTokens(false);
         configuration.setLexicalPreservationEnabled(false);
         configuration.setAttributeComments(false);
@@ -278,5 +311,57 @@ public class JavaParserUtil {
                 }
             }
         }
+    }
+
+    /**
+     * Initialized by {@link #getCurrentSourceVersion(ProcessingEnvironment)}. Use that method to
+     * access.
+     */
+    private static LanguageLevel currentSourceVersion = null;
+    /**
+     * Returns the {@link com.github.javaparser.ParserConfiguration.LanguageLevel} corresponding to
+     * the current source version.
+     *
+     * @param env processing environment used to get source version
+     * @return the current source version
+     */
+    public static ParserConfiguration.LanguageLevel getCurrentSourceVersion(
+            ProcessingEnvironment env) {
+        if (currentSourceVersion == null) {
+            // Use String comparison so we can compile on older JDKs which
+            // don't have all the latest SourceVersion constants:
+            switch (env.getSourceVersion().name()) {
+                case "RELEASE_8":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_8;
+                    break;
+                case "RELEASE_9":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_9;
+                    break;
+                case "RELEASE_10":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_10;
+                    break;
+                case "RELEASE_11":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_11;
+                    break;
+                case "RELEASE_12":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_12;
+                    break;
+                case "RELEASE_13":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_13;
+                    break;
+                case "RELEASE_14":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_14;
+                    break;
+                case "RELEASE_15":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_15;
+                    break;
+                case "RELEASE_16":
+                    currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_16;
+                    break;
+                default:
+                    currentSourceVersion = DEFAULT_LANGUAGE_LEVEL;
+            }
+        }
+        return currentSourceVersion;
     }
 }

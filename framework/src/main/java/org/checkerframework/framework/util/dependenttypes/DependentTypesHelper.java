@@ -10,7 +10,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
@@ -450,7 +449,7 @@ public class DependentTypesHelper {
                 }
                 Tree enclTree = pathTillEnclTree.getLeaf();
 
-                if (enclTree.getKind() == Kind.METHOD) {
+                if (enclTree.getKind() == Tree.Kind.METHOD) {
                     MethodTree methodDeclTree = (MethodTree) enclTree;
                     StringToJavaExpression stringToJavaExpr =
                             stringExpr ->
@@ -837,7 +836,7 @@ public class DependentTypesHelper {
      *
      * @param expression an expression that caused {@code e} when parsed
      * @param e the exception thrown when parsing {@code expression}
-     * @return a java expression
+     * @return a Java expression
      */
     protected PassThroughExpression createError(String expression, JavaExpressionParseException e) {
         return new PassThroughExpression(
@@ -850,7 +849,7 @@ public class DependentTypesHelper {
      *
      * @param expression an expression that caused {@code error} when parsed
      * @param error the error message caused by {@code expression}
-     * @return a java expression
+     * @return a Java expression
      */
     protected PassThroughExpression createError(String expression, String error) {
         return new PassThroughExpression(
@@ -934,7 +933,7 @@ public class DependentTypesHelper {
             return;
         }
 
-        if (errorTree.getKind() == Kind.VARIABLE) {
+        if (errorTree.getKind() == Tree.Kind.VARIABLE) {
             ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
             errorTree = ((VariableTree) errorTree).getType();
             for (AnnotationTree annoTree : modifiers.getAnnotations()) {
@@ -1168,8 +1167,10 @@ public class DependentTypesHelper {
                 }
             }
             to.replaceAnnotations(replacements);
-            if (from.getKind() != to.getKind()) {
-                // If the underlying types don't match, then this from has been substituted for a
+            if (from.getKind() != to.getKind()
+                    || (from.getKind() == TypeKind.TYPEVAR
+                            && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
+                // If the underlying types don't match, then from has been substituted for a
                 // from variable, so don't recur. The primary annotation was copied because
                 // the from variable might have had a primary annotation at a use.
                 // For example:

@@ -366,7 +366,8 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type given an {@link javax.lang.model.element.Element}.
+     * Applies default annotations to a type obtained from an {@link
+     * javax.lang.model.element.Element}.
      *
      * @param elt the element from which the type was obtained
      * @param type the type to annotate
@@ -966,6 +967,8 @@ public class QualifierDefaults {
                                 && scope.getKind() == ElementKind.CONSTRUCTOR
                                 && t.getKind() == TypeKind.EXECUTABLE
                                 && isTopLevelType) {
+                            // This is the return type of a constructor declaration (not a
+                            // constructor invocation).
                             final AnnotatedTypeMirror returnType =
                                     ((AnnotatedExecutableType) t).getReturnType();
                             if (shouldBeAnnotated(returnType, false)) {

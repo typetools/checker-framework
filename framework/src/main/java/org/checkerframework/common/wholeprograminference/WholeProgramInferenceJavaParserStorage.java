@@ -7,9 +7,11 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
@@ -559,7 +561,7 @@ public class WholeProgramInferenceJavaParserStorage
         for (String path : modifiedFiles) {
             CompilationUnitAnnos root = sourceToAnnos.get(path);
             prepareCompilationUnitForWriting(root);
-            root.transferAnnotations();
+            root.transferAnnotations(checker);
             String packageDir = AJAVA_FILES_PATH;
             if (root.compilationUnit.getPackageDeclaration().isPresent()) {
                 packageDir +=
@@ -643,7 +645,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
      * which is the JavaParser node representing the same type. Does nothing if {@code
-     * annotatedType} is null (this may occur if there's no inferred annotations for the type).
+     * annotatedType} is null (this may occur if there are no inferred annotations for the type).
      *
      * @param annotatedType type to transfer annotations from
      * @param target the JavaParser type to transfer annotation to; must represent the same type as
@@ -669,7 +671,7 @@ public class WholeProgramInferenceJavaParserStorage
     private static class CompilationUnitAnnos {
         /** Compilation unit being wrapped. */
         public CompilationUnit compilationUnit;
-        /** Wrappers for classes and interfaces in {@code declaration} */
+        /** Wrappers for classes and interfaces in {@code compilationUnit}. */
         public List<ClassOrInterfaceAnnos> types;
 
         /**
@@ -685,9 +687,17 @@ public class WholeProgramInferenceJavaParserStorage
         /**
          * Transfers all annotations inferred by whole program inference for the wrapped compilation
          * unit to their corresponding JavaParser locations.
+         *
+         * @param checker the checker who's name to include in the @AnnotatedFor annotation
          */
-        public void transferAnnotations() {
+        public void transferAnnotations(BaseTypeChecker checker) {
             JavaParserUtil.clearAnnotations(compilationUnit);
+            for (TypeDeclaration<?> typeDecl : compilationUnit.getTypes()) {
+                typeDecl.addSingleMemberAnnotation(
+                        "org.checkerframework.framework.qual.AnnotatedFor",
+                        "\"" + checker.getClass().getCanonicalName() + "\"");
+            }
+
             for (ClassOrInterfaceAnnos typeAnnos : types) {
                 typeAnnos.transferAnnotations();
             }
@@ -760,8 +770,8 @@ public class WholeProgramInferenceJavaParserStorage
          */
         private @MonotonicNonNull AnnotatedTypeMirror receiverType = null;
         /**
-         * Inferred annotations for parameter types. Initialized the first time any parameter is
-         * accessed and each parameter is initialized the first time it's accessed.
+         * Inferred annotations for parameter types. The list is initialized the first time any
+         * parameter is accessed, and each parameter is initialized the first time it's accessed.
          */
         private @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
         /** Annotations on the callable declaration. */
@@ -1032,8 +1042,24 @@ public class WholeProgramInferenceJavaParserStorage
             }
 
             for (int i = 0; i < parameterTypes.size(); i++) {
-                WholeProgramInferenceJavaParserStorage.transferAnnotations(
-                        parameterTypes.get(i), declaration.getParameter(i).getType());
+                AnnotatedTypeMirror inferredType = parameterTypes.get(i);
+                Parameter param = declaration.getParameter(i);
+                Type javaParserType = param.getType();
+                if (param.isVarArgs()) {
+                    NodeList<AnnotationExpr> varArgsAnnoExprs =
+                            AnnotationMirrorToAnnotationExprConversion
+                                    .annotationMirrorSetToAnnotationExprList(
+                                            inferredType.getAnnotations());
+                    param.setVarArgsAnnotations(varArgsAnnoExprs);
+
+                    AnnotatedTypeMirror inferredComponentType =
+                            ((AnnotatedArrayType) inferredType).getComponentType();
+                    WholeProgramInferenceJavaParserStorage.transferAnnotations(
+                            inferredComponentType, javaParserType);
+                } else {
+                    WholeProgramInferenceJavaParserStorage.transferAnnotations(
+                            inferredType, javaParserType);
+                }
             }
         }
 

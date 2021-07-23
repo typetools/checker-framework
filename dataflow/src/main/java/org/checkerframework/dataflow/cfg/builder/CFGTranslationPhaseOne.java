@@ -46,7 +46,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1666,7 +1665,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                             operNode = new FloatingDivisionNode(operTree, targetRHS, value);
                         }
                     } else {
-                        assert kind == Kind.REMAINDER_ASSIGNMENT;
+                        assert kind == Tree.Kind.REMAINDER_ASSIGNMENT;
                         if (TypesUtils.isIntegralPrimitive(exprType)) {
                             operNode = new IntegerRemainderNode(operTree, targetRHS, value);
 
@@ -1722,7 +1721,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         if (kind == Tree.Kind.PLUS_ASSIGNMENT) {
                             operNode = new NumericalAdditionNode(operTree, targetRHS, value);
                         } else {
-                            assert kind == Kind.MINUS_ASSIGNMENT;
+                            assert kind == Tree.Kind.MINUS_ASSIGNMENT;
                             operNode = new NumericalSubtractionNode(operTree, targetRHS, value);
                         }
                         extendWithNode(operNode);
@@ -1768,7 +1767,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     } else if (kind == Tree.Kind.RIGHT_SHIFT_ASSIGNMENT) {
                         operNode = new SignedRightShiftNode(operTree, targetRHS, value);
                     } else {
-                        assert kind == Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
+                        assert kind == Tree.Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
                         operNode = new UnsignedRightShiftNode(operTree, targetRHS, value);
                     }
                     extendWithNode(operNode);
@@ -1821,7 +1820,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 } else if (kind == Tree.Kind.OR_ASSIGNMENT) {
                     operNode = new BitwiseOrNode(operTree, targetRHS, value);
                 } else {
-                    assert kind == Kind.XOR_ASSIGNMENT;
+                    assert kind == Tree.Kind.XOR_ASSIGNMENT;
                     operNode = new BitwiseXorNode(operTree, targetRHS, value);
                 }
                 extendWithNode(operNode);
@@ -1876,7 +1875,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                             r = new FloatingDivisionNode(tree, left, right);
                         }
                     } else {
-                        assert kind == Kind.REMAINDER;
+                        assert kind == Tree.Kind.REMAINDER;
                         if (TypesUtils.isIntegralPrimitive(exprType)) {
                             r = new IntegerRemainderNode(tree, left, right);
 
@@ -1912,7 +1911,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         if (kind == Tree.Kind.PLUS) {
                             r = new NumericalAdditionNode(tree, left, right);
                         } else {
-                            assert kind == Kind.MINUS;
+                            assert kind == Tree.Kind.MINUS;
                             r = new NumericalSubtractionNode(tree, left, right);
                         }
                     }
@@ -1933,7 +1932,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     } else if (kind == Tree.Kind.RIGHT_SHIFT) {
                         r = new SignedRightShiftNode(tree, left, right);
                     } else {
-                        assert kind == Kind.UNSIGNED_RIGHT_SHIFT;
+                        assert kind == Tree.Kind.UNSIGNED_RIGHT_SHIFT;
                         r = new UnsignedRightShiftNode(tree, left, right);
                     }
                     break;
@@ -2005,7 +2004,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     if (kind == Tree.Kind.EQUAL_TO) {
                         node = new EqualToNode(tree, left, right);
                     } else {
-                        assert kind == Kind.NOT_EQUAL_TO;
+                        assert kind == Tree.Kind.NOT_EQUAL_TO;
                         node = new NotEqualNode(tree, left, right);
                     }
                     extendWithNode(node);
@@ -2045,7 +2044,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     } else if (kind == Tree.Kind.OR) {
                         node = new BitwiseOrNode(tree, left, right);
                     } else {
-                        assert kind == Kind.XOR;
+                        assert kind == Tree.Kind.XOR;
                         node = new BitwiseXorNode(tree, left, right);
                     }
 
@@ -2195,7 +2194,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             Integer defaultIndex = null;
             for (int i = 0; i < cases; ++i) {
                 CaseTree caseTree = switchTree.getCases().get(i);
-                if (caseTree.getExpression() == null) {
+                if (TreeUtils.caseTreeGetExpressions(caseTree).isEmpty()) {
                     defaultIndex = i;
                 } else {
                     buildCase(caseTree, i);
@@ -2223,11 +2222,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             final Label nextBodyL = caseBodyLabels[index + 1];
             final Label nextCaseL = new Label();
 
-            ExpressionTree exprTree = tree.getExpression();
-            if (exprTree != null) {
+            List<? extends ExpressionTree> exprTrees = TreeUtils.caseTreeGetExpressions(tree);
+            if (!exprTrees.isEmpty()) {
                 // non-default cases
-                Node expr = scan(exprTree, null);
-                CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
+                ArrayList<Node> exprs = new ArrayList<>();
+                for (ExpressionTree exprTree : exprTrees) {
+                    exprs.add(scan(exprTree, null));
+                }
+                CaseNode test = new CaseNode(tree, switchExpr, exprs, env.getTypeUtils());
                 extendWithNode(test);
                 extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
             }
@@ -2995,19 +2997,19 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         ReturnNode result = null;
         if (ret != null) {
             Node node = scan(ret, p);
-            Tree enclosing =
-                    TreePathUtil.enclosingOfKind(
+            TreePath enclosingPath =
+                    TreePathUtil.pathTillOfKind(
                             getCurrentPath(),
-                            new HashSet<>(Arrays.asList(Kind.METHOD, Kind.LAMBDA_EXPRESSION)));
-            if (enclosing.getKind() == Kind.LAMBDA_EXPRESSION) {
+                            new HashSet<>(
+                                    Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
+            Tree enclosing = enclosingPath.getLeaf();
+            if (enclosing.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
                 LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
-                TreePath lambdaTreePath =
-                        TreePath.getPath(getCurrentPath().getCompilationUnit(), lambdaTree);
                 Context ctx = ((JavacProcessingEnvironment) env).getContext();
                 Element overriddenElement =
                         com.sun.tools.javac.code.Types.instance(ctx)
                                 .findDescriptorSymbol(
-                                        ((Type) trees.getTypeMirror(lambdaTreePath)).tsym);
+                                        ((Type) trees.getTypeMirror(enclosingPath)).tsym);
 
                 result =
                         new ReturnNode(
@@ -3496,9 +3498,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     Node expr = scan(exprTree, p);
 
                     boolean isIncrement =
-                            kind == Tree.Kind.POSTFIX_INCREMENT || kind == Kind.PREFIX_INCREMENT;
+                            kind == Tree.Kind.POSTFIX_INCREMENT
+                                    || kind == Tree.Kind.PREFIX_INCREMENT;
                     boolean isPostfix =
-                            kind == Tree.Kind.POSTFIX_INCREMENT || kind == Kind.POSTFIX_DECREMENT;
+                            kind == Tree.Kind.POSTFIX_INCREMENT
+                                    || kind == Tree.Kind.POSTFIX_DECREMENT;
                     AssignmentNode unaryAssign =
                             createIncrementOrDecrementAssign(
                                     isPostfix ? null : tree, expr, isIncrement);
@@ -3617,7 +3621,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         boolean isField =
                 getCurrentPath().getParentPath() != null
-                        && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.CLASS;
+                        && getCurrentPath().getParentPath().getLeaf().getKind() == Tree.Kind.CLASS;
         Node node = null;
 
         ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());

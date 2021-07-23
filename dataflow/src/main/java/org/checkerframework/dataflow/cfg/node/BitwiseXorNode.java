@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -18,7 +18,7 @@ public class BitwiseXorNode extends BinaryOperationNode {
 
     public BitwiseXorNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
-        assert tree.getKind() == Kind.XOR;
+        assert tree.getKind() == Tree.Kind.XOR;
     }
 
     @Override

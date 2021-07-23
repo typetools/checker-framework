@@ -45,20 +45,25 @@ else
   has_java_home="yes"
 fi
 
-# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA8_HOME}" = "x" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
+# shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
 if [ "x${JAVA11_HOME}" = "x" ]; then
   has_java11="no"
 else
   has_java11="yes"
+fi
+
+# shellcheck disable=SC2153 # testing for JAVA16_HOME, not a typo of JAVA_HOME
+if [ "x${JAVA16_HOME}" = "x" ]; then
+  has_java16="no"
+else
+  has_java16="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
@@ -70,6 +75,10 @@ if [ "${has_java_home}" = "yes" ]; then
     if [ "${has_java11}" = "no" ] && [ "${java_version}" = 11 ]; then
       export JAVA11_HOME="${JAVA_HOME}"
       has_java11="yes"
+    fi
+    if [ "${has_java16}" = "no" ] && [ "${java_version}" = 16 ]; then
+      export JAVA16_HOME="${JAVA_HOME}"
+      has_java16="yes"
     fi
 fi
 
@@ -83,8 +92,13 @@ if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
     exit 7
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ]; then
-    echo "No Java 8 or 11 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, or JAVA11_HOME must be set."
+if [ "${has_java16}" = "yes" ] && [ ! -d "${JAVA16_HOME}" ]; then
+    echo "JAVA16_HOME is set to a non-existent directory ${JAVA16_HOME}"
+    exit 7
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java16}" = "no" ]; then
+    echo "No Java 8, 11, or 16 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA16_HOME must be set."
     exit 8
 fi
 
@@ -139,7 +153,7 @@ function configure_and_exec_dljc {
       else
         MVN_EXEC="mvn"
       fi
-      # if running on java 8, need /jre at the end of this Maven command
+      # if running on Java 8, need /jre at the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
           BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
@@ -159,7 +173,12 @@ function configure_and_exec_dljc {
 
   if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
     JDK_VERSION_ARG="--jdkVersion 8"
+  elif [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
+    JDK_VERSION_ARG="--jdkVersion 11"
+  elif [ "${JAVA_HOME}" = "${JAVA16_HOME}" ]; then
+    JDK_VERSION_ARG="--jdkVersion 16"
   else
+    # Default to the latest LTS release.  (Probably better to compute the version.)
     JDK_VERSION_ARG="--jdkVersion 11"
   fi
 
@@ -178,8 +197,9 @@ function configure_and_exec_dljc {
   # Remove old DLJC output.
   rm -rf dljc-out
 
-  # ensure the project is clean before invoking DLJC
-  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1
+  # Ensure the project is clean before invoking DLJC.
+  # If it fails, re-run without piping output to /dev/null.
+  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || eval "${CLEAN_CMD}" < /dev/null
 
   mkdir -p "${DIR}/dljc-out/"
   dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout-$(date +%Y%m%d-%H%M%S)-XXX")
@@ -187,8 +207,7 @@ function configure_and_exec_dljc {
   PATH_BACKUP="${PATH}"
   export PATH="${JAVA_HOME}/bin:${PATH}"
 
-  # use simpler syntax because this line was crashing mysteriously in CI, to get better debugging output
-  # shellcheck disable=SC2129
+  # shellcheck disable=SC2129 # recommended syntax was crashing mysteriously in CI
   echo "WORKING DIR: $(pwd)" >> "$dljc_stdout"
   echo "JAVA_HOME: ${JAVA_HOME}" >> "$dljc_stdout"
   echo "PATH: ${PATH}" >> "$dljc_stdout"
@@ -263,20 +282,29 @@ rm -f -- "${DIR}/.cannot-run-wpi"
 cd "${DIR}" || exit 5
 
 JAVA_HOME_BACKUP="${JAVA_HOME}"
-if [ "${has_java11}" = "yes" ]; then
-  export JAVA_HOME="${JAVA11_HOME}"
-  configure_and_exec_dljc "$@"
-elif [ "${has_java8}" = "yes" ]; then
+if [ "${has_java8}" = "yes" ]; then
   export JAVA_HOME="${JAVA8_HOME}"
-  configure_and_exec_dljc "$@"
+elif [ "${has_java11}" = "yes" ]; then
+  export JAVA_HOME="${JAVA11_HOME}"
+elif [ "${has_java16}" = "yes" ]; then
+  export JAVA_HOME="${JAVA16_HOME}"
 fi
+configure_and_exec_dljc "$@"
 
 if [ "${has_java11}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-    # if running under Java 11 fails, try to run
-    # under Java 8 instead
+    # If running under Java 11 fails, try Java 8.
     if [ "${has_java8}" = "yes" ]; then
       export JAVA_HOME="${JAVA8_HOME}"
       echo "couldn't build using Java 11; trying Java 8"
+      configure_and_exec_dljc "$@"
+    fi
+fi
+
+if [ "${has_java11}" = "yes" ] && [ "${has_java8}" = "yes" ] && [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
+    # If running under Java 11 and Java 8 fails, try Java 16.
+    if [ "${has_java16}" = "yes" ]; then
+      export JAVA_HOME="${JAVA16_HOME}"
+      echo "couldn't build using Java 11 or Java 8; trying Java 16"
       configure_and_exec_dljc "$@"
     fi
 fi

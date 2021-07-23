@@ -14,7 +14,7 @@ class SocketBufferedReader {
             PrintStream out = new PrintStream(socket.getOutputStream());
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             @MustCall("close") BufferedReader reader = in;
-            // :: error: assignment
+            // :: error: assignment.type.incompatible
             @MustCall({}) BufferedReader reader2 = in;
             in.close();
         } catch (Exception e) {

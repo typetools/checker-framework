@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #aliasing-checker Aliasing Checker
  */
 
-// This is a type qualifier because of a checker framework limitation (Issue 383), but its hierarchy
+// This is a type qualifier because of a Checker Framework limitation (Issue 383), but its hierarchy
 // is ignored. Once the stub parser gets updated to read non-type-qualifiers annotations on stub
 // files, this annotation won't be a type qualifier anymore.
 

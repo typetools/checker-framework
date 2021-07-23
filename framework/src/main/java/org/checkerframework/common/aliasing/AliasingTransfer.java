@@ -1,7 +1,6 @@
 package org.checkerframework.common.aliasing;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
@@ -130,7 +129,7 @@ public class AliasingTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
         Tree parent = n.getTreePath().getParentPath().getLeaf();
-        boolean parentIsStatement = parent.getKind() == Kind.EXPRESSION_STATEMENT;
+        boolean parentIsStatement = parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT;
 
         if (!parentIsStatement) {
 

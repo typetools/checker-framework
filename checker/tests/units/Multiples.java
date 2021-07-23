@@ -72,9 +72,9 @@ public class Multiples {
         @N int N = 5 * UnitsTools.N;
         @N(Prefix.one) int alsoN = N;
         @N(Prefix.giga)
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         int notN = N;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         N = notN;
         N = alsoN;
 
@@ -82,9 +82,9 @@ public class Multiples {
         @kN int kN = 5 * UnitsTools.kN;
         @N(Prefix.kilo) int alsokN = kN;
         @N(Prefix.giga)
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         int notkN = kN;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         kN = notkN;
         kN = alsokN;
 
@@ -117,44 +117,44 @@ public class Multiples {
 
         // m * m2 = m3
         @m3 int volume = m * area;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @km3 int volumembad1 = m * area;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @mm3 int volumembad2 = m * area;
 
         // km * km2 = km3
         @km3 int kvolume = km * karea;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @m3 int volumekmbad1 = km * karea;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @mm3 int volumekmbad2 = km * karea;
 
         // mm * mm2 = mm3
         @mm3 int mvolume = mm * marea;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @m3 int volumemmbad1 = mm * marea;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @km3 int volumemmbad2 = mm * marea;
 
         // m2 * m = m3
         volume = area * m;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         volumembad1 = area * m;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         volumembad2 = area * m;
 
         // km2 * km = km3
         kvolume = karea * km;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         volumekmbad1 = karea * km;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         volumekmbad2 = karea * km;
 
         // mm2 * mm = mm3
         mvolume = marea * mm;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         volumemmbad1 = marea * mm;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         volumemmbad2 = marea * mm;
 
         // s * mPERs = m

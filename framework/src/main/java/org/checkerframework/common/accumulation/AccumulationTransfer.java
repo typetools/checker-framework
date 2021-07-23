@@ -2,7 +2,6 @@ package org.checkerframework.common.accumulation;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -102,7 +101,7 @@ public class AccumulationTransfer extends CFTransfer {
         insertIntoStores(result, target, newAnno);
 
         Tree tree = node.getTree();
-        if (tree != null && tree.getKind() == Kind.METHOD_INVOCATION) {
+        if (tree != null && tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             Node receiver = ((MethodInvocationNode) node).getTarget().getReceiver();
             if (receiver != null && atypeFactory.returnsThis((MethodInvocationTree) tree)) {
                 accumulate(receiver, result, values);

@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -52,8 +53,10 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
         for (CaseTree caseExpr : node.getCases()) {
-            ExpressionTree realCaseExpr = caseExpr.getExpression();
-            if (realCaseExpr != null) {
+            List<? extends ExpressionTree> realCaseExprs =
+                    TreeUtils.caseTreeGetExpressions(caseExpr);
+            // Check all the case options against the switch expression type:
+            for (ExpressionTree realCaseExpr : realCaseExprs) {
                 AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
                 // There is currently no "switch.type.incompatible" message key, so it is treated

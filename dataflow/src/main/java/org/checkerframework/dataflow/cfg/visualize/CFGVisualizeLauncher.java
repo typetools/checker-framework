@@ -125,7 +125,7 @@ public class CFGVisualizeLauncher {
     /**
      * Generate the DOT representation of the CFG for a method, only. Does no dataflow analysis.
      *
-     * @param inputFile java source input file
+     * @param inputFile a Java source file, used as input
      * @param outputDir output directory
      * @param method name of the method to generate the CFG for
      * @param clas name of the class which includes the method to generate the CFG for
@@ -145,7 +145,7 @@ public class CFGVisualizeLauncher {
     /**
      * Generate the String representation of the CFG for a method, only. Does no dataflow analysis.
      *
-     * @param inputFile java source input file
+     * @param inputFile a Java source file, used as input
      * @param method name of the method to generate the CFG for
      * @param clas name of the class which includes the method to generate the CFG for
      * @param verbose show verbose information in CFG
@@ -173,7 +173,7 @@ public class CFGVisualizeLauncher {
      * @param <V> the abstract value type to be tracked by the analysis
      * @param <S> the store type used in the analysis
      * @param <T> the transfer function type that is used to approximated runtime behavior
-     * @param inputFile java source input file
+     * @param inputFile a Java source file, used as input
      * @param outputDir source output directory
      * @param method name of the method to generate the CFG for
      * @param clas name of the class which includes the method to generate the CFG for
@@ -214,7 +214,7 @@ public class CFGVisualizeLauncher {
     /**
      * Generate the control flow graph of a method in a class.
      *
-     * @param file java source input file
+     * @param file a Java source file, used as input
      * @param clas name of the class which includes the method to generate the CFG for
      * @param method name of the method to generate the CFG for
      * @return control flow graph of the specified method
@@ -288,7 +288,7 @@ public class CFGVisualizeLauncher {
      * @param <V> the abstract value type to be tracked by the analysis
      * @param <S> the store type used in the analysis
      * @param <T> the transfer function type that is used to approximated runtime behavior
-     * @param inputFile java source input file
+     * @param inputFile a Java source file, used as input
      * @param method name of the method to generate the CFG for
      * @param clas name of the class which includes the method to generate the CFG for
      * @param verbose show verbose information in CFG

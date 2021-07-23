@@ -7,7 +7,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
@@ -462,7 +461,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             TreePath topLevelMemberPath = findTopLevelClassMemberForTree(path);
             if (topLevelMemberPath != null && topLevelMemberPath.getLeaf() != null) {
                 Tree topLevelMember = topLevelMemberPath.getLeaf();
-                if (topLevelMember.getKind() != Kind.METHOD
+                if (topLevelMember.getKind() != Tree.Kind.METHOD
                         || TreeUtils.isConstructor((MethodTree) topLevelMember)) {
                     setSelfTypeInInitializationCode(tree, enclosing, topLevelMemberPath);
                 }
@@ -748,7 +747,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 // The receiver is not initialized for this frame and the type being computed is not
                 // a LHS.
                 // Replace all annotations with the top annotation for that hierarchy.
-                type.clearAnnotations();
+                type.clearPrimaryAnnotations();
                 type.addAnnotations(qualHierarchy.getTopAnnotations());
             }
 

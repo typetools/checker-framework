@@ -16,7 +16,7 @@ class SimpleSocketField {
 
     void test() {
         @MustCall("close") Socket s = mySock;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @MustCall({}) Socket s1 = mySock;
     }
 }

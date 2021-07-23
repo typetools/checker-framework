@@ -22,7 +22,7 @@ import org.checkerframework.checker.mustcall.qual.*;
         CreatesMustCallForSimple cos = makeNoMC();
         @MustCall({}) CreatesMustCallForSimple a = cos;
         cos.reset();
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @CalledMethods({"reset"}) CreatesMustCallForSimple b = cos;
         @CalledMethods({}) CreatesMustCallForSimple c = cos;
     }
@@ -32,7 +32,7 @@ import org.checkerframework.checker.mustcall.qual.*;
         CreatesMustCallForSimple cos = makeNoMC();
         @MustCall({}) CreatesMustCallForSimple a = cos;
         cos.resetThis();
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @CalledMethods({"resetThis"}) CreatesMustCallForSimple b = cos;
         @CalledMethods({}) CreatesMustCallForSimple c = cos;
     }

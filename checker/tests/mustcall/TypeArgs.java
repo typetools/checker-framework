@@ -4,11 +4,11 @@ public class TypeArgs {
 
     static class A<Q extends @MustCall({"carly"}) Object> {}
 
-    // :: error: (type.argument)
+    // :: error: (type.argument.type.incompatible)
     static class B<S> extends A<S> {}
 
     public <T> void f1(Generic<T> real, Generic<? super T> other, boolean flag) {
-        // :: error: (type.argument)
+        // :: error: (type.argument.type.incompatible)
         f2(flag ? real : other);
     }
 
