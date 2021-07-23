@@ -184,13 +184,11 @@ public class BoundsInitializer {
    * apply the primary annotations. We do this so that when we make copies of the original type to
    * represent recursive references the recursive references don't have the primary annotation.
    *
-   * <pre>{@code
-   * e.g.   given the declaration {@code <E extends List<E>>}
-   *        if we do not do this, the NonNull on the use @NonNull E
-   *        would be copied to the primary annotation on E in the bound {@code List<E>}
-   *        i.e. the use would be {@code <@NonNull E extends @NonNull List<@NonNull E>>}
-   *             rather than      {@code <@NonNull E extends @NonNull List<E>>}
-   * }</pre>
+   * <p>Example: The declaration {@code <E extends List<E>>}.<br>
+   * if we do not do this, the NonNull on the use @NonNull E would be copied to the primary
+   * annotation on E in the bound {@code List<E>}.<br>
+   * i.e. the use would be {@code <@NonNull E extends @NonNull List<@NonNull E>>}<br>
+   * rather than {@code <@NonNull E extends @NonNull List<E>>}
    */
   private static Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
     if (!type.getAnnotationsField().isEmpty()) {
