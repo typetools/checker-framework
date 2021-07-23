@@ -9,6 +9,12 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 /** The default org.checkerframework.dataflow analysis used in the Checker Framework. */
 public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
+  /**
+   * Creates {@code CFAnalysis}
+   *
+   * @param checker the checker
+   * @param factory the factory
+   */
   public CFAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory) {

@@ -10,11 +10,12 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 /** Boilerplate code to glue together all the parts the KeyFor dataflow classes. */
 public class KeyForAnalysis extends CFAbstractAnalysis<KeyForValue, KeyForStore, KeyForTransfer> {
 
-  public KeyForAnalysis(
-      BaseTypeChecker checker, KeyForAnnotatedTypeFactory factory, int maxCountBeforeWidening) {
-    super(checker, factory, maxCountBeforeWidening);
-  }
-
+  /**
+   * Creates {@code KeyForAnalysis}
+   *
+   * @param checker the checker
+   * @param factory the factory
+   */
   public KeyForAnalysis(BaseTypeChecker checker, KeyForAnnotatedTypeFactory factory) {
     super(checker, factory);
   }

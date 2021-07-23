@@ -14,6 +14,12 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 public class NullnessAnalysis
     extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
 
+  /**
+   * Creates {@code NullnessAnalysis}
+   *
+   * @param checker the checker
+   * @param factory the factory
+   */
   public NullnessAnalysis(BaseTypeChecker checker, NullnessAnnotatedTypeFactory factory) {
     super(checker, factory);
   }

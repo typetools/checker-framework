@@ -16,6 +16,12 @@ import org.checkerframework.framework.flow.CFValue;
  */
 public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
 
+  /**
+   * Creates {@link LockAnalysis}
+   *
+   * @param checker the checker
+   * @param factory the factory
+   */
   public LockAnalysis(BaseTypeChecker checker, LockAnnotatedTypeFactory factory) {
     super(checker, factory);
   }
