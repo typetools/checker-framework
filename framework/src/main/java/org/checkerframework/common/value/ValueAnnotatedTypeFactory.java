@@ -1517,4 +1517,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     return null;
   }
+
+  @Override
+  public boolean isImmutable(TypeMirror type) {
+    if (type.getKind() == TypeKind.ARRAY) {
+      return true;
+    }
+    return super.isImmutable(type);
+  }
 }

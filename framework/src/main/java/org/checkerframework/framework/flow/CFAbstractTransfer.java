@@ -76,8 +76,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
-import org.plumelib.util.ImmutableTypes;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates information through
@@ -425,8 +423,7 @@ public abstract class CFAbstractTransfer<
       if (init != null
           && varEle.getModifiers().contains(Modifier.PRIVATE)
           && ElementUtils.isFinal(varEle)
-          && ImmutableTypes.isImmutable(
-              TypeAnnotationUtils.unannotatedType(ElementUtils.getType(varEle)).toString())) {
+          && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
         // Insert the value from the initializer of private final fields.
         info.insertValue(field, init);
       }
