@@ -13,6 +13,7 @@ interface InterfaceTest {
   default void requireSibling1(@Sibling1 String x) {}
 
   default void testX() {
+    // :: warning: (argument)
     requireSibling1(toaster);
   }
 }
