@@ -19,6 +19,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -297,7 +298,7 @@ public abstract class CFAbstractTransfer<
       ExecutableElement methodElem = TreeUtils.elementFromDeclaration(methodDeclTree);
       addInformationFromPreconditions(info, factory, method, methodDeclTree, methodElem);
 
-      addFieldValues(info, methodDeclTree);
+      addFieldValues(info, method.getClassTree(), methodDeclTree);
 
       addFinalLocalValues(info, methodElem);
 
@@ -412,10 +413,10 @@ public abstract class CFAbstractTransfer<
    * @param info initial store
    * @param methodTree the method or constructor tree
    */
-  private void addFieldValues(S info, MethodTree methodTree) {
+  private void addFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
     boolean constructor = TreeUtils.isConstructor(methodTree);
     List<Pair<FieldAccess, Pair<V, V>>> fields = analysis.getFieldValues();
-
+    TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
     for (Pair<FieldAccess, Pair<V, V>> p : fields) {
       FieldAccess field = p.first;
       VariableElement varEle = p.first.getField();
@@ -429,12 +430,17 @@ public abstract class CFAbstractTransfer<
         // Insert the value from the initializer of private final fields.
         info.insertValue(field, init);
       }
+
+      // Insert some of the declared types:
+      // If it's not a constructor, use the declared type if the r.
+      // If it is a constructor, then only use the declared type if the field has been
+      // initialized.
       boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
       if (isInitializedReceiver && (!constructor || init != null)) {
-        // If it's not a constructor, use the declared type.
-        // If it is a constructor, then only use the declared type if the field has been
-        // initialized.
-        info.insertValue(field, declared);
+        // Only insert declared types
+        if (field.getField().getEnclosingElement().equals(classEle)) {
+          info.insertValue(field, declared);
+        }
       }
     }
   }
