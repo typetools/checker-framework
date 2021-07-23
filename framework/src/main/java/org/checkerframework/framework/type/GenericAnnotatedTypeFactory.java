@@ -2497,14 +2497,15 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns an {@code @RequiresQualifier} annotation for the given expression. Returns an empty
-   * list if none can be created, because the qualifier has elements/arguments, which
+   * Returns a list of inferred {@code @RequiresQualifier} annotations for the given expression. By
+   * default this list will not include any qualifier that has elements/arguments, which
    * {@code @RequiresQualifier} does not support (subclasses are permitted to remove this
-   * restriction).
+   * restriction by overriding {@link #createRequiresOrEnsuresQualifier(String, AnnotationMirror,
+   * AnnotatedTypeMirror, BeforeOrAfter, List)}).
    *
-   * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
-   * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
-   * {@code @B} which is a sub-qualifier of {@code @A}.
+   * <p>Each annotation in the list is of the form
+   * {@code @RequiresQualifier(expression="expression", qualifier=MyQual.class)}. {@code expression}
+   * must be a valid Java Expression string, in the same format used by {@link RequiresQualifier}.
    *
    * @param expression an expression
    * @param inferredType the type of the expression, on method entry
@@ -2518,17 +2519,16 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns an {@code @EnsuresQualifier} annotation for the given expression. Returns an empty list
-   * if none can be created, because the qualifier has elements/arguments, which
-   * {@code @EnsuresQualifier} does not support (subclasses are permitted to remove this
-   * restriction).
+   * Returns a list of inferred {@code @EnsuresQualifier} annotations for the given expression. By
+   * default this list will not include any qualifier that has elements/arguments, which
+   * {@code @EnsuresQualifier} does not support; and, preconditions are not used to suppress
+   * redundant postconditions (subclasses are permitted to remove these restrictions by overriding
+   * {@link #createRequiresOrEnsuresQualifier(String, AnnotationMirror, AnnotatedTypeMirror,
+   * BeforeOrAfter, List)}).
    *
-   * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
-   * subclasses may do so.
-   *
-   * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt", qualifier=MyQual.class)}
-   * when elt is declared as {@code @A} or {@code @Poly*} and f contains {@code @B} which is a
-   * sub-qualifier of {@code @A}.
+   * <p>Each annotation in the list is of the form {@code @EnsuresQualifier(expression="expression",
+   * qualifier=MyQual.class)}. {@code expression} must be a valid Java Expression string, in the
+   * same format used by {@link EnsuresQualifier}.
    *
    * @param expression an expression
    * @param inferredType the type of the expression, on method exit
@@ -2585,7 +2585,7 @@ public abstract class GenericAnnotatedTypeFactory<
       return Collections.emptyList();
     }
 
-    List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+    List<AnnotationMirror> result = new ArrayList<>();
     for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
       AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
       if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
@@ -2632,7 +2632,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *     redundant pre- or postcondition annotations
    * @param preOrPost whether to return a precondition or postcondition annotation
    * @param preconds the list of precondition annotations; used to suppress redundant
-   *     postconditions; always null if {@code preOrPost} is {@code BeforeOrAfter.BEFORE}
+   *     postconditions; non-null exactly when {@code preOrPost} is {@code BeforeOrAfter.BEFORE}
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    *     the given field, or null
    */
