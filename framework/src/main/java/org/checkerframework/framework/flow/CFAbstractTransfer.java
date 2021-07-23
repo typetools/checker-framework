@@ -59,6 +59,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldValues;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -413,19 +414,16 @@ public abstract class CFAbstractTransfer<
    */
   private void addFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
     boolean constructor = TreeUtils.isConstructor(methodTree);
-    List<Pair<FieldAccess, Pair<V, V>>> fields = analysis.getFieldValues();
+    List<FieldValues<V>> fields = analysis.getFieldValues();
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
-    for (Pair<FieldAccess, Pair<V, V>> p : fields) {
-      FieldAccess field = p.first;
-      VariableElement varEle = p.first.getField();
-      V declared = p.second.first;
-      V init = p.second.second;
-      if (init != null
+    for (FieldValues<V> fieldValues : fields) {
+      VariableElement varEle = fieldValues.field.getField();
+      if (fieldValues.initializer != null
           && varEle.getModifiers().contains(Modifier.PRIVATE)
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
         // Insert the value from the initializer of private final fields.
-        info.insertValue(field, init);
+        info.insertValue(fieldValues.field, fieldValues.initializer);
       }
 
       // Insert some of the declared types:
@@ -433,10 +431,10 @@ public abstract class CFAbstractTransfer<
       // If it is a constructor, then only use the declared type if the field has been
       // initialized.
       boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
-      if (isInitializedReceiver && (!constructor || init != null)) {
+      if (isInitializedReceiver && (!constructor || fieldValues.initializer != null)) {
         // Only insert declared types
-        if (field.getField().getEnclosingElement().equals(classEle)) {
-          info.insertValue(field, declared);
+        if (varEle.getEnclosingElement().equals(classEle)) {
+          info.insertValue(fieldValues.field, fieldValues.declared);
         }
       }
     }

@@ -66,6 +66,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldValues;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -1275,7 +1276,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
-    List<Pair<FieldAccess, Pair<Value, Value>>> fieldValues = new ArrayList<>();
+    List<FieldValues<Value>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
     queue.add(Pair.of(classTree, null));
@@ -1356,11 +1357,11 @@ public abstract class GenericAnnotatedTypeFactory<
                     capturedStore);
                 Value value = flowResult.getValue(initializer);
                 if (value != null) {
-                  fieldValues.add(Pair.of(fieldExpr, Pair.of(declaredValue, value)));
+                  fieldValues.add(new FieldValues<>(fieldExpr, declaredValue, value));
                   break;
                 }
               }
-              fieldValues.add(Pair.of(fieldExpr, Pair.of(declaredValue, null)));
+              fieldValues.add(new FieldValues<>(fieldExpr, declaredValue, null));
               break;
             case CLASS:
             case ANNOTATION_TYPE:
@@ -1480,7 +1481,7 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<Pair<ClassTree, Store>> queue,
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
-      List<Pair<FieldAccess, Pair<Value, Value>>> fieldValues,
+      List<FieldValues<Value>> fieldValues,
       ClassTree currentClass,
       boolean isInitializationCode,
       boolean updateInitializationStore,

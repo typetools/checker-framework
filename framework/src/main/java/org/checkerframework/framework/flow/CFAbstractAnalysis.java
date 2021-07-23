@@ -23,7 +23,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -61,8 +60,38 @@ public abstract class CFAbstractAnalysis<
   /** A checker that contains command-line arguments and other information. */
   protected final SourceChecker checker;
 
+  /**
+   * A triple of field, value of its declared type, value of its initializer. The value of the
+   * initializer is {@code null} if the field does not have one.
+   *
+   * @param <V> type of value
+   */
+  public static class FieldValues<V extends CFAbstractValue<V>> {
+
+    /** A field access that corresponds to the declaration of a field. */
+    public final FieldAccess field;
+    /** The value of the declared type of the field. */
+    public final V declared;
+    /** The value of the initializer of the field, or null if no initializer exists. */
+    public final @Nullable V initializer;
+
+    /**
+     * Creates a FieldValues
+     *
+     * @param field a field access that corresponds to the declaration of a field
+     * @param declared value of the declared type of {@code field}
+     * @param initializer value of the initializer of {@code field}, or null if no initializer
+     *     exists
+     */
+    public FieldValues(FieldAccess field, V declared, @Nullable V initializer) {
+      this.field = field;
+      this.declared = declared;
+      this.initializer = initializer;
+    }
+  }
+
   /** Initial abstract types for fields. */
-  protected final List<Pair<FieldAccess, Pair<V, V>>> fieldValues;
+  protected final List<FieldValues<V>> fieldValues;
 
   /** The associated processing environment. */
   protected final ProcessingEnvironment env;
@@ -93,20 +122,36 @@ public abstract class CFAbstractAnalysis<
     this.fieldValues = new ArrayList<>();
   }
 
+  /**
+   * Create a CFAbstractAnalysis.
+   *
+   * @param checker a checker that contains command-line arguments and other information
+   * @param factory an annotated type factory to introduce type and dataflow rules
+   */
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory) {
     this(checker, factory, factory.getQualifierHierarchy().numberOfIterationsBeforeWidening());
   }
 
-  public void performAnalysis(
-      ControlFlowGraph cfg, List<Pair<FieldAccess, Pair<V, V>>> fieldValues) {
+  /**
+   * Analyze the given control flow graph.
+   *
+   * @param cfg control flow graph to analyze
+   * @param fieldValues initial values of the fields
+   */
+  public void performAnalysis(ControlFlowGraph cfg, List<FieldValues<V>> fieldValues) {
     this.fieldValues.clear();
     this.fieldValues.addAll(fieldValues);
     super.performAnalysis(cfg);
   }
 
-  public List<Pair<FieldAccess, Pair<V, V>>> getFieldValues() {
+  /**
+   * A list of values for the types of fields.
+   *
+   * @return a list of values for the types of fields
+   */
+  public List<FieldValues<V>> getFieldValues() {
     return fieldValues;
   }
 

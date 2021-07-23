@@ -30,6 +30,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldValues;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -272,9 +273,9 @@ public class InitializationVisitor<
         Store store = atypeFactory.getRegularExitStore(block);
 
         // Add field values for fields with an initializer.
-        for (Pair<FieldAccess, Pair<Value, Value>> t : store.getAnalysis().getFieldValues()) {
-          if (t.second.second != null) {
-            store.addInitializedField(t.first.getField());
+        for (FieldValues<Value> fieldValues : store.getAnalysis().getFieldValues()) {
+          if (fieldValues.initializer != null) {
+            store.addInitializedField(fieldValues.field.getField());
           }
         }
         final List<VariableTree> init =
@@ -295,9 +296,9 @@ public class InitializationVisitor<
       // the regular exit store of the class here.
       Store store = atypeFactory.getRegularExitStore(node);
       // Add field values for fields with an initializer.
-      for (Pair<FieldAccess, Pair<Value, Value>> t : store.getAnalysis().getFieldValues()) {
-        if (t.second.second != null) {
-          store.addInitializedField(t.first.getField());
+      for (FieldValues<Value> fieldValues : store.getAnalysis().getFieldValues()) {
+        if (fieldValues != null) {
+          store.addInitializedField(fieldValues.field.getField());
         }
       }
 
