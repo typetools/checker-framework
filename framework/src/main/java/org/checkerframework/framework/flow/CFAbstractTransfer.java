@@ -412,7 +412,7 @@ public abstract class CFAbstractTransfer<
    * @param info initial store
    * @param methodTree the method or constructor tree
    */
-  protected void addFieldValues(S info, MethodTree methodTree) {
+  private void addFieldValues(S info, MethodTree methodTree) {
     boolean constructor = TreeUtils.isConstructor(methodTree);
     List<Pair<FieldAccess, Pair<V, V>>> fields = analysis.getFieldValues();
 
@@ -429,7 +429,8 @@ public abstract class CFAbstractTransfer<
         // Insert the value from the initializer of private final fields.
         info.insertValue(field, init);
       }
-      if (!constructor || init != null) {
+      boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
+      if (isInitializedReceiver && (!constructor || init != null)) {
         // If it's not a constructor, use the declared type.
         // If it is a constructor, then only use the declared type if the field has been
         // initialized.
@@ -485,7 +486,7 @@ public abstract class CFAbstractTransfer<
    * Returns true if the receiver of a method or constructor might not yet be fully initialized.
    *
    * @param methodDeclTree the declaration of the method or constructor
-   * @return true if the receiver of a method or constructormight not yet be fully initialized
+   * @return true if the receiver of a method or constructor might not yet be fully initialized
    */
   protected boolean isNotFullyInitializedReceiver(MethodTree methodDeclTree) {
     return TreeUtils.isConstructor(methodDeclTree);

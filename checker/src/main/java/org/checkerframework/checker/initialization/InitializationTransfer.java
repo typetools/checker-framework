@@ -7,7 +7,6 @@ import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -29,7 +28,6 @@ import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -200,20 +198,5 @@ public class InitializationTransfer<
       }
     }
     return result;
-  }
-
-  @Override
-  protected void addFieldValues(S info, MethodTree methodTree) {
-    ExecutableElement element = TreeUtils.elementFromDeclaration(methodTree);
-    if (element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element)) {
-      //      AnnotatedExecutableType type = atypeFactory.getAnnotatedType(methodTree);
-      AnnotatedTypeMirror receiverType = atypeFactory.getSelfType(methodTree);
-      if ((atypeFactory.isUnknownInitialization(receiverType)
-              || atypeFactory.isUnderInitialization(receiverType))
-          && !atypeFactory.isInitializedForFrame(receiverType, receiverType.getUnderlyingType())) {
-        return;
-      }
-    }
-    super.addFieldValues(info, methodTree);
   }
 }
