@@ -409,7 +409,15 @@ public abstract class CFAbstractTransfer<
   /**
    * Add field values to the initial store before {@code methodTree}.
    *
-   * @param info initial store
+   * <p>The initializer value is inserted into {@code info} if the field is private and final.
+   *
+   * <p>If {@code methodTree} is a constructor, then the declared value is inserted into {@code
+   * info} if the field has an initializer. If {@code methodTree} is not a constructor, then the
+   * declared value is inserted into {@code info} if the receiver of the method is fully initialized
+   * as determined by {@link #isNotFullyInitializedReceiver(MethodTree)}.
+   *
+   * @param info initial store in which field values are inserted
+   * @param classTree the class that contains {@code methodTree}
    * @param methodTree the method or constructor tree
    */
   private void addFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
