@@ -1429,6 +1429,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (initializationStaticStore == null) {
           regularExitStores.put(ct, emptyStore);
         } else {
+
           regularExitStores.put(ct, initializationStaticStore);
         }
       } finally {

@@ -75,7 +75,7 @@ public class Initializer {
 
 class SubInitializer extends Initializer {
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: (initialization.field.uninitialized)
   String f;
 
   void subt1(@UnknownInitialization(Initializer.class) SubInitializer this) {

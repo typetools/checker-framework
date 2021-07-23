@@ -412,7 +412,7 @@ public abstract class CFAbstractTransfer<
    * @param info initial store
    * @param methodTree the method or constructor tree
    */
-  private void addFieldValues(S info, MethodTree methodTree) {
+  protected void addFieldValues(S info, MethodTree methodTree) {
     boolean constructor = TreeUtils.isConstructor(methodTree);
     List<Pair<FieldAccess, Pair<V, V>>> fields = analysis.getFieldValues();
 
