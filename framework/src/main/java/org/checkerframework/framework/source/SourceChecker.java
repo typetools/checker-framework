@@ -930,7 +930,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (!warnedAboutGarbageCollection) {
-      String gcUsageMessage = SystemPlume.gcUsageMessage(.20, 60);
+      String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
       if (gcUsageMessage != null) {
         messager.printMessage(Kind.WARNING, gcUsageMessage);
         warnedAboutGarbageCollection = true;
