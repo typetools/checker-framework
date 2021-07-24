@@ -5419,7 +5419,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * are mutable, but the annotated type of an object is immutable.
    *
    * @param type type to test.
-   * @return true if the type is immutable.
+   * @return true if the type is immutable
    */
   public boolean isImmutable(TypeMirror type) {
     if (type.getKind().isPrimitive()) {

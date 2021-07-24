@@ -1518,6 +1518,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return null;
   }
 
+  /** A fact about an array, such as its length, cannot be changed via side effects to the array. */
   @Override
   public boolean isImmutable(TypeMirror type) {
     if (type.getKind() == TypeKind.ARRAY) {

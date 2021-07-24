@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
   /**
-   * Creates {@code CFAnalysis}
+   * Creates a new {@code CFAnalysis}.
    *
    * @param checker the checker
    * @param factory the factory

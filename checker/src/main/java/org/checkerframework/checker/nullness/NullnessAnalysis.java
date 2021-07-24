@@ -15,7 +15,7 @@ public class NullnessAnalysis
     extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
 
   /**
-   * Creates {@code NullnessAnalysis}
+   * Creates a new {@code NullnessAnalysis}.
    *
    * @param checker the checker
    * @param factory the factory

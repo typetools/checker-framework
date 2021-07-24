@@ -61,8 +61,8 @@ public abstract class CFAbstractAnalysis<
   protected final SourceChecker checker;
 
   /**
-   * A triple of field, value of its declared type, value of its initializer. The value of the
-   * initializer is {@code null} if the field does not have one.
+   * A triple of field, value corresponding to the annotations on its declared type, value of its
+   * initializer. The value of the initializer is {@code null} if the field does not have one.
    *
    * @param <V> type of value
    */
@@ -70,16 +70,16 @@ public abstract class CFAbstractAnalysis<
 
     /** A field access that corresponds to the declaration of a field. */
     public final FieldAccess field;
-    /** The value of the declared type of the field. */
+    /** The value corresponding to the annotations on the declared type of the field. */
     public final V declared;
     /** The value of the initializer of the field, or null if no initializer exists. */
     public final @Nullable V initializer;
 
     /**
-     * Creates a FieldValues
+     * Creates a new FieldValues.
      *
      * @param field a field access that corresponds to the declaration of a field
-     * @param declared value of the declared type of {@code field}
+     * @param declared value corresponding to the annotations on the declared type of {@code field}
      * @param initializer value of the initializer of {@code field}, or null if no initializer
      *     exists
      */

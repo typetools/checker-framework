@@ -11,7 +11,7 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 public class KeyForAnalysis extends CFAbstractAnalysis<KeyForValue, KeyForStore, KeyForTransfer> {
 
   /**
-   * Creates {@code KeyForAnalysis}
+   * Creates a new {@code KeyForAnalysis}.
    *
    * @param checker the checker
    * @param factory the factory
