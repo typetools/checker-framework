@@ -2489,7 +2489,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param inferredType the type of the field, on method entry
    * @return precondition annotations for the element (possibly an empty list)
    */
-  public List<AnnotationMirror> getPreconditionAnnotations(
+  public final List<AnnotationMirror> getPreconditionAnnotations(
       VariableElement elt, AnnotatedTypeMirror inferredType) {
     return getPreOrPostconditionAnnotations(elt, inferredType, BeforeOrAfter.BEFORE, null);
   }
@@ -2512,7 +2512,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *     postconditions
    * @return postcondition annotations for the element (possibly an empty list)
    */
-  public List<AnnotationMirror> getPostconditionAnnotations(
+  public final List<AnnotationMirror> getPostconditionAnnotations(
       VariableElement elt, AnnotatedTypeMirror inferredType, List<AnnotationMirror> preconds) {
     return getPreOrPostconditionAnnotations(elt, inferredType, BeforeOrAfter.AFTER, preconds);
   }
@@ -2581,7 +2581,7 @@ public abstract class GenericAnnotatedTypeFactory<
         continue;
       }
       // inferredAm must be a subtype of declaredAm (since they are not equal).
-      AnnotationMirror anno = requiresOrEnsuresQualifierAnno(elt, inferredAm, preOrPost);
+      AnnotationMirror anno = requiresOrEnsuresQualifierAnno(elt, inferredAm, preOrPost, preconds);
       if (anno != null) {
         result.add(anno);
       }
@@ -2604,11 +2604,16 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param fieldElement a field
    * @param qualifier the qualifier that must be present
    * @param preOrPost whether to return a precondition or postcondition annotation
+   * @param preconds the precondition annotations for the method; used to suppress redundant
+   *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    *     the given field, or null
    */
   protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnno(
-      VariableElement fieldElement, AnnotationMirror qualifier, Analysis.BeforeOrAfter preOrPost) {
+      VariableElement fieldElement,
+      AnnotationMirror qualifier,
+      Analysis.BeforeOrAfter preOrPost,
+      @Nullable List<AnnotationMirror> preconds) {
     if (!qualifier.getElementValues().isEmpty()) {
       // @RequiresQualifier does not yet support annotations with elements/arguments.
       return null;

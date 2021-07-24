@@ -45,6 +45,7 @@ echo "Starting wpi-many.sh."
 
 # check required arguments and environment variables:
 
+# shellcheck disable=SC2153 # testing for JAVA_HOME, not a typo of JAVA8_HOME
 if [ "${JAVA_HOME}" = "" ]; then
   has_java_home="no"
 else
@@ -135,9 +136,6 @@ fi
 if [ "${SKIP_OR_DELETE_UNUSABLE}" = "" ]; then
   SKIP_OR_DELETE_UNUSABLE="delete"
 fi
-
-JAVA_HOME_BACKUP="${JAVA_HOME}"
-export JAVA_HOME="${JAVA11_HOME}"
 
 ### Script
 
@@ -278,9 +276,10 @@ else
     listpath=$(mktemp "/tmp/cloc-file-list-$(date +%Y%m%d-%H%M%S)-XXX.txt")
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
-    # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java".
+    # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java"
+    # or "--add-opens=jdk.compiler/com.sun.tools.java".
     # shellcheck disable=SC2046
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | grep -v '^\-\-add\-opens' | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
         echo "${listpath} has size zero"
@@ -306,7 +305,5 @@ else
     echo "skipping computation of lines of code because the operating system is not linux: ${OSTYPE}}"
   fi
 fi
-
-export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
 echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."
