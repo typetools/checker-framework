@@ -13,7 +13,7 @@ apply plugin: 'org.checkerframework'
 
 dependencies {
     // Must use at least version 2.4.0 of Error Prone.
-    errorprone 'com.google.errorprone:error_prone_core:2.7.1'
+    errorprone 'com.google.errorprone:error_prone_core:2.8.0'
 }
 
 repositories {
