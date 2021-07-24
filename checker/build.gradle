@@ -44,7 +44,7 @@ dependencies {
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:1.0.3'
+    implementation 'org.plumelib:reflection-util:1.0.4'
     implementation 'org.plumelib:plume-util:1.5.8'
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
