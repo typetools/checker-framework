@@ -51,7 +51,7 @@ public class FluentAPIGenerator {
             /**
              * The qualified name of the AutoValue Builder annotation. This needs to be constructed
              * dynamically due to a side effect of the shadow plugin. See {@link
-             * FluentAPIGenerators#AUTO_VALUE#getAutoValueBuilderCanonicalName()} for more
+             * FluentAPIGenerator#AUTO_VALUE#getAutoValueBuilderCanonicalName()} for more
              * information.
              */
             private final String AUTO_VALUE_BUILDER = getAutoValueBuilderCanonicalName();
