@@ -448,12 +448,14 @@ public class AnnotationFileElementTypes {
           AnnotationFileParser.RecordStub recordComponentType =
               annotationFileAnnos.records.get(
                   ((TypeElement) enclosing).getQualifiedName().toString());
-          List<AnnotatedTypeMirror> componentsInCanonicalConstructor =
-              recordComponentType.getComponentsInCanonicalConstructor();
-          if (componentsInCanonicalConstructor != null) {
-            for (int i = 0; i < recordComponents.size(); i++) {
-              replaceAnnotations(
-                  memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
+          if (recordComponentType != null) {
+            List<AnnotatedTypeMirror> componentsInCanonicalConstructor =
+                recordComponentType.getComponentsInCanonicalConstructor();
+            if (componentsInCanonicalConstructor != null) {
+              for (int i = 0; i < recordComponents.size(); i++) {
+                replaceAnnotations(
+                    memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
+              }
             }
           }
         }
