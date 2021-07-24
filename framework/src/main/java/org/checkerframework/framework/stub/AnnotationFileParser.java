@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -86,6 +87,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -288,21 +290,47 @@ public class AnnotationFileParser {
     public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
         new HashMap<>(1);
 
+    /** Maps fully qualified record name to information in the stubs file. */
+    public final Map<String, RecordStub> records = new HashMap<>();
+  }
+
+  /** Information about a record from the stubs file */
+  public static class RecordStub {
+    /** The components of the record, in order that they are declared in the record header. */
+    public final List<RecordComponentStub> componentsInOrder;
+    /** A map from name to record component. */
+    public final Map<String, RecordComponentStub> componentsByName;
     /**
-     * Maps fully qualified record component name (fully-qualified-record-type.component-name) to an
-     * annotated type found in the stubs file, plus info on whether the constructor/accessor had a
-     * specific annotation in the stubs.
+     * If the canonical constructor is given in the stubs, the annotated types (in component
+     * declaration order) for the constructor. Null if not present in the stubs.
      */
-    public final Map<String, RecordComponentAnnotation> recordComponents = new HashMap<>();
+    public @MonotonicNonNull List<AnnotatedTypeMirror> componentsInCanonicalConstructor;
+
+    public RecordStub(
+        List<RecordComponentStub> componentsInOrder,
+        Map<String, RecordComponentStub> componentsByName) {
+      this.componentsInOrder = componentsInOrder;
+      this.componentsByName = componentsByName;
+    }
+
+    /**
+     * Gets the annotated types for the parameters to the canonical constructor. This is either from
+     * explicit annotations on the constructor in the stubs, otherwise it's taken from the
+     * annotations on the record components in the stubs.
+     */
+    public List<AnnotatedTypeMirror> getComponentsInCanonicalConstructor() {
+      if (componentsInCanonicalConstructor != null) return componentsInCanonicalConstructor;
+      else return componentsInOrder.stream().map(c -> c.type).collect(Collectors.toList());
+    }
   }
 
   /**
    * Information on a record component: its type, and whether there was then a specific annotation
    * on the canonical constructor and/or accessor.
    */
-  public static class RecordComponentAnnotation {
+  public static class RecordComponentStub {
     public final AnnotatedTypeMirror type;
-    private boolean moreSpecificConstructorInStubs = false;
+
     private boolean moreSpecificAccessorInStubs = false;
 
     /**
@@ -310,16 +338,11 @@ public class AnnotationFileParser {
      *
      * @param type the type of the record component
      */
-    public RecordComponentAnnotation(AnnotatedTypeMirror type) {
+    public RecordComponentStub(AnnotatedTypeMirror type) {
       this.type = type;
     }
 
-    /** @return whether there is a specifically annotated canonical constructor in the record */
-    public boolean hasMoreSpecificConstructorInStubs() {
-      return moreSpecificConstructorInStubs;
-    }
-
-    /** @return whether there is a specifically annotated accessor in the stubs. */
+    /** Returns whether there is a specifically annotated accessor in the stubs. */
     public boolean hasMoreSpecificAccessorInStubs() {
       return moreSpecificAccessorInStubs;
     }
@@ -883,10 +906,18 @@ public class AnnotationFileParser {
 
     if (typeDecl instanceof RecordDeclaration) {
       NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
+      List<RecordComponentStub> inOrder = new ArrayList<>();
+      HashMap<String, RecordComponentStub> byName = new HashMap<>();
       for (Parameter recordMember : recordMembers) {
-        processRecordField(
-            recordMember, findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
+        RecordComponentStub stub =
+            processRecordField(
+                recordMember,
+                findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
+        byName.put(recordMember.getNameAsString(), stub);
+        inOrder.add(stub);
       }
+      annotationFileAnnos.records.put(
+          typeDecl.getFullyQualifiedName().get(), new RecordStub(inOrder, byName));
     }
 
     Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
@@ -1127,12 +1158,19 @@ public class AnnotationFileParser {
     if (decl.isMethodDeclaration()) {
       MethodDeclaration methodDeclaration = (MethodDeclaration) decl;
       if (methodDeclaration.getParameters().isEmpty()) {
-        String qualFieldName =
-            ElementUtils.getQualifiedName(elt.getEnclosingElement())
-                + "."
-                + methodDeclaration.getNameAsString();
-        if (annotationFileAnnos.recordComponents.containsKey(qualFieldName)) {
-          annotationFileAnnos.recordComponents.get(qualFieldName).moreSpecificAccessorInStubs =
+        String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
+        if (annotationFileAnnos.records.containsKey(qualRecordName)
+            && annotationFileAnnos
+                .records
+                .get(qualRecordName)
+                .componentsByName
+                .containsKey(methodDeclaration.getNameAsString())) {
+          annotationFileAnnos
+                  .records
+                  .get(qualRecordName)
+                  .componentsByName
+                  .get(methodDeclaration.getNameAsString())
+                  .moreSpecificAccessorInStubs =
               true;
         }
       }
@@ -1159,16 +1197,19 @@ public class AnnotationFileParser {
             }
           }
           if (!mismatch) {
-            for (Element component : components) {
-              String qualFieldName =
-                  ElementUtils.getQualifiedName(elt.getEnclosingElement())
-                      + "."
-                      + component.getSimpleName().toString();
-              if (annotationFileAnnos.recordComponents.containsKey(qualFieldName)) {
-                annotationFileAnnos.recordComponents.get(qualFieldName)
-                        .moreSpecificConstructorInStubs =
-                    true;
+            String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
+            if (annotationFileAnnos.records.containsKey(qualRecordName)) {
+              ArrayList<AnnotatedTypeMirror> typeMirrors = new ArrayList<>();
+              List<? extends VariableElement> parameters = elt.getParameters();
+              for (int i = 0; i < parameters.size(); i++) {
+                VariableElement parameter = parameters.get(i);
+                AnnotatedTypeMirror atm =
+                    AnnotatedTypeMirror.createType(parameter.asType(), atypeFactory, false);
+                annotate(atm, decl.getParameter(i).getAnnotations(), decl.getParameter(i));
+                typeMirrors.add(atm);
               }
+              annotationFileAnnos.records.get(qualRecordName).componentsInCanonicalConstructor =
+                  typeMirrors;
             }
           }
         }
@@ -1508,7 +1549,7 @@ public class AnnotationFileParser {
    * @param decl the parameter in the record header
    * @param elt the corresponding variable declaration element
    */
-  private void processRecordField(Parameter decl, VariableElement elt) {
+  private RecordComponentStub processRecordField(Parameter decl, VariableElement elt) {
     markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     // AnnotationFileParser parses all annotations in type annotation position as type annotations
@@ -1517,8 +1558,7 @@ public class AnnotationFileParser {
 
     annotate(fieldType, decl.getType(), decl.getAnnotations(), decl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
-    annotationFileAnnos.recordComponents.put(
-        ElementUtils.getQualifiedName(elt), new RecordComponentAnnotation(fieldType));
+    return new RecordComponentStub(fieldType);
   }
 
   /**

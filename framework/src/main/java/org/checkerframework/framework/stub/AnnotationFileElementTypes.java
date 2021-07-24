@@ -410,18 +410,22 @@ public class AnnotationFileElementTypes {
     }
 
     if (elt.getKind() == ElementKind.METHOD) {
-      String eltName = ElementUtils.getQualifiedName(elt);
-      if (eltName.endsWith("()")) {
-        // Change from no-arg method into a field of the same name:
-        eltName = eltName.substring(0, eltName.length() - 2);
-        if (annotationFileAnnos.recordComponents.containsKey(eltName)) {
-          AnnotationFileParser.RecordComponentAnnotation recordComponentType =
-              annotationFileAnnos.recordComponents.get(eltName);
+      if (((ExecutableElement) elt).getParameters().isEmpty()) {
+        String recordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
+        if (annotationFileAnnos.records.containsKey(recordName)) {
+          AnnotationFileParser.RecordStub recordComponentType =
+              annotationFileAnnos.records.get(recordName);
           // If the record component has an annotation, it replaces any
           // from the same hierarchy on the method, unless there is
           // a specific annotation on the accessor in the stubs file:
-          if (!recordComponentType.hasMoreSpecificAccessorInStubs())
-            replaceAnnotations(memberType.getReturnType(), recordComponentType.type);
+          if (recordComponentType.componentsByName.containsKey(elt.getSimpleName().toString())
+              && !recordComponentType
+                  .componentsByName
+                  .get(elt.getSimpleName().toString())
+                  .hasMoreSpecificAccessorInStubs())
+            replaceAnnotations(
+                memberType.getReturnType(),
+                recordComponentType.componentsByName.get(elt.getSimpleName().toString()).type);
         }
       }
     } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
@@ -441,14 +445,16 @@ public class AnnotationFileElementTypes {
               return;
             }
           }
-          for (int i = 0; i < recordComponents.size(); i++) {
-            AnnotationFileParser.RecordComponentAnnotation recordComponentType =
-                annotationFileAnnos.recordComponents.get(
-                    ((TypeElement) enclosing).getQualifiedName()
-                        + "."
-                        + recordComponents.get(i).getSimpleName().toString());
-            if (!recordComponentType.hasMoreSpecificConstructorInStubs())
-              replaceAnnotations(memberType.getParameterTypes().get(i), recordComponentType.type);
+          AnnotationFileParser.RecordStub recordComponentType =
+              annotationFileAnnos.records.get(
+                  ((TypeElement) enclosing).getQualifiedName().toString());
+          List<AnnotatedTypeMirror> componentsInCanonicalConstructor =
+              recordComponentType.getComponentsInCanonicalConstructor();
+          if (componentsInCanonicalConstructor != null) {
+            for (int i = 0; i < recordComponents.size(); i++) {
+              replaceAnnotations(
+                  memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
+            }
           }
         }
       }
