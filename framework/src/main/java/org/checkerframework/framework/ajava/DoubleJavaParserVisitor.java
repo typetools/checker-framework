@@ -79,6 +79,7 @@ import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
+import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.SwitchStmt;
@@ -713,6 +714,13 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     LocalClassDeclarationStmt node2 = (LocalClassDeclarationStmt) other;
     defaultAction(node1, node2);
     node1.getClassDeclaration().accept(this, node2.getClassDeclaration());
+  }
+
+  @Override
+  public void visit(LocalRecordDeclarationStmt node1, final Node other) {
+    LocalRecordDeclarationStmt node2 = (LocalRecordDeclarationStmt) other;
+    defaultAction(node1, node2);
+    node1.getRecordDeclaration().accept(this, node2.getRecordDeclaration());
   }
 
   @Override

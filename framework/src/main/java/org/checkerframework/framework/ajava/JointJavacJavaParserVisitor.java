@@ -65,6 +65,7 @@ import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.LabeledStmt;
 import com.github.javaparser.ast.stmt.LocalClassDeclarationStmt;
+import com.github.javaparser.ast.stmt.LocalRecordDeclarationStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.stmt.SwitchEntry;
@@ -464,6 +465,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       visitClassMembers(javacTree.getMembers(), node.getMembers());
     } else if (javaParserNode instanceof LocalClassDeclarationStmt) {
       javacTree.accept(this, ((LocalClassDeclarationStmt) javaParserNode).getClassDeclaration());
+    } else if (javaParserNode instanceof LocalRecordDeclarationStmt) {
+      javacTree.accept(this, ((LocalRecordDeclarationStmt) javaParserNode).getRecordDeclaration());
     } else if (javaParserNode instanceof EnumDeclaration) {
       EnumDeclaration node = (EnumDeclaration) javaParserNode;
       processClass(javacTree, node);
