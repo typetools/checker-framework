@@ -412,34 +412,37 @@ public abstract class CFAbstractTransfer<
    * <p>The initializer value is inserted into {@code info} if the field is private and final.
    *
    * <p>If {@code methodTree} is a constructor, then the declared value is inserted into {@code
-   * info} if the field has an initializer. If {@code methodTree} is not a constructor, then the
-   * declared value is inserted into {@code info} if the receiver of the method is fully initialized
-   * as determined by {@link #isNotFullyInitializedReceiver(MethodTree)}.
+   * info} if the field has an initializer. (Use the declaration type rather than the initializer
+   * because an initialization block might have re-set it.) If {@code methodTree} is not a
+   * constructor, then the declared value is inserted into {@code info} if the receiver of the
+   * method is fully initialized as determined by {@link
+   * #isNotFullyInitializedReceiver(MethodTree)}.
    *
-   * @param info initial store in which field values are inserted
+   * @param info initial store into which field values are inserted
    * @param classTree the class that contains {@code methodTree}
    * @param methodTree the method or constructor tree
    */
   private void addFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
-    boolean constructor = TreeUtils.isConstructor(methodTree);
+    boolean isConstructor = TreeUtils.isConstructor(methodTree);
     List<FieldValues<V>> fields = analysis.getFieldValues();
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
     for (FieldValues<V> fieldValues : fields) {
       VariableElement varEle = fieldValues.field.getField();
+      // Insert the value from the initializer of private final fields.
       if (fieldValues.initializer != null
           && varEle.getModifiers().contains(Modifier.PRIVATE)
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
-        // Insert the value from the initializer of private final fields.
         info.insertValue(fieldValues.field, fieldValues.initializer);
       }
 
-      // Insert some of the declared types:
-      // If it's not a constructor, use the declared type if the r.
+      // Maybe insert the declared type:
+      // If it's not a constructor, use the declared type if the rreceiver of the method is fully
+      // initialized.
       // If it is a constructor, then only use the declared type if the field has been
       // initialized.
       boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
-      if (isInitializedReceiver && (!constructor || fieldValues.initializer != null)) {
+      if (isConstructor ? isInitializedReceiver : fieldValues.initializer != null) {
         // Only insert declared types
         if (varEle.getEnclosingElement().equals(classEle)) {
           info.insertValue(fieldValues.field, fieldValues.declared);

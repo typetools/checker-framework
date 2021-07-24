@@ -1355,9 +1355,9 @@ public abstract class GenericAnnotatedTypeFactory<
                     true,
                     isStatic,
                     capturedStore);
-                Value value = flowResult.getValue(initializer);
-                if (value != null) {
-                  fieldValues.add(new FieldValues<>(fieldExpr, declaredValue, value));
+                Value initializerValue = flowResult.getValue(initializer);
+                if (initializerValue != null) {
+                  fieldValues.add(new FieldValues<>(fieldExpr, declaredValue, initializerValue));
                   break;
                 }
               }
