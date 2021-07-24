@@ -69,6 +69,8 @@ public @interface RequiresNonNull {
    * The Java expressions that need to be {@link
    * org.checkerframework.checker.nullness.qual.NonNull}.
    *
+   * @return the Java expressions that need to be {@link
+   *     org.checkerframework.checker.nullness.qual.NonNull}
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] value();
