@@ -1,11 +1,16 @@
-Version 3.??.? (August 2, 2021)
+Version 3.17.0 (August 3, 2021)
 -------------------------------
 
 **User-visible changes:**
 
-Java records are type-checked.  Thanks to Neil Brown.
+Java records are type-checked.
 
 **Implementation details:**
+
+Method renamings in `GenericAnnotatedTypeFactory`:
+* `getPreconditionAnnotation` => `getPreconditionAnnotations`
+* `getPostconditionAnnotation` => `getPostconditionAnnotations`
+* `getPreOrPostconditionAnnotation` => `getPreOrPostconditionAnnotations`
 
 **Closed issues:**
 
@@ -52,7 +57,6 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
 
 **Closed issues:**
 #3013, #3754, #3791, #3845, #4523, #4767.
-
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------
