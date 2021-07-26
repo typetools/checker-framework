@@ -252,7 +252,7 @@ class MustCallConsistencyAnalyzer {
         LocalVariable reference = alias.reference;
         CFValue value = mcStore == null ? null : mcStore.getValue(reference);
         AnnotationMirror mcAnno =
-            (value != null)
+            (value == null)
                 ? null
                 : AnnotationUtils.getAnnotationByClass(value.getAnnotations(), MustCall.class);
         if (mcAnno == null) {
