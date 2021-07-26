@@ -245,7 +245,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a super or this constructor invocation
    */
   private void handleThisOrSuperConstructorMustCallAlias(Set<Obligation> obligations, Node node) {
-    List<Node> mustCallAliasArguments = getMustCallAliasArgumentNode(node);
+    List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
     // If the MustCallAlias argument is also in the set of obligations, then remove it -- its
     // obligation has been fulfilled by being passed on to the MustCallAlias constructor (because a
     // this/super constructor call can only occur in the body of another constructor).
@@ -428,13 +428,10 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    // `mustCallAliases` is a set of the argument(s) passed in the MustCallAlias position(s), if any
-    // exists, otherwise is an empty List.
-    List<Node> mustCallAliases = getMustCallAliasArgumentNode(node);
-    // If mustCallAlias is an empty List and call returns @This, add the receiver to
-    // mustCallAliases.
-    if (mustCallAliases.isEmpty()
-        && node instanceof MethodInvocationNode
+    // mustCallAliases is a (possibly-empty) list of arguments passed in a MustCallAlias position
+    List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
+    // If call returns @This, add the receiver to mustCallAliases.
+    if (node instanceof MethodInvocationNode
         && typeFactory.returnsThis((MethodInvocationTree) tree)) {
       mustCallAliases.add(
           removeCastsAndGetTmpVarIfPresent(
@@ -446,9 +443,7 @@ class MustCallConsistencyAnalyzer {
       if (mustCallAlias instanceof FieldAccessNode) {
         // Do not track the call result if the MustCallAlias argument is a field.  Handling of
         // @Owning fields is a completely separate check, and there is never a need to track an
-        // alias
-        // of
-        // a non-@Owning field, as by definition such a field does not have obligations!
+        // alias of a non-@Owning field, as by definition such a field does not have obligations!
       } else if (mustCallAlias instanceof LocalVariableNode) {
         Obligation obligationContainingMustCallAlias =
             getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
@@ -520,7 +515,7 @@ class MustCallConsistencyAnalyzer {
    *     field or a definitely non-owning pointer
    */
   private boolean returnTypeIsMustCallAliasWithUntrackable(MethodInvocationNode node) {
-    List<Node> mustCallAliasArguments = getMustCallAliasArgumentNode(node);
+    List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
     return !mustCallAliasArguments.isEmpty()
         && mustCallAliasArguments.stream()
             .allMatch(
@@ -997,7 +992,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Finds the argument(s) passed in the {@code @MustCallAlias} position(s) for a call.
+   * Finds the arguments passed in the {@code @MustCallAlias} positions for a call.
    *
    * @param callNode callNode representing the call; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
@@ -1006,10 +1001,10 @@ class MustCallConsistencyAnalyzer {
    *     #removeCastsAndGetTmpVarIfPresent(Node)} on the argument(s) passed in corresponding
    *     position(s). Otherwise, returns an empty List.
    */
-  private List<Node> getMustCallAliasArgumentNode(Node callNode) {
-    List<Node> result = new ArrayList<>();
+  private List<Node> getMustCallAliasArgumentNodes(Node callNode) {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
+    List<Node> result = new ArrayList<>();
     if (!typeFactory.hasMustCallAlias(callNode.getTree())) {
       return result;
     }
