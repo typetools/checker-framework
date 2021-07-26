@@ -275,7 +275,7 @@ public class InitializationVisitor<
         // Add field values for fields with an initializer.
         for (FieldInitialValue<Value> fieldInitialValue : store.getAnalysis().getFieldValues()) {
           if (fieldInitialValue.initializer != null) {
-            store.addInitializedField(fieldInitialValue.field.getField());
+            store.addInitializedField(fieldInitialValue.fieldDecl.getField());
           }
         }
         final List<VariableTree> init =
@@ -298,7 +298,7 @@ public class InitializationVisitor<
       // Add field values for fields with an initializer.
       for (FieldInitialValue<Value> fieldInitialValue : store.getAnalysis().getFieldValues()) {
         if (fieldInitialValue.initializer != null) {
-          store.addInitializedField(fieldInitialValue.field.getField());
+          store.addInitializedField(fieldInitialValue.fieldDecl.getField());
         }
       }
 

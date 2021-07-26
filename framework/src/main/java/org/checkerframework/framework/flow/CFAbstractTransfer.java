@@ -427,13 +427,13 @@ public abstract class CFAbstractTransfer<
     List<FieldInitialValue<V>> fields = analysis.getFieldValues();
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
     for (FieldInitialValue<V> fieldInitialValue : fields) {
-      VariableElement varEle = fieldInitialValue.field.getField();
+      VariableElement varEle = fieldInitialValue.fieldDecl.getField();
       // Insert the value from the initializer of private final fields.
       if (fieldInitialValue.initializer != null
           && varEle.getModifiers().contains(Modifier.PRIVATE)
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
-        info.insertValue(fieldInitialValue.field, fieldInitialValue.initializer);
+        info.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
       }
 
       // Maybe insert the declared type:
@@ -442,14 +442,14 @@ public abstract class CFAbstractTransfer<
         // initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
-          info.insertValue(fieldInitialValue.field, fieldInitialValue.declared);
+          info.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
         }
       } else {
         // If it is a constructor, then only use the declared type if the field has been
         // initialized.
         if (fieldInitialValue.initializer != null
             && varEle.getEnclosingElement().equals(classEle)) {
-          info.insertValue(fieldInitialValue.field, fieldInitialValue.declared);
+          info.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
         }
       }
     }

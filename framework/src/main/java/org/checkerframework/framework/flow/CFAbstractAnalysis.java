@@ -69,7 +69,7 @@ public abstract class CFAbstractAnalysis<
   public static class FieldInitialValue<V extends CFAbstractValue<V>> {
 
     /** A field access that corresponds to the declaration of a field. */
-    public final FieldAccess field;
+    public final FieldAccess fieldDecl;
     /** The value corresponding to the annotations on the declared type of the field. */
     public final V declared;
     /** The value of the initializer of the field, or null if no initializer exists. */
@@ -78,13 +78,13 @@ public abstract class CFAbstractAnalysis<
     /**
      * Creates a new FieldInitialValue.
      *
-     * @param field a field access that corresponds to the declaration of a field
+     * @param fieldDecl a field access that corresponds to the declaration of a field
      * @param declared value corresponding to the annotations on the declared type of {@code field}
      * @param initializer value of the initializer of {@code field}, or null if no initializer
      *     exists
      */
-    public FieldInitialValue(FieldAccess field, V declared, @Nullable V initializer) {
-      this.field = field;
+    public FieldInitialValue(FieldAccess fieldDecl, V declared, @Nullable V initializer) {
+      this.fieldDecl = fieldDecl;
       this.declared = declared;
       this.initializer = initializer;
     }
