@@ -100,6 +100,7 @@ public class TestUtilities {
         // For "ainfer-*" tests, their sources do not necessarily
         // exist yet but will be created by a test that runs earlier than they do.
         if (!(dir.getName().equals("annotated")
+            && dir.getParentFile() != null
             && dir.getParentFile().getName().startsWith("ainfer-"))) {
           throw new BugInCF("test directory does not exist: %s", dir);
         }
