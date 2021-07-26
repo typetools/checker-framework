@@ -297,7 +297,7 @@ public class InitializationVisitor<
       Store store = atypeFactory.getRegularExitStore(node);
       // Add field values for fields with an initializer.
       for (FieldValues<Value> fieldValues : store.getAnalysis().getFieldValues()) {
-        if (fieldValues != null) {
+        if (fieldValues.initializer != null) {
           store.addInitializedField(fieldValues.field.getField());
         }
       }
