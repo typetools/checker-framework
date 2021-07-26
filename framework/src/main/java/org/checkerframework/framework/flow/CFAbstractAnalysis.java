@@ -66,7 +66,7 @@ public abstract class CFAbstractAnalysis<
    *
    * @param <V> type of value
    */
-  public static class FieldValues<V extends CFAbstractValue<V>> {
+  public static class FieldInitialValue<V extends CFAbstractValue<V>> {
 
     /** A field access that corresponds to the declaration of a field. */
     public final FieldAccess field;
@@ -76,14 +76,14 @@ public abstract class CFAbstractAnalysis<
     public final @Nullable V initializer;
 
     /**
-     * Creates a new FieldValues.
+     * Creates a new FieldInitialValue.
      *
      * @param field a field access that corresponds to the declaration of a field
      * @param declared value corresponding to the annotations on the declared type of {@code field}
      * @param initializer value of the initializer of {@code field}, or null if no initializer
      *     exists
      */
-    public FieldValues(FieldAccess field, V declared, @Nullable V initializer) {
+    public FieldInitialValue(FieldAccess field, V declared, @Nullable V initializer) {
       this.field = field;
       this.declared = declared;
       this.initializer = initializer;
@@ -91,7 +91,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /** Initial abstract types for fields. */
-  protected final List<FieldValues<V>> fieldValues;
+  protected final List<FieldInitialValue<V>> fieldValues;
 
   /** The associated processing environment. */
   protected final ProcessingEnvironment env;
@@ -140,7 +140,7 @@ public abstract class CFAbstractAnalysis<
    * @param cfg control flow graph to analyze
    * @param fieldValues initial values of the fields
    */
-  public void performAnalysis(ControlFlowGraph cfg, List<FieldValues<V>> fieldValues) {
+  public void performAnalysis(ControlFlowGraph cfg, List<FieldInitialValue<V>> fieldValues) {
     this.fieldValues.clear();
     this.fieldValues.addAll(fieldValues);
     super.performAnalysis(cfg);
@@ -151,7 +151,7 @@ public abstract class CFAbstractAnalysis<
    *
    * @return a list of values for the types of fields
    */
-  public List<FieldValues<V>> getFieldValues() {
+  public List<FieldInitialValue<V>> getFieldValues() {
     return fieldValues;
   }
 

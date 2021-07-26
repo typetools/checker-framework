@@ -66,7 +66,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldValues;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -1279,7 +1279,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
-    List<FieldValues<Value>> fieldValues = new ArrayList<>();
+    List<FieldInitialValue<Value>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
     queue.add(Pair.of(classTree, null));
@@ -1360,11 +1360,12 @@ public abstract class GenericAnnotatedTypeFactory<
                     capturedStore);
                 Value initializerValue = flowResult.getValue(initializer);
                 if (initializerValue != null) {
-                  fieldValues.add(new FieldValues<>(fieldExpr, declaredValue, initializerValue));
+                  fieldValues.add(
+                      new FieldInitialValue<>(fieldExpr, declaredValue, initializerValue));
                   break;
                 }
               }
-              fieldValues.add(new FieldValues<>(fieldExpr, declaredValue, null));
+              fieldValues.add(new FieldInitialValue<>(fieldExpr, declaredValue, null));
               break;
             case CLASS:
             case ANNOTATION_TYPE:
@@ -1483,7 +1484,7 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<Pair<ClassTree, Store>> queue,
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
-      List<FieldValues<Value>> fieldValues,
+      List<FieldInitialValue<Value>> fieldValues,
       ClassTree currentClass,
       boolean isInitializationCode,
       boolean updateInitializationStore,

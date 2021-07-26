@@ -59,7 +59,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldValues;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -424,16 +424,16 @@ public abstract class CFAbstractTransfer<
    */
   private void addFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
     boolean isConstructor = TreeUtils.isConstructor(methodTree);
-    List<FieldValues<V>> fields = analysis.getFieldValues();
+    List<FieldInitialValue<V>> fields = analysis.getFieldValues();
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
-    for (FieldValues<V> fieldValues : fields) {
-      VariableElement varEle = fieldValues.field.getField();
+    for (FieldInitialValue<V> fieldInitialValue : fields) {
+      VariableElement varEle = fieldInitialValue.field.getField();
       // Insert the value from the initializer of private final fields.
-      if (fieldValues.initializer != null
+      if (fieldInitialValue.initializer != null
           && varEle.getModifiers().contains(Modifier.PRIVATE)
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
-        info.insertValue(fieldValues.field, fieldValues.initializer);
+        info.insertValue(fieldInitialValue.field, fieldInitialValue.initializer);
       }
 
       // Maybe insert the declared type:
@@ -442,13 +442,14 @@ public abstract class CFAbstractTransfer<
         // initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
-          info.insertValue(fieldValues.field, fieldValues.declared);
+          info.insertValue(fieldInitialValue.field, fieldInitialValue.declared);
         }
       } else {
         // If it is a constructor, then only use the declared type if the field has been
         // initialized.
-        if (fieldValues.initializer != null && varEle.getEnclosingElement().equals(classEle)) {
-          info.insertValue(fieldValues.field, fieldValues.declared);
+        if (fieldInitialValue.initializer != null
+            && varEle.getEnclosingElement().equals(classEle)) {
+          info.insertValue(fieldInitialValue.field, fieldInitialValue.declared);
         }
       }
     }
