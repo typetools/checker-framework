@@ -2500,8 +2500,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns a list of inferred {@code @RequiresQualifier} annotations for the given expression. By
    * default this list will not include any qualifier that has elements/arguments, which
    * {@code @RequiresQualifier} does not support (subclasses are permitted to remove this
-   * restriction by overriding {@link #createRequiresOrEnsuresQualifier(String, AnnotationMirror,
-   * AnnotatedTypeMirror, BeforeOrAfter, List)}).
+   * restriction by overriding {@link #createRequiresOrEnsuresQualifier}).
    *
    * <p>Each annotation in the list is of the form
    * {@code @RequiresQualifier(expression="expression", qualifier=MyQual.class)}. {@code expression}
@@ -2523,8 +2522,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * default this list will not include any qualifier that has elements/arguments, which
    * {@code @EnsuresQualifier} does not support; and, preconditions are not used to suppress
    * redundant postconditions (subclasses are permitted to remove these restrictions by overriding
-   * {@link #createRequiresOrEnsuresQualifier(String, AnnotationMirror, AnnotatedTypeMirror,
-   * BeforeOrAfter, List)}).
+   * {@link #createRequiresOrEnsuresQualifier}).
    *
    * <p>Each annotation in the list is of the form {@code @EnsuresQualifier(expression="expression",
    * qualifier=MyQual.class)}. {@code expression} must be a valid Java Expression string, in the
