@@ -409,20 +409,20 @@ public abstract class CFAbstractTransfer<
   /**
    * Add field values to the initial store before {@code methodTree}.
    *
-   * <p>The initializer value is inserted into {@code info} if the field is private and final.
+   * <p>The initializer value is inserted into {@code store} if the field is private and final.
    *
    * <p>If {@code methodTree} is a constructor, then the declared value is inserted into {@code
-   * info} if the field has an initializer. (Use the declaration type rather than the initializer
+   * store} if the field has an initializer. (Use the declaration type rather than the initializer
    * because an initialization block might have re-set it.) If {@code methodTree} is not a
-   * constructor, then the declared value is inserted into {@code info} if the receiver of the
+   * constructor, then the declared value is inserted into {@code store} if the receiver of the
    * method is fully initialized as determined by {@link
    * #isNotFullyInitializedReceiver(MethodTree)}.
    *
-   * @param info initial store into which field values are inserted; it may not be empty
+   * @param store initial store into which field values are inserted; it may not be empty
    * @param classTree the class that contains {@code methodTree}
    * @param methodTree the method or constructor tree
    */
-  private void addInitialFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
+  private void addInitialFieldValues(S store, ClassTree classTree, MethodTree methodTree) {
     boolean isConstructor = TreeUtils.isConstructor(methodTree);
     List<FieldInitialValue<V>> fields = analysis.getFieldValues();
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
@@ -433,7 +433,7 @@ public abstract class CFAbstractTransfer<
           && varEle.getModifiers().contains(Modifier.PRIVATE)
           && ElementUtils.isFinal(varEle)
           && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
-        info.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
+        store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
       }
 
       // Maybe insert the declared type:
@@ -442,14 +442,14 @@ public abstract class CFAbstractTransfer<
         // initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
-          info.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
         }
       } else {
         // If it is a constructor, then only use the declared type if the field has been
         // initialized.
         if (fieldInitialValue.initializer != null
             && varEle.getEnclosingElement().equals(classEle)) {
-          info.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
+          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
         }
       }
     }
