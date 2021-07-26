@@ -591,6 +591,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>Subclasses have to override this method to create the appropriate analysis if they do not
    * follow the checker naming convention.
+   *
+   * @return the appropriate flow analysis class that is used for the org.checkerframework.dataflow
+   *     analysis
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
   protected FlowAnalysis createFlowAnalysis() {
