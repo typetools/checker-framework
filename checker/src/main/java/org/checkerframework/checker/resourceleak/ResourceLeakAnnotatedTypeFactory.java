@@ -292,9 +292,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Returns the {@link CreatesMustCallFor.List#value} element.
+   * Returns the {@link org.checkerframework.checker.mustcall.qual.CreatesMustCallFor.List#value}
+   * element.
    *
-   * @return the {@link CreatesMustCallFor.List#value} element
+   * @return the {@link org.checkerframework.checker.mustcall.qual.CreatesMustCallFor.List#value}
+   *     element
    */
   @Override
   public ExecutableElement getCreatesMustCallForListValueElement() {

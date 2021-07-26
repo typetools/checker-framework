@@ -274,33 +274,33 @@ public abstract class CFAbstractTransfer<
       }
     }
 
-    S info;
+    S store;
 
     if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
 
       if (fixedInitialStore != null) {
         // copy knowledge
-        info = analysis.createCopiedStore(fixedInitialStore);
+        store = analysis.createCopiedStore(fixedInitialStore);
       } else {
-        info = analysis.createEmptyStore(sequentialSemantics);
+        store = analysis.createEmptyStore(sequentialSemantics);
       }
 
       AnnotatedTypeFactory factory = analysis.getTypeFactory();
       for (LocalVariableNode p : parameters) {
         AnnotatedTypeMirror anno = factory.getAnnotatedType(p.getElement());
-        info.initializeMethodParameter(p, analysis.createAbstractValue(anno));
+        store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
       }
 
       // add properties known through precondition
       CFGMethod method = (CFGMethod) underlyingAST;
       MethodTree methodDeclTree = method.getMethod();
       ExecutableElement methodElem = TreeUtils.elementFromDeclaration(methodDeclTree);
-      addInformationFromPreconditions(info, factory, method, methodDeclTree, methodElem);
+      addInformationFromPreconditions(store, factory, method, methodDeclTree, methodElem);
 
       final ClassTree classTree = method.getClassTree();
-      addFieldValues(info, factory, classTree, methodDeclTree);
+      addFieldValues(store, factory, classTree, methodDeclTree);
 
-      addFinalLocalValues(info, methodElem);
+      addFinalLocalValues(store, methodElem);
 
       if (shouldPerformWholeProgramInference(methodDeclTree, methodElem)) {
         Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
@@ -326,19 +326,19 @@ public abstract class CFAbstractTransfer<
 
     } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
       // Create a copy and keep only the field values (nothing else applies).
-      info = analysis.createCopiedStore(fixedInitialStore);
+      store = analysis.createCopiedStore(fixedInitialStore);
       // Allow that local variables are retained; they are effectively final,
       // otherwise Java wouldn't allow access from within the lambda.
       // TODO: what about the other information? Can code further down be simplified?
-      // info.localVariableValues.clear();
-      info.classValues.clear();
-      info.arrayValues.clear();
-      info.methodValues.clear();
+      // store.localVariableValues.clear();
+      store.classValues.clear();
+      store.arrayValues.clear();
+      store.methodValues.clear();
 
       AnnotatedTypeFactory factory = analysis.getTypeFactory();
       for (LocalVariableNode p : parameters) {
         AnnotatedTypeMirror anno = factory.getAnnotatedType(p.getElement());
-        info.initializeMethodParameter(p, analysis.createAbstractValue(anno));
+        store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
       }
 
       CFGLambda lambda = (CFGLambda) underlyingAST;
@@ -388,27 +388,27 @@ public abstract class CFAbstractTransfer<
         }
       }
       if (enclosingElement != null) {
-        addFinalLocalValues(info, enclosingElement);
+        addFinalLocalValues(store, enclosingElement);
       }
 
       // We want the initialization stuff, but need to throw out any refinements.
-      Map<FieldAccess, V> fieldValuesClone = new HashMap<>(info.fieldValues);
+      Map<FieldAccess, V> fieldValuesClone = new HashMap<>(store.fieldValues);
       for (Map.Entry<FieldAccess, V> fieldValue : fieldValuesClone.entrySet()) {
         AnnotatedTypeMirror declaredType = factory.getAnnotatedType(fieldValue.getKey().getField());
         V lubbedValue =
             analysis.createAbstractValue(declaredType).leastUpperBound(fieldValue.getValue());
-        info.fieldValues.put(fieldValue.getKey(), lubbedValue);
+        store.fieldValues.put(fieldValue.getKey(), lubbedValue);
       }
     } else {
       assert false : "Unexpected tree: " + underlyingAST;
-      info = null;
+      store = null;
     }
 
-    return info;
+    return store;
   }
 
   private void addFieldValues(
-      S info, AnnotatedTypeFactory factory, ClassTree classTree, MethodTree methodTree) {
+      S store, AnnotatedTypeFactory factory, ClassTree classTree, MethodTree methodTree) {
 
     // Add knowledge about final fields, or values of non-final fields
     // if we are inside a constructor (information about initializers)
@@ -426,7 +426,7 @@ public abstract class CFAbstractTransfer<
         }
         TypeMirror fieldType = ElementUtils.getType(element);
         JavaExpression field = new FieldAccess(receiver, fieldType, element);
-        info.insertValue(field, value);
+        store.insertValue(field, value);
       }
     }
 
@@ -471,12 +471,12 @@ public abstract class CFAbstractTransfer<
           }
         }
         JavaExpression field = new FieldAccess(receiver, fieldType, element);
-        info.insertValue(field, value);
+        store.insertValue(field, value);
       }
     }
   }
 
-  private void addFinalLocalValues(S info, Element enclosingElement) {
+  private void addFinalLocalValues(S store, Element enclosingElement) {
     // add information about effectively final variables (from outer scopes)
     for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
 
@@ -509,7 +509,7 @@ public abstract class CFAbstractTransfer<
         while (enclosingMethodOfCurrentMethod != null) {
           if (enclosingMethodOfVariableDeclaration.equals(enclosingMethodOfCurrentMethod)) {
             LocalVariable l = new LocalVariable(elem);
-            info.insertValue(l, e.getValue());
+            store.insertValue(l, e.getValue());
             break;
           }
 
@@ -605,8 +605,8 @@ public abstract class CFAbstractTransfer<
       return new ConditionalTransferResult<>(
           finishValue(value, thenStore, elseStore), thenStore, elseStore);
     } else {
-      S info = in.getRegularStore();
-      return new RegularTransferResult<>(finishValue(value, info), info);
+      S store = in.getRegularStore();
+      return new RegularTransferResult<>(finishValue(value, store), store);
     }
   }
 
@@ -628,8 +628,8 @@ public abstract class CFAbstractTransfer<
       return new ConditionalTransferResult<>(
           finishValue(value, thenStore, elseStore), thenStore, elseStore);
     } else {
-      S info = in.getRegularStore();
-      return new RegularTransferResult<>(finishValue(value, info), info);
+      S store = in.getRegularStore();
+      return new RegularTransferResult<>(finishValue(value, store), store);
     }
   }
 
@@ -860,7 +860,7 @@ public abstract class CFAbstractTransfer<
     Node lhs = n.getTarget();
     Node rhs = n.getExpression();
 
-    S info = in.getRegularStore();
+    S store = in.getRegularStore();
     V rhsValue = in.getValueOfSubNode(rhs);
 
     if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
@@ -884,9 +884,9 @@ public abstract class CFAbstractTransfer<
       }
     }
 
-    processCommonAssignment(in, lhs, rhs, info, rhsValue);
+    processCommonAssignment(in, lhs, rhs, store, rhsValue);
 
-    return new RegularTransferResult<>(finishValue(rhsValue, info), info);
+    return new RegularTransferResult<>(finishValue(rhsValue, store), store);
   }
 
   @Override
@@ -935,7 +935,7 @@ public abstract class CFAbstractTransfer<
     Node rhs = n.getRightOperand();
 
     // update the results store if the assignment target is something we can process
-    S info = result.getRegularStore();
+    S store = result.getRegularStore();
     // ResultValue is the type of LHS + RHS
     V resultValue = result.getResultValue();
 
@@ -949,19 +949,25 @@ public abstract class CFAbstractTransfer<
               (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()));
     }
 
-    processCommonAssignment(in, lhs, rhs, info, resultValue);
+    processCommonAssignment(in, lhs, rhs, store, resultValue);
 
-    return new RegularTransferResult<>(finishValue(resultValue, info), info);
+    return new RegularTransferResult<>(finishValue(resultValue, store), store);
   }
 
   /**
-   * Determine abstract value of right-hand side and update the store accordingly to the assignment.
+   * Determine abstract value of right-hand side and update the store accordingly.
+   *
+   * @param in the store(s) before the assignment
+   * @param lhs the left-hand side of the assignment
+   * @param rhs the right-hand side of the assignment
+   * @param store the regular input store (from {@code in})
+   * @param rhsValue the value of the right-hand side of the assignment
    */
   protected void processCommonAssignment(
-      TransferInput<V, S> in, Node lhs, Node rhs, S info, V rhsValue) {
+      TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
 
     // update information in the store
-    info.updateForAssignment(lhs, rhsValue);
+    store.updateForAssignment(lhs, rhsValue);
   }
 
   @Override

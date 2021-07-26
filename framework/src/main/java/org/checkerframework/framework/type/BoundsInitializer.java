@@ -20,6 +20,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -179,20 +180,23 @@ public class BoundsInitializer {
   }
 
   /**
-   * If we are initializing a type variable with a primary annotation than we should first
+   * Returns a type's primary annotations, and clears those annotations.
+   *
+   * <p>If we are initializing a type variable with a primary annotation than we should first
    * initialize it as if it were a declaration (i.e. as if it had no primary annotations) and then
    * apply the primary annotations. We do this so that when we make copies of the original type to
    * represent recursive references the recursive references don't have the primary annotation.
    *
-   * <pre>{@code
-   * e.g.   given the declaration {@code <E extends List<E>>}
-   *        if we do not do this, the NonNull on the use @NonNull E
-   *        would be copied to the primary annotation on E in the bound {@code List<E>}
-   *        i.e. the use would be {@code <@NonNull E extends @NonNull List<@NonNull E>>}
-   *             rather than      {@code <@NonNull E extends @NonNull List<E>>}
-   * }</pre>
+   * <p>Example: The declaration {@code <E extends List<E>>}.<br>
+   * If we do not do this, the NonNull on the use @NonNull E would be copied to the primary
+   * annotation on E in the bound {@code List<E>}.<br>
+   * i.e. the use would be {@code <@NonNull E extends @NonNull List<@NonNull E>>}<br>
+   * rather than {@code <@NonNull E extends @NonNull List<E>>}
+   *
+   * @param type a type whose annotations to read, clear, and return
+   * @return the original primary annotations on {@code type}, or null if none
    */
-  private static Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
+  private static @Nullable Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
     if (!type.getAnnotationsField().isEmpty()) {
       final Set<AnnotationMirror> annos = new HashSet<>(type.getAnnotations());
       type.clearPrimaryAnnotations();
