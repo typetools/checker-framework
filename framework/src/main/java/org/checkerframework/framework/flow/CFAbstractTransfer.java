@@ -442,7 +442,7 @@ public abstract class CFAbstractTransfer<
       // If it is a constructor, then only use the declared type if the field has been
       // initialized.
       boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
-      if (isConstructor ? isInitializedReceiver : fieldValues.initializer != null) {
+      if (isInitializedReceiver && (!isConstructor || fieldValues.initializer != null)) {
         // Only insert declared types
         if (varEle.getEnclosingElement().equals(classEle)) {
           info.insertValue(fieldValues.field, fieldValues.declared);
