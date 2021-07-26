@@ -733,10 +733,10 @@ public class ValueTransfer extends CFTransfer {
       // Both operands have a length from a known range, compute a range of result lengths
       if (!nonNullStringConcat) {
         if (isNullable(leftOperand)) {
-          leftLengthRange.union(Range.create(4, 4)); // "null"
+          leftLengthRange = leftLengthRange.union(Range.create(4, 4)); // "null"
         }
         if (isNullable(rightOperand)) {
-          rightLengthRange.union(Range.create(4, 4)); // "null"
+          rightLengthRange = rightLengthRange.union(Range.create(4, 4)); // "null"
         }
       }
       Range concatLengthRange = calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
