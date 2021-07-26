@@ -297,7 +297,7 @@ public abstract class CFAbstractTransfer<
       ExecutableElement methodElem = TreeUtils.elementFromDeclaration(methodDeclTree);
       addInformationFromPreconditions(info, factory, method, methodDeclTree, methodElem);
 
-      addFieldValues(info, method.getClassTree(), methodDeclTree);
+      addInitialFieldValues(info, method.getClassTree(), methodDeclTree);
 
       addFinalLocalValues(info, methodElem);
 
@@ -418,11 +418,11 @@ public abstract class CFAbstractTransfer<
    * method is fully initialized as determined by {@link
    * #isNotFullyInitializedReceiver(MethodTree)}.
    *
-   * @param info initial store into which field values are inserted
+   * @param info initial store into which field values are inserted; it may not be empty
    * @param classTree the class that contains {@code methodTree}
    * @param methodTree the method or constructor tree
    */
-  private void addFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
+  private void addInitialFieldValues(S info, ClassTree classTree, MethodTree methodTree) {
     boolean isConstructor = TreeUtils.isConstructor(methodTree);
     List<FieldInitialValue<V>> fields = analysis.getFieldValues();
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
