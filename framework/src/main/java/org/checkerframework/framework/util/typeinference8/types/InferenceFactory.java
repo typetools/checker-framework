@@ -352,9 +352,10 @@ public class InferenceFactory {
       return (ExecutableType) ele.asType();
     }
     DeclaredType receiverType = getReceiverType(expressionTree);
-
     if (receiverType == null) {
       receiverType = context.enclosingType;
+    } else {
+      receiverType = (DeclaredType) context.types.capture((Type) receiverType);
     }
 
     while (context.types.asSuper((Type) receiverType, (Symbol) ele.getEnclosingElement()) == null) {

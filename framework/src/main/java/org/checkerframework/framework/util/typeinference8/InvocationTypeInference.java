@@ -147,6 +147,8 @@ public class InvocationTypeInference {
       return null;
     }
     ExecutableType e = InferenceFactory.getTypeOfMethodAdaptedToUse(invocation, context);
+    // TODO: The captured types will differ, should I use the underlying type instead?
+    // ExecutableType e= methodType.getUnderlyingType();
     List<Variable> result;
     try {
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
