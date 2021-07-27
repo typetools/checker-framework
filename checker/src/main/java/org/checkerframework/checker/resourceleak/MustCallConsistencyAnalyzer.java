@@ -439,33 +439,34 @@ class MustCallConsistencyAnalyzer {
     }
 
     ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
-    for (Node mustCallAlias : mustCallAliases) {
-      if (mustCallAlias instanceof FieldAccessNode) {
-        // Do not track the call result if the MustCallAlias argument is a field.  Handling of
-        // @Owning fields is a completely separate check, and there is never a need to track an
-        // alias of a non-@Owning field, as by definition such a field does not have obligations!
-      } else {
-        if (!(mustCallAlias instanceof LocalVariableNode)) {
-          throw new TypeSystemError(
-              "unexpected node type for mustCallAlias: " + mustCallAlias.getClass());
-        }
-        Obligation obligationContainingMustCallAlias =
-            getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
-        // If mustCallAlias is a local variable already being tracked, add tmpVarAsResourceAlias
-        // to the set containing mustCallAlias.
-        if (obligationContainingMustCallAlias != null) {
-          Set<ResourceAlias> newResourceAliasSet =
-              FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
-                  .append(tmpVarAsResourceAlias)
-                  .toSet();
-          obligations.remove(obligationContainingMustCallAlias);
-          obligations.add(new Obligation(newResourceAliasSet));
-        }
-      }
-    }
     if (mustCallAliases.isEmpty()) {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias)));
+    } else {
+      for (Node mustCallAlias : mustCallAliases) {
+        if (mustCallAlias instanceof FieldAccessNode) {
+          // Do not track the call result if the MustCallAlias argument is a field.  Handling of
+          // @Owning fields is a completely separate check, and there is never a need to track an
+          // alias of a non-@Owning field, as by definition such a field does not have obligations!
+        } else {
+          if (!(mustCallAlias instanceof LocalVariableNode)) {
+            throw new TypeSystemError(
+                "unexpected node type for mustCallAlias: " + mustCallAlias.getClass());
+          }
+          Obligation obligationContainingMustCallAlias =
+              getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
+          // If mustCallAlias is a local variable already being tracked, add tmpVarAsResourceAlias
+          // to the set containing mustCallAlias.
+          if (obligationContainingMustCallAlias != null) {
+            Set<ResourceAlias> newResourceAliasSet =
+                FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
+                    .append(tmpVarAsResourceAlias)
+                    .toSet();
+            obligations.remove(obligationContainingMustCallAlias);
+            obligations.add(new Obligation(newResourceAliasSet));
+          }
+        }
+      }
     }
   }
 
