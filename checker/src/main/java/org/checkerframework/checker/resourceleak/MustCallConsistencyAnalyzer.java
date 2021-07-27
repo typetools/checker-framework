@@ -68,7 +68,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
-import org.checkerframework.javacutil.*;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -440,7 +440,8 @@ class MustCallConsistencyAnalyzer {
         // alias of a non-@Owning field, as by definition such a field does not have obligations!
       } else {
         if (!(mustCallAlias instanceof LocalVariableNode)) {
-          throw new TypeSystemError("unexpected node type for mustCallAlias: " + mustCallAlias.getClass());
+          throw new TypeSystemError(
+              "unexpected node type for mustCallAlias: " + mustCallAlias.getClass());
         }
         Obligation obligationContainingMustCallAlias =
             getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
