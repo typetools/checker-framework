@@ -45,6 +45,8 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -69,10 +71,10 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the nullness type-system. */
@@ -638,7 +640,8 @@ public class NullnessAnnotatedTypeFactory
       if (!subKind.isInSameHierarchyAs(NULLABLE) || !superKind.isInSameHierarchyAs(NULLABLE)) {
         return this.isSubtypeInitialization(subAnno, subKind, superAnno, superKind);
       }
-      throw new BugInCF("Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
+      throw new TypeSystemError(
+          "Unexpected annotations isSubtypeWithElements(%s, %s)", subAnno, superAnno);
     }
 
     @Override
@@ -652,7 +655,8 @@ public class NullnessAnnotatedTypeFactory
           || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
         return this.leastUpperBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
       }
-      throw new BugInCF("Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
+      throw new TypeSystemError(
+          "Unexpected annotations leastUpperBoundWithElements(%s, %s)", a1, a2);
     }
 
     @Override
@@ -666,7 +670,8 @@ public class NullnessAnnotatedTypeFactory
           || !qualifierKind2.isInSameHierarchyAs(NULLABLE)) {
         return this.greatestLowerBoundInitialization(a1, qualifierKind1, a2, qualifierKind2);
       }
-      throw new BugInCF("Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
+      throw new TypeSystemError(
+          "Unexpected annotations greatestLowerBoundWithElements(%s, %s)", a1, a2);
     }
   }
 
@@ -801,21 +806,37 @@ public class NullnessAnnotatedTypeFactory
   //  * check for @MonotonicNonNull
   //  * output @RequiresNonNull rather than @RequiresQualifier.
   @Override
-  public List<AnnotationMirror> getPreconditionAnnotation(
-      VariableElement elt, AnnotatedTypeMirror fieldType) {
-    AnnotatedTypeMirror declaredType = fromElement(elt);
+  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnno(
+      VariableElement fieldElement,
+      AnnotationMirror qualifier,
+      Analysis.BeforeOrAfter preOrPost,
+      @Nullable List<AnnotationMirror> preconds) {
+
+    AnnotatedTypeMirror declaredType = fromElement(fieldElement);
     // TODO: This does not handle the possibility that the user set a different default annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
         || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
-      return Collections.emptyList();
+      return null;
     }
 
-    if (AnnotationUtils.containsSameByName(
-        fieldType.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
-      return requiresNonNullAnno(elt);
+    if (preOrPost == BeforeOrAfter.AFTER
+        && declaredType.hasAnnotation(MONOTONIC_NONNULL)
+        && preconds.contains(requiresNonNullAnno(fieldElement))) {
+      // The postcondition is implied by the precondition and the field being @MonotonicNonNull.
+      return null;
     }
-    return Collections.emptyList();
+
+    if (AnnotationUtils.areSameByName(
+        qualifier, "org.checkerframework.checker.nullness.qual.NonNull")) {
+      if (preOrPost == BeforeOrAfter.BEFORE) {
+        return requiresNonNullAnno(fieldElement);
+      } else {
+        return ensuresNonNullAnno(fieldElement);
+      }
+    }
+
+    return super.requiresOrEnsuresQualifierAnno(fieldElement, qualifier, preOrPost, preconds);
   }
 
   /**
@@ -824,35 +845,13 @@ public class NullnessAnnotatedTypeFactory
    * @param fieldElement a field
    * @return a {@code RequiresNonNull("...")} annotation for the given field
    */
-  private List<AnnotationMirror> requiresNonNullAnno(VariableElement fieldElement) {
+  private AnnotationMirror requiresNonNullAnno(VariableElement fieldElement) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
     String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
     String expression = receiver + "." + fieldElement.getSimpleName();
     builder.setValue("value", new String[] {expression});
     AnnotationMirror am = builder.build();
-    return Collections.singletonList(am);
-  }
-
-  @Override
-  public List<AnnotationMirror> getPostconditionAnnotation(
-      VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
-    AnnotatedTypeMirror declaredType = fromElement(elt);
-    // TODO: This does not handle the possibility that the user set a different default annotation.
-    if (!(declaredType.hasAnnotation(NULLABLE)
-        || declaredType.hasAnnotation(POLYNULL)
-        || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
-      return Collections.emptyList();
-    }
-    if (declaredType.hasAnnotation(MONOTONIC_NONNULL)
-        && preconds.contains(requiresNonNullAnno(elt))) {
-      // The postcondition is implied by the precondition and the field being @MonotonicNonNull.
-      return Collections.emptyList();
-    }
-    if (AnnotationUtils.containsSameByName(
-        fieldAnnos.getAnnotations(), "org.checkerframework.checker.nullness.qual.NonNull")) {
-      return ensuresNonNullAnno(elt);
-    }
-    return Collections.emptyList();
+    return am;
   }
 
   /**
@@ -861,12 +860,12 @@ public class NullnessAnnotatedTypeFactory
    * @param fieldElement a field
    * @return a {@code EnsuresNonNull("...")} annotation for the given field
    */
-  private List<AnnotationMirror> ensuresNonNullAnno(VariableElement fieldElement) {
+  private AnnotationMirror ensuresNonNullAnno(VariableElement fieldElement) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
     String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
     String expression = receiver + "." + fieldElement.getSimpleName();
     builder.setValue("value", new String[] {expression});
     AnnotationMirror am = builder.build();
-    return Collections.singletonList(am);
+    return am;
   }
 }

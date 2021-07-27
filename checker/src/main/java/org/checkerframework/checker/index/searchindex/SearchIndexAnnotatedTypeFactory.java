@@ -23,8 +23,8 @@ import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * The Search Index Checker is used to help type the results of calls to the JDK's binary search
@@ -92,7 +92,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     } else if (areSameByClass(am, SearchIndexFor.class)) {
       return AnnotationUtils.getElementValueArray(am, searchIndexForValueElement, String.class);
     } else {
-      throw new BugInCF("indexForValue(%s)", am);
+      throw new TypeSystemError("indexForValue(%s)", am);
     }
   }
 

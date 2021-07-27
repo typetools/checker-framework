@@ -46,9 +46,9 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * The annotated type factory for the Must Call Checker. Primarily responsible for the subtyping
@@ -197,7 +197,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     } else if (tree instanceof MemberReferenceTree) {
       declaration = (ExecutableElement) TreeUtils.elementFromTree(tree);
     } else {
-      throw new BugInCF("unexpected type of method tree: " + tree.getKind());
+      throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
     }
     changeNonOwningParameterTypesToTop(declaration, type);
     super.methodFromUsePreSubstitution(tree, type);
