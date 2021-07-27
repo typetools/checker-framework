@@ -410,8 +410,6 @@ class MustCallConsistencyAnalyzer {
     this.analysis = analysis;
   }
 
-  // TODO: I found this wording clearer than that in the Javadoc for Obligation.  I suggest moving
-  // the last 1.5 sentences to Obligation's documentation.
   /**
    * The main function of the consistency dataflow analysis. The analysis tracks dataflow facts
    * ("Obligations") of type {@link Obligation}, each representing a set of owning resource aliases
@@ -434,8 +432,7 @@ class MustCallConsistencyAnalyzer {
   void analyze(ControlFlowGraph cfg) {
     // The `visited` set contains everything that has been added to the worklist, even if it has not
     // yet been removed and analyzed.
-    // TODO: Why is this a LINKED HashSet?  That seems unnecessarily expensive.
-    Set<BlockWithObligations> visited = new LinkedHashSet<>();
+    Set<BlockWithObligations> visited = new HashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
     // Add any owning parameters to the initial set of variables to track.
@@ -452,8 +449,6 @@ class MustCallConsistencyAnalyzer {
       Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
-        // TODO: It is inconsistent that `obligations` is the last argument to some methods and the
-        // first argument to other methods.  Make the order consistent throughout.
         if (node instanceof AssignmentNode) {
           updateObligationsForAssignment(obligations, (AssignmentNode) node);
         } else if (node instanceof ReturnNode) {
@@ -491,9 +486,7 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    // TODO: I find the name "hasDeclaredMustCall" hard to read.  Haw about
-    // "declaredTypeHasMustCall"?
-    if (typeFactory.hasDeclaredMustCall(node.getTree())) {
+    if (typeFactory.declaredTypeHasMustCall(node.getTree())) {
       // The incrementNumMustCall call above increments the count for the target of the
       // @CreatesMustCallFor annotation.  By contrast, this call increments the count for the return
       // value of the method (which can't be the target of the annotation, because our syntax
@@ -528,10 +521,7 @@ class MustCallConsistencyAnalyzer {
     List<JavaExpression> cmcfExpressions =
         CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
             node, typeFactory, typeFactory);
-    // TODO: Why not use a list? A list is more efficient, particularly ArrayList which, when empty,
-    // does not allocate an array. I don't think that duplicate expressions will be common, or that
-    // it's a problem to produce duplicate errors when a user writes duplicate expressions.
-    Set<JavaExpression> missing = new LinkedHashSet<>(1);
+    List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
       if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
         missing.add(expression);
@@ -578,7 +568,11 @@ class MustCallConsistencyAnalyzer {
       Element elt = ((LocalVariable) expression).getElement();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
           && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
-        // The expression is an Owning formal parameter or local variable.  This satisfies case 1.
+        // The expression is an Owning formal parameter. Note that this cannot actually
+        // be a local variable (despite expressions's type being LocalVariable) because
+        // the @Owning annotation can only be written on methods, parameters, and fields;
+        // formal parameters are also represented by LocalVariable in the bodies of methods.
+        // This satisfies case 1.
         return true;
       } else {
         Obligation toRemove = null;
@@ -1678,7 +1672,7 @@ class MustCallConsistencyAnalyzer {
       for (VariableTree param : method.getParameters()) {
         Element paramElement = TreeUtils.elementFromDeclaration(param);
         if (typeFactory.hasMustCallAlias(paramElement)
-            || (typeFactory.hasDeclaredMustCall(param)
+            || (typeFactory.declaredTypeHasMustCall(param)
                 && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
                 && paramElement.getAnnotation(Owning.class) != null)) {
           result.add(

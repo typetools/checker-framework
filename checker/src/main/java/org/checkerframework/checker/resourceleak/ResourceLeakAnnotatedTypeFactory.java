@@ -207,7 +207,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param tree a tree
    * @return whether the tree has declared must-call obligations
    */
-  /* package-private */ boolean hasDeclaredMustCall(Tree tree) {
+  /* package-private */ boolean declaredTypeHasMustCall(Tree tree) {
     assert tree.getKind() == Tree.Kind.METHOD
             || tree.getKind() == Tree.Kind.VARIABLE
             || tree.getKind() == Tree.Kind.NEW_CLASS
