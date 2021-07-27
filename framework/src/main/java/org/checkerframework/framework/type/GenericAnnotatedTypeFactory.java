@@ -2634,7 +2634,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param preconds the list of precondition annotations; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code BeforeOrAfter.BEFORE}
    * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
-   *     the given field, or null
+   *     the given expression, or null
    */
   protected @Nullable AnnotationMirror createRequiresOrEnsuresQualifier(
       String expression,

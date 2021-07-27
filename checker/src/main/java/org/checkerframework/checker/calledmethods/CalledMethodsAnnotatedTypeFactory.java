@@ -393,18 +393,17 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         return ensuresCMAnno(expression, calledMethods);
       }
     }
-
     return super.createRequiresOrEnsuresQualifier(
         expression, qualifier, declaredType, preOrPost, preconds);
   }
 
   /**
-   * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given field.
+   * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given expression.
    *
    * @param expression the expression to put in the value field of the EnsuresCalledMethods
    *     annotation
-   * @param calledMethods the methods that were definitely called on the field
-   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given field
+   * @param calledMethods the methods that were definitely called on the expression
+   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given expression
    */
   private AnnotationMirror ensuresCMAnno(String expression, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);

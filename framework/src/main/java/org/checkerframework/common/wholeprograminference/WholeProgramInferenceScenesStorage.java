@@ -269,7 +269,7 @@ public class WholeProgramInferenceScenesStorage
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
-   * @return the precondition annotations for a field
+   * @return the precondition annotations for a Java expression
    */
   private ATypeElement getPreconditionsForExpression(
       ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
@@ -281,12 +281,12 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Returns the postcondition annotations for a field.
+   * Returns the postcondition annotations for a Java expression.
    *
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
-   * @return the postcondition annotations for a field
+   * @return the postcondition annotations for a Java expression
    */
   private ATypeElement getPostconditionsForExpression(
       ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {

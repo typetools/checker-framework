@@ -765,17 +765,15 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
     /**
-     * Mapping from Strings to pairs of AnnotatedTypeMirrors: the first contains an inferred
-     * precondition, and the second the declared type of the expression represented by the key. The
-     * keys are strings representing JavaExpressions, using the same format as a user would in an
-     * {@link org.checkerframework.framework.qual.RequiresQualifier} annotation.
+     * Mapping from expression strings to pairs of (inferred precondition, declared type). The keys
+     * are strings representing JavaExpressions, using the same format as a user would in an {@link
+     * org.checkerframework.framework.qual.RequiresQualifier} annotation.
      */
     private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
         preconditions = null;
     /**
-     * Mapping from Strings to pairs of AnnotatedTypeMirrors: the first contains an inferred
-     * postcondition, and the second the declared type of the expression represented by the key. The
-     * keys are strings representing JavaExpressions, using the same format as a user would in an
+     * Mapping from expression strings to pairs of (inferred postcondition, declared type). The
+     * okeys are strings representing JavaExpressions, using the same format as a user would in an
      * {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation.
      */
     private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
@@ -907,9 +905,8 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred preconditions for this callable declaration.
      *
-     * @return a mapping from strings to pairs of AnnotatedTypeMirrors containing the inferred
-     *     preconditions for the JavaExpressions represented by the strings and their declared
-     *     types, respectively. The keys of this map use the same string formatting as the {@link
+     * @return a mapping from expression string to pairs of (inferred precondition, declared type).
+     *     The keys of this map use the same string formatting as the {@link
      *     org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g. "#1" for the
      *     first parameter.
      */
@@ -924,9 +921,8 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred postconditions for this callable declaration.
      *
-     * @return a mapping from strings to pairs of AnnotatedTypeMirrors containing the inferred
-     *     postconditions for the JavaExpressions represented by the strings and their declared
-     *     types, respectively. The keys of this map use the same string formatting as the {@link
+     * @return a mapping from expression string to pairs of (inferred postcondition, declared type).
+     *     The keys of this map use the same string formatting as the {@link
      *     org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g. "#1" for the first
      *     parameter.
      */
