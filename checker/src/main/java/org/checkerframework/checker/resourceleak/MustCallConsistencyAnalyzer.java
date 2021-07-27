@@ -444,7 +444,10 @@ class MustCallConsistencyAnalyzer {
         // Do not track the call result if the MustCallAlias argument is a field.  Handling of
         // @Owning fields is a completely separate check, and there is never a need to track an
         // alias of a non-@Owning field, as by definition such a field does not have obligations!
-      } else if (mustCallAlias instanceof LocalVariableNode) {
+      } else {
+        if (!(mustCallAlias instanceof LocalVariableNode)) {
+          throw new BugInCF("unexpected node type for mustCallAlias: " + mustCallAlias.getClass());
+        }
         Obligation obligationContainingMustCallAlias =
             getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
         // If mustCallAlias is a local variable already being tracked, add tmpVarAsResourceAlias
