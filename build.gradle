@@ -49,6 +49,7 @@ ext {
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
 }
+
 // Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
 // and with text in #installation
 switch (JavaVersion.current()) {
@@ -57,7 +58,10 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_12:
     case JavaVersion.VERSION_13:
     case JavaVersion.VERSION_14:
-        logger.warn("The Checker Framework has only been tested with JDK 8 and 11." +
+    case JavaVersion.VERSION_15:
+    case JavaVersion.VERSION_17:
+    case JavaVersion.VERSION_18:
+        logger.warn("The Checker Framework has only been tested with JDKs 8, 11, and 16." +
                 " Found version " + JavaVersion.current().majorVersion);
         break;
     case JavaVersion.VERSION_1_8:
@@ -65,7 +69,7 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_16:
         break; // Supported versions
     default:
-        throw new GradleException("Build the Checker Framework with JDK 8 or JDK 11." +
+        throw new GradleException("Build the Checker Framework with JDK 8, 11, or 16." +
                 " Found version " + JavaVersion.current().majorVersion);
 }
 
@@ -345,6 +349,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
                 '-Xmaxwarns', '10000',
                 '-ArequirePrefixInWarningSuppressions',
                 '-AwarnUnneededSuppressions',
+                '-AnoJreVersionCheck',
         ]
         options.compilerArgs += args
         options.forkOptions.jvmArgs += ["-Xmx2g"]
@@ -861,6 +866,11 @@ subprojects {
                                     "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
                             ]
                         }
+
+                        // Allow running on any JRE version.
+                        args += [
+                                "-javacoptions:-AnoJreVersionCheck"
+                        ]
 
                         // Location of jtreg tests
                         args += "${tests}"

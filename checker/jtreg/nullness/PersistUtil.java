@@ -53,6 +53,7 @@ public class PersistUtil {
                         new String[] {
                             "-source",
                             "1.8",
+                            "-AnoJreVersionCheck",
                             "-g",
                             "-processor",
                             "org.checkerframework.checker.nullness.NullnessChecker",

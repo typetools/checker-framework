@@ -95,6 +95,8 @@ public class TypecheckExecutor {
         nonJvmOptions.add("-ApermitMissingJdk");
         nonJvmOptions.add("-Anocheckjdk"); // temporary, for backward compatibility
 
+        nonJvmOptions.add("-AnoJreVersionCheck");
+
         options.addAll(nonJvmOptions);
 
         if (configuration.shouldEmitDebugInfo()) {

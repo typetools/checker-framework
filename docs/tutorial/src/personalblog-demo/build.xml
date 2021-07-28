@@ -13,6 +13,7 @@
     <javac fork="yes" executable="${checker-framework}/checker/bin/${cfJavac}" encoding="UTF-8">
       <compilerarg value="-version"/>
       <compilerarg value="-implicit:class"/>
+      <compilerarg value="-AnoJreVersionCheck"/>
 
       <classpath>
         <pathelement location="${checker-framework}/checker/dist/checker.jar"/>
