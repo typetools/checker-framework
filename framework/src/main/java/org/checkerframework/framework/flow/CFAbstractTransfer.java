@@ -424,9 +424,8 @@ public abstract class CFAbstractTransfer<
    */
   private void addInitialFieldValues(S store, ClassTree classTree, MethodTree methodTree) {
     boolean isConstructor = TreeUtils.isConstructor(methodTree);
-    List<FieldInitialValue<V>> fields = analysis.getFieldValues();
     TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
-    for (FieldInitialValue<V> fieldInitialValue : fields) {
+    for (FieldInitialValue<V> fieldInitialValue : analysis.getFieldInitialValues()) {
       VariableElement varEle = fieldInitialValue.fieldDecl.getField();
       // Insert the value from the initializer of private final fields.
       if (fieldInitialValue.initializer != null

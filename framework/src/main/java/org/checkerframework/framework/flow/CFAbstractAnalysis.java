@@ -147,11 +147,11 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * A list of values for the types of fields.
+   * A list of initial abstract values for the fields.
    *
-   * @return a list of values for the types of fields
+   * @return a list of initial abstract values for the fields
    */
-  public List<FieldInitialValue<V>> getFieldValues() {
+  public List<FieldInitialValue<V>> getFieldInitialValues() {
     return fieldValues;
   }
 
