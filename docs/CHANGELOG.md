@@ -17,6 +17,15 @@ Method renamings and signature changes (old methods are removed) in `GenericAnno
 Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
 * `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
 
+Method renamings:
+ * `CFAbstractAnalysis.getFieldValues` => `getFieldInitialValues`
+
+The following methods no longer take a `fieldValues` parameter:
+ * `GenericAnnotatedTypeFactory#createFlowAnalysis`
+ * `CFAnalysis` construtor
+ * `CFAbstractAnalysis#performAnalysis`
+ * `CFAbstractAnalysis` constructors
+
 **Closed issues:**
 
 
