@@ -2562,8 +2562,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param expression an expression whose type annotations to return
    * @param inferredType the type of the expression, on method entry or exit (depending on the value
    *     of {@code preOrPost})
-   * @param declaredType the declared type of the expression, which is used to determine whether the
-   *     inferredType is redundant
+   * @param declaredType the declared type of the expression, which is used to determine if the
+   *     inferred type supplies no additional information beyond the declared type
    * @param preOrPost whether to return preconditions or postconditions
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
@@ -2612,10 +2612,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * Creates a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
    * the given expression.
    *
-   * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
-   * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="this.elt",
-   * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
-   * {@code @B} which is a sub-qualifier of {@code @A}.
+   * <p>This is of the form {@code @RequiresQualifier(expression="expression",
+   * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="expression",
+   * qualifier=MyQual.class)}, where "expression" is exactly the string {@code expression} and
+   * MyQual is the annotation represented by {@code qualifier}.
    *
    * <p>Returns null if the expression is invalid when combined with the kind of annotation: for
    * example, precondition annotations on "this" and parameters ("#1", etc.) are not supported,
