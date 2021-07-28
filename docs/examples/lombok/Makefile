@@ -8,8 +8,8 @@ all: clean
 	- ../../../gradlew build > Out.txt 2>&1
 # TODO JDK16: Temporary hack to skip running under JDK > 11.
 	[ ${JAVA_VER} -gt 11 ] || \
-	(grep -qF "User.java:9: error: [argument] incompatible argument for parameter y of y." Out.txt \
-	  && grep -qF "Foo.java:12: error: [assignment] incompatible types in assignment." Out.txt \
+	(grep -qF "User.java:9: error: [argument.type.incompatible] incompatible argument for parameter y of y." Out.txt \
+	  && grep -qF "Foo.java:12: error: [assignment.type.incompatible] incompatible types in assignment." Out.txt \
 	  && grep -qF "y = null; // error" Out.txt) \
 	 || (echo "===== start of Out.txt =====" && cat Out.txt && echo "===== end of Out.txt =====" && false)
 
