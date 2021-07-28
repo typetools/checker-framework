@@ -4,7 +4,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -19,6 +18,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -54,12 +55,11 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
-import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -297,8 +297,7 @@ public abstract class CFAbstractTransfer<
       ExecutableElement methodElem = TreeUtils.elementFromDeclaration(methodDeclTree);
       addInformationFromPreconditions(store, factory, method, methodDeclTree, methodElem);
 
-      final ClassTree classTree = method.getClassTree();
-      addFieldValues(store, factory, classTree, methodDeclTree);
+      addInitialFieldValues(store, method.getClassTree(), methodDeclTree);
 
       addFinalLocalValues(store, methodElem);
 
@@ -407,71 +406,53 @@ public abstract class CFAbstractTransfer<
     return store;
   }
 
-  private void addFieldValues(
-      S store, AnnotatedTypeFactory factory, ClassTree classTree, MethodTree methodTree) {
-
-    // Add knowledge about final fields, or values of non-final fields
-    // if we are inside a constructor (information about initializers)
-    TypeMirror classType = TreeUtils.typeOf(classTree);
-    List<Pair<VariableElement, V>> fieldValues = analysis.getFieldValues();
-    for (Pair<VariableElement, V> p : fieldValues) {
-      VariableElement element = p.first;
-      V value = p.second;
-      if (ElementUtils.isFinal(element) || TreeUtils.isConstructor(methodTree)) {
-        JavaExpression receiver;
-        if (ElementUtils.isStatic(element)) {
-          receiver = new ClassName(classType);
-        } else {
-          receiver = new ThisReference(classType);
-        }
-        TypeMirror fieldType = ElementUtils.getType(element);
-        JavaExpression field = new FieldAccess(receiver, fieldType, element);
-        store.insertValue(field, value);
+  /**
+   * Add field values to the initial store before {@code methodTree}.
+   *
+   * <p>The initializer value is inserted into {@code store} if the field is private and final.
+   *
+   * <p>The declared value is inserted into {@code store} if:
+   *
+   * <ul>
+   *   <li>{@code methodTree} is a constructor and the field has an initializer. (Use the
+   *       declaration type rather than the initializer because an initialization block might have
+   *       re-set it.)
+   *   <li>{@code methodTree} is not a constructor and the receiver is fully initialized as
+   *       determined by {@link #isNotFullyInitializedReceiver(MethodTree)}.
+   * </ul>
+   *
+   * @param store initial store into which field values are inserted; it may not be empty
+   * @param classTree the class that contains {@code methodTree}
+   * @param methodTree the method or constructor tree
+   */
+  private void addInitialFieldValues(S store, ClassTree classTree, MethodTree methodTree) {
+    boolean isConstructor = TreeUtils.isConstructor(methodTree);
+    TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
+    for (FieldInitialValue<V> fieldInitialValue : analysis.getFieldInitialValues()) {
+      VariableElement varEle = fieldInitialValue.fieldDecl.getField();
+      // Insert the value from the initializer of private final fields.
+      if (fieldInitialValue.initializer != null
+          && varEle.getModifiers().contains(Modifier.PRIVATE)
+          && ElementUtils.isFinal(varEle)
+          && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
+        store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
       }
-    }
 
-    // add properties about fields (static information from type)
-    boolean isNotFullyInitializedReceiver = isNotFullyInitializedReceiver(methodTree);
-    if (isNotFullyInitializedReceiver && !TreeUtils.isConstructor(methodTree)) {
-      // cannot add information about fields if the receiver isn't initialized
-      // and the method isn't a constructor
-      return;
-    }
-    for (Tree member : classTree.getMembers()) {
-      if (member instanceof VariableTree) {
-        VariableTree vt = (VariableTree) member;
-        final VariableElement element = TreeUtils.elementFromDeclaration(vt);
-        AnnotatedTypeMirror type =
-            ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory).getAnnotatedTypeLhs(vt);
-        TypeMirror fieldType = ElementUtils.getType(element);
-        JavaExpression receiver;
-        if (ElementUtils.isStatic(element)) {
-          receiver = new ClassName(classType);
-        } else {
-          receiver = new ThisReference(classType);
+      // Maybe insert the declared type:
+      if (!isConstructor) {
+        // If it's not a constructor, use the declared type if the receiver of the method is fully
+        // initialized.
+        boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
+        if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
+          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
         }
-        V value = analysis.createAbstractValue(type);
-        if (value == null) {
-          continue;
+      } else {
+        // If it is a constructor, then only use the declared type if the field has been
+        // initialized.
+        if (fieldInitialValue.initializer != null
+            && varEle.getEnclosingElement().equals(classEle)) {
+          store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
         }
-        if (TreeUtils.isConstructor(methodTree)) {
-          // If we are in a constructor, then we can still use the static type, but only if there is
-          // also an initializer that already does some initialization.
-          boolean found = false;
-          for (Pair<VariableElement, V> fieldValue : fieldValues) {
-            if (fieldValue.first.equals(element)) {
-              value = value.leastUpperBound(fieldValue.second);
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            // no initializer found, cannot use static type
-            continue;
-          }
-        }
-        JavaExpression field = new FieldAccess(receiver, fieldType, element);
-        store.insertValue(field, value);
       }
     }
   }
@@ -523,7 +504,7 @@ public abstract class CFAbstractTransfer<
    * Returns true if the receiver of a method or constructor might not yet be fully initialized.
    *
    * @param methodDeclTree the declaration of the method or constructor
-   * @return true if the receiver of a method or constructormight not yet be fully initialized
+   * @return true if the receiver of a method or constructor might not yet be fully initialized
    */
   protected boolean isNotFullyInitializedReceiver(MethodTree methodDeclTree) {
     return TreeUtils.isConstructor(methodDeclTree);
