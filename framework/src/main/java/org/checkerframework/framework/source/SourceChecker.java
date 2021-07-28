@@ -389,9 +389,6 @@ import javax.tools.Diagnostic.Kind;
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
 
-    // Parse all JDK files at startup rather than as needed.
-    "parseAllJdk",
-
     // Run checks that test ajava files.
     //
     // Whenever processing a source file, parse it with JavaParser and check that the AST can be
