@@ -2061,9 +2061,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                             + " SourceChecker#getSuppressWarningsPrefixes was not overridden"
                             + " correctly.");
         }
-        if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
-            return true;
-        }
 
         if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
             // If the error key matches a warning string in the -AsuppressWarnings, then suppress
@@ -2292,16 +2289,29 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             }
             // Check if the message key in the warning suppression is part of the message key that
             // the checker is emiting.
-            if (messageKey.equals(messageKeyInSuppressWarningsString)
-                    || messageKey.startsWith(messageKeyInSuppressWarningsString + ".")
-                    || messageKey.endsWith("." + messageKeyInSuppressWarningsString)
-                    || messageKey.contains("." + messageKeyInSuppressWarningsString + ".")) {
+            if (messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)) {
                 return true;
             }
         }
 
         // None of the SuppressWarnings strings suppress this error.
         return false;
+    }
+
+    /**
+     * Does the given messageKey match a messageKey that appears in a SuppressWarnings? Subclasses
+     * should override this method if they need additional logic to compare message keys.
+     *
+     * @param messageKey the message key
+     * @param messageKeyInSuppressWarningsString the message key in a SuppressWarnings
+     * @return true if the arguments match
+     */
+    protected boolean messageKeyMatches(
+            String messageKey, String messageKeyInSuppressWarningsString) {
+        return messageKey.equals(messageKeyInSuppressWarningsString)
+                || messageKey.startsWith(messageKeyInSuppressWarningsString + ".")
+                || messageKey.endsWith("." + messageKeyInSuppressWarningsString)
+                || messageKey.contains("." + messageKeyInSuppressWarningsString + ".");
     }
 
     /**
