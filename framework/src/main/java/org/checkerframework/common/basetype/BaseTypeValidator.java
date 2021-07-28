@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
@@ -470,6 +471,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case SUPER_WILDCARD:
       case TYPE_PARAMETER:
         // Nothing to do.
+        break;
+      case METHOD:
+        // If a MethodTree is passed, it's just the return type that is validated.
+        // See BaseTypeVisitor#validateTypeOf.
+        MethodTree methodTree = (MethodTree) tree;
+        if (methodTree.getReturnType() instanceof ParameterizedTypeTree) {
+          typeargtree = (ParameterizedTypeTree) methodTree.getReturnType();
+        }
         break;
       default:
         // The parameterized type is the result of some expression tree.
