@@ -742,31 +742,33 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the current set of Obligations, which may be side-effected
    * @param node the invocation node to check; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
-   * @return true iff the result of node should be tracked in {@code obligations}
+   * @return true iff the result of {@code node} should be tracked in {@code obligations}
    */
   private boolean shouldTrackInvocationResult(Set<Obligation> obligations, Node node) {
     Tree callTree = node.getTree();
-    if (callTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
-      MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
-
-      if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
-          || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
-        Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
-        // If the MustCallAlias argument is also in the set of Obligations, then remove it -- its
-        // must-call obligation has been fulfilled by being passed on to the MustCallAlias
-        // constructor
-        // (because a this/super constructor call can only occur in the body of another
-        // constructor).
-        if (mustCallAliasArgument instanceof LocalVariableNode) {
-          removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
-        }
-        return false;
-      }
-      return !returnTypeIsMustCallAliasWithUntrackable((MethodInvocationNode) node)
-          && !hasNotOwningReturnType((MethodInvocationNode) node);
+    if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
+      // Constructor results from new expressions are always owning.
+      return true;
     }
-    // Constructor results from new expressions are always owning.
-    return true;
+
+    // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
+    MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
+
+    if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
+        || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
+      Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
+      // If the MustCallAlias argument is also in the set of Obligations, then remove it -- its
+      // must-call obligation has been fulfilled by being passed on to the MustCallAlias
+      // constructor
+      // (because a this/super constructor call can only occur in the body of another
+      // constructor).
+      if (mustCallAliasArgument instanceof LocalVariableNode) {
+        removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
+      }
+      return false;
+    }
+    return !returnTypeIsMustCallAliasWithUntrackable((MethodInvocationNode) node)
+        && !hasNotOwningReturnType((MethodInvocationNode) node);
   }
 
   /**
@@ -864,7 +866,6 @@ class MustCallConsistencyAnalyzer {
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
           Set<AnnotationMirror> annotationMirrors = typeFactory.getDeclAnnotations(parameter);
-
           for (AnnotationMirror anno : annotationMirrors) {
             if (AnnotationUtils.areSameByName(
                 anno, "org.checkerframework.checker.mustcall.qual.Owning")) {
@@ -879,8 +880,9 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * If the return type of the enclosing method is {@code @Owning}, treat its must-call obligations
-   * as satisfied by removing all references to it from {@code obligations}.
+   * If the return type of the enclosing method is {@code @Owning}, treat the must-call obligations
+   * of the return expression as satisfied by removing all references to them from {@code
+   * obligations}.
    *
    * @param obligations the current set of tracked Obligations. If ownership is transferred, it is
    *     side-effected to remove any Obligations that are resource-aliased to the return node.
@@ -1019,12 +1021,12 @@ class MustCallConsistencyAnalyzer {
     // Replacements to eventually perform in Obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
     Map<Obligation, Obligation> replacements = new LinkedHashMap<>();
-    // Construct aliasForAssignment once outside the loop for efficiency.
-    ResourceAlias aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
+    // Cache to re-use on subsequent iterations.
+    ResourceAlias aliasForAssignment = null;
     for (Obligation obligation : obligations) {
       // This is a non-null value iff the resource alias set for obligation needs to
       // change because of the pseudo-assignment. The value of this variable is the new
-      // alias set for obligation if it is non-null.
+      // alias set for `obligation` if it is non-null.
       Set<ResourceAlias> newResourceAliasesForObligation = null;
 
       // Always kill the lhs var if it is present in the resource alias set for this Obligation
@@ -1041,6 +1043,9 @@ class MustCallConsistencyAnalyzer {
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
         if (newResourceAliasesForObligation == null) {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
+        }
+        if (aliasForAssignment == null) {
+          aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
         }
         newResourceAliasesForObligation.add(aliasForAssignment);
         // Remove temp vars from tracking once they are assigned to another location.
@@ -1068,14 +1073,16 @@ class MustCallConsistencyAnalyzer {
             typeFactory.getStoreBefore(node),
             mcAtf.getStoreBefore(node),
             "variable overwritten by assignment " + node.getTree());
+        replacements.put(obligation, null);
+      } else {
+        replacements.put(obligation, new Obligation(newResourceAliasesForObligation));
       }
-      replacements.put(obligation, new Obligation(newResourceAliasesForObligation));
     }
 
     // Finally, update the set of Obligations according to the replacements.
     for (Map.Entry<Obligation, Obligation> entry : replacements.entrySet()) {
       obligations.remove(entry.getKey());
-      if (!entry.getValue().resourceAliases.isEmpty()) {
+      if (entry.getValue() != null && !entry.getValue().resourceAliases.isEmpty()) {
         obligations.add(entry.getValue());
       }
     }
@@ -1095,7 +1102,7 @@ class MustCallConsistencyAnalyzer {
 
     if (!(lhsNode instanceof FieldAccessNode)) {
       throw new TypeSystemError(
-          "checkReassignmentToField: non-field node " + node + " of type " + node.getClass());
+          "checkReassignmentToField: non-field node " + node + " of class " + node.getClass());
     }
 
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;
@@ -1944,21 +1951,21 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * A pair of a {@link Block} and a set of Obligations (i.e. dataflow facts) on entry to the block.
-   * Each Obligation represents a set of resource aliases for some tracked resource. The analyzer's
-   * worklist consists of BlockWithObligations objects, each representing the need to handle the set
-   * of Obligations reaching the block during analysis.
+   * A pair of a {@link Block} and a set of dataflow facts on entry to the block. Each dataflow fact
+   * represents a set of resource aliases for some tracked resource. The analyzer's worklist
+   * consists of BlockWithObligations objects, each representing the need to handle the set of
+   * dataflow facts reaching the block during analysis.
    */
   private static class BlockWithObligations {
 
     /** The block. */
     public final Block block;
 
-    /** The facts. */
+    /** The dataflow facts. */
     public final ImmutableSet<Obligation> obligations;
 
     /**
-     * Create a new BlockWithObligations from a block and a set of Obligations.
+     * Create a new BlockWithObligations from a block and a set of dataflow facts.
      *
      * @param b the block
      * @param obligations the set of incoming Obligations at the start of the block (may be the
