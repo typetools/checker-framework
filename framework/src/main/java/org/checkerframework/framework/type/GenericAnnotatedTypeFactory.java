@@ -2498,9 +2498,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns a list of inferred {@code @RequiresQualifier} annotations for the given expression. By
-   * default this list will not include any qualifier that has elements/arguments, which
-   * {@code @RequiresQualifier} does not support (subclasses are permitted to remove this
-   * restriction by overriding {@link #createRequiresOrEnsuresQualifier}).
+   * default this list does not include any qualifier that has elements/arguments, which
+   * {@code @RequiresQualifier} does not support. Subclasses may remove this restriction by
+   * overriding {@link #createRequiresOrEnsuresQualifier}.
    *
    * <p>Each annotation in the list is of the form
    * {@code @RequiresQualifier(expression="expression", qualifier=MyQual.class)}. {@code expression}
@@ -2519,10 +2519,10 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns a list of inferred {@code @EnsuresQualifier} annotations for the given expression. By
-   * default this list will not include any qualifier that has elements/arguments, which
+   * default this list does not include any qualifier that has elements/arguments, which
    * {@code @EnsuresQualifier} does not support; and, preconditions are not used to suppress
-   * redundant postconditions (subclasses are permitted to remove these restrictions by overriding
-   * {@link #createRequiresOrEnsuresQualifier}).
+   * redundant postconditions. Subclasses may remove these restrictions by overriding {@link
+   * #createRequiresOrEnsuresQualifier}.
    *
    * <p>Each annotation in the list is of the form {@code @EnsuresQualifier(expression="expression",
    * qualifier=MyQual.class)}. {@code expression} must be a valid Java Expression string, in the
@@ -2545,7 +2545,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Creates pre- and postcondtion annotations. Helper method for {@link
+   * Creates pre- and postcondition annotations. Helper method for {@link
    * #getPreconditionAnnotations} and {@link #getPostconditionAnnotations}.
    *
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
@@ -2596,7 +2596,6 @@ public abstract class GenericAnnotatedTypeFactory<
         result.add(anno);
       }
     }
-
     return result;
   }
 
