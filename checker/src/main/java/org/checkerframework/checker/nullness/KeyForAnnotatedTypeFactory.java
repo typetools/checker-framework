@@ -8,11 +8,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
@@ -33,7 +31,6 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class KeyForAnnotatedTypeFactory
@@ -157,10 +154,9 @@ public class KeyForAnnotatedTypeFactory
   }
 
   @Override
-  protected KeyForAnalysis createFlowAnalysis(
-      List<Pair<VariableElement, KeyForValue>> fieldValues) {
+  protected KeyForAnalysis createFlowAnalysis() {
     // Explicitly call the constructor instead of using reflection.
-    return new KeyForAnalysis(checker, this, fieldValues);
+    return new KeyForAnalysis(checker, this);
   }
 
   @Override

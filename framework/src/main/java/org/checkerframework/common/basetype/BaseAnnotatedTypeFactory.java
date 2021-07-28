@@ -1,13 +1,10 @@
 package org.checkerframework.common.basetype;
 
-import java.util.List;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * A factory that extends {@link GenericAnnotatedTypeFactory} to use the default flow-sensitive
@@ -30,7 +27,7 @@ public class BaseAnnotatedTypeFactory
   }
 
   @Override
-  protected CFAnalysis createFlowAnalysis(List<Pair<VariableElement, CFValue>> fieldValues) {
-    return new CFAnalysis(checker, this, fieldValues);
+  protected CFAnalysis createFlowAnalysis() {
+    return new CFAnalysis(checker, this);
   }
 }
