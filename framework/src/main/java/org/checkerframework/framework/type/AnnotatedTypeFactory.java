@@ -129,12 +129,14 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsPlume;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.ATypeElement;
@@ -5410,5 +5412,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       throw new BugInCF("Not a contract list annotation: " + contractListAnno);
     }
+  }
+
+  /**
+   * Returns true if the type is immutable. Subclasses can override this method to add types that
+   * are mutable, but the annotated type of an object is immutable.
+   *
+   * @param type type to test.
+   * @return true if the type is immutable
+   */
+  public boolean isImmutable(TypeMirror type) {
+    if (type.getKind().isPrimitive()) {
+      return true;
+    }
+    return ImmutableTypes.isImmutable(TypeAnnotationUtils.unannotatedType(type).toString());
   }
 }
