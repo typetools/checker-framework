@@ -521,12 +521,12 @@ class MustCallConsistencyAnalyzer {
    */
   private boolean returnTypeIsMustCallAliasWithUntrackable(MethodInvocationNode node) {
     List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
-    return !mustCallAliasArguments.isEmpty()
-        && mustCallAliasArguments.stream()
-            .allMatch(
-                mustCallAliasArgument ->
-                    mustCallAliasArgument instanceof FieldAccessNode
-                        || mustCallAliasArgument instanceof ThisNode);
+    for (Node mustCallAliasArg : mustCallAliasArguments) {
+      if (!(mustCallAliasArg instanceof FieldAccessNode || mustCallAliasArg instanceof ThisNode)) {
+        return false;
+      }
+    }
+    return !mustCallAliasArguments.isEmpty();
   }
 
   /**

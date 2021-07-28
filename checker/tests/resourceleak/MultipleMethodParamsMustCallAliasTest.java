@@ -6,12 +6,39 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class MultipleMethodParamsMustCallAliasTest {
 
-  void testMultiMethodParamsCorrect(@Owning InputStream in1, @Owning InputStream in2)
+  void testMultiMethodParamsCorrect1(@Owning InputStream in1, @Owning InputStream in2)
       throws IOException {
 
     ReplicaInputStreams r = new ReplicaInputStreams(in1, in2);
 
     r.close();
+  }
+
+  void testMultiMethodParamsCorrect2(@Owning InputStream in1, @Owning InputStream in2)
+      throws IOException {
+
+    ReplicaInputStreams r = new ReplicaInputStreams(in1, in2);
+
+    try {
+      in1.close();
+    } catch (IOException e) {
+    } finally {
+      in2.close();
+    }
+  }
+
+  // Is this a bug in checker framework?
+  // :: error: required.method.not.called
+  void testMultiMethodParamsCorrect3(@Owning InputStream in1, @Owning InputStream in2)
+      throws IOException {
+
+    ReplicaInputStreams r = new ReplicaInputStreams(in1, in2);
+
+    try {
+      in1.close();
+    } finally {
+      in2.close();
+    }
   }
 
   // :: error: required.method.not.called
