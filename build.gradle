@@ -422,7 +422,7 @@ List<String> getJavaFilesToFormat(projectName) {
 }
 
 task writeListOfJavaFilesToFormat(group: 'Format') {
-  description "Writes a file with a list of java files that should be format to ${buildDir}/javafiles.txt"
+  description "Writes a list of Java files subject to formatting, to ${buildDir}/javafiles.txt"
   doLast {
     mkdir buildDir
     File list = new File("${buildDir}/javafiles.txt");
