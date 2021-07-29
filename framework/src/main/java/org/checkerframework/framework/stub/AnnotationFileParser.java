@@ -1166,24 +1166,17 @@ public class AnnotationFileParser {
       MethodDeclaration methodDeclaration = (MethodDeclaration) decl;
       if (methodDeclaration.getParameters().isEmpty()) {
         String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
-        if (annotationFileAnnos.records.containsKey(qualRecordName)
-            && annotationFileAnnos
-                .records
-                .get(qualRecordName)
-                .componentsByName
-                .containsKey(methodDeclaration.getNameAsString())) {
-          annotationFileAnnos
-                  .records
-                  .get(qualRecordName)
-                  .componentsByName
-                  .get(methodDeclaration.getNameAsString())
-                  .moreSpecificAccessorInStubs =
-              true;
+        RecordStub recordStub = annotationFileAnnos.records.get(qualRecordName);
+        if (recordStub != null) {
+          RecordComponentStub recordComponentStub =
+              recordStub.componentsByName.get(methodDeclaration.getNameAsString());
+          if (recordComponentStub != null) {
+            recordComponentStub.moreSpecificAccessorInStubs = true;
+          }
         }
       }
 
       try {
-
         annotate(
             methodType.getReturnType(), methodDeclaration.getType(), decl.getAnnotations(), decl);
       } catch (ErrorTypeKindException e) {
