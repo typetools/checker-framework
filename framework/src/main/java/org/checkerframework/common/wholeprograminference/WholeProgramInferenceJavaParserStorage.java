@@ -726,7 +726,7 @@ public class WholeProgramInferenceJavaParserStorage
     public Map<String, CallableDeclarationAnnos> callableDeclarations = new HashMap<>();
     /** Mapping from field names to wrappers for those fields. */
     public Map<String, FieldAnnos> fields = new HashMap<>(2);
-    /** Collection of declared enum constants (empty if not an enum) */
+    /** Collection of declared enum constants (empty if not an enum). */
     public Set<String> enumConstants = new HashSet<>(2);
 
     /**
