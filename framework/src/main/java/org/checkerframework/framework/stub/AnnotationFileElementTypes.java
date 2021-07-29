@@ -422,7 +422,7 @@ public class AnnotationFileElementTypes {
               && !recordComponentType
                   .componentsByName
                   .get(elt.getSimpleName().toString())
-                  .hasMoreSpecificAccessorInStubs())
+                  .hasAccessorInStubs())
             replaceAnnotations(
                 memberType.getReturnType(),
                 recordComponentType.componentsByName.get(elt.getSimpleName().toString()).type);

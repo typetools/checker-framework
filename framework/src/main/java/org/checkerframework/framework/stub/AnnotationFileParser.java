@@ -290,11 +290,11 @@ public class AnnotationFileParser {
     public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
         new HashMap<>(1);
 
-    /** Maps fully qualified record name to information in the stubs file. */
+    /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
   }
 
-  /** Information about a record from the stubs file */
+  /** Information about a record from a stub file. */
   public static class RecordStub {
     /** The components of the record, in order that they are declared in the record header. */
     public final List<RecordComponentStub> componentsInOrder;
@@ -326,22 +326,25 @@ public class AnnotationFileParser {
      * annotations on the record components in the stubs.
      */
     public List<AnnotatedTypeMirror> getComponentsInCanonicalConstructor() {
-      if (componentsInCanonicalConstructor != null) return componentsInCanonicalConstructor;
-      else return componentsInOrder.stream().map(c -> c.type).collect(Collectors.toList());
+      if (componentsInCanonicalConstructor != null) {
+        return componentsInCanonicalConstructor;
+      } else {
+        return componentsInOrder.stream().map(c -> c.type).collect(Collectors.toList());
+      }
     }
   }
 
   /**
-   * Information on a record component: its type, and whether there was then a specific annotation
-   * on the canonical constructor and/or accessor.
+   * Information about a record component: its type, and whether there was an annotation on the
+   * canonical constructor and/or accessor.
    */
   public static class RecordComponentStub {
     public final AnnotatedTypeMirror type;
 
-    private boolean moreSpecificAccessorInStubs = false;
+    private boolean hasAccessorInStubs = false;
 
     /**
-     * Makes a new instance with the given type
+     * Creates a new RecordComponentStub with the given type.
      *
      * @param type the type of the record component
      */
@@ -349,9 +352,13 @@ public class AnnotationFileParser {
       this.type = type;
     }
 
-    /** Returns whether there is a specifically annotated accessor in the stubs. */
-    public boolean hasMoreSpecificAccessorInStubs() {
-      return moreSpecificAccessorInStubs;
+    /**
+     * Returns whether there is an accessor in a stub file.
+     *
+     * @return true if some stub file contains an accessor
+     */
+    public boolean hasAccessorInStubs() {
+      return hasAccessorInStubs;
     }
   }
 
@@ -1171,7 +1178,7 @@ public class AnnotationFileParser {
           RecordComponentStub recordComponentStub =
               recordStub.componentsByName.get(methodDeclaration.getNameAsString());
           if (recordComponentStub != null) {
-            recordComponentStub.moreSpecificAccessorInStubs = true;
+            recordComponentStub.hasAccessorInStubs = true;
           }
         }
       }
