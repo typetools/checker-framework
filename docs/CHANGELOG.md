@@ -3,12 +3,19 @@ Version 3.17.0 (August 3, 2021)
 
 **User-visible changes:**
 
+`-Ainfer` can now infer postcondition annotations that reference formal parameters
+(e.g. `"#1"`, `"#2"`) and the receiver (`"this"`).
+
 **Implementation details:**
 
-Method renamings in `GenericAnnotatedTypeFactory`:
- * `getPreconditionAnnotation` => `getPreconditionAnnotations`
- * `getPostconditionAnnotation` => `getPostconditionAnnotations`
- * `getPreOrPostconditionAnnotation` => `getPreOrPostconditionAnnotations`
+Method renamings and signature changes (old methods are removed) in `GenericAnnotatedTypeFactory`:
+* `getPreconditionAnnotation(VariableElement, AnnotatedTypeMirror)` => `getPreconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror)`
+* `getPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, List<AnnotationMirror>)` => `getPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, List<AnnotationMirror>)`
+* `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
+* `requiresOrEnsuresQualifierAnno(VariableElement, AnnotationMirror, Analysis.BeforeOrAfter)` => `createRequiresOrEnsuresQualifier(String, AnnotationMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
+
+Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
+* `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
 
 Method renamings:
  * `CFAbstractAnalysis.getFieldValues` => `getFieldInitialValues`
