@@ -327,7 +327,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   public AnnotatedTypeMirror visitMethodInvocation(
       MethodInvocationTree node, AnnotatedTypeFactory f) {
     AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
-    return ex.getReturnType().asUse();
+    return f.applyCaptureConversion(ex.getReturnType().asUse());
   }
 
   @Override

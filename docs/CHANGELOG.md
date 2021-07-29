@@ -8,9 +8,18 @@ Java records are type-checked.
 **Implementation details:**
 
 Method renamings in `GenericAnnotatedTypeFactory`:
-* `getPreconditionAnnotation` => `getPreconditionAnnotations`
-* `getPostconditionAnnotation` => `getPostconditionAnnotations`
-* `getPreOrPostconditionAnnotation` => `getPreOrPostconditionAnnotations`
+ * `getPreconditionAnnotation` => `getPreconditionAnnotations`
+ * `getPostconditionAnnotation` => `getPostconditionAnnotations`
+ * `getPreOrPostconditionAnnotation` => `getPreOrPostconditionAnnotations`
+
+Method renamings:
+ * `CFAbstractAnalysis.getFieldValues` => `getFieldInitialValues`
+
+The following methods no longer take a `fieldValues` parameter:
+ * `GenericAnnotatedTypeFactory#createFlowAnalysis`
+ * `CFAnalysis` construtor
+ * `CFAbstractAnalysis#performAnalysis`
+ * `CFAbstractAnalysis` constructors
 
 **Closed issues:**
 
