@@ -850,10 +850,7 @@ public abstract class CFAbstractTransfer<
           || (lhs instanceof LocalVariableNode
               && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.FIELD)) {
         // Updates inferred field type
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromFieldAssignment(lhs, rhs, analysis.getContainingClass(n.getTree()));
+        analysis.atypeFactory.getWholeProgramInference().updateFromFieldAssignment(lhs, rhs);
       } else if (lhs instanceof LocalVariableNode
           && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
@@ -926,8 +923,7 @@ public abstract class CFAbstractTransfer<
       analysis
           .atypeFactory
           .getWholeProgramInference()
-          .updateFromFieldAssignment(
-              (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()));
+          .updateFromFieldAssignment((FieldAccessNode) lhs, rhs);
     }
 
     processCommonAssignment(in, lhs, rhs, store, resultValue);
