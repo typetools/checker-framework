@@ -2220,8 +2220,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedExecutableType memberTypeWithoutOverrides =
         getAnnotatedType(methodElt); // get unsubstituted type
     AnnotatedExecutableType memberTypeWithOverrides =
-        (AnnotatedExecutableType)
-            applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+        applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
     methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
 
     AnnotatedExecutableType methodType =
@@ -2328,18 +2327,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param memberType the type of {@code member}
    * @return {@code memberType}, adjusted according to fake overrides
    */
-  private AnnotatedTypeMirror applyFakeOverrides(
-      AnnotatedTypeMirror receiverType, Element member, AnnotatedTypeMirror memberType) {
+  private AnnotatedExecutableType applyFakeOverrides(
+      AnnotatedTypeMirror receiverType, Element member, AnnotatedExecutableType memberType) {
     // Currently, handle only methods, not fields.  TODO: Handle fields.
     if (memberType.getKind() != TypeKind.EXECUTABLE) {
       return memberType;
     }
 
     AnnotationFileElementTypes afet = stubTypes;
-    AnnotatedExecutableType methodType =
-        (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
+    AnnotatedExecutableType methodType = afet.getFakeOverride(member, receiverType);
     if (methodType == null) {
-      methodType = (AnnotatedExecutableType) memberType;
+      methodType = memberType;
     }
     return methodType;
   }
