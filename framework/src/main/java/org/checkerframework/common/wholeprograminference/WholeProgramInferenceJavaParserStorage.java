@@ -183,10 +183,13 @@ public class WholeProgramInferenceJavaParserStorage
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     @BinaryName String className = enclosingClass.flatname.toString();
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
-    // If it's an enum constant it won't appear as a field,
-    // and it won't have extra annotations so just return the basic type:
-    if (classAnnos.enumConstants.contains(fieldName)) return lhsATM;
-    else return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
+    // If it's an enum constant it won't appear as a field
+    // and it won't have extra annotations, so just return the basic type:
+    if (classAnnos.enumConstants.contains(fieldName)) {
+      return lhsATM;
+    } else {
+      return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
+    }
   }
 
   @Override
@@ -729,7 +732,7 @@ public class WholeProgramInferenceJavaParserStorage
     public Map<String, CallableDeclarationAnnos> callableDeclarations = new HashMap<>();
     /** Mapping from field names to wrappers for those fields. */
     public Map<String, FieldAnnos> fields = new HashMap<>(2);
-    /** Collection of declared enum constants (empty if not an enum) */
+    /** Collection of declared enum constants (empty if not an enum). */
     public Set<String> enumConstants = new HashSet<>(2);
 
     /**

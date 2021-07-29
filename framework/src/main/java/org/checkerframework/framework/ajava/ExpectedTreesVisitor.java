@@ -119,8 +119,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
       //      }
       //      private final String myField;
       //   }
-      // So the constructor and the field declarations have no matching trees in
-      // the JavaParser node, and we must remove those trees (and their subtrees).
+      // So the constructor and the field declarations have no matching trees in the JavaParser
+      // node, and we must remove those trees (and their subtrees) from the `trees` field.
       TreeScannerWithDefaults removeAllVisitor =
           new TreeScannerWithDefaults() {
             @Override
