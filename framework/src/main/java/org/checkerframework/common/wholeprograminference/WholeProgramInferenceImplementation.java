@@ -423,7 +423,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   @Override
-  public void updateFromFieldAssignment(Node lhs, Node rhs, ClassTree classTree) {
+  public void updateFromFieldAssignment(Node lhs, Node rhs) {
 
     Element element;
     String fieldName;
