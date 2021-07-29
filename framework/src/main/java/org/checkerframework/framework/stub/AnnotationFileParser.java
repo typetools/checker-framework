@@ -944,10 +944,11 @@ public class AnnotationFileParser {
           processField((FieldDeclaration) decl, (VariableElement) elt);
           break;
         case ENUM_CONSTANT:
-          if (decl instanceof FieldDeclaration)
+          if (decl instanceof FieldDeclaration) {
             processField((FieldDeclaration) decl, (VariableElement) elt);
-          else if (decl instanceof EnumConstantDeclaration)
+          } else if (decl instanceof EnumConstantDeclaration) {
             processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
+          }
           break;
         case CONSTRUCTOR:
         case METHOD:
@@ -1017,9 +1018,11 @@ public class AnnotationFileParser {
 
     final List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
     final List<TypeParameter> typeParameters;
-    if (decl instanceof NodeWithTypeParameters)
+    if (decl instanceof NodeWithTypeParameters) {
       typeParameters = ((NodeWithTypeParameters<?>) decl).getTypeParameters();
-    else typeParameters = Collections.emptyList();
+    } else {
+      typeParameters = Collections.emptyList();
+    }
 
     // It can be the case that args=[] and params=null, so don't crash in that case.
     // if ((typeParameters == null) != (typeArguments == null)) {
@@ -1050,8 +1053,9 @@ public class AnnotationFileParser {
     }
 
     annotateTypeParameters(decl, elt, typeArguments, typeParameters);
-    if (decl instanceof ClassOrInterfaceDeclaration)
+    if (decl instanceof ClassOrInterfaceDeclaration) {
       annotateSupertypes((ClassOrInterfaceDeclaration) decl, type);
+    }
     putMerge(annotationFileAnnos.atypes, elt, type);
     List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
     for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
