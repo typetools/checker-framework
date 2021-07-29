@@ -429,7 +429,7 @@ public class AnnotationFileElementTypes {
       Element enclosing = elt.getEnclosingElement();
       if (enclosing.getKind().name().equals("RECORD")) {
         // The annotations only transfer if this constructor has
-        // the same signature as the canonical constructor
+        // the same signature as the canonical constructor.
         List<? extends Element> recordComponents =
             ElementUtils.getRecordComponents((TypeElement) enclosing);
         if (recordComponents.size() == constructor.getParameters().size()) {
