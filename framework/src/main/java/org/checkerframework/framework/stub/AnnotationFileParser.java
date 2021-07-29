@@ -306,6 +306,13 @@ public class AnnotationFileParser {
      */
     public @MonotonicNonNull List<AnnotatedTypeMirror> componentsInCanonicalConstructor;
 
+    /**
+     * Creates a new RecordStub.
+     *
+     * @param componentsInOrder the components of the record, in order that they are declared in the
+     *     record header
+     * @param componentsByName a map from name to record component
+     */
     public RecordStub(
         List<RecordComponentStub> componentsInOrder,
         Map<String, RecordComponentStub> componentsByName) {
