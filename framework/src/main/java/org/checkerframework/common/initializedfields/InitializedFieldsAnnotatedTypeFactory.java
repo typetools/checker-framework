@@ -51,7 +51,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         continue;
       }
       @SuppressWarnings("signature:argument") // -processor is a binary name
-      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = createTypeFactoryForProcessor(checkerName);
       if (atf != null) {
         defaultValueAtypeFactories.add(atf);
       }
@@ -61,12 +61,14 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
   }
 
   /**
-   * Returns the type factory for the given annotation processor, if it is type-checker.
+   * Creates a new type factory for the given annotation processor, if it is a type-checker. This
+   * does NOT return an existing type factory.
    *
    * @param processorName the fully-qualified class name of an annotation processor
    * @return the type factory for the given annotation processor, or null if it's not a checker
    */
-  GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(@BinaryName String processorName) {
+  GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
+      @BinaryName String processorName) {
     try {
       Class<?> checkerClass = Class.forName(processorName);
       if (!BaseTypeChecker.class.isAssignableFrom(checkerClass)) {
