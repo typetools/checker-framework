@@ -2348,14 +2348,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * component has an annotation AND the method has no-arguments. If so, replaces the annotations on
    * the method return type with those from the record type in the same hierarchy.
    *
-   * @param member The class/record that this method is a member of.
-   * @param memberType The type of the method.
-   * @return The memberType parameter with the annotations replaced if applicable.
+   * @param member a method or constructor
+   * @param memberType the type of the method/constructor
+   * @return {@code memberType} with annotations replaced if applicable
    */
   private AnnotatedExecutableType applyRecordTypesToAccessors(
-      Element member, AnnotatedExecutableType memberType) {
+      ExecutableElement member, AnnotatedExecutableType memberType) {
     if (memberType.getKind() != TypeKind.EXECUTABLE) {
-      return memberType;
+      throw new BugInCF(
+          "member %s has type %s of kind %s", member, memberType, memberType.getKind());
     }
 
     stubTypes.injectRecordComponentType(types, member, memberType);

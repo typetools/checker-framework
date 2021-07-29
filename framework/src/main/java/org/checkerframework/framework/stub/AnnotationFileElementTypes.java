@@ -41,6 +41,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
+import org.checkerframework.framework.stub.AnnotationFileParser.RecordComponentStub;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -399,9 +400,9 @@ public class AnnotationFileElementTypes {
    * are given in the stub files. Such transfer is automatically done by javac usually, but not if
    * the stubs were used instead.
    *
-   * @param types a Types instance used for checking type equivalence.
-   * @param elt a method or constructor element (method does nothing if it's neither of these)
-   * @param memberType the type corresponding to the element elt.
+   * @param types a Types instance used for checking type equivalence
+   * @param elt a member. This method does nothing if it's not a method or constructor.
+   * @param memberType the type corresponding to the element elt
    */
   public void injectRecordComponentType(
       Types types, Element elt, AnnotatedExecutableType memberType) {
@@ -412,20 +413,15 @@ public class AnnotationFileElementTypes {
     if (elt.getKind() == ElementKind.METHOD) {
       if (((ExecutableElement) elt).getParameters().isEmpty()) {
         String recordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
-        if (annotationFileAnnos.records.containsKey(recordName)) {
-          AnnotationFileParser.RecordStub recordComponentType =
-              annotationFileAnnos.records.get(recordName);
-          // If the record component has an annotation, it replaces any
-          // from the same hierarchy on the method, unless there is
-          // a specific annotation on the accessor in the stubs file:
-          if (recordComponentType.componentsByName.containsKey(elt.getSimpleName().toString())
-              && !recordComponentType
-                  .componentsByName
-                  .get(elt.getSimpleName().toString())
-                  .hasAccessorInStubs())
-            replaceAnnotations(
-                memberType.getReturnType(),
-                recordComponentType.componentsByName.get(elt.getSimpleName().toString()).type);
+        AnnotationFileParser.RecordStub recordComponentType =
+            annotationFileAnnos.records.get(recordName);
+        if (recordComponentType != null) {
+          // If the record component has an annotation, it replaces any from the same hierarchy on
+          // the method, unless there is a specific annotation on the accessor in the stubs file:
+          RecordComponentStub recordComponentStub =
+              recordComponentType.componentsByName.get(elt.getSimpleName().toString());
+          if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs())
+            replaceAnnotations(memberType.getReturnType(), recordComponentStub.type);
         }
       }
     } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
@@ -467,8 +463,8 @@ public class AnnotationFileElementTypes {
    * Replace annotations on destType with those from srcType, first removing any annotations on
    * destType that are in the same hierarchy as any on srcType.
    *
-   * @param destType the type to remove/replace the annotations on.
-   * @param srcType the type to take the annotations from.
+   * @param destType the type whose annotations to remove/replace
+   * @param srcType the type whose annotations are copied to {@code destType}
    */
   private void replaceAnnotations(AnnotatedTypeMirror destType, AnnotatedTypeMirror srcType) {
     for (AnnotationMirror annotation : srcType.getAnnotations()) {
