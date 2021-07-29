@@ -15,7 +15,6 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,9 +41,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
@@ -2772,37 +2769,5 @@ public abstract class GenericAnnotatedTypeFactory<
     List<String> result =
         AnnotationUtils.getElementValueArray(contractAnnotation, elementName, String.class, true);
     return result;
-  }
-
-  /**
-   * Returns the type factory for the given annotation processor, if it is type-checker.
-   *
-   * @param processorName the fully-qualified class name of an annotation processor
-   * @return the type factory for the given annotation processor, or null if it's not a checker
-   */
-  public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(@BinaryName String processorName) {
-    try {
-      Class<?> checkerClass = Class.forName(processorName);
-      if (!BaseTypeChecker.class.isAssignableFrom(checkerClass)) {
-        return null;
-      }
-      @SuppressWarnings("unchecked")
-      BaseTypeChecker c =
-          ((Class<? extends BaseTypeChecker>) checkerClass).getDeclaredConstructor().newInstance();
-      c.init(processingEnv);
-      c.initChecker();
-      BaseTypeVisitor<?> v = c.createSourceVisitorPublic();
-      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = v.createTypeFactoryPublic();
-      if (atf == null) {
-        throw new UserError("Cannot find %s; check the classpath or processorpath", processorName);
-      }
-      return atf;
-    } catch (ClassNotFoundException
-        | InstantiationException
-        | InvocationTargetException
-        | IllegalAccessException
-        | NoSuchMethodException e) {
-      throw new UserError("Problem instantiating " + processorName, e);
-    }
   }
 }

@@ -1,6 +1,7 @@
 package org.checkerframework.common.initializedfields;
 
 import com.sun.source.tree.VariableTree;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -10,8 +11,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.initializedfields.qual.EnsuresInitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFieldsBottom;
@@ -21,6 +24,7 @@ import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.UserError;
 
 /** The annotated type factory for the Initialized Fields Checker. */
 public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
@@ -47,13 +51,47 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         continue;
       }
       @SuppressWarnings("signature:argument") // -processor is a binary name
-      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = createTypeFactoryForProcessor(checkerName);
       if (atf != null) {
         defaultValueAtypeFactories.add(atf);
       }
     }
 
     this.postInit();
+  }
+
+  /**
+   * Creates a new type factory for the given annotation processor, if it is a type-checker. This
+   * does NOT return an existing type factory.
+   *
+   * @param processorName the fully-qualified class name of an annotation processor
+   * @return the type factory for the given annotation processor, or null if it's not a checker
+   */
+  GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
+      @BinaryName String processorName) {
+    try {
+      Class<?> checkerClass = Class.forName(processorName);
+      if (!BaseTypeChecker.class.isAssignableFrom(checkerClass)) {
+        return null;
+      }
+      @SuppressWarnings("unchecked")
+      BaseTypeChecker c =
+          ((Class<? extends BaseTypeChecker>) checkerClass).getDeclaredConstructor().newInstance();
+      c.init(processingEnv);
+      c.initChecker();
+      BaseTypeVisitor<?> v = c.createSourceVisitorPublic();
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = v.createTypeFactoryPublic();
+      if (atf == null) {
+        throw new UserError("Cannot find %s; check the classpath or processorpath", processorName);
+      }
+      return atf;
+    } catch (ClassNotFoundException
+        | InstantiationException
+        | InvocationTargetException
+        | IllegalAccessException
+        | NoSuchMethodException e) {
+      throw new UserError("Problem instantiating " + processorName, e);
+    }
   }
 
   @Override
