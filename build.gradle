@@ -917,6 +917,9 @@ subprojects {
                 // Show the found unexpected diagnostics and expected diagnostics not found.
                 exceptionFormat "full"
                 events "failed"
+
+                // Don't show the uninteresting stack traces from the exceptions.
+                showStackTraces = false
             }
 
             // After each test, print a summary.
