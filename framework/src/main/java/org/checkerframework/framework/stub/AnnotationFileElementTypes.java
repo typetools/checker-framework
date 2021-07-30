@@ -803,15 +803,4 @@ public class AnnotationFileElementTypes {
       throw new BugInCF("cannot open the Jar file " + resourceURL.getFile(), e);
     }
   }
-
-  public AnnotatedTypeMirror getAnnotationForRecordComponent(Element enclosing, String name) {
-    return annotationFileAnnos.atypes.entrySet().stream()
-        .filter(
-            e ->
-                e.getKey().getEnclosingElement().toString().equals(enclosing.toString())
-                    && e.getKey().getSimpleName().toString().equals(name))
-        .map(e -> e.getValue())
-        .findFirst()
-        .orElse(null);
-  }
 }
