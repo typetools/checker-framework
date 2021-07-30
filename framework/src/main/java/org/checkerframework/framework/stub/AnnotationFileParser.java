@@ -1191,12 +1191,12 @@ public class AnnotationFileParser {
         annotate(
             methodType.getReturnType(), methodDeclaration.getType(), decl.getAnnotations(), decl);
       } catch (ErrorTypeKindException e) {
-        // Do nothing, per Issue #244.
+        // Do nothing, per https://github.com/typetools/checker-framework/issues/244 .
       }
     } else {
       assert decl.isConstructorDeclaration();
       if (elt.getEnclosingElement().getKind().name().equals("RECORD")) {
-        // If this is the canonical constructor, record that the component
+        // If this is the (user-written) canonical constructor, record that the component
         // annotations should not be automatically transferred:
         List<? extends Element> components =
             ElementUtils.getRecordComponents((TypeElement) elt.getEnclosingElement());

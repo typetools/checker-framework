@@ -395,10 +395,9 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Checks the given constructor/method, and if appropriate, adds annotations from the
-   * corresponding record components (if it is the canonical constructor or a record accessor) that
-   * are given in the stub files. Such transfer is automatically done by javac usually, but not if
-   * the stubs were used instead.
+   * Adds annotations from stub files for the corresponding record components (if the given
+   * constructor/method is the canonical constructor or a record accessor). Such transfer is
+   * automatically done by javac usually, but not from stubs.
    *
    * @param types a Types instance used for checking type equivalence
    * @param elt a member. This method does nothing if it's not a method or constructor.
