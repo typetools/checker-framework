@@ -415,8 +415,12 @@ public class AnnotationFileElementTypes {
         AnnotationFileParser.RecordStub recordComponentType =
             annotationFileAnnos.records.get(recordName);
         if (recordComponentType != null) {
-          // If the record component has an annotation, it replaces any from the same hierarchy on
-          // the method, unless there is a specific annotation on the accessor in the stubs file:
+          // If the record component has an annotation in the stub, the component annotation
+          // replaces any from the same hierarchy on
+          // the accessor method, unless there is a specific annotation on the accessor in the stubs
+          // file.
+          // We thus only replace the method annotation with the component annotation
+          // if there is no accessor in the stubs file:
           RecordComponentStub recordComponentStub =
               recordComponentType.componentsByName.get(elt.getSimpleName().toString());
           if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs())
