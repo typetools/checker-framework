@@ -1199,17 +1199,17 @@ public class AnnotationFileParser {
         // annotations should not be automatically transferred:
         String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
         if (annotationFileAnnos.records.containsKey(qualRecordName)) {
-          ArrayList<AnnotatedTypeMirror> typeMirrors = new ArrayList<>();
+          ArrayList<AnnotatedTypeMirror> annotatedParameters = new ArrayList<>();
           List<? extends VariableElement> parameters = elt.getParameters();
           for (int i = 0; i < parameters.size(); i++) {
             VariableElement parameter = parameters.get(i);
             AnnotatedTypeMirror atm =
                 AnnotatedTypeMirror.createType(parameter.asType(), atypeFactory, false);
             annotate(atm, decl.getParameter(i).getAnnotations(), decl.getParameter(i));
-            typeMirrors.add(atm);
+            annotatedParameters.add(atm);
           }
           annotationFileAnnos.records.get(qualRecordName).componentsInCanonicalConstructor =
-              typeMirrors;
+              annotatedParameters;
         }
       }
       annotate(methodType.getReturnType(), decl.getAnnotations(), decl);
