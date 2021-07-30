@@ -1,7 +1,7 @@
 // The error is reproducable only if the classes are not inner classes.
 final class Issue4849F<T> {}
 
-abstract class C<F1> extends Issue4849G<C<F1>> {}
+abstract class Issue4849C<F1> extends Issue4849G<Issue4849C<F1>> {}
 
 abstract class Issue4849G<M extends Issue4849G<M>> {
   abstract M e();
