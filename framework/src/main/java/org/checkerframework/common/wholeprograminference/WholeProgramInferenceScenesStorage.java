@@ -152,6 +152,7 @@ public class WholeProgramInferenceScenesStorage
         className = getEnclosingClassName((LocalVariableNode) elt);
         break;
       case FIELD:
+      case ENUM_CONSTANT:
         ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
         className = enclosingClass.flatname.toString();
         break;
