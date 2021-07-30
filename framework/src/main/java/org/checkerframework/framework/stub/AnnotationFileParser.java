@@ -296,10 +296,11 @@ public class AnnotationFileParser {
 
   /** Information about a record from a stub file. */
   public static class RecordStub {
-    /** The components of the record, in order that they are declared in the record header. */
-    public final List<RecordComponentStub> componentsInOrder;
-    /** A map from name to record component. */
-    public final Map<String, RecordComponentStub> componentsByName;
+    /**
+     * A map from name to record component. The iteration order is the order that they are declared
+     * in the record header.
+     */
+    public final LinkedHashMap<String, RecordComponentStub> componentsByName;
     /**
      * If the canonical constructor is given in the stubs, the annotated types (in component
      * declaration order) for the constructor. Null if not present in the stubs.
@@ -309,14 +310,10 @@ public class AnnotationFileParser {
     /**
      * Creates a new RecordStub.
      *
-     * @param componentsInOrder the components of the record, in order that they are declared in the
-     *     record header
-     * @param componentsByName a map from name to record component
+     * @param componentsByName a map from name to record component. The insertion/iteration order is
+     *     the order that they are declared in the record header.
      */
-    public RecordStub(
-        List<RecordComponentStub> componentsInOrder,
-        Map<String, RecordComponentStub> componentsByName) {
-      this.componentsInOrder = componentsInOrder;
+    public RecordStub(LinkedHashMap<String, RecordComponentStub> componentsByName) {
       this.componentsByName = componentsByName;
     }
 
@@ -329,7 +326,7 @@ public class AnnotationFileParser {
       if (componentsInCanonicalConstructor != null) {
         return componentsInCanonicalConstructor;
       } else {
-        return componentsInOrder.stream().map(c -> c.type).collect(Collectors.toList());
+        return componentsByName.values().stream().map(c -> c.type).collect(Collectors.toList());
       }
     }
   }
@@ -924,18 +921,16 @@ public class AnnotationFileParser {
 
     if (typeDecl instanceof RecordDeclaration) {
       NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
-      List<RecordComponentStub> inOrder = new ArrayList<>();
-      HashMap<String, RecordComponentStub> byName = new HashMap<>();
+      LinkedHashMap<String, RecordComponentStub> byName = new LinkedHashMap<>();
       for (Parameter recordMember : recordMembers) {
         RecordComponentStub stub =
             processRecordField(
                 recordMember,
                 findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
         byName.put(recordMember.getNameAsString(), stub);
-        inOrder.add(stub);
       }
       annotationFileAnnos.records.put(
-          typeDecl.getFullyQualifiedName().get(), new RecordStub(inOrder, byName));
+          typeDecl.getFullyQualifiedName().get(), new RecordStub(byName));
     }
 
     Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
