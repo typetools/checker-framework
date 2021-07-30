@@ -4,10 +4,13 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
@@ -16,6 +19,10 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -78,6 +85,69 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       }
     }
     return super.visitMethod(node, p);
+  }
+
+  // Overwritten to check that destructors (i.e. methods responsible for resolving
+  // the must-call obligations of owning fields) enforce a stronger version of
+  // @EnsuresCalledMethods: that the claimed @CalledMethods annotation is true on
+  // both exceptional and regular exits, not just on regular exits.
+  @Override
+  protected void checkPostcondition(MethodTree methodTree, AnnotationMirror annotation,
+      JavaExpression expression) {
+    super.checkPostcondition(methodTree, annotation, expression);
+    // Only check if the required annotation is a CalledMethods annotation (implying
+    // the method was annotated with @EnsuresCalledMethods).
+    if (!AnnotationUtils.areSameByName(annotation,
+        "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+      return;
+    }
+    // This method might be a destructor that is responsible for resolving the must-call
+    // obligations of one or more owning fields of the containing class.
+    ExecutableElement elt = TreeUtils.elementFromDeclaration(methodTree);
+    TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
+    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
+          rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    AnnotationMirror mcAnno =
+          mustCallAnnotatedTypeFactory
+              .getAnnotatedType(containingClass)
+              .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
+    List<String> mcValues =
+          AnnotationUtils.getElementValueArray(
+              mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
+    String methodName = elt.getSimpleName().toString();
+    if (!mcValues.contains(methodName)) {
+      // Not a destructor, just a method with an ECM annotation. No further checking to do.
+      return;
+    }
+    // The following is mostly copied from BaseTypeVisitor#checkPostcondition, except
+    // the exit store used and the error issued. The exit store is the general (i.e.
+    // LUB of all exits) store because getExceptionalExitStore(MethodTree) appears to
+    // be buggy. TODO: investigate why that doesn't work.
+    CFAbstractStore<?, ?> exitStore = atypeFactory.getStoreAfter(methodTree);
+    if (exitStore == null) {
+      // If there is no exceptional exitStore, then the method cannot throw an exception and there
+      // is no need to check anything else.
+    } else {
+      // TODO: 7/29: the checker is never getting here. Is getStoreAfter(Tree) also broken and
+      //  always returning null? Investigate.
+      System.out.println(exitStore);
+      CFAbstractValue<?> value = exitStore.getValue(expression);
+      AnnotationMirror inferredAnno = null;
+      if (value != null) {
+        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+        Set<AnnotationMirror> annos = value.getAnnotations();
+        inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+      }
+      if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+        checker.reportError(
+            methodTree,
+            "destructor.exceptional.postcondition",
+            methodTree.getName(),
+            expression.toString(),
+            inferredAnno,
+            annotation);
+      }
+    }
   }
 
   /**

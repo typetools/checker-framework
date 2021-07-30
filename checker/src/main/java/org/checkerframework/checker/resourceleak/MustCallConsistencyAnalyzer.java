@@ -28,12 +28,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -126,14 +124,6 @@ import org.plumelib.util.StringsPlume;
 class MustCallConsistencyAnalyzer {
 
   /**
-   * The String used in error messages to denote a regular method exit. It is kept in a field
-   * because the consistency checker never issues errors about owning fields on non-exceptional exit
-   * paths in destructors, because the Called Methods Checker does instead, and this string is used
-   * to test for that condition, so it must be kept in sync in two places.
-   */
-  private static final String REGULAR_METHOD_EXIT_STRING = "regular method exit";
-
-  /**
    * Aliases through which the checker has already reported about a resource leak, to avoid
    * duplicate reports.
    */
@@ -186,7 +176,7 @@ class MustCallConsistencyAnalyzer {
 
     // Add any owning parameters to the initial set of variables to track.
     BlockWithObligations entry =
-        new BlockWithObligations(cfg.getEntryBlock(), computeOwningParametersAndFields(cfg));
+        new BlockWithObligations(cfg.getEntryBlock(), computeOwningParameters(cfg));
     worklist.add(entry);
     visited.add(entry);
 
@@ -920,7 +910,7 @@ class MustCallConsistencyAnalyzer {
             node.getTree(),
             "required.method.not.called",
             formatMissingMustCallMethods(mcValues),
-            "field " + lhs.getFieldName(),
+            lhsElement.toString(),
             lhsElement.asType().toString(),
             " Non-final owning field might be overwritten");
       }
@@ -1202,7 +1192,7 @@ class MustCallConsistencyAnalyzer {
               ?
               // Technically the variable may be going out of scope before the method exit, but that
               // doesn't seem to provide additional helpful information.
-              REGULAR_METHOD_EXIT_STRING
+              "regular method exit"
               : "possible exceptional exit due to "
                   + ((ExceptionBlock) currentBlock).getNode().getTree()
                   + " with exception type "
@@ -1404,18 +1394,13 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Finds {@link Owning} formal parameters for the method corresponding to a CFG. If the method is
-   * a destructor (i.e. it is named in its containing class' {@code MustCall} annotation and has an
-   * {@code EnsuresCalledMethods} annotation referencing one or more owning fields), also adds those
-   * owning fields as if they were parameters, since this method is responsible for fulfilling their
-   * must-call obligations, too.
+   * Finds {@link Owning} formal parameters for the method corresponding to a CFG.
    *
    * @param cfg the CFG
-   * @return the owning formal parameters of the method that corresponds to the given cfg and the
-   *     owning fields the method is responsible for, or an empty set if the given CFG doesn't
-   *     correspond to a method body
+   * @return the owning formal parameters of the method that corresponds to the given cfg, or an
+   *     empty set if the given CFG doesn't correspond to a method body
    */
-  private Set<Obligation> computeOwningParametersAndFields(ControlFlowGraph cfg) {
+  private Set<Obligation> computeOwningParameters(ControlFlowGraph cfg) {
     // TODO what about lambdas?
     if (cfg.getUnderlyingAST().getKind() == Kind.METHOD) {
       MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
@@ -1431,65 +1416,6 @@ class MustCallConsistencyAnalyzer {
                   ImmutableSet.of(new ResourceAlias(new LocalVariable(paramElement), param))));
           // Increment numMustCall for each @Owning parameter tracked by the enclosing method.
           incrementNumMustCall(paramElement);
-        }
-      }
-      ExecutableElement methodElt = TreeUtils.elementFromDeclaration(method);
-      AnnotationMirror ecmAnno =
-          typeFactory.getDeclAnnotation(methodElt, EnsuresCalledMethods.class);
-      if (ecmAnno != null) {
-        // This method might be a destructor that is responsible for resolving the must-call
-        // obligations of one or more owning fields of the containing class.
-        TypeElement containingClass = ElementUtils.enclosingTypeElement(methodElt);
-        MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-            typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-        AnnotationMirror mcAnno =
-            mustCallAnnotatedTypeFactory
-                .getAnnotatedType(containingClass)
-                .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
-        List<String> mcValues =
-            AnnotationUtils.getElementValueArray(
-                mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
-        String methodName = methodElt.getSimpleName().toString();
-        if (!mcValues.contains(methodName)) {
-          // Not a destructor, just a method with an ECM annotation. No further checking to do.
-          return result;
-        }
-        List<String> ecmValues =
-            AnnotationUtils.getElementValueArray(
-                ecmAnno, typeFactory.ensuresCalledMethodsValueElement, String.class);
-
-        // This is necessary because the findFieldsInType* methods below require the field names,
-        // but the format of EnsuresCalledMethods annotations permits either the name or "this."
-        // and then the name.
-        List<String> possibleFieldNames = new ArrayList<>(ecmValues.size());
-        for (String ecmValue : ecmValues) {
-          if (ecmValue.startsWith("this.")) {
-            possibleFieldNames.add(ecmValue.substring(5));
-          } else {
-            possibleFieldNames.add(ecmValue);
-          }
-        }
-
-        // findFieldsInTypeOrSuperType cannot find private fields, so use it only to get the visible
-        // fields from the superclass(es). Then, use findFieldsInType (which does find private
-        // fields) to get the fields for the actual class, and then combine the two to create the
-        // true list.
-        Set<VariableElement> superFields =
-            ElementUtils.findFieldsInTypeOrSuperType(
-                containingClass.getSuperclass(), possibleFieldNames);
-        Set<VariableElement> fields =
-            ElementUtils.findFieldsInType(containingClass, possibleFieldNames);
-        fields.addAll(superFields);
-
-        for (VariableElement fieldElement : fields) {
-          // Only check owning fields.
-          if (typeFactory.getDeclAnnotation(fieldElement, Owning.class) != null) {
-            FieldAccess fieldAccess =
-                new FieldAccess(new ThisReference(containingClass.asType()), fieldElement);
-            ResourceAlias aliasForField = new ResourceAlias(fieldAccess, method);
-            Obligation obligationForField = new Obligation(Collections.singleton(aliasForField));
-            result.add(obligationForField);
-          }
         }
       }
       return result;
@@ -1571,15 +1497,10 @@ class MustCallConsistencyAnalyzer {
         }
       }
       if (cmAnno == null) {
-        if (alias.reference instanceof LocalVariable) {
-          cmAnno =
-              typeFactory
-                  .getAnnotatedType(((LocalVariable) alias.reference).getElement())
-                  .getEffectiveAnnotationInHierarchy(typeFactory.top);
-        } else {
-          // Use a safe default.
-          cmAnno = typeFactory.top;
-        }
+        cmAnno =
+            typeFactory
+                .getAnnotatedType(alias.reference.getElement())
+                .getEffectiveAnnotationInHierarchy(typeFactory.top);
       }
 
       if (calledMethodsSatisfyMustCall(mustCallValue, cmAnno)) {
@@ -1591,21 +1512,16 @@ class MustCallConsistencyAnalyzer {
     if (!mustCallSatisfied) {
       // Report the error at the first alias' definition. This choice is arbitrary but consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
-      // Don't issue errors about fields on regular exits, because the Called Methods
-      // Checker will issue a contracts.postcondition error instead.
-      if (!(firstAlias.reference instanceof FieldAccess
-          && REGULAR_METHOD_EXIT_STRING.equals(outOfScopeReason))) {
-        if (!reportedErrorAliases.contains(firstAlias)) {
-          if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
-            reportedErrorAliases.add(firstAlias);
-            checker.reportError(
-                firstAlias.tree,
-                "required.method.not.called",
-                formatMissingMustCallMethods(mustCallValue),
-                firstAlias.reference.toString(),
-                firstAlias.reference.getType().toString(),
-                outOfScopeReason);
-          }
+      if (!reportedErrorAliases.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedErrorAliases.add(firstAlias);
+          checker.reportError(
+              firstAlias.tree,
+              "required.method.not.called",
+              firstAlias.reference.toString(),
+              formatMissingMustCallMethods(mustCallValue),
+              firstAlias.reference.getType().toString(),
+              outOfScopeReason);
         }
       }
     }
@@ -1842,8 +1758,7 @@ class MustCallConsistencyAnalyzer {
     private @Nullable ResourceAlias getResourceAlias(LocalVariableNode localVariableNode) {
       Element element = localVariableNode.getElement();
       for (ResourceAlias alias : resourceAliases) {
-        if (alias.reference instanceof LocalVariable
-            && ((LocalVariable) alias.reference).getElement().equals(element)) {
+        if (alias.reference.getElement().equals(element)) {
           return alias;
         }
       }
@@ -1888,34 +1803,31 @@ class MustCallConsistencyAnalyzer {
   /**
    * This class represents a single resource alias in a resource alias set.
    *
-   * <p>Internally, a resource alias is represented by a pair of the "reference" through which the
-   * must-call obligations for the alias set can be satisfied (which might be a local variable, a
-   * temporary variable, a field access, etc.) along with a tree in the corresponding method that
-   * "assigns" that reference. Besides a normal assignment, the tree may be a {@link VariableTree}
-   * in the case of a formal parameter or a {@link MethodTree} if the alias is an owning field which
-   * must have its must-call obligations resolved by a destructor (in which case, the MethodTree is
-   * the destructor). The tree is only used for error-reporting purposes.
+   * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
+   * "reference" through which the must-call obligations for the alias set can be satisfied) along
+   * with a tree in the corresponding method that "assigns" the variable. Besides a normal
+   * assignment, the tree may be a {@link VariableTree} in the case of a formal parameter. The tree
+   * is only used for error-reporting purposes.
    */
   /* package-private */ static class ResourceAlias {
 
     /**
      * The JavaExpression that represents the reference through which this resource can have its
      * must-call obligations satisfied. This is either a local variable actually defined in the
-     * source code, a temporary variable for an expression, or a field access for an owning field
-     * that must have its must-call obligations resolved by a destructor.
+     * source code, or a temporary variable for an expression.
      */
-    public final JavaExpression reference;
+    public final LocalVariable reference;
 
-    /** The tree at which it was "assigned", for error reporting. */
+    /** The tree at which it was assigned, for error reporting. */
     public final Tree tree;
 
     /**
      * Create a new resource alias.
      *
-     * @param reference the java expression
+     * @param reference the local variable
      * @param tree the tree
      */
-    public ResourceAlias(JavaExpression reference, Tree tree) {
+    public ResourceAlias(LocalVariable reference, Tree tree) {
       this.reference = reference;
       this.tree = tree;
     }
