@@ -428,33 +428,18 @@ public class AnnotationFileElementTypes {
         }
       }
     } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
-      ExecutableElement constructor = (ExecutableElement) elt;
-      Element enclosing = elt.getEnclosingElement();
-      if (enclosing.getKind().name().equals("RECORD")) {
-        // The annotations only transfer if this constructor has
-        // the same signature as the canonical constructor.
-        List<? extends Element> recordComponents =
-            ElementUtils.getRecordComponents((TypeElement) enclosing);
-        if (recordComponents.size() == constructor.getParameters().size()) {
-          // First check that it is actually the canonical constructor:
-          for (int i = 0; i < recordComponents.size(); i++) {
-            if (!types.isSameType(
-                recordComponents.get(i).asType(),
-                memberType.getParameterTypes().get(i).getUnderlyingType())) {
-              return;
-            }
-          }
-          AnnotationFileParser.RecordStub recordComponentType =
-              annotationFileAnnos.records.get(
-                  ((TypeElement) enclosing).getQualifiedName().toString());
-          if (recordComponentType != null) {
-            List<AnnotatedTypeMirror> componentsInCanonicalConstructor =
-                recordComponentType.getComponentsInCanonicalConstructor();
-            if (componentsInCanonicalConstructor != null) {
-              for (int i = 0; i < recordComponents.size(); i++) {
-                replaceAnnotations(
-                    memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
-              }
+      if (AnnotationFileUtil.isCanonicalConstructor((ExecutableElement) elt, types)) {
+        Element enclosing = elt.getEnclosingElement();
+        AnnotationFileParser.RecordStub recordComponentType =
+            annotationFileAnnos.records.get(
+                ((TypeElement) enclosing).getQualifiedName().toString());
+        if (recordComponentType != null) {
+          List<AnnotatedTypeMirror> componentsInCanonicalConstructor =
+              recordComponentType.getComponentsInCanonicalConstructor();
+          if (componentsInCanonicalConstructor != null) {
+            for (int i = 0; i < componentsInCanonicalConstructor.size(); i++) {
+              replaceAnnotations(
+                  memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
             }
           }
         }

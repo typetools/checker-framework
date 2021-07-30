@@ -1194,34 +1194,22 @@ public class AnnotationFileParser {
       }
     } else {
       assert decl.isConstructorDeclaration();
-      if (elt.getEnclosingElement().getKind().name().equals("RECORD")) {
+      if (AnnotationFileUtil.isCanonicalConstructor(elt, atypeFactory.types)) {
         // If this is the (user-written) canonical constructor, record that the component
         // annotations should not be automatically transferred:
-        List<? extends Element> components =
-            ElementUtils.getRecordComponents((TypeElement) elt.getEnclosingElement());
-        if (decl.getParameters().size() == components.size()) {
-          boolean mismatch = false;
-          for (int i = 0; i < decl.getParameters().size(); i++) {
-            if (!sameType(components.get(i).asType(), decl.getParameter(i).getType())) {
-              mismatch = true;
-            }
+        String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
+        if (annotationFileAnnos.records.containsKey(qualRecordName)) {
+          ArrayList<AnnotatedTypeMirror> typeMirrors = new ArrayList<>();
+          List<? extends VariableElement> parameters = elt.getParameters();
+          for (int i = 0; i < parameters.size(); i++) {
+            VariableElement parameter = parameters.get(i);
+            AnnotatedTypeMirror atm =
+                AnnotatedTypeMirror.createType(parameter.asType(), atypeFactory, false);
+            annotate(atm, decl.getParameter(i).getAnnotations(), decl.getParameter(i));
+            typeMirrors.add(atm);
           }
-          if (!mismatch) {
-            String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
-            if (annotationFileAnnos.records.containsKey(qualRecordName)) {
-              ArrayList<AnnotatedTypeMirror> typeMirrors = new ArrayList<>();
-              List<? extends VariableElement> parameters = elt.getParameters();
-              for (int i = 0; i < parameters.size(); i++) {
-                VariableElement parameter = parameters.get(i);
-                AnnotatedTypeMirror atm =
-                    AnnotatedTypeMirror.createType(parameter.asType(), atypeFactory, false);
-                annotate(atm, decl.getParameter(i).getAnnotations(), decl.getParameter(i));
-                typeMirrors.add(atm);
-              }
-              annotationFileAnnos.records.get(qualRecordName).componentsInCanonicalConstructor =
-                  typeMirrors;
-            }
-          }
+          annotationFileAnnos.records.get(qualRecordName).componentsInCanonicalConstructor =
+              typeMirrors;
         }
       }
       annotate(methodType.getReturnType(), decl.getAnnotations(), decl);
