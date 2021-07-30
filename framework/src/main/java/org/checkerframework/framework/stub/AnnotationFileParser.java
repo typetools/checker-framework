@@ -335,12 +335,16 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Information about a record component: its type, and whether there was an annotation on the
-   * canonical constructor and/or accessor.
+   * Information about a record component: its type, and whether there was an accessor in the stubs
+   * for that component. That is, for a component "foo" was there a method named exactly "foo()" in
+   * the stubs. If so, annotations on that accessor will take precedence over annotations that would
+   * otherwise be copied from the component in the stubs to the acessor.
    */
   public static class RecordComponentStub {
+    /** The type of the record component. */
     public final AnnotatedTypeMirror type;
 
+    /** Whether this component has an accessor of exactly the same name in the stubs file. */
     private boolean hasAccessorInStubs = false;
 
     /**
