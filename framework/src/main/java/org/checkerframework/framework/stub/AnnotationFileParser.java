@@ -1555,7 +1555,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Processes a parameter to a record (i.e. a record component).
+   * Processes a parameter in a record header (i.e. a record component).
    *
    * @param decl the parameter in the record header
    * @param elt the corresponding variable declaration element
