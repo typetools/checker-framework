@@ -1,4 +1,4 @@
-// The error is reproducable only if the classes are not inner classes.
+// The error is reproducable none of the classes are not inner classes.
 final class Issue4849F<T> {}
 
 abstract class Issue4849C<F1> extends Issue4849G<Issue4849C<F1>> {}
