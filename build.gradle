@@ -730,7 +730,7 @@ subprojects {
         relocate 'nonapi.io.github.classgraph', 'org.checkerframework.nonapi.io.github.classgraph'
         // relocate 'sun', 'org.checkerframework.sun'
         relocate 'com.google', 'org.checkerframework.com.google'
-        relocate 'plume', 'org.checkerframework.plume'
+
         exclude '**/module-info.class'
 
         doFirst {
@@ -739,6 +739,8 @@ subprojects {
                 relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
             }
         }
+
+        minimize()
     }
 
     if (!project.name.startsWith('checker-qual-android')) {
@@ -1159,9 +1161,21 @@ jar.onlyIf {false}
  */
 final sharedPublicationConfiguration(publication) {
     publication.pom {
-        url = 'https://checkerframework.org'
+        url = 'https://eisop.github.io/'
         developers {
             // These are the lead developers/maintainers, not all the developers or contributors.
+
+            // For eisop, previously also typetools
+            developer {
+                id = 'wmdietl'
+                name = 'Werner M. Dietl'
+                email = 'wdietl@gmail.com'
+                url = 'https://ece.uwaterloo.ca/~wdietl/'
+                organization = 'University of Waterloo'
+                organizationUrl = 'https://uwaterloo.ca/'
+            }
+
+            // For typetools
             developer {
                 id = 'mernst'
                 name = 'Michael Ernst'
@@ -1180,9 +1194,9 @@ final sharedPublicationConfiguration(publication) {
         }
 
         scm {
-            url = 'https://github.com/typetools/checker-framework.git'
-            connection = 'scm:git:git://github.com/typetools/checker-framework.git'
-            developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
+            url = 'https://github.com/eisop/checker-framework.git'
+            connection = 'scm:git:git://github.com/eisop/checker-framework.git'
+            developerConnection = 'scm:git:ssh://git@github.com/eisop/checker-framework.git'
         }
     }
 }

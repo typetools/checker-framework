@@ -180,6 +180,9 @@ shadowJar {
     description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
+
+    minimize()
+
     doLast{
         copy {
             from archiveFile.get()

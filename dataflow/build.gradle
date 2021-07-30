@@ -19,16 +19,16 @@ dependencies {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 /**
- * Creates a task with name datflow${shadedPkgName} that creates a shaded dataflow jar. The packages will be shaded to
- * "org.checkerframework.{@code shadedPkgName}" and the jar name is datflow-${shadedPkgName}.jar.
+ * Creates a task with name dataflow${shadedPkgName} that creates a shaded dataflow jar. The packages will be shaded to
+ * "org.checkerframework.{@code shadedPkgName}" and the jar name is dataflow-${shadedPkgName}.jar.
  * @param shadedPkgName
  * @return
  */
 def createDataflowShaded(shadedPkgName) {
-    tasks.create(name: "datflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
-        description "Builds datflow-${shadedPkgName}.jar."
+    tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+        description "Builds dataflow-${shadedPkgName}.jar."
         includeEmptyDirs = false
-        archivesBaseName = "datflow-${shadedPkgName}"
+        archivesBaseName = "dataflow-${shadedPkgName}"
         // Without this line, the Maven artifact will have the classifier "all".
         archiveClassifier.set('')
 
@@ -44,7 +44,9 @@ def createDataflowShaded(shadedPkgName) {
         }
 
         // Relocate external dependencies
-        relocate 'org.plume', "org.checkerframework.${shadedPkgName}.org.plume"
+        relocate 'org.plumelib', "org.checkerframework.${shadedPkgName}.org.plumelib"
+
+        minimize()
     }
 }
 
@@ -179,23 +181,23 @@ publishing {
         dataflowShaded(MavenPublication) {
             dataflowShadedPom(it, 'shaded')
 
-            artifact getTasksByName('datflowshadedJar',false).iterator().next()
+            artifact getTasksByName('dataflowshadedJar',false).iterator().next()
             artifact sourcesJar
             artifact javadocJar
         }
 
-        datflowShadednullaway(MavenPublication) {
+        dataflowShadednullaway(MavenPublication) {
             dataflowShadedPom(it, 'nullaway')
 
-            artifact getTasksByName('datflownullawayJar',false).iterator().next()
+            artifact getTasksByName('dataflownullawayJar',false).iterator().next()
             artifact sourcesJar
             artifact javadocJar
         }
 
-        datflowShadederrorprone(MavenPublication) {
+        dataflowShadederrorprone(MavenPublication) {
             dataflowShadedPom(it, 'errorprone')
 
-            artifact getTasksByName('datflowerrorproneJar',false).iterator().next()
+            artifact getTasksByName('dataflowerrorproneJar',false).iterator().next()
             artifact sourcesJar
             artifact javadocJar
         }
@@ -204,6 +206,6 @@ publishing {
 signing {
     sign publishing.publications.dataflow
     sign publishing.publications.dataflowShaded
-    sign publishing.publications.datflowShadednullaway
-    sign publishing.publications.datflowShadederrorprone
+    sign publishing.publications.dataflowShadednullaway
+    sign publishing.publications.dataflowShadederrorprone
 }
