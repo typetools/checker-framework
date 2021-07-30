@@ -11,11 +11,11 @@ abstract class Issue4849G<M extends Issue4849G<M>> {
 abstract class Issue4849 {
   enum MyEnum {}
 
-  abstract <F1> C<F1> n(Issue4849F<F1> field1);
+  abstract <F1> Issue4849C<F1> n(Issue4849F<F1> field1);
 
   abstract <E extends Enum<E>> Issue4849F<E> of(Class<E> e);
 
   void method() {
-    C<MyEnum> c = this.n(this.of(MyEnum.class)).e();
+    Issue4849C<MyEnum> c = this.n(this.of(MyEnum.class)).e();
   }
 }
