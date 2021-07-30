@@ -119,18 +119,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       // Not a destructor, just a method with an ECM annotation. No further checking to do.
       return;
     }
-    // The following is mostly copied from BaseTypeVisitor#checkPostcondition, except
-    // the exit store used and the error issued. The exit store is the general (i.e.
-    // LUB of all exits) store because getExceptionalExitStore(MethodTree) appears to
-    // be buggy. TODO: investigate why that doesn't work.
-    CFAbstractStore<?, ?> exitStore = atypeFactory.getStoreAfter(methodTree);
+    CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(methodTree);
     if (exitStore == null) {
       // If there is no exceptional exitStore, then the method cannot throw an exception and there
       // is no need to check anything else.
     } else {
-      // TODO: 7/29: the checker is never getting here. Is getStoreAfter(Tree) also broken and
-      //  always returning null? Investigate.
-      System.out.println(exitStore);
       CFAbstractValue<?> value = exitStore.getValue(expression);
       AnnotationMirror inferredAnno = null;
       if (value != null) {
