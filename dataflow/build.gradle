@@ -45,8 +45,6 @@ def createDataflowShaded(shadedPkgName) {
 
         // Relocate external dependencies
         relocate 'org.plumelib', "org.checkerframework.${shadedPkgName}.org.plumelib"
-
-        minimize()
     }
 }
 

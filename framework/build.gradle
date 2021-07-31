@@ -172,8 +172,6 @@ shadowJar {
     manifest {
         attributes('Automatic-Module-Name': "org.checkerframework.framework")
     }
-
-    minimize()
 }
 
 createCheckTypeTask(project.name, "CompilerMessages",

@@ -181,8 +181,6 @@ shadowJar {
     // To see what files are incorporated into the shadow jar file:
     // doFirst { println sourceSets.main.runtimeClasspath.asPath }
 
-    minimize()
-
     doLast{
         copy {
             from archiveFile.get()

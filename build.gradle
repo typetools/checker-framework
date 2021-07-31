@@ -738,8 +738,6 @@ subprojects {
                 relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
             }
         }
-
-        minimize()
     }
 
     if (!project.name.startsWith('checker-qual-android')) {
