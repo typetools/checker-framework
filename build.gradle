@@ -771,7 +771,7 @@ subprojects {
             }
             manifest {
                 attributes("Implementation-Version": "${project.version}")
-                attributes("Implementation-URL": "https://checkerframework.org")
+                attributes("Implementation-URL": "https://eisop.github.io/")
                 if (! archiveFileName.get().endsWith("source.jar")) {
                     attributes('Automatic-Module-Name': "org.checkerframework." + project.name.replaceAll('-', '.'))
                 }
