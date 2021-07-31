@@ -1190,10 +1190,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Determines whether or not the node referred to by the given {@link Tree} is an anonymous
+   * Determines whether or not the node referred to by the given {@link MethodTree} is an anonymous
    * constructor (the constructor for an anonymous class.
    *
-   * @param method the {@link Tree} for a node that may be an anonymous constructor
+   * @param method a method tree that may be an anonymous constructor
    * @return true if the given path points to an anonymous constructor, false if it does not
    */
   public static boolean isAnonymousConstructor(final MethodTree method) {
