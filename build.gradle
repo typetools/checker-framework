@@ -423,6 +423,24 @@ List<String> getJavaFilesToFormat(projectName) {
     return args
 }
 
+task writeListOfJavaFilesToFormat(group: 'Format') {
+  description "Writes a list of Java files subject to formatting, to ${buildDir}/javafiles.txt"
+  doLast {
+    mkdir buildDir
+    File list = new File("${buildDir}/javafiles.txt");
+    list.createNewFile();
+    FileWriter fileWriter = new FileWriter(list)
+    subprojects.forEach {
+      if (!it.name.startsWith("checker-qual-android")) {
+        for (String fileName : getJavaFilesToFormat(it.name)) {
+          fileWriter.write(fileName)
+          fileWriter.write(System.lineSeparator())
+        }
+      }
+    }
+  }
+}
+
 task htmlValidate(type: Exec, group: 'Format') {
     description 'Validate that HTML files are well-formed'
     executable 'html5validator'

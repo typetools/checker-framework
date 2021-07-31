@@ -327,6 +327,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Map keys are canonical names of aliased annotations. */
   private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
+  /**
+   * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
+   */
+  private SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
+      new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
+
+  /**
+   * Initializes all fields of {@code type}.
+   *
+   * @param type annotated type mirror
+   */
+  public void initializeAtm(AnnotatedTypeMirror type) {
+    atmInitializer.visit(type);
+  }
 
   /**
    * Information about one annotation alias.
