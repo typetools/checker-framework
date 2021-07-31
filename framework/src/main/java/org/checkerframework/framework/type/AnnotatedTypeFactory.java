@@ -2349,7 +2349,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * the method return type with those from the record type in the same hierarchy.
    *
    * @param member a method or constructor
-   * @param memberType the type of the method/constructor
+   * @param memberType the type of the method/constructor; side-effected by this method
    * @return {@code memberType} with annotations replaced if applicable
    */
   private AnnotatedExecutableType applyRecordTypesToAccessors(

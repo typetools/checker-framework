@@ -3523,6 +3523,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     boolean isField = false;
     if (getCurrentPath().getParentPath() != null) {
       Tree.Kind kind = TreeUtils.getKindRecordAsClass(getCurrentPath().getParentPath().getLeaf());
+      // CLASS includes records.
       if (kind == Tree.Kind.CLASS || kind == Tree.Kind.INTERFACE || kind == Tree.Kind.ENUM) {
         isField = true;
       }

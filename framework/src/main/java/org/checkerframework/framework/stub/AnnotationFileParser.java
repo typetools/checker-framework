@@ -68,7 +68,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -111,6 +110,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -328,7 +328,7 @@ public class AnnotationFileParser {
       if (componentsInCanonicalConstructor != null) {
         return componentsInCanonicalConstructor;
       } else {
-        return componentsByName.values().stream().map(c -> c.type).collect(Collectors.toList());
+        return CollectionsPlume.mapList(c -> c.type, componentsByName.values());
       }
     }
   }
@@ -358,7 +358,7 @@ public class AnnotationFileParser {
     /**
      * Returns whether there is an accessor in a stub file.
      *
-     * @return true if some stub file contains an accessor
+     * @return true if some stub file contains an accessor for this record component
      */
     public boolean hasAccessorInStubs() {
       return hasAccessorInStubs;
@@ -1544,7 +1544,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * Processes a parameter in a record header (i.e. a record component).
+   * Processes a parameter in a record header (i.e., a record component).
    *
    * @param decl the parameter in the record header
    * @param elt the corresponding variable declaration element
@@ -1553,7 +1553,7 @@ public class AnnotationFileParser {
   private RecordComponentStub processRecordField(Parameter decl, VariableElement elt) {
     markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
-    // AnnotationFileParser parses all annotations in type annotation position as type annotations
+    // AnnotationFileParser parses all annotations in type annotation position as type annotations.
     recordDeclAnnotation(elt, decl.getType().getAnnotations(), decl);
     AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 

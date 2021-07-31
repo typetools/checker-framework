@@ -478,18 +478,18 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Checks if the given {@link ExecutableElement} is a constructor and is a constructor of a record
-   * and is the canonical constructor of the record (i.e. the parameter types of the constructor
-   * correspond to the parameter types of the record components, ignoring annotations).
+   * Returns true if the given {@link ExecutableElement} is the canonical constructor of a record
+   * (i.e., the parameter types of the constructor correspond to the parameter types of the record
+   * components, ignoring annotations).
    *
-   * @param elt the constructor/method to check.
-   * @param types the types instance to use for comparing types
-   * @return true if elt is the canonical constructor of the record containing it.
+   * @param elt the constructor/method to check
+   * @param types the Types instance to use for comparing types
+   * @return true if elt is the canonical constructor of the record containing it
    */
   public static boolean isCanonicalConstructor(ExecutableElement elt, Types types) {
     if (elt.getKind() == ElementKind.CONSTRUCTOR) {
       Element enclosing = elt.getEnclosingElement();
-      // Can't use RECORD enum as it's not available before JDK 16:
+      // Can't use RECORD enum constant as it's not available before JDK 16:
       if (enclosing.getKind().name().equals("RECORD")) {
         List<? extends Element> recordComponents =
             ElementUtils.getRecordComponents((TypeElement) enclosing);

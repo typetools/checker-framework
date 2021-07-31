@@ -401,7 +401,7 @@ public class AnnotationFileElementTypes {
    *
    * @param types a Types instance used for checking type equivalence
    * @param elt a member. This method does nothing if it's not a method or constructor.
-   * @param memberType the type corresponding to the element elt
+   * @param memberType the type corresponding to the element elt; side-effected by this method
    */
   public void injectRecordComponentType(
       Types types, Element elt, AnnotatedExecutableType memberType) {
@@ -416,9 +416,8 @@ public class AnnotationFileElementTypes {
             annotationFileAnnos.records.get(recordName);
         if (recordComponentType != null) {
           // If the record component has an annotation in the stub, the component annotation
-          // replaces any from the same hierarchy on
-          // the accessor method, unless there is a specific annotation on the accessor in the stubs
-          // file.
+          // replaces any from the same hierarchy on the accessor method, unless there is a specific
+          // annotation on the accessor in the stubs file.
           // We thus only replace the method annotation with the component annotation
           // if there is no accessor in the stubs file:
           RecordComponentStub recordComponentStub =
@@ -429,10 +428,9 @@ public class AnnotationFileElementTypes {
       }
     } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
       if (AnnotationFileUtil.isCanonicalConstructor((ExecutableElement) elt, types)) {
-        Element enclosing = elt.getEnclosingElement();
+        TypeElement enclosing = (TypeElement) elt.getEnclosingElement();
         AnnotationFileParser.RecordStub recordComponentType =
-            annotationFileAnnos.records.get(
-                ((TypeElement) enclosing).getQualifiedName().toString());
+            annotationFileAnnos.records.get(enclosing.getQualifiedName().toString());
         if (recordComponentType != null) {
           List<AnnotatedTypeMirror> componentsInCanonicalConstructor =
               recordComponentType.getComponentsInCanonicalConstructor();
