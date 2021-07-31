@@ -1,7 +1,8 @@
 plugins {
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.3.1"
+    id 'com.gorylenko.gradle-git-properties' version '2.3.1'
 }
+
 sourceSets {
     main {
         resources {
@@ -11,7 +12,6 @@ sourceSets {
     }
     testannotations
 }
-
 
 sourcesJar {
     // The resources duplicate content from the src directory.
@@ -587,7 +587,6 @@ task ainferTestCheckerJaifTest(dependsOn: 'shadowJar', group: 'Verification') {
     outputs.upToDateWhen { false }
 }
 
-
 task ainferNullnessGenerateJaifs(type: Test) {
     description 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
 
@@ -817,6 +816,7 @@ final checkerPom(publication) {
         }
     }
 }
+
 publishing {
     publications {
         checker(MavenPublication) {
@@ -828,6 +828,7 @@ publishing {
         }
     }
 }
+
 signing {
     sign publishing.publications.checker
 }

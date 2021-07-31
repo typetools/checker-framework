@@ -38,6 +38,7 @@ final frameworkTest(publication) {
         }
     }
 }
+
 publishing {
     publications {
         frameworkTest(MavenPublication) {
@@ -45,6 +46,7 @@ publishing {
         }
     }
 }
+
 signing {
     sign publishing.publications.frameworkTest
 }

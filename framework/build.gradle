@@ -5,6 +5,7 @@ plugins {
 ext {
     annotatedJdkHome = '../../jdk'
 }
+
 sourceSets {
     main {
         resources {
@@ -129,6 +130,7 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
         }
     }
 }
+
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)

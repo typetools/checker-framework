@@ -33,6 +33,7 @@ task replaceAnnotations {
         }
     }
 }
+
 replaceAnnotations.dependsOn copySources
 
 compileJava.dependsOn replaceAnnotations
@@ -66,6 +67,7 @@ final checkerQualAndroidPom(publication) {
         }
     }
 }
+
 publishing {
     publications {
         checkerQualAndroid(MavenPublication) {
@@ -73,6 +75,7 @@ publishing {
         }
     }
 }
+
 signing {
     sign publishing.publications.checkerQualAndroid
 }
