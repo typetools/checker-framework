@@ -318,9 +318,11 @@ public class AnnotationFileParser {
     }
 
     /**
-     * Gets the annotated types for the parameters to the canonical constructor. This is either from
-     * explicit annotations on the constructor in the stubs, otherwise it's taken from the
+     * Returns the annotated types for the parameters to the canonical constructor. This is either
+     * from explicit annotations on the constructor in the stubs, otherwise it's taken from the
      * annotations on the record components in the stubs.
+     *
+     * @return the annotated types for the parameters to the canonical constructor
      */
     public List<AnnotatedTypeMirror> getComponentsInCanonicalConstructor() {
       if (componentsInCanonicalConstructor != null) {
@@ -1546,6 +1548,7 @@ public class AnnotationFileParser {
    *
    * @param decl the parameter in the record header
    * @param elt the corresponding variable declaration element
+   * @return a representation of the record component in the stub file
    */
   private RecordComponentStub processRecordField(Parameter decl, VariableElement elt) {
     markAsFromStubFile(elt);

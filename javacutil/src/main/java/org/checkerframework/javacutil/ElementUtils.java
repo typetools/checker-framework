@@ -915,10 +915,9 @@ public class ElementUtils {
   }
 
   /**
-   * Calls getKind() on the given Element, but if the ElementKind is RECORD, CLASS is returned
-   * instead. This is needed because the checker framework runs on JDKs before the RECORD item was
-   * added, so RECORD can't be used in case statements, and usually we want to treat them the same
-   * as classes.
+   * Calls getKind() on the given Element, but returns CLASS if the ElementKind is RECORD. This is
+   * needed because the Checker Framework runs on JDKs before the RECORD item was added, so RECORD
+   * can't be used in case statements, and usually we want to treat them the same as classes.
    *
    * @param elt the element to get the kind for
    * @return the kind of the element, but CLASS if the kind was RECORD
@@ -938,7 +937,7 @@ public class ElementUtils {
    *
    * @param element the type element to call getRecordComponents on
    * @return the return value of calling getRecordComponents, or empty list if the method is not
-   *     available.
+   *     available
    */
   @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
   public static List<? extends Element> getRecordComponents(TypeElement element) {

@@ -120,7 +120,7 @@ public final class TreeUtils {
     } catch (IllegalAccessException ex) {
       throw new RuntimeException(ex);
     } catch (NoSuchFieldException ex) {
-      // We are on an older JDK, in which case it can't be a record constructor.
+      // We are on an older JDK, which does not support records.
       Flags_GENERATED_MEMBER = 0;
       Flags_RECORD = 0;
     }
@@ -1773,9 +1773,9 @@ public final class TreeUtils {
   }
 
   /**
-   * Calls getKind() on the given tree, but if the Kind is RECORD, CLASS is returned instead. This
-   * is needed because the checker framework runs on JDKs before the RECORD item was added, so
-   * RECORD can't be used in case statements, and usually we want to treat them the same as classes.
+   * Calls getKind() on the given tree, but returns CLASS if the Kind is RECORD. This is needed
+   * because the Checker Framework runs on JDKs before the RECORD item was added, so RECORD can't be
+   * used in case statements, and usually we want to treat them the same as classes.
    *
    * @param tree the tree to get the kind for
    * @return the kind of the tree, but CLASS if the kind was RECORD
