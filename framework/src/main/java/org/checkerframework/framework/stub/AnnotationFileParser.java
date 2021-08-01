@@ -945,7 +945,12 @@ public class AnnotationFileParser {
           processField((FieldDeclaration) decl, (VariableElement) elt);
           break;
         case ENUM_CONSTANT:
-          if (decl instanceof EnumConstantDeclaration) {
+          // Enum constants can occur as fields in stubs files when their
+          // type has an annotation on it, e.g. see DeviceTypeTest which ends up with
+          // the TRACKER enum constant annotated with DefaultType:
+          if (decl instanceof FieldDeclaration) {
+            processField((FieldDeclaration) decl, (VariableElement) elt);
+          } else if (decl instanceof EnumConstantDeclaration) {
             processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
           } else {
             throw new Error(
