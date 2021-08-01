@@ -1,5 +1,9 @@
 // Tests that parameters (including receiver parameters) marked as @Owning are still checked.
 
+// Use of @Owning on receiver parameter doesn't work in Java 17+.
+// The TODO comment below might indicate that it also doesn't work before.
+// @skip-test
+
 import org.checkerframework.checker.mustcall.qual.*;
 
 class OwningParams {
