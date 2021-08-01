@@ -433,11 +433,25 @@ public class CheckerMain {
         if (SystemUtil.getJreVersion() == 8) {
             args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, runtimeClasspath));
         } else {
+            // See comments in build.gradle
             args.addAll(
                     Arrays.asList(
-                            "--illegal-access=warn",
                             "--add-opens",
-                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
+                            "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                            "--add-exports",
+                            "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                            "--add-exports",
+                            "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                            "--add-exports",
+                            "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                            "--add-exports",
+                            "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+                            "--add-exports",
+                            "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                            "--add-exports",
+                            "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                            "--add-exports",
+                            "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"));
         }
 
         args.add("-classpath");
