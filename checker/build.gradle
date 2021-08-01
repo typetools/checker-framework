@@ -756,8 +756,6 @@ task wpiManyTest(group: "Verification") {
                         || line.startsWith("warning: [path]")
                         // Ignore bootstrap classpath warning:
                         || line.startsWith("warning: [options] bootstrap")
-                        // Ignore warnings about illegal access:
-                        || line.contains("Option --illegal-access is deprecated")
                         // Ignore the summary line that reports the total number of warnings (which can be single or plural).
                         || line.endsWith("warning")
                         || line.endsWith("warnings")) {
