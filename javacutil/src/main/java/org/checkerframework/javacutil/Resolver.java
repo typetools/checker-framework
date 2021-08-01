@@ -61,6 +61,7 @@ public class Resolver {
     // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
     private static final Method ACCESSERROR_ACCESS;
 
+    /** Whether we are running on at least Java 13. */
     private static final boolean atLeastJava13;
 
     static {
@@ -506,7 +507,7 @@ public class Resolver {
      * @return the result of invoking the method on {@code resolve} (as the receiver) and the
      *     arguments
      */
-    private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
+    private Symbol wrapInvocationOnResolveInstance(Method method, @Nullable Object... args) {
         return wrapInvocation(resolve, method, args);
     }
 

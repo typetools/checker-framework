@@ -107,10 +107,10 @@ public final class TreeUtils {
     private static final boolean atLeastJava12;
 
     /** The CaseTree.getExpression method for Java up to 11; null otherwise. */
-    private static final Method CASETREE_GETEXPRESSION;
+    private static final @Nullable Method CASETREE_GETEXPRESSION;
 
     /** The CaseTree.getExpressions method for Java 12 and higher; null otherwise. */
-    private static final Method CASETREE_GETEXPRESSIONS;
+    private static final @Nullable Method CASETREE_GETEXPRESSIONS;
 
     static {
         final SourceVersion latestSource = SourceVersion.latest();
@@ -1671,6 +1671,7 @@ public final class TreeUtils {
                         (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
                 return result;
             } else {
+                @SuppressWarnings({"nullness"})
                 ExpressionTree expression =
                         (ExpressionTree) CASETREE_GETEXPRESSION.invoke(caseTree);
                 if (expression == null) {
