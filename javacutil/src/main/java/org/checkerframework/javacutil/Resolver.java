@@ -16,6 +16,7 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
@@ -31,6 +32,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -59,8 +61,19 @@ public class Resolver {
     // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
     private static final Method ACCESSERROR_ACCESS;
 
+    private static final boolean atLeastJava13;
+
     static {
         try {
+            final SourceVersion latestSource = SourceVersion.latest();
+            SourceVersion java13;
+            try {
+                java13 = SourceVersion.valueOf("RELEASE_13");
+            } catch (IllegalArgumentException e) {
+                java13 = null;
+            }
+            atLeastJava13 = java13 != null && latestSource.ordinal() >= java13.ordinal();
+
             FIND_METHOD =
                     Resolve.class.getDeclaredMethod(
                             "findMethod",
@@ -76,59 +89,59 @@ public class Resolver {
             FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
             FIND_VAR.setAccessible(true);
 
-            Method findIdentMethod;
-            try {
-                findIdentMethod =
+            if (atLeastJava13) {
+                FIND_IDENT =
+                        Resolve.class.getDeclaredMethod(
+                                "findIdent",
+                                DiagnosticPosition.class,
+                                Env.class,
+                                Name.class,
+                                KindSelector.class);
+            } else {
+                FIND_IDENT =
                         Resolve.class.getDeclaredMethod(
                                 "findIdent", Env.class, Name.class, KindSelector.class);
-            } catch (NoSuchMethodException e) {
-                findIdentMethod =
-                        Resolve.class.getDeclaredMethod(
-                                "findIdentInternal", Env.class, Name.class, KindSelector.class);
             }
-            FIND_IDENT = findIdentMethod;
             FIND_IDENT.setAccessible(true);
 
-            Method findIdentInTypeMethod;
-            try {
-                findIdentInTypeMethod =
+            if (atLeastJava13) {
+                FIND_IDENT_IN_TYPE =
+                        Resolve.class.getDeclaredMethod(
+                                "findIdentInType",
+                                DiagnosticPosition.class,
+                                Env.class,
+                                Type.class,
+                                Name.class,
+                                KindSelector.class);
+            } else {
+                FIND_IDENT_IN_TYPE =
                         Resolve.class.getDeclaredMethod(
                                 "findIdentInType",
                                 Env.class,
                                 Type.class,
                                 Name.class,
                                 KindSelector.class);
-            } catch (NoSuchMethodException e) {
-                findIdentInTypeMethod =
-                        Resolve.class.getDeclaredMethod(
-                                "findIdentInTypeInternal",
-                                Env.class,
-                                Type.class,
-                                Name.class,
-                                KindSelector.class);
             }
-            FIND_IDENT_IN_TYPE = findIdentInTypeMethod;
             FIND_IDENT_IN_TYPE.setAccessible(true);
 
-            Method findIdentInPackageMethod;
-            try {
-                findIdentInPackageMethod =
+            if (atLeastJava13) {
+                FIND_IDENT_IN_PACKAGE =
+                        Resolve.class.getDeclaredMethod(
+                                "findIdentInPackage",
+                                DiagnosticPosition.class,
+                                Env.class,
+                                TypeSymbol.class,
+                                Name.class,
+                                KindSelector.class);
+            } else {
+                FIND_IDENT_IN_PACKAGE =
                         Resolve.class.getDeclaredMethod(
                                 "findIdentInPackage",
                                 Env.class,
                                 TypeSymbol.class,
                                 Name.class,
                                 KindSelector.class);
-            } catch (NoSuchMethodException e) {
-                findIdentInPackageMethod =
-                        Resolve.class.getDeclaredMethod(
-                                "findIdentInPackageInternal",
-                                Env.class,
-                                TypeSymbol.class,
-                                Name.class,
-                                KindSelector.class);
             }
-            FIND_IDENT_IN_PACKAGE = findIdentInPackageMethod;
             FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
             FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
@@ -199,12 +212,24 @@ public class Resolver {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
-            Element res =
-                    wrapInvocationOnResolveInstance(
-                            FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
-            // findIdent will return a PackageSymbol even for a symbol that is not a package, such
-            // as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure that it
-            // exists.
+            final Element res;
+            if (atLeastJava13) {
+                res =
+                        wrapInvocationOnResolveInstance(
+                                FIND_IDENT,
+                                null,
+                                env,
+                                names.fromString(name),
+                                Kinds.KindSelector.PCK);
+            } else {
+                res =
+                        wrapInvocationOnResolveInstance(
+                                FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
+            }
+
+            // findIdent will return a PackageSymbol even for a symbol that is not a package,
+            // such as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure
+            // that it exists.
             if (res.getKind() == ElementKind.PACKAGE) {
                 PackageSymbol ps = (PackageSymbol) res;
                 return ps.exists() ? ps : null;
@@ -232,13 +257,25 @@ public class Resolver {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
-            Element res =
-                    wrapInvocationOnResolveInstance(
-                            FIND_IDENT_IN_TYPE,
-                            env,
-                            type,
-                            names.fromString(name),
-                            Kinds.KindSelector.VAR);
+            final Element res;
+            if (atLeastJava13) {
+                res =
+                        wrapInvocationOnResolveInstance(
+                                FIND_IDENT_IN_TYPE,
+                                null,
+                                env,
+                                type,
+                                names.fromString(name),
+                                Kinds.KindSelector.VAR);
+            } else {
+                res =
+                        wrapInvocationOnResolveInstance(
+                                FIND_IDENT_IN_TYPE,
+                                env,
+                                type,
+                                names.fromString(name),
+                                Kinds.KindSelector.VAR);
+            }
 
             if (res.getKind().isField()) {
                 return (VariableElement) res;
@@ -311,13 +348,26 @@ public class Resolver {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             Env<AttrContext> env = getEnvForPath(path);
-            Element res =
-                    wrapInvocationOnResolveInstance(
-                            FIND_IDENT_IN_PACKAGE,
-                            env,
-                            pck,
-                            names.fromString(name),
-                            Kinds.KindSelector.TYP);
+            final Element res;
+            if (atLeastJava13) {
+                res =
+                        wrapInvocationOnResolveInstance(
+                                FIND_IDENT_IN_PACKAGE,
+                                null,
+                                env,
+                                pck,
+                                names.fromString(name),
+                                Kinds.KindSelector.TYP);
+            } else {
+                res =
+                        wrapInvocationOnResolveInstance(
+                                FIND_IDENT_IN_PACKAGE,
+                                env,
+                                pck,
+                                names.fromString(name),
+                                Kinds.KindSelector.TYP);
+            }
+
             if (ElementUtils.isTypeElement(res)) {
                 return (ClassSymbol) res;
             } else {
