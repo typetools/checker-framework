@@ -75,6 +75,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -101,6 +102,40 @@ public final class TreeUtils {
 
     /** Unique IDs for trees. */
     public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
+
+    /** Whether we are running on at least Java 12. */
+    private static final boolean atLeastJava12;
+
+    /** The CaseTree.getExpression method for Java up to 11; null otherwise. */
+    private static final Method CASETREE_GETEXPRESSION;
+
+    /** The CaseTree.getExpressions method for Java 12 and higher; null otherwise. */
+    private static final Method CASETREE_GETEXPRESSIONS;
+
+    static {
+        final SourceVersion latestSource = SourceVersion.latest();
+        SourceVersion java12;
+        try {
+            java12 = SourceVersion.valueOf("RELEASE_12");
+        } catch (IllegalArgumentException e) {
+            java12 = null;
+        }
+        atLeastJava12 = java12 != null && latestSource.ordinal() >= java12.ordinal();
+
+        try {
+            if (atLeastJava12) {
+                CASETREE_GETEXPRESSIONS = CaseTree.class.getDeclaredMethod("getExpressions");
+                CASETREE_GETEXPRESSION = null;
+            } else {
+                CASETREE_GETEXPRESSION = CaseTree.class.getDeclaredMethod("getExpression");
+                CASETREE_GETEXPRESSIONS = null;
+            }
+        } catch (Exception e) {
+            Error err = new AssertionError("Unexpected error in TreeUtils static initializer");
+            err.initCause(e);
+            throw err;
+        }
+    }
 
     /**
      * Checks if the provided method is a constructor method or no.
@@ -1630,24 +1665,24 @@ public final class TreeUtils {
      */
     public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
         try {
-            Method method = CaseTree.class.getDeclaredMethod("getExpressions");
-            @SuppressWarnings({"unchecked", "nullness"})
-            @NonNull List<? extends ExpressionTree> result =
-                    (List<? extends ExpressionTree>) method.invoke(caseTree);
-            return result;
-        } catch (NoSuchMethodException e) {
-            // Must be on JDK 11 or earlier
+            if (atLeastJava12) {
+                @SuppressWarnings({"unchecked", "nullness"})
+                @NonNull List<? extends ExpressionTree> result =
+                        (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
+                return result;
+            } else {
+                ExpressionTree expression =
+                        (ExpressionTree) CASETREE_GETEXPRESSION.invoke(caseTree);
+                if (expression == null) {
+                    return Collections.emptyList();
+                } else {
+                    return Collections.singletonList(expression);
+                }
+            }
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // May as well fall back to old method
-        }
-
-        // Need to suppress deprecation on JDK 12 and later:
-        @SuppressWarnings("deprecation")
-        ExpressionTree expression = caseTree.getExpression();
-        if (expression == null) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(expression);
+            Error err = new AssertionError("Unexpected error in caseTreeGetExpressions");
+            err.initCause(e);
+            throw err;
         }
     }
 
