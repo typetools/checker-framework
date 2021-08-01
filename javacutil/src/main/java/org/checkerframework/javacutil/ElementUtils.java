@@ -932,8 +932,8 @@ public class ElementUtils {
 
   /**
    * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is not
-   * available before JDK 16. On earlier JDKs, which don't support records anyway, an empty list is
-   * returned.
+   * available before JDK 16. On earlier JDKs, which don't support records anyway, an exception is
+   * thrown.
    *
    * @param element the type element to call getRecordComponents on
    * @return the return value of calling getRecordComponents, or empty list if the method is not
@@ -944,9 +944,10 @@ public class ElementUtils {
     try {
       return (@NonNull List<? extends Element>)
           TypeElement.class.getMethod("getRecordComponents").invoke(element);
-    } catch (NoSuchMethodException e) {
-      return Collections.emptyList();
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+    } catch (NoSuchMethodException
+        | IllegalAccessException
+        | IllegalArgumentException
+        | InvocationTargetException e) {
       throw new Error("Cannot access TypeElement.getRecordComponents", e);
     }
   }
