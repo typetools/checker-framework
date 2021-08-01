@@ -949,6 +949,12 @@ public class AnnotationFileParser {
             processField((FieldDeclaration) decl, (VariableElement) elt);
           } else if (decl instanceof EnumConstantDeclaration) {
             processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
+          } else {
+            throw new Error(
+                "Unexpected decl type "
+                    + decl.getClass()
+                    + " for ENUM_CONSTANT kind, original: "
+                    + decl);
           }
           break;
         case CONSTRUCTOR:
