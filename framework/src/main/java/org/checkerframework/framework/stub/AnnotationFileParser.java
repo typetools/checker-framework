@@ -945,9 +945,7 @@ public class AnnotationFileParser {
           processField((FieldDeclaration) decl, (VariableElement) elt);
           break;
         case ENUM_CONSTANT:
-          if (decl instanceof FieldDeclaration) {
-            processField((FieldDeclaration) decl, (VariableElement) elt);
-          } else if (decl instanceof EnumConstantDeclaration) {
+          if (decl instanceof EnumConstantDeclaration) {
             processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
           } else {
             throw new Error(
