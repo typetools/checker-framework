@@ -434,8 +434,6 @@ public class CheckerMain {
               // Add opens allow for reflect access.
               "--add-opens",
               "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-              "--add-opens",
-              "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
               // Add exports allow use of unexported packages.
               "--add-exports",
               "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
