@@ -5,6 +5,15 @@ Version 3.17.0 (August 3, 2021)
 
 Java records are type-checked.  Thanks to Neil Brown.
 
+**Implementation details:**
+
+**Closed issues:**
+
+Version 3.17.0 (August 3, 2021)
+-------------------------------
+
+**User-visible changes:**
+
 `-Ainfer` can now infer postcondition annotations that reference formal parameters
 (e.g. `"#1"`, `"#2"`) and the receiver (`"this"`).
 
