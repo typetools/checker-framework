@@ -652,38 +652,16 @@ public class ValueTransfer extends CFTransfer {
   /** Creates an annotation for a result of string concatenation. */
   private AnnotationMirror createAnnotationForStringConcatenation(
       Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
+    boolean nonNullStringConcat =
+			  atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
 
     // Try using sets of string values
     List<String> leftValues = getStringValues(leftOperand, p);
     List<String> rightValues = getStringValues(rightOperand, p);
-
-    boolean nonNullStringConcat =
-        atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
-
     if (leftValues != null && rightValues != null) {
       // Both operands have known string values, compute set of results
-      if (!nonNullStringConcat) {
-        if (isNullable(leftOperand)) {
-          leftValues = CollectionsPlume.append(leftValues, "null");
-        }
-        if (isNullable(rightOperand)) {
-          rightValues = CollectionsPlume.append(rightValues, "null");
-        }
-      } else {
-        if (leftOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) leftOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            leftValues = CollectionsPlume.append(leftValues, "null");
-          }
-        }
-        if (rightOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            rightValues = CollectionsPlume.append(rightValues, "null");
-          }
-        }
-      }
-
+      leftValues = appendNull(nonNullStringConcat, leftOperand, leftValues);
+      rightValues = appendNull(nonNullStringConcat, rightOperand, rightValues);
       List<String> concatValues = new ArrayList<>(leftValues.size() * rightValues.size());
       for (String left : leftValues) {
         for (String right : rightValues) {
@@ -694,57 +672,85 @@ public class ValueTransfer extends CFTransfer {
     }
 
     // Try using sets of lengths
-    List<Integer> leftLengths =
-        leftValues != null
-            ? ValueCheckerUtils.getLengthsForStringValues(leftValues)
-            : getStringLengths(leftOperand, p);
-    List<Integer> rightLengths =
-        rightValues != null
-            ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
-            : getStringLengths(rightOperand, p);
-
+    List<Integer> leftLengths = getStringLengths(leftOperand, p, leftValues);
+    List<Integer> rightLengths = getStringLengths(rightOperand, p, rightValues);
     if (leftLengths != null && rightLengths != null) {
       // Both operands have known lengths, compute set of result lengths
-      if (!nonNullStringConcat) {
-        if (isNullable(leftOperand)) {
-          leftLengths = new ArrayList<>(leftLengths);
-          leftLengths.add(4); // "null"
-        }
-        if (isNullable(rightOperand)) {
-          rightLengths = new ArrayList<>(rightLengths);
-          rightLengths.add(4); // "null"
-        }
-      }
+      leftLengths = appendNull(nonNullStringConcat, leftOperand, leftLengths);
+      rightLengths = appendNull(nonNullStringConcat, rightOperand, rightLengths);
       List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
       return atypeFactory.createArrayLenAnnotation(concatLengths);
     }
 
     // Try using ranges of lengths
-    Range leftLengthRange =
-        leftLengths != null
-            ? ValueCheckerUtils.getRangeFromValues(leftLengths)
-            : getStringLengthRange(leftOperand, p);
-    Range rightLengthRange =
-        rightLengths != null
-            ? ValueCheckerUtils.getRangeFromValues(rightLengths)
-            : getStringLengthRange(rightOperand, p);
-
+    Range leftLengthRange = getStringLengthRange(leftLengths, p, leftLengths);
+    Range rightLengthRange = getStringLengthRange(rightOperand, p, rightLengths);
     if (leftLengthRange != null && rightLengthRange != null) {
       // Both operands have a length from a known range, compute a range of result lengths
-      if (!nonNullStringConcat) {
-        if (isNullable(leftOperand)) {
-          leftLengthRange = leftLengthRange.union(Range.create(4, 4)); // "null"
-        }
-        if (isNullable(rightOperand)) {
-          rightLengthRange = rightLengthRange.union(Range.create(4, 4)); // "null"
-        }
-      }
+      leftLengthRange = appendNull(nonNullStringConcat, leftOperand, leftLengthRange);
+      rightLengthRange = appendNull(nonNullStringConcat, rightOperand, rightLengthRange);
       Range concatLengthRange = calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
       return atypeFactory.createArrayLenRangeAnnotation(concatLengthRange);
     }
 
     return atypeFactory.UNKNOWNVAL;
   }
+  
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private List<Integer> getStringLengths(Node rightOperand, 
+		  TransferInput<CFValue, CFStore> p, List<String> rightValues){ 
+    return rightValues != null
+            ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
+            : getStringLengths(rightOperand, p);
+  }
+  
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private Range getStringLengthRange(Node rightOperand, TransferInput<CFValue, CFStore> p, List<Integer> rightLengths) {
+    return rightLengths != null
+            ? ValueCheckerUtils.getRangeFromValues(rightLengths)
+            : getStringLengthRange(rightOperand, p);	  
+  }
+  
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private static Range appendNull(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange){
+    if (!nonNullStringConcat) {
+      if (isNullable(rightOperand)){
+        return rightLengthRange.union(Range.create(4, 4)); // "null"
+      }
+    }
+	return rightLengthRange
+  }
+	   
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private static List<Integer> appendNull(boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
+    if (!nonNullStringConcat) {
+      if (isNullable(rightOperand)) {
+        rightLengths = new ArrayList<>(rightLengths);
+        rightLengths.add(4); // "null"          
+      }
+    }
+	return rightLengths;
+  }
+ 
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private static List<String> appendNull(boolean nonNullStringConcat, Node rightOperand, List<String> rightValues) {
+    boolean append=false;
+    if (!nonNullStringConcat) {
+        if (isNullable(rightOperand)) {
+          append = true;
+        }
+    } else {
+        if (rightOperand instanceof StringConversionNode) {
+          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
+              == TypeKind.NULL) {
+            append = true;
+          }
+        }
+    }
+    if (append)
+      return CollectionsPlume.append(rightValues, "null");
+    return rightValues;
+  }  	  
 
   public TransferResult<CFValue, CFStore> stringConcatenation(
       Node leftOperand,
