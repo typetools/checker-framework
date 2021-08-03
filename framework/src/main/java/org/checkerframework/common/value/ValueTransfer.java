@@ -1636,7 +1636,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static Range appendNull(
+  private Range appendNull(
       boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
@@ -1647,7 +1647,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static List<Integer> appendNull(
+  private List<Integer> appendNull(
       boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
@@ -1659,7 +1659,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static List<String> appendNull(
+  private List<String> appendNull(
       boolean nonNullStringConcat, Node rightOperand, List<String> rightValues) {
     boolean append = false;
     if (!nonNullStringConcat) {
