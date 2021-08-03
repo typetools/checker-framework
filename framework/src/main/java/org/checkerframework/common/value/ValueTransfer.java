@@ -683,7 +683,7 @@ public class ValueTransfer extends CFTransfer {
     }
 
     // Try using ranges of lengths
-    Range leftLengthRange = getStringLengthRange(leftLengths, p, leftLengths);
+    Range leftLengthRange = getStringLengthRange(leftOperand, p, leftLengths);
     Range rightLengthRange = getStringLengthRange(rightOperand, p, rightLengths);
     if (leftLengthRange != null && rightLengthRange != null) {
       // Both operands have a length from a known range, compute a range of result lengths
@@ -1636,8 +1636,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private Range appendNull(
-      boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
+  private Range appendNull(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
         return rightLengthRange.union(Range.create(4, 4)); // "null"
