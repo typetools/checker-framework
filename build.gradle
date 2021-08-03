@@ -121,6 +121,28 @@ allprojects {
         allProjects subprojects
     }
 
+  ext {
+    // A list of add-export and add-open arguments to be used when running the Checker Framework.
+    // Keep this list in sync with the lists in CheckerMain#getExecArguments,
+    // the sections with labels "javac-jdk11-non-modularized", "maven", and "sbt" in the manual
+    // and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
+    complierArgsForRunningCF = [
+        // These are required in Java 16+ because the --illegal-access option is set to deny
+        // by default.  None of these packages are accessed via reflection, so the module
+        // only needs to be exported, but not opened.
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+        // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
+        "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    ]
+  }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -356,19 +378,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
                 ]
         } else {
             options.fork = true
-            options.forkOptions.jvmArgs += [
-                // These are required in Java 16+ because the --illegal-access option is set to deny
-                // by default.  None of these packages are accessed via reflection, so the module
-                // only needs to be exported, but not opened.
-                "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-                "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-                // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
-                "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-            ]
+            options.forkOptions.jvmArgs += complierArgsForRunningCF
        }
     }
 }
@@ -898,10 +908,7 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             } else {
-                jvmArgs += [
-                        "--illegal-access=warn",
-                        "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                ]
+                jvmArgs += complierArgsForRunningCF
             }
 
             maxParallelForks = Integer.MAX_VALUE
