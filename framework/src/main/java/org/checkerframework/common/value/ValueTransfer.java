@@ -660,8 +660,8 @@ public class ValueTransfer extends CFTransfer {
     List<String> rightValues = getStringValues(rightOperand, p);
     if (leftValues != null && rightValues != null) {
       // Both operands have known string values, compute set of results
-      leftValues = appendNull(nonNullStringConcat, leftOperand, leftValues);
-      rightValues = appendNull(nonNullStringConcat, rightOperand, rightValues);
+      leftValues = appendNullToStrings(nonNullStringConcat, leftOperand, leftValues);
+      rightValues = appendNullToStrings(nonNullStringConcat, rightOperand, rightValues);
       List<String> concatValues = new ArrayList<>(leftValues.size() * rightValues.size());
       for (String left : leftValues) {
         for (String right : rightValues) {
@@ -676,8 +676,8 @@ public class ValueTransfer extends CFTransfer {
     List<Integer> rightLengths = getStringLengths(rightOperand, p, rightValues);
     if (leftLengths != null && rightLengths != null) {
       // Both operands have known lengths, compute set of result lengths
-      leftLengths = appendNull(nonNullStringConcat, leftOperand, leftLengths);
-      rightLengths = appendNull(nonNullStringConcat, rightOperand, rightLengths);
+      leftLengths = appendNullToIntegers(nonNullStringConcat, leftOperand, leftLengths);
+      rightLengths = appendNullToIntegers(nonNullStringConcat, rightOperand, rightLengths);
       List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
       return atypeFactory.createArrayLenAnnotation(concatLengths);
     }
@@ -687,8 +687,8 @@ public class ValueTransfer extends CFTransfer {
     Range rightLengthRange = getStringLengthRange(rightOperand, p, rightLengths);
     if (leftLengthRange != null && rightLengthRange != null) {
       // Both operands have a length from a known range, compute a range of result lengths
-      leftLengthRange = appendNull(nonNullStringConcat, leftOperand, leftLengthRange);
-      rightLengthRange = appendNull(nonNullStringConcat, rightOperand, rightLengthRange);
+      leftLengthRange = appendNullToRange(nonNullStringConcat, leftOperand, leftLengthRange);
+      rightLengthRange = appendNullToRange(nonNullStringConcat, rightOperand, rightLengthRange);
       Range concatLengthRange = calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
       return atypeFactory.createArrayLenRangeAnnotation(concatLengthRange);
     }
@@ -1636,7 +1636,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private Range appendNull(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
+  private Range appendNullToRange(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
         return rightLengthRange.union(Range.create(4, 4)); // "null"
@@ -1646,7 +1646,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private List<Integer> appendNull(
+  private List<Integer> appendNullToIntegers(
       boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
@@ -1658,7 +1658,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private List<String> appendNull(
+  private List<String> appendNullToStrings(
       boolean nonNullStringConcat, Node rightOperand, List<String> rightValues) {
     boolean append = false;
     if (!nonNullStringConcat) {
