@@ -431,8 +431,8 @@ public class CheckerMain {
     } else {
       args.addAll(
           // Keep this list in sync with the lists in checker-framework/build.gradle in
-          // complierArgsForRunningCFs and the section with label "javac-jdk11-non-modularized" in
-          // the manual.
+          // complierArgsForRunningCFs and the sections with labels "javac-jdk11-non-modularized",
+          // "maven", and "sbt" in the manual.
           Arrays.asList(
               // These are required in Java 16+ because the --illegal-access option is set to deny
               // by default.  None of these packages are accessed via reflection, so the module

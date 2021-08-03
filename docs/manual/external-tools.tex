@@ -601,8 +601,9 @@ instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
 
 To compile non-modularized code:
-% Keep list of --add-opens and --add-exports in sync with CheckerMain#getExecArguments
-% and  checker-framework/build.gradle in complierArgsForRunningCFs.
+
+% Keep list of --add-opens and --add-exports in sync with the "maven" and "SBT" sections,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs.
 \begin{Verbatim}
 javac \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
@@ -652,6 +653,14 @@ so you must do this even if you write no annotations in your code.
 
 \begin{Verbatim}
 javac \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
   -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
   -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
   --module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
@@ -1086,6 +1095,14 @@ section, or add it if it is not present.
             <configuration>
               <fork>true</fork>
               <compilerArgs combine.children="append">
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>
             </configuration>
@@ -1335,8 +1352,18 @@ javacOptions ++= Seq(
 
 \subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
 
+% Keep list of --add-opens and --add-exports in sync with the "maven" and "javac-jdk11-non-modularized" sections,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs.
 \begin{Verbatim}
 javacOptions ++= Seq(
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
     "-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
@@ -1350,6 +1377,14 @@ javacOptions ++= Seq(
 \begin{Verbatim}
 For compiling modularized code:
 javacOptions ++= Seq(
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
     "--module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",

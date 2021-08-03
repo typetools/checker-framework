@@ -124,7 +124,7 @@ allprojects {
   ext {
     // A list of add-export and add-open arguments to be used when running the Checker Framework.
     // Keep this list in sync with the lists in CheckerMain#getExecArguments and
-    // the section with label "javac-jdk11-non-modularized" in the manual.
+    // the sections with labels "javac-jdk11-non-modularized", "maven", and "sbt" in the manual.
     complierArgsForRunningCF = [
         // These are required in Java 16+ because the --illegal-access option is set to deny
         // by default.  None of these packages are accessed via reflection, so the module
