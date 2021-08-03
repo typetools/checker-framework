@@ -809,7 +809,7 @@ public class DependentTypesHelper {
    *
    * @param expression an expression that caused {@code e} when parsed
    * @param e the exception thrown when parsing {@code expression}
-   * @return a java expression
+   * @return a Java expression
    */
   protected PassThroughExpression createError(String expression, JavaExpressionParseException e) {
     return new PassThroughExpression(objectTM, new DependentTypesError(expression, e).toString());
@@ -820,7 +820,7 @@ public class DependentTypesHelper {
    *
    * @param expression an expression that caused {@code error} when parsed
    * @param error the error message caused by {@code expression}
-   * @return a java expression
+   * @return a Java expression
    */
   protected PassThroughExpression createError(String expression, String error) {
     return new PassThroughExpression(
@@ -1131,8 +1131,10 @@ public class DependentTypesHelper {
         }
       }
       to.replaceAnnotations(replacements);
-      if (from.getKind() != to.getKind()) {
-        // If the underlying types don't match, then this from has been substituted for a
+      if (from.getKind() != to.getKind()
+          || (from.getKind() == TypeKind.TYPEVAR
+              && TypesUtils.isCapturedTypeVariable(to.getUnderlyingType()))) {
+        // If the underlying types don't match, then from has been substituted for a
         // from variable, so don't recur. The primary annotation was copied because
         // the from variable might have had a primary annotation at a use.
         // For example:

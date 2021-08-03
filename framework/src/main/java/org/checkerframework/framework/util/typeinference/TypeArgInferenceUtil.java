@@ -525,7 +525,7 @@ public class TypeArgInferenceUtil {
       TypeMirror correctType = fromReturn.get(typeVariable);
       TypeMirror inferredType = entry.getValue().getUnderlyingType();
       if (types.isSameType(types.erasure(correctType), types.erasure(inferredType))) {
-        if (areSameCapture(correctType, inferredType, types)) {
+        if (areSameCapture(correctType, inferredType)) {
           continue;
         }
       }
@@ -544,12 +544,15 @@ public class TypeArgInferenceUtil {
   /**
    * Returns true if actual and inferred are captures of the same wildcard or declared type.
    *
+   * @param actual the actual type
+   * @param inferred the inferred type
    * @return true if actual and inferred are captures of the same wildcard or declared type
    */
-  private static boolean areSameCapture(TypeMirror actual, TypeMirror inferred, Types types) {
-    if (TypesUtils.isCaptured(actual) && TypesUtils.isCaptured(inferred)) {
+  private static boolean areSameCapture(TypeMirror actual, TypeMirror inferred) {
+    if (TypesUtils.isCapturedTypeVariable(actual) && TypesUtils.isCapturedTypeVariable(inferred)) {
       return true;
-    } else if (TypesUtils.isCaptured(actual) && inferred.getKind() == TypeKind.WILDCARD) {
+    } else if (TypesUtils.isCapturedTypeVariable(actual)
+        && inferred.getKind() == TypeKind.WILDCARD) {
       return true;
     } else if (actual.getKind() == TypeKind.DECLARED && inferred.getKind() == TypeKind.DECLARED) {
       DeclaredType actualDT = (DeclaredType) actual;
@@ -557,7 +560,7 @@ public class TypeArgInferenceUtil {
       if (actualDT.getTypeArguments().size() == inferredDT.getTypeArguments().size()) {
         for (int i = 0; i < actualDT.getTypeArguments().size(); i++) {
           if (!areSameCapture(
-              actualDT.getTypeArguments().get(i), inferredDT.getTypeArguments().get(i), types)) {
+              actualDT.getTypeArguments().get(i), inferredDT.getTypeArguments().get(i))) {
             return false;
           }
         }

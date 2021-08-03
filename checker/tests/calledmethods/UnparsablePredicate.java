@@ -14,7 +14,7 @@ public class UnparsablePredicate {
   // :: error: predicate
   void badKeywords2(@CalledMethodsPredicate("foo AND bar") Object x) {}
 
-  // These tests check that valid java identifiers don't cause problems
+  // These tests check that valid Java identifiers don't cause problems
   // when evaluating predicates. Examples of identifiers from
   // https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8
 

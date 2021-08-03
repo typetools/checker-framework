@@ -41,8 +41,8 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -401,7 +401,7 @@ public class NullnessTransfer
         AnnotatedTypes.asSuper(nullnessTypeFactory, mapOrSubtype, MAP_TYPE);
     int numTypeArguments = mapType.getTypeArguments().size();
     if (numTypeArguments != 2) {
-      throw new BugInCF("Wrong number %d of type arguments: %s", numTypeArguments, mapType);
+      throw new TypeSystemError("Wrong number %d of type arguments: %s", numTypeArguments, mapType);
     }
     AnnotatedTypeMirror valueType = mapType.getTypeArguments().get(1);
     return valueType.hasAnnotation(NULLABLE);

@@ -611,7 +611,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       AnnotatedTypeVariable type, AnnotatedTypeVariable superType, Void p) {
     // Clear the superType annotations and copy over the primary annotations before computing
     // bounds, so that the superType annotations don't override the type annotations on the bounds.
-    superType.clearAnnotations();
+    superType.clearPrimaryAnnotations();
     copyPrimaryAnnos(type, superType);
 
     AnnotatedTypeMirror upperBound = visit(type.getUpperBound(), superType.getUpperBound(), p);

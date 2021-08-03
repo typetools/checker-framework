@@ -428,7 +428,7 @@ public class ChapterExamples {
   int someInt = 1;
 
   // TODO: For now, boxed types are treated as primitive types. This may change in the future.
-  @SuppressWarnings("deprecation") // new Integer
+  @SuppressWarnings({"deprecation", "removal"}) // new Integer
   void unboxing() {
     int a = someInt;
     // :: error: (immutable.type.guardedby)

@@ -1,6 +1,6 @@
 // Keep somewhat in sync with
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
-// Adapted to handled the same type qualifier appearing multiple times.
+// Adapted to handle the same type qualifier appearing multiple times.
 
 import com.sun.tools.classfile.Attribute;
 import com.sun.tools.classfile.ClassFile;
@@ -20,14 +20,28 @@ public class ReferenceInfoUtil {
 
   public static final int IGNORE_VALUE = -321;
 
-  public static List<TypeAnnotation> extendedAnnotationsOf(ClassFile cf) {
+  /** If true, don't collect annotations on constructors. */
+  boolean ignoreConstructors;
+
+  /**
+   * Creates a new ReferenceInfoUtil.
+   *
+   * @param ignoreConstructors if true, don't collect annotations on constructor
+   */
+  public ReferenceInfoUtil(boolean ignoreConstructors) {
+    this.ignoreConstructors = ignoreConstructors;
+  }
+
+  public static List<TypeAnnotation> extendedAnnotationsOf(
+      ClassFile cf, boolean ignoreConstructors) {
+    ReferenceInfoUtil riu = new ReferenceInfoUtil(ignoreConstructors);
     List<TypeAnnotation> annos = new ArrayList<>();
-    findAnnotations(cf, annos);
+    riu.findAnnotations(cf, annos);
     return annos;
   }
 
   /////////////////// Extract type annotations //////////////////
-  private static void findAnnotations(ClassFile cf, List<TypeAnnotation> annos) {
+  private void findAnnotations(ClassFile cf, List<TypeAnnotation> annos) {
     findAnnotations(cf, Attribute.RuntimeVisibleTypeAnnotations, annos);
     findAnnotations(cf, Attribute.RuntimeInvisibleTypeAnnotations, annos);
 
@@ -35,6 +49,19 @@ public class ReferenceInfoUtil {
       findAnnotations(cf, f, annos);
     }
     for (Method m : cf.methods) {
+      String methodName;
+      try {
+        methodName = m.getName(cf.constant_pool);
+      } catch (Exception e) {
+        throw new Error(e);
+      }
+      // This method, `findAnnotations`, aims to extract annotations from one method.
+      // In JDK 16, constructors are included in  ClassFile.methods(); in JDK 11, they are not.
+      // Therefore, this if statement is required in JDK 16, and has no effect in JDK 11.
+      if (ignoreConstructors && methodName.equals("<init>")) {
+        continue;
+      }
+
       findAnnotations(cf, m, annos);
     }
   }
@@ -189,10 +216,12 @@ public class ReferenceInfoUtil {
   public static boolean compare(
       List<Pair<String, TypeAnnotation.Position>> expectedAnnos,
       List<TypeAnnotation> actualAnnos,
-      ClassFile cf)
+      ClassFile cf,
+      String diagnostic)
       throws InvalidIndex, UnexpectedEntry {
     if (actualAnnos.size() != expectedAnnos.size()) {
-      throw new ComparisonException("Wrong number of annotations", expectedAnnos, actualAnnos);
+      throw new ComparisonException(
+          "Wrong number of annotations in " + cf + "; " + diagnostic, expectedAnnos, actualAnnos);
     }
 
     for (Pair<String, TypeAnnotation.Position> e : expectedAnnos) {
@@ -201,7 +230,12 @@ public class ReferenceInfoUtil {
       TypeAnnotation actual = findAnnotation(aName, expected, actualAnnos, cf);
       if (actual == null) {
         throw new ComparisonException(
-            "Expected annotation not found: " + aName + " position: " + expected,
+            "Expected annotation not found: "
+                + aName
+                + " position: "
+                + expected
+                + "; "
+                + diagnostic,
             expectedAnnos,
             actualAnnos);
       }
@@ -226,15 +260,8 @@ class ComparisonException extends RuntimeException {
   }
 
   public String toString() {
-    return String.join(
-        System.lineSeparator(),
-        super.toString(),
-        "\tExpected: "
-            + expected.size()
-            + " annotations; but found: "
-            + found.size()
-            + " annotations",
-        "  Expected: " + expected,
-        "  Found: " + found);
+    return String.format(
+        "%s%n  Expected (%d): %s%s  Found (%d): %s",
+        super.toString(), expected.size(), expected, found.size(), found);
   }
 }

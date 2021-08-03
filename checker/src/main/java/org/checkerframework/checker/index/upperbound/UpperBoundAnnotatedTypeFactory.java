@@ -75,9 +75,9 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Implements the introduction rules for the Upper Bound Checker.
@@ -296,7 +296,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             && !offsets.isEmpty()) {
           // Cannot use type.replaceAnnotation because it will call isSubtype, which will
           // try to process the annotation and throw an error.
-          type.clearAnnotations();
+          type.clearPrimaryAnnotations();
           type.addAnnotation(BOTTOM);
         }
       }
@@ -334,18 +334,32 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return imf.isRandomNextInt(methodTree, processingEnv);
   }
 
+  /**
+   * Creates a new @LTLengthOf annotation.
+   *
+   * @param names the arguments to @LTLengthOf
+   * @return a new @LTLengthOf annotation with the given arguments
+   */
   AnnotationMirror createLTLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
-      throw new BugInCF("createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
+      throw new TypeSystemError(
+          "createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
     }
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTLengthOf.class);
     builder.setValue("value", names);
     return builder.build();
   }
 
+  /**
+   * Creates a new @LTEqLengthOf annotation.
+   *
+   * @param names the arguments to @LTEqLengthOf
+   * @return a new @LTEqLengthOf annotation with the given arguments
+   */
   AnnotationMirror createLTEqLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
-      throw new BugInCF("createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
+      throw new TypeSystemError(
+          "createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
     }
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTEqLengthOf.class);
     builder.setValue("value", names);

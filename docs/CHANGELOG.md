@@ -1,7 +1,46 @@
-Version 3.16.0 (July 9, 2021)
------------------------------
+Version 3.17.0 (August 2, 2021)
+-------------------------------
 
 **User-visible changes:**
+
+`-Ainfer` can now infer postcondition annotations that reference formal parameters
+(e.g. `"#1"`, `"#2"`) and the receiver (`"this"`).
+
+**Implementation details:**
+
+Method renamings and signature changes (old methods are removed) in `GenericAnnotatedTypeFactory`:
+* `getPreconditionAnnotation(VariableElement, AnnotatedTypeMirror)` => `getPreconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror)`
+* `getPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, List<AnnotationMirror>)` => `getPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, List<AnnotationMirror>)`
+* `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
+* `requiresOrEnsuresQualifierAnno(VariableElement, AnnotationMirror, Analysis.BeforeOrAfter)` => `createRequiresOrEnsuresQualifier(String, AnnotationMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
+
+Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
+* `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
+
+Method renamings:
+ * `CFAbstractAnalysis.getFieldValues` => `getFieldInitialValues`
+
+The following methods no longer take a `fieldValues` parameter:
+ * `GenericAnnotatedTypeFactory#createFlowAnalysis`
+ * `CFAnalysis` construtor
+ * `CFAbstractAnalysis#performAnalysis`
+ * `CFAbstractAnalysis` constructors
+
+**Closed issues:**
+#4685, #4689, #4785, #4805, #4806, #4815, #4829, #4849.
+
+
+Version 3.16.0 (July 13, 2021)
+------------------------------
+
+**User-visible changes:**
+
+You can run the Checker Framework on a JDK 16 JVM.  You can pass the `--release
+16` command-line argument to the compiler.  You may need to add additional
+command-line options, such as `--add-opens`; see the Checker Framework manual.
+New syntax, such as records and switch expressions, is not yet supported or
+type-checked; that will be added in a future release.  Thanks to Neil Brown for
+the JDK 16 support.
 
 The Lock Checker supports a new type, `@NewObject`, for the result of a
 constructor invocation.
@@ -14,6 +53,9 @@ on the command line.
 
 Method renamings (the old methods remain but are deprecated):
  * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
+
+Method renamings (the old methods were removed):
+ * `AnnotatedTypeMirror.clearAnnotations => `clearPrimaryAnnotations`
 
 Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
  * `visitIntersectionSupertype` => `visitIntersectionSupertype`
@@ -28,9 +70,8 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
  * `expandVarArgs` => `expandVarArgsParameters`
  * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
 
-
 **Closed issues:**
-
+#3013, #3754, #3791, #3845, #4523, #4767.
 
 Version 3.15.0 (June 18, 2021)
 ----------------------------

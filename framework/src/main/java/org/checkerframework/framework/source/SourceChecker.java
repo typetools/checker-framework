@@ -535,19 +535,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // Keep in sync with check in checker-framework/build.gradle and text in installation
     // section of manual.
     int jreVersion = SystemUtil.getJreVersion();
-    if (jreVersion < 8) {
-      throw new UserError(
-          "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
-          jreVersion);
-    } else if (jreVersion > 12) {
-      throw new UserError(
-          String.format(
-              "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
-              jreVersion));
-    } else if (jreVersion != 8 && jreVersion != 11) {
+    if (jreVersion != 8 && jreVersion != 11 && jreVersion != 16) {
       message(
           Kind.WARNING,
-          "Use JDK 8 or JDK 11 to run the Checker Framework.  You are using version %d.",
+          "Use JDK 8, 11, or 16 to run the Checker Framework.  You are using version %d.",
           jreVersion);
     }
 
@@ -938,18 +929,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager.printMessage(Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
       return;
     }
-    if (!warnedAboutGarbageCollection && SystemPlume.gcPercentage() > .25) {
-      messager.printMessage(
-          Kind.WARNING, "Garbage collection consumed over 25% of CPU during the past minute.");
-      messager.printMessage(
-          Kind.WARNING,
-          String.format(
-              "Perhaps increase max heap size"
-                  + " (max memory = %d, total memory = %d, free memory = %d).",
-              Runtime.getRuntime().maxMemory(),
-              Runtime.getRuntime().totalMemory(),
-              Runtime.getRuntime().freeMemory()));
-      warnedAboutGarbageCollection = true;
+
+    if (!warnedAboutGarbageCollection) {
+      String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
+      if (gcUsageMessage != null) {
+        messager.printMessage(Kind.WARNING, gcUsageMessage);
+        warnedAboutGarbageCollection = true;
+      }
     }
 
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();

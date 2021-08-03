@@ -1062,7 +1062,8 @@ issuing a warning about the call \<myField.toString()>.
 
 \begin{enumerate}
 \item
-  If \<computeValue> has no side effects, declare it as
+  If \<computeValue> has no side effects, declare the method as
+  \refqualclass{dataflow/qual}{SideEffectFree}:
 
 \begin{Verbatim}
   @SideEffectFree
@@ -1077,14 +1078,16 @@ the one in the test.
 \item
   If no method resets \<myField> to \<null> after it has been initialized
   to a non-null value (even if a method has some other side effect),
-  declare \<myField> as \refqualclass{checker/nullness/qual}{MonotonicNonNull}.
+  declare the field as \refqualclass{checker/nullness/qual}{MonotonicNonNull}:
 
 \begin{Verbatim}
   @MonotonicNonNull Object myField;
 \end{Verbatim}
 
 \item
-  If \<computeValue> sets \<myField> to a non-null value, declare it as
+  If \<computeValue> sets \<myField> to a non-null value (or maintains it
+  as a non-null value), declare the method as
+  \refqualclass{checker/nullness/qual}{EnsuresNonNull}:
 
 \begin{Verbatim}
   @EnsuresNonNull("myField")
@@ -1574,7 +1577,7 @@ class @Marsupial-Animal {
 
 % LocalWords:  MyClass qual PolymorphicQualifier DefaultQualifier subpackages
 % LocalWords:  actuals toArray CollectionToArrayHeuristics nn RegexBottom
-% LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
+% LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
 % LocalWords:  myLocalVar myClass getPackage getSuperclass myString Regex

@@ -13,8 +13,9 @@
 
 ## Change these to match your system.
 
-export JAVA11_HOME=/usr/lib/jvm/java-11-openjdk/
 export JAVA8_HOME=/usr/lib/jvm/java-1.8.0-openjdk
+export JAVA11_HOME=/usr/lib/jvm/java-11-openjdk
+export JAVA16_HOME=/usr/lib/jvm/java-16-oracle
 
 export ANDROID_HOME=${HOME}/compliance-experiments/fse20/android_home
 
@@ -69,19 +70,19 @@ export JAVA_HOME=${JAVA11_HOME}
 repolistbase=$(basename "$repolist")
 
 # DLJC will fail if these arguments are passed to it with empty values.
-if [ ! "x${qual_classpath}" = "x" ]; then
+if [ ! "${qual_classpath}" = "" ]; then
   quals_arg='yes'
 else
   quals_arg=
 fi
 
-if [ ! "x${checker_classpath}" = "x" ]; then
+if [ ! "${checker_classpath}" = "" ]; then
   lib_arg='yes'
 else
   lib_arg=
 fi
 
-if [ ! "x${custom_stubs}" = "x" ]; then
+if [ ! "${custom_stubs}" = "" ]; then
   stubs_arg='yes'
 fi
 
