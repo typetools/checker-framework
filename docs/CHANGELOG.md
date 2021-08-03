@@ -1,4 +1,4 @@
-Version 3.17.0 (August 2, 2021)
+Version 3.18.0 (September 1, 2021)
 -------------------------------
 
 **User-visible changes:**
