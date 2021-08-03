@@ -12,7 +12,6 @@ public class Figure3 {
             // extends @Initialized @Nullable Object super @Initialized @NonNull Void]]
             // method return type: A[ extends @Initialized @Nullable Object super @Initialized
             // @NonNull Void]
-            // ::  error: (return.type.incompatible)
             return pair(this.<B>bad(), b).value;
         }
     }

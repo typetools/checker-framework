@@ -15,7 +15,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
@@ -152,7 +152,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (qualifierKind2 == FENUM_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
+            throw new TypeSystemError(
+                    "Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
         }
 
         @Override
@@ -169,7 +170,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (qualifierKind2 == FENUM_KIND) {
                 return a1;
             }
-            throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
+            throw new TypeSystemError(
+                    "Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
         }
     }
 }

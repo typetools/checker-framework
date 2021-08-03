@@ -64,9 +64,9 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -344,9 +344,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         return imf.isRandomNextInt(methodTree, processingEnv);
     }
 
+    /**
+     * Creates a new @LTLengthOf annotation.
+     *
+     * @param names the arguments to @LTLengthOf
+     * @return a new @LTLengthOf annotation with the given arguments
+     */
     AnnotationMirror createLTLengthOfAnnotation(String... names) {
         if (names == null || names.length == 0) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
         }
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTLengthOf.class);
@@ -354,9 +360,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         return builder.build();
     }
 
+    /**
+     * Creates a new @LTEqLengthOf annotation.
+     *
+     * @param names the arguments to @LTEqLengthOf
+     * @return a new @LTEqLengthOf annotation with the given arguments
+     */
     AnnotationMirror createLTEqLengthOfAnnotation(String... names) {
         if (names == null || names.length == 0) {
-            throw new BugInCF(
+            throw new TypeSystemError(
                     "createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
         }
         AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTEqLengthOf.class);

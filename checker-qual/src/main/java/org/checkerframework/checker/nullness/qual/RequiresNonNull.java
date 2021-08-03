@@ -4,6 +4,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -62,13 +63,35 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@Repeatable(RequiresNonNull.List.class)
 @PreconditionAnnotation(qualifier = NonNull.class)
 public @interface RequiresNonNull {
     /**
      * The Java expressions that need to be {@link
      * org.checkerframework.checker.nullness.qual.NonNull}.
      *
+     * @return the Java expressions that need to be {@link
+     *     org.checkerframework.checker.nullness.qual.NonNull}
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] value();
+
+    /**
+     * A wrapper annotation that makes the {@link RequiresNonNull} annotation repeatable.
+     *
+     * <p>Programmers generally do not need to write this. It is created by Java when a programmer
+     * writes more than one {@link RequiresNonNull} annotation at the same location.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    @PreconditionAnnotation(qualifier = NonNull.class)
+    @interface List {
+        /**
+         * Returns the repeatable annotations.
+         *
+         * @return the repeatable annotations
+         */
+        RequiresNonNull[] value();
+    }
 }

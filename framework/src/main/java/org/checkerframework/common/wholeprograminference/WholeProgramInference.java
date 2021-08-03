@@ -137,9 +137,8 @@ public interface WholeProgramInference {
      * @param field the field whose type will be refined. Must be either a FieldAccessNode or a
      *     LocalVariableNode whose element kind is FIELD.
      * @param rhs the expression being assigned to the field
-     * @param classTree the ClassTree for the enclosing class of the assignment
      */
-    void updateFromFieldAssignment(Node field, Node rhs, ClassTree classTree);
+    void updateFromFieldAssignment(Node field, Node rhs);
 
     /**
      * Updates the type of {@code field} based on an assignment whose right-hand side has type

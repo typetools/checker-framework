@@ -72,8 +72,12 @@ public class PerDirectorySuite extends Suite {
 
         // We must have a method getTestDirs which returns String[],
         // or getParametersMethod would fail.
+        if (method == null) {
+            throw new BugInCF("no method annotated with @Parameters");
+        }
         if (!method.getReturnType().isArray()) {
-            return Collections.emptyList();
+            throw new BugInCF(
+                    "@Parameters annotation on method that does not return an array: " + method);
         }
         String[] dirs = (String[]) method.invokeExplosively(null);
         return TestUtilities.findJavaFilesPerDirectory(new File("tests"), dirs);

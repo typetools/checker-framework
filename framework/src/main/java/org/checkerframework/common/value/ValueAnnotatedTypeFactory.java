@@ -50,10 +50,10 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -505,7 +505,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (typeKind != null && TypeKindUtils.isIntegral(typeKind)) {
             return typeKind;
         }
-        throw new BugInCF(type.toString() + " expected to be an integral type.");
+        throw new TypeSystemError(type.toString() + " expected to be an integral type.");
     }
 
     /**
@@ -1542,5 +1542,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return atm;
         }
         return null;
+    }
+
+    /**
+     * A fact about an array, such as its length, cannot be changed via side effects to the array.
+     */
+    @Override
+    public boolean isImmutable(TypeMirror type) {
+        if (type.getKind() == TypeKind.ARRAY) {
+            return true;
+        }
+        return super.isImmutable(type);
     }
 }

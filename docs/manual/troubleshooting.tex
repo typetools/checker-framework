@@ -197,9 +197,11 @@ system.
 Versions 0.9.0 and 0.9.1 of
 \ahref{https://github.com/uber/NullAway}{NullAway} are compatible
 only with Checker Framework version 3.6.0 through 3.8.0.  Those versions of
-Error Prone use version 3.6.0 of the Checker Framework's dataflow analysis
-without shading it.  If you want to use a newer version of the Checker
-Framework, then use an older or newer version of NullAway.
+NullAway use version 3.6.0 of the Checker Framework's dataflow analysis
+library without shading it.  As of version 0.9.2, NullAway uses a shaded version of
+the library, so this conflict no longer exists.
+If you want to use a version of the Checker Framework newer than 3.8.0 with
+NullAway in the same build, then use NullAway 0.9.2 or later.
 
 \end{itemize}
 

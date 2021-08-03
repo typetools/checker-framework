@@ -20,8 +20,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -137,7 +137,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (qualifierKind2 == SIBLING_WITH_FIELDS_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+            throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
         }
 
         @Override
@@ -158,7 +158,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (qualifierKind2 == SIBLING_WITH_FIELDS_KIND) {
                 return a2;
             }
-            throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+            throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
         }
 
         @Override
@@ -188,7 +188,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 superAnno, siblingWithFieldsValue2Element, String.class, "");
                 return subVal1.equals(supVal1) && subVal2.equals(supVal2);
             }
-            throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);
+            throw new TypeSystemError("Unexpected qualifiers: %s %s", subAnno, superAnno);
         }
     }
 }

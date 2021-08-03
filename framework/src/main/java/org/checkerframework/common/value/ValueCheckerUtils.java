@@ -12,7 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -29,7 +29,7 @@ public class ValueCheckerUtils {
 
     /** Do not instantiate. */
     private ValueCheckerUtils() {
-        throw new BugInCF("do not instantiate");
+        throw new TypeSystemError("do not instantiate");
     }
 
     /**

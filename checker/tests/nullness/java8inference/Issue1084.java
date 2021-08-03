@@ -8,6 +8,7 @@ class MyOpt<T extends Object> {
         throw new RuntimeException();
     }
 
+    // :: error: (type.argument.type.incompatible)
     static <S> MyOpt<S> of(S p) {
         throw new RuntimeException();
     }

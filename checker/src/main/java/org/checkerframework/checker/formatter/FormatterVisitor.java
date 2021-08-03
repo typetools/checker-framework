@@ -19,11 +19,11 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.UserError;
 
 import java.util.List;
 
@@ -226,7 +226,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         ExecutableElement calledMethodElement = TreeUtils.elementFromUse(invocationTree);
         int callIndex = formatStringIndex(calledMethodElement);
         if (callIndex == -1) {
-            throw new BugInCF(
+            throw new UserError(
                     "Method "
                             + calledMethodElement
                             + " is annotated @FormatMethod but has no String formal parameter");

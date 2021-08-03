@@ -1104,7 +1104,7 @@ public class AnnotationFileParser {
                         decl.getAnnotations(),
                         decl);
             } catch (ErrorTypeKindException e) {
-                // Do nothing, per Issue #244.
+                // Do nothing, per https://github.com/typetools/checker-framework/issues/244 .
             }
         } else {
             assert decl.isConstructorDeclaration();

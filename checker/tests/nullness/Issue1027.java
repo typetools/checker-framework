@@ -20,7 +20,7 @@ public class Issue1027 {
         void bar(Function<T, String> p) {}
     }
 
-    @SuppressWarnings("nullness")
+    @SuppressWarnings({"nullness", "keyfor"})
     Repr<@KeyFor("this") String> foo() {
         return null;
     }

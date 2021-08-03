@@ -39,7 +39,8 @@ public class StringIntern {
         internedStr = finalStringInitializedToInterned; // OK
         // :: error: (assignment.type.incompatible)
         internedStr = finalString2; // error
-        @Interned Foo internedFoo = finalFooInitializedToInterned; // OK
+        // :: error: (assignment.type.incompatible)
+        @Interned Foo internedFoo = finalFooInitializedToInterned;
         if (arg == finalStringStatic1) {} // OK
         // :: error: (not.interned)
         if (arg == finalStringStatic2) {} // error

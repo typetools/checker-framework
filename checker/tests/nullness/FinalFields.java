@@ -2,13 +2,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Upper {
     @Nullable String fs = "NonNull init";
-    final @Nullable String ffs = "NonNull init";
+    private final @Nullable String ffs = "NonNull init";
 
     void access() {
         // Error, because non-final field type is not refined
         // :: error: (dereference.of.nullable)
         fs.hashCode();
-        // Final field in the same class is refined
+        // private final field is refined
         ffs.hashCode();
     }
 }
@@ -35,13 +35,13 @@ public class FinalFields {
 
 class Lower {
     @Nullable String fs = "NonNull init, too";
-    final @Nullable String ffs = "NonNull init, too";
+    private final @Nullable String ffs = "NonNull init, too";
 
     void access() {
         // Error, because non-final field type is not refined
         // :: error: (dereference.of.nullable)
         fs.hashCode();
-        // Final field in the same class is refined
+        // private final field is refined
         ffs.hashCode();
     }
 }

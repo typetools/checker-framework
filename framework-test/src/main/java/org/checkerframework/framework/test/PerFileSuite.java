@@ -77,10 +77,12 @@ public class PerFileSuite extends Suite {
         List<File> javaFiles;
         // We will have either a method getTestDirs which returns String [] or getTestFiles
         // which returns List<Object []> or getParametersMethod would fail
+        if (method == null) {
+            throw new BugInCF("no method annotated with @Parameters");
+        }
         if (method.getReturnType().isArray()) {
             String[] dirs = (String[]) method.invokeExplosively(null);
             javaFiles = TestUtilities.findNestedJavaTestFiles(dirs);
-
         } else {
             javaFiles = (List<File>) method.invokeExplosively(null);
         }

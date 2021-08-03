@@ -26,9 +26,9 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.util.HashSet;
@@ -312,7 +312,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 srcType = callerReceiver;
             } else {
-                throw new BugInCF("Unexpected getMethodSelect() kind at callsite " + node);
+                throw new TypeSystemError("Unexpected getMethodSelect() kind at callsite " + node);
             }
 
             // Instantiate type-polymorphic effects

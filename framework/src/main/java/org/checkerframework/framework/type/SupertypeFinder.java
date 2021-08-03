@@ -216,7 +216,7 @@ class SupertypeFinder {
 
             List<AnnotatedDeclaredType> superTypesNew = new ArrayList<>();
             for (AnnotatedDeclaredType dt : supertypes) {
-                dt.getTypeArguments(); // Initialize the type arguments.
+                type.atypeFactory.initializeAtm(dt);
                 superTypesNew.add(
                         (AnnotatedDeclaredType)
                                 atypeFactory.getTypeVarSubstitutor().substitute(mapping, dt));

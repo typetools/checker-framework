@@ -27,7 +27,7 @@ public class FlowField {
         nonnull.toString();
     }
 
-    static final String nonnull = new String();
+    private static final String nonnull = new String();
 
     class A {
         protected String field = null;

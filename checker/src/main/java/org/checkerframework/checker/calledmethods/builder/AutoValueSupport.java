@@ -8,10 +8,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraysPlume;
 
 import java.beans.Introspector;
@@ -84,7 +84,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
             Element classContainingBuilderElement = builderElement.getEnclosingElement();
             if (!ElementUtils.hasAnnotation(
                     classContainingBuilderElement, getAutoValuePackageName() + ".AutoValue")) {
-                throw new BugInCF(
+                throw new UserError(
                         "class "
                                 + classContainingBuilderElement.getSimpleName()
                                 + " is missing @AutoValue annotation");

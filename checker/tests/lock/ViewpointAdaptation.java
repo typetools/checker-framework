@@ -15,8 +15,7 @@ public class ViewpointAdaptation {
 
     public void method1(final String a) {
         synchronized (a) {
-            // The expression "a" from the @GuardedBy annotation on f is not valid at the
-            // declaration site of f, but an error was already issued at the declaration of f.
+            // :: error: (expression.unparsable.type.invalid)
             f.counter++;
         }
     }

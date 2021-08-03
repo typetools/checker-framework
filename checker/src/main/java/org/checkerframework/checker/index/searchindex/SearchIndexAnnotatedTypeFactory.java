@@ -12,8 +12,8 @@ import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -96,7 +96,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return AnnotationUtils.getElementValueArray(
                     am, searchIndexForValueElement, String.class);
         } else {
-            throw new BugInCF("indexForValue(%s)", am);
+            throw new TypeSystemError("indexForValue(%s)", am);
         }
     }
 

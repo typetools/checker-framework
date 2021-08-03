@@ -13,6 +13,7 @@ public class Initializer {
 
     public String d = ("");
 
+    // :: error: (initialization.fields.uninitialized)
     public Initializer() {
         // :: error: (assignment.type.incompatible)
         a = null;
@@ -26,11 +27,13 @@ public class Initializer {
     public Initializer(int foo) {
         a = "";
         c = "";
+        f = "";
     }
 
     public Initializer(float foo) {
         setField();
         c = "";
+        f = "";
     }
 
     public Initializer(double foo) {
@@ -38,6 +41,7 @@ public class Initializer {
             a = "";
         }
         c = "";
+        f = "";
     }
 
     // :: error: (initialization.fields.uninitialized)
@@ -59,7 +63,7 @@ public class Initializer {
         return true;
     }
 
-    String f = "";
+    String f;
 
     void t1(@UnknownInitialization Initializer this) {
         // :: error: (dereference.of.nullable)
@@ -71,7 +75,8 @@ public class Initializer {
 
 class SubInitializer extends Initializer {
 
-    String f = "";
+    // :: error: (initialization.field.uninitialized)
+    String f;
 
     void subt1(@UnknownInitialization(Initializer.class) SubInitializer this) {
         fieldF.toString();

@@ -5,6 +5,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -44,6 +45,7 @@ import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 import scenelib.annotations.util.JVMNames;
@@ -187,55 +189,68 @@ public class WholeProgramInferenceJavaParserStorage
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
         @BinaryName String className = enclosingClass.flatname.toString();
         ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
-        return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
+        // If it's an enum constant it won't appear as a field
+        // and it won't have extra annotations, so just return the basic type:
+        if (classAnnos.enumConstants.contains(fieldName)) {
+            return lhsATM;
+        } else {
+            return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
+        }
     }
 
     @Override
-    public AnnotatedTypeMirror getPreOrPostconditionsForField(
+    public AnnotatedTypeMirror getPreOrPostconditions(
             Analysis.BeforeOrAfter preOrPost,
             ExecutableElement methodElement,
-            VariableElement fieldElement,
+            String expression,
+            AnnotatedTypeMirror declaredType,
             AnnotatedTypeFactory atypeFactory) {
         switch (preOrPost) {
             case BEFORE:
-                return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
+                return getPreconditionsForExpression(
+                        methodElement, expression, declaredType, atypeFactory);
             case AFTER:
-                return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
+                return getPostconditionsForExpression(
+                        methodElement, expression, declaredType, atypeFactory);
             default:
                 throw new BugInCF("Unexpected " + preOrPost);
         }
     }
 
     /**
-     * Returns the precondition annotations for a field.
+     * Returns the precondition annotations for the given expression.
      *
      * @param methodElement the method
-     * @param fieldElement the field
+     * @param expression the expression
+     * @param declaredType the declared type of the expression
      * @param atypeFactory the type factory
      * @return the precondition annotations for a field
      */
-    private AnnotatedTypeMirror getPreconditionsForField(
+    private AnnotatedTypeMirror getPreconditionsForExpression(
             ExecutableElement methodElement,
-            VariableElement fieldElement,
+            String expression,
+            AnnotatedTypeMirror declaredType,
             AnnotatedTypeFactory atypeFactory) {
         CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
-        return methodAnnos.getPreconditionsForField(fieldElement, atypeFactory);
+        return methodAnnos.getPreconditionsForExpression(expression, declaredType, atypeFactory);
     }
 
     /**
-     * Returns the postcondition annotations for a field.
+     * Returns the postcondition annotations for an expression.
      *
      * @param methodElement the method
-     * @param fieldElement the field
+     * @param expression the expression
+     * @param declaredType the declared type of the expression
      * @param atypeFactory the type factory
      * @return the postcondition annotations for a field
      */
-    private AnnotatedTypeMirror getPostconditionsForField(
+    private AnnotatedTypeMirror getPostconditionsForExpression(
             ExecutableElement methodElement,
-            VariableElement fieldElement,
+            String expression,
+            AnnotatedTypeMirror declaredType,
             AnnotatedTypeFactory atypeFactory) {
         CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
-        return methodAnnos.getPostconditionsForField(fieldElement, atypeFactory);
+        return methodAnnos.getPostconditionsForExpression(expression, declaredType, atypeFactory);
     }
 
     @Override
@@ -449,6 +464,20 @@ public class WholeProgramInferenceJavaParserStorage
                                     executableSignature,
                                     new CallableDeclarationAnnos(javaParserNode));
                         }
+                    }
+
+                    @Override
+                    public void processVariable(
+                            VariableTree javacTree, EnumConstantDeclaration javaParserNode) {
+                        VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
+                        if (!elt.getKind().isField()) {
+                            throw new Error();
+                        }
+
+                        String enclosingClassName = ElementUtils.getEnclosingClassName(elt);
+                        ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(enclosingClassName);
+                        String fieldName = javacTree.getName().toString();
+                        enclosingClass.enumConstants.add(fieldName);
                     }
 
                     @Override
@@ -725,6 +754,8 @@ public class WholeProgramInferenceJavaParserStorage
         public Map<String, CallableDeclarationAnnos> callableDeclarations = new HashMap<>();
         /** Mapping from field names to wrappers for those fields. */
         public Map<String, FieldAnnos> fields = new HashMap<>(2);
+        /** Collection of declared enum constants (empty if not an enum). */
+        public Set<String> enumConstants = new HashSet<>(2);
 
         /**
          * Transfers all annotations inferred by whole program inference for the methods and fields
@@ -778,19 +809,19 @@ public class WholeProgramInferenceJavaParserStorage
         private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
         /**
-         * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
-         * inferred preconditions on that field.
+         * Mapping from expression strings to pairs of (inferred precondition, declared type). The
+         * keys are strings representing JavaExpressions, using the same format as a user would in
+         * an {@link org.checkerframework.framework.qual.RequiresQualifier} annotation.
          */
-        private @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPreconditions =
-                null;
+        private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
+                preconditions = null;
         /**
-         * Mapping from VariableElements for fields to an AnnotatedTypeMirror containing the
-         * inferred postconditions on that field.
+         * Mapping from expression strings to pairs of (inferred postcondition, declared type). The
+         * okeys are strings representing JavaExpressions, using the same format as a user would in
+         * an {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation.
          */
-        private @MonotonicNonNull Map<VariableElement, AnnotatedTypeMirror> fieldToPostconditions =
-                null;
-        // /** Inferred contracts for the callable declaration. */
-        // private @MonotonicNonNull List<AnnotationMirror> contracts = null;
+        private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
+                postconditions = null;
 
         /**
          * Creates a wrapper for the given method or constructor declaration.
@@ -922,79 +953,88 @@ public class WholeProgramInferenceJavaParserStorage
         /**
          * Returns the inferred preconditions for this callable declaration.
          *
-         * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
-         *     inferred preconditions for those fields.
+         * @return a mapping from expression string to pairs of (inferred precondition, declared
+         *     type). The keys of this map use the same string formatting as the {@link
+         *     org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g. "#1" for the
+         *     first parameter.
          */
-        public Map<VariableElement, AnnotatedTypeMirror> getFieldToPreconditions() {
-            if (fieldToPreconditions == null) {
+        public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
+            if (preconditions == null) {
                 return Collections.emptyMap();
             }
 
-            return Collections.unmodifiableMap(fieldToPreconditions);
+            return Collections.unmodifiableMap(preconditions);
         }
 
         /**
          * Returns the inferred postconditions for this callable declaration.
          *
-         * @return a mapping from VariableElements for fields to AnnotatedTypeMirrors containing the
-         *     inferred postconditions for those fields.
+         * @return a mapping from expression string to pairs of (inferred postcondition, declared
+         *     type). The keys of this map use the same string formatting as the {@link
+         *     org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g. "#1" for the
+         *     first parameter.
          */
-        public Map<VariableElement, AnnotatedTypeMirror> getFieldToPostconditions() {
-            if (fieldToPostconditions == null) {
+        public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
+            if (postconditions == null) {
                 return Collections.emptyMap();
             }
 
-            return Collections.unmodifiableMap(fieldToPostconditions);
+            return Collections.unmodifiableMap(postconditions);
         }
 
         /**
-         * Returns an AnnotatedTypeMirror containing the preconditions for the given field.
+         * Returns an AnnotatedTypeMirror containing the preconditions for the given expression.
          *
-         * @param field VariableElement for a field in the enclosing class for this method
+         * @param expression a string representing a Java expression, in the same format as the
+         *     argument to a {@link org.checkerframework.framework.qual.RequiresQualifier}
+         *     annotation
+         * @param declaredType the declared type of {@code expression}
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
          *     be used
          * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
-         *     preconditions for the given field
+         *     preconditions for the given expression
          */
-        public AnnotatedTypeMirror getPreconditionsForField(
-                VariableElement field, AnnotatedTypeFactory atf) {
-            if (fieldToPreconditions == null) {
-                fieldToPreconditions = new HashMap<>(1);
+        public AnnotatedTypeMirror getPreconditionsForExpression(
+                String expression, AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atf) {
+            if (preconditions == null) {
+                preconditions = new HashMap<>(1);
             }
 
-            if (!fieldToPreconditions.containsKey(field)) {
-                TypeMirror underlyingType = atf.getAnnotatedType(field).getUnderlyingType();
+            if (!preconditions.containsKey(expression)) {
                 AnnotatedTypeMirror preconditionsType =
-                        AnnotatedTypeMirror.createType(underlyingType, atf, false);
-                fieldToPreconditions.put(field, preconditionsType);
+                        AnnotatedTypeMirror.createType(
+                                declaredType.getUnderlyingType(), atf, false);
+                preconditions.put(expression, Pair.of(preconditionsType, declaredType));
             }
 
-            return fieldToPreconditions.get(field);
+            return preconditions.get(expression).first;
         }
 
         /**
-         * Returns an AnnotatedTypeMirror containing the postconditions for the given field.
+         * Returns an AnnotatedTypeMirror containing the postconditions for the given expression.
          *
-         * @param field VariableElement for a field in the enclosing class for this method
+         * @param expression a string representing a Java expression, in the same format as the
+         *     argument to a {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation
+         * @param declaredType the declared type of {@code expression}
          * @param atf the annotated type factory of a given type system, whose type hierarchy will
          *     be used
          * @return an {@code AnnotatedTypeMirror} containing the annotations for the inferred
-         *     postconditions for the given field
+         *     postconditions for the given expression
          */
-        public AnnotatedTypeMirror getPostconditionsForField(
-                VariableElement field, AnnotatedTypeFactory atf) {
-            if (fieldToPostconditions == null) {
-                fieldToPostconditions = new HashMap<>(1);
+        public AnnotatedTypeMirror getPostconditionsForExpression(
+                String expression, AnnotatedTypeMirror declaredType, AnnotatedTypeFactory atf) {
+            if (postconditions == null) {
+                postconditions = new HashMap<>(1);
             }
 
-            if (!fieldToPostconditions.containsKey(field)) {
-                TypeMirror underlyingType = atf.getAnnotatedType(field).getUnderlyingType();
+            if (!postconditions.containsKey(expression)) {
                 AnnotatedTypeMirror postconditionsType =
-                        AnnotatedTypeMirror.createType(underlyingType, atf, false);
-                fieldToPostconditions.put(field, postconditionsType);
+                        AnnotatedTypeMirror.createType(
+                                declaredType.getUnderlyingType(), atf, false);
+                postconditions.put(expression, Pair.of(postconditionsType, declaredType));
             }
 
-            return fieldToPostconditions.get(field);
+            return postconditions.get(expression).first;
         }
 
         /**

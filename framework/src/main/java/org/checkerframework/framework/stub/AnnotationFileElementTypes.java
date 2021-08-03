@@ -410,7 +410,7 @@ public class AnnotationFileElementTypes {
      * @return the most specific AnnotatedTypeMirror for {@code elt} that is a fake override, or
      *     null if there are no fake overrides
      */
-    public @Nullable AnnotatedTypeMirror getFakeOverride(
+    public @Nullable AnnotatedExecutableType getFakeOverride(
             Element elt, AnnotatedTypeMirror receiverType) {
         if (parsing) {
             throw new BugInCF("parsing while calling getFakeOverride");

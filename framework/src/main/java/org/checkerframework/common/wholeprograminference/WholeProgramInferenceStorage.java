@@ -2,6 +2,7 @@ package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.tree.ClassTree;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -106,21 +107,30 @@ public interface WholeProgramInferenceStorage<T> {
             AnnotatedTypeMirror lhsATM,
             AnnotatedTypeFactory atypeFactory);
 
-    // Fields are special because currently WPI computes preconditions for fields only, not for
-    // other expressions.
     /**
-     * Returns the pre- or postcondition annotations for a field.
+     * Returns the pre- or postcondition annotations for an expression. The format of the expression
+     * is the same as a programmer would write in a {@link
+     * org.checkerframework.framework.qual.RequiresQualifier} or {@link
+     * org.checkerframework.framework.qual.EnsuresQualifier} annotation.
+     *
+     * <p>This method may return null if the given expression is not a supported expression type.
+     * Currently, the supported expression types are: fields of "this" (e.g. "this.f", pre- and
+     * postconditions), "this" (postconditions only), and method parameters (e.g. "#1", "#2",
+     * postconditions only).
      *
      * @param preOrPost whether to get the precondition or postcondition
      * @param methodElement the method
-     * @param fieldElement the field
+     * @param expression the expression
+     * @param declaredType the declared type of the expression
      * @param atypeFactory the type factory
-     * @return the pre- or postcondition annotations for a field
+     * @return the pre- or postcondition annotations for an expression, or null if the given
+     *     expression is not a supported expression type
      */
-    public T getPreOrPostconditionsForField(
+    public @Nullable T getPreOrPostconditions(
             Analysis.BeforeOrAfter preOrPost,
             ExecutableElement methodElement,
-            VariableElement fieldElement,
+            String expression,
+            AnnotatedTypeMirror declaredType,
             AnnotatedTypeFactory atypeFactory);
 
     /**

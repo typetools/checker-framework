@@ -86,12 +86,14 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsPlume;
 
 import scenelib.annotations.el.AMethod;
@@ -331,6 +333,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Map keys are canonical names of aliased annotations. */
     private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
+    /**
+     * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
+     */
+    private SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
+            new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
+
+    /**
+     * Initializes all fields of {@code type}.
+     *
+     * @param type annotated type mirror
+     */
+    public void initializeAtm(AnnotatedTypeMirror type) {
+        atmInitializer.visit(type);
+    }
 
     /**
      * Information about one annotation alias.
@@ -423,7 +439,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Which whole-program inference output format to use, if doing whole-program inference. This
      * variable would be final, but it is not set unless WPI is enabled.
      */
-    protected WholeProgramInference.OutputFormat wpiOutputFormat;
+    public WholeProgramInference.OutputFormat wpiOutputFormat;
 
     /**
      * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used
@@ -2259,8 +2275,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedExecutableType memberTypeWithoutOverrides =
                 getAnnotatedType(methodElt); // get unsubstituted type
         AnnotatedExecutableType memberTypeWithOverrides =
-                (AnnotatedExecutableType)
-                        applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+                applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
         methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
 
         AnnotatedExecutableType methodType =
@@ -2373,18 +2388,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param memberType the type of {@code member}
      * @return {@code memberType}, adjusted according to fake overrides
      */
-    private AnnotatedTypeMirror applyFakeOverrides(
-            AnnotatedTypeMirror receiverType, Element member, AnnotatedTypeMirror memberType) {
+    private AnnotatedExecutableType applyFakeOverrides(
+            AnnotatedTypeMirror receiverType, Element member, AnnotatedExecutableType memberType) {
         // Currently, handle only methods, not fields.  TODO: Handle fields.
         if (memberType.getKind() != TypeKind.EXECUTABLE) {
             return memberType;
         }
 
         AnnotationFileElementTypes afet = stubTypes;
-        AnnotatedExecutableType methodType =
-                (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
+        AnnotatedExecutableType methodType = afet.getFakeOverride(member, receiverType);
         if (methodType == null) {
-            methodType = (AnnotatedExecutableType) memberType;
+            methodType = memberType;
         }
         return methodType;
     }
@@ -5547,5 +5561,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else {
             throw new BugInCF("Not a contract list annotation: " + contractListAnno);
         }
+    }
+
+    /**
+     * Returns true if the type is immutable. Subclasses can override this method to add types that
+     * are mutable, but the annotated type of an object is immutable.
+     *
+     * @param type type to test.
+     * @return true if the type is immutable
+     */
+    public boolean isImmutable(TypeMirror type) {
+        if (type.getKind().isPrimitive()) {
+            return true;
+        }
+        return ImmutableTypes.isImmutable(TypeAnnotationUtils.unannotatedType(type).toString());
     }
 }
