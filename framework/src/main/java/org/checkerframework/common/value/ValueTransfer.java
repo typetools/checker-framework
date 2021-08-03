@@ -694,63 +694,7 @@ public class ValueTransfer extends CFTransfer {
     }
 
     return atypeFactory.UNKNOWNVAL;
-  }
-  
-  /** convenience function used by createAnnotationForStringConcatenation(). */
-  private List<Integer> getStringLengths(Node rightOperand, 
-		  TransferInput<CFValue, CFStore> p, List<String> rightValues){ 
-    return rightValues != null
-            ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
-            : getStringLengths(rightOperand, p);
-  }
-  
-  /** convenience function used by createAnnotationForStringConcatenation(). */
-  private Range getStringLengthRange(Node rightOperand, TransferInput<CFValue, CFStore> p, List<Integer> rightLengths) {
-    return rightLengths != null
-            ? ValueCheckerUtils.getRangeFromValues(rightLengths)
-            : getStringLengthRange(rightOperand, p);	  
-  }
-  
-  /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static Range appendNull(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange){
-    if (!nonNullStringConcat) {
-      if (isNullable(rightOperand)){
-        return rightLengthRange.union(Range.create(4, 4)); // "null"
-      }
-    }
-	return rightLengthRange
-  }
-	   
-  /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static List<Integer> appendNull(boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
-    if (!nonNullStringConcat) {
-      if (isNullable(rightOperand)) {
-        rightLengths = new ArrayList<>(rightLengths);
-        rightLengths.add(4); // "null"          
-      }
-    }
-	return rightLengths;
-  }
- 
-  /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static List<String> appendNull(boolean nonNullStringConcat, Node rightOperand, List<String> rightValues) {
-    boolean append=false;
-    if (!nonNullStringConcat) {
-        if (isNullable(rightOperand)) {
-          append = true;
-        }
-    } else {
-        if (rightOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            append = true;
-          }
-        }
-    }
-    if (append)
-      return CollectionsPlume.append(rightValues, "null");
-    return rightValues;
-  }  	  
+  }	  
 
   public TransferResult<CFValue, CFStore> stringConcatenation(
       Node leftOperand,
@@ -1674,4 +1618,61 @@ public class ValueTransfer extends CFTransfer {
         resultValues,
         transferResult.getResultValue().getUnderlyingType());
   }
+  
+  
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private List<Integer> getStringLengths(Node rightOperand, 
+		  TransferInput<CFValue, CFStore> p, List<String> rightValues){ 
+    return rightValues != null
+            ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
+            : getStringLengths(rightOperand, p);
+  }
+  
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private Range getStringLengthRange(Node rightOperand, TransferInput<CFValue, CFStore> p, List<Integer> rightLengths) {
+    return rightLengths != null
+            ? ValueCheckerUtils.getRangeFromValues(rightLengths)
+            : getStringLengthRange(rightOperand, p);	  
+  }
+  
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private static Range appendNull(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange){
+    if (!nonNullStringConcat) {
+      if (isNullable(rightOperand)){
+        return rightLengthRange.union(Range.create(4, 4)); // "null"
+      }
+    }
+	return rightLengthRange;
+  }
+	   
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private static List<Integer> appendNull(boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
+    if (!nonNullStringConcat) {
+      if (isNullable(rightOperand)) {
+        rightLengths = new ArrayList<>(rightLengths);
+        rightLengths.add(4); // "null"          
+      }
+    }
+	return rightLengths;
+  }
+ 
+  /** convenience function used by createAnnotationForStringConcatenation(). */
+  private static List<String> appendNull(boolean nonNullStringConcat, Node rightOperand, List<String> rightValues) {
+    boolean append=false;
+    if (!nonNullStringConcat) {
+        if (isNullable(rightOperand)) {
+          append = true;
+        }
+    } else {
+        if (rightOperand instanceof StringConversionNode) {
+          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
+              == TypeKind.NULL) {
+            append = true;
+          }
+        }
+    }
+    if (append)
+      return CollectionsPlume.append(rightValues, "null");
+    return rightValues;
+  }  
 }
