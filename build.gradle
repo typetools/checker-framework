@@ -427,21 +427,21 @@ List<String> getJavaFilesToFormat(projectName) {
 }
 
 task writeListOfJavaFilesToFormat(group: 'Format') {
-  description "Writes a list of Java files subject to formatting, to ${buildDir}/javafiles.txt"
-  doLast {
-    mkdir buildDir
-    File list = new File("${buildDir}/javafiles.txt");
-    list.createNewFile();
-    FileWriter fileWriter = new FileWriter(list)
-    subprojects.forEach {
-      if (!it.name.startsWith("checker-qual-android")) {
-        for (String fileName : getJavaFilesToFormat(it.name)) {
-          fileWriter.write(fileName)
-          fileWriter.write(System.lineSeparator())
+    description "Writes a list of Java files subject to formatting, to ${buildDir}/javafiles.txt"
+    doLast {
+        mkdir buildDir
+        File list = new File("${buildDir}/javafiles.txt");
+        list.createNewFile();
+        FileWriter fileWriter = new FileWriter(list)
+        subprojects.forEach {
+            if (!it.name.startsWith("checker-qual-android")) {
+                for (String fileName : getJavaFilesToFormat(it.name)) {
+                    fileWriter.write(fileName)
+                    fileWriter.write(System.lineSeparator())
+                }
+            }
         }
-      }
     }
-  }
 }
 
 task htmlValidate(type: Exec, group: 'Format') {
@@ -601,17 +601,17 @@ task getCodeFormatScripts() {
 // However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97 .
 // No group so it does not show up in the output of `gradlew tasks`
 task getCodeFormatScriptsInGradle {
-  description "Obtain the run-google-java-format scripts"
-  doLast {
-    if (! new File(formatScriptsHome).exists()) {
-      // There is no support for the --depth argument:
-      // https://github.com/ajoberstar/grgit/issues/155   https://bugs.eclipse.org/bugs/show_bug.cgi?id=475615
-      def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/plume-lib/run-google-java-format.git')
-    } else {
-      def rgjfGit = Grgit.open(dir: formatScriptsHome)
-      rgjfGit.pull()
+    description "Obtain the run-google-java-format scripts"
+    doLast {
+        if (! new File(formatScriptsHome).exists()) {
+            // There is no support for the --depth argument:
+            // https://github.com/ajoberstar/grgit/issues/155   https://bugs.eclipse.org/bugs/show_bug.cgi?id=475615
+            def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/plume-lib/run-google-java-format.git')
+        } else {
+            def rgjfGit = Grgit.open(dir: formatScriptsHome)
+            rgjfGit.pull()
+        }
     }
-  }
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
