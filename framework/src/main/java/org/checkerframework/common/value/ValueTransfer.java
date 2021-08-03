@@ -653,7 +653,7 @@ public class ValueTransfer extends CFTransfer {
   private AnnotationMirror createAnnotationForStringConcatenation(
       Node leftOperand, Node rightOperand, TransferInput<CFValue, CFStore> p) {
     boolean nonNullStringConcat =
-			  atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
+        atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
 
     // Try using sets of string values
     List<String> leftValues = getStringValues(leftOperand, p);
@@ -694,7 +694,7 @@ public class ValueTransfer extends CFTransfer {
     }
 
     return atypeFactory.UNKNOWNVAL;
-  }	  
+  }
 
   public TransferResult<CFValue, CFStore> stringConcatenation(
       Node leftOperand,
@@ -1618,61 +1618,63 @@ public class ValueTransfer extends CFTransfer {
         resultValues,
         transferResult.getResultValue().getUnderlyingType());
   }
-  
-  
+
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private List<Integer> getStringLengths(Node rightOperand, 
-		  TransferInput<CFValue, CFStore> p, List<String> rightValues){ 
+  private List<Integer> getStringLengths(
+      Node rightOperand, TransferInput<CFValue, CFStore> p, List<String> rightValues) {
     return rightValues != null
-            ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
-            : getStringLengths(rightOperand, p);
+        ? ValueCheckerUtils.getLengthsForStringValues(rightValues)
+        : getStringLengths(rightOperand, p);
   }
-  
+
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private Range getStringLengthRange(Node rightOperand, TransferInput<CFValue, CFStore> p, List<Integer> rightLengths) {
+  private Range getStringLengthRange(
+      Node rightOperand, TransferInput<CFValue, CFStore> p, List<Integer> rightLengths) {
     return rightLengths != null
-            ? ValueCheckerUtils.getRangeFromValues(rightLengths)
-            : getStringLengthRange(rightOperand, p);	  
+        ? ValueCheckerUtils.getRangeFromValues(rightLengths)
+        : getStringLengthRange(rightOperand, p);
   }
-  
+
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static Range appendNull(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange){
+  private static Range appendNull(
+      boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
     if (!nonNullStringConcat) {
-      if (isNullable(rightOperand)){
+      if (isNullable(rightOperand)) {
         return rightLengthRange.union(Range.create(4, 4)); // "null"
       }
     }
-	return rightLengthRange;
+    return rightLengthRange;
   }
-	   
+
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static List<Integer> appendNull(boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
+  private static List<Integer> appendNull(
+      boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
         rightLengths = new ArrayList<>(rightLengths);
-        rightLengths.add(4); // "null"          
+        rightLengths.add(4); // "null"
       }
     }
-	return rightLengths;
+    return rightLengths;
   }
- 
+
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private static List<String> appendNull(boolean nonNullStringConcat, Node rightOperand, List<String> rightValues) {
-    boolean append=false;
+  private static List<String> appendNull(
+      boolean nonNullStringConcat, Node rightOperand, List<String> rightValues) {
+    boolean append = false;
     if (!nonNullStringConcat) {
-        if (isNullable(rightOperand)) {
+      if (isNullable(rightOperand)) {
+        append = true;
+      }
+    } else {
+      if (rightOperand instanceof StringConversionNode) {
+        if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
+            == TypeKind.NULL) {
           append = true;
         }
-    } else {
-        if (rightOperand instanceof StringConversionNode) {
-          if (((StringConversionNode) rightOperand).getOperand().getType().getKind()
-              == TypeKind.NULL) {
-            append = true;
-          }
-        }
+      }
     }
-    if (append)
-      return CollectionsPlume.append(rightValues, "null");
+    if (append) return CollectionsPlume.append(rightValues, "null");
     return rightValues;
-  }  
+  }
 }
