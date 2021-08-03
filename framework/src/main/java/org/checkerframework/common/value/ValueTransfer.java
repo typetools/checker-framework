@@ -1636,7 +1636,8 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private Range appendNullToRange(boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
+  private Range appendNullToRange(
+      boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
         return rightLengthRange.union(Range.create(4, 4)); // "null"
