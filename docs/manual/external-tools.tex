@@ -603,7 +603,8 @@ instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK
 To compile non-modularized code:
 
 % Keep list of --add-opens and --add-exports in sync with the "maven" and "SBT" sections,
-% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs.
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs,
+% and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javac \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
@@ -1353,7 +1354,8 @@ javacOptions ++= Seq(
 \subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
 
 % Keep list of --add-opens and --add-exports in sync with the "maven" and "javac-jdk11-non-modularized" sections,
-% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs.
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs,
+% and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javacOptions ++= Seq(
     "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
