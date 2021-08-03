@@ -61,7 +61,7 @@ load-from-dir-test:
 	  -Anomsgtext \
 	  -ApermitMissingJdk \
 	  LoaderTest.java > Out.txt 2>&1 || true
-	diff -u Expected.txt Out.txt -I 'Note'
+	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 
 # loads from framework.jar

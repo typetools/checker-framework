@@ -33,6 +33,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
@@ -40,6 +41,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
+import org.checkerframework.framework.stub.AnnotationFileParser.RecordComponentStub;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -390,6 +392,73 @@ public class AnnotationFileElementTypes {
       return annotationFileAnnos.declAnnos.get(eltName);
     }
     return Collections.emptySet();
+  }
+
+  /**
+   * Adds annotations from stub files for the corresponding record components (if the given
+   * constructor/method is the canonical constructor or a record accessor). Such transfer is
+   * automatically done by javac usually, but not from stubs.
+   *
+   * @param types a Types instance used for checking type equivalence
+   * @param elt a member. This method does nothing if it's not a method or constructor.
+   * @param memberType the type corresponding to the element elt; side-effected by this method
+   */
+  public void injectRecordComponentType(
+      Types types, Element elt, AnnotatedExecutableType memberType) {
+    if (parsing) {
+      throw new BugInCF("parsing while calling injectRecordComponentType");
+    }
+
+    if (elt.getKind() == ElementKind.METHOD) {
+      if (((ExecutableElement) elt).getParameters().isEmpty()) {
+        String recordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
+        AnnotationFileParser.RecordStub recordComponentType =
+            annotationFileAnnos.records.get(recordName);
+        if (recordComponentType != null) {
+          // If the record component has an annotation in the stub, the component annotation
+          // replaces any from the same hierarchy on the accessor method, unless there is an
+          // accessor in the stubs file (which may or may not have an annotation in the same
+          // hierarchy;
+          // the user may want to specify the annotation or deliberately not annotate the accessor).
+          // We thus only replace the method annotation with the component annotation
+          // if there is no accessor in the stubs file:
+          RecordComponentStub recordComponentStub =
+              recordComponentType.componentsByName.get(elt.getSimpleName().toString());
+          if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs())
+            replaceAnnotations(memberType.getReturnType(), recordComponentStub.type);
+        }
+      }
+    } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {
+      if (AnnotationFileUtil.isCanonicalConstructor((ExecutableElement) elt, types)) {
+        TypeElement enclosing = (TypeElement) elt.getEnclosingElement();
+        AnnotationFileParser.RecordStub recordComponentType =
+            annotationFileAnnos.records.get(enclosing.getQualifiedName().toString());
+        if (recordComponentType != null) {
+          List<AnnotatedTypeMirror> componentsInCanonicalConstructor =
+              recordComponentType.getComponentsInCanonicalConstructor();
+          if (componentsInCanonicalConstructor != null) {
+            for (int i = 0; i < componentsInCanonicalConstructor.size(); i++) {
+              replaceAnnotations(
+                  memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Replace annotations on destType with those from srcType, first removing any annotations on
+   * destType that are in the same hierarchy as any on srcType.
+   *
+   * @param destType the type whose annotations to remove/replace
+   * @param srcType the type whose annotations are copied to {@code destType}
+   */
+  private void replaceAnnotations(AnnotatedTypeMirror destType, AnnotatedTypeMirror srcType) {
+    for (AnnotationMirror annotation : srcType.getAnnotations()) {
+      destType.removeAnnotationInHierarchy(annotation);
+    }
+    destType.addAnnotations(srcType.getAnnotations());
   }
 
   /**
