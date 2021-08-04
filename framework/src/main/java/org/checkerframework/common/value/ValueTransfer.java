@@ -676,8 +676,8 @@ public class ValueTransfer extends CFTransfer {
     List<Integer> rightLengths = getStringLengths(rightOperand, p, rightValues);
     if (leftLengths != null && rightLengths != null) {
       // Both operands have known lengths, compute set of result lengths
-      leftLengths = appendNullToIntegers(nonNullStringConcat, leftOperand, leftLengths);
-      rightLengths = appendNullToIntegers(nonNullStringConcat, rightOperand, rightLengths);
+      leftLengths = appendNullToLengths(nonNullStringConcat, leftOperand, leftLengths);
+      rightLengths = appendNullToLengths(nonNullStringConcat, rightOperand, rightLengths);
       List<Integer> concatLengths = calculateLengthAddition(leftLengths, rightLengths);
       return atypeFactory.createArrayLenAnnotation(concatLengths);
     }
@@ -1648,7 +1648,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private List<Integer> appendNullToIntegers(
+  private List<Integer> appendNullToLengths(
       boolean nonNullStringConcat, Node rightOperand, List<Integer> rightLengths) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
