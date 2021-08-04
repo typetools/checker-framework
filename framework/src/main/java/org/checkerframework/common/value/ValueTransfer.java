@@ -687,8 +687,9 @@ public class ValueTransfer extends CFTransfer {
     Range rightLengthRange = getStringLengthRange(rightOperand, p, rightLengths);
     if (leftLengthRange != null && rightLengthRange != null) {
       // Both operands have a length from a known range, compute a range of result lengths
-      leftLengthRange = appendNullToRange(nonNullStringConcat, leftOperand, leftLengthRange);
-      rightLengthRange = appendNullToRange(nonNullStringConcat, rightOperand, rightLengthRange);
+      leftLengthRange = appendNullToLengthRange(nonNullStringConcat, leftOperand, leftLengthRange);
+      rightLengthRange =
+          appendNullToLengthRange(nonNullStringConcat, rightOperand, rightLengthRange);
       Range concatLengthRange = calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
       return atypeFactory.createArrayLenRangeAnnotation(concatLengthRange);
     }
@@ -1636,7 +1637,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** convenience function used by createAnnotationForStringConcatenation(). */
-  private Range appendNullToRange(
+  private Range appendNullToLengthRange(
       boolean nonNullStringConcat, Node rightOperand, Range rightLengthRange) {
     if (!nonNullStringConcat) {
       if (isNullable(rightOperand)) {
