@@ -361,7 +361,17 @@ public abstract class AbstractAnalysis<
     initInitialInputs();
   }
 
-  protected boolean isIgnoredExceptionType(TypeMirror typeMirror) {
+  /**
+   * Should exceptional control flow for a particular exception type be ignored?
+   *
+   * <p>The default implementation always returns {@code false}. Subclasses should override the
+   * method to implement a different policy.
+   *
+   * @param exceptionType the exception type
+   * @return {@code true} if exceptional control flow due to {@code exceptionType} should be
+   *     ignored, {@code false} otherwise
+   */
+  protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
     return false;
   }
 

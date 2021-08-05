@@ -108,7 +108,8 @@ public class Postconditions {
   @EnsuresCalledMethods(
       value = {"#1", "#2"},
       methods = "a")
-  static void callAOnBothTryCatch(Postconditions p1, Postconditions p2) {
+  static void callAOnBothCatchNPE(Postconditions p1, Postconditions p2) {
+    // postcondition is verified because the checker assumes NullPointerExceptions cannot occur
     try {
       p1.a();
     } catch (NullPointerException e) {
@@ -119,7 +120,8 @@ public class Postconditions {
   @EnsuresCalledMethods(
       value = {"#1", "#2"},
       methods = "a")
-  static int callAOnBothTryFinally(Postconditions p1, Postconditions p2) {
+  static int callAOnBothFinallyNPE(Postconditions p1, Postconditions p2) {
+    // postcondition is verified because the checker assumes NullPointerExceptions cannot occur
     try {
       p1.a();
     } finally {
