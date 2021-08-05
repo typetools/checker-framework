@@ -96,4 +96,35 @@ public class Postconditions {
     } catch (java.io.IOException e) {
     }
   }
+
+  @EnsuresCalledMethods(
+      value = {"#1", "#2"},
+      methods = "a")
+  static void callAOnBoth(Postconditions p1, Postconditions p2) {
+    p1.a();
+    p2.a();
+  }
+
+  @EnsuresCalledMethods(
+      value = {"#1", "#2"},
+      methods = "a")
+  static void callAOnBothTryCatch(Postconditions p1, Postconditions p2) {
+    try {
+      p1.a();
+    } catch (NullPointerException e) {
+    }
+    p2.a();
+  }
+
+  @EnsuresCalledMethods(
+      value = {"#1", "#2"},
+      methods = "a")
+  static int callAOnBothTryFinally(Postconditions p1, Postconditions p2) {
+    try {
+      p1.a();
+    } finally {
+      p2.a();
+      return 0;
+    }
+  }
 }
