@@ -227,7 +227,9 @@ class SupertypeFinder {
           mapping.put((TypeVariable) ele.asType(), typArg);
         }
 
-        if (enclosing != type) {
+        @SuppressWarnings("interning:not.interned") // First time through type == enclosing.
+        boolean notType = enclosing != type;
+        if (notType) {
           for (AnnotatedDeclaredType enclSuper : directSupertypes(enclosing)) {
             mapping.putAll(getTypeVarToTypeArg(enclSuper));
           }
