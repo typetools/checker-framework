@@ -11,12 +11,16 @@ import org.checkerframework.framework.flow.CFAnalysis;
  */
 public class CalledMethodsAnalysis extends CFAnalysis {
 
+  /**
+   * Creates a new {@code CalledMethodsAnalysis}.
+   *
+   * @param checker the checker
+   * @param factory the factory
+   */
   protected CalledMethodsAnalysis(
       BaseTypeChecker checker, CalledMethodsAnnotatedTypeFactory factory) {
     super(checker, factory);
   }
-
-  private static final String NPE_NAME = NullPointerException.class.getCanonicalName();
 
   /**
    * Ignore exceptional control flow due to {@code NullPointerException}s, as this checker assumes
@@ -28,6 +32,9 @@ public class CalledMethodsAnalysis extends CFAnalysis {
    */
   @Override
   protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ((Type) exceptionType).tsym.getQualifiedName().contentEquals(NPE_NAME);
+    return ((Type) exceptionType)
+        .tsym
+        .getQualifiedName()
+        .contentEquals("java.lang.NullPointerException");
   }
 }

@@ -27,8 +27,6 @@ class MultipleMethodParamsMustCallAliasTest {
     }
   }
 
-  // It's a FP, see: https://github.com/typetools/checker-framework/issues/4843
-  // :: error: required.method.not.called
   void testMultiMethodParamsCorrect3(@Owning InputStream in1, @Owning InputStream in2)
       throws IOException {
 
