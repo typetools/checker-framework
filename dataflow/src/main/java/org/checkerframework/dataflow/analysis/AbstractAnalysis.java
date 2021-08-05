@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
@@ -358,6 +359,10 @@ public abstract class AbstractAnalysis<
   protected final void init(ControlFlowGraph cfg) {
     initFields(cfg);
     initInitialInputs();
+  }
+
+  protected boolean isIgnoredExceptionType(TypeMirror typeMirror) {
+    return false;
   }
 
   /**
