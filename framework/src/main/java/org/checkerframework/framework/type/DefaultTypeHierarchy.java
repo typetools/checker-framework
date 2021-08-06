@@ -51,6 +51,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   protected final StructuralEqualityComparer equalityComparer;
 
   protected final boolean ignoreRawTypes;
+  /** Whether to make array subtyping invariant with respect to array component types */
   protected final boolean invariantArrayComponents;
 
   /** The top annotation of the hierarchy currently being checked. */
@@ -1092,6 +1093,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     return areAllSubtypes(subtype.getAlternatives(), supertype);
   }
 
+  /**
+   * Check a wildcard type's relation against a subtype
+   *
+   * @param subtype the potential subtype to check
+   * @param supertype the wildcard supertype to check
+   * @return whether the subtype is a subtype of the supertype's super bound
+   */
   protected boolean visitType_Wildcard(
       AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype) {
     if (supertype.isUninferredTypeArgument()) { // TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
@@ -1101,6 +1109,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     return isSubtype(subtype, supertype.getSuperBound(), currentTop);
   }
 
+  /**
+   * Check a wildcard type's relation against a supertype
+   *
+   * @param subtype the potential wildcard subtype to check
+   * @param supertype the supertype to check
+   * @return whether the subtype's extends bound is a subtype of the supertype
+   */
   protected boolean visitWildcard_Type(
       AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype) {
     if (subtype.isUninferredTypeArgument()) {
