@@ -15,8 +15,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  */
 public class StringConcatenateAssignmentNode extends Node {
+  /** The entire tree of the assignment */
   protected final Tree tree;
+  /** The left-hand side of the assignment */
   protected final Node left;
+  /** The right-hand side of the assignment */
   protected final Node right;
 
   /**

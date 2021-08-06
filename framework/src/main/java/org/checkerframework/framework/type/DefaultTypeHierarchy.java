@@ -44,12 +44,19 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     implements TypeHierarchy {
-  // used for processingEnvironment when needed
+  /**
+   * The type-checker that is associated with this.
+   *
+   * <p>Used for processingEnvironment when needed.
+   */
   protected final BaseTypeChecker checker;
 
+  /** The qualifier hierarchy that is associated with this */
   protected final QualifierHierarchy qualifierHierarchy;
+  /** The equality comparer */
   protected final StructuralEqualityComparer equalityComparer;
 
+  /** Whether to ignore raw types */
   protected final boolean ignoreRawTypes;
   /** Whether to make array subtyping invariant with respect to array component types */
   protected final boolean invariantArrayComponents;
@@ -74,7 +81,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Creates a DefaultTypeHierarchy.
    *
    * @param checker the type-checker that is associated with this
-   * @param qualifierHierarchy the qualiifer hierarchy that is associated with this
+   * @param qualifierHierarchy the qualifier hierarchy that is associated with this
    * @param ignoreRawTypes whether to ignore raw types
    * @param invariantArrayComponents whether to make array subtyping invariant with respect to array
    *     component types

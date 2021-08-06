@@ -71,9 +71,12 @@ import org.plumelib.util.CollectionsPlume;
  * @checker_framework.manual #lock-checker Lock Checker
  */
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
+  /** The class of GuardedBy */
   private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
+  /** The class of GuardSatisfied */
   private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
+  /** A pattern for spotting self receiver */
   protected static final Pattern SELF_RECEIVER_PATTERN = Pattern.compile("^<self>(\\.(.*))?$");
 
   /**
