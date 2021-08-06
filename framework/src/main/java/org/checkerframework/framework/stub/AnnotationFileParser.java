@@ -22,6 +22,7 @@ import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -43,6 +44,7 @@ import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.nodeTypes.modifiers.NodeWithAccessModifiers;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.PrimitiveType;
@@ -84,6 +86,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -107,6 +110,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -285,6 +289,80 @@ public class AnnotationFileParser {
      */
     public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
         new HashMap<>(1);
+
+    /** Maps fully qualified record name to information in the stub file. */
+    public final Map<String, RecordStub> records = new HashMap<>();
+  }
+
+  /** Information about a record from a stub file. */
+  public static class RecordStub {
+    /**
+     * A map from name to record component. The iteration order is the order that they are declared
+     * in the record header.
+     */
+    public final LinkedHashMap<String, RecordComponentStub> componentsByName;
+    /**
+     * If the canonical constructor is given in the stubs, the annotated types (in component
+     * declaration order) for the constructor. Null if not present in the stubs.
+     */
+    public @MonotonicNonNull List<AnnotatedTypeMirror> componentsInCanonicalConstructor;
+
+    /**
+     * Creates a new RecordStub.
+     *
+     * @param componentsByName a map from name to record component. The insertion/iteration order is
+     *     the order that they are declared in the record header.
+     */
+    public RecordStub(LinkedHashMap<String, RecordComponentStub> componentsByName) {
+      this.componentsByName = componentsByName;
+    }
+
+    /**
+     * Returns the annotated types for the parameters to the canonical constructor. This is either
+     * from explicit annotations on the constructor in the stubs, otherwise it's taken from the
+     * annotations on the record components in the stubs.
+     *
+     * @return the annotated types for the parameters to the canonical constructor
+     */
+    public List<AnnotatedTypeMirror> getComponentsInCanonicalConstructor() {
+      if (componentsInCanonicalConstructor != null) {
+        return componentsInCanonicalConstructor;
+      } else {
+        return CollectionsPlume.mapList(c -> c.type, componentsByName.values());
+      }
+    }
+  }
+
+  /**
+   * Information about a record component: its type, and whether there was an accessor in the stubs
+   * for that component. That is, for a component "foo" was there a method named exactly "foo()" in
+   * the stubs. If so, annotations on that accessor will take precedence over annotations that would
+   * otherwise be copied from the component in the stubs to the acessor.
+   */
+  public static class RecordComponentStub {
+    /** The type of the record component. */
+    public final AnnotatedTypeMirror type;
+
+    /** Whether this component has an accessor of exactly the same name in the stubs file. */
+    private boolean hasAccessorInStubs = false;
+
+    /**
+     * Creates a new RecordComponentStub with the given type.
+     *
+     * @param type the type of the record component
+     */
+    public RecordComponentStub(AnnotatedTypeMirror type) {
+      this.type = type;
+    }
+
+    /**
+     * Returns whether there is an accessor in a stub file.
+     *
+     * @return true if some stub file contains an accessor for this record component
+     */
+    public boolean hasAccessorInStubs() {
+      return hasAccessorInStubs;
+    }
   }
 
   /**
@@ -829,7 +907,10 @@ public class AnnotationFileParser {
                 + "...");
         return null;
       }
-      typeDeclTypeParameters = processType((ClassOrInterfaceDeclaration) typeDecl, typeElt);
+      typeDeclTypeParameters = processType(typeDecl, typeElt);
+      typeParameters.addAll(typeDeclTypeParameters);
+    } else if (typeDecl instanceof RecordDeclaration) {
+      typeDeclTypeParameters = processType(typeDecl, typeElt);
       typeParameters.addAll(typeDeclTypeParameters);
     } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have
     // annotations, right?
@@ -838,6 +919,20 @@ public class AnnotationFileParser {
     // of this method.
     if (fileType == AnnotationFileType.AJAVA) {
       return typeDeclTypeParameters;
+    }
+
+    if (typeDecl instanceof RecordDeclaration) {
+      NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
+      LinkedHashMap<String, RecordComponentStub> byName = new LinkedHashMap<>();
+      for (Parameter recordMember : recordMembers) {
+        RecordComponentStub stub =
+            processRecordField(
+                recordMember,
+                findFieldElement(typeElt, recordMember.getNameAsString(), recordMember));
+        byName.put(recordMember.getNameAsString(), stub);
+      }
+      annotationFileAnnos.records.put(
+          typeDecl.getFullyQualifiedName().get(), new RecordStub(byName));
     }
 
     Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
@@ -850,7 +945,20 @@ public class AnnotationFileParser {
           processField((FieldDeclaration) decl, (VariableElement) elt);
           break;
         case ENUM_CONSTANT:
-          processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
+          // Enum constants can occur as fields in stubs files when their
+          // type has an annotation on it, e.g. see DeviceTypeTest which ends up with
+          // the TRACKER enum constant annotated with DefaultType:
+          if (decl instanceof FieldDeclaration) {
+            processField((FieldDeclaration) decl, (VariableElement) elt);
+          } else if (decl instanceof EnumConstantDeclaration) {
+            processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
+          } else {
+            throw new Error(
+                "Unexpected decl type "
+                    + decl.getClass()
+                    + " for ENUM_CONSTANT kind, original: "
+                    + decl);
+          }
           break;
         case CONSTRUCTOR:
         case METHOD:
@@ -912,15 +1020,19 @@ public class AnnotationFileParser {
    * @param elt the type's element
    * @return the type's type parameter declarations
    */
-  private List<AnnotatedTypeVariable> processType(
-      ClassOrInterfaceDeclaration decl, TypeElement elt) {
+  private List<AnnotatedTypeVariable> processType(TypeDeclaration<?> decl, TypeElement elt) {
 
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
     AnnotatedDeclaredType type = atypeFactory.fromElement(elt);
     annotate(type, decl.getAnnotations(), decl);
 
     final List<? extends AnnotatedTypeMirror> typeArguments = type.getTypeArguments();
-    final List<TypeParameter> typeParameters = decl.getTypeParameters();
+    final List<TypeParameter> typeParameters;
+    if (decl instanceof NodeWithTypeParameters) {
+      typeParameters = ((NodeWithTypeParameters<?>) decl).getTypeParameters();
+    } else {
+      typeParameters = Collections.emptyList();
+    }
 
     // It can be the case that args=[] and params=null, so don't crash in that case.
     // if ((typeParameters == null) != (typeArguments == null)) {
@@ -951,7 +1063,9 @@ public class AnnotationFileParser {
     }
 
     annotateTypeParameters(decl, elt, typeArguments, typeParameters);
-    annotateSupertypes(decl, type);
+    if (decl instanceof ClassOrInterfaceDeclaration) {
+      annotateSupertypes((ClassOrInterfaceDeclaration) decl, type);
+    }
     putMerge(annotationFileAnnos.atypes, elt, type);
     List<AnnotatedTypeVariable> typeVariables = new ArrayList<>(type.getTypeArguments().size());
     for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
@@ -1070,17 +1184,45 @@ public class AnnotationFileParser {
 
     // Return type, from declaration annotations on the method or constructor
     if (decl.isMethodDeclaration()) {
+      MethodDeclaration methodDeclaration = (MethodDeclaration) decl;
+      if (methodDeclaration.getParameters().isEmpty()) {
+        String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
+        RecordStub recordStub = annotationFileAnnos.records.get(qualRecordName);
+        if (recordStub != null) {
+          RecordComponentStub recordComponentStub =
+              recordStub.componentsByName.get(methodDeclaration.getNameAsString());
+          if (recordComponentStub != null) {
+            recordComponentStub.hasAccessorInStubs = true;
+          }
+        }
+      }
+
       try {
         annotate(
-            methodType.getReturnType(),
-            ((MethodDeclaration) decl).getType(),
-            decl.getAnnotations(),
-            decl);
+            methodType.getReturnType(), methodDeclaration.getType(), decl.getAnnotations(), decl);
       } catch (ErrorTypeKindException e) {
-        // Do nothing, per Issue #244.
+        // Do nothing, per https://github.com/typetools/checker-framework/issues/244 .
       }
     } else {
       assert decl.isConstructorDeclaration();
+      if (AnnotationFileUtil.isCanonicalConstructor(elt, atypeFactory.types)) {
+        // If this is the (user-written) canonical constructor, record that the component
+        // annotations should not be automatically transferred:
+        String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
+        if (annotationFileAnnos.records.containsKey(qualRecordName)) {
+          ArrayList<AnnotatedTypeMirror> annotatedParameters = new ArrayList<>();
+          List<? extends VariableElement> parameters = elt.getParameters();
+          for (int i = 0; i < parameters.size(); i++) {
+            VariableElement parameter = parameters.get(i);
+            AnnotatedTypeMirror atm =
+                AnnotatedTypeMirror.createType(parameter.asType(), atypeFactory, false);
+            annotate(atm, decl.getParameter(i).getAnnotations(), decl.getParameter(i));
+            annotatedParameters.add(atm);
+          }
+          annotationFileAnnos.records.get(qualRecordName).componentsInCanonicalConstructor =
+              annotatedParameters;
+        }
+      }
       annotate(methodType.getReturnType(), decl.getAnnotations(), decl);
     }
 
@@ -1408,6 +1550,25 @@ public class AnnotationFileParser {
     assert fieldVarDecl != null;
     annotate(fieldType, fieldVarDecl.getType(), decl.getAnnotations(), fieldVarDecl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
+  }
+
+  /**
+   * Processes a parameter in a record header (i.e., a record component).
+   *
+   * @param decl the parameter in the record header
+   * @param elt the corresponding variable declaration element
+   * @return a representation of the record component in the stub file
+   */
+  private RecordComponentStub processRecordField(Parameter decl, VariableElement elt) {
+    markAsFromStubFile(elt);
+    recordDeclAnnotation(elt, decl.getAnnotations(), decl);
+    // AnnotationFileParser parses all annotations in type annotation position as type annotations.
+    recordDeclAnnotation(elt, decl.getType().getAnnotations(), decl);
+    AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
+
+    annotate(fieldType, decl.getType(), decl.getAnnotations(), decl);
+    putMerge(annotationFileAnnos.atypes, elt, fieldType);
+    return new RecordComponentStub(fieldType);
   }
 
   /**

@@ -61,7 +61,7 @@ load-from-dir-test:
 	  -Anomsgtext \
 	  -ApermitMissingJdk \
 	  LoaderTest.java > Out.txt 2>&1 || true
-	diff -u Expected.txt Out.txt -I 'Note' -I "illegal-access is deprecated"
+	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 
 # loads from framework.jar
@@ -73,5 +73,5 @@ load-from-jar-test:
 	  -Anomsgtext \
 	  -ApermitMissingJdk \
 	  LoaderTest.java > Out.txt 2>&1 || true
-	diff -u Expected.txt Out.txt -I "illegal-access is deprecated"
+	diff -u Expected.txt Out.txt
 	rm -f Out.txt

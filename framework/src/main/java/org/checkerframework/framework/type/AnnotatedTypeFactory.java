@@ -327,6 +327,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Map keys are canonical names of aliased annotations. */
   private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
+  /**
+   * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
+   */
+  private SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
+      new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
+
+  /**
+   * Initializes all fields of {@code type}.
+   *
+   * @param type annotated type mirror
+   */
+  public void initializeAtm(AnnotatedTypeMirror type) {
+    atmInitializer.visit(type);
+  }
 
   /**
    * Information about one annotation alias.
@@ -2221,6 +2235,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         getAnnotatedType(methodElt); // get unsubstituted type
     AnnotatedExecutableType memberTypeWithOverrides =
         applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+    memberTypeWithOverrides = applyRecordTypesToAccessors(methodElt, memberTypeWithOverrides);
     methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
 
     AnnotatedExecutableType methodType =
@@ -2340,6 +2355,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       methodType = memberType;
     }
     return methodType;
+  }
+
+  /**
+   * Given a method, checks if there is: a record component with the same name AND the record
+   * component has an annotation AND the method has no-arguments. If so, replaces the annotations on
+   * the method return type with those from the record type in the same hierarchy.
+   *
+   * @param member a method or constructor
+   * @param memberType the type of the method/constructor; side-effected by this method
+   * @return {@code memberType} with annotations replaced if applicable
+   */
+  private AnnotatedExecutableType applyRecordTypesToAccessors(
+      ExecutableElement member, AnnotatedExecutableType memberType) {
+    if (memberType.getKind() != TypeKind.EXECUTABLE) {
+      throw new BugInCF(
+          "member %s has type %s of kind %s", member, memberType, memberType.getKind());
+    }
+
+    stubTypes.injectRecordComponentType(types, member, memberType);
+
+    return memberType;
   }
 
   /**
@@ -2536,6 +2572,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               con.getTypeVariables());
       con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
     }
+
+    stubTypes.injectRecordComponentType(types, ctor, con);
 
     return new ParameterizedExecutableType(con, typeargs);
   }
@@ -3421,8 +3459,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Tree fromElt;
     // Prevent calling declarationFor on elements we know we don't have the tree for.
 
-    switch (elt.getKind()) {
-      case CLASS:
+    switch (ElementUtils.getKindRecordAsClass(elt)) {
+      case CLASS: // Including RECORD
       case ENUM:
       case INTERFACE:
       case ANNOTATION_TYPE:
