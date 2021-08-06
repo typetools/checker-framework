@@ -354,6 +354,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
   }
 
+  @Override
+  protected CalledMethodsAnalysis createFlowAnalysis() {
+    return new CalledMethodsAnalysis(checker, this);
+  }
+
   /**
    * Returns the annotation type mirror for the type of {@code expressionTree} with default
    * annotations applied. As types relevant to Called Methods checking are rarely used inside
