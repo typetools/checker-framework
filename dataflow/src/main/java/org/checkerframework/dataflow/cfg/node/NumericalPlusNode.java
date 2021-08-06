@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class NumericalPlusNode extends UnaryOperationNode {
 
   /**
-   * Constructs a {@link NumericalPlusNode}
+   * Constructs a {@link NumericalPlusNode}.
    *
    * @param tree The tree of the whole operation
    * @param operand The operand of the operation

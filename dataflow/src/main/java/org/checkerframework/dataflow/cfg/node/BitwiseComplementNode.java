@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class BitwiseComplementNode extends UnaryOperationNode {
 
   /**
-   * Constructs a {@link BitwiseComplementNode}
+   * Constructs a {@link BitwiseComplementNode}.
    *
    * @param tree the tree of the bitwise complement
    * @param operand the operand of the bitwise complement

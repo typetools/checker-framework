@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class BitwiseOrNode extends BinaryOperationNode {
 
   /**
-   * Constructs a {@link BitwiseOrNode}
+   * Constructs a {@link BitwiseOrNode}.
    *
    * @param tree the binary tree
    * @param left the left operand

@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class IntegerRemainderNode extends BinaryOperationNode {
 
   /**
-   * Constructs an {@link IntegerRemainderNode}
+   * Constructs an {@link IntegerRemainderNode}.
    *
    * @param tree the binary tree
    * @param left the left operand

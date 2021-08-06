@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class NumericalAdditionNode extends BinaryOperationNode {
 
   /**
-   * Constructs a {@link NumericalAdditionNode}
+   * Constructs a {@link NumericalAdditionNode}.
    *
    * @param tree the binary tree
    * @param left the left operand

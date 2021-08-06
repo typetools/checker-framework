@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class FloatingDivisionNode extends BinaryOperationNode {
 
   /**
-   * Constructs a {@link FloatingDivisionNode}
+   * Constructs a {@link FloatingDivisionNode}.
    *
    * @param tree the binary tree
    * @param left the left operand

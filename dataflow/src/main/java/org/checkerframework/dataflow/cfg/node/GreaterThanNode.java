@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class GreaterThanNode extends BinaryOperationNode {
 
   /**
-   * Constructs a {@link GreaterThanNode}
+   * Constructs a {@link GreaterThanNode}.
    *
    * @param tree the binary tree
    * @param left the left operand

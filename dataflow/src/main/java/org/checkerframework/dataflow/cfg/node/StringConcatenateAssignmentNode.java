@@ -23,7 +23,7 @@ public class StringConcatenateAssignmentNode extends Node {
   protected final Node right;
 
   /**
-   * Constructs an {@link StringConcatenateAssignmentNode}
+   * Constructs an {@link StringConcatenateAssignmentNode}.
    *
    * @param tree the binary tree of the assignment
    * @param left the left-hand side

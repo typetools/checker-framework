@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class NotEqualNode extends BinaryOperationNode {
 
   /**
-   * Constructs a {@link NotEqualNode}
+   * Constructs a {@link NotEqualNode}.
    *
    * @param tree the binary tree
    * @param left the left operand

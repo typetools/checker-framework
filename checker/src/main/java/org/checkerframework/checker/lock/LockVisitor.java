@@ -80,7 +80,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   protected static final Pattern SELF_RECEIVER_PATTERN = Pattern.compile("^<self>(\\.(.*))?$");
 
   /**
-   * Constructs a {@link LockVisitor}
+   * Constructs a {@link LockVisitor}.
    *
    * @param checker the type checker to use.
    */
