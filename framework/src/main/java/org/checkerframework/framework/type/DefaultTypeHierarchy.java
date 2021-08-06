@@ -1081,7 +1081,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     return type;
   }
 
-  /** A union type is a subtype if ALL of its alternatives are subtypes of supertype. */
+  /**
+   * A union type is a subtype if ALL of its alternatives are subtypes of supertype.
+   *
+   * @param subtype the potential subtype to check
+   * @param supertype the supertype to check
+   * @return whether all the alternatives of subtype are subtypes of supertype
+   */
   protected boolean visitUnion_Type(AnnotatedUnionType subtype, AnnotatedTypeMirror supertype) {
     return areAllSubtypes(subtype.getAlternatives(), supertype);
   }

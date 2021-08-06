@@ -1317,6 +1317,7 @@ public final class TreeUtils {
   /**
    * Returns true if the tree is the declaration or use of a local variable.
    *
+   * @param tree the tree to check
    * @return true if the tree is the declaration or use of a local variable
    */
   public static boolean isLocalVariable(Tree tree) {

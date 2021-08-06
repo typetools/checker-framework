@@ -67,7 +67,11 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     literalKindToTreeKind.put(LiteralKind.STRING, Tree.Kind.STRING_LITERAL);
   }
 
-  /** Creates a {@link LiteralTreeAnnotator} for the given {@code atypeFactory}. */
+  /**
+   * Creates a {@link LiteralTreeAnnotator} for the given {@code atypeFactory}.
+   *
+   * @param atypeFactory the type factory to make an annotator for
+   */
   public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
     super(atypeFactory);
     this.treeKinds = new EnumMap<>(Tree.Kind.class);
