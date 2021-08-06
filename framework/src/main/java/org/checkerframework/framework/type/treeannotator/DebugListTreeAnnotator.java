@@ -9,11 +9,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** A ListTreeAnnotator implementation that additionally outputs debugging information. */
 public class DebugListTreeAnnotator extends ListTreeAnnotator {
-  /** The tree kinds to debug */
+  /** The tree kinds to debug. */
   private final Set<Tree.Kind> kinds;
 
   /**
-   * Constructs a DebugListTreeAnnotator that does not output any debug information
+   * Constructs a DebugListTreeAnnotator that does not output any debug information.
    *
    * @param annotators the annotators for ListTreeAnnotator
    */
@@ -23,7 +23,7 @@ public class DebugListTreeAnnotator extends ListTreeAnnotator {
   }
 
   /**
-   * Constructs a DebugListTreeAnnotator that outputs debug for the given tree kinds
+   * Constructs a DebugListTreeAnnotator that outputs debug for the given tree kinds.
    *
    * @param kinds the tree kinds to output debug info for
    * @param annotators the annotators for ListTreeAnnotator

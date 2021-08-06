@@ -15,10 +15,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class NumericalMinusNode extends UnaryOperationNode {
 
   /**
-   * Constructs a {@link NumericalMinusNode}
+   * Constructs a {@link NumericalMinusNode}.
    *
-   * @param tree The tree of the whole operation
-   * @param operand The operand of the operation
+   * @param tree the unary tree
+   * @param operand the operand of the unary minus
    */
   public NumericalMinusNode(UnaryTree tree, Node operand) {
     super(tree, operand);

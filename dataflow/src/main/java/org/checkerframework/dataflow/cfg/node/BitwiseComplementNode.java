@@ -17,8 +17,8 @@ public class BitwiseComplementNode extends UnaryOperationNode {
   /**
    * Constructs a {@link BitwiseComplementNode}
    *
-   * @param tree The tree of the whole operation
-   * @param operand The operand of the operation
+   * @param tree the tree of the bitwise complement
+   * @param operand the operand of the bitwise complement
    */
   public BitwiseComplementNode(UnaryTree tree, Node operand) {
     super(tree, operand);

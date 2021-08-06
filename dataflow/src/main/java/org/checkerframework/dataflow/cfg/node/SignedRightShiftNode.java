@@ -17,9 +17,9 @@ public class SignedRightShiftNode extends BinaryOperationNode {
   /**
    * Constructs a {@link SignedRightShiftNode}
    *
-   * @param tree The binary tree
-   * @param left The left-hand side
-   * @param right The right-hand side
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
    */
   public SignedRightShiftNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);

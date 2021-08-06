@@ -51,14 +51,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   protected final BaseTypeChecker checker;
 
-  /** The qualifier hierarchy that is associated with this */
+  /** The qualifier hierarchy that is associated with this. */
   protected final QualifierHierarchy qualifierHierarchy;
-  /** The equality comparer */
+  /** The equality comparer. */
   protected final StructuralEqualityComparer equalityComparer;
 
-  /** Whether to ignore raw types */
+  /** Whether to ignore raw types. */
   protected final boolean ignoreRawTypes;
-  /** Whether to make array subtyping invariant with respect to array component types */
+  /** Whether to make array subtyping invariant with respect to array component types. */
   protected final boolean invariantArrayComponents;
 
   /** The top annotation of the hierarchy currently being checked. */
@@ -1101,7 +1101,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Check a wildcard type's relation against a subtype
+   * Check a wildcard type's relation against a subtype.
    *
    * @param subtype the potential subtype to check
    * @param supertype the wildcard supertype to check
@@ -1117,7 +1117,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Check a wildcard type's relation against a supertype
+   * Check a wildcard type's relation against a supertype.
    *
    * @param subtype the potential wildcard subtype to check
    * @param supertype the supertype to check

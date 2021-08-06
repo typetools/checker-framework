@@ -25,9 +25,9 @@ public class StringConcatenateAssignmentNode extends Node {
   /**
    * Constructs an {@link StringConcatenateAssignmentNode}
    *
-   * @param tree The binary tree of the assignment
-   * @param left The left-hand side
-   * @param right The right-hand side
+   * @param tree the binary tree of the assignment
+   * @param left the left-hand side
+   * @param right the right-hand side
    */
   public StringConcatenateAssignmentNode(Tree tree, Node left, Node right) {
     super(TreeUtils.typeOf(tree));

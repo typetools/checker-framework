@@ -15,11 +15,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class StringConcatenateNode extends BinaryOperationNode {
 
   /**
-   * Constructs a {@link StringConcatenateNode}
+   * Constructs a {@link StringConcatenateNode}.
    *
-   * @param tree The binary tree
-   * @param left The left-hand side
-   * @param right The right-hand side
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
    */
   public StringConcatenateNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);

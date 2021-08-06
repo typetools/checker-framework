@@ -21,10 +21,10 @@ public class NullChkNode extends Node {
   protected final Node operand;
 
   /**
-   * Constructs a {@link NullChkNode}
+   * Constructs a {@link NullChkNode}.
    *
-   * @param tree The tree of the whole operation
-   * @param operand The operand of the operation
+   * @param tree the nullchk tree
+   * @param operand the operand of the null check
    */
   public NullChkNode(Tree tree, Node operand) {
     super(TreeUtils.typeOf(tree));
