@@ -10,7 +10,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
@@ -92,13 +91,13 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   // @EnsuresCalledMethods: that the claimed @CalledMethods annotation is true on
   // both exceptional and regular exits, not just on regular exits.
   @Override
-  protected void checkPostcondition(MethodTree methodTree, AnnotationMirror annotation,
-      JavaExpression expression) {
+  protected void checkPostcondition(
+      MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
     super.checkPostcondition(methodTree, annotation, expression);
     // Only check if the required annotation is a CalledMethods annotation (implying
     // the method was annotated with @EnsuresCalledMethods).
-    if (!AnnotationUtils.areSameByName(annotation,
-        "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+    if (!AnnotationUtils.areSameByName(
+        annotation, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
       return;
     }
     // This method might be a destructor that is responsible for resolving the must-call
@@ -106,14 +105,14 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(methodTree);
     TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-          rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotationMirror mcAnno =
-          mustCallAnnotatedTypeFactory
-              .getAnnotatedType(containingClass)
-              .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
+        mustCallAnnotatedTypeFactory
+            .getAnnotatedType(containingClass)
+            .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
     List<String> mcValues =
-          AnnotationUtils.getElementValueArray(
-              mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
+        AnnotationUtils.getElementValueArray(
+            mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
     String methodName = elt.getSimpleName().toString();
     if (!mcValues.contains(methodName)) {
       // Not a destructor, just a method with an ECM annotation. No further checking to do.
@@ -132,12 +131,16 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
       }
       if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+        String inferredAnnoStr =
+            inferredAnno == null
+                ? "no information about " + expression.toString()
+                : inferredAnno.toString();
         checker.reportError(
             methodTree,
             "destructor.exceptional.postcondition",
             methodTree.getName(),
             expression.toString(),
-            inferredAnno,
+            inferredAnnoStr,
             annotation);
       }
     }

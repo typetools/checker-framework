@@ -79,6 +79,7 @@ class MultipleMethodParamsMustCallAliasTest {
     @EnsuresCalledMethods(
         value = {"this.in1", "this.in2"},
         methods = {"close"})
+    // :: error: destructor.exceptional.postcondition
     public void close() throws IOException {
       in1.close();
       in2.close();

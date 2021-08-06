@@ -19,7 +19,7 @@ import org.checkerframework.checker.mustcall.qual.*;
   @EnsuresCalledMethods(
       value = {"this.s1", "this.s2"},
       methods = {"close"})
-  // :: error: contracts.postcondition :: error: required.method.not.called
+  // :: error: contracts.postcondition :: error: destructor.exceptional.postcondition
   public void dispose() throws IOException {
     s1.close();
     s2.close();
