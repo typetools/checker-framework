@@ -15,10 +15,20 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  */
 public class StringConcatenateAssignmentNode extends Node {
+  /** The entire tree of the assignment */
   protected final Tree tree;
+  /** The left-hand side of the assignment */
   protected final Node left;
+  /** The right-hand side of the assignment */
   protected final Node right;
 
+  /**
+   * Constructs an {@link StringConcatenateAssignmentNode}.
+   *
+   * @param tree the binary tree of the assignment
+   * @param left the left-hand side
+   * @param right the right-hand side
+   */
   public StringConcatenateAssignmentNode(Tree tree, Node left, Node right) {
     super(TreeUtils.typeOf(tree));
     assert tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT;

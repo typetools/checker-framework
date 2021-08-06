@@ -14,6 +14,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class NumericalSubtractionNode extends BinaryOperationNode {
 
+  /**
+   * Constructs a {@link NumericalSubtractionNode}.
+   *
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
+   */
   public NumericalSubtractionNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
     assert tree.getKind() == Tree.Kind.MINUS;

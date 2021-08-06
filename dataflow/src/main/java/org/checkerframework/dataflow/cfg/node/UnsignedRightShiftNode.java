@@ -14,6 +14,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class UnsignedRightShiftNode extends BinaryOperationNode {
 
+  /**
+   * Constructs an {@link UnsignedRightShiftNode}
+   *
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
+   */
   public UnsignedRightShiftNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
     assert tree.getKind() == Tree.Kind.UNSIGNED_RIGHT_SHIFT;
