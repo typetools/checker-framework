@@ -14,6 +14,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class NotEqualNode extends BinaryOperationNode {
 
+  /**
+   * Constructs a {@link NotEqualNode}
+   *
+   * @param tree The binary tree
+   * @param left The left-hand side
+   * @param right The right-hand side
+   */
   public NotEqualNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
     assert tree.getKind() == Tree.Kind.NOT_EQUAL_TO;

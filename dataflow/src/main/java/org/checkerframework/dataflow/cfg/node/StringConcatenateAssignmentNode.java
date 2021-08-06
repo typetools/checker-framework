@@ -19,6 +19,13 @@ public class StringConcatenateAssignmentNode extends Node {
   protected final Node left;
   protected final Node right;
 
+  /**
+   * Constructs an {@link StringConcatenateAssignmentNode}
+   *
+   * @param tree The binary tree of the assignment
+   * @param left The left-hand side
+   * @param right The right-hand side
+   */
   public StringConcatenateAssignmentNode(Tree tree, Node left, Node right) {
     super(TreeUtils.typeOf(tree));
     assert tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT;

@@ -14,6 +14,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class BitwiseComplementNode extends UnaryOperationNode {
 
+  /**
+   * Constructs a {@link BitwiseComplementNode}
+   *
+   * @param tree The tree of the whole operation
+   * @param operand The operand of the operation
+   */
   public BitwiseComplementNode(UnaryTree tree, Node operand) {
     super(tree, operand);
     assert tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT;

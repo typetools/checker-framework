@@ -16,6 +16,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class LessThanNode extends BinaryOperationNode {
 
+  /**
+   * Constructs a {@link LessThanNode}
+   *
+   * @param tree The binary tree
+   * @param left The left-hand side
+   * @param right The right-hand side
+   */
   public LessThanNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
     assert tree.getKind() == Tree.Kind.LESS_THAN;

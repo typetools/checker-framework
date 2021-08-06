@@ -14,6 +14,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class NumericalMinusNode extends UnaryOperationNode {
 
+  /**
+   * Constructs a {@link NumericalMinusNode}
+   *
+   * @param tree The tree of the whole operation
+   * @param operand The operand of the operation
+   */
   public NumericalMinusNode(UnaryTree tree, Node operand) {
     super(tree, operand);
     assert tree.getKind() == Tree.Kind.UNARY_MINUS;

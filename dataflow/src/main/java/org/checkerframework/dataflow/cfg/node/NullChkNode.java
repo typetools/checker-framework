@@ -19,6 +19,12 @@ public class NullChkNode extends Node {
   protected final Tree tree;
   protected final Node operand;
 
+  /**
+   * Constructs a {@link NullChkNode}
+   *
+   * @param tree The tree of the whole operation
+   * @param operand The operand of the operation
+   */
   public NullChkNode(Tree tree, Node operand) {
     super(TreeUtils.typeOf(tree));
     assert tree.getKind() == Tree.Kind.OTHER;

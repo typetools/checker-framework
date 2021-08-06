@@ -14,6 +14,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class NumericalAdditionNode extends BinaryOperationNode {
 
+  /**
+   * Constructs a {@link NumericalAdditionNode}
+   *
+   * @param tree The binary tree
+   * @param left The left-hand side
+   * @param right The right-hand side
+   */
   public NumericalAdditionNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
     assert tree.getKind() == Tree.Kind.PLUS || tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT;
