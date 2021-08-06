@@ -32,7 +32,7 @@ import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -132,7 +132,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
     for (ResourceAlias alias : resourceAliasSet) {
       AnnotationMirror mcAnno = null;
-      JavaExpression reference = alias.reference;
+      LocalVariable reference = alias.reference;
       CFValue value = mcStore == null ? null : mcStore.getValue(reference);
       if (value != null) {
         mcAnno = getAnnotationByClass(value.getAnnotations(), MustCall.class);
