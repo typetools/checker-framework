@@ -12,6 +12,9 @@ class EnsuresCalledMethodsIfTest {
   // assumes the program is free of NullPointerExceptions, delegating verification of that
   // property to the Nullness Checker.  So, the postcondition is verified.
   public static void closeSock(EnsuresCalledMethodsIfTest sock) throws Exception {
+    if (!sock.isOpen()) {
+      return;
+    }
     try {
       sock.close();
     } catch (Exception e) {
