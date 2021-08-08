@@ -10,6 +10,15 @@ class DisbarredClass {
   @DisbarUse
   DisbarredClass(String param) {}
 
+  DisbarredClass(@DisbarUse Integer param) {}
+
+  DisbarredClass(@DisbarUse Long param) {
+    // :: error: (disbar.use)
+    param = 7L;
+    // :: error: (disbar.use)
+    param.toString();
+  }
+
   @DisbarUse
   void disbarredMethod() {}
 

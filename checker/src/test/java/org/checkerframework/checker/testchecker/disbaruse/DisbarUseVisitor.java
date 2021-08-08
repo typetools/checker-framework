@@ -6,6 +6,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.testchecker.disbaruse.qual.DisbarUse;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -63,7 +64,7 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
         elem = TreeUtils.elementFromUse(memberSel);
       }
 
-      if (elem == null || !elem.getKind().isField()) {
+      if (elem == null || (!elem.getKind().isField() && elem.getKind() != ElementKind.PARAMETER)) {
         continue;
       }
 
