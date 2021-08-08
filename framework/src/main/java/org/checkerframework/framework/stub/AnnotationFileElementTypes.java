@@ -390,6 +390,42 @@ public class AnnotationFileElementTypes {
     String eltName = ElementUtils.getQualifiedName(elt);
     if (annotationFileAnnos.declAnnos.containsKey(eltName)) {
       return annotationFileAnnos.declAnnos.get(eltName);
+    } else {
+      Element enclosingType = null;
+      boolean canTransferAnnotationsToSameName;
+      switch (elt.getKind()) {
+        case METHOD:
+          // Annotations transfer to zero-arg accessor methods of same name:
+          canTransferAnnotationsToSameName = ((ExecutableElement) elt).getParameters().isEmpty();
+          enclosingType = elt.getEnclosingElement();
+          break;
+        case FIELD:
+          // Annotations transfer to fields of same name:
+          canTransferAnnotationsToSameName = true;
+          enclosingType = elt.getEnclosingElement();
+          break;
+        case PARAMETER:
+          // Annotations transfer to compact canonical constructor parameter of same name:
+          canTransferAnnotationsToSameName =
+              ElementUtils.isCompactCanonicalRecordConstructor(elt.getEnclosingElement())
+                  && elt.getEnclosingElement().getKind() == ElementKind.CONSTRUCTOR;
+          enclosingType = elt.getEnclosingElement().getEnclosingElement();
+          break;
+        default:
+          canTransferAnnotationsToSameName = false;
+          break;
+      }
+
+      if (canTransferAnnotationsToSameName && enclosingType.getKind().toString().equals("RECORD")) {
+        AnnotationFileParser.RecordStub recordStub =
+            annotationFileAnnos.records.get(enclosingType.getSimpleName().toString());
+        if (recordStub != null
+            && recordStub.componentsByName.containsKey(elt.getSimpleName().toString())) {
+          RecordComponentStub recordComponentStub =
+              recordStub.componentsByName.get(elt.getSimpleName().toString());
+          return recordComponentStub.getAnnotationsForTarget(elt.getKind());
+        }
+      }
     }
     return Collections.emptySet();
   }

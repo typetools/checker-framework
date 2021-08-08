@@ -105,6 +105,9 @@ public final class TreeUtils {
   /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
   private static final long Flags_RECORD = 2305843009213693952L;
 
+  /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
+  static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
+
   /**
    * Checks if the provided method is a constructor method or no.
    *
