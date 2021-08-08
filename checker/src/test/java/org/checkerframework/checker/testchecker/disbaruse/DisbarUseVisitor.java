@@ -30,7 +30,7 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
   @Override
   public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
     ExecutableElement methodElt = TreeUtils.elementFromUse(node);
-    if (methodElt != null && methodElt.getAnnotation(DisbarUse.class) != null) {
+    if (methodElt != null && atypeFactory.getDeclAnnotation(methodElt, DisbarUse.class) != null) {
       checker.reportError(node, "disbar.use");
     }
     return super.visitMethodInvocation(node, p);
@@ -39,7 +39,7 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
   @Override
   public Void visitNewClass(NewClassTree node, Void p) {
     ExecutableElement consElt = TreeUtils.elementFromUse(node);
-    if (consElt != null && consElt.getAnnotation(DisbarUse.class) != null) {
+    if (consElt != null && atypeFactory.getDeclAnnotation(consElt, DisbarUse.class) != null) {
       checker.reportError(node, "disbar.use");
     }
     return super.visitNewClass(node, p);
@@ -68,7 +68,7 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
         continue;
       }
 
-      if (elem.getAnnotation(DisbarUse.class) != null) {
+      if (atypeFactory.getDeclAnnotation(elem, DisbarUse.class) != null) {
         checker.reportError(tree, "disbar.use");
       }
     }
