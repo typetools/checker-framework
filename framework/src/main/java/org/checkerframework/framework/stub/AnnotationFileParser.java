@@ -357,6 +357,7 @@ public class AnnotationFileParser {
      * Creates a new RecordComponentStub with the given type.
      *
      * @param type the type of the record component
+     * @param allAnnotations the set of declaration annotations on the component
      */
     public RecordComponentStub(AnnotatedTypeMirror type, Set<AnnotationMirror> allAnnotations) {
       this.type = type;
