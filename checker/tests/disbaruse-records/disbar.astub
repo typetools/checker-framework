@@ -1,0 +1,4 @@
+import org.checkerframework.checker.testchecker.disbaruse.qual.DisbarUse;
+
+record DisbarredRecordByStubs(@DisbarUse String barred, String fine) {
+}

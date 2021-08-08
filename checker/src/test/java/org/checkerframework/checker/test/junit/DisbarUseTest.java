@@ -14,7 +14,13 @@ public class DisbarUseTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public DisbarUseTest(List<File> testFiles) {
-    super(testFiles, DisbarUseChecker.class, "disbaruse-records", "-Anomsgtext");
+    super(
+        testFiles,
+        DisbarUseChecker.class,
+        "disbaruse-records",
+        "-Anomsgtext",
+        "-Astubs=tests/disbaruse-records",
+        "-AstubWarnIfNotFound");
   }
 
   @Parameters
