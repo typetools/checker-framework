@@ -20,7 +20,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -31,6 +30,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -273,8 +273,11 @@ public class InitializationVisitor<
         Store store = atypeFactory.getRegularExitStore(block);
 
         // Add field values for fields with an initializer.
-        for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-          store.addInitializedField(t.first);
+        for (FieldInitialValue<Value> fieldInitialValue :
+            store.getAnalysis().getFieldInitialValues()) {
+          if (fieldInitialValue.initializer != null) {
+            store.addInitializedField(fieldInitialValue.fieldDecl.getField());
+          }
         }
         final List<VariableTree> init =
             atypeFactory.getInitializedInvariantFields(store, getCurrentPath());
@@ -294,9 +297,13 @@ public class InitializationVisitor<
       // the regular exit store of the class here.
       Store store = atypeFactory.getRegularExitStore(node);
       // Add field values for fields with an initializer.
-      for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-        store.addInitializedField(t.first);
+      for (FieldInitialValue<Value> fieldInitialValue :
+          store.getAnalysis().getFieldInitialValues()) {
+        if (fieldInitialValue.initializer != null) {
+          store.addInitializedField(fieldInitialValue.fieldDecl.getField());
+        }
       }
+
       List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
       checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
     }
@@ -369,6 +376,14 @@ public class InitializationVisitor<
       List<? extends AnnotationMirror> receiverAnnotations) {
     // If the store is null, then the constructor cannot terminate successfully
     if (store == null) {
+      return;
+    }
+
+    // Canonical record constructors do not generate visible assignments in the source,
+    // but by definition they assign to all the record's fields so we don't need to
+    // check for uninitialized fields in them:
+    if (node.getKind() == Tree.Kind.METHOD
+        && TreeUtils.isCanonicalRecordConstructor((MethodTree) node)) {
       return;
     }
 

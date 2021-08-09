@@ -902,6 +902,7 @@ public class AnnotatedTypes {
    * <p>Otherwise, it would return the list of parameters as if the vararg is expanded to match the
    * size of the passed arguments.
    *
+   * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method's type
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of

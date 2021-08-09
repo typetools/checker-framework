@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
@@ -407,13 +408,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * If {@code tree} has a type parameter tree, then the tree and its type is returned. Otherwise
-   * null and {@code type} are returned.
+   * If {@code tree} has a {@link ParameterizedTypeTree}, then the tree and its type is returned.
+   * Otherwise null and {@code type} are returned.
    *
    * @param tree tree to search
-   * @param type type to return if no parameter type tree is found
-   * @return if {@code tree} has a type parameter tree, then returns the tree and its type.
-   *     Otherwise, returns null and {@code type}.
+   * @param type type to return if no {@code ParameterizedTypeTree} is found
+   * @return if {@code tree} has a {@code ParameterizedTypeTree}, then returns the tree and its
+   *     type. Otherwise, returns null and {@code type}.
    */
   private Pair<@Nullable ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
       Tree tree, AnnotatedDeclaredType type) {
@@ -470,6 +471,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case SUPER_WILDCARD:
       case TYPE_PARAMETER:
         // Nothing to do.
+        break;
+      case METHOD:
+        // If a MethodTree is passed, it's just the return type that is validated.
+        // See BaseTypeVisitor#validateTypeOf.
+        MethodTree methodTree = (MethodTree) tree;
+        if (methodTree.getReturnType() instanceof ParameterizedTypeTree) {
+          typeargtree = (ParameterizedTypeTree) methodTree.getReturnType();
+        }
         break;
       default:
         // The parameterized type is the result of some expression tree.
