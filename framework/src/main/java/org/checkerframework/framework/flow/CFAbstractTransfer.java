@@ -457,6 +457,12 @@ public abstract class CFAbstractTransfer<
     }
   }
 
+  /**
+   * Adds information about effectively final variables (from outer scopes)
+   *
+   * @param store the store to add to
+   * @param enclosingElement the enclosing element of the code we are analyzing
+   */
   private void addFinalLocalValues(S store, Element enclosingElement) {
     // add information about effectively final variables (from outer scopes)
     for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {

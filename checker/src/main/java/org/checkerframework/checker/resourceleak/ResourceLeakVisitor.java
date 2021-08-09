@@ -294,6 +294,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           "required.method.not.called",
           MustCallConsistencyAnalyzer.formatMissingMustCallMethods(
               unsatisfiedMustCallObligationsOfOwningField),
+          "field " + field.getSimpleName().toString(),
           field.asType().toString(),
           error);
     }
