@@ -7,7 +7,7 @@ class MyOpt<T extends Object> {
   static <S> MyOpt<@NonNull S> empty() {
     throw new RuntimeException();
   }
-
+  // :: error: (type.argument)
   static <S> MyOpt<S> of(S p) {
     throw new RuntimeException();
   }

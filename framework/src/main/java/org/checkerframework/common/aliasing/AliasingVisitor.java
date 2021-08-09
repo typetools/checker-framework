@@ -269,6 +269,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
    * {@code @Unique}
    *
    * @param exp the Tree to check
+   * @return true if {@code exp} has type {@code @Unique} and is not a method invocation nor a new
+   *     class expression
    */
   private boolean canBeLeaked(Tree exp) {
     AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);

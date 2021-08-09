@@ -14,6 +14,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class BitwiseOrNode extends BinaryOperationNode {
 
+  /**
+   * Constructs a {@link BitwiseOrNode}.
+   *
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
+   */
   public BitwiseOrNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
     assert tree.getKind() == Tree.Kind.OR;

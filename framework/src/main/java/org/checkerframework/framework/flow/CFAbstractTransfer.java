@@ -457,6 +457,12 @@ public abstract class CFAbstractTransfer<
     }
   }
 
+  /**
+   * Adds information about effectively final variables (from outer scopes)
+   *
+   * @param store the store to add to
+   * @param enclosingElement the enclosing element of the code we are analyzing
+   */
   private void addFinalLocalValues(S store, Element enclosingElement) {
     // add information about effectively final variables (from outer scopes)
     for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
@@ -850,10 +856,7 @@ public abstract class CFAbstractTransfer<
           || (lhs instanceof LocalVariableNode
               && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.FIELD)) {
         // Updates inferred field type
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromFieldAssignment(lhs, rhs, analysis.getContainingClass(n.getTree()));
+        analysis.atypeFactory.getWholeProgramInference().updateFromFieldAssignment(lhs, rhs);
       } else if (lhs instanceof LocalVariableNode
           && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
@@ -926,8 +929,7 @@ public abstract class CFAbstractTransfer<
       analysis
           .atypeFactory
           .getWholeProgramInference()
-          .updateFromFieldAssignment(
-              (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()));
+          .updateFromFieldAssignment((FieldAccessNode) lhs, rhs);
     }
 
     processCommonAssignment(in, lhs, rhs, store, resultValue);
