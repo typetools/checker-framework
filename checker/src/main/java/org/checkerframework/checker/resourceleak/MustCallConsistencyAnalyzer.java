@@ -69,11 +69,11 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -238,19 +238,21 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * If node is an invocation of a this or super constructor that has a MustCallAlias return type
-   * and a MustCallAlias parameter, check if any variable in the current set of obligations is being
-   * passed to the other constructor. If so, remove it from the obligations.
+   * and some MustCallAlias parameter(s), check if any variable in the current set of obligations is
+   * being passed to the other constructor. If so, remove it from the obligations.
    *
    * @param obligations current obligations
    * @param node a super or this constructor invocation
    */
   private void handleThisOrSuperConstructorMustCallAlias(Set<Obligation> obligations, Node node) {
-    Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
+    List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
     // If the MustCallAlias argument is also in the set of obligations, then remove it -- its
     // obligation has been fulfilled by being passed on to the MustCallAlias constructor (because a
     // this/super constructor call can only occur in the body of another constructor).
-    if (mustCallAliasArgument instanceof LocalVariableNode) {
-      removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
+    for (Node mustCallAliasArgument : mustCallAliasArguments) {
+      if (mustCallAliasArgument instanceof LocalVariableNode) {
+        removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
+      }
     }
   }
 
@@ -330,7 +332,7 @@ class MustCallConsistencyAnalyzer {
             if (expression.equals(alias.reference)) {
               // This satisfies case 2 above. Remove all its aliases, then return below.
               if (toRemove != null) {
-                throw new BugInCF(
+                throw new TypeSystemError(
                     "tried to remove multiple sets containing a reset expression at once");
               }
               toRemove = obligation;
@@ -406,8 +408,8 @@ class MustCallConsistencyAnalyzer {
   /**
    * Given a node representing a method or constructor call, checks that if the result of the call
    * has a non-empty {@code @MustCall} type, then the result is pseudo-assigned to some location
-   * that can take ownership of the result. Searches for the set of same resources in {@code
-   * obligations} and adds the new resource alias to it if one exists. Otherwise creates a new set.
+   * that can take ownership of the result. Searches for the set(s) of same resources in {@code
+   * obligations} and adds the new resource alias to it if any exists. Otherwise creates a new set.
    *
    * @param obligations the currently-tracked obligations. This is always side-effected: an
    *     obligation is either modified (by removing it from the obligation set and adding a new one)
@@ -426,40 +428,45 @@ class MustCallConsistencyAnalyzer {
       return;
     }
 
-    // `mustCallAlias` is the argument passed in the MustCallAlias position, if any exists,
-    // otherwise null.
-    Node mustCallAlias = getMustCallAliasArgumentNode(node);
-    // If mustCallAlias is null and call returns @This, set mustCallAlias to the receiver.
-    if (mustCallAlias == null
-        && node instanceof MethodInvocationNode
+    // mustCallAliases is a (possibly-empty) list of arguments passed in a MustCallAlias position
+    List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
+    // If call returns @This, add the receiver to mustCallAliases.
+    if (node instanceof MethodInvocationNode
         && typeFactory.returnsThis((MethodInvocationTree) tree)) {
-      mustCallAlias =
-          removeCastsAndGetTmpVarIfPresent(((MethodInvocationNode) node).getTarget().getReceiver());
+      mustCallAliases.add(
+          removeCastsAndGetTmpVarIfPresent(
+              ((MethodInvocationNode) node).getTarget().getReceiver()));
     }
 
     ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
-    if (mustCallAlias instanceof FieldAccessNode) {
-      // Do not track the call result if the MustCallAlias argument is a field.  Handling of
-      // @Owning fields is a completely separate check, and there is never a need to track an alias
-      // of
-      // a non-@Owning field, as by definition such a field does not have obligations!
-    } else if (mustCallAlias instanceof LocalVariableNode) {
-      Obligation obligationContainingMustCallAlias =
-          getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
-      // If mustCallAlias is a local variable already being tracked, add tmpVarAsResourceAlias
-      // to the set containing mustCallAlias.
-      if (obligationContainingMustCallAlias != null) {
-        Set<ResourceAlias> newResourceAliasSet =
-            FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
-                .append(tmpVarAsResourceAlias)
-                .toSet();
-        obligations.remove(obligationContainingMustCallAlias);
-        obligations.add(new Obligation(newResourceAliasSet));
-      }
-    } else {
-      // If mustCallAlias is neither a field nor a local already in the set of obligations,
-      // add it to a new set.
+    if (mustCallAliases.isEmpty()) {
+      // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias)));
+    } else {
+      for (Node mustCallAlias : mustCallAliases) {
+        if (mustCallAlias instanceof FieldAccessNode) {
+          // Do not track the call result if the MustCallAlias argument is a field.  Handling of
+          // @Owning fields is a completely separate check, and there is never a need to track an
+          // alias of a non-@Owning field, as by definition such a field does not have obligations!
+        } else {
+          if (!(mustCallAlias instanceof LocalVariableNode)) {
+            throw new TypeSystemError(
+                "unexpected node type for mustCallAlias: " + mustCallAlias.getClass());
+          }
+          Obligation obligationContainingMustCallAlias =
+              getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
+          // If mustCallAlias is a local variable already being tracked, add tmpVarAsResourceAlias
+          // to the set containing mustCallAlias.
+          if (obligationContainingMustCallAlias != null) {
+            Set<ResourceAlias> newResourceAliasSet =
+                FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
+                    .append(tmpVarAsResourceAlias)
+                    .toSet();
+            obligations.remove(obligationContainingMustCallAlias);
+            obligations.add(new Obligation(newResourceAliasSet));
+          }
+        }
+      }
     }
   }
 
@@ -513,9 +520,13 @@ class MustCallConsistencyAnalyzer {
    *     field or a definitely non-owning pointer
    */
   private boolean returnTypeIsMustCallAliasWithUntrackable(MethodInvocationNode node) {
-    Node mustCallAliasArgument = getMustCallAliasArgumentNode(node);
-    return mustCallAliasArgument instanceof FieldAccessNode
-        || mustCallAliasArgument instanceof ThisNode;
+    List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
+    for (Node mustCallAliasArg : mustCallAliasArguments) {
+      if (!(mustCallAliasArg instanceof FieldAccessNode || mustCallAliasArg instanceof ThisNode)) {
+        return false;
+      }
+    }
+    return !mustCallAliasArguments.isEmpty();
   }
 
   /**
@@ -819,7 +830,7 @@ class MustCallConsistencyAnalyzer {
     Node lhsNode = node.getTarget();
 
     if (!(lhsNode instanceof FieldAccessNode)) {
-      throw new BugInCF(
+      throw new TypeSystemError(
           "checkReassignmentToField: non-field node " + node + " of type " + node.getClass());
     }
 
@@ -981,43 +992,43 @@ class MustCallConsistencyAnalyzer {
 
       return ((LocalVariableNode) receiver).getName();
     }
-    throw new BugInCF(
+    throw new TypeSystemError(
         "unexpected receiver of field assignment: " + receiver + " of type " + receiver.getClass());
   }
 
   /**
-   * Finds the argument passed in the {@code @MustCallAlias} position for a call.
+   * Finds the arguments passed in the {@code @MustCallAlias} positions for a call.
    *
    * @param callNode callNode representing the call; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
    * @return if {@code callNode} invokes a method with a {@code @MustCallAlias} annotation on some
-   *     formal parameter (or the receiver), returns the result of calling {@link
-   *     #removeCastsAndGetTmpVarIfPresent(Node)} on the argument passed in that position.
-   *     Otherwise, returns {@code null}.
+   *     formal parameter(s) (or the receiver), returns the result of calling {@link
+   *     #removeCastsAndGetTmpVarIfPresent(Node)} on the argument(s) passed in corresponding
+   *     position(s). Otherwise, returns an empty List.
    */
-  private @Nullable Node getMustCallAliasArgumentNode(Node callNode) {
+  private List<Node> getMustCallAliasArgumentNodes(Node callNode) {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
+    List<Node> result = new ArrayList<>();
     if (!typeFactory.hasMustCallAlias(callNode.getTree())) {
-      return null;
+      return result;
     }
 
-    Node result = null;
     List<Node> args = getArgumentsOfInvocation(callNode);
     List<? extends VariableElement> parameters = getParametersOfInvocation(callNode);
     for (int i = 0; i < args.size(); i++) {
       if (typeFactory.hasMustCallAlias(parameters.get(i))) {
-        result = args.get(i);
-        break;
+        result.add(removeCastsAndGetTmpVarIfPresent(args.get(i)));
       }
     }
 
     // If none of the parameters were @MustCallAlias, it must be the receiver
-    if (result == null && callNode instanceof MethodInvocationNode) {
-      result = ((MethodInvocationNode) callNode).getTarget().getReceiver();
+    if (result.isEmpty() && callNode instanceof MethodInvocationNode) {
+      result.add(
+          removeCastsAndGetTmpVarIfPresent(
+              ((MethodInvocationNode) callNode).getTarget().getReceiver()));
     }
 
-    result = removeCastsAndGetTmpVarIfPresent(result);
     return result;
   }
 
@@ -1049,7 +1060,7 @@ class MustCallConsistencyAnalyzer {
     } else if (node instanceof ObjectCreationNode) {
       return ((ObjectCreationNode) node).getArguments();
     } else {
-      throw new BugInCF("unexpected node type " + node.getClass());
+      throw new TypeSystemError("unexpected node type " + node.getClass());
     }
   }
 
@@ -1069,7 +1080,7 @@ class MustCallConsistencyAnalyzer {
     } else if (node instanceof ObjectCreationNode) {
       executableElement = TreeUtils.elementFromUse(((ObjectCreationNode) node).getTree());
     } else {
-      throw new BugInCF("unexpected node type " + node.getClass());
+      throw new TypeSystemError("unexpected node type " + node.getClass());
     }
 
     return executableElement.getParameters();
@@ -1488,7 +1499,7 @@ class MustCallConsistencyAnalyzer {
         cmAnno =
             typeFactory
                 .getAnnotatedType(alias.reference.getElement())
-                .getAnnotationInHierarchy(typeFactory.top);
+                .getEffectiveAnnotationInHierarchy(typeFactory.top);
       }
 
       if (calledMethodsSatisfyMustCall(mustCallValue, cmAnno)) {
@@ -1659,7 +1670,7 @@ class MustCallConsistencyAnalyzer {
   static String formatMissingMustCallMethods(List<String> mustCallVal) {
     int size = mustCallVal.size();
     if (size == 0) {
-      throw new BugInCF("empty mustCallVal " + mustCallVal);
+      throw new TypeSystemError("empty mustCallVal " + mustCallVal);
     } else if (size == 1) {
       return "method " + mustCallVal.get(0);
     } else {

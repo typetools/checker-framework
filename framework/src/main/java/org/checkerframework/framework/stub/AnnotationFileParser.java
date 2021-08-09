@@ -1077,7 +1077,7 @@ public class AnnotationFileParser {
             decl.getAnnotations(),
             decl);
       } catch (ErrorTypeKindException e) {
-        // Do nothing, per Issue #244.
+        // Do nothing, per https://github.com/typetools/checker-framework/issues/244 .
       }
     } else {
       assert decl.isConstructorDeclaration();
@@ -1204,7 +1204,7 @@ public class AnnotationFileParser {
     */
     // Clear existing annotations, which only makes a difference for
     // type variables, but doesn't hurt in other cases.
-    atype.clearAnnotations();
+    atype.clearPrimaryAnnotations();
   }
 
   /**

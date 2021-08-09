@@ -4,12 +4,9 @@ import org.checkerframework.checker.guieffect.qual.PolyUIType;
 import org.checkerframework.checker.guieffect.qual.UI;
 
 public class ThrowCatchTest {
-  // Default type of List's type parameter is below @UI so these
-  // fields are type.argument.incompatible
-  // :: error: (type.argument)
   List<? extends @UI Object> ooo;
 
-  // :: error: (type.argument) :: error: (annotations.on.use)
+  // :: error: (annotations.on.use)
   List<? extends @UI Inner> iii;
 
   class Inner {}
@@ -57,14 +54,10 @@ public class ThrowCatchTest {
 
   // Wildcards
   void throwWildcard(
-      // :: error: (type.argument)
-      List<? extends @UI PolyUIException>
-          ui, // Default type of List's type parameter is below @UI so this is
-      // type.argument.incompatible
+      List<? extends @UI PolyUIException> ui,
       List<? extends @AlwaysSafe PolyUIException> alwaysSafe)
       throws PolyUIException {
     if (flag) {
-      // :: error: (throw)
       throw ui.get(0);
     }
     throw alwaysSafe.get(0);

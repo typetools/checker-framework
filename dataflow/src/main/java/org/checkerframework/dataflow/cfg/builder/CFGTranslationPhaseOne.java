@@ -2149,7 +2149,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       Integer defaultIndex = null;
       for (int i = 0; i < cases; ++i) {
         CaseTree caseTree = switchTree.getCases().get(i);
-        if (caseTree.getExpression() == null) {
+        if (TreeUtils.caseTreeGetExpressions(caseTree).isEmpty()) {
           defaultIndex = i;
         } else {
           buildCase(caseTree, i);
@@ -2177,11 +2177,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       final Label nextBodyL = caseBodyLabels[index + 1];
       final Label nextCaseL = new Label();
 
-      ExpressionTree exprTree = tree.getExpression();
-      if (exprTree != null) {
+      List<? extends ExpressionTree> exprTrees = TreeUtils.caseTreeGetExpressions(tree);
+      if (!exprTrees.isEmpty()) {
         // non-default cases
-        Node expr = scan(exprTree, null);
-        CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
+        ArrayList<Node> exprs = new ArrayList<>();
+        for (ExpressionTree exprTree : exprTrees) {
+          exprs.add(scan(exprTree, null));
+        }
+        CaseNode test = new CaseNode(tree, switchExpr, exprs, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
       }

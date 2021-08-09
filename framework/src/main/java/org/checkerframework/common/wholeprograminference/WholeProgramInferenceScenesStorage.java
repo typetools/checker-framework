@@ -39,7 +39,6 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.UserError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AClass;
@@ -108,6 +107,28 @@ public class WholeProgramInferenceScenesStorage
   public final Set<String> modifiedScenes = new HashSet<>();
 
   /**
+   * This map relates inferred preconditions to the declared types of the expressions to which the
+   * precondition applies. It is necessary to keep this map here because the AFU does not have a
+   * dependency on the CF itself, where AnnotatedTypeMirror exists.
+   *
+   * <p>The keys are the concatenation of the string representation of the method signature as
+   * stored by {@link AMethod} to which the precondition applies and the expression to which the
+   * precondition applies.
+   */
+  private final Map<String, AnnotatedTypeMirror> preconditionsToDeclaredTypes = new HashMap<>();
+
+  /**
+   * This map relates inferred postconditions to the declared types of the expressions to which the
+   * postcondition applies. It is necessary to keep this map here because the AFU does not have a
+   * dependency on the CF itself, where AnnotatedTypeMirror exists.
+   *
+   * <p>The keys are the concatenation of the string representation of the method signature as
+   * stored by {@link AMethod} to which the postcondition applies and the expression to which the
+   * postcondition applies.
+   */
+  private final Map<String, AnnotatedTypeMirror> postconditionsToDeclaredTypes = new HashMap<>();
+
+  /**
    * Default constructor.
    *
    * @param atypeFactory the type factory associated with this WholeProgramInferenceScenesStorage
@@ -131,6 +152,7 @@ public class WholeProgramInferenceScenesStorage
         className = getEnclosingClassName((LocalVariableNode) elt);
         break;
       case FIELD:
+      case ENUM_CONSTANT:
         ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
         className = enclosingClass.flatname.toString();
         break;
@@ -226,55 +248,92 @@ public class WholeProgramInferenceScenesStorage
   }
 
   @Override
-  public ATypeElement getPreOrPostconditionsForField(
+  public ATypeElement getPreOrPostconditions(
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
-      VariableElement fieldElement,
+      String expression,
+      AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
     switch (preOrPost) {
       case BEFORE:
-        return getPreconditionsForField(methodElement, fieldElement, atypeFactory);
+        return getPreconditionsForExpression(methodElement, expression, declaredType);
       case AFTER:
-        return getPostconditionsForField(methodElement, fieldElement, atypeFactory);
+        return getPostconditionsForExpression(methodElement, expression, declaredType);
       default:
         throw new BugInCF("Unexpected " + preOrPost);
     }
   }
 
   /**
-   * Returns the precondition annotations for a field.
+   * Returns the precondition annotations for a Java expression.
    *
    * @param methodElement the method
-   * @param fieldElement the field
-   * @param atypeFactory the type factory
-   * @return the precondition annotations for a field
+   * @param expression the expression
+   * @param declaredType the declared type of the expression
+   * @return the precondition annotations for a Java expression
    */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPreconditionsForField(
-      ExecutableElement methodElement,
-      VariableElement fieldElement,
-      AnnotatedTypeFactory atypeFactory) {
+  private ATypeElement getPreconditionsForExpression(
+      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
-    TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
-    return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(fieldElement, typeMirror).type;
+    preconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
+    return methodAnnos.vivifyAndAddTypeMirrorToPrecondition(
+            expression, declaredType.getUnderlyingType())
+        .type;
   }
 
   /**
-   * Returns the postcondition annotations for a field.
+   * Returns the postcondition annotations for a Java expression.
    *
    * @param methodElement the method
-   * @param fieldElement the field
-   * @param atypeFactory the type factory
-   * @return the postcondition annotations for a field
+   * @param expression the expression
+   * @param declaredType the declared type of the expression
+   * @return the postcondition annotations for a Java expression
    */
-  @SuppressWarnings("UnusedVariable")
-  private ATypeElement getPostconditionsForField(
-      ExecutableElement methodElement,
-      VariableElement fieldElement,
-      AnnotatedTypeFactory atypeFactory) {
+  private ATypeElement getPostconditionsForExpression(
+      ExecutableElement methodElement, String expression, AnnotatedTypeMirror declaredType) {
     AMethod methodAnnos = getMethodAnnos(methodElement);
-    TypeMirror typeMirror = TypeAnnotationUtils.unannotatedType(fieldElement.asType());
-    return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(fieldElement, typeMirror).type;
+    postconditionsToDeclaredTypes.put(methodAnnos.methodSignature + expression, declaredType);
+    return methodAnnos.vivifyAndAddTypeMirrorToPostcondition(
+            expression, declaredType.getUnderlyingType())
+        .type;
+  }
+
+  /**
+   * Fetches the declared type of an expression for which a precondition was inferred, for the given
+   * AMethod.
+   *
+   * @param m a method
+   * @param expression the expression
+   * @return the declared type
+   */
+  public AnnotatedTypeMirror getPreconditionDeclaredType(AMethod m, String expression) {
+    String key = m.methodSignature + expression;
+    if (!preconditionsToDeclaredTypes.containsKey(key)) {
+      throw new BugInCF(
+          "attempted to retrieve the declared type of a precondition expression for which"
+              + "nothing was inferred: "
+              + key);
+    }
+    return preconditionsToDeclaredTypes.get(key);
+  }
+
+  /**
+   * Fetches the declared type of an expression for which a postcondition was inferred, for the
+   * given AMethod.
+   *
+   * @param m a method
+   * @param expression the expression
+   * @return the declared type
+   */
+  public AnnotatedTypeMirror getPostconditionDeclaredType(AMethod m, String expression) {
+    String key = m.methodSignature + expression;
+    if (!postconditionsToDeclaredTypes.containsKey(key)) {
+      throw new BugInCF(
+          "attempted to retrieve the declared type of a postcondition expression for which"
+              + "nothing was inferred: "
+              + key);
+    }
+    return postconditionsToDeclaredTypes.get(key);
   }
 
   @Override

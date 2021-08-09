@@ -43,6 +43,10 @@ public class TestUtilities {
   public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
   /** True if the JVM is version 11 or lower. */
   public static final boolean IS_AT_MOST_11_JVM = SystemUtil.getJreVersion() <= 11;
+  /** True if the JVM is version 16 or above. */
+  public static final boolean IS_AT_LEAST_16_JVM = SystemUtil.getJreVersion() >= 16;
+  /** True if the JVM is version 16 or lower. */
+  public static final boolean IS_AT_MOST_16_JVM = SystemUtil.getJreVersion() <= 16;
 
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -92,11 +96,15 @@ public class TestUtilities {
 
     for (String dirName : dirNames) {
       File dir = new File(parent, dirName).toPath().toAbsolutePath().normalize().toFile();
-      // This fails for the whole-program-inference tests:  their sources do not necessarily
-      // exist yet but will be created by a test that runs earlier than they do.
-      // if (!dir.isDirectory()) {
-      //     throw new BugInCF("test directory does not exist: %s", dir);
-      // }
+      if (!dir.isDirectory()) {
+        // For "ainfer-*" tests, their sources do not necessarily
+        // exist yet but will be created by a test that runs earlier than they do.
+        if (!(dir.getName().equals("annotated")
+            && dir.getParentFile() != null
+            && dir.getParentFile().getName().startsWith("ainfer-"))) {
+          throw new BugInCF("test directory does not exist: %s", dir);
+        }
+      }
       if (dir.isDirectory()) {
         filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
       }
@@ -162,7 +170,12 @@ public class TestUtilities {
     return arguments;
   }
 
-  /** Returns all the java files that are descendants of the given directory. */
+  /**
+   * Returns all the Java files that are descendants of the given directory.
+   *
+   * @param directory a directory
+   * @return all the Java files that are descendants of the given directory
+   */
   public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
     if (!directory.exists()) {
       throw new IllegalArgumentException(
@@ -204,12 +217,6 @@ public class TestUtilities {
       return false;
     }
 
-    // We could implement special filtering based on directory names,
-    // but I prefer using @below-java9-jdk-skip-test
-    // if (!IS_AT_LEAST_9_JVM && file.getAbsolutePath().contains("java9")) {
-    //     return false;
-    // }
-
     Scanner in = null;
     try {
       in = new Scanner(file);
@@ -222,7 +229,9 @@ public class TestUtilities {
       if (nextLine.contains("@skip-test")
           || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
           || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
-          || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))) {
+          || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))
+          || (!IS_AT_LEAST_16_JVM && nextLine.contains("@below-java16-jdk-skip-test"))
+          || (!IS_AT_MOST_16_JVM && nextLine.contains("@above-java16-skip-test"))) {
         in.close();
         return false;
       }

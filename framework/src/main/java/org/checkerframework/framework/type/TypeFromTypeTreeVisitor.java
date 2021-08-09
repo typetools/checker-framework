@@ -288,8 +288,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
           visitTypeParameter(meth.getTypeParameters().get(idx), f).shallowCopy();
       result.setDeclaration(false);
       return result;
-    } else if (TypesUtils.isCaptured(typeVar)) {
-      // Captured types can have a generic element (owner) that is
+    } else if (TypesUtils.isCapturedTypeVariable(typeVar)) {
+      // Captured type variables can have a generic element (owner) that is
       // not an element at all, namely Symtab.noSymbol.
       return type.asUse();
     } else {

@@ -134,7 +134,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -144,6 +143,7 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.SimpleTreeVisitor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -168,7 +168,7 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>The {@code process} methods are called in pre-order. That is, process methods for a parent are
  * called before its children.
  */
-public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, Node> {
+public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void, Node> {
   @Override
   public Void visitAnnotation(AnnotationTree javacTree, Node javaParserNode) {
     // javac stores annotation arguments as assignments, so @MyAnno("myArg") is stored the same
@@ -255,6 +255,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     processBinary(javacTree, node);
     javacTree.getLeftOperand().accept(this, node.getLeft());
     javacTree.getRightOperand().accept(this, node.getRight());
+    return null;
+  }
+
+  /**
+   * Visit a BindingPatternTree.
+   *
+   * @param tree a BindingPatternTree, typed as Tree to be backward-compatible
+   * @param node a PatternExpr, typed as Node to be backward-compatible
+   * @return nothing
+   */
+  public Void visitBindingPattern17(Tree tree, Node node) {
     return null;
   }
 
@@ -381,15 +392,15 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
   public Void visitCase(CaseTree javacTree, Node javaParserNode) {
     SwitchEntry node = castNode(SwitchEntry.class, javaParserNode, javacTree);
     processCase(javacTree, node);
-    // The expression is null if and only if the case is the default case.
-    // Java 12 introduced multiple label cases, but expressions should contain at most one
-    // element for Java 11 and below.
-    List<Expression> expressions = node.getLabels();
-    if (javacTree.getExpression() == null) {
-      assert expressions.isEmpty();
-    } else {
-      assert expressions.size() == 1;
-      javacTree.getExpression().accept(this, expressions.get(0));
+    // Java 12 introduced multiple label cases:
+    List<Expression> labels = node.getLabels();
+    List<? extends ExpressionTree> treeExpressions =
+        org.checkerframework.javacutil.TreeUtils.caseTreeGetExpressions(javacTree);
+    assert node.getLabels().size() == treeExpressions.size()
+        : String.format(
+            "node.getLabels() = %s, treeExpressions = %s", node.getLabels(), treeExpressions);
+    for (int i = 0; i < treeExpressions.size(); i++) {
+      treeExpressions.get(i).accept(this, labels.get(i));
     }
 
     processStatements(javacTree.getStatements(), node.getStatements());
@@ -1172,6 +1183,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     return null;
   }
 
+  /**
+   * Visit a SwitchExpressionTree
+   *
+   * @param tree a SwitchExpressionTree, typed as Tree to be backward-compatible
+   * @param node a SwitchExpr, typed as Node to be backward-compatible
+   * @return nothing
+   */
+  public Void visitSwitchExpression17(Tree tree, Node node) {
+    return null;
+  }
+
   @Override
   public Void visitSynchronized(SynchronizedTree javacTree, Node javaParserNode) {
     SynchronizedStmt node = castNode(SynchronizedStmt.class, javaParserNode, javacTree);
@@ -1378,6 +1400,17 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
   }
 
   /**
+   * Visit a YieldTree
+   *
+   * @param tree a YieldTree, typed as Tree to be backward-compatible
+   * @param node a YieldStmt, typed as Node to be backward-compatible
+   * @return nothing
+   */
+  public Void visitYield17(Tree tree, Node node) {
+    return null;
+  }
+
+  /**
    * Process an {@code AnnotationTree} with multiple key-value pairs like {@code @MyAnno(a=5,
    * b=10)}.
    *
@@ -1500,7 +1533,7 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
   public abstract void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode);
 
   /**
-   * Process a {@code ClassTree} representing an annotation declaration.
+   * Process a {@code ClassTree} representing a class or interface declaration.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2149,5 +2182,30 @@ public abstract class JointJavacJavaParserVisitor implements TreeVisitor<Void, N
     throw new BugInCF(
         "desynced trees: %s [%s], %s [%s (expected %s)]",
         javacTree, javacTree.getClass(), javaParserNode, javaParserNode.getClass(), expectedType);
+  }
+
+  /**
+   * The default action for this visitor. This is inherited from SimpleTreeVisitor, but is only
+   * called for those methods which do not have an override of the visitXXX method in this class.
+   * Ultimately, those are the methods added post Java 11, such as for switch-expressions.
+   *
+   * @param tree the Javac tree
+   * @param node the Javaparser node
+   * @return nothing
+   */
+  @Override
+  protected Void defaultAction(Tree tree, Node node) {
+    // Features added between JDK 12 and JDK 17 inclusive.
+    // Must use String comparison to support compiling on JDK 11 and earlier:
+    switch (tree.getKind().name()) {
+      case "BINDING_PATTERN":
+        return visitBindingPattern17(tree, node);
+      case "SWITCH_EXPRESSION":
+        return visitSwitchExpression17(tree, node);
+      case "YIELD":
+        return visitYield17(tree, node);
+    }
+
+    return super.defaultAction(tree, node);
   }
 }

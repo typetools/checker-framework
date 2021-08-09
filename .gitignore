@@ -62,10 +62,10 @@ manual.dvi
 manual.haux
 manual.html
 manual.htoc
+manual.image.log
 manual.image.out
 manual.image.tex
 manual.image.tex.new
-manual.image.log
 manual.log
 manual.out
 manual.pdf
@@ -79,20 +79,20 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
+docs/examples/**/*.class
+docs/examples/MavenExample/Out.txt
+docs/examples/errorprone/.gradle/
+docs/examples/errorprone/Out.txt
+docs/examples/lombok/.gradle/
+docs/examples/lombok/Out.txt
+docs/examples/lombok/lombok.config
+docs/manual/*.png
+docs/manual/*.svg
 docs/manual/contributors.txt
 docs/manual/figures/*.eps
 docs/manual/figures/*.pdf
 docs/manual/figures/*.png
 docs/manual/figures/signature-types-with-canonicalname.dia
-docs/manual/*.png
-docs/manual/*.svg
-docs/examples/**/*.class
-docs/examples/MavenExample/Out.txt
-docs/examples/errorprone/.gradle/
-docs/examples/errorprone/Out.txt
-docs/examples/lombok/Out.txt
-docs/examples/lombok/.gradle/
-docs/examples/lombok/lombok.config
 docs/manual/manual.html-e
 docs/tmpapi/
 
@@ -125,21 +125,23 @@ checker/tests/nullness-extra/*.class
 checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
 checker/tests/nullness-extra/compat/lib/Lib.class
-checker/tests/nullness-extra/multiple-errors/*.class
-checker/tests/nullness-extra/multiple-errors/Out.txt
-checker/tests/nullness-extra/package-anno/Out.txt
-checker/tests/nullness-extra/package-anno/test/*.class
-checker/tests/nullness-extra/shorthand/NullnessRegexWithErrors.class
-checker/tests/nullness-extra/shorthand/Out.txt
+checker/tests/nullness-extra/issue3597/testpkg/Issue3597A.class
+checker/tests/nullness-extra/issue3597/testpkg/Issue3597B.class
 checker/tests/nullness-extra/issue502/Issue502.class
 checker/tests/nullness-extra/issue502/Out.txt
 checker/tests/nullness-extra/issue594/Out.txt
 checker/tests/nullness-extra/issue607/Issue607.class
 checker/tests/nullness-extra/issue607/Issue607Interface.class
 checker/tests/nullness-extra/issue607/Issue607SuperClass.class
-checker/tests/nullness/generics/*.class
-checker/tests/nullness-temp/*.java
+checker/tests/nullness-extra/multiple-errors/*.class
+checker/tests/nullness-extra/multiple-errors/Out.txt
+checker/tests/nullness-extra/package-anno/Out.txt
+checker/tests/nullness-extra/package-anno/test/*.class
+checker/tests/nullness-extra/shorthand/NullnessRegexWithErrors.class
+checker/tests/nullness-extra/shorthand/Out.txt
 checker/tests/nullness-temp/*.class
+checker/tests/nullness-temp/*.java
+checker/tests/nullness/generics/*.class
 
 dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class
@@ -152,8 +154,8 @@ checker/jtreg/multipleexecutions/Main.class
 checker-qual-android/src
 
 # Some tests produce output into the tests/ directory instead of the build/ directory.
-checker/tests/ainfer-testchecker/annotated/
-checker/tests/ainfer-testchecker/inference-output/
 checker/tests/ainfer-nullness/annotated/
 checker/tests/ainfer-nullness/inference-output/
+checker/tests/ainfer-testchecker/annotated/
+checker/tests/ainfer-testchecker/inference-output/
 framework/tests/returnsreceiverdelomboked/
