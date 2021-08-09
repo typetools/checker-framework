@@ -1,4 +1,4 @@
-package main.java.org.checkerframework.dataflow.util;
+package org.checkerframework.dataflow.util;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
