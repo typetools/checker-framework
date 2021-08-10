@@ -790,20 +790,20 @@ public class AnnotatedTypes {
    * @param atypeFactory the AnnotatedTypeFactory
    * @param type1 annotated type
    * @param type2 annotated type
+   * @param glbJava glb type
    * @return the annotated glb of type1 and type2
    */
   public static AnnotatedTypeMirror annotatedGLB(
-      AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+      AnnotatedTypeFactory atypeFactory,
+      AnnotatedTypeMirror type1,
+      AnnotatedTypeMirror type2,
+      TypeMirror glbJava) {
     Types types = atypeFactory.types;
     if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
       return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
     } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
       return glbSubtype(atypeFactory.getQualifierHierarchy(), type2, type1);
     }
-
-    TypeMirror glbJava =
-        TypesUtils.greatestLowerBound(
-            type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
 
     if (types.isSameType(type1.getUnderlyingType(), glbJava)) {
       return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
@@ -830,9 +830,9 @@ public class AnnotatedTypes {
 
     List<AnnotatedTypeMirror> newBounds = new ArrayList<>(2);
     for (AnnotatedTypeMirror bound : glb.getBounds()) {
-      if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
+      if (types.isSubtype(bound.getUnderlyingType(), type1.getUnderlyingType())) {
         newBounds.add(type1.deepCopy());
-      } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
+      } else if (types.isSubtype(bound.getUnderlyingType(), type2.getUnderlyingType())) {
         newBounds.add(type2.deepCopy());
       } else {
         throw new BugInCF(
@@ -851,7 +851,7 @@ public class AnnotatedTypes {
    * underlying Java types are in a subtyping relationship.
    *
    * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
-   * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
+   * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror, TypeMirror)}.
    *
    * @param qualifierHierarchy QualifierHierarchy
    * @param subtype annotated type whose underlying type is a subtype of {@code supertype}

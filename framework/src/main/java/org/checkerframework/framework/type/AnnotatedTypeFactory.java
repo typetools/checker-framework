@@ -5057,7 +5057,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
             typeVarToAnnotatedTypeArg, typeVariable.getUpperBound());
     AnnotatedTypeMirror upperBound =
-        AnnotatedTypes.annotatedGLB(this, typeVarUpperBound, wildcard.getExtendsBound());
+        AnnotatedTypes.annotatedGLB(
+            this,
+            typeVarUpperBound,
+            wildcard.getExtendsBound(),
+            capturedTypeVar.getUpperBound().getUnderlyingType());
     capturedTypeVar.setUpperBound(upperBound);
 
     // typeVariable's lower bound is a NullType, so there's nothing to substitute.
