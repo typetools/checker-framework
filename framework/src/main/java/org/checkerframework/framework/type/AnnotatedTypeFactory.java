@@ -5004,7 +5004,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Collection<? extends AnnotatedTypeVariable> collection) {
     AnnotatedTypeVariable first = null;
     for (AnnotatedTypeVariable candidate : collection) {
-      first = candidate;
+      if (first == null) {
+        first = candidate;
+      }
       boolean doesNotContain = true;
       for (AnnotatedTypeVariable other : collection) {
         if (candidate != other && captureScanner.visit(candidate, other.getUnderlyingType())) {
