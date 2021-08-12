@@ -379,11 +379,11 @@ public class InitializationVisitor<
       return;
     }
 
-    // Canonical record constructors do not generate visible assignments in the source,
+    // Compact canonical record constructors do not generate visible assignments in the source,
     // but by definition they assign to all the record's fields so we don't need to
     // check for uninitialized fields in them:
     if (node.getKind() == Tree.Kind.METHOD
-        && TreeUtils.isCanonicalRecordConstructor((MethodTree) node)) {
+        && TreeUtils.isCompactCanonicalRecordConstructor((MethodTree) node)) {
       return;
     }
 
