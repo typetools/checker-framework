@@ -345,7 +345,7 @@ public class AnnotationFileParser {
 
     /**
      * The set of all annotations on the declaration of the record component. If applicable these
-     * will be copied to the corresponding field, accessor method and compact canonical constructor
+     * will be copied to the corresponding field, accessor method, and compact canonical constructor
      * parameter.
      */
     private final Set<AnnotationMirror> allAnnotations;
@@ -357,7 +357,7 @@ public class AnnotationFileParser {
      * Creates a new RecordComponentStub with the given type.
      *
      * @param type the type of the record component
-     * @param allAnnotations the set of declaration annotations on the component
+     * @param allAnnotations the declaration annotations on the component
      */
     public RecordComponentStub(AnnotatedTypeMirror type, Set<AnnotationMirror> allAnnotations) {
       this.type = type;
@@ -367,7 +367,7 @@ public class AnnotationFileParser {
     /**
      * Get the record component annotations that are applicable to the given element kind.
      *
-     * @param elementKind the element kind to apply to (e.g. FIELD, METHOD)
+     * @param elementKind the element kind to apply to (e.g., FIELD, METHOD)
      * @return the set of annotations from the component that apply
      */
     public Set<AnnotationMirror> getAnnotationsForTarget(ElementKind elementKind) {
