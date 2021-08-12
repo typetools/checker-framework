@@ -44,13 +44,21 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     implements TypeHierarchy {
-  // used for processingEnvironment when needed
+  /**
+   * The type-checker that is associated with this.
+   *
+   * <p>Used for processingEnvironment when needed.
+   */
   protected final BaseTypeChecker checker;
 
+  /** The qualifier hierarchy that is associated with this. */
   protected final QualifierHierarchy qualifierHierarchy;
+  /** The equality comparer. */
   protected final StructuralEqualityComparer equalityComparer;
 
+  /** Whether to ignore raw types. */
   protected final boolean ignoreRawTypes;
+  /** Whether to make array subtyping invariant with respect to array component types. */
   protected final boolean invariantArrayComponents;
 
   /** The top annotation of the hierarchy currently being checked. */
@@ -73,7 +81,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Creates a DefaultTypeHierarchy.
    *
    * @param checker the type-checker that is associated with this
-   * @param qualifierHierarchy the qualiifer hierarchy that is associated with this
+   * @param qualifierHierarchy the qualifier hierarchy that is associated with this
    * @param ignoreRawTypes whether to ignore raw types
    * @param invariantArrayComponents whether to make array subtyping invariant with respect to array
    *     component types
@@ -496,8 +504,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types
     // 4th paragraph, bullet 2
-    if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
-      return true;
+    try {
+      if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
+        return true;
+      }
+    } catch (Exception e) {
+      // Some types need to be captured first, so ignore crashes.
     }
     // 5th paragraph:
     // Instead of calling isSubtype with the captured type, just check for containment.
@@ -1081,11 +1093,24 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     return type;
   }
 
-  /** A union type is a subtype if ALL of its alternatives are subtypes of supertype. */
+  /**
+   * A union type is a subtype if ALL of its alternatives are subtypes of supertype.
+   *
+   * @param subtype the potential subtype to check
+   * @param supertype the supertype to check
+   * @return whether all the alternatives of subtype are subtypes of supertype
+   */
   protected boolean visitUnion_Type(AnnotatedUnionType subtype, AnnotatedTypeMirror supertype) {
     return areAllSubtypes(subtype.getAlternatives(), supertype);
   }
 
+  /**
+   * Check a wildcard type's relation against a subtype.
+   *
+   * @param subtype the potential subtype to check
+   * @param supertype the wildcard supertype to check
+   * @return whether the subtype is a subtype of the supertype's super bound
+   */
   protected boolean visitType_Wildcard(
       AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype) {
     if (supertype.isUninferredTypeArgument()) { // TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
@@ -1095,6 +1120,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     return isSubtype(subtype, supertype.getSuperBound(), currentTop);
   }
 
+  /**
+   * Check a wildcard type's relation against a supertype.
+   *
+   * @param subtype the potential wildcard subtype to check
+   * @param supertype the supertype to check
+   * @return whether the subtype's extends bound is a subtype of the supertype
+   */
   protected boolean visitWildcard_Type(
       AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype) {
     if (subtype.isUninferredTypeArgument()) {
