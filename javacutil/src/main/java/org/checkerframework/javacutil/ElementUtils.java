@@ -951,4 +951,19 @@ public class ElementUtils {
       throw new Error("Cannot access TypeElement.getRecordComponents", e);
     }
   }
+
+  /**
+   * Check if the given element is a compact canonical record constructor.
+   *
+   * @param elt the element to check
+   * @return true if the element is a compact canonical constructor of a record
+   */
+  public static boolean isCompactCanonicalRecordConstructor(Element elt) {
+    if (!(elt instanceof Symbol)) {
+      return false;
+    }
+
+    return elt.getKind() == ElementKind.CONSTRUCTOR
+        && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+  }
 }
