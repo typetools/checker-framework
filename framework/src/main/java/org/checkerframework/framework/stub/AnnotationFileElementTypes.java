@@ -391,8 +391,9 @@ public class AnnotationFileElementTypes {
     if (annotationFileAnnos.declAnnos.containsKey(eltName)) {
       return annotationFileAnnos.declAnnos.get(eltName);
     } else {
-      Element enclosingType = null;
+      // Handle annotations on record declarations.
       boolean canTransferAnnotationsToSameName;
+      Element enclosingType; // Do nothing unless this element is a record.
       switch (elt.getKind()) {
         case METHOD:
           // Annotations transfer to zero-arg accessor methods of same name:
@@ -413,6 +414,7 @@ public class AnnotationFileElementTypes {
           break;
         default:
           canTransferAnnotationsToSameName = false;
+          enclosingType = null;
           break;
       }
 
