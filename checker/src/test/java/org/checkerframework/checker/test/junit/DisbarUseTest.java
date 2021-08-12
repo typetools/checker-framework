@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class DisbarUseTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a GuiEffectTest.
+   * Create a DisbarUseTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
