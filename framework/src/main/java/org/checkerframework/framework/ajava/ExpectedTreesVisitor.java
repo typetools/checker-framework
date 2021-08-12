@@ -134,8 +134,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
           member.accept(removeAllVisitor, null);
         } else {
           // If the user declares a compact canonical constructor, javac will automatically fill in
-          // the
-          // parameters.  These trees also don't have a match:
+          // the parameters.  These trees also don't have a match:
           if (member.getKind() == Tree.Kind.METHOD) {
             MethodTree methodTree = (MethodTree) member;
             if (TreeUtils.isCompactCanonicalRecordConstructor(methodTree)) {
