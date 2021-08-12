@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
@@ -358,6 +359,20 @@ public abstract class AbstractAnalysis<
   protected final void init(ControlFlowGraph cfg) {
     initFields(cfg);
     initInitialInputs();
+  }
+
+  /**
+   * Should exceptional control flow for a particular exception type be ignored?
+   *
+   * <p>The default implementation always returns {@code false}. Subclasses should override the
+   * method to implement a different policy.
+   *
+   * @param exceptionType the exception type
+   * @return {@code true} if exceptional control flow due to {@code exceptionType} should be
+   *     ignored, {@code false} otherwise
+   */
+  protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return false;
   }
 
   /**

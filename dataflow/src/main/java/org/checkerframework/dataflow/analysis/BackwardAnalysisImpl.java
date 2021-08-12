@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -254,7 +255,11 @@ public class BackwardAnalysisImpl<
   protected void addStoreAfter(Block pred, @Nullable Node node, S s, boolean addBlockToWorklist) {
     // If the block pred is an exception block, decide whether the block of passing node is an
     // exceptional successor of the block pred
-    if (isExceptionalSucc(pred, node)) {
+    TypeMirror excSuccType = getSuccExceptionType(pred, node);
+    if (excSuccType != null) {
+      if (isIgnoredExceptionType(excSuccType)) {
+        return;
+      }
       // If the block of passing node is an exceptional successor of Block pred, propagate
       // store to the exceptionStores. Currently it doesn't track the label of an
       // exceptional edge from exception block to its exceptional successors in backward
@@ -283,28 +288,30 @@ public class BackwardAnalysisImpl<
   }
 
   /**
-   * Checks if the block for a node is an exceptional successor of a predecessor block.
+   * Checks if the block for a node is an exceptional successor of a predecessor block, and if so,
+   * returns the exception type for the control-flow edge.
    *
    * @param pred the predecessor block
    * @param node the successor node
-   * @return {@code true} if {@code pred} is an {@link ExceptionBlock} and the block for {@code
-   *     node} is an exceptional successor of {@code pred}, false otherwise
+   * @return the exception type leading to a control flow edge from {@code pred} to the block for
+   *     {@code node}, if it exists; {@code null} otherwise
    */
-  private boolean isExceptionalSucc(Block pred, @Nullable Node node) {
+  private @Nullable TypeMirror getSuccExceptionType(Block pred, @Nullable Node node) {
     if (pred instanceof ExceptionBlock && node != null) {
       Block block = node.getBlock();
       if (block != null) {
-        for (Set<Block> excSuccBlocks :
-            ((ExceptionBlock) pred).getExceptionalSuccessors().values()) {
-          for (Block excSuccBlock : excSuccBlocks) {
+        Map<TypeMirror, Set<Block>> exceptionalSuccessors =
+            ((ExceptionBlock) pred).getExceptionalSuccessors();
+        for (TypeMirror excType : exceptionalSuccessors.keySet()) {
+          for (Block excSuccBlock : exceptionalSuccessors.get(excType)) {
             if (excSuccBlock.getUid() == block.getUid()) {
-              return true;
+              return excType;
             }
           }
         }
       }
     }
-    return false;
+    return null;
   }
 
   /**
