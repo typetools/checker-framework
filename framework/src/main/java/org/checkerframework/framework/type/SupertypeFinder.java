@@ -208,11 +208,11 @@ class SupertypeFinder {
 
     /**
      * Creates a mapping from a type parameter to its corresponding annotated type argument for all
-     * type parameters of {@code type}, it's enclosing types, and all super types of all {@code
+     * type parameters of {@code type}, its enclosing types, and all super types of all {@code
      * type}'s enclosing types.
      *
      * @param type a type
-     * @return a mapping from a type parameter to its corresponding annotated type argument
+     * @return a mapping from each type parameter to its corresponding annotated type argument
      */
     private Map<TypeVariable, AnnotatedTypeMirror> getTypeVarToTypeArg(AnnotatedDeclaredType type) {
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
