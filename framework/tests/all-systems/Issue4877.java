@@ -1,3 +1,4 @@
+@SuppressWarnings("all") // Just check for crashes.
 public class Issue4877 {
 
   interface NInterface<T extends NInterface<T>> {}
