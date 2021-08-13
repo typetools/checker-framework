@@ -830,10 +830,24 @@ public class AnnotatedTypes {
 
     List<AnnotatedTypeMirror> newBounds = new ArrayList<>(2);
     for (AnnotatedTypeMirror bound : glb.getBounds()) {
-      if (types.isSubtype(bound.getUnderlyingType(), type1.getUnderlyingType())) {
+      if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
         newBounds.add(type1.deepCopy());
-      } else if (types.isSubtype(bound.getUnderlyingType(), type2.getUnderlyingType())) {
+      } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
         newBounds.add(type2.deepCopy());
+      } else if (type1.getKind() == TypeKind.INTERSECTION) {
+        AnnotatedIntersectionType intertype1 = (AnnotatedIntersectionType) type1;
+        for (AnnotatedTypeMirror otherBound : intertype1.getBounds()) {
+          if (types.isSameType(bound.getUnderlyingType(), otherBound.getUnderlyingType())) {
+            newBounds.add(otherBound.deepCopy());
+          }
+        }
+      } else if (type2.getKind() == TypeKind.INTERSECTION) {
+        AnnotatedIntersectionType intertype2 = (AnnotatedIntersectionType) type2;
+        for (AnnotatedTypeMirror otherBound : intertype2.getBounds()) {
+          if (types.isSameType(bound.getUnderlyingType(), otherBound.getUnderlyingType())) {
+            newBounds.add(otherBound.deepCopy());
+          }
+        }
       } else {
         throw new BugInCF(
             "Neither %s nor %s is one of the intersection bounds in %s. Bound: %s",
