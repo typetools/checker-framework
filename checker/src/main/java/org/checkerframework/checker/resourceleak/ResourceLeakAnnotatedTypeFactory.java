@@ -11,8 +11,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
@@ -26,20 +24,16 @@ import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.ResourceAlias;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The type factory for the Resource Leak Checker. The main difference between this and the Called
@@ -112,65 +106,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Use the must-call store to get the must-call value of the resource represented by the given
-   * resource aliases.
-   *
-   * @param resourceAliasSet a set of resource aliases of the same resource
-   * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is null,
-   *     then the default MustCall type of each variable's class will be used.
-   * @return the list of must-call method names, or null if the resource's must-call obligations are
-   *     unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
-   */
-  public @Nullable List<String> getMustCallValue(
-      Set<ResourceAlias> resourceAliasSet, @Nullable CFStore mcStore) {
-    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-        getTypeFactoryOfSubchecker(MustCallChecker.class);
-
-    // Need to get the LUB of the MC values, because if a CreatesMustCallFor method was
-    // called on just one of the locals then they all need to be treated as if
-    // they need to call the relevant methods.
-    AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
-    for (ResourceAlias alias : resourceAliasSet) {
-      AnnotationMirror mcAnno = null;
-      LocalVariable reference = alias.reference;
-      CFValue value = mcStore == null ? null : mcStore.getValue(reference);
-      if (value != null) {
-        mcAnno = getAnnotationByClass(value.getAnnotations(), MustCall.class);
-      }
-      if (mcAnno == null) {
-        // It wasn't in the store, so fall back to the default must-call type for the class.
-        // TODO: we currently end up in this case when checking a call to the return type
-        // of a returns-receiver method on something with a MustCall type; for example,
-        // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we
-        // can.
-        TypeElement typeElt = TypesUtils.getTypeElement(reference.getType());
-        if (typeElt == null) {
-          // typeElt is null if reference.getType() was not a class, interface, annotation type, or
-          // enum---that is, was not an annotatable type.
-          // That shouldn't happen, but if it does fall back to a safe default (i.e. top).
-          mcAnno = mustCallAnnotatedTypeFactory.TOP;
-        } else {
-          // TODO: Why does this happen sometimes?
-          if (typeElt.asType().getKind() == TypeKind.VOID) {
-            return Collections.emptyList();
-          }
-          mcAnno =
-              mustCallAnnotatedTypeFactory
-                  .getAnnotatedType(typeElt)
-                  .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
-        }
-      }
-      mcLub = mustCallAnnotatedTypeFactory.getQualifierHierarchy().leastUpperBound(mcLub, mcAnno);
-    }
-    if (AnnotationUtils.areSameByName(
-        mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
-      return getMustCallValues(mcLub);
-    } else {
-      return null;
-    }
-  }
-
-  /**
    * Returns the {@link MustCall#value} element/argument of the @MustCall annotation on the type of
    * {@code tree}.
    *
@@ -192,8 +127,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * Returns the {@link MustCall#value} element/argument of the @MustCall annotation on the class
    * type of {@code element}.
    *
-   * <p>If possible, prefer {@link #getMustCallValue(Tree)}, which accounts for flow-sensitive
-   * refinement.
+   * <p>Do not use this method to get the MustCall value of an {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
+   * {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * CFStore)}.
    *
    * @param element an element
    * @return the strings in its must-call type
@@ -214,7 +152,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return the strings in mustCallAnnotation's value element, or the empty list if
    *     mustCallAnnotation is null
    */
-  private List<String> getMustCallValues(@Nullable AnnotationMirror mustCallAnnotation) {
+  /* package-private */ List<String> getMustCallValues(
+      @Nullable AnnotationMirror mustCallAnnotation) {
     if (mustCallAnnotation == null) {
       return Collections.emptyList();
     }
@@ -256,13 +195,19 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /**
    * Returns true if the type of the tree includes a must-call annotation. Note that this method may
    * not consider dataflow, and is only safe to use when you need the declared, rather than
-   * inferred, type of the tree. Use {@link #getMustCallValue(Set, CFStore)} (and check for
-   * emptiness) if you are trying to determine whether a local variable has must-call obligations.
+   * inferred, type of the tree.
+   *
+   * <p>Do not use this method if you are trying to get the must-call obligations of the resource
+   * aliases of an {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
+   * {@link
+   * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * CFStore)}.
    *
    * @param tree a tree
    * @return whether the tree has declared must-call obligations
    */
-  /* package-private */ boolean hasDeclaredMustCall(Tree tree) {
+  /* package-private */ boolean declaredTypeHasMustCall(Tree tree) {
     assert tree.getKind() == Tree.Kind.METHOD
             || tree.getKind() == Tree.Kind.VARIABLE
             || tree.getKind() == Tree.Kind.NEW_CLASS
@@ -347,9 +292,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Returns the {@link CreatesMustCallFor.List#value} element.
+   * Returns the {@link org.checkerframework.checker.mustcall.qual.CreatesMustCallFor.List#value}
+   * element.
    *
-   * @return the {@link CreatesMustCallFor.List#value} element
+   * @return the {@link org.checkerframework.checker.mustcall.qual.CreatesMustCallFor.List#value}
+   *     element
    */
   @Override
   public ExecutableElement getCreatesMustCallForListValueElement() {

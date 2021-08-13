@@ -193,29 +193,51 @@ class SupertypeFinder {
         supertypes.add(jlaAnnotation);
       }
 
+      Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg = getTypeVarToTypeArg(type);
+
+      List<AnnotatedDeclaredType> superTypesNew = new ArrayList<>();
+      for (AnnotatedDeclaredType dt : supertypes) {
+        type.atypeFactory.initializeAtm(dt);
+        superTypesNew.add(
+            (AnnotatedDeclaredType)
+                atypeFactory.getTypeVarSubstitutor().substitute(typeVarToTypeArg, dt));
+      }
+
+      return superTypesNew;
+    }
+
+    /**
+     * Creates a mapping from a type parameter to its corresponding annotated type argument for all
+     * type parameters of {@code type}, its enclosing types, and all super types of all {@code
+     * type}'s enclosing types.
+     *
+     * @param type a type
+     * @return a mapping from each type parameter to its corresponding annotated type argument
+     */
+    private Map<TypeVariable, AnnotatedTypeMirror> getTypeVarToTypeArg(AnnotatedDeclaredType type) {
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
       AnnotatedDeclaredType enclosing = type;
       while (enclosing != null) {
         TypeElement enclosingTypeElement = (TypeElement) enclosing.getUnderlyingType().asElement();
-        List<AnnotatedTypeMirror> typeArgs = enclosing.getTypeArguments();
         List<? extends TypeParameterElement> typeParams = enclosingTypeElement.getTypeParameters();
+        List<AnnotatedTypeMirror> typeArgs = enclosing.getTypeArguments();
         for (int i = 0; i < enclosing.getTypeArguments().size(); ++i) {
           AnnotatedTypeMirror typArg = typeArgs.get(i);
           TypeParameterElement ele = typeParams.get(i);
           mapping.put((TypeVariable) ele.asType(), typArg);
         }
 
+        @SuppressWarnings("interning:not.interned") // First time through type == enclosing.
+        boolean notType = enclosing != type;
+        if (notType) {
+          for (AnnotatedDeclaredType enclSuper : directSupertypes(enclosing)) {
+            mapping.putAll(getTypeVarToTypeArg(enclSuper));
+          }
+        }
+
         enclosing = enclosing.getEnclosingType();
       }
-
-      List<AnnotatedDeclaredType> superTypesNew = new ArrayList<>();
-      for (AnnotatedDeclaredType dt : supertypes) {
-        dt.getTypeArguments(); // Initialize the type arguments.
-        superTypesNew.add(
-            (AnnotatedDeclaredType) atypeFactory.getTypeVarSubstitutor().substitute(mapping, dt));
-      }
-
-      return superTypesNew;
+      return mapping;
     }
 
     private List<AnnotatedDeclaredType> supertypesFromElement(

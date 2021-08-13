@@ -57,10 +57,10 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -71,11 +71,19 @@ import org.plumelib.util.CollectionsPlume;
  * @checker_framework.manual #lock-checker Lock Checker
  */
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
+  /** The class of GuardedBy */
   private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
+  /** The class of GuardSatisfied */
   private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
+  /** A pattern for spotting self receiver */
   protected static final Pattern SELF_RECEIVER_PATTERN = Pattern.compile("^<self>(\\.(.*))?$");
 
+  /**
+   * Constructs a {@link LockVisitor}.
+   *
+   * @param checker the type checker to use.
+   */
   public LockVisitor(BaseTypeChecker checker) {
     super(checker);
     for (String checkerName : atypeFactory.getCheckerNames()) {
@@ -1096,9 +1104,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     checkLockOfThisOrTree(tree, false, gbAnno);
   }
 
+  /**
+   * Helper method tat checks the lock of either the implicit {@code this} or the given tree.
+   *
+   * @param tree a tree whose lock to check
+   * @param implicitThis true if checking the lock of the implicit {@code this}
+   * @param gbAnno a @GuardedBy annotation
+   */
   private void checkLockOfThisOrTree(Tree tree, boolean implicitThis, AnnotationMirror gbAnno) {
     if (gbAnno == null) {
-      throw new BugInCF("LockVisitor.checkLock: gbAnno cannot be null");
+      throw new TypeSystemError("LockVisitor.checkLock: gbAnno cannot be null");
     }
     if (atypeFactory.areSameByClass(gbAnno, GuardedByUnknown.class)
         || atypeFactory.areSameByClass(gbAnno, GuardedByBottom.class)) {

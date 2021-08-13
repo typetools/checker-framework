@@ -118,7 +118,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.15.0'
+    ext.checkerFrameworkVersion = '3.17.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -191,7 +191,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.15.0'
+    ext.checkerFrameworkVersion = '3.17.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -344,13 +344,13 @@ file showing how to enable Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.15.0.jar',
+    binary_jar = 'checker-3.17.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.15.0.jar',
+    binary_jar = 'checker-qual-3.17.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -385,21 +385,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.15.0/>.
+other than \<\${HOME}/checker-framework-3.17.0/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.15.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.17.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.15.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.17.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -420,7 +420,7 @@ other than \<\${HOME}/checker-framework-3.15.0/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.15.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.17.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -442,11 +442,11 @@ other than \<\${HOME}/checker-framework-3.15.0/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.15.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.17.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.15.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.17.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -525,9 +525,9 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.15.0/checker-qual-3.15.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.15.0/checker-util-3.15.0.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.15.0/checker-3.15.0-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.17.0/checker-qual-3.17.0.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.17.0/checker-util-3.17.0.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.17.0/checker-3.17.0-all.jar}
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
@@ -602,15 +602,20 @@ instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK
 
 To compile non-modularized code:
 
+% Keep list of --add-opens and --add-exports in sync with the "maven" and "SBT" sections,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs,
+% and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javac \
--J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
 -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
+-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
 -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
 -cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
 -processor org.checkerframework.checker.nullness.NullnessChecker
@@ -649,6 +654,14 @@ so you must do this even if you write no annotations in your code.
 
 \begin{Verbatim}
 javac \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
   -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
   -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
   --module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
@@ -898,6 +911,12 @@ is run.  The instructions in this section
 bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
 
+Debugging your Maven configuration can be tricky because of a
+\ahreforurl{https://issues.apache.org/jira/browse/MCOMPILER-434}{bug in
+  Maven}: Maven does not report annotation processor exceptions, even when
+the \<-X> command-line argument is passed.
+
+
 \begin{enumerate}
 
 \item Declare a dependency on the Checker Framework artifacts, either from
@@ -1026,7 +1045,7 @@ section, or add it if it is not present.
         <dependency>
           <groupId>org.checkerframework</groupId>
           <artifactId>checker</artifactId>
-          <version>$\{checkerFrameworkVersion\}</version>
+          <version>\ReleaseVersion{}</version>
         </dependency>
       </dependencies>
     </profile>
@@ -1077,6 +1096,14 @@ section, or add it if it is not present.
             <configuration>
               <fork>true</fork>
               <compilerArgs combine.children="append">
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>
             </configuration>
@@ -1326,8 +1353,19 @@ javacOptions ++= Seq(
 
 \subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
 
+% Keep list of --add-opens and --add-exports in sync with the "maven" and "javac-jdk11-non-modularized" sections,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs,
+% and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javacOptions ++= Seq(
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
     "-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
@@ -1341,6 +1379,14 @@ javacOptions ++= Seq(
 \begin{Verbatim}
 For compiling modularized code:
 javacOptions ++= Seq(
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
     "--module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",

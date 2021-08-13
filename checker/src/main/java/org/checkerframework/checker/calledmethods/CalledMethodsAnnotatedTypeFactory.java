@@ -6,13 +6,11 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.builder.AutoValueSupport;
@@ -29,7 +27,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -355,6 +354,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     }
   }
 
+  @Override
+  protected CalledMethodsAnalysis createFlowAnalysis() {
+    return new CalledMethodsAnalysis(checker, this);
+  }
+
   /**
    * Returns the annotation type mirror for the type of {@code expressionTree} with default
    * annotations applied. As types relevant to Called Methods checking are rarely used inside
@@ -381,37 +385,36 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   @Override
-  public List<AnnotationMirror> getPostconditionAnnotation(
-      VariableElement elt, AnnotatedTypeMirror fieldAnnos, List<AnnotationMirror> preconds) {
-    AnnotationMirror cmAnno =
-        AnnotationUtils.getAnnotationByName(
-            fieldAnnos.getAnnotations(),
-            "org.checkerframework.checker.calledmethods.qual.CalledMethods");
-    if (cmAnno != null) {
+  protected @Nullable AnnotationMirror createRequiresOrEnsuresQualifier(
+      String expression,
+      AnnotationMirror qualifier,
+      AnnotatedTypeMirror declaredType,
+      Analysis.BeforeOrAfter preOrPost,
+      @Nullable List<AnnotationMirror> preconds) {
+    if (preOrPost == BeforeOrAfter.AFTER && isAccumulatorAnnotation(qualifier)) {
       List<String> calledMethods =
-          AnnotationUtils.getElementValueArray(cmAnno, calledMethodsValueElement, String.class);
+          AnnotationUtils.getElementValueArray(qualifier, calledMethodsValueElement, String.class);
       if (!calledMethods.isEmpty()) {
-        return ensuresCMAnno(elt, calledMethods);
+        return ensuresCMAnno(expression, calledMethods);
       }
     }
-    return Collections.emptyList();
+    return super.createRequiresOrEnsuresQualifier(
+        expression, qualifier, declaredType, preOrPost, preconds);
   }
 
   /**
-   * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given field.
+   * Returns a {@code @EnsuresCalledMethods("...")} annotation for the given expression.
    *
-   * @param fieldElement a field
-   * @param calledMethods the methods that were definitely called on the field
-   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given field
+   * @param expression the expression to put in the value field of the EnsuresCalledMethods
+   *     annotation
+   * @param calledMethods the methods that were definitely called on the expression
+   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given expression
    */
-  private List<AnnotationMirror> ensuresCMAnno(
-      VariableElement fieldElement, List<String> calledMethods) {
+  private AnnotationMirror ensuresCMAnno(String expression, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
-    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
-    String expression = receiver + "." + fieldElement.getSimpleName();
     builder.setValue("value", new String[] {expression});
     builder.setValue("methods", calledMethods.toArray(new String[0]));
     AnnotationMirror am = builder.build();
-    return Collections.singletonList(am);
+    return am;
   }
 }

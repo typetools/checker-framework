@@ -274,8 +274,8 @@ def build_checker_framework_release(
     )
 
     # build the checker framework binaries and documents.  Tests are run by release_push.py
-    ant_cmd = "./gradlew releaseBuild"
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
+    gradle_cmd = "./gradlew releaseBuild"
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
