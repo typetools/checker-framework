@@ -371,7 +371,7 @@ public class AnnotationFileParser {
      * @return the set of annotations from the component that apply
      */
     public Set<AnnotationMirror> getAnnotationsForTarget(ElementKind elementKind) {
-      HashSet<AnnotationMirror> filtered = new HashSet<>();
+      Set<AnnotationMirror> filtered = AnnotationUtils.createAnnotationSet();
       for (AnnotationMirror annoMirror : allAnnotations) {
         Target target = annoMirror.getAnnotationType().asElement().getAnnotation(Target.class);
         // Only add the declaration annotation if the annotation applies to the element.
