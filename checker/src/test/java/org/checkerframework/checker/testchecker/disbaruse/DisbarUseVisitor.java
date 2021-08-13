@@ -48,28 +48,20 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
   @Override
   public Void visitIdentifier(IdentifierTree node, Void p) {
     MemberSelectTree enclosingMemberSel = enclosingMemberSelect();
-    MemberSelectTree[] memberSelectTrees =
+    ExpressionTree[] memberSelectTrees =
         enclosingMemberSel == null
-            ? new MemberSelectTree[] {null}
-            : new MemberSelectTree[] {enclosingMemberSel, null};
+            ? new ExpressionTree[] {node}
+            : new ExpressionTree[] {enclosingMemberSel, node};
 
-    for (MemberSelectTree memberSel : memberSelectTrees) {
-      final ExpressionTree tree;
-      final Element elem;
-      if (memberSel == null) {
-        tree = node;
-        elem = TreeUtils.elementFromUse(node);
-      } else {
-        tree = memberSel;
-        elem = TreeUtils.elementFromUse(memberSel);
-      }
+    for (ExpressionTree memberSel : memberSelectTrees) {
+      final Element elem = TreeUtils.elementFromUse(memberSel);
 
       if (elem == null || (!elem.getKind().isField() && elem.getKind() != ElementKind.PARAMETER)) {
         continue;
       }
 
       if (atypeFactory.getDeclAnnotation(elem, DisbarUse.class) != null) {
-        checker.reportError(tree, "disbar.use");
+        checker.reportError(memberSel, "disbar.use");
       }
     }
 
