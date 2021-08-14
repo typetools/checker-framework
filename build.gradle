@@ -71,8 +71,8 @@ task setLocalRepo(type:Exec) {
     commandLine 'git', 'worktree', 'list'
     standardOutput = new ByteArrayOutputStream()
     doLast {
-       String worktreeList = standardOutput.toString()
-       localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
+        String worktreeList = standardOutput.toString()
+        localRepo = worktreeList.substring(0, worktreeList.indexOf(" ")) + "/.git"
     }
 }
 
@@ -654,9 +654,9 @@ task getHtmlTools() {
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
-  description "Check that the python3 executable is installed."
-  executable = "python3"
-  args "--version"
+    description "Check that the python3 executable is installed."
+    executable = "python3"
+    args "--version"
 }
 
 task tags {
