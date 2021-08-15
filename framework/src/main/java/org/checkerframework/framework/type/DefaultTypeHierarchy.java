@@ -504,8 +504,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
 
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types
     // 4th paragraph, bullet 2
-    if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
-      return true;
+    try {
+      if (isContainedMany(subtype.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes)) {
+        return true;
+      }
+    } catch (Exception e) {
+      // Some types need to be captured first, so ignore crashes.
     }
     // 5th paragraph:
     // Instead of calling isSubtype with the captured type, just check for containment.
