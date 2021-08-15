@@ -27,6 +27,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
+/**
+ * For methods annotated with {@link SideEffectsOnly}, computes expressions that are side-effected
+ * but not permitted by the annotation.
+ */
 public class SideEffectsOnlyAnnoChecker {
   public static SideEffectsOnlyResult checkSideEffectsOnly(
       TreePath statement,
@@ -42,6 +46,10 @@ public class SideEffectsOnlyAnnoChecker {
   }
 
   public static class SideEffectsOnlyResult {
+    /**
+     * List of expressions a method side-effects that are not specified in the list of arguments to
+     * {@link SideEffectsOnly}.
+     */
     protected final List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = new ArrayList<>(1);
 
     public void addNotSEOnlyExpr(Tree t, JavaExpression javaExpr) {
@@ -84,21 +92,32 @@ public class SideEffectsOnlyAnnoChecker {
       AnnotationMirror pureAnno = annoProvider.getDeclAnnotation(treeElem, Pure.class);
       AnnotationMirror sideEffectFreeAnno =
           annoProvider.getDeclAnnotation(treeElem, SideEffectFree.class);
+      // If the invoked method is annotated as @Pure or @SideEffectFree, nothing to do.
       if (pureAnno != null || sideEffectFreeAnno != null) {
         return super.visitMethodInvocation(node, aVoid);
       }
 
       AnnotationMirror sideEffectsOnlyAnno =
           annoProvider.getDeclAnnotation(treeElem, SideEffectsOnly.class);
+      // If the invoked method is not annotated with @SideEffectsOnly,
+      // add those arguments to seOnlyIncorrectExprs
+      // that are not present in sideEffectsOnlyExpressions.
       if (sideEffectsOnlyAnno == null) {
         JavaExpression receiverExpr = JavaExpression.getReceiver(node);
-        sideEffectsOnlyResult.addNotSEOnlyExpr(node, receiverExpr);
+        if (!sideEffectsOnlyExpressions.contains(receiverExpr)) {
+          sideEffectsOnlyResult.addNotSEOnlyExpr(node, receiverExpr);
+        }
         List<JavaExpression> paramsAsLocals =
             JavaExpression.getParametersAsLocalVariables((ExecutableElement) treeElem);
         for (JavaExpression expr : paramsAsLocals) {
-          sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
+          if (!sideEffectsOnlyExpressions.contains(expr)) {
+            sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
+          }
         }
       } else {
+        // If the invoked method is annotated with @SideEffectsOnly,
+        // add annotation values to seOnlyIncorrectExprs
+        // that are not present in sideEffectsOnlyExpressions.
         ExecutableElement sideEffectsOnlyValueElement =
             TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
         List<String> sideEffectsOnlyExpressionStrings =
