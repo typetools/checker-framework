@@ -2637,19 +2637,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           .tsym
           .getTypeParameters()
           .nonEmpty()) {
-        Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-        if (ctx != null) {
-          AnnotatedTypeMirror ctxtype = ctx.second;
+        TreePath p = getPath(newClassTree);
+        AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+        if (ctxtype != null) {
           fromNewClassContextHelper(type, ctxtype);
         } else {
-          TreePath p = getPath(newClassTree);
-          AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-          if (ctxtype != null) {
-            fromNewClassContextHelper(type, ctxtype);
-          } else {
-            // give up trying and set to raw.
-            type.setIsUnderlyingTypeRaw();
-          }
+          // give up trying and set to raw.
+          type.setIsUnderlyingTypeRaw();
         }
       }
       AnnotatedDeclaredType fromTypeTree =
@@ -4998,7 +4992,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the first TypeVariable in {@code collection} that does not lexically contain any other
-   * type in the collection.
+   * type in the collection. Or if all the TypeVariables contain another, then it returns the first
+   * TypeVariable in {@code collection}.
    *
    * @param collection a collection of type variables
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
@@ -5007,7 +5002,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   @SuppressWarnings("interning:not.interned") // must be the same object from collection
   private AnnotatedTypeVariable doesNotContainOthers(
       Collection<? extends AnnotatedTypeVariable> collection) {
+    AnnotatedTypeVariable first = null;
     for (AnnotatedTypeVariable candidate : collection) {
+      if (first == null) {
+        first = candidate;
+      }
       boolean doesNotContain = true;
       for (AnnotatedTypeVariable other : collection) {
         if (candidate != other && captureScanner.visit(candidate, other.getUnderlyingType())) {
@@ -5019,7 +5018,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return candidate;
       }
     }
-    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+    return first;
   }
 
   /**
