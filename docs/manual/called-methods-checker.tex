@@ -7,11 +7,9 @@ of the form ``call method A before method B''. For the purpose of this
 checker, a method has ``definitely been called'' if it is \emph{invoked}:
 a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
-The checker also assumes that the program is free of null-pointer dereferences:
-for example, a method that is called on an object that is \<null> at run time
-is considered to have been invoked.
-(You can verify that all pointer dereferences are safe
-by running the Nullness Checker (Section~\ref{nullness-checker}).)
+The checker also assumes that the program is free of null-pointer dereferences.
+You can verify that all pointer dereferences are safe
+by running the Nullness Checker (Section~\ref{nullness-checker}).
 
 The Called Methods Checker provides built-in support for one such property:
 that clients of the builder pattern for object
