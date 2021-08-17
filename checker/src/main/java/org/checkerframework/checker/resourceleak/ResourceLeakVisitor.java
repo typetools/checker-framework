@@ -100,22 +100,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
         annotation, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
       return;
     }
-    // This method might be a destructor that is responsible for resolving the must-call
-    // obligations of one or more owning fields of the containing class.
-    ExecutableElement elt = TreeUtils.elementFromDeclaration(methodTree);
-    TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
-    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotationMirror mcAnno =
-        mustCallAnnotatedTypeFactory
-            .getAnnotatedType(containingClass)
-            .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
-    List<String> mcValues =
-        AnnotationUtils.getElementValueArray(
-            mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
-    String methodName = elt.getSimpleName().toString();
-    if (!mcValues.contains(methodName)) {
-      // Not a destructor, just a method with an ECM annotation. No further checking to do.
+    if (!isMustCallMethod(methodTree)) {
+      // In this case, the method has an EnsuresCalledMethods annotation but is not a destructor,
+      // so no further checking is required.
       return;
     }
     CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(methodTree);
@@ -144,6 +131,29 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             annotation);
       }
     }
+  }
+
+  /**
+   * Returns true iff the {@code MustCall} annotation of the class that encloses the methodTree
+   * names this method.
+   *
+   * @param methodTree the declaration of a method
+   * @return whether that method is one of the must-call methods for its enclosing class
+   */
+  private boolean isMustCallMethod(MethodTree methodTree) {
+    ExecutableElement elt = TreeUtils.elementFromDeclaration(methodTree);
+    TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
+    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
+        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    AnnotationMirror mcAnno =
+        mustCallAnnotatedTypeFactory
+            .getAnnotatedType(containingClass)
+            .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
+    List<String> mcValues =
+        AnnotationUtils.getElementValueArray(
+            mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
+    String methodName = elt.getSimpleName().toString();
+    return mcValues.contains(methodName);
   }
 
   /**
