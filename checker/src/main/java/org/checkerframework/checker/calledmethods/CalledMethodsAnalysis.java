@@ -35,7 +35,7 @@ public class CalledMethodsAnalysis extends CFAnalysis {
    * The fully-qualified names of the exception types that are ignored by this checker when
    * computing dataflow stores.
    */
-  private final Set<String> ignoredExceptionTypes = new HashSet<>();
+  protected final Set<String> ignoredExceptionTypes = new HashSet<>();
 
   /**
    * Ignore exceptional control flow due to ignored exception types.
