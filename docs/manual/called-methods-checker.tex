@@ -7,11 +7,10 @@ of the form ``call method A before method B''. For the purpose of this
 checker, a method has ``definitely been called'' if it is \emph{invoked}:
 a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
-The checker also ignores the possibility that an exception might occur as part
-of the call (even if the called method does not throw the exception):
-that is, it assumes that the receiver of every method invocation
-is non-null at each call-site, and that run-time errors (such as \<OutOfMemoryError>
-and the like) do not occur. (You can verify that every receiver is non-null
+The checker also ignores the possibility that a run-time exception might occur:
+in particular, it assumes that the program is free of null-pointer dereferences and
+that the JVM itself does not suffer from a run-time error (such as an \<OutOfMemoryError>
+or the like). (You can verify that all pointer dereferences are safe
 by running the Nullness Checker (Section~\ref{nullness-checker}).)
 
 The Called Methods Checker provides built-in support for one such property:
