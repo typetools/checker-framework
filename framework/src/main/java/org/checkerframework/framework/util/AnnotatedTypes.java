@@ -790,14 +790,13 @@ public class AnnotatedTypes {
    * @param atypeFactory the AnnotatedTypeFactory
    * @param type1 annotated type
    * @param type2 annotated type
-   * @param glbJava glb type
    * @return the annotated glb of type1 and type2
    */
   public static AnnotatedTypeMirror annotatedGLB(
-      AnnotatedTypeFactory atypeFactory,
-      AnnotatedTypeMirror type1,
-      AnnotatedTypeMirror type2,
-      TypeMirror glbJava) {
+      AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    TypeMirror glbJava =
+        TypesUtils.greatestLowerBound(
+            type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
     Types types = atypeFactory.types;
     if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
       return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
@@ -865,7 +864,7 @@ public class AnnotatedTypes {
    * underlying Java types are in a subtyping relationship.
    *
    * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
-   * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror, TypeMirror)}.
+   * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
    *
    * @param qualifierHierarchy QualifierHierarchy
    * @param subtype annotated type whose underlying type is a subtype of {@code supertype}
