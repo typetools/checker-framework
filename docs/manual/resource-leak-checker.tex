@@ -221,7 +221,12 @@ initialization (RAII)'' programming idiom.  Some
 destructor-like method \<d()> must satisfy the field's must-call obligation
 (and this fact must be expressed via a \<@EnsuresCalledMethods> annotation on \<d()>),
 and the enclosing class must have a \<@MustCall("d")> obligation to
-ensure the destructor is called.
+ensure the destructor is called. In addition to the \<@EnsuresCalledMethods> annotation,
+which guarantees that the field(s) it references have their must-call obligations satisfied
+on non-exceptional paths, the Resource Leak Checker requires those fields to have their must-call
+obligations satisfied on all paths in (only) the destructor, and will issue a \<destructor.exceptional.postcondition>
+error if they are not satisfied. Resolve this error by ensuring that the required methods are called
+on all exceptional paths.
 
 \textbf{Non-final, non-static owning fields} usually require one or more \<@CreatesMustCallFor> annotations
 when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
