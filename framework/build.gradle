@@ -25,6 +25,9 @@ def versions = [
         lombok          : "1.18.20",
 ]
 
+configurations {
+  implementation.extendsFrom(annotatedGuava)
+}
 
 dependencies {
     api project(':javacutil')
@@ -42,17 +45,7 @@ dependencies {
     // See the comment in ../build.gradle in the shadowJar block.
     implementation 'org.plumelib:plume-util:1.5.8'
     implementation 'org.plumelib:reflection-util:1.0.4'
-    implementation 'io.github.classgraph:classgraph:4.8.110'
-
-    // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
-    // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile
-    // dependencies" section of https://mvnrepository.com/artifact/com.google.guava/guava/28.2-jre .
-    // (It isn't at https://mvnrepository.com/artifact/org.checkerframework.annotatedlib/guava/28.2-jre, which is the bug.)
-    implementation 'com.google.errorprone:error_prone_annotations:2.6.0'
-    implementation ('org.checkerframework.annotatedlib:guava:30.1.1-jre') {
-        // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
-        exclude group: 'org.checkerframework'
-    }
+    implementation 'io.github.classgraph:classgraph:4.8.113'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')

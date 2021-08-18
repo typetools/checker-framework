@@ -19,14 +19,18 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * type. For example,
  *
  * <pre>
- * {@code Map<T, Object> map = ...;}
- * {@code <T> T method(T param) { }
- *   if (map.contains(param) {
  *     {@code @NonNull Object o = map.get(param);}
+ * </pre>
+ *
+ * <pre><code>
+ * Map&lt;T, Object&gt; map = ...;
+ * &lt;T&gt; T method(T param) {
+ *   if (map.contains(param)) {
+ *    &nbsp;@NonNull Object o = map.get(param);
  *     return param;
  *   }
  * }
- * }</pre>
+ * </code></pre>
  *
  * Inside the if statement, {@code param} is a key for "map". This would normally be represented as
  * {@code @KeyFor("map") T}, but this is not a subtype of {@code T}, so the type cannot be refined.

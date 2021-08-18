@@ -129,12 +129,14 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsPlume;
 import scenelib.annotations.el.AMethod;
 import scenelib.annotations.el.ATypeElement;
@@ -325,6 +327,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Map keys are canonical names of aliased annotations. */
   private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
+  /**
+   * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
+   */
+  private SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
+      new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
+
+  /**
+   * Initializes all fields of {@code type}.
+   *
+   * @param type annotated type mirror
+   */
+  public void initializeAtm(AnnotatedTypeMirror type) {
+    atmInitializer.visit(type);
+  }
 
   /**
    * Information about one annotation alias.
@@ -415,7 +431,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Which whole-program inference output format to use, if doing whole-program inference. This
    * variable would be final, but it is not set unless WPI is enabled.
    */
-  protected WholeProgramInference.OutputFormat wpiOutputFormat;
+  public WholeProgramInference.OutputFormat wpiOutputFormat;
 
   /**
    * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used to
@@ -2218,8 +2234,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedExecutableType memberTypeWithoutOverrides =
         getAnnotatedType(methodElt); // get unsubstituted type
     AnnotatedExecutableType memberTypeWithOverrides =
-        (AnnotatedExecutableType)
-            applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+        applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+    memberTypeWithOverrides = applyRecordTypesToAccessors(methodElt, memberTypeWithOverrides);
     methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
 
     AnnotatedExecutableType methodType =
@@ -2326,20 +2342,40 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param memberType the type of {@code member}
    * @return {@code memberType}, adjusted according to fake overrides
    */
-  private AnnotatedTypeMirror applyFakeOverrides(
-      AnnotatedTypeMirror receiverType, Element member, AnnotatedTypeMirror memberType) {
+  private AnnotatedExecutableType applyFakeOverrides(
+      AnnotatedTypeMirror receiverType, Element member, AnnotatedExecutableType memberType) {
     // Currently, handle only methods, not fields.  TODO: Handle fields.
     if (memberType.getKind() != TypeKind.EXECUTABLE) {
       return memberType;
     }
 
     AnnotationFileElementTypes afet = stubTypes;
-    AnnotatedExecutableType methodType =
-        (AnnotatedExecutableType) afet.getFakeOverride(member, receiverType);
+    AnnotatedExecutableType methodType = afet.getFakeOverride(member, receiverType);
     if (methodType == null) {
-      methodType = (AnnotatedExecutableType) memberType;
+      methodType = memberType;
     }
     return methodType;
+  }
+
+  /**
+   * Given a method, checks if there is: a record component with the same name AND the record
+   * component has an annotation AND the method has no-arguments. If so, replaces the annotations on
+   * the method return type with those from the record type in the same hierarchy.
+   *
+   * @param member a method or constructor
+   * @param memberType the type of the method/constructor; side-effected by this method
+   * @return {@code memberType} with annotations replaced if applicable
+   */
+  private AnnotatedExecutableType applyRecordTypesToAccessors(
+      ExecutableElement member, AnnotatedExecutableType memberType) {
+    if (memberType.getKind() != TypeKind.EXECUTABLE) {
+      throw new BugInCF(
+          "member %s has type %s of kind %s", member, memberType, memberType.getKind());
+    }
+
+    stubTypes.injectRecordComponentType(types, member, memberType);
+
+    return memberType;
   }
 
   /**
@@ -2537,6 +2573,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
     }
 
+    stubTypes.injectRecordComponentType(types, ctor, con);
+
     return new ParameterizedExecutableType(con, typeargs);
   }
 
@@ -2599,19 +2637,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           .tsym
           .getTypeParameters()
           .nonEmpty()) {
-        Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-        if (ctx != null) {
-          AnnotatedTypeMirror ctxtype = ctx.second;
+        TreePath p = getPath(newClassTree);
+        AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+        if (ctxtype != null) {
           fromNewClassContextHelper(type, ctxtype);
         } else {
-          TreePath p = getPath(newClassTree);
-          AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-          if (ctxtype != null) {
-            fromNewClassContextHelper(type, ctxtype);
-          } else {
-            // give up trying and set to raw.
-            type.setIsUnderlyingTypeRaw();
-          }
+          // give up trying and set to raw.
+          type.setIsUnderlyingTypeRaw();
         }
       }
       AnnotatedDeclaredType fromTypeTree =
@@ -3421,8 +3453,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Tree fromElt;
     // Prevent calling declarationFor on elements we know we don't have the tree for.
 
-    switch (elt.getKind()) {
-      case CLASS:
+    switch (ElementUtils.getKindRecordAsClass(elt)) {
+      case CLASS: // Including RECORD
       case ENUM:
       case INTERFACE:
       case ANNOTATION_TYPE:
@@ -4960,7 +4992,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the first TypeVariable in {@code collection} that does not lexically contain any other
-   * type in the collection.
+   * type in the collection. Or if all the TypeVariables contain another, then it returns the first
+   * TypeVariable in {@code collection}.
    *
    * @param collection a collection of type variables
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
@@ -4969,7 +5002,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   @SuppressWarnings("interning:not.interned") // must be the same object from collection
   private AnnotatedTypeVariable doesNotContainOthers(
       Collection<? extends AnnotatedTypeVariable> collection) {
+    AnnotatedTypeVariable first = null;
     for (AnnotatedTypeVariable candidate : collection) {
+      if (first == null) {
+        first = candidate;
+      }
       boolean doesNotContain = true;
       for (AnnotatedTypeVariable other : collection) {
         if (candidate != other && captureScanner.visit(candidate, other.getUnderlyingType())) {
@@ -4981,7 +5018,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return candidate;
       }
     }
-    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+    return first;
   }
 
   /**
@@ -5410,5 +5447,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       throw new BugInCF("Not a contract list annotation: " + contractListAnno);
     }
+  }
+
+  /**
+   * Returns true if the type is immutable. Subclasses can override this method to add types that
+   * are mutable, but the annotated type of an object is immutable.
+   *
+   * @param type type to test.
+   * @return true if the type is immutable
+   */
+  public boolean isImmutable(TypeMirror type) {
+    if (type.getKind().isPrimitive()) {
+      return true;
+    }
+    return ImmutableTypes.isImmutable(TypeAnnotationUtils.unannotatedType(type).toString());
   }
 }

@@ -25,6 +25,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -234,13 +235,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // TODO: Probably move some part of this into the AnnotatedTypeFactory.
 
-    // This code only handles fields of "this", for now.  In the future, extend it to other
-    // expressions.
+    // This code handles fields of "this" and method parameters (including the receiver parameter
+    // "this"), for now.  In the future, extend it to other expressions.
     TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
     ThisReference thisReference = new ThisReference(containingClass.asType());
     ClassName classNameReceiver = new ClassName(containingClass.asType());
+    // Fields of "this":
     for (VariableElement fieldElement :
         ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
+      if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF
+          && containingClass.getNestingKind().isNested()) {
+        // Don't infer facts about fields of inner classes, because IndexFileWriter
+        // places the annotations incorrectly on the class declarations.
+        continue;
+      }
       FieldAccess fa =
           new FieldAccess(
               (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),
@@ -254,14 +262,86 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, fieldDeclType);
         atypeFactory.wpiAdjustForUpdateNonField(inferredType);
       } else {
-        // This field is not in the store. Add its declared type.
-        inferredType = atypeFactory.getAnnotatedType(fieldElement);
+        // This field is not in the store. Use the declared type.
+        inferredType = fieldDeclType;
       }
       T preOrPostConditionAnnos =
-          storage.getPreOrPostconditionsForField(preOrPost, methodElt, fieldElement, atypeFactory);
+          storage.getPreOrPostconditions(
+              preOrPost, methodElt, fa.toString(), fieldDeclType, atypeFactory);
+      if (preOrPostConditionAnnos == null) {
+        continue;
+      }
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
           preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
+    }
+    // Method parameters (other than the receiver parameter "this"):
+    // This loop is 1-indexed to match the syntax used in annotation arguments.
+    for (int index = 1; index <= methodElt.getParameters().size(); index++) {
+      VariableElement paramElt = methodElt.getParameters().get(index - 1);
+
+      // Do not infer information about non-effectively-final method parameters, to avoid
+      // spurious flowexpr.parameter.not.final warnings.
+      if (!ElementUtils.isEffectivelyFinal(paramElt)) {
+        continue;
+      }
+      LocalVariable param = new LocalVariable(paramElt);
+      CFAbstractValue<?> v = store.getValue(param);
+      AnnotatedTypeMirror declType = atypeFactory.getAnnotatedType(paramElt);
+      AnnotatedTypeMirror inferredType;
+      if (v != null) {
+        // This parameter is in the store.
+        inferredType = convertCFAbstractValueToAnnotatedTypeMirror(v, declType);
+        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+      } else {
+        // The parameter is not in the store, so don't attempt to create a postcondition for it,
+        // since anything other than its default type would not be verifiable. (Only postconditions
+        // are supported for parameters.)
+        continue;
+      }
+      T preOrPostConditionAnnos =
+          storage.getPreOrPostconditions(preOrPost, methodElt, "#" + index, declType, atypeFactory);
+      if (preOrPostConditionAnnos != null) {
+        String file = storage.getFileForElement(methodElt);
+        updateAnnotationSet(
+            preOrPostConditionAnnos,
+            TypeUseLocation.PARAMETER,
+            inferredType,
+            declType,
+            file,
+            false);
+      }
+    }
+    // Receiver parameter ("this"):
+    if (!ElementUtils.isStatic(methodElt)) { // Static methods do not have a receiver.
+      CFAbstractValue<?> v = store.getValue(thisReference);
+      if (v != null) {
+        // This parameter is in the store.
+        AnnotatedTypeMirror declaredType =
+            atypeFactory.getAnnotatedType(methodElt).getReceiverType();
+        if (declaredType == null) {
+          // declaredType is null when the method being analyzed is a constructor (which doesn't
+          // have a receiver).
+          return;
+        }
+        AnnotatedTypeMirror inferredType =
+            AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atypeFactory, false);
+        inferredType.replaceAnnotations(v.getAnnotations());
+        atypeFactory.wpiAdjustForUpdateNonField(inferredType);
+        T preOrPostConditionAnnos =
+            storage.getPreOrPostconditions(
+                preOrPost, methodElt, "this", declaredType, atypeFactory);
+        if (preOrPostConditionAnnos != null) {
+          String file = storage.getFileForElement(methodElt);
+          updateAnnotationSet(
+              preOrPostConditionAnnos,
+              TypeUseLocation.PARAMETER,
+              inferredType,
+              declaredType,
+              file,
+              false);
+        }
+      }
     }
   }
 
@@ -343,7 +423,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   @Override
-  public void updateFromFieldAssignment(Node lhs, Node rhs, ClassTree classTree) {
+  public void updateFromFieldAssignment(Node lhs, Node rhs) {
 
     Element element;
     String fieldName;
