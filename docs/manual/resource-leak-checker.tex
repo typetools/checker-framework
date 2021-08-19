@@ -381,6 +381,42 @@ methods (including \<close()>) do not appear in the \<@CalledMethods> type quali
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
 
+\sectionAndLabel{Ignored exception types}{resource-leak-ignored-exceptions}
+
+The Resource Leak Checker checks that an element's must-call obligations are fulfilled
+when that element goes out of scope. When an element goes out of scope can depend not only
+on a program element's lexical scope, but also on whether an exception is thrown. Consider
+the following method:
+
+\begin{verbatim}
+  void foo() {
+    Socket s = ...;
+    bar();
+    s.close();
+  }
+\end{verbatim}
+
+Lexically, \<s> goes out of scope at the end of \<foo>, after the call to \<close()>.
+However, what if \<bar()> can throw an exception? Such an exception is not caught,
+returning control to the caller of \<foo>, and the only reference to <s> is lost, which
+could lead to a resource leak. The Resource Leak Checker would therefore warn about this
+code if \<bar> is declared to throw an exception.
+
+Some exceptions can occur at any point in the program. For example, the JVM can
+throw an \<OutOfMemoryError> on any allocation. It is not feasible (or useful) for
+the Resource Leak Checker to reason about these kind of exceptions, and so possible
+exits due to them (and other run-time errors) are ignored.
+
+The Resource Leak Checker also ignores some other exception types when computing when
+an element will go out of scope, because programs can be verified to be free of them
+using other checkers. In particular, the Resource Leak Checker ignores \<NullPointerException>s
+(use the Nullness Checker (Section~\ref{nullness-checker})) and
+\<ArrayIndexOutOfBoundsException>s and \<NegativeArraySizeException>s (use the Index
+Checker (Section~\ref{index-checker})). Other exception types may be added to this
+list in the future (please let us know if there is a type that you think should
+be ignored by filing an issue listing both the exception type and the alternative
+verification tool).
+
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
 % LocalWords:  Partitioner CalledMethods AnoLightweightOwnership NotOwning
