@@ -405,8 +405,7 @@ List<String> getJavaFilesToFormat(projectName) {
                 && !details.path.contains("calledmethods-delomboked")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
-                && (isJava16 || !details.path.contains("nullness-records"))
-                && (isJava16 || !details.path.contains("stubparser-records"))
+                && (isJava16 || !details.path.contains("-records"))
                 && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
