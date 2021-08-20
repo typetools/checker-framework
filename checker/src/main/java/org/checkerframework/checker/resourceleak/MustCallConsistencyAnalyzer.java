@@ -534,7 +534,11 @@ class MustCallConsistencyAnalyzer {
     }
 
     String missingStrs = StringsPlume.join(", ", missing);
-    checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
+    checker.reportError(
+        node.getTree(),
+        "reset.not.owning",
+        node.getTarget().getMethod().getSimpleName().toString(),
+        missingStrs);
   }
 
   /**
@@ -1251,6 +1255,7 @@ class MustCallConsistencyAnalyzer {
       checker.reportError(
           enclosingMethod,
           "missing.creates.mustcall.for",
+          enclosingMethodElt.getSimpleName().toString(),
           receiverString,
           ((FieldAccessNode) lhs).getFieldName());
       return;
@@ -1276,6 +1281,7 @@ class MustCallConsistencyAnalyzer {
     checker.reportError(
         enclosingMethod,
         "incompatible.creates.mustcall.for",
+        enclosingMethodElt.getSimpleName().toString(),
         receiverString,
         ((FieldAccessNode) lhs).getFieldName(),
         String.join(", ", checked));
