@@ -1,8 +1,6 @@
 // Test case affected by eisop Issue 22:
 // https://github.com/eisop/checker-framework/issues/22
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.common.value.qual.MinLen;
 
 import java.util.Arrays;
