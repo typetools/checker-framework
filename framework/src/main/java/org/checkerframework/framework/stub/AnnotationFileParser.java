@@ -233,7 +233,7 @@ public class AnnotationFileParser {
      * The annotations on the declared package of the complation unit being processed. Contains null
      * if not processing a compilation unit or if the file has no declared package.
      */
-    @Nullable List<AnnotationExpr> packageAnnos;
+    private @Nullable List<AnnotationExpr> packageAnnos;
 
     // The following variables are stored in the AnnotationFileParser because otherwise they would
     // need to be passed through everywhere, which would be verbose.
@@ -250,7 +250,7 @@ public class AnnotationFileParser {
      * Contains the annotations of the file currently being processed, or null if not currently
      * processing a file. The {@code process*} methods side-effect this data structure.
      */
-    @Nullable AnnotationFileAnnotations annotationFileAnnos;
+    private @Nullable AnnotationFileAnnotations annotationFileAnnos;
 
     /** The line separator. */
     private static final String LINE_SEPARATOR = System.lineSeparator().intern();
@@ -684,13 +684,13 @@ public class AnnotationFileParser {
      */
     private void processCompilationUnit(CompilationUnit cu) {
 
-        if (!cu.getPackageDeclaration().isPresent()) {
-            packageAnnos = null;
-            typeBeingParsed = new FqName(null, null);
-        } else {
+        if (cu.getPackageDeclaration().isPresent()) {
             PackageDeclaration pDecl = cu.getPackageDeclaration().get();
             packageAnnos = pDecl.getAnnotations();
             processPackage(pDecl);
+        } else {
+            packageAnnos = null;
+            typeBeingParsed = new FqName(null, null);
         }
 
         if (fileType.isStub()) {
@@ -1235,7 +1235,7 @@ public class AnnotationFileParser {
         */
         // Clear existing annotations, which only makes a difference for
         // type variables, but doesn't hurt in other cases.
-        atype.clearPrimaryAnnotations();
+        atype.clearAnnotations();
     }
 
     /**

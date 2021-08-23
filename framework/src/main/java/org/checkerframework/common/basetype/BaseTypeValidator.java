@@ -299,7 +299,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                     atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
 
             AnnotatedDeclaredType elemType = type.deepCopy();
-            elemType.clearPrimaryAnnotations();
+            elemType.clearAnnotations();
             elemType.addAnnotations(bounds);
 
             if (!visitor.isValidUse(elemType, type, tree)) {

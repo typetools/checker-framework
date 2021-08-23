@@ -261,8 +261,6 @@ public abstract class AnnotatedTypeMirror {
      *
      * <p>It doesn't account for annotations in deep types (type arguments, array components, etc).
      *
-     * <p>If there is only one hierarchy, you can use {@link #getAnnotation()} instead.
-     *
      * <p>May return null if the receiver is a type variable or a wildcard without a primary
      * annotation, or if the receiver is not yet fully annotated.
      *
@@ -314,8 +312,7 @@ public abstract class AnnotatedTypeMirror {
      * arguments, array components, etc).
      *
      * <p>To get the single annotation in a particular hierarchy, use {@link
-     * #getAnnotationInHierarchy}. If there is only one hierarchy, you can use {@link
-     * #getAnnotation}.
+     * #getAnnotationInHierarchy}.
      *
      * @return a unmodifiable set of the annotations on this
      */
@@ -335,28 +332,6 @@ public abstract class AnnotatedTypeMirror {
      */
     protected final Set<AnnotationMirror> getAnnotationsField() {
         return annotations;
-    }
-
-    /**
-     * Returns the single annotation on this type. It does not include annotations in deep types
-     * (type arguments, array components, etc).
-     *
-     * <p>This method requires that there is only a single hierarchy. In that case, it is equivalent
-     * to {@link #getAnnotationInHierarchy}.
-     *
-     * @see #getAnnotations
-     * @return the annotation on this, or null if none (which can only happen if {@code this} is a
-     *     type variable or wildcard)
-     */
-    public final @Nullable AnnotationMirror getAnnotation() {
-        if (annotations.isEmpty()) {
-            // This AnnotatedTypeMirror must be a type variable or wildcard.
-            return null;
-        }
-        if (annotations.size() != 1) {
-            throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
-        }
-        return annotations.iterator().next();
     }
 
     /**
@@ -739,7 +714,7 @@ public abstract class AnnotatedTypeMirror {
      * it is generally better to use {@link #removeAnnotation(AnnotationMirror)} and similar
      * methods.
      */
-    public void clearPrimaryAnnotations() {
+    public void clearAnnotations() {
         annotations.clear();
     }
 
@@ -1637,12 +1612,11 @@ public abstract class AnnotatedTypeMirror {
                 }
 
                 // Note:
-                // if the lower bound is a type variable
-                // then when we place annotations on the primary annotation
-                //   this will actually cause the type variable to be exact and propagate the
-                //   primary annotation to the type variable because primary annotations overwrite
-                //   the upper and lower bounds of type variables when getUpperBound/getLowerBound
-                //   is called
+                // if the lower bound is a type variable then when we place annotations on the
+                // primary annotation this will actually cause the type variable to be exact and
+                // propagate the primary annotation to the type variable because primary annotations
+                // overwrite the upper and lower bounds of type variables when
+                // getUpperBound/getLowerBound is called.
                 if (lowerBound != null) {
                     lowerBound.replaceAnnotations(newAnnos);
                 }

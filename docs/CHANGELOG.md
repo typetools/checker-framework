@@ -4,6 +4,13 @@ Version 3.17.0-eisop1 (August ?, 2021)
 The new `-AnoJreVersionCheck` command-line argument can be used to not get
 a warning about running the Checker Framework on an unsupported JRE version.
 
+**Implementation details:**
+
+Changes to `AnnotatedTypeMirror`:
+ * Rename `clearPrimaryAnnotations()` back to `clearAnnotations()` to be consistent
+   with other method names. Undoes change in typetools 3.16.0.
+ * Remove `getAnnotation()` method. `getAnnotationInHierarchy` should be used instead.
+   Undoes change in typetools #3691.
 
 Version 3.17.0 (August 3, 2021)
 -------------------------------

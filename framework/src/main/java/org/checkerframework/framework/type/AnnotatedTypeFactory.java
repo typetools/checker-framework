@@ -1706,7 +1706,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<AnnotationMirror> annotations = type.getEffectiveAnnotations();
         for (AnnotatedTypeMirror supertype : supertypes) {
             if (!annotations.equals(supertype.getEffectiveAnnotations())) {
-                supertype.clearPrimaryAnnotations();
+                supertype.clearAnnotations();
                 // TODO: is this correct for type variables and wildcards?
                 supertype.addAnnotations(annotations);
             }
@@ -2248,7 +2248,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             if (ignoreUninferredTypeArguments) {
                 // Remove the annotations so that default annotations are used instead.
                 // (See call to addDefaultAnnotations below.)
-                t.clearPrimaryAnnotations();
+                t.clearAnnotations();
             } else {
                 t.replaceAnnotations(wildcard.getExtendsBound().getAnnotations());
             }
