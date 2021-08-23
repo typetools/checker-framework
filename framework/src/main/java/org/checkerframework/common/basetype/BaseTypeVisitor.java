@@ -97,7 +97,6 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
-import org.checkerframework.dataflow.util.SideEffectsOnlyAnnoChecker;
 import org.checkerframework.framework.ajava.AnnotationEqualityVisitor;
 import org.checkerframework.framework.ajava.ExpectedTreesVisitor;
 import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
@@ -1072,7 +1071,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If the method {@param node} is annotated with {@link SideEffectsOnly}, checks that the method
+   * If the method {@code node} is annotated with {@link SideEffectsOnly}, checks that the method
    * side-effects a subset of the expressions specified as annotation arguments/elements to {@link
    * SideEffectsOnly}.
    *
