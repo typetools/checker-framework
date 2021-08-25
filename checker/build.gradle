@@ -19,10 +19,10 @@ sourcesJar {
 }
 
 configurations {
-  fatJar {
-    canBeConsumed = true
-    canBeResolved = false
-  }
+    fatJar {
+        canBeConsumed = true
+        canBeResolved = false
+    }
 }
 
 dependencies {
