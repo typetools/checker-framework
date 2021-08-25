@@ -82,7 +82,7 @@ task cloneTypetoolsJdk() {
             exec {
                 workingDir "${annotatedJdkHome}/../"
                 executable 'git'
-                args = ['clone', '-q', '--depth', '1', 'https://github.com/typetools/jdk.git', 'jdk']
+                args = ['clone', '-q', '--depth', '1', 'https://github.com/eisop/jdk.git', 'jdk']
             }
         }
     }
