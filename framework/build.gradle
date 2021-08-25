@@ -8,9 +8,21 @@ ext {
 
 sourceSets {
     main {
+        java {
+            // NO-AFU
+            exclude '**/org/checkerframework/common/wholeprograminference/**'
+            exclude '**/org/checkerframework/framework/stub/AddAnnotatedFor.java'
+            exclude '**/org/checkerframework/framework/stub/ToIndexFileConverter.java'
+        }
+
         resources {
             // Stub files, message.properties, etc.
             srcDirs += ['src/main/java', "${buildDir}/generated/resources"]
+
+            // NO-AFU
+            exclude '**/org/checkerframework/common/wholeprograminference/**'
+            exclude '**/org/checkerframework/framework/stub/AddAnnotatedFor.java'
+            exclude '**/org/checkerframework/framework/stub/ToIndexFileConverter.java'
         }
     }
     testannotations
@@ -31,11 +43,16 @@ dependencies {
     api project(':javacutil')
     api project(':dataflow')
     api files("${stubparserJar}")
+
+    // NO-AFU
+    /*
     // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
     api('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
+    */
+
     api project(':checker-qual')
 
     // External dependencies:

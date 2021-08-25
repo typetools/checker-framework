@@ -29,11 +29,15 @@ dependencies {
     implementation project(':javacutil')
     implementation project(':dataflow')
     implementation project(':framework')
+
+    /* NO-AFU
     // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
     implementation('org.checkerframework:annotation-file-utilities:*') {
         exclude group: 'com.google.errorprone', module: 'javac'
     }
+    */
+
     implementation project(':checker-qual')
     implementation project(':checker-util')
 

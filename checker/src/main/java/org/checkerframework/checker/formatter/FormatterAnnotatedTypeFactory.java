@@ -13,7 +13,6 @@ import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
@@ -25,14 +24,16 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-
 import java.util.IllegalFormatException;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+
+/* NO-AFU
+   import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
+   import scenelib.annotations.Annotation;
+   import scenelib.annotations.el.AField;
+   import scenelib.annotations.el.AMethod;
+*/
 
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
@@ -84,12 +85,13 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new FormatterTreeAnnotator(this));
     }
 
-    /**
+    /* NO-AFU
      * {@inheritDoc}
      *
      * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
      * from its first argument.
      */
+    /* NO-AFU
     @Override
     public void prepareMethodForWriting(AMethod method) {
         if (hasFormatMethodAnno(method)) {
@@ -103,13 +105,15 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
     }
+    */
 
-    /**
+    /* NO-AFU
      * {@inheritDoc}
      *
      * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
      * from its first argument.
      */
+    /* NO-AFU
     @Override
     public void prepareMethodForWriting(
             WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
@@ -118,13 +122,15 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             atm.removeAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);
         }
     }
+    */
 
-    /**
+    /* NO-AFU
      * Returns true if the method has a {@code @FormatMethod} annotation.
      *
      * @param methodAnnos method annotations
      * @return true if the method has a {@code @FormatMethod} annotation
      */
+    /* NO-AFU
     private boolean hasFormatMethodAnno(AMethod methodAnnos) {
         for (Annotation anno : methodAnnos.tlAnnotationsHere) {
             String annoName = anno.def.name;
@@ -135,13 +141,15 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         return false;
     }
+    */
 
-    /**
+    /* NO-AFU
      * Returns true if the method has a {@code @FormatMethod} annotation.
      *
      * @param methodAnnos method annotations
      * @return true if the method has a {@code @FormatMethod} annotation
      */
+    /* NO-AFU
     private boolean hasFormatMethodAnno(
             WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
         Set<AnnotationMirror> declarationAnnos = methodAnnos.getDeclarationAnnotations();
@@ -151,6 +159,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 || AnnotationUtils.containsSameByName(
                         declarationAnnos, "com.google.errorprone.annotations.FormatMethod");
     }
+    */
 
     /** The tree annotator for the Format String Checker. */
     private class FormatterTreeAnnotator extends TreeAnnotator {

@@ -16,7 +16,6 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -32,6 +31,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+
+/* NO-AFU
+   import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+*/
 
 /**
  * Whenever a format method invocation is found in the syntax tree, checks are performed as
@@ -163,13 +166,15 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                 }
             }
 
-            // Support -Ainfer command-line argument.
-            WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-            if (wpi != null && forwardsArguments(node, enclosingMethod)) {
-                wpi.addMethodDeclarationAnnotation(
-                        TreeUtils.elementFromDeclaration(enclosingMethod),
-                        atypeFactory.FORMATMETHOD);
-            }
+            /* NO-AFU
+                   // Support -Ainfer command-line argument.
+                   WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+                   if (wpi != null && forwardsArguments(node, enclosingMethod)) {
+                       wpi.addMethodDeclarationAnnotation(
+                               TreeUtils.elementFromDeclaration(enclosingMethod),
+                               atypeFactory.FORMATMETHOD);
+                   }
+            */
         }
         return super.visitMethodInvocation(node, p);
     }

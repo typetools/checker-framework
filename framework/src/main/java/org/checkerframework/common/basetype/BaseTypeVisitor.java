@@ -50,8 +50,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.wholeprograminference.WholeProgramInference;
-import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -148,6 +146,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
+/* NO-AFU
+   import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+*/
+
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
  * invocation checking, and assignability checking.
@@ -237,8 +239,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** True if "-Ashowchecks" was passed on the command line. */
     private final boolean showchecks;
-    /** True if "-Ainfer" was passed on the command line. */
+
+    /* NO-AFU True if "-Ainfer" was passed on the command line. */
+    /* NO-AFU
     private final boolean infer;
+    */
+
     /** True if "-AsuggestPureMethods" or "-Ainfer" was passed on the command line. */
     private final boolean suggestPureMethods;
     /**
@@ -281,8 +287,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
         unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
         showchecks = checker.hasOption("showchecks");
-        infer = checker.hasOption("infer");
-        suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
+        /* NO-AFU
+               infer = checker.hasOption("infer");
+        */
+        suggestPureMethods = checker.hasOption("suggestPureMethods"); // NO-AFU || infer;
         checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
     }
 
@@ -977,20 +985,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checkContractsAtMethodDeclaration(
                     node, methodElement, formalParamNames, abstractMethod);
 
-            // Infer postconditions
-            if (atypeFactory.getWholeProgramInference() != null) {
-                assert ElementUtils.isElementFromSourceCode(methodElement);
+            /* NO-AFU
+                   // Infer postconditions
+                   if (atypeFactory.getWholeProgramInference() != null) {
+                       assert ElementUtils.isElementFromSourceCode(methodElement);
 
-                // TODO: Infer conditional postconditions too.
-                CFAbstractStore<?, ?> store = atypeFactory.getRegularExitStore(node);
-                // The store is null if the method has no normal exit, for example if its body is a
-                // throw statement.
-                if (store != null) {
-                    atypeFactory
-                            .getWholeProgramInference()
-                            .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
-                }
-            }
+                       // TODO: Infer conditional postconditions too.
+                       CFAbstractStore<?, ?> store = atypeFactory.getRegularExitStore(node);
+                       // The store is null if the method has no normal exit, for example if its body is a
+                       // throw statement.
+                       if (store != null) {
+                           atypeFactory
+                                   .getWholeProgramInference()
+                                   .updateContracts(Analysis.BeforeOrAfter.AFTER, methodElement, store);
+                       }
+                   }
+            */
 
             checkForPolymorphicQualifiers(node.getTypeParameters());
 
@@ -1057,31 +1067,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 additionalKinds.remove(Pure.Kind.DETERMINISTIC);
             }
             if (!additionalKinds.isEmpty()) {
-                if (infer) {
-                    if (inferPurity) {
-                        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-                        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
-                        if (additionalKinds.size() == 2) {
-                            wpi.addMethodDeclarationAnnotation(methodElt, PURE);
-                        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                            wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
-                        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-                            wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
-                        } else {
-                            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-                        }
-                    }
+                /* NO-AFU
+                              if (infer) {
+                                  if (inferPurity) {
+                                      WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+                                      ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
+                                      if (additionalKinds.size() == 2) {
+                                          wpi.addMethodDeclarationAnnotation(methodElt, PURE);
+                                      } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                                          wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
+                                      } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+                                          wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
+                                      } else {
+                                          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+                                      }
+                                  }
+                              } else {
+                */
+                if (additionalKinds.size() == 2) {
+                    checker.reportWarning(node, "purity.more.pure", node.getName());
+                } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                    checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
+                } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+                    checker.reportWarning(node, "purity.more.deterministic", node.getName());
                 } else {
-                    if (additionalKinds.size() == 2) {
-                        checker.reportWarning(node, "purity.more.pure", node.getName());
-                    } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                        checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
-                    } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-                        checker.reportWarning(node, "purity.more.deterministic", node.getName());
-                    } else {
-                        throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-                    }
+                    throw new BugInCF("Unexpected purity kind in " + additionalKinds);
                 }
+                // NO-AFU }
             }
         }
     }

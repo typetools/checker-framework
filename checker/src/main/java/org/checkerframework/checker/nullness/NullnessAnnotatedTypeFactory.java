@@ -16,24 +16,18 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -58,7 +52,6 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -75,7 +68,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -785,6 +777,7 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
+    /* NO-AFU
     // If
     //  1. rhs is @Nullable
     //  2. lhs is a field of this
@@ -853,30 +846,35 @@ public class NullnessAnnotatedTypeFactory
         return super.createRequiresOrEnsuresQualifier(
                 expression, qualifier, declaredType, preOrPost, preconds);
     }
+    */
 
-    /**
+    /* NO-AFU
      * Returns a {@code RequiresNonNull("...")} annotation for the given expression.
      *
      * @param expression an expression
      * @return a {@code RequiresNonNull("...")} annotation for the given expression
      */
+    /* NO-AFU
     private AnnotationMirror requiresNonNullAnno(String expression) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, RequiresNonNull.class);
         builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
         return am;
     }
+    */
 
-    /**
+    /* NO-AFU
      * Returns a {@code EnsuresNonNull("...")} annotation for the given expression.
      *
      * @param expression an expression
      * @return a {@code EnsuresNonNull("...")} annotation for the given expression
      */
+    /* NO-AFU
     private AnnotationMirror ensuresNonNullAnno(String expression) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresNonNull.class);
         builder.setValue("value", new String[] {expression});
         AnnotationMirror am = builder.build();
         return am;
     }
+    */
 }

@@ -26,8 +26,9 @@ ext {
 
     parentDir = file("${rootDir}/../").absolutePath
 
-    annotationTools = "${parentDir}/annotation-tools"
-    afu = "${annotationTools}/annotation-file-utilities"
+    // NO-AFU
+    // annotationTools = "${parentDir}/annotation-tools"
+    // afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.22.1.jar"
@@ -990,7 +991,8 @@ subprojects {
         tasks.create(name: 'inferenceTests', group: 'Verification') {
             description 'Run inference tests.'
             if (project.name.is('checker')) {
-                dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
+                // NO-AFU: Needs to depend on future AFU version of CF
+                // dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
             }
         }
 

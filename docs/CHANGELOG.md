@@ -4,6 +4,9 @@ Version 3.17.0-eisop1 (August ?, 2021)
 The new `-AnoJreVersionCheck` command-line argument can be used to not get
 a warning about running the Checker Framework on an unsupported JRE version.
 
+Temporarily remove support for "Whole Program Inference" - the -Ainfer option and
+related scripts.
+
 **Implementation details:**
 
 Changes to `AnnotatedTypeMirror`:
