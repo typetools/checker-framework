@@ -5,9 +5,9 @@ Version 3.18.0 (September 1, 2021)
 
 Java records are type-checked.  Thanks to Neil Brown.
 
-**Implementation details:**
 
 **Closed issues:**
+#4838, #4843, #4852, #4853, #4861, #4876, #4877, #4878, #4878, #4889, #4889.
 
 Version 3.17.0 (August 3, 2021)
 -------------------------------

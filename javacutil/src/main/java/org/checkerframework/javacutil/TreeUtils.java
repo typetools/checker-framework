@@ -114,6 +114,9 @@ public final class TreeUtils {
   /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
   private static final long Flags_RECORD = 2305843009213693952L;
 
+  /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
+  static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
+
   /**
    * Checks if the provided method is a constructor method or no.
    *
@@ -1234,15 +1237,15 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the given {@link MethodTree} is a canonical constructor (the constructor for a
-   * record where the parameters are implicitly declared and implicitly assigned to the record's
-   * fields). This may be an explicitly declared canonical constructor or an implicitly generated
-   * one.
+   * Returns true if the given {@link MethodTree} is a compact canonical constructor (the
+   * constructor for a record where the parameters are implicitly declared and implicitly assigned
+   * to the record's fields). This may be an explicitly declared compact canonical constructor or an
+   * implicitly generated one.
    *
-   * @param method a method tree that may be a canonical constructor
-   * @return true if the given method is a canonical constructor
+   * @param method a method tree that may be a compact canonical constructor
+   * @return true if the given method is a compact canonical constructor
    */
-  public static boolean isCanonicalRecordConstructor(final MethodTree method) {
+  public static boolean isCompactCanonicalRecordConstructor(final MethodTree method) {
     @Nullable Element e = elementFromTree(method);
     if (!(e instanceof Symbol)) {
       return false;
