@@ -24,8 +24,8 @@ alias create_upload_docker_image=' \
   mkdir -p dockerdir && \
   (cd dockerdir && \
   \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
-  docker build -t mdernst/$PROJECT-$OS-$JDKVER . && \
-  docker push mdernst/$PROJECT-$OS-$JDKVER) && \
+  docker build -t wmdietl/$PROJECT-$OS-$JDKVER . && \
+  docker push wmdietl/$PROJECT-$OS-$JDKVER) && \
   rm -rf dockerdir'
 
 export OS=ubuntu
@@ -57,6 +57,31 @@ export OS=ubuntu
 export JDKVER=jdk16-plus
 export PROJECT=cf
 create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk-latest
+export PROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk-latest-plus
+export PROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk-next
+export PROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk-next-plus
+export PROJECT=cf
+create_upload_docker_image
+
+
+Use numbered JDK releases for versions that should be supported longer term.
+jdk-latest is for the latest release and jdk-next is for pre-releases of
+the upcoming release.
 
 
 Cleanup:

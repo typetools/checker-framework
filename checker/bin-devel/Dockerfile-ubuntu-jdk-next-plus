@@ -1,0 +1,65 @@
+# Create a Docker image that is ready to run the full Checker Framework tests,
+# including building the manual and Javadoc, using the next upcoming JDK release,
+# currently JDK 17.
+
+# "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
+FROM ubuntu
+MAINTAINER Werner Dietl <wdietl@gmail.com>
+
+## Keep this file in sync with ../../docs/manual/troubleshooting.tex
+
+# According to
+# https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
+#  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
+#  * Do not run "apt-get upgrade"; instead get upstream to update.
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -y update \
+&& apt-get -y install \
+  ant \
+  cpp \
+  git \
+  gradle \
+  jq \
+  libcurl3-gnutls \
+  make \
+  maven \
+  mercurial \
+  python3-pip \
+  python3-requests \
+  unzip \
+  wget
+
+RUN wget https://download.java.net/java/GA/jdk17/0d483333a00540d886896bac774ff48b/35/GPL/openjdk-17_linux-x64_bin.tar.gz \
+&& tar xzvf openjdk-17_linux-x64_bin.tar.gz
+ENV JAVA_HOME=/jdk-17
+ENV PATH="/jdk-17/bin:$PATH"
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz \
+&& tar xzvf apache-maven-3.8.1-bin.tar.gz
+ENV PATH="/apache-maven-3.8.1/bin:$PATH"
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -y update \
+&& apt-get -y install \
+  devscripts \
+  dia \
+  hevea \
+  imagemagick \
+  latexmk \
+  librsvg2-bin \
+  pdf2svg \
+  rsync \
+  shellcheck \
+  texlive-font-utils \
+  texlive-fonts-recommended \
+  texlive-latex-base \
+  texlive-latex-extra \
+  texlive-latex-recommended
+
+RUN pip3 install black flake8 html5validator
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/*

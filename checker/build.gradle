@@ -360,7 +360,18 @@ task delombok {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
                 classpath: collection.asPath)
-        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+        if (isJava17) {
+            // TODO: Delombok crashes with Java 17 on uses of Singular, see
+            // https://github.com/projectlombok/lombok/issues/2940
+            ant.delombok(to: srcDelomboked, classpath: collection.asPath) {
+                ant.fileset(dir: srcJava) {
+                    include(name: '**/*.java')
+                    exclude(name: '**/LombokSingularExample.java')
+                }
+            }
+        } else {
+            ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+        }
     }
 }
 

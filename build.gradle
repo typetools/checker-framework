@@ -21,6 +21,7 @@ ext {
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
     isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
+    isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
 
     errorproneJavacVersion = '9+181-r4173-1'
 
@@ -593,7 +594,7 @@ task getCodeFormatScripts() {
         exec {
             workingDir "${formatScriptsHome}/../"
             executable 'git'
-            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/eisop-plume-lib/run-google-java-format.git', '.run-google-java-format']
         }
     }
 }
@@ -607,7 +608,7 @@ task getCodeFormatScriptsInGradle {
         if (! new File(formatScriptsHome).exists()) {
             // There is no support for the --depth argument:
             // https://github.com/ajoberstar/grgit/issues/155   https://bugs.eclipse.org/bugs/show_bug.cgi?id=475615
-            def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/plume-lib/run-google-java-format.git')
+            def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/eisop-plume-lib/run-google-java-format.git')
         } else {
             def rgjfGit = Grgit.open(dir: formatScriptsHome)
             rgjfGit.pull()
