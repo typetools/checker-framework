@@ -16,6 +16,13 @@ import java.util.Objects;
  */
 public class BitwiseAndNode extends BinaryOperationNode {
 
+    /**
+     * Constructs a {@link BitwiseAndNode}.
+     *
+     * @param tree the binary tree
+     * @param left the left operand
+     * @param right the right operand
+     */
     public BitwiseAndNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
         assert tree.getKind() == Tree.Kind.AND;

@@ -45,8 +45,11 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
      * For type systems with single top qualifiers, the sets will always contain
      * at most one element.
      */
+    /** Maps AST kind to the set of AnnotationMirrors that should be defaulted. */
     private final Map<Tree.Kind, Set<AnnotationMirror>> treeKinds;
+    /** Maps AST class to the set of AnnotationMirrors that should be defaulted. */
     private final Map<Class<?>, Set<AnnotationMirror>> treeClasses;
+    /** Maps String literal pattern to the set of AnnotationMirrors that should be defaulted. */
     private final IdentityHashMap<Pattern, Set<AnnotationMirror>> stringPatterns;
 
     protected final QualifierHierarchy qualHierarchy;
@@ -70,7 +73,11 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         literalKindToTreeKind.put(LiteralKind.STRING, Tree.Kind.STRING_LITERAL);
     }
 
-    /** Creates a {@link LiteralTreeAnnotator} for the given {@code atypeFactory}. */
+    /**
+     * Creates a {@link LiteralTreeAnnotator} for the given {@code atypeFactory}.
+     *
+     * @param atypeFactory the type factory to make an annotator for
+     */
     public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
         this.treeKinds = new EnumMap<>(Tree.Kind.class);

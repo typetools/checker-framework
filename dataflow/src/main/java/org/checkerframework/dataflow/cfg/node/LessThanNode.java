@@ -18,6 +18,13 @@ import java.util.Objects;
  */
 public class LessThanNode extends BinaryOperationNode {
 
+    /**
+     * Constructs a {@link LessThanNode}.
+     *
+     * @param tree the binary tree
+     * @param left the left operand
+     * @param right the right operand
+     */
     public LessThanNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
         assert tree.getKind() == Tree.Kind.LESS_THAN;

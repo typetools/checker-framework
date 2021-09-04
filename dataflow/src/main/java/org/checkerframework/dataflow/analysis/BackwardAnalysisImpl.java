@@ -20,6 +20,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * An implementation of a backward analysis to solve a org.checkerframework.dataflow problem given a
@@ -268,26 +271,23 @@ public class BackwardAnalysisImpl<
     protected void addStoreAfter(Block pred, @Nullable Node node, S s, boolean addBlockToWorklist) {
         // If the block pred is an exception block, decide whether the block of passing node is an
         // exceptional successor of the block pred
-        if (pred instanceof ExceptionBlock
-                && ((ExceptionBlock) pred).getSuccessor() != null
-                && node != null) {
-            @Nullable Block succBlock = ((ExceptionBlock) pred).getSuccessor();
-            @Nullable Block block = node.getBlock();
-            if (succBlock != null && block != null && succBlock.getUid() == block.getUid()) {
-                // If the block of passing node is an exceptional successor of Block pred, propagate
-                // store to the exceptionStores. Currently it doesn't track the label of an
-                // exceptional edge from exception block to its exceptional successors in backward
-                // direction. Instead, all exception stores of exceptional successors of an
-                // exception block will merge to one exception store at the exception block
-                ExceptionBlock ebPred = (ExceptionBlock) pred;
-                S exceptionStore = exceptionStores.get(ebPred);
-                S newExceptionStore =
-                        (exceptionStore != null) ? exceptionStore.leastUpperBound(s) : s;
-                if (!newExceptionStore.equals(exceptionStore)) {
-                    exceptionStores.put(ebPred, newExceptionStore);
-                    inputs.put(ebPred, new TransferInput<V, S>(node, this, newExceptionStore));
-                    addBlockToWorklist = true;
-                }
+        TypeMirror excSuccType = getSuccExceptionType(pred, node);
+        if (excSuccType != null) {
+            if (isIgnoredExceptionType(excSuccType)) {
+                return;
+            }
+            // If the block of passing node is an exceptional successor of Block pred, propagate
+            // store to the exceptionStores. Currently it doesn't track the label of an
+            // exceptional edge from exception block to its exceptional successors in backward
+            // direction. Instead, all exception stores of exceptional successors of an
+            // exception block will merge to one exception store at the exception block
+            ExceptionBlock ebPred = (ExceptionBlock) pred;
+            S exceptionStore = exceptionStores.get(ebPred);
+            S newExceptionStore = (exceptionStore != null) ? exceptionStore.leastUpperBound(s) : s;
+            if (!newExceptionStore.equals(exceptionStore)) {
+                exceptionStores.put(ebPred, newExceptionStore);
+                inputs.put(ebPred, new TransferInput<V, S>(node, this, newExceptionStore));
+                addBlockToWorklist = true;
             }
         } else {
             S predOutStore = getStoreAfter(pred);
@@ -301,6 +301,33 @@ public class BackwardAnalysisImpl<
         if (addBlockToWorklist) {
             addToWorklist(pred);
         }
+    }
+
+    /**
+     * Checks if the block for a node is an exceptional successor of a predecessor block, and if so,
+     * returns the exception type for the control-flow edge.
+     *
+     * @param pred the predecessor block
+     * @param node the successor node
+     * @return the exception type leading to a control flow edge from {@code pred} to the block for
+     *     {@code node}, if it exists; {@code null} otherwise
+     */
+    private @Nullable TypeMirror getSuccExceptionType(Block pred, @Nullable Node node) {
+        if (pred instanceof ExceptionBlock && node != null) {
+            Block block = node.getBlock();
+            if (block != null) {
+                Map<TypeMirror, Set<Block>> exceptionalSuccessors =
+                        ((ExceptionBlock) pred).getExceptionalSuccessors();
+                for (TypeMirror excType : exceptionalSuccessors.keySet()) {
+                    for (Block excSuccBlock : exceptionalSuccessors.get(excType)) {
+                        if (excSuccBlock.getUid() == block.getUid()) {
+                            return excType;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

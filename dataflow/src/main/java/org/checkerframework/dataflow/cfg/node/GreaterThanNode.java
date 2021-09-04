@@ -16,6 +16,13 @@ import java.util.Objects;
  */
 public class GreaterThanNode extends BinaryOperationNode {
 
+    /**
+     * Constructs a {@link GreaterThanNode}.
+     *
+     * @param tree the binary tree
+     * @param left the left operand
+     * @param right the right operand
+     */
     public GreaterThanNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
         assert tree.getKind() == Tree.Kind.GREATER_THAN;

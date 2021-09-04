@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -194,7 +195,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             // the type of a class literal is the type of the "class" element.
             return f.getAnnotatedType(elt);
         }
-        switch (elt.getKind()) {
+        switch (ElementUtils.getKindRecordAsClass(elt)) {
             case METHOD:
             case PACKAGE: // "java.lang" in new java.lang.Short("2")
             case CLASS: // o instanceof MyClass.InnerClass

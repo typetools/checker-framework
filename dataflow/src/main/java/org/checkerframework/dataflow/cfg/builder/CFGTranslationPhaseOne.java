@@ -3619,9 +3619,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         // see JLS 14.4
 
-        boolean isField =
-                getCurrentPath().getParentPath() != null
-                        && getCurrentPath().getParentPath().getLeaf().getKind() == Tree.Kind.CLASS;
+        boolean isField = false;
+        if (getCurrentPath().getParentPath() != null) {
+            Tree.Kind kind =
+                    TreeUtils.getKindRecordAsClass(getCurrentPath().getParentPath().getLeaf());
+            // CLASS includes records.
+            if (kind == Tree.Kind.CLASS || kind == Tree.Kind.INTERFACE || kind == Tree.Kind.ENUM) {
+                isField = true;
+            }
+        }
         Node node = null;
 
         ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());

@@ -103,7 +103,9 @@ public class NullnessAnnotatedTypeFactory
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
     // List is in alphabetical order.  If you update it, also update
-    // ../../../../../../../../docs/manual/nullness-checker.tex .
+    // ../../../../../../../../docs/manual/nullness-checker.tex
+    // and make a pull request for variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
+    // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
     /** Aliases for {@code @Nonnull}. */
     private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
             Arrays.asList(

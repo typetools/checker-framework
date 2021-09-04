@@ -2292,6 +2292,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 getAnnotatedType(methodElt); // get unsubstituted type
         AnnotatedExecutableType memberTypeWithOverrides =
                 applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
+        memberTypeWithOverrides = applyRecordTypesToAccessors(methodElt, memberTypeWithOverrides);
         methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
 
         AnnotatedExecutableType methodType =
@@ -2417,6 +2418,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             methodType = memberType;
         }
         return methodType;
+    }
+
+    /**
+     * Given a method, checks if there is: a record component with the same name AND the record
+     * component has an annotation AND the method has no-arguments. If so, replaces the annotations
+     * on the method return type with those from the record type in the same hierarchy.
+     *
+     * @param member a method or constructor
+     * @param memberType the type of the method/constructor; side-effected by this method
+     * @return {@code memberType} with annotations replaced if applicable
+     */
+    private AnnotatedExecutableType applyRecordTypesToAccessors(
+            ExecutableElement member, AnnotatedExecutableType memberType) {
+        if (memberType.getKind() != TypeKind.EXECUTABLE) {
+            throw new BugInCF(
+                    "member %s has type %s of kind %s", member, memberType, memberType.getKind());
+        }
+
+        stubTypes.injectRecordComponentType(types, member, memberType);
+
+        return memberType;
     }
 
     /**
@@ -2626,6 +2648,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
         }
 
+        stubTypes.injectRecordComponentType(types, ctor, con);
+
         return new ParameterizedExecutableType(con, typeargs);
     }
 
@@ -2688,19 +2712,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     .tsym
                     .getTypeParameters()
                     .nonEmpty()) {
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    AnnotatedTypeMirror ctxtype = ctx.second;
+                TreePath p = getPath(newClassTree);
+                AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+                if (ctxtype != null) {
                     fromNewClassContextHelper(type, ctxtype);
                 } else {
-                    TreePath p = getPath(newClassTree);
-                    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-                    if (ctxtype != null) {
-                        fromNewClassContextHelper(type, ctxtype);
-                    } else {
-                        // give up trying and set to raw.
-                        type.setIsUnderlyingTypeRaw();
-                    }
+                    // give up trying and set to raw.
+                    type.setIsUnderlyingTypeRaw();
                 }
             }
             AnnotatedDeclaredType fromTypeTree =
@@ -3531,8 +3549,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Tree fromElt;
         // Prevent calling declarationFor on elements we know we don't have the tree for.
 
-        switch (elt.getKind()) {
-            case CLASS:
+        switch (ElementUtils.getKindRecordAsClass(elt)) {
+            case CLASS: // Including RECORD
             case ENUM:
             case INTERFACE:
             case ANNOTATION_TYPE:
@@ -5119,7 +5137,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the first TypeVariable in {@code collection} that does not lexically contain any
-     * other type in the collection.
+     * other type in the collection. Or if all the TypeVariables contain another, then it returns
+     * the first TypeVariable in {@code collection}.
      *
      * @param collection a collection of type variables
      * @return the first TypeVariable in {@code collection} that does not contain any other type in
@@ -5128,7 +5147,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("interning:not.interned") // must be the same object from collection
     private AnnotatedTypeVariable doesNotContainOthers(
             Collection<? extends AnnotatedTypeVariable> collection) {
+        AnnotatedTypeVariable first = null;
         for (AnnotatedTypeVariable candidate : collection) {
+            if (first == null) {
+                first = candidate;
+            }
             boolean doesNotContain = true;
             for (AnnotatedTypeVariable other : collection) {
                 if (candidate != other
@@ -5141,7 +5164,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 return candidate;
             }
         }
-        throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+        return first;
     }
 
     /**
@@ -5180,6 +5203,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         typeVarToAnnotatedTypeArg, typeVariable.getUpperBound());
         AnnotatedTypeMirror upperBound =
                 AnnotatedTypes.annotatedGLB(this, typeVarUpperBound, wildcard.getExtendsBound());
+        // There is a bug in javac such that the upper bound of the captured type variable is not
+        // the
+        // greatest lower bound. So the captureTypeVar.getUnderlyingType().getUpperBound() may not
+        // be the same type as upperbound.getUnderlyingType().  See
+        // framework/tests/all-systems/Issue4890Interfaces.java,
+        // framework/tests/all-systems/Issue4890.java and
+        // framework/tests/all-systems/Issue4877.java.
         capturedTypeVar.setUpperBound(upperBound);
 
         // typeVariable's lower bound is a NullType, so there's nothing to substitute.

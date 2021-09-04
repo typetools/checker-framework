@@ -16,6 +16,12 @@ import java.util.Objects;
  */
 public class NumericalMinusNode extends UnaryOperationNode {
 
+    /**
+     * Constructs a {@link NumericalMinusNode}.
+     *
+     * @param tree the unary tree
+     * @param operand the operand of the unary minus
+     */
     public NumericalMinusNode(UnaryTree tree, Node operand) {
         super(tree, operand);
         assert tree.getKind() == Tree.Kind.UNARY_MINUS;

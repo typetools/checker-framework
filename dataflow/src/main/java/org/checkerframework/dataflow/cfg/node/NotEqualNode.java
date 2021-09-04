@@ -16,6 +16,13 @@ import java.util.Objects;
  */
 public class NotEqualNode extends BinaryOperationNode {
 
+    /**
+     * Constructs a {@link NotEqualNode}.
+     *
+     * @param tree the binary tree
+     * @param left the left operand
+     * @param right the right operand
+     */
     public NotEqualNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
         assert tree.getKind() == Tree.Kind.NOT_EQUAL_TO;

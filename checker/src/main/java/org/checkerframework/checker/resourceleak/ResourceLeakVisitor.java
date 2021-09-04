@@ -11,17 +11,23 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 
 /**
  * The visitor for the Resource Leak Checker. Responsible for checking that the rules for {@link
@@ -82,6 +88,80 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             }
         }
         return super.visitMethod(node, p);
+    }
+
+    // Overwritten to check that destructors (i.e. methods responsible for resolving
+    // the must-call obligations of owning fields) enforce a stronger version of
+    // @EnsuresCalledMethods: that the claimed @CalledMethods annotation is true on
+    // both exceptional and regular exits, not just on regular exits.
+    @Override
+    protected void checkPostcondition(
+            MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
+        super.checkPostcondition(methodTree, annotation, expression);
+        // Only check if the required annotation is a CalledMethods annotation (implying
+        // the method was annotated with @EnsuresCalledMethods).
+        if (!AnnotationUtils.areSameByName(
+                annotation, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+            return;
+        }
+        if (!isMustCallMethod(methodTree)) {
+            // In this case, the method has an EnsuresCalledMethods annotation but is not a
+            // destructor,
+            // so no further checking is required.
+            return;
+        }
+        CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(methodTree);
+        if (exitStore == null) {
+            // If there is no exceptional exitStore, then the method cannot throw an exception and
+            // there
+            // is no need to check anything else.
+        } else {
+            CFAbstractValue<?> value = exitStore.getValue(expression);
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+            }
+            if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+                String inferredAnnoStr =
+                        inferredAnno == null
+                                ? "no information about " + expression.toString()
+                                : inferredAnno.toString();
+                checker.reportError(
+                        methodTree,
+                        "destructor.exceptional.postcondition",
+                        methodTree.getName(),
+                        expression.toString(),
+                        inferredAnnoStr,
+                        annotation);
+            }
+        }
+    }
+
+    /**
+     * Returns true iff the {@code MustCall} annotation of the class that encloses the methodTree
+     * names this method.
+     *
+     * @param methodTree the declaration of a method
+     * @return whether that method is one of the must-call methods for its enclosing class
+     */
+    private boolean isMustCallMethod(MethodTree methodTree) {
+        ExecutableElement elt = TreeUtils.elementFromDeclaration(methodTree);
+        TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
+        MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
+                rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+        AnnotationMirror mcAnno =
+                mustCallAnnotatedTypeFactory
+                        .getAnnotatedType(containingClass)
+                        .getAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
+        List<String> mcValues =
+                AnnotationUtils.getElementValueArray(
+                        mcAnno,
+                        mustCallAnnotatedTypeFactory.getMustCallValueElement(),
+                        String.class);
+        String methodName = elt.getSimpleName().toString();
+        return mcValues.contains(methodName);
     }
 
     /**
@@ -238,6 +318,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
                     "required.method.not.called",
                     MustCallConsistencyAnalyzer.formatMissingMustCallMethods(
                             unsatisfiedMustCallObligationsOfOwningField),
+                    "field " + field.getSimpleName().toString(),
                     field.asType().toString(),
                     error);
         }

@@ -813,18 +813,17 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2) {
+        TypeMirror glbJava =
+                TypesUtils.greatestLowerBound(
+                        type1.getUnderlyingType(),
+                        type2.getUnderlyingType(),
+                        atypeFactory.getProcessingEnv());
         Types types = atypeFactory.types;
         if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
             return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
         } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
             return glbSubtype(atypeFactory.getQualifierHierarchy(), type2, type1);
         }
-
-        TypeMirror glbJava =
-                TypesUtils.greatestLowerBound(
-                        type1.getUnderlyingType(),
-                        type2.getUnderlyingType(),
-                        atypeFactory.getProcessingEnv());
 
         if (types.isSameType(type1.getUnderlyingType(), glbJava)) {
             return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
@@ -857,6 +856,22 @@ public class AnnotatedTypes {
                 newBounds.add(type1.deepCopy());
             } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
                 newBounds.add(type2.deepCopy());
+            } else if (type1.getKind() == TypeKind.INTERSECTION) {
+                AnnotatedIntersectionType intertype1 = (AnnotatedIntersectionType) type1;
+                for (AnnotatedTypeMirror otherBound : intertype1.getBounds()) {
+                    if (types.isSameType(
+                            bound.getUnderlyingType(), otherBound.getUnderlyingType())) {
+                        newBounds.add(otherBound.deepCopy());
+                    }
+                }
+            } else if (type2.getKind() == TypeKind.INTERSECTION) {
+                AnnotatedIntersectionType intertype2 = (AnnotatedIntersectionType) type2;
+                for (AnnotatedTypeMirror otherBound : intertype2.getBounds()) {
+                    if (types.isSameType(
+                            bound.getUnderlyingType(), otherBound.getUnderlyingType())) {
+                        newBounds.add(otherBound.deepCopy());
+                    }
+                }
             } else {
                 throw new BugInCF(
                         "Neither %s nor %s is one of the intersection bounds in %s. Bound: %s",
@@ -928,6 +943,7 @@ public class AnnotatedTypes {
      * <p>Otherwise, it would return the list of parameters as if the vararg is expanded to match
      * the size of the passed arguments.
      *
+     * @param atypeFactory the type factory to use for fetching annotated types
      * @param method the method's type
      * @param args the arguments to the method invocation
      * @return the types that the method invocation arguments need to be subtype of

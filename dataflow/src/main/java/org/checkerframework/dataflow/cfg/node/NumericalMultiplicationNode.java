@@ -16,6 +16,13 @@ import java.util.Objects;
  */
 public class NumericalMultiplicationNode extends BinaryOperationNode {
 
+    /**
+     * Constructs a {@link NumericalMultiplicationNode}.
+     *
+     * @param tree the binary tree
+     * @param left the left operand
+     * @param right the right operand
+     */
     public NumericalMultiplicationNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
         assert tree.getKind() == Tree.Kind.MULTIPLY;

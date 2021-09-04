@@ -9,11 +9,13 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.plumelib.util.CollectionsPlume;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -923,5 +925,58 @@ public class ElementUtils {
      */
     public static boolean inSameClass(Element e1, Element e2) {
         return e1.getEnclosingElement().equals(e2.getEnclosingElement());
+    }
+
+    /**
+     * Calls getKind() on the given Element, but returns CLASS if the ElementKind is RECORD. This is
+     * needed because the Checker Framework runs on JDKs before the RECORD item was added, so RECORD
+     * can't be used in case statements, and usually we want to treat them the same as classes.
+     *
+     * @param elt the element to get the kind for
+     * @return the kind of the element, but CLASS if the kind was RECORD
+     */
+    public static ElementKind getKindRecordAsClass(Element elt) {
+        ElementKind kind = elt.getKind();
+        if (kind.name().equals("RECORD")) {
+            kind = ElementKind.CLASS;
+        }
+        return kind;
+    }
+
+    /**
+     * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is
+     * not available before JDK 16. On earlier JDKs, which don't support records anyway, an
+     * exception is thrown.
+     *
+     * @param element the type element to call getRecordComponents on
+     * @return the return value of calling getRecordComponents, or empty list if the method is not
+     *     available
+     */
+    @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
+    public static List<? extends Element> getRecordComponents(TypeElement element) {
+        try {
+            return (@NonNull List<? extends Element>)
+                    TypeElement.class.getMethod("getRecordComponents").invoke(element);
+        } catch (NoSuchMethodException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            throw new Error("Cannot access TypeElement.getRecordComponents", e);
+        }
+    }
+
+    /**
+     * Check if the given element is a compact canonical record constructor.
+     *
+     * @param elt the element to check
+     * @return true if the element is a compact canonical constructor of a record
+     */
+    public static boolean isCompactCanonicalRecordConstructor(Element elt) {
+        if (!(elt instanceof Symbol)) {
+            return false;
+        }
+
+        return elt.getKind() == ElementKind.CONSTRUCTOR
+                && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
     }
 }
