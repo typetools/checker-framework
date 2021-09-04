@@ -9,7 +9,7 @@ public class Issue4853Nullness {
 
     abstract static class SubMyClass extends MyClass<@Nullable String> {
         protected void f() {
-            // :: error: (argument)
+            // :: error: (argument.type.incompatible)
             method(new InnerMyClass());
         }
 
