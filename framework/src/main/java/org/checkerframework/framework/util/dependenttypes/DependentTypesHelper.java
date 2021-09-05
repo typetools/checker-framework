@@ -945,8 +945,7 @@ public class DependentTypesHelper {
                     String annoString = annoTree.toString();
                     for (String annoName : annoToElements.keySet()) {
                         // TODO: Simple string containment seems too simplistic.  At least check for
-                        // a word
-                        // boundary.
+                        // a word boundary.
                         if (annoString.contains(annoName)) {
                             errorTree = annoTree;
                             break;

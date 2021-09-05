@@ -5204,9 +5204,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror upperBound =
                 AnnotatedTypes.annotatedGLB(this, typeVarUpperBound, wildcard.getExtendsBound());
         // There is a bug in javac such that the upper bound of the captured type variable is not
-        // the
-        // greatest lower bound. So the captureTypeVar.getUnderlyingType().getUpperBound() may not
-        // be the same type as upperbound.getUnderlyingType().  See
+        // the greatest lower bound. So the captureTypeVar.getUnderlyingType().getUpperBound() may
+        // not be the same type as upperbound.getUnderlyingType().  See
         // framework/tests/all-systems/Issue4890Interfaces.java,
         // framework/tests/all-systems/Issue4890.java and
         // framework/tests/all-systems/Issue4877.java.

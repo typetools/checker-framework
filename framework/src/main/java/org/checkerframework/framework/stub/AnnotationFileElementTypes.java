@@ -468,14 +468,10 @@ public class AnnotationFileElementTypes {
                         annotationFileAnnos.records.get(recordName);
                 if (recordComponentType != null) {
                     // If the record component has an annotation in the stub, the component
-                    // annotation
-                    // replaces any from the same hierarchy on the accessor method, unless there is
-                    // an
-                    // accessor in the stubs file (which may or may not have an annotation in the
-                    // same
-                    // hierarchy;
-                    // the user may want to specify the annotation or deliberately not annotate the
-                    // accessor).
+                    // annotation replaces any from the same hierarchy on the accessor method,
+                    // unless there is an accessor in the stubs file (which may or may not have an
+                    // annotation in the same hierarchy; the user may want to specify the annotation
+                    // or deliberately not annotate the accessor).
                     // We thus only replace the method annotation with the component annotation
                     // if there is no accessor in the stubs file:
                     RecordComponentStub recordComponentStub =
