@@ -972,10 +972,6 @@ public class ElementUtils {
      * @return true if the element is a compact canonical constructor of a record
      */
     public static boolean isCompactCanonicalRecordConstructor(Element elt) {
-        if (!(elt instanceof Symbol)) {
-            return false;
-        }
-
         return elt.getKind() == ElementKind.CONSTRUCTOR
                 && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
     }
