@@ -39,7 +39,7 @@ def versions = [
 ]
 
 configurations {
-  implementation.extendsFrom(annotatedGuava)
+    implementation.extendsFrom(annotatedGuava)
 }
 
 dependencies {
