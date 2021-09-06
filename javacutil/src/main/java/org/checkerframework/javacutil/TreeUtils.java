@@ -112,6 +112,12 @@ public final class TreeUtils {
     /** The CaseTree.getExpressions method for Java 12 and higher; null otherwise. */
     private static final @Nullable Method CASETREE_GETEXPRESSIONS;
 
+    /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
+    private static final long Flags_GENERATED_MEMBER = 16777216;
+
+    /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
+    private static final long Flags_RECORD = 2305843009213693952L;
+
     static {
         final SourceVersion latestSource = SourceVersion.latest();
         SourceVersion java12;
@@ -136,15 +142,6 @@ public final class TreeUtils {
             throw err;
         }
     }
-
-    /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
-    private static final long Flags_GENERATED_MEMBER = 16777216;
-
-    /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
-    private static final long Flags_RECORD = 2305843009213693952L;
-
-    /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
-    static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
 
     /**
      * Checks if the provided method is a constructor method or no.

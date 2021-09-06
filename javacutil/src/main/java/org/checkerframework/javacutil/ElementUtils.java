@@ -57,6 +57,9 @@ public class ElementUtils {
         throw new AssertionError("Class ElementUtils cannot be instantiated.");
     }
 
+    /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
+    private static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
+
     /**
      * Returns the innermost type element enclosing the given element. Returns the element itself if
      * it is a type element.
@@ -973,6 +976,6 @@ public class ElementUtils {
      */
     public static boolean isCompactCanonicalRecordConstructor(Element elt) {
         return elt.getKind() == ElementKind.CONSTRUCTOR
-                && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+                && (((Symbol) elt).flags() & Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
     }
 }
