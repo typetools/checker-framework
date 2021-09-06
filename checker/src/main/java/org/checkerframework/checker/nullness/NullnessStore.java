@@ -7,36 +7,18 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.plumelib.util.UniqueId;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Behaves like {@link InitializationStore}, but additionally tracks whether {@link PolyNull} is
  * known to be {@link NonNull} or {@link Nullable} (or not known to be either).
  */
-public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore>
-        implements UniqueId {
+public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore> {
 
     /** True if, at this point, {@link PolyNull} is known to be {@link NonNull}. */
     protected boolean isPolyNullNonNull;
 
     /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
     protected boolean isPolyNullNull;
-
-    /** The unique ID for the next-created object. */
-    static final AtomicLong nextUid = new AtomicLong(0);
-    /** The unique ID of this object. */
-    final long uid = nextUid.getAndIncrement();
-    /**
-     * Returns the unique ID of this object.
-     *
-     * @return the unique ID of this object
-     */
-    @Override
-    public long getUid() {
-        return uid;
-    }
 
     /**
      * Create a NullnessStore.
