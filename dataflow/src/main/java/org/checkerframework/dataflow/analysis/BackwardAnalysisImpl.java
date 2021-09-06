@@ -312,6 +312,7 @@ public class BackwardAnalysisImpl<
      * @return the exception type leading to a control flow edge from {@code pred} to the block for
      *     {@code node}, if it exists; {@code null} otherwise
      */
+    @SuppressWarnings("interning:not.interned") // Block equality
     private @Nullable TypeMirror getSuccExceptionType(Block pred, @Nullable Node node) {
         if (!(pred instanceof ExceptionBlock) || node == null) {
             return null;
