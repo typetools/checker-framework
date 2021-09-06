@@ -16,6 +16,13 @@ import java.util.Objects;
  */
 public class LeftShiftNode extends BinaryOperationNode {
 
+    /**
+     * Constructs a {@link LeftShiftNode}.
+     *
+     * @param tree the binary tree
+     * @param left the left operand
+     * @param right the right operand
+     */
     public LeftShiftNode(BinaryTree tree, Node left, Node right) {
         super(tree, left, right);
         assert tree.getKind() == Tree.Kind.LEFT_SHIFT;

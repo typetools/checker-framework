@@ -4,7 +4,12 @@
 4 -> 10 ELSE_TO_BOTH
 8 -> 11 EACH_TO_EACH
 10 -> 11 EACH_TO_EACH
-11 -> 0 EACH_TO_EACH
+11 -> 12 EACH_TO_EACH
+12 -> 13 EACH_TO_EACH
+12 -> 15 ArithmeticException
+13 -> 17 EACH_TO_EACH
+15 -> 17 EACH_TO_EACH
+17 -> 0 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -31,7 +36,7 @@ a   [ LocalVariable ]
 0   [ IntegerLiteral ]
 (a > 0)   [ GreaterThan ]
 ~~~~~~~~~
-TransferInput#22
+TransferInput#49
 After:   live variables = a, b, c
 
 4:
@@ -52,7 +57,7 @@ c   [ LocalVariable ]
 (a + c)   [ NumericalAddition ]
 d = (a + c)   [ Assignment ]
 ~~~~~~~~~
-TransferInput#6
+TransferInput#33
 After:   live variables = a
 
 10:
@@ -66,12 +71,64 @@ b   [ LocalVariable ]
 (a + b)   [ NumericalAddition ]
 e = (a + b)   [ Assignment ]
 ~~~~~~~~~
-TransferInput#5
+TransferInput#32
 After:   live variables = a
 
 11:
 Process order: 6
 AnalysisResult#11
+Before:   live variables = a
+~~~~~~~~~
+f   [ VariableDeclaration ]
+b   [ LocalVariable ]
+0   [ IntegerLiteral ]
+b = 0   [ Assignment ]
+marker (start of try statement #0)   [ Marker ]
+marker (start of try block #0)   [ Marker ]
+f   [ LocalVariable ]
+1   [ IntegerLiteral ]
+a   [ LocalVariable ]
+~~~~~~~~~
+TransferInput#21
+After:   live variables = a, b
+
+12:
+Process order: 7
+AnalysisResult#13
+Before:   live variables = a
+~~~~~~~~~
+(1 / a)   [ IntegerDivision ]
+
+13:
+Process order: 8
+AnalysisResult#15
+Before:   live variables = a
+~~~~~~~~~
+(1 / a)   [ IntegerDivision ]
+f = (1 / a)   [ Assignment ]
+marker (end of try block #0)   [ Marker ]
+~~~~~~~~~
+TransferInput#5
+After:   live variables = a
+
+15:
+Process order: 9
+AnalysisResult#17
+Before:   live variables = a, b
+~~~~~~~~~
+marker (start of catch block for ArithmeticException #0)   [ Marker ]
+e   [ VariableDeclaration ]
+f   [ LocalVariable ]
+b   [ LocalVariable ]
+f = b   [ Assignment ]
+marker (end of catch block for ArithmeticException #0)   [ Marker ]
+~~~~~~~~~
+TransferInput#6
+After:   live variables = a
+
+17:
+Process order: 10
+AnalysisResult#19
 Before:   live variables = a
 ~~~~~~~~~
 a   [ LocalVariable ]
@@ -81,8 +138,8 @@ TransferInput#1
 After:   live variables = none
 
 0:
-Process order: 7
-AnalysisResult#13
+Process order: 11
+AnalysisResult#21
 Before:   live variables = none
 ~~~~~~~~~
 <exit>

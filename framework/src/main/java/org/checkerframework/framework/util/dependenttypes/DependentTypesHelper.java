@@ -12,6 +12,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.tree.JCTree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.FormalParameter;
@@ -933,17 +934,22 @@ public class DependentTypesHelper {
             return;
         }
 
+        // Report the error at the type rather than at the variable.
         if (errorTree.getKind() == Tree.Kind.VARIABLE) {
-            ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
-            errorTree = ((VariableTree) errorTree).getType();
-            for (AnnotationTree annoTree : modifiers.getAnnotations()) {
-                String annoString = annoTree.toString();
-                for (String annoName : annoToElements.keySet()) {
-                    // TODO: Simple string containment seems too simplistic.  At least check for a
-                    // word boundary.
-                    if (annoString.contains(annoName)) {
-                        errorTree = annoTree;
-                        break;
+            Tree typeTree = ((VariableTree) errorTree).getType();
+            // Don't report the error at the type if the type is not present in source code.
+            if (((JCTree) typeTree).getPreferredPosition() != -1) {
+                ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
+                errorTree = typeTree;
+                for (AnnotationTree annoTree : modifiers.getAnnotations()) {
+                    String annoString = annoTree.toString();
+                    for (String annoName : annoToElements.keySet()) {
+                        // TODO: Simple string containment seems too simplistic.  At least check for
+                        // a word boundary.
+                        if (annoString.contains(annoName)) {
+                            errorTree = annoTree;
+                            break;
+                        }
                     }
                 }
             }

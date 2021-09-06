@@ -16,6 +16,12 @@ import java.util.Objects;
  */
 public class NumericalPlusNode extends UnaryOperationNode {
 
+    /**
+     * Constructs a {@link NumericalPlusNode}.
+     *
+     * @param tree the tree of the whole operation
+     * @param operand the operand of the operation
+     */
     public NumericalPlusNode(UnaryTree tree, Node operand) {
         super(tree, operand);
         assert tree.getKind() == Tree.Kind.UNARY_PLUS;

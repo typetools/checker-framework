@@ -7,6 +7,13 @@ public class Test {
         } else {
             int e = a + b;
         }
+        int f;
+        b = 0;
+        try {
+            f = 1 / a;
+        } catch (ArithmeticException e) {
+            f = b;
+        }
         return a;
     }
 }

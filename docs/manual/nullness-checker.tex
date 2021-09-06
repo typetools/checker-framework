@@ -922,6 +922,8 @@ Section~\ref{declaration-annotations-moved}.
 
 % These lists should be kept in sync with
 % ../../checker/src/main/java/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java
+% and with variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
+% https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
 \begin{figure}
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
@@ -938,6 +940,7 @@ Section~\ref{declaration-annotations-moved}.
  ~io.reactivex.annotations.NonNull~ \\ \hline
  ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
+ // The field might contain a null value until it is persisted.
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NonNullDecl~ \\ \hline

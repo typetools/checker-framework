@@ -394,6 +394,14 @@ public class InitializationVisitor<
             return;
         }
 
+        // Compact canonical record constructors do not generate visible assignments in the source,
+        // but by definition they assign to all the record's fields so we don't need to
+        // check for uninitialized fields in them:
+        if (node.getKind() == Tree.Kind.METHOD
+                && TreeUtils.isCompactCanonicalRecordConstructor((MethodTree) node)) {
+            return;
+        }
+
         Pair<List<VariableTree>, List<VariableTree>> uninitializedFields =
                 atypeFactory.getUninitializedFields(
                         store, getCurrentPath(), staticFields, receiverAnnotations);

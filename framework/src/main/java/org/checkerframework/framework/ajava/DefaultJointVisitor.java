@@ -7,12 +7,14 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -184,6 +186,9 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
     public void processClass(ClassTree javacTree, EnumDeclaration javaParserNode) {}
 
     @Override
+    public void processClass(ClassTree javacTree, RecordDeclaration javaParserNode) {}
+
+    @Override
     public void processCompilationUnit(
             CompilationUnitTree javacTree, CompilationUnit javaParserNode) {}
 
@@ -289,6 +294,9 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
 
     @Override
     public void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode) {}
+
+    @Override
+    public void processMethod(MethodTree javacTree, CompactConstructorDeclaration javaParserNode) {}
 
     @Override
     public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {}

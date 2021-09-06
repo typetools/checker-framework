@@ -19,6 +19,7 @@ import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 
 import java.io.File;
@@ -33,9 +34,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Types;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
@@ -477,5 +480,37 @@ public class AnnotationFileUtil {
                 addAnnotationFilesToList(enclosed, resources, fileType);
             }
         }
+    }
+
+    /**
+     * Returns true if the given {@link ExecutableElement} is the canonical constructor of a record
+     * (i.e., the parameter types of the constructor correspond to the parameter types of the record
+     * components, ignoring annotations).
+     *
+     * @param elt the constructor/method to check
+     * @param types the Types instance to use for comparing types
+     * @return true if elt is the canonical constructor of the record containing it
+     */
+    public static boolean isCanonicalConstructor(ExecutableElement elt, Types types) {
+        if (elt.getKind() != ElementKind.CONSTRUCTOR) {
+            return false;
+        }
+        Element enclosing = elt.getEnclosingElement();
+        // Can't use RECORD enum constant as it's not available before JDK 16:
+        if (!enclosing.getKind().name().equals("RECORD")) {
+            return false;
+        }
+        List<? extends Element> recordComponents =
+                ElementUtils.getRecordComponents((TypeElement) enclosing);
+        if (recordComponents.size() == elt.getParameters().size()) {
+            for (int i = 0; i < recordComponents.size(); i++) {
+                if (!types.isSameType(
+                        recordComponents.get(i).asType(), elt.getParameters().get(i).asType())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }

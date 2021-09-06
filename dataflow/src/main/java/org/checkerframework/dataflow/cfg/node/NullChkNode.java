@@ -17,10 +17,17 @@ import java.util.Objects;
  * </pre>
  */
 public class NullChkNode extends Node {
-
+    /** The entire tree of the null check */
     protected final Tree tree;
+    /** The operand of the null check */
     protected final Node operand;
 
+    /**
+     * Constructs a {@link NullChkNode}.
+     *
+     * @param tree the nullchk tree
+     * @param operand the operand of the null check
+     */
     public NullChkNode(Tree tree, Node operand) {
         super(TreeUtils.typeOf(tree));
         assert tree.getKind() == Tree.Kind.OTHER;

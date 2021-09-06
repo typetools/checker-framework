@@ -38,7 +38,12 @@ public class LockTreeAnnotator extends TreeAnnotator {
         return super.visitBinary(node, type);
     }
 
-    /** Indicates that the result of the operation is a boolean value. */
+    /**
+     * Indicates that the result of the operation is a boolean value.
+     *
+     * @param opKind the operation to check
+     * @return whether the result is boolean
+     */
     private static boolean isBinaryComparisonOrInstanceOfOperator(Tree.Kind opKind) {
         switch (opKind) {
             case EQUAL_TO:
