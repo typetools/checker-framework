@@ -29,7 +29,7 @@ record NormalizingRecord2(String s) {
 
 record NormalizingRecordIllegalConstructor1(String s) {
     NormalizingRecordIllegalConstructor1(@Nullable String s) {
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         this.s = s;
     }
 }
@@ -38,7 +38,7 @@ record NormalizingRecordIllegalConstructor2(@Nullable String s) {
     NormalizingRecordIllegalConstructor2(String s) {
         if (s.equals("")) {
             // The formal parametr type is @NonNull, so this assignment to it is illegal.
-            // :: error: (assignment)
+            // :: error: (assignment.type.incompatible)
             s = null;
         }
         this.s = s;
@@ -47,7 +47,7 @@ record NormalizingRecordIllegalConstructor2(@Nullable String s) {
 
 class Client {
 
-    // :: error: (argument)
+    // :: error: (argument.type.incompatible)
     NormalizingRecord1 nr1_1 = new NormalizingRecord1(null);
     NormalizingRecord1 nr1_2 = new NormalizingRecord1("");
     NormalizingRecord1 nr1_3 = new NormalizingRecord1("hello");

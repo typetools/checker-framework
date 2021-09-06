@@ -16,25 +16,25 @@ public class NestedRecordTest {
         void nclient() {
             Nested.NPerson np1 = new Nested.NPerson(nn, nn);
             Nested.NPerson np2 = new Nested.NPerson(nn, nble);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Nested.NPerson np3 = new Nested.NPerson(nble, nn);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Nested.NPerson np4 = new Nested.NPerson(nble, nble);
             Inner.IPerson ip1 = new Inner.IPerson(nn, nn);
             Inner.IPerson ip2 = new Inner.IPerson(nn, nble);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Inner.IPerson ip3 = new Inner.IPerson(nble, nn);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Inner.IPerson ip4 = new Inner.IPerson(nble, nble);
 
             nn2 = np2.familyName();
             nble2 = np2.familyName();
-            // :: error: assignment
+            // :: error: (assignment.type.incompatible)
             nn2 = np2.maidenName();
             nble2 = np2.maidenName();
             nn2 = ip2.familyName();
             nble2 = ip2.familyName();
-            // :: error: assignment
+            // :: error: (assignment.type.incompatible)
             nn2 = ip2.maidenName();
             nble2 = ip2.maidenName();
         }
@@ -46,25 +46,25 @@ public class NestedRecordTest {
         void iclient() {
             Nested.NPerson np1 = new Nested.NPerson(nn, nn);
             Nested.NPerson np2 = new Nested.NPerson(nn, nble);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Nested.NPerson np3 = new Nested.NPerson(nble, nn);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Nested.NPerson np4 = new Nested.NPerson(nble, nble);
             Inner.IPerson ip1 = new Inner.IPerson(nn, nn);
             Inner.IPerson ip2 = new Inner.IPerson(nn, nble);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Inner.IPerson ip3 = new Inner.IPerson(nble, nn);
-            // :: error: argument
+            // :: error: (argument.type.incompatible)
             Inner.IPerson ip4 = new Inner.IPerson(nble, nble);
 
             nn2 = np2.familyName();
             nble2 = np2.familyName();
-            // :: error: assignment
+            // :: error: (assignment.type.incompatible)
             nn2 = np2.maidenName();
             nble2 = np2.maidenName();
             nn2 = ip2.familyName();
             nble2 = ip2.familyName();
-            // :: error: assignment
+            // :: error: (assignment.type.incompatible)
             nn2 = ip2.maidenName();
             nble2 = ip2.maidenName();
         }
@@ -73,25 +73,25 @@ public class NestedRecordTest {
     void client() {
         Nested.NPerson np1 = new Nested.NPerson(nn, nn);
         Nested.NPerson np2 = new Nested.NPerson(nn, nble);
-        // :: error: argument
+        // :: error: (argument.type.incompatible)
         Nested.NPerson np3 = new Nested.NPerson(nble, nn);
-        // :: error: argument
+        // :: error: (argument.type.incompatible)
         Nested.NPerson np4 = new Nested.NPerson(nble, nble);
         Inner.IPerson ip1 = new Inner.IPerson(nn, nn);
         Inner.IPerson ip2 = new Inner.IPerson(nn, nble);
-        // :: error: argument
+        // :: error: (argument.type.incompatible)
         Inner.IPerson ip3 = new Inner.IPerson(nble, nn);
-        // :: error: argument
+        // :: error: (argument.type.incompatible)
         Inner.IPerson ip4 = new Inner.IPerson(nble, nble);
 
         nn2 = np2.familyName();
         nble2 = np2.familyName();
-        // :: error: assignment
+        // :: error: (assignment.type.incompatible)
         nn2 = np2.maidenName();
         nble2 = np2.maidenName();
         nn2 = ip2.familyName();
         nble2 = ip2.familyName();
-        // :: error: assignment
+        // :: error: (assignment.type.incompatible)
         nn2 = ip2.maidenName();
         nble2 = ip2.maidenName();
     }

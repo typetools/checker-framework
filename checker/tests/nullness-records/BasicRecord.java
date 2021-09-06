@@ -8,7 +8,7 @@ public record BasicRecord(String str) {
     }
 
     public static BasicRecord makeNull(@Nullable String s) {
-        // :: error: argument
+        // :: error: (argument.type.incompatible)
         return new BasicRecord(s);
     }
 }

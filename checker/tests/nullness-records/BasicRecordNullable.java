@@ -20,12 +20,12 @@ public record BasicRecordNullable(@Nullable String str) {
     }
 
     public String getStringFromFieldErr() {
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return str;
     }
 
     public String getStringFromMethodErr() {
-        // :: error: return
+        // :: error: (return.type.incompatible)
         return str();
     }
 }

@@ -2,9 +2,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 class StandardQualClass {
-    // :: error: assignment
+    // :: error: (assignment.type.incompatible)
     public static String s = null;
-    // :: error: initialization.static.field.uninitialized
+    // :: error: (initialization.static.field.uninitialized)
     public static String u;
 }
 
@@ -15,7 +15,7 @@ class DefaultQualClass {
 }
 
 interface StandardQualInterface {
-    // :: error: assignment
+    // :: error: (assignment.type.incompatible)
     public static String s = null;
 }
 
@@ -26,9 +26,9 @@ interface DefaultQualInterface {
 
 enum StandardQualEnum {
     DUMMY;
-    // :: error: assignment
+    // :: error: (assignment.type.incompatible)
     public static String s = null;
-    // :: error: initialization.static.field.uninitialized
+    // :: error: (initialization.static.field.uninitialized)
     public static String u;
 }
 
@@ -40,13 +40,13 @@ enum DefaultQualEnum {
 }
 
 record StandardQualRecord(String m) {
-    // :: error: assignment
+    // :: error: (assignment.type.incompatible)
     public static String s = null;
-    // :: error: initialization.static.field.uninitialized
+    // :: error: (initialization.static.field.uninitialized)
     public static String u;
 
     StandardQualRecord {
-        // :: error: assignment
+        // :: error: (assignment.type.incompatible)
         m = null;
     }
 }

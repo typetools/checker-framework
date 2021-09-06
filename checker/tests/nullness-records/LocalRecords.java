@@ -6,7 +6,7 @@ public class LocalRecords {
         record L(String key, @Nullable Integer value) {}
         L a = new L("one", 1);
         L b = new L("i", null);
-        // :: error: (argument)
+        // :: error: (argument.type.incompatible)
         L c = new L(null, 6);
     }
 }

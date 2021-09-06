@@ -8,7 +8,7 @@ public record BasicRecordCanon(String str) {
     }
 
     public static BasicRecordCanon makeNull(@Nullable String s) {
-        // :: error: argument
+        // :: error: (argument.type.incompatible)
         return new BasicRecordCanon(s);
     }
 
