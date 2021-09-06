@@ -27,8 +27,10 @@ public class StubparserRecordTest extends CheckerFrameworkPerDirectoryTest {
     @Parameterized.Parameters
     public static String[] getTestDirs() {
         // Check for JDK 16+ without using a library:
-        if (System.getProperty("java.version").matches("^(1[6-9]|[2-9][0-9])\\..*"))
+        if (System.getProperty("java.version").matches("^(1[6-9]|[2-9][0-9])")) {
             return new String[] {"stubparser-records"};
-        else return new String[] {};
+        } else {
+            return new String[] {};
+        }
     }
 }
