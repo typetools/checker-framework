@@ -313,17 +313,19 @@ public class BackwardAnalysisImpl<
      *     {@code node}, if it exists; {@code null} otherwise
      */
     private @Nullable TypeMirror getSuccExceptionType(Block pred, @Nullable Node node) {
-        if (pred instanceof ExceptionBlock && node != null) {
-            Block block = node.getBlock();
-            if (block != null) {
-                Map<TypeMirror, Set<Block>> exceptionalSuccessors =
-                        ((ExceptionBlock) pred).getExceptionalSuccessors();
-                for (TypeMirror excType : exceptionalSuccessors.keySet()) {
-                    for (Block excSuccBlock : exceptionalSuccessors.get(excType)) {
-                        if (excSuccBlock.getUid() == block.getUid()) {
-                            return excType;
-                        }
-                    }
+        if (!(pred instanceof ExceptionBlock) || node == null) {
+            return null;
+        }
+        Block block = node.getBlock();
+        if (block == null) {
+            return null;
+        }
+        Map<TypeMirror, Set<Block>> exceptionalSuccessors =
+                ((ExceptionBlock) pred).getExceptionalSuccessors();
+        for (Map.Entry<TypeMirror, Set<Block>> excTypeEntry : exceptionalSuccessors.entrySet()) {
+            for (Block excSuccBlock : excTypeEntry.getValue()) {
+                if (excSuccBlock == block) {
+                    return excTypeEntry.getKey();
                 }
             }
         }
