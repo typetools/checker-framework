@@ -1,10 +1,18 @@
+Version 3.?.? (October 1, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
 Version 3.18.0 (September 1, 2021)
 -------------------------------
 
 **User-visible changes:**
 
 Java records are type-checked.  Thanks to Neil Brown.
-
 
 **Closed issues:**
 #4838, #4843, #4852, #4853, #4861, #4876, #4877, #4878, #4878, #4889, #4889.
