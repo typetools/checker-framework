@@ -13,6 +13,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -60,6 +61,7 @@ public class InferenceType extends AbstractType {
   public static AbstractType create(
       AnnotatedTypeMirror type, TypeMirror typeMirror, Theta map, Java8InferenceContext context) {
     assert type != null;
+    typeMirror = TypeAnnotationUtils.unannotatedType(typeMirror);
     if (map == null) {
       return new ProperType(type, typeMirror, context);
     }
