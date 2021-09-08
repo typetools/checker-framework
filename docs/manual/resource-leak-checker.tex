@@ -383,10 +383,11 @@ methods (including \<close()>) do not appear in the \<@CalledMethods> type quali
 
 \sectionAndLabel{Ignored exception types}{resource-leak-ignored-exceptions}
 
-The Resource Leak Checker checks that an element's must-call obligations are fulfilled
-when that element goes out of scope. When an element goes out of scope can depend not only
-on a program element's lexical scope, but also on whether an exception is thrown. Consider
-the following method:
+The Resource Leak Checker checks that an element's must-call obligations
+are fulfilled when that element may go out of scope: at the end of its
+lexical scope or when control may be transferred to the end of its lexical
+scope, such as via a \<break> or \<continue> statement or via throwing an
+exception.  As an example of an exception, consider the following method:
 
 \begin{verbatim}
   void foo() {
@@ -396,32 +397,40 @@ the following method:
   }
 \end{verbatim}
 
-Lexically, \<s> goes out of scope at the end of \<foo>, after the call to \<close()>.
-However, what if \<bar()> can throw an exception? Such an exception is not caught,
-returning control to the caller of \<foo>, and the only reference to <s> is lost, which
-could lead to a resource leak. The Resource Leak Checker would therefore warn about this
-code if \<bar> is declared to throw an exception.
+If \<bar> is declared to throw an exception, the Resource Leak Checker
+warns that a \<Socket> may be leaked.  If \<bar> throws an exception, the
+only reference to \<s> is lost, which could lead to a resource leak.
 
-Some exceptions can occur at any point in the program. For example, the JVM can
-throw an \<OutOfMemoryError> on any allocation. It is not feasible (or useful) for
-the Resource Leak Checker to reason about these kind of exceptions, and so possible
-exits due to them (and other run-time errors) are ignored.
+The Resource Leak Checker ignores control flow due to some exceptions.
 
-The Resource Leak Checker also ignores some other exception types when computing when
-an element will go out of scope, because programs can be verified to be free of them
-using other checkers. In particular, the Resource Leak Checker ignores \<NullPointerException>s
-(use the Nullness Checker (Section~\ref{nullness-checker})) and
+\begin{itemize}
+\item
+The Resource Leak Checker ignores run-time errors that can occur
+unpredictably at most points in the program. For example, the JVM can throw
+an \<OutOfMemoryError> on any allocation.  Similarly,
+\<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
+may occur at any reference to a class.  Such exceptions usually terminate
+the program.  Accounting for such exceptions would lead to vast numbers of
+false positive warnings, so the Resource Leak Checker assumes they are
+never thrown.  Strictly speaking, this is an unsoundness.
+
+\item
+The Resource Leak Checker also ignores exception types that can be verified
+to never occur.  In particular, the Resource Leak Checker ignores \<NullPointerException>s
+(use the Nullness Checker, \chapterpageref{nullness-checker}) and
 \<ArrayIndexOutOfBoundsException>s and \<NegativeArraySizeException>s (use the Index
-Checker (Section~\ref{index-checker})). Other exception types may be added to this
-list in the future (please let us know if there is a type that you think should
-be ignored by filing an issue listing both the exception type and the alternative
-verification tool).
+Checker, \chapterpageref{index-checker}). Other exception types may be added to this
+list in the future.  Please let us know if there is a type that you think should
+be ignored by filing an issue listing both the exception type and the
+verification tool.
+\end{itemize}
 
-% LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII
+% LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
 % LocalWords:  Partitioner CalledMethods AnoLightweightOwnership NotOwning
 % LocalWords:  AnoResourceAliasing MustCallAlias AnoCreatesMustCallFor
-% LocalWords:  EnsuresCalledMethods CreatesMustCallFor expr
+% LocalWords:  EnsuresCalledMethods CreatesMustCallFor expr Verification''
 % LocalWords:  closeSocket destructor'' destructor BufferedOutputStream
 % LocalWords:  AnoResourceAliases createsmustcallfor SocketContainer
-% LocalWords:  CalledMethodsBottom
+% LocalWords:  CalledMethodsBottom ArrayIndexOutOfBoundsException
+% LocalWords:  NegativeArraySizeException
