@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -125,7 +126,11 @@ public class ProperType extends AbstractType {
     TypeMirror subType = getJavaType();
     TypeMirror superJavaType = superType.getJavaType();
     if (subType.getKind() == TypeKind.WILDCARD) {
-      subType = context.types.erasure((Type) subType);
+      if (((WildcardType) subType).getExtendsBound() != null) {
+        subType = ((WildcardType) subType).getExtendsBound();
+      } else {
+        subType = context.types.erasure((Type) subType);
+      }
     }
 
     if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
