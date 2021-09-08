@@ -124,6 +124,9 @@ public class ProperType extends AbstractType {
   public ReductionResult isSubType(ProperType superType) {
     TypeMirror subType = getJavaType();
     TypeMirror superJavaType = superType.getJavaType();
+    if (subType.getKind() == TypeKind.WILDCARD) {
+      subType = context.types.erasure((Type) subType);
+    }
 
     if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
       AnnotatedTypeMirror superATM = superType.getAnnotatedType();
