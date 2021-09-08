@@ -872,7 +872,7 @@ public class InferenceFactory {
 
     AnnotatedExecutableType aet;
     if (expression.getKind() == Kind.LAMBDA_EXPRESSION) {
-      aet = typeFactory.getFnInterfaceFromTree((LambdaExpressionTree) expression).second;
+      aet = typeFactory.getFnInterfaceFromTree(expression).second;
     } else {
       aet = findFunctionType((MemberReferenceTree) expression, targetType).getAnnotatedType();
     }
