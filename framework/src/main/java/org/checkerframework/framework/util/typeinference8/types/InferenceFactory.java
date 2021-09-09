@@ -689,8 +689,8 @@ public class InferenceFactory {
    * Comparator<MyClass> func = MyClass::compareByField;
    * }</pre>
    *
-   * The function type is {@code compare​(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
-   * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+   * The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where as
+   * the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
    *
    * @param memRef method reference tree
    * @param targetType target type of the method reference tree
@@ -867,16 +867,14 @@ public class InferenceFactory {
       ExpressionTree expression, AbstractType targetType, Theta map) {
     ConstraintSet constraintSet = new ConstraintSet();
     ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
+    // The types in the function type's throws clause that are not proper types.
     List<Variable> es = new ArrayList<>();
     List<ProperType> properTypes = new ArrayList<>();
 
-    AnnotatedExecutableType aet;
-    if (expression.getKind() == Kind.LAMBDA_EXPRESSION) {
-      aet = typeFactory.getFnInterfaceFromTree(expression).second;
-    } else {
-      aet = findFunctionType((MemberReferenceTree) expression, targetType).getAnnotatedType();
-    }
-    Iterator<AnnotatedTypeMirror> iter = aet.getThrownTypes().iterator();
+    AnnotatedExecutableType functionType =
+        AnnotatedTypes.asMemberOf(
+            context.modelTypes, context.typeFactory, targetType.getAnnotatedType(), ele);
+    Iterator<AnnotatedTypeMirror> iter = functionType.getThrownTypes().iterator();
     for (TypeMirror thrownType : ele.getThrownTypes()) {
       AbstractType ei = InferenceType.create(iter.next(), thrownType, map, context);
       if (ei.isProper()) {

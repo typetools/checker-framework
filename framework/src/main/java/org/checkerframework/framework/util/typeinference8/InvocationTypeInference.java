@@ -57,6 +57,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsPlume;
 
 /**
  * Performs invocation type inference as described in <a
@@ -148,7 +149,7 @@ public class InvocationTypeInference {
     }
     ExecutableType e = InferenceFactory.getTypeOfMethodAdaptedToUse(invocation, context);
     // TODO: The captured types will differ, should I use the underlying type instead?
-    // ExecutableType e= methodType.getUnderlyingType();
+    // ExecutableType e = methodType.getUnderlyingType();
     List<Variable> result;
     try {
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
@@ -582,28 +583,9 @@ public class InvocationTypeInference {
     StringBuilder message = new StringBuilder();
     message.append(ex.getLocalizedMessage());
     if (checker.hasOption("printErrorStack")) {
-      message.append("\n").append(formatStackTrace(ex.getStackTrace()));
+      message.append(StringsPlume.join("\n", ex.getStackTrace()));
     }
     checker.reportError(methodInvocation, "type.inference.crash", message);
-  }
-
-  /** Format a list of {@link StackTraceElement}s to be printed out as an error message. */
-  private String formatStackTrace(StackTraceElement[] stackTrace) {
-    boolean first = true;
-    StringBuilder sb = new StringBuilder();
-    if (stackTrace.length == 0) {
-      sb.append("no stack trace available.");
-    } else {
-      sb.append("Stack trace: ");
-    }
-    for (StackTraceElement ste : stackTrace) {
-      if (!first) {
-        sb.append(Character.LINE_SEPARATOR);
-      }
-      first = false;
-      sb.append(ste.toString());
-    }
-    return sb.toString();
   }
 
   /**
