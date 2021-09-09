@@ -9,7 +9,6 @@ public class Issue1630 {
     return null;
   }
 
-  @SuppressWarnings("nullness") // Issue 979
   public static List<String> f(List<Integer> xs) {
     return xs != null
         ? xs.stream().map(Issue1630::toString).filter(Objects::nonNull).collect(Collectors.toList())
