@@ -154,7 +154,7 @@ public class InvocationTypeInference {
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
       result = inferInternal(invocation, invocationType);
     } catch (FalseBoundException ex) {
-      checker.reportError(invocation, "type.inference.failed");
+      //      checker.reportError(invocation, "type.inference.failed");
 
       if (ex.isAnnotatedTypeFailed()) {
         // This error indicates that type inference failed because some constraint between

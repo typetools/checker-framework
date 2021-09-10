@@ -3,6 +3,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 public class Issue3850 {
 
   private static Iterable<@PolyNull String> toPos(Iterable<? extends @PolyNull Object> nodes) {
+    // :: error: (lambda.param)
     // :: error: (return)
     return transform(nodes, node -> node == null ? null : node.toString());
   }
