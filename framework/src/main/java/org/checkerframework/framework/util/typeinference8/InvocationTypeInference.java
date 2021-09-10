@@ -174,7 +174,7 @@ public class InvocationTypeInference {
       return null;
     }
 
-    checkResult(result, invocation, e);
+    //    checkResult(result, invocation, e);
     return result;
   }
 
@@ -621,6 +621,7 @@ public class InvocationTypeInference {
    * Issues an error if the type arguments computed by this class do not match those computed by
    * javac.
    */
+  @SuppressWarnings("Unused")
   private void checkResult(
       List<Variable> result, ExpressionTree invocation, ExecutableType methodType) {
     Map<TypeVariable, TypeMirror> fromReturn =
