@@ -1550,7 +1550,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the lower bound type
      */
-    void setLowerBound(AnnotatedTypeMirror type) {
+    public void setLowerBound(AnnotatedTypeMirror type) {
       checkBound("Lower", type, this);
       this.lowerBound = type;
       fixupBoundAnnotations();
@@ -1616,7 +1616,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the upper bound type
      */
-    void setUpperBound(AnnotatedTypeMirror type) {
+    public void setUpperBound(AnnotatedTypeMirror type) {
       checkBound("Upper", type, this);
       this.upperBound = type;
       fixupBoundAnnotations();

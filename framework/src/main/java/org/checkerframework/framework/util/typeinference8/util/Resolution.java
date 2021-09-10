@@ -309,7 +309,8 @@ public class Resolution {
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
 
       typeVar.add(ai.getJavaType());
-      ProperType freshTypeVar = context.inferenceTypeFactory.createWildcard(lowerBound, upperBound);
+      ProperType freshTypeVar =
+          context.inferenceTypeFactory.createFreshTypeVariable(lowerBound, upperBound);
       typeArg.add(freshTypeVar);
     }
 
@@ -321,7 +322,7 @@ public class Resolution {
       Variable ai = asList.get(i);
       ContainsInferenceVariable.getMentionedTypeVariables(
           Collections.singleton(ai.getJavaType()), subsTypeArg.get(i).getJavaType());
-      ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i).capture(context));
+      ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
     }
 
     boundSet.incorporateToFixedPoint(resolvedBoundSet);

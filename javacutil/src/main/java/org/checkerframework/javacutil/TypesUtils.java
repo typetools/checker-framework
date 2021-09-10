@@ -9,6 +9,7 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Names;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1125,6 +1126,37 @@ public final class TypesUtils {
     com.sun.tools.javac.code.Types types =
         com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
     return types.freshTypeVariables(com.sun.tools.javac.util.List.of((Type) typeMirror)).head;
+  }
+
+  public static TypeMirror freshTypeVariable(
+      @Nullable TypeMirror upper, @Nullable TypeMirror lower, ProcessingEnvironment env) {
+    JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
+    Names names = Names.instance(javacEnv.getContext());
+    Symtab syms = Symtab.instance(javacEnv.getContext());
+    com.sun.tools.javac.util.Name capturedName = names.fromString("<captured wildcard>");
+    WildcardType wildcardType = null;
+    if (lower != null
+        && (lower.getKind() == TypeKind.ARRAY
+            || lower.getKind() == TypeKind.DECLARED
+            || lower.getKind() == TypeKind.TYPEVAR)) {
+
+      wildcardType = env.getTypeUtils().getWildcardType(null, lower);
+    } else if (upper != null
+        && (upper.getKind() == TypeKind.ARRAY
+            || upper.getKind() == TypeKind.DECLARED
+            || upper.getKind() == TypeKind.TYPEVAR)) {
+      wildcardType = env.getTypeUtils().getWildcardType(upper, null);
+    } else {
+      wildcardType = env.getTypeUtils().getWildcardType(null, null);
+    }
+    if (lower == null) {
+      lower = syms.botType;
+    }
+    if (upper == null) {
+      upper = syms.objectType;
+    }
+    return new CapturedType(
+        capturedName, syms.noSymbol, (Type) upper, (Type) lower, (Type.WildcardType) wildcardType);
   }
 
   /**

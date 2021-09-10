@@ -928,7 +928,7 @@ public class InferenceFactory {
    *
    * @param lowerBound a proper type or null
    * @param upperBound an abstract type or null
-   * @return a wildcard with the provide upper and lower bounds
+   * @return a wildcard with the provided upper and lower bounds
    */
   public ProperType createWildcard(ProperType lowerBound, AbstractType upperBound) {
     TypeMirror wildcard =
@@ -945,6 +945,31 @@ public class InferenceFactory {
       wildcardAtm.setExtendsBound(upperBound.getAnnotatedType());
     }
     return new ProperType(wildcardAtm, wildcard, context);
+  }
+
+  /**
+   * Creates a fresh type variable using the upper and lower bounds provided.
+   *
+   * @param lowerBound a proper type or null
+   * @param upperBound an abstract type or null
+   * @return a fresh type variable with the provided upper and lower bounds
+   */
+  public ProperType createFreshTypeVariable(ProperType lowerBound, AbstractType upperBound) {
+    TypeMirror freshTypeVariable =
+        TypesUtils.freshTypeVariable(
+            lowerBound == null ? null : lowerBound.getJavaType(),
+            upperBound == null ? null : upperBound.getJavaType(),
+            context.env);
+    AnnotatedTypeVariable typeVariable =
+        (AnnotatedTypeVariable)
+            AnnotatedTypeMirror.createType(freshTypeVariable, typeFactory, false);
+    if (lowerBound != null) {
+      typeVariable.setLowerBound(lowerBound.getAnnotatedType());
+    }
+    if (upperBound != null) {
+      typeVariable.setUpperBound(upperBound.getAnnotatedType());
+    }
+    return new ProperType(typeVariable, freshTypeVariable, context);
   }
 
   public List<ProperType> getSubsTypeArgs(

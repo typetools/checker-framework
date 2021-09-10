@@ -57,7 +57,6 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
 
 /**
  * Performs invocation type inference as described in <a
@@ -155,6 +154,8 @@ public class InvocationTypeInference {
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
       result = inferInternal(invocation, invocationType);
     } catch (FalseBoundException ex) {
+      checker.reportError(invocation, "type.inference.failed");
+
       if (ex.isAnnotatedTypeFailed()) {
         // This error indicates that type inference failed because some constraint between
         // annotated types could not be satisfied.
@@ -162,14 +163,14 @@ public class InvocationTypeInference {
 
         // TODO: Add more detail to the error message to indicate which bounds/constraints
         // could not be satisfied so that the user can figure out how to correct their code.
-        checker.reportError(invocation, "type.inference.failed");
       } else {
-        logException(invocation, ex);
+        //        throw ex;
       }
       return null;
-    } catch (Exception ex) {
-      // Catch any exception so all crashes in a compilation unit are reported.
-      logException(invocation, ex);
+    } catch (ProperType.CantCompute ex) {
+      // This exception is thrown when inference found an uninferred type argument when
+      // getting the type of an expression.
+      // This should be removed once Java 8 inference is actually used by the framework.
       return null;
     }
 
@@ -567,25 +568,6 @@ public class InvocationTypeInference {
       current.incorporateToFixedPoint(newBounds);
     }
     return current;
-  }
-
-  /**
-   * Convert the exceptions into a checker error and report it. Don't throw the exceptions so that
-   * the checker continues checking. Eventually this method should throw the exception.
-   */
-  private void logException(ExpressionTree methodInvocation, Exception ex) {
-    if (ex instanceof ProperType.CantCompute) {
-      // This exception is thrown when inference found an uninferred type argument when
-      // getting the type of an expression.
-      // This should be removed once Java 8 inference is actually used by the framework.
-      return;
-    }
-    StringBuilder message = new StringBuilder();
-    message.append(ex.getLocalizedMessage());
-    if (checker.hasOption("printErrorStack")) {
-      message.append(StringsPlume.join("\n", ex.getStackTrace()));
-    }
-    checker.reportError(methodInvocation, "type.inference.crash", message);
   }
 
   /**
