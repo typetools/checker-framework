@@ -732,7 +732,7 @@ public class InferenceFactory {
    * @return the type of {@code element}
    */
   public AbstractType getTypeOfElement(Element element, Theta map) {
-    AnnotatedTypeMirror atm = typeFactory.getAnnotatedType(element);
+    AnnotatedTypeMirror atm = typeFactory.getAnnotatedType(element).asUse();
     return InferenceType.create(atm, element.asType(), map, context);
   }
 

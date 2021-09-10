@@ -41,7 +41,7 @@ public class InferenceType extends AbstractType {
       AnnotatedTypeMirror type, TypeMirror typeMirror, Theta map, Java8InferenceContext context) {
     super(context);
     assert type.getKind() == typeMirror.getKind();
-    this.type = type;
+    this.type = type.asUse();
     this.typeMirror = typeMirror;
     this.map = map;
   }
@@ -171,6 +171,7 @@ public class InferenceType extends AbstractType {
     for (Variable alpha : instantiations) {
       if (map.containsValue(alpha)) {
         AnnotatedTypeMirror instantiation = alpha.getBounds().getInstantiation().getAnnotatedType();
+        context.typeFactory.initializeAtm(instantiation);
         mapping.put(alpha.getJavaType(), instantiation);
       }
     }
