@@ -2,7 +2,6 @@ package org.checkerframework.checker.resourceleak;
 
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -34,7 +33,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    * @param analysis the analysis. Its type factory must be a {@link
    *     ResourceLeakAnnotatedTypeFactory}.
    */
-  public ResourceLeakTransfer(final CalledMethodsAnalysis analysis) {
+  public ResourceLeakTransfer(final ResourceLeakAnalysis analysis) {
     super(analysis);
     this.rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) analysis.getTypeFactory();
   }
