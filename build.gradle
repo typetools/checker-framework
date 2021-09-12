@@ -164,6 +164,7 @@ allprojects {
         // any module to reference classes in any other module.
         // Also, build and use ManualTaglet as a taglet.
         tasks.withType(Javadoc) {
+            // Similar test in framework-test/build.gradle
             def tagletVersion = isJava8 ? 'taglet' : 'tagletJdk11'
 
             dependsOn(':checker:shadowJar')
@@ -781,6 +782,8 @@ subprojects {
                 relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
             }
         }
+
+        minimize()
     }
 
     if (!project.name.startsWith('checker-qual-android')) {

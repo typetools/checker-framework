@@ -1,4 +1,6 @@
 plugins {
+    id 'java-library'
+
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
     id 'com.gorylenko.gradle-git-properties' version '2.3.1'
 }
@@ -27,9 +29,9 @@ configurations {
 }
 
 dependencies {
-    implementation project(':javacutil')
-    implementation project(':dataflow')
-    implementation project(':framework')
+    // Use "api" instead of "implementation" to re-export sub-projects, making
+    // sure "minimize()" does not remove those classes.
+    api project(':framework')
 
     /* NO-AFU
     // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
@@ -39,8 +41,8 @@ dependencies {
     }
     */
 
-    implementation project(':checker-qual')
-    implementation project(':checker-util')
+    api project(':checker-qual')
+    api project(':checker-util')
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages.
@@ -183,6 +185,8 @@ shadowJar {
             rename 'checker.*', 'checker.jar'
         }
     }
+
+    minimize()
 }
 
 artifacts {

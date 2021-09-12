@@ -4,6 +4,8 @@ Version 3.18.0-eisop1 (September ?, 2021)
 The new `-AnoJreVersionCheck` command-line argument can be used to not get
 a warning about running the Checker Framework on an unsupported JRE version.
 
+JAR files are minimized to only include required classes.
+
 Temporarily remove support for "Whole Program Inference" - the -Ainfer option and
 related scripts.
 
