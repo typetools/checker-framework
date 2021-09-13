@@ -611,8 +611,23 @@ public class InferenceFactory {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.13.1">JLS section
    * 15.13.1</a> for a complete definition.
    *
-   * <p>See {@link #findFunctionType(MemberReferenceTree, AbstractType)} for an explanation of the
-   * difference between compile-time declaration type and function type of a method reference.
+   * <p>The type of a member reference is a functional interface. The function type of a member
+   * reference is the type of the single abstract method declared by the functional interface. The
+   * compile-time declaration type is the type of the actual method referenced by the method
+   * reference, i.e. the method that is actually being referenced.
+   *
+   * <p>For example,
+   *
+   * <pre>{@code
+   * static class MyClass {
+   *   String field;
+   *   public static int compareByField(MyClass a, MyClass b) { ... }
+   * }
+   * Comparator<MyClass> func = MyClass::compareByField;
+   * }</pre>
+   *
+   * The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where as
+   * the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
    *
    * @param memRef method reference tree
    * @param targetType {@code memRef}'s target type
@@ -667,43 +682,6 @@ public class InferenceFactory {
     return new InvocationType(
         compileTimeType,
         TreeUtils.compileTimeDeclarationType(memRef, targetType.getJavaType(), context.env),
-        memRef,
-        context);
-  }
-
-  /**
-   * Returns the function type of the member reference when the target type is {@code targetType}.
-   *
-   * <p>The type of a member reference is a functional interface. The function type of a member
-   * reference is the type of the single abstract method declared by the functional interface. The
-   * compile-time declaration type is the type of the actual method referenced by the method
-   * reference, i.e. the method that is actually being referenced.
-   *
-   * <p>For example,
-   *
-   * <pre>{@code
-   * static class MyClass {
-   *   String field;
-   *   public static int compareByField(MyClass a, MyClass b) { ... }
-   * }
-   * Comparator<MyClass> func = MyClass::compareByField;
-   * }</pre>
-   *
-   * The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where as
-   * the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
-   *
-   * @param memRef method reference tree
-   * @param targetType target type of the method reference tree
-   * @return the function type of the member reference when the target type is {@code targetType}
-   */
-  public InvocationType findFunctionType(MemberReferenceTree memRef, AbstractType targetType) {
-    InvocationType other = compileTimeDeclarationType(memRef, targetType);
-
-    // The type of the single method that is declared by the functional interface.
-    AnnotatedExecutableType functionType = other.getAnnotatedType();
-    return new InvocationType(
-        functionType,
-        TypesUtils.findFunctionType(TreeUtils.typeOf(memRef), context.env),
         memRef,
         context);
   }

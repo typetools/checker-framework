@@ -144,7 +144,8 @@ public class Expression extends Constraint {
   private ReductionResult reduceMethodRef(Java8InferenceContext context) {
     MemberReferenceTree memRef = (MemberReferenceTree) expression;
     if (TreeUtils.isExactMethodReference(memRef)) {
-      InvocationType typeOfPoAppMethod = context.inferenceTypeFactory.findFunctionType(memRef, T);
+      InvocationType typeOfPoAppMethod =
+          context.inferenceTypeFactory.compileTimeDeclarationType(memRef, T);
 
       ConstraintSet constraintSet = new ConstraintSet();
       List<AbstractType> ps = T.getFunctionTypeParameterTypes();
@@ -167,7 +168,7 @@ public class Expression extends Constraint {
       }
       AbstractType r = T.getFunctionTypeReturnType();
       if (r != null && r.getTypeKind() != TypeKind.VOID) {
-        AbstractType rPrime = typeOfPoAppMethod.getReturnType(null);
+        AbstractType rPrime = typeOfPoAppMethod.getReturnType(null).capture(context);
         constraintSet.add(new Typing(rPrime, r, Constraint.Kind.TYPE_COMPATIBILITY));
       }
       return constraintSet;
