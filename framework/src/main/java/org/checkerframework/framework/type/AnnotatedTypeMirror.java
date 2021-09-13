@@ -969,12 +969,12 @@ public abstract class AnnotatedTypeMirror {
             for (AnnotatedTypeMirror typeArg : ts) {
               if (typeArg.getKind() != TypeKind.TYPEVAR) {
                 throw new BugInCF(
-                    "Type declaration must have type variables as type arguments. Found: %s.",
+                    "Type declaration must have type variables as type arguments. Found %s",
                     typeArg);
               }
               if (!typeArg.isDeclaration()) {
                 throw new BugInCF(
-                    "Type declarations must have type varaibles that are declarations. Found %s",
+                    "Type declarations must have type variables that are declarations. Found %s",
                     typeArg);
               }
             }
