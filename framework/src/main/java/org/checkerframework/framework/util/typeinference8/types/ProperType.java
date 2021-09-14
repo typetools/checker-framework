@@ -16,6 +16,7 @@ import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -83,8 +84,9 @@ public class ProperType extends AbstractType {
       }
     }
 
-    assert typeMirror.getKind() == atm.getKind()
-        : String.format("type: %s atm: %s", typeMirror, atm.getUnderlyingType());
+    if (typeMirror.getKind() != atm.getKind()) {
+      throw new BugInCF("type: %s atm: %s", typeMirror, atm.getUnderlyingType());
+    }
     return atm;
   }
 

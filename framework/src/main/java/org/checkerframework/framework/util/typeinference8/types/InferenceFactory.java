@@ -102,40 +102,27 @@ public class InferenceFactory {
         return Pair.of(variableAtm, TreeUtils.typeOf(variableTree.getType()));
       case METHOD_INVOCATION:
         MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
-        ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
-        AnnotatedTypeMirror receiver = factory.getReceiverType(methodInvocation);
+        AnnotatedExecutableType methodType = factory.methodFromUse(methodInvocation).executableType;
         AnnotatedTypeMirror ex =
             assignedToExecutable(
-                path,
-                methodInvocation,
-                methodInvocation.getArguments(),
-                receiver,
-                factory,
-                methodElt);
+                path, methodInvocation, methodInvocation.getArguments(), methodType);
         return Pair.of(
             ex,
             assignedToExecutable(path, methodInvocation, methodInvocation.getArguments(), context));
       case NEW_CLASS:
         NewClassTree newClassTree = (NewClassTree) assignmentContext;
-        ExecutableElement constructorElt = TreeUtils.constructor(newClassTree);
-        AnnotatedTypeMirror receiverConst = factory.fromNewClass(newClassTree);
+        AnnotatedExecutableType constructorType =
+            factory.constructorFromUse(newClassTree).executableType;
         AnnotatedTypeMirror constATM =
-            assignedToExecutable(
-                path,
-                newClassTree,
-                newClassTree.getArguments(),
-                receiverConst,
-                factory,
-                constructorElt);
+            assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return Pair.of(
             constATM,
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), context));
       case NEW_ARRAY:
         NewArrayTree newArrayTree = (NewArrayTree) assignmentContext;
         ArrayType arrayType = (ArrayType) TreeUtils.typeOf(newArrayTree);
-        AnnotatedTypeMirror type = factory.getAnnotatedType((NewArrayTree) assignmentContext);
-        AnnotatedTypeMirror component =
-            ((AnnotatedTypeMirror.AnnotatedArrayType) type).getComponentType();
+        AnnotatedArrayType type = factory.getAnnotatedType((NewArrayTree) assignmentContext);
+        AnnotatedTypeMirror component = type.getComponentType();
         return Pair.of(component, arrayType.getComponentType());
       case RETURN:
         HashSet<Kind> kinds =
@@ -252,9 +239,7 @@ public class InferenceFactory {
       TreePath path,
       ExpressionTree methodInvocation,
       List<? extends ExpressionTree> arguments,
-      AnnotatedTypeMirror receiver,
-      AnnotatedTypeFactory atypeFactory,
-      ExecutableElement methodElt) {
+      AnnotatedExecutableType methodType) {
     int treeIndex = -1;
     for (int i = 0; i < arguments.size(); ++i) {
       ExpressionTree argumentTree = arguments.get(i);
@@ -264,9 +249,6 @@ public class InferenceFactory {
       }
     }
 
-    AnnotatedExecutableType methodType =
-        AnnotatedTypes.asMemberOf(
-            atypeFactory.getProcessingEnv().getTypeUtils(), atypeFactory, receiver, methodElt);
     if (treeIndex >= methodType.getParameterTypes().size() - 1
         && TreeUtils.isVarArgMethodCall(methodInvocation)) {
       treeIndex = methodType.getParameterTypes().size() - 1;
