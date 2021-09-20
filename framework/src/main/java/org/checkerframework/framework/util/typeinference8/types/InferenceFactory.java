@@ -102,7 +102,10 @@ public class InferenceFactory {
         return Pair.of(variableAtm, TreeUtils.typeOf(variableTree.getType()));
       case METHOD_INVOCATION:
         MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
+        boolean oldShouldCache = factory.shouldCache;
+        factory.shouldCache = false;
         AnnotatedExecutableType methodType = factory.methodFromUse(methodInvocation).executableType;
+        factory.shouldCache = oldShouldCache;
         AnnotatedTypeMirror ex =
             assignedToExecutable(
                 path, methodInvocation, methodInvocation.getArguments(), methodType);
@@ -111,8 +114,11 @@ public class InferenceFactory {
             assignedToExecutable(path, methodInvocation, methodInvocation.getArguments(), context));
       case NEW_CLASS:
         NewClassTree newClassTree = (NewClassTree) assignmentContext;
+        boolean oldShouldCacheNewClass = factory.shouldCache;
+        factory.shouldCache = false;
         AnnotatedExecutableType constructorType =
             factory.constructorFromUse(newClassTree).executableType;
+        factory.shouldCache = oldShouldCacheNewClass;
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return Pair.of(
