@@ -105,7 +105,6 @@ public class InferenceFactory {
         boolean oldShouldCache = factory.shouldCache;
         factory.shouldCache = false;
         boolean oldpolyResol = factory.polyResol;
-        ;
         factory.polyResol = false;
         AnnotatedExecutableType methodType = factory.methodFromUse(methodInvocation).executableType;
         factory.shouldCache = oldShouldCache;
@@ -120,9 +119,12 @@ public class InferenceFactory {
         NewClassTree newClassTree = (NewClassTree) assignmentContext;
         boolean oldShouldCacheNewClass = factory.shouldCache;
         factory.shouldCache = false;
+        boolean oldpolyResolNC = factory.polyResol;
+        factory.polyResol = false;
         AnnotatedExecutableType constructorType =
             factory.constructorFromUse(newClassTree).executableType;
         factory.shouldCache = oldShouldCacheNewClass;
+        factory.polyResol = oldpolyResolNC;
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return Pair.of(

@@ -1726,7 +1726,9 @@ public abstract class GenericAnnotatedTypeFactory<
   @Override
   protected void constructorFromUsePreSubstitution(
       NewClassTree tree, AnnotatedExecutableType type) {
-    poly.resolve(tree, type);
+    if (polyResol) {
+      poly.resolve(tree, type);
+    }
   }
 
   @Override
