@@ -2040,7 +2040,9 @@ public abstract class GenericAnnotatedTypeFactory<
   public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
     super.methodFromUsePreSubstitution(tree, type);
     if (tree instanceof MethodInvocationTree) {
-      poly.resolve((MethodInvocationTree) tree, type);
+      if (polyResol) {
+        poly.resolve((MethodInvocationTree) tree, type);
+      }
     }
   }
 

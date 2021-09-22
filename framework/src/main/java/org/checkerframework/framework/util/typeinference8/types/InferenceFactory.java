@@ -104,8 +104,12 @@ public class InferenceFactory {
         MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
         boolean oldShouldCache = factory.shouldCache;
         factory.shouldCache = false;
+        boolean oldpolyResol = factory.polyResol;
+        ;
+        factory.polyResol = false;
         AnnotatedExecutableType methodType = factory.methodFromUse(methodInvocation).executableType;
         factory.shouldCache = oldShouldCache;
+        factory.polyResol = oldpolyResol;
         AnnotatedTypeMirror ex =
             assignedToExecutable(
                 path, methodInvocation, methodInvocation.getArguments(), methodType);
