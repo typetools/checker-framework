@@ -61,16 +61,6 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
 
 # ---------------------------------------------------------------------------------
 
-# TODO: publish to GitHub
-
-# The location the test site is built in
-DEV_SITE_URL = "https://checkerframework.org/dev"
-DEV_SITE_DIR = "/cse/www2/types/checker-framework/dev"
-
-# The location the test site is pushed to when it is ready
-LIVE_SITE_URL = "https://checkerframework.org"
-LIVE_SITE_DIR = "/cse/www2/types/checker-framework"
-
 # Per-user directory for the temporary files created by the release process
 # ("USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566.
 # Another alternative is: USER = os.getenv('USER').)
@@ -136,6 +126,16 @@ LIVE_TO_INTERM_REPOS = (
     (LIVE_CHECKER_REPO, INTERM_CHECKER_REPO),
     (LIVE_ANNO_REPO, INTERM_ANNO_REPO),
 )
+
+# TODO: publish to GitHub
+
+# The location the test site is built in
+DEV_SITE_URL = "https://eisop.github.io/cf/dev"
+DEV_SITE_DIR = TMP_DIR + "/web-cf-dev"
+
+# The location the test site is pushed to when it is ready
+LIVE_SITE_URL = "https://eisop.github.io/cf"
+LIVE_SITE_DIR = TMP_DIR + "/web-cf"
 
 AFU_LIVE_SITE = os.path.join(LIVE_SITE_DIR, "annotation-file-utilities")
 AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
