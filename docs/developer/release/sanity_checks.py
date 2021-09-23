@@ -59,7 +59,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     )
     download_binary(new_checkers_release_zip, javac_sanity_zip)
 
-    nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
+    nullness_example_url = "https://raw.githubusercontent.com/eisop/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
     nullness_example = os.path.join(
         javac_sanity_dir, "NullnessExampleWithWarnings.java"
     )

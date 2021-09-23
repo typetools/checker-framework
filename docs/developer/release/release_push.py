@@ -342,7 +342,7 @@ def main(argv):
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/dev/
-    # The output of the link checker is written to files in the /scratch/$USER/cf-release directory
+    # The output of the link checker is written to files in the /tmp/$USER/cf-release directory
     # whose locations will be output at the command prompt if the link checker reported errors.
 
     # In rare instances (such as when a link is correct but the link checker is
@@ -462,7 +462,7 @@ def main(argv):
 
     # Runs the link the checker on all websites at:
     # https://checkerframework.org/
-    # The output of the link checker is written to files in the /scratch/$USER/cf-release directory whose locations
+    # The output of the link checker is written to files in the /tmp/$USER/cf-release directory whose locations
     # will be output at the command prompt. Review the link checker output.
 
     # The set of broken links that is displayed by this check will differ from those in push
@@ -545,7 +545,7 @@ def main(argv):
             + "\n"
             + "To post the Checker Framework release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-"
+            + "* Go to https://github.com/eisop/checker-framework/releases/new?tag=checker-framework-"
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Checker Framework "
@@ -559,7 +559,7 @@ def main(argv):
             + "\n"
             + "To post the Annotation File Utilities release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/typetools/annotation-tools/releases/new?tag="
+            + "* Go to https://github.com/eisop/annotation-tools/releases/new?tag="
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Annotation File Utilities "

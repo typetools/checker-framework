@@ -130,7 +130,7 @@ def check_tools(tools):
     print(", ".join(tools))
     print(
         (
-            "Note: If you are NOT working on buffalo.cs.washington.edu then you "
+            "Note: If you are NOT working in the Release Docker image then you "
             + "likely need to change the variables that are set in release.py\n"
             + 'Search for "Set environment variables".'
         )

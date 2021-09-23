@@ -106,7 +106,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <b>Update stubparser.</b> If there has been
     a <a href="https://github.com/javaparser/javaparser/releases">JavaParser
     release</a> since the last Checker Framework
-    release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
+    release, <a href="https://github.com/eisop/stubparser#updating-from-upstream-javaparser">update
     Stubparser from JavaParser</a>.
   </li>
   <li>Update the Checker Framework source code:
@@ -117,7 +117,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 make contributors.tex
 git diff `git rev-list -1 --before 1.month.ago origin/master` HEAD -- contributors.tex
 </code></pre>
-        Update the <a href="https://github.com/plume-lib/plume-scripts/blob/master/git-authors.sed"><code>plume-scripts/git-authors.sed</code></a> script if
+        Update the <a href="https://github.com/eisop-plume-lib/plume-scripts/blob/master/git-authors.sed"><code>plume-scripts/git-authors.sed</code></a> script if
         any customizations are necessary.
       </li>
       <li>
@@ -173,18 +173,18 @@ TreeAnnotator
         </p>
       </li>
       <li>
-        <b>Commit and push</b> these changes to typetools/master.
+        <b>Commit and push</b> these changes to eisop/master.
       </li>
     </ul>
   <li>
-      <strong>Log into Buffalo</strong><br/>
-      <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
+      <strong>Log into the <a href="#release_docker">Release Docker image</a></strong><br/>
+      <code>TODO<br/></code>
   </li>
   <li>
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
-      <code>mkdir -p /scratch/$USER/cf-release<br/></code>
-      <code>cd /scratch/$USER/cf-release<br/></code>
-      <code>test -d checker-framework && (cd checker-framework && git pull --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
+      <code>mkdir -p /tmp/$USER/cf-release<br/></code>
+      <code>cd /tmp/$USER/cf-release<br/></code>
+      <code>test -d checker-framework && (cd checker-framework && git pull --quiet) || git clone --quiet https://github.com/eisop/checker-framework.git<br/></code>
       <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
   </li>
@@ -211,7 +211,8 @@ TreeAnnotator
   <li> <strong>Update list of qualifiers in Project Lombok.</strong>
     Following the instructions in <a href="https://github.com/projectlombok/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java#L108">HandlerUtil.java</a>.
     If the release did not add, remove, or rename any type qualifiers, no changes are required.
-    Those instructions do not work on macOS, so you may need to use buffalo to make the changes.
+    Those instructions do not work on macOS, so you may need to use the
+    <a href="#release_docker">Release Docker image</a> to make the changes.
   </li>
 </ol>
 
@@ -225,9 +226,9 @@ TreeAnnotator
 <ol>
   <li>The following Continuous Integration builds should be passing (refresh this page to see the latest status):
   <ul>
-    <li>Annotation File Utilities: <a href="https://travis-ci.org/typetools/annotation-tools/branches"><img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master" alt="Travis typetools/annotation-tools status"/></a></li>
-    <li>Checker Framework: <a href="https://dev.azure.com/typetools/checker-framework/_build/latest?definitionId=2&branchName=master"><img src="https://dev.azure.com/typetools/checker-framework/_apis/build/status/typetools.checker-framework?branchName=master" alt="Azure Pipelines typetools/checker-framework status"/></a></li>
-    <li>checker-framework.demos: <a href="https://travis-ci.org/typetools/checker-framework.demos/branches"><img src="https://travis-ci.org/typetools/checker-framework.demos.svg?branch=master" alt="Travis typetools/checker-framework.demos status"/></a></li>
+    <li>Annotation File Utilities: <a href="https://travis-ci.org/eisop/annotation-tools/branches"><img src="https://travis-ci.org/eisop/annotation-tools.svg?branch=master" alt="Travis eisop/annotation-tools status"/></a></li>
+    <li>Checker Framework: <a href="https://dev.azure.com/eisop/checker-framework/_build/latest?definitionId=2&branchName=master"><img src="https://dev.azure.com/eisop/checker-framework/_apis/build/status/eisop.checker-framework?branchName=master" alt="Azure Pipelines eisop/checker-framework status"/></a></li>
+    <li>checker-framework.demos: <a href="https://travis-ci.org/eisop/checker-framework.demos/branches"><img src="https://travis-ci.org/eisop/checker-framework.demos.svg?branch=master" alt="Travis eisop/checker-framework.demos status"/></a></li>
     <li>Daikon: <a href="https://dev.azure.com/codespecs/daikon/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/codespecs/daikon/_apis/build/status/codespecs.daikon?branchName=master" alt="codespecs/daikon Azure Pipelines status"></a></li>
     <li>guava-typecheck: <a href="https://travis-ci.org/typetests/guava-typecheck/branches"><img src="https://travis-ci.org/typetests/guava-typecheck.svg?branch=master" alt="Travis typetests/guava-typecheck status"/></a></li>
   </ul>
@@ -289,21 +290,21 @@ SONATYPE_NEXUS_PASSWORD=your_password</pre>
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
         the issue trackers.
-        You should be listed as a member of typetools on a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
+        You should be listed as a member of eisop as a committer on <a href="https://github.com/orgs/eisop/teams/committers">GitHub</a>.
       </td>
     </tr>
     <tr>
       <td>6.</td>
       <td><strong>Install html5validator</strong><br/>
-       If you are going to perform the release on buffalo, you may need to install
-       html5validator.  If <code>html5validator --version</code> issues any errors, try running
-       <code>pip install --user html5validator</code>.  You may need to add <code>.local/bin</code>
+       If you are going to perform the release outside the <a href="#release_docker">Release Docker image</a>,
+       you may need to install html5validator.  If <code>html5validator --version</code> issues any errors,
+       try running <code>pip install --user html5validator</code>.  You may need to add <code>.local/bin</code>
        to your path.
       </td>
     </tr>
     <tr>
       <td>7.</td>
-      <td><strong>Add GitHub SSH keys to buffalo</strong><br/>
+      <td><strong>Add GitHub SSH keys to your <a href="#release_docker">Release Docker image</a></strong><br/>
       See <a href="https://help.github.com/articles/connecting-to-github-with-ssh/">GitHub docs</a>.
       </td>
     </tr>
@@ -329,13 +330,13 @@ git config --global user.email you@example.com</pre>
   </table>
 
   <h2 id="release_process_overview">Release Process Overview</h2>
-  <p>This section first explains the structure of the projects on disk on Buffalo, then lists scripts used during the release process.</p>
+  <p>This section first explains the structure of the projects on disk and then lists scripts used during the release process.</p>
 
     <h3 id="file_layout">File Layout</h3>
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
       <tr>
-        <td colspan="2" class="top_file">/scratch/$USER/cf-release</td>
+        <td colspan="2" class="top_file">/tmp/$USER/cf-release</td>
         <td>Contains repositories and scripts to perform a release</td>
       </tr>
       <tr>
@@ -452,8 +453,8 @@ git config --global user.email you@example.com</pre>
         <td>release_vars.py</td>
         <td>Global variables used in release_push, release_build, and sanity_checks.  These should NOT
           be used in release_utils as release_utils is supposed to consist of self-contained
-          reusable methods.  These variables are tailored for running the scripts on
-          buffalo.cs.washington.edu
+          reusable methods.  These variables are tailored for running the scripts in
+          the <a href="#release_docker">Release Docker image</a>.
         </td>
       </tr>
       <tr>
@@ -486,14 +487,14 @@ git config --global user.email you@example.com</pre>
         <ul>
           <li>List all issues (in issue trackers) resolved since the previous release:
             <a href="https://checkerframework.org/CHANGELOG.md">previous release</a>,
-            <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-            <a href="https://github.com/typetools/checker-framework/blob/master/docs/changelog.txt">current changelog</a>.
+            <a href="https://github.com/eisop/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+            <a href="https://github.com/eisop/checker-framework/blob/master/docs/changelog.txt">current changelog</a>.
           </li>
           <li>
             Ensure the changelogs reflect version control commits since the last release, via the
             command line:<br/>
             <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-            or via <a href="https://github.com/typetools/checker-framework/commits/master">GitHub Checker Framework commit logs</a>.
+            or via <a href="https://github.com/eisop/checker-framework/commits/master">GitHub Checker Framework commit logs</a>.
           </li>
           <li>
             Ensure the changelogs reflect changes to the manual since the last release, via the
@@ -507,14 +508,14 @@ git config --global user.email you@example.com</pre>
         <ul>
           <li>List all issues (in issue trackers) resolved since the previous release:
             <a href="https://checkerframework.org/annotation-file-utilities/changelog.html">previous release</a>,
-            <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-            <a href="https://github.com/typetools/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>
+            <a href="https://github.com/eisop/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+            <a href="https://github.com/eisop/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>
           </li>
           <li>
             Ensure the changelogs reflect version control commits since the last release, via the
             command line:<br/>
             <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-            or via <a href="https://github.com/typetools/annotation-tools/commits/master">GitHub Annotation File Utilities commit logs</a>.
+            or via <a href="https://github.com/eisop/annotation-tools/commits/master">GitHub Annotation File Utilities commit logs</a>.
           </li>
           <li>
             Ensure the changelogs reflect changes to the manual since the last release, via the
@@ -589,6 +590,10 @@ git config --global user.email you@example.com</pre>
     reason or other.  It is important to remember that the symlinks may be absolute.  You should check any
     symlinks that may be affected by the move and ensure they point to the new location and not the old one.
   </p>
+
+  <h2 id="release_docker">Release Docker image</h2>
+  <p>TODO: provide a docker image that can be used for reproducible releases.</p>
+  <p>TODO: remove remaining uses of "buffalo".</p>
 
   <h2 id="future_improvements">Future Improvements</h2>
   <p>Below is a roughly priority-ordered list of future improvements.  In a perfect world we would do

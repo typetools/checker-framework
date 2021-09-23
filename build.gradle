@@ -56,17 +56,17 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_13:
     case JavaVersion.VERSION_14:
     case JavaVersion.VERSION_15:
-    case JavaVersion.VERSION_17:
+    case JavaVersion.VERSION_16:
     case JavaVersion.VERSION_18:
-        logger.warn("The Checker Framework has only been tested with JDKs 8, 11, and 16." +
+        logger.warn("The Checker Framework has only been tested with JDKs 8, 11, and 17." +
                 " Found version " + JavaVersion.current().majorVersion);
         break;
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
-    case JavaVersion.VERSION_16:
+    case JavaVersion.VERSION_17:
         break; // Supported versions
     default:
-        throw new GradleException("Build the Checker Framework with JDK 8, 11, or 16." +
+        throw new GradleException("Build the Checker Framework with JDK 8, 11, or 17." +
                 " Found version " + JavaVersion.current().majorVersion);
 }
 
@@ -99,7 +99,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.18.0'
+    version '3.18.0-eisop1'
 
     repositories {
         mavenCentral()

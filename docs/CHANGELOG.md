@@ -1,4 +1,4 @@
-Version 3.18.0-eisop1 (September ?, 2021)
+Version 3.18.0-eisop1 (September 23, 2021)
 --------------------------------------
 
 The new `-AnoJreVersionCheck` command-line argument can be used to not get

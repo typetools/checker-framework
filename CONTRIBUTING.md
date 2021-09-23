@@ -20,18 +20,18 @@ bug, and we want to fix it.  Please report it.
 ## Submitting changes
 
 Please see the [pull
-requests](https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#pull-requests)
+requests](https://htmlpreview.github.io/?https://github.com/eisop/checker-framework/master/docs/developer/developer-manual.html#pull-requests)
 section of the Developer Manual.
 
-Submit changes to the annotated JDK at https://github.com/typetools/jdk/pulls .
+Submit changes to the annotated JDK at https://github.com/eisop/jdk/pulls .
 Annotations for other libraries can be contributed as stub files in this
-repository, in a fork of the library in https://github.com/typetools/, or
+repository, in a fork of the library in https://github.com/eisop/, or
 in the library's own repository.
 
 Do you want to contribute to the project, but you are not sure what issue
 to fix or what feature to add?  Use the tool in your daily work, and when
 you encounter a limitation that bothers you, fix that one.  The ["help
-wanted"](https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
+wanted"](https://github.com/eisop/checker-framework/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22)
 label marks issues that require less deep knowledge and may be appropriate
 for a newcomer to the codebase.
 
