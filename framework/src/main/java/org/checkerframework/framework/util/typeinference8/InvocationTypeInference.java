@@ -423,7 +423,7 @@ public class InvocationTypeInference {
 
   /**
    * Adds argument constraints for the argument {@code ei} and its subexpressions. These are in
-   * addtion to the constraints added in {@link #createC(InvocationType, List, Theta)}.
+   * addition to the constraints added in {@link #createC(InvocationType, List, Theta)}.
    *
    * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
    * invocation, new class tree, conditional expression, or parenthesized expression.

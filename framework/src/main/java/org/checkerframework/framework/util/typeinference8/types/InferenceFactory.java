@@ -41,6 +41,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -78,14 +79,13 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the type that the leaf of path is assigned to, if it is within an assignment context.
-   * Returns the type that the method invocation at the leaf is assigned to. If the result is a
-   * primitive, return the boxed version.
+   * Gets the target type for the expression for which type arguments are being inferred.
    *
-   * @return type that path leaf is assigned to
+   * @return target type for the expression for which type arguments are being inferred
    */
-  private static Pair<AnnotatedTypeMirror, TypeMirror> getTargetType(
-      AnnotatedTypeFactory factory, TreePath path, Java8InferenceContext context) {
+  public @Nullable ProperType getTargetType() {
+    AnnotatedTypeFactory factory = context.typeFactory;
+    TreePath path = context.pathToExpression;
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
     if (assignmentContext == null) {
       return null;
@@ -95,11 +95,11 @@ public class InferenceFactory {
       case ASSIGNMENT:
         ExpressionTree variable = ((AssignmentTree) assignmentContext).getVariable();
         AnnotatedTypeMirror atm = factory.getAnnotatedType(variable);
-        return Pair.of(atm, TreeUtils.typeOf(variable));
+        return new ProperType(atm, TreeUtils.typeOf(variable), context);
       case VARIABLE:
         VariableTree variableTree = (VariableTree) assignmentContext;
         AnnotatedTypeMirror variableAtm = assignedToVariable(factory, assignmentContext);
-        return Pair.of(variableAtm, TreeUtils.typeOf(variableTree.getType()));
+        return new ProperType(variableAtm, TreeUtils.typeOf(variableTree.getType()), context);
       case METHOD_INVOCATION:
         MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
         boolean oldShouldCache = factory.shouldCache;
@@ -112,9 +112,10 @@ public class InferenceFactory {
         AnnotatedTypeMirror ex =
             assignedToExecutable(
                 path, methodInvocation, methodInvocation.getArguments(), methodType);
-        return Pair.of(
+        return new ProperType(
             ex,
-            assignedToExecutable(path, methodInvocation, methodInvocation.getArguments(), context));
+            assignedToExecutable(path, methodInvocation, methodInvocation.getArguments(), context),
+            context);
       case NEW_CLASS:
         NewClassTree newClassTree = (NewClassTree) assignmentContext;
         boolean oldShouldCacheNewClass = factory.shouldCache;
@@ -127,15 +128,16 @@ public class InferenceFactory {
         factory.polyResol = oldpolyResolNC;
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
-        return Pair.of(
+        return new ProperType(
             constATM,
-            assignedToExecutable(path, newClassTree, newClassTree.getArguments(), context));
+            assignedToExecutable(path, newClassTree, newClassTree.getArguments(), context),
+            context);
       case NEW_ARRAY:
         NewArrayTree newArrayTree = (NewArrayTree) assignmentContext;
         ArrayType arrayType = (ArrayType) TreeUtils.typeOf(newArrayTree);
         AnnotatedArrayType type = factory.getAnnotatedType((NewArrayTree) assignmentContext);
         AnnotatedTypeMirror component = type.getComponentType();
-        return Pair.of(component, arrayType.getComponentType());
+        return new ProperType(component, arrayType.getComponentType(), context);
       case RETURN:
         HashSet<Kind> kinds =
             new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
@@ -143,14 +145,14 @@ public class InferenceFactory {
         if (enclosing.getKind() == Tree.Kind.METHOD) {
           MethodTree methodTree = (MethodTree) enclosing;
           AnnotatedTypeMirror res = factory.getAnnotatedType(methodTree).getReturnType();
-          return Pair.of(res, TreeUtils.typeOf(methodTree.getReturnType()));
+          return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), context);
         } else {
           // TODO: I don't think this should happen. during inference
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
           AnnotatedExecutableType fninf =
               factory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
           AnnotatedTypeMirror res = fninf.getReturnType();
-          return Pair.of(res, TreeUtils.typeOf(lambdaTree));
+          return new ProperType(res, TreeUtils.typeOf(lambdaTree), context);
         }
       default:
         if (assignmentContext.getKind().asInterface().equals(CompoundAssignmentTree.class)) {
@@ -158,7 +160,7 @@ public class InferenceFactory {
           ExpressionTree var = ((CompoundAssignmentTree) assignmentContext).getVariable();
           AnnotatedTypeMirror res = factory.getAnnotatedType(var);
 
-          return Pair.of(res, TreeUtils.typeOf(var));
+          return new ProperType(res, TreeUtils.typeOf(var), context);
         } else {
           throw new BugInCF(
               "Unexpected assignment context.\nKind: %s\nTree: %s",
@@ -586,17 +588,6 @@ public class InferenceFactory {
     }
     return new InvocationType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);
-  }
-
-  public ProperType getTargetType() {
-    ProperType targetType = null;
-    Pair<AnnotatedTypeMirror, TypeMirror> assignmentTypes =
-        getTargetType(context.typeFactory, context.pathToExpression, context);
-
-    if (assignmentTypes != null) {
-      targetType = new ProperType(assignmentTypes.first, assignmentTypes.second, context);
-    }
-    return targetType;
   }
 
   /**
