@@ -1453,11 +1453,16 @@ Not many such tools exist today, but the annotation designers wanted to
 accommodate them in the future.
 
 \<RUNTIME> retention has negligible costs (no run-time dependency, minimal
-increase in heap size).
+increase in heap size). To avoid these costs, a project can use the
+\<checker-qual-android> dependency; as explained in Section~\ref{android},
+it is identical to \<checker-qual>, except that in \<checker-qual-android>
+annotations have
+\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
+retention.
 
 For the purpose of static checking at compile time,
 \sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
-retention would be sufficient.  Note that
+retention is sufficient.  Note that
 \sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
 retention would not be sufficient, because of separate compilation: when
 type-checking a class, the compiler needs to read the annotations on
