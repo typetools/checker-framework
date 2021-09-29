@@ -496,7 +496,7 @@ task ainferTestCheckerAjavaTest(dependsOn: 'shadowJar', group: 'Verification') {
 }
 
 task ainferTestCheckerGenerateJaifs(type: Test) {
-    description 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=jaifs to generate .jaif files'
+    description 'Internal task.  Users should run ainferTestCheckerJaifTest instead.  This type-checks the ainfer-testchecker files with -Ainfer=jaifs to generate .jaif files'
 
     dependsOn(compileTestJava)
     dependsOn(':checker-qual:jar')  // For the Value Checker annotations.
