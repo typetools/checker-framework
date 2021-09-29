@@ -1726,9 +1726,7 @@ public abstract class GenericAnnotatedTypeFactory<
   @Override
   protected void constructorFromUsePreSubstitution(
       NewClassTree tree, AnnotatedExecutableType type) {
-    if (polyResol) {
-      poly.resolve(tree, type);
-    }
+    poly.resolve(tree, type);
   }
 
   @Override
@@ -2042,9 +2040,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
     super.methodFromUsePreSubstitution(tree, type);
     if (tree instanceof MethodInvocationTree) {
-      if (polyResol) {
-        poly.resolve((MethodInvocationTree) tree, type);
-      }
+      poly.resolve((MethodInvocationTree) tree, type);
     }
   }
 

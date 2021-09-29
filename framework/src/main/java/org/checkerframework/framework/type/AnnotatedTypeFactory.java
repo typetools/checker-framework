@@ -2378,7 +2378,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return memberType;
   }
 
-  public boolean polyResol = true;
   /**
    * A callback method for the AnnotatedTypeFactory subtypes to customize the handling of the
    * declared method type before type variable substitution.

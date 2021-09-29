@@ -102,13 +102,9 @@ public class InferenceFactory {
         return new ProperType(variableAtm, TreeUtils.typeOf(variableTree.getType()), context);
       case METHOD_INVOCATION:
         MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
-        boolean oldShouldCache = factory.shouldCache;
-        factory.shouldCache = false;
-        boolean oldpolyResol = factory.polyResol;
-        factory.polyResol = false;
+
         AnnotatedExecutableType methodType = factory.methodFromUse(methodInvocation).executableType;
-        factory.shouldCache = oldShouldCache;
-        factory.polyResol = oldpolyResol;
+
         AnnotatedTypeMirror ex =
             assignedToExecutable(
                 path, methodInvocation, methodInvocation.getArguments(), methodType);
@@ -118,14 +114,8 @@ public class InferenceFactory {
             context);
       case NEW_CLASS:
         NewClassTree newClassTree = (NewClassTree) assignmentContext;
-        boolean oldShouldCacheNewClass = factory.shouldCache;
-        factory.shouldCache = false;
-        boolean oldpolyResolNC = factory.polyResol;
-        factory.polyResol = false;
         AnnotatedExecutableType constructorType =
             factory.constructorFromUse(newClassTree).executableType;
-        factory.shouldCache = oldShouldCacheNewClass;
-        factory.polyResol = oldpolyResolNC;
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return new ProperType(
