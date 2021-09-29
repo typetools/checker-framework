@@ -178,12 +178,14 @@ public class InvocationTypeInference {
     return result;
   }
 
+  Set<ExpressionTree> treesInInference = new HashSet<>();
   /**
    * Perform invocation type inference on {@code invocation}. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
    */
   private List<Variable> inferInternal(ExpressionTree invocation, InvocationType invocationType) {
+    treesInInference.add(invocation);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -497,7 +499,7 @@ public class InvocationTypeInference {
   }
 
   /**
-   * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-15.12.2.2">JLS
+   * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.2">JLS
    * 15.12.2.2</a> (Assuming the method is a generic method and the method invocation does not
    * provide explicit type arguments)
    *
