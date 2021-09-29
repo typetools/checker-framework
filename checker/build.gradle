@@ -541,8 +541,7 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
             // checker-qual is needed for Constant Value Checker annotations.
-            // Note that "/" works on Windows as well as on Linux.
-            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}:" + file("tests/build/testclasses")]
+            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}"]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
@@ -621,8 +620,7 @@ task ainferNullnessGenerateJaifs(type: Test) {
         exec {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
-            // Note that "/" works on Windows as well as on Linux.
-            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}:" + file("tests/build/testclasses")]
+            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}"]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
