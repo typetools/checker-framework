@@ -166,4 +166,4 @@ PATH = PATH + ":."
 os.environ["PATH"] = PATH
 
 # Tools that must be on your PATH (besides common Unix ones like grep)
-TOOLS = ["hevea", "perl", "java", "latex", "mvn", "hg", "git", "html5validator", EDITOR]
+TOOLS = ["hevea", "perl", "java", "latex", "mvn", "hg", "git", "html5validator", "dot", EDITOR]
