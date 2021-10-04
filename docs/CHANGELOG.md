@@ -1,11 +1,8 @@
-Version 3.?.? (October 1, 2021)
+Version 3.18.1 (October 4, 2021)
 -------------------------------
 
-**User-visible changes:**
-
-**Implementation details:**
-
 **Closed issues:**
+#4902 and #4903.
 
 Version 3.18.0 (September 1, 2021)
 -------------------------------
