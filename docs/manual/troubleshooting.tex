@@ -453,7 +453,8 @@ error: annotation type not applicable to this kind of declaration
 indicates that you are using a definition of \<@NonNull> that is a
 declaration annotation, which cannot be used in that syntactic location.
 For example, many legacy annotations such as those listed in
-Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
+Figures~\ref{fig-nullness-refactoring-nonnull} and \ref{fig-nullness-refactoring-nullable}
+are declaration annotations.  You can
 fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
