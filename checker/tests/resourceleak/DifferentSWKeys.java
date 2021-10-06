@@ -21,7 +21,7 @@ class DifferentSWKeys {
     void test3(@Owning @MustCall("foo") Object obj) {
         // test that the option-specific suppression key doesn't work
         @SuppressWarnings("mustcallnocreatesmustcallfor")
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @MustCall({}) Object bar = obj;
     }
 }
