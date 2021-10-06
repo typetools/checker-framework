@@ -16,7 +16,7 @@ public class ResourceLeakNoCreatesMustCallForTest extends CheckerFrameworkPerDir
                 "resourceleak-nocreatesmustcallfor",
                 "-Anomsgtext",
                 "-AnoCreatesMustCallFor",
-                "-nowarn",
+                "-AwarnUnneededSuppressions",
                 "-encoding",
                 "UTF-8");
     }

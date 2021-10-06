@@ -466,7 +466,8 @@ Read the error message first; sometimes that is enough to clarify it.
 Search through this manual for the text of the warning message or for words
 that appear in it.
 
-If nothing else explains it, then ask on the
+If nothing else explains it, then
+open an issue (Section~\ref{reporting-bugs}) or ask on the
 \href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{mailing
   list}.  Be sure to say what you think it means or what specific part does
 not make sense to you, and what you have already done to try to understand it.
@@ -1453,11 +1454,16 @@ Not many such tools exist today, but the annotation designers wanted to
 accommodate them in the future.
 
 \<RUNTIME> retention has negligible costs (no run-time dependency, minimal
-increase in heap size).
+increase in heap size). To avoid these costs, a project can use the
+\<checker-qual-android> dependency; as explained in Section~\ref{android},
+it is identical to \<checker-qual>, except that in \<checker-qual-android>
+annotations have
+\sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
+retention.
 
 For the purpose of static checking at compile time,
 \sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
-retention would be sufficient.  Note that
+retention is sufficient.  Note that
 \sunjavadoc{java.base/java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
 retention would not be sufficient, because of separate compilation: when
 type-checking a class, the compiler needs to read the annotations on

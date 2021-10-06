@@ -1,3 +1,10 @@
+Version 3.18.1 (October 4, 2021)
+-------------------------------
+
+**Closed issues:**
+#4902 and #4903.
+
+
 Version 3.18.0-eisop1 (September 23, 2021)
 --------------------------------------
 
@@ -24,7 +31,6 @@ Version 3.18.0 (September 1, 2021)
 **User-visible changes:**
 
 Java records are type-checked.  Thanks to Neil Brown.
-
 
 **Closed issues:**
 #4838, #4843, #4852, #4853, #4861, #4876, #4877, #4878, #4878, #4889, #4889.
