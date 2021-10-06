@@ -108,6 +108,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         tempVarToTree.clear();
     }
 
+    @Override
+    protected ResourceLeakAnalysis createFlowAnalysis() {
+        return new ResourceLeakAnalysis(checker, this);
+    }
+
     /**
      * Returns the {@link MustCall#value} element/argument of the @MustCall annotation on the type
      * of {@code tree}.
