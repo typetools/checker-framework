@@ -99,7 +99,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.18.1'
+    version '3.18.1-eisop1'
 
     repositories {
         mavenCentral()
