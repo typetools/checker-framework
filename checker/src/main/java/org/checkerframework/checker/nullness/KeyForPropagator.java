@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
@@ -157,10 +156,6 @@ public class KeyForPropagator {
       NewClassTree newClassTree,
       AnnotatedTypeMirror type,
       KeyForAnnotatedTypeFactory atypeFactory) {
-    Pair<Tree, AnnotatedTypeMirror> context = atypeFactory.getVisitorState().getAssignmentContext();
-    if (type.getKind() != TypeKind.DECLARED || context == null || context.first == null) {
-      return;
-    }
     TreePath path = atypeFactory.getPath(newClassTree);
     if (path == null) {
       return;
