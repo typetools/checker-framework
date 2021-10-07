@@ -238,7 +238,8 @@ allprojects {
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
                     // warnings are suppressible with a "// fall through" comment.
-                    "-Xlint:-options,-fallthrough",
+                    // -classfile: classgraph jar file and https://bugs.openjdk.java.net/browse/JDK-8190452
+                    "-Xlint:-options,-fallthrough,-classfile",
                     "-Xlint",
             ]
 
