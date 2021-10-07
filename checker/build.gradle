@@ -56,7 +56,7 @@ dependencies {
     testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
     testImplementation "com.google.auto.value:auto-value:1.7.4"
     testImplementation "com.ryanharter.auto.value:auto-value-parcel:0.2.9"
-    testImplementation "org.projectlombok:lombok:1.18.20"
+    testImplementation "org.projectlombok:lombok:1.18.22"
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
