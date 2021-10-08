@@ -4535,7 +4535,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Represents the state of a visitor. Stores the relevant information to find the type of 'this'
    * in the visitor.
    */
-  protected class VisitorState {
+  protected static class VisitorState {
     /** The type of the enclosing class tree. */
     private AnnotatedDeclaredType act;
 
@@ -4562,7 +4562,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** Sets the current path for the visitor. */
     public void setPath(TreePath path) {
-      visitorState.setPath(path);
+      assignmentContext.setPath(path);
     }
 
     /**
