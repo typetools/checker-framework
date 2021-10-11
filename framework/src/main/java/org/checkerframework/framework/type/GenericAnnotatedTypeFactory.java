@@ -1291,18 +1291,10 @@ public abstract class GenericAnnotatedTypeFactory<
       final Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
-      TreePath preTreePath = visitorState.getPath();
-      AnnotatedDeclaredType preClassType = visitorState.getClassType();
-      ClassTree preClassTree = visitorState.getClassTree();
-      AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
-      MethodTree preMT = visitorState.getMethodTree();
+      TreePath preTreePath = assignmentContext.getPath();
 
-      // Don't use getPath, because that depends on the visitorState path.
-      visitorState.setPath(TreePath.getPath(this.root, ct));
-      visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
-      visitorState.setClassTree(ct);
-      visitorState.setMethodReceiver(null);
-      visitorState.setMethodTree(null);
+      // Don't use getPath, because that depends on the assignmentContext path.
+      assignmentContext.setPath(TreePath.getPath(this.root, ct));
 
       // start with the captured store as initialization store
       initializationStaticStore = capturedStore;
@@ -1438,11 +1430,7 @@ public abstract class GenericAnnotatedTypeFactory<
           regularExitStores.put(ct, initializationStaticStore);
         }
       } finally {
-        visitorState.setPath(preTreePath);
-        visitorState.setClassType(preClassType);
-        visitorState.setClassTree(preClassTree);
-        visitorState.setMethodReceiver(preAMT);
-        visitorState.setMethodTree(preMT);
+        assignmentContext.setPath(preTreePath);
       }
 
       scannedClasses.put(ct, ScanState.FINISHED);
@@ -2087,12 +2075,8 @@ public abstract class GenericAnnotatedTypeFactory<
     T subFactory = (T) subchecker.getTypeFactory();
     if (subFactory != null && subFactory.getVisitorState() != null) {
       // Copy the visitor state so that the types are computed properly.
-      VisitorState subFactoryVisitorState = subFactory.getVisitorState();
-      subFactoryVisitorState.setPath(visitorState.getPath());
-      subFactoryVisitorState.setClassTree(visitorState.getClassTree());
-      subFactoryVisitorState.setClassType(visitorState.getClassType());
-      subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
-      subFactoryVisitorState.setMethodReceiver(visitorState.getMethodReceiver());
+      AssignmentContext subFactoryAssignmentContext = subFactory.getVisitorState();
+      subFactoryAssignmentContext.setPath(assignmentContext.getPath());
     }
     return subFactory;
   }

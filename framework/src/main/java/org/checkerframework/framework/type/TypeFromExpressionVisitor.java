@@ -219,10 +219,11 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node, AnnotatedTypeFactory f) {
 
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = f.visitorState.getAssignmentContext();
+    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
+        f.assignmentContext.getAssignmentContext();
     try {
       // TODO: what other trees shouldn't maintain the context?
-      f.visitorState.setAssignmentContext(null);
+      f.assignmentContext.setAssignmentContext(null);
 
       AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
       if (type.getKind() == TypeKind.ARRAY) {
@@ -237,7 +238,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       }
       throw new BugInCF("Unexpected type: " + type);
     } finally {
-      f.visitorState.setAssignmentContext(preAssignmentContext);
+      f.assignmentContext.setAssignmentContext(preAssignmentContext);
     }
   }
 

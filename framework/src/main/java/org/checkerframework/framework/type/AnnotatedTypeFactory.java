@@ -196,7 +196,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public final Types types;
 
   /** The state of the visitor. */
-  protected final VisitorState visitorState;
+  protected final AssignmentContext assignmentContext;
 
   /** The AnnotatedFor.value argument/element. */
   private final ExecutableElement annotatedForValueElement;
@@ -517,7 +517,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.trees = Trees.instance(processingEnv);
     this.elements = processingEnv.getElementUtils();
     this.types = processingEnv.getTypeUtils();
-    this.visitorState = new VisitorState();
+    this.assignmentContext = new AssignmentContext();
 
     this.supportedQuals = new HashSet<>();
     this.supportedQualNames = new HashSet<>();
@@ -3006,12 +3006,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the VisitorState instance used by the factory to infer types.
+   * Returns the AssignmentContext instance used by the factory to infer types.
    *
-   * @return the VisitorState instance used by the factory to infer types
+   * @return the AssignmentContext instance used by the factory to infer types
    */
-  public VisitorState getVisitorState() {
-    return this.visitorState;
+  public AssignmentContext getVisitorState() {
+    return this.assignmentContext;
   }
 
   // **********************************************************************
@@ -3482,16 +3482,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @return type of the most enclosing class being visited
    */
-  // This method is used to wrap access to visitorState
   protected final ClassTree getCurrentClassTree(Tree tree) {
-    if (visitorState.getClassTree() != null) {
-      return visitorState.getClassTree();
-    }
     return TreePathUtil.enclosingClass(getPath(tree));
-  }
-
-  protected final AnnotatedDeclaredType getCurrentClassType(Tree tree) {
-    return getAnnotatedType(getCurrentClassTree(tree));
   }
 
   /**
@@ -3502,45 +3494,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @return receiver type of the most enclosing method being visited
    */
+  @Deprecated // Seems like this isn't used.
   protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
-    AnnotatedDeclaredType res = visitorState.getMethodReceiver();
-    if (res == null) {
-      TreePath path = getPath(tree);
-      if (path != null) {
-        @SuppressWarnings("interning:assignment") // used for == test
-        @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
-        ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
+    TreePath path = getPath(tree);
+    if (path == null) {
+      return null;
+    }
+    @SuppressWarnings("interning:assignment") // used for == test
+    @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
+    ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
 
-        boolean found = false;
+    boolean found = false;
 
-        for (Tree member : enclosingClass.getMembers()) {
-          if (member.getKind() == Tree.Kind.METHOD) {
-            if (member == enclosingMethod) {
-              found = true;
-            }
-          }
-        }
-
-        if (found && enclosingMethod != null) {
-          AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
-          res = method.getReceiverType();
-          // TODO: three tests fail if one adds the following, which would make sense, or not?
-          // visitorState.setMethodReceiver(res);
-        } else {
-          // We are within an anonymous class or field initializer
-          res = this.getAnnotatedType(enclosingClass);
+    for (Tree member : enclosingClass.getMembers()) {
+      if (member.getKind() == Tree.Kind.METHOD) {
+        if (member == enclosingMethod) {
+          found = true;
         }
       }
     }
-    return res;
+
+    if (found && enclosingMethod != null) {
+      AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
+      return method.getReceiverType();
+    } else {
+      // We are within an anonymous class or field initializer
+      return this.getAnnotatedType(enclosingClass);
+    }
   }
 
+  @Deprecated
   protected final boolean isWithinConstructor(Tree tree) {
-    if (visitorState.getClassType() != null) {
-      return visitorState.getMethodTree() != null
-          && TreeUtils.isConstructor(visitorState.getMethodTree());
-    }
-
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getPath(tree));
     return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
   }
@@ -3576,7 +3560,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return treePathCache.getPath(root, node);
     }
 
-    TreePath currentPath = visitorState.getPath();
+    TreePath currentPath = assignmentContext.getPath();
     if (currentPath == null) {
       TreePath path = TreePath.getPath(root, node);
       treePathCache.addPath(node, path);

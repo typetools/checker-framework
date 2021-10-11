@@ -118,10 +118,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
+import org.checkerframework.framework.type.AssignmentContext;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -179,7 +179,7 @@ import org.plumelib.util.CollectionsPlume;
  * @see AnnotatedTypeFactory
  */
 /*
- * Note how the handling of VisitorState is duplicated in AbstractFlow. In
+ * Note how the handling of AssignmentContext is duplicated in AbstractFlow. In
  * particular, the handling of the assignment context has to be done correctly
  * in both classes. This is a pain and we should see how to handle this in the
  * DFF version.
@@ -268,7 +268,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     this.checker = checker;
     this.atypeFactory = typeFactory == null ? createTypeFactory() : typeFactory;
     this.positions = trees.getSourcePositions();
-    this.visitorState = atypeFactory.getVisitorState();
+    this.visitorState = new VisitorState(atypeFactory.getVisitorState());
     this.typeValidator = createTypeValidator();
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
@@ -483,16 +483,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     TreePath preTreePath = visitorState.getPath();
     AnnotatedDeclaredType preACT = visitorState.getClassType();
-    ClassTree preCT = visitorState.getClassTree();
     AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
     MethodTree preMT = visitorState.getMethodTree();
     Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
 
-    // Don't use atypeFactory.getPath, because that depends on the visitorState path.
+    // Don't use atypeFactory.getPath, because that depends on the assignmentContext path.
     visitorState.setPath(TreePath.getPath(root, classTree));
     visitorState.setClassType(
         atypeFactory.getAnnotatedType(TreeUtils.elementFromDeclaration(classTree)));
-    visitorState.setClassTree(classTree);
     visitorState.setMethodReceiver(null);
     visitorState.setMethodTree(null);
     visitorState.setAssignmentContext(null);
@@ -503,7 +501,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } finally {
       visitorState.setPath(preTreePath);
       visitorState.setClassType(preACT);
-      visitorState.setClassTree(preCT);
       visitorState.setMethodReceiver(preAMT);
       visitorState.setMethodTree(preMT);
       visitorState.setAssignmentContext(preAssignmentContext);
@@ -4532,5 +4529,125 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // r = reduce(scan(node.getImports(), p), r);
     r = reduce(scan(node.getTypeDecls(), p), r);
     return r;
+  }
+
+  /**
+   * Represents the state of a visitor. Stores the relevant information to find the type of 'this'
+   * in the visitor.
+   */
+  protected static class VisitorState {
+    /** The type of the enclosing class tree. */
+    private AnnotatedDeclaredType act;
+
+    /** The receiver type of the enclosing method tree. */
+    private AnnotatedDeclaredType mrt;
+    /** The enclosing method tree. */
+    private MethodTree mt;
+
+    private AssignmentContext assignmentContext;
+
+    public VisitorState(AssignmentContext assignmentContext) {
+      super();
+      this.assignmentContext = assignmentContext;
+    }
+
+    /**
+     * Updates the assignment context.
+     *
+     * @param assignmentContext the new assignment context to use
+     */
+    public void setAssignmentContext(Pair<Tree, AnnotatedTypeMirror> assignmentContext) {
+      this.assignmentContext.setAssignmentContext(assignmentContext);
+    }
+
+    /** Sets the current path for the visitor. */
+    public void setPath(TreePath path) {
+      assignmentContext.setPath(path);
+    }
+
+    /**
+     * Returns the assignment context.
+     *
+     * <p>NOTE: This method is known to be buggy.
+     *
+     * @return the assignment context
+     */
+    public Pair<Tree, AnnotatedTypeMirror> getAssignmentContext() {
+      return assignmentContext.getAssignmentContext();
+    }
+
+    /**
+     * Returns the current path for the visitor.
+     *
+     * @return the current path for the visitor
+     */
+    public TreePath getPath() {
+      return assignmentContext.getPath();
+    }
+    /** Updates the type of the class currently visited. */
+    public void setClassType(AnnotatedDeclaredType act) {
+      this.act = act;
+    }
+
+    /** Updates the method receiver type currently visited. */
+    public void setMethodReceiver(AnnotatedDeclaredType mrt) {
+      this.mrt = mrt;
+    }
+
+    /** Updates the method currently visited. */
+    public void setMethodTree(MethodTree mt) {
+      this.mt = mt;
+    }
+
+    /**
+     * Returns the type of the enclosing class.
+     *
+     * @return the type of the enclosing class
+     */
+    // GUI Effect Visitor still uses.  Need to rewrite.
+    public AnnotatedDeclaredType getClassType() {
+      if (act == null) {
+        return null;
+      }
+      return act.deepCopy();
+    }
+
+    /**
+     * Returns the method receiver type of the enclosing method.
+     *
+     * @return the method receiver type of the enclosing method
+     */
+    // GUI Effect Visitor still uses.  Need to rewrite.
+    public AnnotatedDeclaredType getMethodReceiver() {
+      if (mrt == null) {
+        return null;
+      }
+      return mrt.deepCopy();
+    }
+
+    /**
+     * Returns the method tree currently visiting.
+     *
+     * @return the method tree currently visiting
+     */
+    // Interning Visitor uses.
+    public MethodTree getMethodTree() {
+      return this.mt;
+    }
+
+    @SideEffectFree
+    @Override
+    public String toString() {
+      return String.format(
+          "AssignmentContext: method %s (%s) / class (%s)%n"
+              + "    assignment context %s (%s)%n"
+              + "    path is non-null: %s",
+          (mt != null ? mt.getName() : "null"),
+          mrt,
+          act,
+          (getAssignmentContext() != null ? getAssignmentContext().first : "null"),
+          (getAssignmentContext() != null ? getAssignmentContext().second : "null"),
+          getPath() != null);
+    }
   }
 }
