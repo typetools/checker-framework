@@ -70,7 +70,7 @@ public class MethodInvocationNode extends Node {
     // set assignment contexts for parameters
     int i = 0;
     for (Node arg : arguments) {
-      AssignmentContext ctx = new MethodParameterContext(target.getMethod(), i++);
+      AssignmentContext ctx = new MethodParameterContext(target.getMethod(), i++, treePath);
       arg.setAssignmentContext(ctx);
     }
   }

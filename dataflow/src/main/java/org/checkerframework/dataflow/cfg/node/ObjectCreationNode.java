@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,7 +31,8 @@ public class ObjectCreationNode extends Node {
       NewClassTree tree,
       Node constructor,
       List<Node> arguments,
-      @Nullable ClassDeclarationNode classbody) {
+      @Nullable ClassDeclarationNode classbody,
+      TreePath treePath) {
     super(TreeUtils.typeOf(tree));
     this.tree = tree;
     this.constructor = constructor;
@@ -42,7 +44,7 @@ public class ObjectCreationNode extends Node {
     ExecutableElement elem = TreeUtils.elementFromUse(tree);
     if (elem != null) {
       for (Node arg : arguments) {
-        AssignmentContext ctx = new AssignmentContext.MethodParameterContext(elem, i++);
+        AssignmentContext ctx = new AssignmentContext.MethodParameterContext(elem, i++, treePath);
         arg.setAssignmentContext(ctx);
       }
     }

@@ -4,6 +4,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -18,13 +19,30 @@ import org.checkerframework.javacutil.TreeUtils;
  * left-hand side of the assignment for proper type-refinement.
  */
 public abstract class AssignmentContext {
+  protected final TreePath treePath;
+
+  protected AssignmentContext(TreePath treePath) {
+    this.treePath = treePath;
+  }
+
+  /** Returns an {@link Element} that has the type of this assignment context. */
+  public abstract @Nullable Element getElementForType();
+
+  /** Returns the context tree. */
+  public abstract @Nullable Tree getContextTree();
+
+  /** Returns the path to the assignment. */
+  public @Nullable TreePath getTreePath() {
+    return treePath;
+  }
 
   /** An assignment context for an assignment 'lhs = rhs'. */
   public static class AssignmentLhsContext extends AssignmentContext {
 
     protected final Node node;
 
-    public AssignmentLhsContext(Node node) {
+    public AssignmentLhsContext(Node node, TreePath treePath) {
+      super(treePath);
       this.node = node;
     }
 
@@ -54,7 +72,8 @@ public abstract class AssignmentContext {
     protected final ExecutableElement method;
     protected final int paramNum;
 
-    public MethodParameterContext(ExecutableElement method, int paramNum) {
+    public MethodParameterContext(ExecutableElement method, int paramNum, TreePath treePath) {
+      super(treePath);
       this.method = method;
       this.paramNum = paramNum;
     }
@@ -78,7 +97,8 @@ public abstract class AssignmentContext {
     protected final ExecutableElement method;
     protected final Tree ret;
 
-    public MethodReturnContext(MethodTree method) {
+    public MethodReturnContext(MethodTree method, TreePath treePath) {
+      super(treePath);
       this.method = TreeUtils.elementFromDeclaration(method);
       this.ret = method.getReturnType();
     }
@@ -99,7 +119,8 @@ public abstract class AssignmentContext {
 
     protected final ExecutableElement method;
 
-    public LambdaReturnContext(ExecutableElement method) {
+    public LambdaReturnContext(ExecutableElement method, TreePath treePath) {
+      super(treePath);
       this.method = method;
     }
 
@@ -115,10 +136,4 @@ public abstract class AssignmentContext {
       return null;
     }
   }
-
-  /** Returns an {@link Element} that has the type of this assignment context. */
-  public abstract @Nullable Element getElementForType();
-
-  /** Returns the context tree. */
-  public abstract @Nullable Tree getContextTree();
 }
