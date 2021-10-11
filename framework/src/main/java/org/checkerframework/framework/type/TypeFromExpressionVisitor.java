@@ -36,7 +36,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -218,28 +217,18 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
   @Override
   public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node, AnnotatedTypeFactory f) {
-
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
-        f.assignmentContext.getAssignmentContext();
-    try {
-      // TODO: what other trees shouldn't maintain the context?
-      f.assignmentContext.setAssignmentContext(null);
-
-      AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-      if (type.getKind() == TypeKind.ARRAY) {
-        return ((AnnotatedArrayType) type).getComponentType();
-      } else if (type.getKind() == TypeKind.WILDCARD
-          && ((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
-        // Clean-up after Issue #979.
-        AnnotatedTypeMirror wcbound = ((AnnotatedWildcardType) type).getExtendsBound();
-        if (wcbound instanceof AnnotatedArrayType) {
-          return ((AnnotatedArrayType) wcbound).getComponentType();
-        }
+    AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
+    if (type.getKind() == TypeKind.ARRAY) {
+      return ((AnnotatedArrayType) type).getComponentType();
+    } else if (type.getKind() == TypeKind.WILDCARD
+        && ((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
+      // Clean-up after Issue #979.
+      AnnotatedTypeMirror wcbound = ((AnnotatedWildcardType) type).getExtendsBound();
+      if (wcbound instanceof AnnotatedArrayType) {
+        return ((AnnotatedArrayType) wcbound).getComponentType();
       }
-      throw new BugInCF("Unexpected type: " + type);
-    } finally {
-      f.assignmentContext.setAssignmentContext(preAssignmentContext);
     }
+    throw new BugInCF("Unexpected type: " + type);
   }
 
   @Override
