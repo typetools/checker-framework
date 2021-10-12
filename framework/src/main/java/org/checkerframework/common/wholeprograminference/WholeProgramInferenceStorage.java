@@ -137,6 +137,7 @@ public interface WholeProgramInferenceStorage<T> {
    */
   public boolean addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
+  public boolean addFieldDeclarationAnnotation(Element field, AnnotationMirror anno);
   /**
    * Obtain the type from a storage location.
    *

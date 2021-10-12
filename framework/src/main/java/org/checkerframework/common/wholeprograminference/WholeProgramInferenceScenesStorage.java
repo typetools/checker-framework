@@ -195,6 +195,14 @@ public class WholeProgramInferenceScenesStorage
     return methodAnnos;
   }
 
+  private AField getFieldAnnos(Element fieldElt) {
+    String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
+    String file = getFileForElement(fieldElt);
+    AClass classAnnos = getClassAnnos(className, file, ((VarSymbol) fieldElt).enclClass());
+    AField fieldAnnos = classAnnos.fields.getVivify(fieldElt.getSimpleName().toString());
+    return fieldAnnos;
+  }
+
   @Override
   public boolean hasStorageLocationForMethod(ExecutableElement methodElt) {
     // The scenes implementation can always add annotations to a method.
@@ -350,6 +358,21 @@ public class WholeProgramInferenceScenesStorage
     scenelib.annotations.Annotation sceneAnno =
         AnnotationConverter.annotationMirrorToAnnotation(anno);
     boolean isNewAnnotation = methodAnnos.tlAnnotationsHere.add(sceneAnno);
+    return isNewAnnotation;
+  }
+
+  @Override
+  public boolean addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(field)) {
+      return false;
+    }
+
+    AField fieldAnnos = getFieldAnnos(field);
+
+    scenelib.annotations.Annotation sceneAnno =
+        AnnotationConverter.annotationMirrorToAnnotation(anno);
+
+    boolean isNewAnnotation = fieldAnnos.tlAnnotationsHere.add(sceneAnno);
     return isNewAnnotation;
   }
 

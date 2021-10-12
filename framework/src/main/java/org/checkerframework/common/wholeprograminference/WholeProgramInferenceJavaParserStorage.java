@@ -145,6 +145,15 @@ public class WholeProgramInferenceJavaParserStorage
     return methodAnnos;
   }
 
+  private FieldAnnos getFieldAnnos(Element fieldElt) {
+    String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
+    // Read in classes for the element.
+    getFileForElement(fieldElt);
+    ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    FieldAnnos fieldAnnos = classAnnos.fields.get(fieldElt.getSimpleName().toString());
+    return fieldAnnos;
+  }
+
   @Override
   public AnnotatedTypeMirror getParameterAnnotations(
       ExecutableElement methodElt,
@@ -255,6 +264,16 @@ public class WholeProgramInferenceJavaParserStorage
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(methodElt));
+    }
+    return isNewAnnotation;
+  }
+
+  @Override
+  public boolean addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+    FieldAnnos fieldAnnos = getFieldAnnos(field);
+    boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
+    if (isNewAnnotation) {
+      modifiedFiles.add(getFileForElement(field));
     }
     return isNewAnnotation;
   }
@@ -1101,6 +1120,8 @@ public class WholeProgramInferenceJavaParserStorage
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
 
+    private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
+
     /**
      * Creates a wrapper for the given field declaration.
      *
@@ -1127,6 +1148,22 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       return this.type;
+    }
+
+    public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
+      if (declarationAnnotations == null) {
+        declarationAnnotations = new HashSet<>();
+      }
+
+      return declarationAnnotations.add(annotation);
+    }
+
+    public Set<AnnotationMirror> getDeclarationAnnotations() {
+      if (declarationAnnotations == null) {
+        return Collections.emptySet();
+      }
+
+      return Collections.unmodifiableSet(declarationAnnotations);
     }
 
     /**

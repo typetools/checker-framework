@@ -2,15 +2,17 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableSet;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
@@ -26,13 +28,16 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.flow.CFCFGBuilder;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -70,6 +75,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    */
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
+  private Set<FieldToFinalizers> fieldToFinalizers = new HashSet<>();
+
   /**
    * Creates a new ResourceLeakAnnotatedTypeFactory.
    *
@@ -78,6 +85,63 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   public ResourceLeakAnnotatedTypeFactory(final BaseTypeChecker checker) {
     super(checker);
     this.postInit();
+  }
+
+  public Set<FieldToFinalizers> CollectFields(ClassTree classTree) {
+    List<? extends Tree> members = classTree.getMembers();
+    Set<FieldToFinalizers> fieldsToFinalizers = new HashSet<>();
+    for (Tree tree : members) {
+      Element elt = TreeUtils.elementFromTree(tree);
+      if (elt != null
+          && elt.getKind().isField()
+          && ElementUtils.isFinal(elt)
+          && !getMustCallValue(elt).isEmpty()) {
+        fieldsToFinalizers.add(new FieldToFinalizers(elt, new LinkedHashSet<>()));
+      }
+    }
+    return fieldsToFinalizers;
+  }
+
+  @Override
+  public void setRoot(@Nullable CompilationUnitTree root) {
+    super.setRoot(root);
+  }
+
+  public Set<FieldToFinalizers> getFieldToFinalizers() {
+    return fieldToFinalizers;
+  }
+
+  @Override
+  public void preProcessClassTree(ClassTree classTree) {
+    fieldToFinalizers.clear();
+    this.fieldToFinalizers = CollectFields(classTree);
+    super.preProcessClassTree(classTree);
+  }
+
+  @Override
+  public void postProcessClassTree(ClassTree tree) {
+    if (!fieldToFinalizers.isEmpty()) {
+      List<? extends Tree> members = tree.getMembers();
+      for (Tree t : members) {
+        if (t.getKind() == Tree.Kind.METHOD) {
+          MethodTree mt = (MethodTree) t;
+          Set<Modifier> flags = mt.getModifiers().getFlags();
+          if (flags.contains(Modifier.ABSTRACT) || flags.contains(Modifier.NATIVE)) {
+            break;
+          }
+          if (mt.getBody() == null) {
+            break;
+          }
+          CFGMethod met = new CFGMethod(mt, tree);
+          ControlFlowGraph cfg = CFCFGBuilder.build(this.root, met, checker, this, processingEnv);
+          if (cfg != null) {
+            MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(this);
+            mustCallInferenceLogic.inference(cfg);
+          }
+        }
+      }
+    }
+    super.postProcessClassTree(tree);
   }
 
   @Override
@@ -306,5 +370,34 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   @Override
   public ExecutableElement getCreatesMustCallForListValueElement() {
     return createsMustCallForListValueElement;
+  }
+
+  public static class FieldToFinalizers {
+    public final Element field;
+
+    public ImmutableSet<Element> finalizers;
+
+    public FieldToFinalizers(Element f, Set<Element> set) {
+      this.field = f;
+      this.finalizers = ImmutableSet.copyOf(set);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      }
+      ResourceLeakAnnotatedTypeFactory.FieldToFinalizers that =
+          (ResourceLeakAnnotatedTypeFactory.FieldToFinalizers) obj;
+      return field.equals(that.field) && this.finalizers.equals(that.finalizers);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(field, finalizers);
+    }
   }
 }
