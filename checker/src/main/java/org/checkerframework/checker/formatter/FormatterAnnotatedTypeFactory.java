@@ -24,6 +24,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
+import java.lang.annotation.Annotation;
 import java.util.IllegalFormatException;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -67,10 +68,23 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
-        addAliasedDeclAnnotation(
-                com.google.errorprone.annotations.FormatMethod.class,
-                FormatMethod.class,
-                FORMATMETHOD);
+        try {
+            // Use concatenation to avoid ShadowJar relocate
+            // "com.google.errorprone.annotations.FormatMethod"
+            @SuppressWarnings({
+                "unchecked", // Class must be an annotation type
+                "signature:argument.type.incompatible" // Class name intentionally obfuscated
+            })
+            Class<? extends Annotation> cgFormatMethod =
+                    (Class<? extends Annotation>)
+                            Class.forName(
+                                    "com.go".toString()
+                                            + "ogle.errorprone.annotations.FormatMethod");
+
+            addAliasedDeclAnnotation(cgFormatMethod, FormatMethod.class, FORMATMETHOD);
+        } catch (ClassNotFoundException cnfe) {
+            // Ignore if com.google.errorprone.annotations.FormatMethod cannot be found.
+        }
 
         this.postInit();
     }
@@ -135,6 +149,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (Annotation anno : methodAnnos.tlAnnotationsHere) {
             String annoName = anno.def.name;
             if (annoName.equals("org.checkerframework.checker.formatter.qual.FormatMethod")
+                    // TODO: avoid com.google relocate
                     || anno.def.name.equals("com.google.errorprone.annotations.FormatMethod")) {
                 return true;
             }
@@ -157,6 +172,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         declarationAnnos,
                         org.checkerframework.checker.formatter.qual.FormatMethod.class)
                 || AnnotationUtils.containsSameByName(
+                        // TODO: avoid com.google relocate
                         declarationAnnos, "com.google.errorprone.annotations.FormatMethod");
     }
     */

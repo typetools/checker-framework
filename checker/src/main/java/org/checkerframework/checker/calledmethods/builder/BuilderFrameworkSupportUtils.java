@@ -17,7 +17,9 @@ public class BuilderFrameworkSupportUtils {
      * @return true if the type is a Guava immutable collection
      */
     public static boolean isGuavaImmutableType(TypeMirror type) {
-        return type.toString().startsWith("com.google.common.collect.Immutable");
+        // Use concatenation to avoid ShadowJar relocate
+        // "com.google.common.collect.Immutable"
+        return type.toString().startsWith("com.go".toString() + "ogle.common.collect.Immutable");
     }
 
     /**

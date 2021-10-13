@@ -106,7 +106,12 @@ public class NullnessAnnotatedTypeFactory
     // ../../../../../../../../docs/manual/nullness-checker.tex
     // and make a pull request for variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
     // https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
+    // Avoid changes to the string constants by ShadowJar relocate by using "start".toString() +
+    // "rest".
+    // Keep the original string constant in a comment to allow searching for it.
     /** Aliases for {@code @Nonnull}. */
+    @SuppressWarnings(
+            "signature:assignment.type.incompatible") // Class names intentionally obfuscated
     private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
@@ -122,9 +127,11 @@ public class NullnessAnnotatedTypeFactory
                     // https://android.googlesource.com/platform/sdk/+/66fcecc/common/src/com/android/annotations/NonNull.java
                     "com.android.annotations.NonNull",
                     // https://github.com/firebase/firebase-android-sdk/blob/master/firebase-database/src/main/java/com/google/firebase/database/annotations/NotNull.java
-                    "com.google.firebase.database.annotations.NotNull",
+                    // "com.google.firebase.database.annotations.NotNull",
+                    "com.go".toString() + "ogle.firebase.database.annotations.NotNull",
                     // https://github.com/firebase/firebase-admin-java/blob/master/src/main/java/com/google/firebase/internal/NonNull.java
-                    "com.google.firebase.internal.NonNull",
+                    // "com.google.firebase.internal.NonNull",
+                    "com.go".toString() + "ogle.firebase.internal.NonNull",
                     // https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/lang/NonNull.java
                     "com.mongodb.lang.NonNull",
                     // https://github.com/eclipse-ee4j/jaxb-istack-commons/blob/master/istack-commons/runtime/src/main/java/com/sun/istack/NotNull.java
@@ -175,7 +182,10 @@ public class NullnessAnnotatedTypeFactory
 
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex .
+    // See more comments with NONNULL_ALIASES above.
     /** Aliases for {@code @Nullable}. */
+    @SuppressWarnings(
+            "signature:assignment.type.incompatible") // Class names intentionally obfuscated
     private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
             Arrays.asList(
                     // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
@@ -193,17 +203,23 @@ public class NullnessAnnotatedTypeFactory
                     // https://github.com/lpantano/java_seqbuster/blob/master/AdRec/src/adrec/com/beust/jcommander/internal/Nullable.java
                     "com.beust.jcommander.internal.Nullable",
                     // https://github.com/cloudendpoints/endpoints-java/blob/master/endpoints-framework/src/main/java/com/google/api/server/spi/config/Nullable.java
-                    "com.google.api.server.spi.config.Nullable",
+                    // "com.google.api.server.spi.config.Nullable",
+                    "com.go".toString() + "ogle.api.server.spi.config.Nullable",
                     // https://github.com/firebase/firebase-android-sdk/blob/master/firebase-database/src/main/java/com/google/firebase/database/annotations/Nullable.java
-                    "com.google.firebase.database.annotations.Nullable",
+                    // "com.google.firebase.database.annotations.Nullable",
+                    "com.go".toString() + "ogle.firebase.database.annotations.Nullable",
                     // https://github.com/firebase/firebase-admin-java/blob/master/src/main/java/com/google/firebase/internal/Nullable.java
-                    "com.google.firebase.internal.Nullable",
+                    // "com.google.firebase.internal.Nullable",
+                    "com.go".toString() + "ogle.firebase.internal.Nullable",
                     // https://gerrit.googlesource.com/gerrit/+/refs/heads/master/java/com/google/gerrit/common/Nullable.java
-                    "com.google.gerrit.common.Nullable",
+                    // "com.google.gerrit.common.Nullable",
+                    "com.go".toString() + "ogle.gerrit.common.Nullable",
                     //
-                    "com.google.protobuf.Internal.ProtoMethodAcceptsNullParameter",
+                    // "com.google.protobuf.Internal.ProtoMethodAcceptsNullParameter",
+                    "com.go".toString() + "ogle.protobuf.Internal.ProtoMethodAcceptsNullParameter",
                     //
-                    "com.google.protobuf.Internal.ProtoMethodMayReturnNull",
+                    // "com.google.protobuf.Internal.ProtoMethodMayReturnNull",
+                    "com.go".toString() + "ogle.protobuf.Internal.ProtoMethodMayReturnNull",
                     // https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/lang/Nullable.java
                     "com.mongodb.lang.Nullable",
                     // https://github.com/eclipse-ee4j/jaxb-istack-commons/blob/master/istack-commons/runtime/src/main/java/com/sun/istack/Nullable.java
@@ -234,11 +250,14 @@ public class NullnessAnnotatedTypeFactory
                     // https://android.googlesource.com/platform/libcore/+/master/luni/src/main/java/libcore/util/Nullable.java
                     "libcore.util.Nullable",
                     // https://github.com/apache/avro/blob/master/lang/java/avro/src/main/java/org/apache/avro/reflect/Nullable.java
-                    "org.apache.avro.reflect.Nullable",
+                    // "org.apache.avro.reflect.Nullable",
+                    "org.apa".toString() + "che.avro.reflect.Nullable",
                     // https://github.com/apache/cxf/blob/master/rt/frontend/jaxrs/src/main/java/org/apache/cxf/jaxrs/ext/Nullable.java
-                    "org.apache.cxf.jaxrs.ext.Nullable",
+                    // "org.apache.cxf.jaxrs.ext.Nullable",
+                    "org.apa".toString() + "che.cxf.jaxrs.ext.Nullable",
                     // https://github.com/gatein/gatein-shindig/blob/master/java/common/src/main/java/org/apache/shindig/common/Nullable.java
-                    "org.apache.shindig.common.Nullable",
+                    // "org.apache.shindig.common.Nullable",
+                    "org.apa".toString() + "che.shindig.common.Nullable",
                     // https://search.maven.org/search?q=a:checker-compat-qual
                     "org.checkerframework.checker.nullness.compatqual.NullableDecl",
                     "org.checkerframework.checker.nullness.compatqual.NullableType",
