@@ -78,9 +78,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     TreePath path = atypeFactory.getPath(tree);
     AnnotatedTypeMirror contextType = null;
-    if (atypeFactory.getVisitorState().getPath() != null
-        && path != null
-        && path.getParentPath() != null) {
+    if (atypeFactory.getVisitorPath() != null && path != null && path.getParentPath() != null) {
       Tree parentTree = path.getParentPath().getLeaf();
       if (parentTree.getKind() == Kind.ASSIGNMENT) {
         Tree var = ((AssignmentTree) parentTree).getVariable();
@@ -99,8 +97,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         }
       } else if (parentTree.getKind() == Kind.METHOD_INVOCATION) {
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
-        TreePath oldPath = atypeFactory.getVisitorState().getPath();
-        atypeFactory.getVisitorState().setPath(null);
+        TreePath oldPath = atypeFactory.getVisitorPath();
+        atypeFactory.setVisitorPath(null);
         ParameterizedExecutableType m = atypeFactory.methodFromUse(methodInvocationTree);
         for (int i = 0; i < m.executableType.getParameterTypes().size(); i++) {
           if (methodInvocationTree.getArguments().get(i) == tree) {
@@ -108,7 +106,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             break;
           }
         }
-        atypeFactory.getVisitorState().setPath(oldPath);
+        atypeFactory.setVisitorPath(oldPath);
       }
     }
     Set<? extends AnnotationMirror> post;
