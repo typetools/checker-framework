@@ -1021,7 +1021,9 @@ public class AnnotatedTypes {
    * @param paramTypes the parameter types to use as assignment context
    * @param trees the AST nodes
    * @return a list with the AnnotatedTypeMirror of each tree in trees
+   * @deprecated use CollectionsPlume.mapList(atypeFactory::getAnnotatedType, trees) instead.
    */
+  @Deprecated
   public static List<AnnotatedTypeMirror> getAnnotatedTypes(
       AnnotatedTypeFactory atypeFactory,
       List<AnnotatedTypeMirror> paramTypes,
@@ -1034,21 +1036,8 @@ public class AnnotatedTypes {
               + " Arguments: "
               + trees);
     }
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext =
-        atypeFactory.getVisitorState().getAssignmentContext();
 
-    List<AnnotatedTypeMirror> types = new ArrayList<>();
-    try {
-      for (int i = 0; i < trees.size(); ++i) {
-        AnnotatedTypeMirror param = paramTypes.get(i);
-        atypeFactory.getVisitorState().setAssignmentContext(Pair.of((Tree) null, param));
-        ExpressionTree arg = trees.get(i);
-        types.add(atypeFactory.getAnnotatedType(arg));
-      }
-    } finally {
-      atypeFactory.getVisitorState().setAssignmentContext(preAssignmentContext);
-    }
-    return types;
+    return CollectionsPlume.mapList(atypeFactory::getAnnotatedType, trees);
   }
 
   /**

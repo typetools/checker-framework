@@ -5,7 +5,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
@@ -485,7 +484,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedDeclaredType preACT = visitorState.getClassType();
     AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
     MethodTree preMT = visitorState.getMethodTree();
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
 
     // Don't use atypeFactory.getPath, because that depends on the assignmentContext path.
     visitorState.setPath(TreePath.getPath(root, classTree));
@@ -493,7 +491,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.getAnnotatedType(TreeUtils.elementFromDeclaration(classTree)));
     visitorState.setMethodReceiver(null);
     visitorState.setMethodTree(null);
-    visitorState.setAssignmentContext(null);
 
     try {
       processClassTree(classTree);
@@ -503,7 +500,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       visitorState.setClassType(preACT);
       visitorState.setMethodReceiver(preAMT);
       visitorState.setMethodTree(preMT);
-      visitorState.setAssignmentContext(preAssignmentContext);
     }
     return null;
   }
@@ -1439,7 +1435,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     visitAnnotatedType(node.getModifiers().getAnnotations(), node.getType());
 
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
     AnnotatedTypeMirror variableType;
     if (getCurrentPath().getParentPath() != null
         && getCurrentPath().getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
@@ -1450,22 +1445,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else {
       variableType = atypeFactory.getAnnotatedTypeLhs(node);
     }
-    visitorState.setAssignmentContext(Pair.of(node, variableType));
 
-    try {
-      atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, node);
-      // If there's no assignment in this variable declaration, skip it.
-      if (node.getInitializer() != null) {
-        commonAssignmentCheck(node, node.getInitializer(), "assignment");
-      } else {
-        // commonAssignmentCheck validates the type of node,
-        // so only validate if commonAssignmentCheck wasn't called
-        validateTypeOf(node);
-      }
-      return super.visitVariable(node, p);
-    } finally {
-      visitorState.setAssignmentContext(preAssignmentContext);
+    atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, node);
+    // If there's no assignment in this variable declaration, skip it.
+    if (node.getInitializer() != null) {
+      commonAssignmentCheck(node, node.getInitializer(), "assignment");
+    } else {
+      // commonAssignmentCheck validates the type of node,
+      // so only validate if commonAssignmentCheck wasn't called
+      validateTypeOf(node);
     }
+    return super.visitVariable(node, p);
   }
 
   /**
@@ -1591,15 +1581,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public Void visitAssignment(AssignmentTree node, Void p) {
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
-    visitorState.setAssignmentContext(
-        Pair.of((Tree) node.getVariable(), atypeFactory.getAnnotatedType(node.getVariable())));
-    try {
-      commonAssignmentCheck(node.getVariable(), node.getExpression(), "assignment");
-      return super.visitAssignment(node, p);
-    } finally {
-      visitorState.setAssignmentContext(preAssignmentContext);
-    }
+    commonAssignmentCheck(node.getVariable(), node.getExpression(), "assignment");
+    return super.visitAssignment(node, p);
   }
 
   /**
@@ -1994,7 +1977,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Check return type for single statement returns here.
       AnnotatedTypeMirror ret = functionType.getReturnType();
       if (ret.getKind() != TypeKind.VOID) {
-        visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
         commonAssignmentCheck(ret, (ExpressionTree) node.getBody(), "return");
       }
     }
@@ -2034,37 +2016,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitReturn(node, p);
     }
 
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
-    try {
+    Tree enclosing =
+        TreePathUtil.enclosingOfKind(
+            getCurrentPath(),
+            new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
 
-      Tree enclosing =
-          TreePathUtil.enclosingOfKind(
-              getCurrentPath(),
-              new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
+    AnnotatedTypeMirror ret = null;
+    if (enclosing.getKind() == Tree.Kind.METHOD) {
 
-      AnnotatedTypeMirror ret = null;
-      if (enclosing.getKind() == Tree.Kind.METHOD) {
-
-        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-        boolean valid = validateTypeOf(enclosing);
-        if (valid) {
-          ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
-        }
-      } else {
-        AnnotatedExecutableType result =
-            atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
-        ret = result.getReturnType();
+      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+      boolean valid = validateTypeOf(enclosing);
+      if (valid) {
+        ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
       }
-
-      if (ret != null) {
-        visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
-
-        commonAssignmentCheck(ret, node.getExpression(), "return");
-      }
-      return super.visitReturn(node, p);
-    } finally {
-      visitorState.setAssignmentContext(preAssignmentContext);
+    } else {
+      AnnotatedExecutableType result =
+          atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
+      ret = result.getReturnType();
     }
+
+    if (ret != null) {
+      commonAssignmentCheck(ret, node.getExpression(), "return");
+    }
+    return super.visitReturn(node, p);
   }
 
   /**
@@ -2125,37 +2099,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       AnnotatedTypeMirror expected = annoTypes.get(at.getVariable().toString());
-      Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
-
-      {
-        // Determine and set the new assignment context.
-        ExpressionTree var = at.getVariable();
-        assert var instanceof IdentifierTree : "Expected IdentifierTree as context. Found: " + var;
-        AnnotatedTypeMirror meth = atypeFactory.getAnnotatedType(var);
-        assert meth instanceof AnnotatedExecutableType
-            : "Expected AnnotatedExecutableType as context. Found: " + meth;
-        AnnotatedTypeMirror newctx = ((AnnotatedExecutableType) meth).getReturnType();
-        visitorState.setAssignmentContext(Pair.of((Tree) null, newctx));
-      }
-
-      try {
-        AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
-        if (expected.getKind() != TypeKind.ARRAY) {
-          // Expected is not an array -> direct comparison.
-          commonAssignmentCheck(expected, actual, at.getExpression(), "annotation");
-        } else if (actual.getKind() == TypeKind.ARRAY) {
-          // Both actual and expected are arrays.
-          commonAssignmentCheck(expected, actual, at.getExpression(), "annotation");
-        } else {
-          // The declaration is an array type, but just a single element is given.
-          commonAssignmentCheck(
-              ((AnnotatedArrayType) expected).getComponentType(),
-              actual,
-              at.getExpression(),
-              "annotation");
-        }
-      } finally {
-        visitorState.setAssignmentContext(preAssignmentContext);
+      AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
+      if (expected.getKind() != TypeKind.ARRAY) {
+        // Expected is not an array -> direct comparison.
+        commonAssignmentCheck(expected, actual, at.getExpression(), "annotation");
+      } else if (actual.getKind() == TypeKind.ARRAY) {
+        // Both actual and expected are arrays.
+        commonAssignmentCheck(expected, actual, at.getExpression(), "annotation");
+      } else {
+        // The declaration is an array type, but just a single element is given.
+        commonAssignmentCheck(
+            ((AnnotatedArrayType) expected).getComponentType(),
+            actual,
+            at.getExpression(),
+            "annotation");
       }
     }
     return null;
@@ -2429,19 +2386,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
     return super.visitInstanceOf(node, p);
-  }
-
-  @Override
-  public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
-    try {
-      visitorState.setAssignmentContext(null);
-      scan(node.getExpression(), p);
-      scan(node.getIndex(), p);
-    } finally {
-      visitorState.setAssignmentContext(preAssignmentContext);
-    }
-    return null;
   }
 
   /**
@@ -3286,23 +3230,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             executableName,
             listToString(paramNames));
 
-    Pair<Tree, AnnotatedTypeMirror> preAssignmentContext = visitorState.getAssignmentContext();
-    try {
-      for (int i = 0; i < size; ++i) {
-        visitorState.setAssignmentContext(
-            Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
-        commonAssignmentCheck(
-            requiredArgs.get(i),
-            passedArgs.get(i),
-            "argument",
-            // TODO: for expanded varargs parameters, maybe adjust the name
-            paramNames.get(Math.min(i, maxParamNamesIndex)),
-            executableName);
-        // Also descend into the argument within the correct assignment context.
-        scan(passedArgs.get(i), null);
-      }
-    } finally {
-      visitorState.setAssignmentContext(preAssignmentContext);
+    for (int i = 0; i < size; ++i) {
+      commonAssignmentCheck(
+          requiredArgs.get(i),
+          passedArgs.get(i),
+          "argument",
+          // TODO: for expanded varargs parameters, maybe adjust the name
+          paramNames.get(Math.min(i, maxParamNamesIndex)),
+          executableName);
+      // Also descend into the argument within the correct assignment context.
+      scan(passedArgs.get(i), null);
     }
   }
 
@@ -4551,29 +4488,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.assignmentContext = assignmentContext;
     }
 
-    /**
-     * Updates the assignment context.
-     *
-     * @param assignmentContext the new assignment context to use
-     */
-    public void setAssignmentContext(Pair<Tree, AnnotatedTypeMirror> assignmentContext) {
-      this.assignmentContext.setAssignmentContext(assignmentContext);
-    }
-
     /** Sets the current path for the visitor. */
     public void setPath(TreePath path) {
       assignmentContext.setPath(path);
-    }
-
-    /**
-     * Returns the assignment context.
-     *
-     * <p>NOTE: This method is known to be buggy.
-     *
-     * @return the assignment context
-     */
-    public Pair<Tree, AnnotatedTypeMirror> getAssignmentContext() {
-      return assignmentContext.getAssignmentContext();
     }
 
     /**
@@ -4639,15 +4556,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public String toString() {
       return String.format(
-          "AssignmentContext: method %s (%s) / class (%s)%n"
-              + "    assignment context %s (%s)%n"
-              + "    path is non-null: %s",
-          (mt != null ? mt.getName() : "null"),
-          mrt,
-          act,
-          (getAssignmentContext() != null ? getAssignmentContext().first : "null"),
-          (getAssignmentContext() != null ? getAssignmentContext().second : "null"),
-          getPath() != null);
+          "AssignmentContext: method %s (%s) / class (%s)%n" + "    path is non-null: %s",
+          (mt != null ? mt.getName() : "null"), mrt, act, getPath() != null);
     }
   }
 }

@@ -74,7 +74,6 @@ import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -190,36 +189,9 @@ public abstract class CFAbstractTransfer<
         analysis.atypeFactory;
     Tree preTree = analysis.getCurrentTree();
     TreePath preTreePath = factory.getVisitorState().getPath();
-    Pair<Tree, AnnotatedTypeMirror> preContext = factory.getVisitorState().getAssignmentContext();
     analysis.setCurrentTree(tree);
-    // is there an assignment context node available?
     if (node != null && node.getAssignmentContext() != null) {
       factory.getVisitorState().setPath(node.getAssignmentContext().getTreePath());
-      // Get the declared type of the assignment context by looking up the assignment context tree's
-      // type in the factory while flow is disabled.
-      Tree contextTree = node.getAssignmentContext().getContextTree();
-      AnnotatedTypeMirror assignmentContext = null;
-      if (contextTree != null) {
-        assignmentContext = factory.getAnnotatedTypeLhs(contextTree);
-      } else {
-        Element assignmentContextElement = node.getAssignmentContext().getElementForType();
-        if (assignmentContextElement != null) {
-          // if contextTree is null, use the element to get the type
-          assignmentContext = factory.getAnnotatedType(assignmentContextElement);
-        }
-      }
-
-      if (assignmentContext != null) {
-        if (assignmentContext instanceof AnnotatedExecutableType) {
-          // For a MethodReturnContext, we get the full type of the
-          // method, but we only want the return type.
-          assignmentContext = ((AnnotatedExecutableType) assignmentContext).getReturnType();
-        }
-        factory
-            .getVisitorState()
-            .setAssignmentContext(
-                Pair.of(node.getAssignmentContext().getContextTree(), assignmentContext));
-      }
     }
     AnnotatedTypeMirror at;
     if (node instanceof MethodInvocationNode
@@ -234,7 +206,6 @@ public abstract class CFAbstractTransfer<
       at = factory.getAnnotatedType(tree);
     }
     analysis.setCurrentTree(preTree);
-    factory.getVisitorState().setAssignmentContext(preContext);
     factory.getVisitorState().setPath(preTreePath);
     return analysis.createAbstractValue(at);
   }
