@@ -173,7 +173,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
     // If we are visiting a pseudo-assignment, visitorLeafKind is either
     // Tree.Kind.NEW_CLASS or Tree.Kind.METHOD_INVOCATION.
-    TreePath path = visitorState.getPath();
+    TreePath path = getCurrentPath();
     if (path == null) {
       return;
     }
@@ -182,7 +182,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     if (visitorLeafKind == Tree.Kind.NEW_CLASS || visitorLeafKind == Tree.Kind.METHOD_INVOCATION) {
       // Handling pseudo-assignments
       if (canBeLeaked(valueTree)) {
-        Tree.Kind parentKind = visitorState.getPath().getParentPath().getLeaf().getKind();
+        Tree.Kind parentKind = getCurrentPath().getParentPath().getLeaf().getKind();
 
         if (!varType.hasAnnotation(NonLeaked.class)
             && !(varType.hasAnnotation(LeakedToResult.class)
