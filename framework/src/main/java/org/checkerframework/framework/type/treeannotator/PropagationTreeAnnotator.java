@@ -101,7 +101,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         atypeFactory.setVisitorPath(null);
         ParameterizedExecutableType m = atypeFactory.methodFromUse(methodInvocationTree);
         for (int i = 0; i < m.executableType.getParameterTypes().size(); i++) {
-          if (methodInvocationTree.getArguments().get(i) == tree) {
+          @SuppressWarnings("interning") // Tree must be exactly the same.
+          boolean foundArgument = methodInvocationTree.getArguments().get(i) == tree;
+          if (foundArgument) {
             contextType = m.executableType.getParameterTypes().get(i);
             break;
           }
