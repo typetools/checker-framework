@@ -11,6 +11,8 @@ plugins {
     id 'net.ltgt.errorprone' version '2.0.2'
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.0' apply false
+    // https://docs.gradle.org/current/userguide/eclipse_plugin.html
+    id 'eclipse'
 }
 
 ext {
@@ -89,6 +91,7 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
 
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'eclipse'
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'de.undercouch.download'
     apply plugin: 'net.ltgt.errorprone'
@@ -123,6 +126,20 @@ allprojects {
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
         allProjects subprojects
+    }
+
+    eclipse.classpath {
+        defaultOutputDir = file("build/default")
+        file.whenMerged { cp ->
+            cp.entries.forEach { cpe ->
+                if (cpe instanceof org.gradle.plugins.ide.eclipse.model.SourceFolder) {
+                    cpe.output = cpe.output.replace "bin/", "build/classes/java/"
+                }
+                if (cpe instanceof org.gradle.plugins.ide.eclipse.model.Output) {
+                    cpe.path = cpe.path.replace "bin/", "build/"
+                }
+            }
+        }
     }
 
     ext {
