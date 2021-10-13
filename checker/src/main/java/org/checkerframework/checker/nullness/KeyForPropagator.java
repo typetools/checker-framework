@@ -156,6 +156,9 @@ public class KeyForPropagator {
       NewClassTree newClassTree,
       AnnotatedTypeMirror type,
       KeyForAnnotatedTypeFactory atypeFactory) {
+    if (type.getKind() != TypeKind.DECLARED) {
+      return;
+    }
     TreePath path = atypeFactory.getPath(newClassTree);
     if (path == null) {
       return;
