@@ -195,9 +195,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Utility class for working with {@link TypeMirror}s. */
   public final Types types;
 
-  /** The state of the visitor. */
-  protected final AssignmentContext assignmentContext;
-
   /** The AnnotatedFor.value argument/element. */
   private final ExecutableElement annotatedForValueElement;
   /** The EnsuresQualifier.expression field/element. */
@@ -517,7 +514,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.trees = Trees.instance(processingEnv);
     this.elements = processingEnv.getElementUtils();
     this.types = processingEnv.getTypeUtils();
-    this.assignmentContext = new AssignmentContext();
 
     this.supportedQuals = new HashSet<>();
     this.supportedQualNames = new HashSet<>();
@@ -3005,15 +3001,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return narrowed;
   }
 
-  /**
-   * Returns the AssignmentContext instance used by the factory to infer types.
-   *
-   * @return the AssignmentContext instance used by the factory to infer types
-   */
-  public AssignmentContext getVisitorState() {
-    return this.assignmentContext;
-  }
-
   // **********************************************************************
   // random methods wrapping #getAnnotatedType(Tree) and #fromElement(Tree)
   // with appropriate casts to reduce casts on the client side
@@ -3529,6 +3516,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
   }
 
+  private TreePath treePath;
+
+  public void setVisitorPath(TreePath treePath) {
+    this.treePath = treePath;
+  }
+
+  public TreePath getVisitorPath() {
+    return treePath;
+  }
+
   /**
    * Gets the path for the given {@link Tree} under the current root by checking from the visitor's
    * current path, and using {@link Trees#getPath(CompilationUnitTree, Tree)} (which is much slower)
@@ -3560,7 +3557,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return treePathCache.getPath(root, node);
     }
 
-    TreePath currentPath = assignmentContext.getPath();
+    TreePath currentPath = treePath;
     if (currentPath == null) {
       TreePath path = TreePath.getPath(root, node);
       treePathCache.addPath(node, path);
