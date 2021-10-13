@@ -222,11 +222,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       checkOwningField(varElement);
     }
 
-    //    if (varElement.getKind().isField() && ElementUtils.isFinal(varElement) &&
-    // !rlTypeFactory.getMustCallValue(varElement).isEmpty()){
-    //      rlTypeFactory.fieldToFinalizer.put(varElement, new LinkedHashSet<>());
-    //    }
-
     return super.visitVariable(node, p);
   }
 

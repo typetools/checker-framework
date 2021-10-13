@@ -4,7 +4,15 @@ import static org.checkerframework.dataflow.cfg.block.Block.BlockType.SPECIAL_BL
 
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
-import java.util.*;
+import com.sun.source.tree.Tree;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.mustcall.qual.Owning;
@@ -16,7 +24,10 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.javacutil.*;
+import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 public class MustCallInferenceLogic {
 
@@ -29,15 +40,14 @@ public class MustCallInferenceLogic {
     OWNING = AnnotationBuilder.fromClass(this.typeFactory.getElementUtils(), Owning.class);
   }
 
-  void inference(ControlFlowGraph cfg) {
+  void inference(ControlFlowGraph cfg, Tree methodTree) {
     Set<BlockWithFields> visited = new HashSet<>();
     Deque<BlockWithFields> worklist = new ArrayDeque<>();
 
     Set<FieldsWithCMV> fieldsWithCMVSTemp = new HashSet<>();
 
-    for (ResourceLeakAnnotatedTypeFactory.FieldToFinalizers fieldToFinalizers :
-        typeFactory.getFieldToFinalizers()) {
-      fieldsWithCMVSTemp.add(new FieldsWithCMV(fieldToFinalizers.field, new HashSet<>()));
+    for (Element field : typeFactory.getFieldToFinalizers().keySet()) {
+      fieldsWithCMVSTemp.add(new FieldsWithCMV(field, new HashSet<>()));
     }
 
     BlockWithFields entry =
@@ -52,30 +62,38 @@ public class MustCallInferenceLogic {
 
       for (Node node : current.block.getNodes()) {
         if (node instanceof MethodInvocationNode) {
-          MethodInvocationNode mNode = (MethodInvocationNode) node;
-          Node receiver = mNode.getTarget().getReceiver();
-          if (receiver.getTree() != null) {
-            Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
-            if (receiverEl.getKind().isField()
-                && ElementUtils.isFinal(receiverEl)
-                && !typeFactory.getMustCallValue(receiverEl).isEmpty()) {
-              Element method = TreeUtils.elementFromTree(mNode.getTree());
-              FieldsWithCMV fieldsWithCMV = getFieldsWithCMVs(receiverEl, fieldsWithCMVs);
-              if (fieldsWithCMV != null) {
-                Set<String> calledMethodsnew =
-                    FluentIterable.from(fieldsWithCMV.calledMethods)
-                        .append(method.getSimpleName().toString())
-                        .toSet();
-                fieldsWithCMVs.remove(fieldsWithCMV);
-                fieldsWithCMVs.add(new FieldsWithCMV(receiverEl, calledMethodsnew));
-              }
-            }
-          }
+          updateFieldsWithCMVsForInvocation((MethodInvocationNode) node, fieldsWithCMVs);
         }
       }
 
-      propagateRegPaths(current, fieldsWithCMVs, visited, worklist);
+      propagateRegPaths(current, fieldsWithCMVs, visited, worklist, methodTree);
     }
+  }
+
+  private void updateFieldsWithCMVsForInvocation(
+      MethodInvocationNode mNode, Set<FieldsWithCMV> fieldsWithCMVs) {
+    Node receiver = mNode.getTarget().getReceiver();
+    if (receiver.getTree() != null) {
+      Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
+      if (isReceiverPossibleOwningField(receiverEl)) {
+        Element method = TreeUtils.elementFromTree(mNode.getTree());
+        FieldsWithCMV fieldsWithCMV = getFieldsWithCMVs(receiverEl, fieldsWithCMVs);
+        if (fieldsWithCMV != null) {
+          Set<String> calledMethodsnew =
+              FluentIterable.from(fieldsWithCMV.calledMethods)
+                  .append(method.getSimpleName().toString())
+                  .toSet();
+          fieldsWithCMVs.remove(fieldsWithCMV);
+          fieldsWithCMVs.add(new FieldsWithCMV(receiverEl, calledMethodsnew));
+        }
+      }
+    }
+  }
+
+  public boolean isReceiverPossibleOwningField(Element receiverEl) {
+    return (receiverEl.getKind().isField()
+        && ElementUtils.isFinal(receiverEl)
+        && !typeFactory.getMustCallValue(receiverEl).isEmpty());
   }
 
   public FieldsWithCMV getFieldsWithCMVs(Element elt, Set<FieldsWithCMV> fieldsWithCMVs) {
@@ -91,23 +109,30 @@ public class MustCallInferenceLogic {
       BlockWithFields curBlock,
       Set<FieldsWithCMV> fieldsWithCMVs,
       Set<BlockWithFields> visited,
-      Deque<BlockWithFields> worklist) {
+      Deque<BlockWithFields> worklist,
+      Tree methodTree) {
     List<BlockImpl> successors = getSuccessors((BlockImpl) curBlock.block);
     for (Block b : successors) {
       if (b.getType() == SPECIAL_BLOCK) {
-        for (FieldsWithCMV fieldsWithCMV : fieldsWithCMVs) {
-          List<String> mcValues = typeFactory.getMustCallValue(fieldsWithCMV.field);
-          if (fieldsWithCMV.calledMethods.containsAll(mcValues)) {
-            WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-            if (wpi != null) {
-              wpi.addFieldDeclarationAnnotation(fieldsWithCMV.field, OWNING);
-            }
-          }
-        }
+        findOwningFields(fieldsWithCMVs, methodTree);
       }
       BlockWithFields successor = new BlockWithFields(b, fieldsWithCMVs);
       if (visited.add(successor)) {
         worklist.add(successor);
+      }
+    }
+  }
+
+  public void findOwningFields(Set<FieldsWithCMV> fieldsWithCMVs, Tree methodTree) {
+    for (FieldsWithCMV fieldsWithCMV : fieldsWithCMVs) {
+      List<String> mcValues = typeFactory.getMustCallValue(fieldsWithCMV.field);
+      if (fieldsWithCMV.calledMethods.containsAll(mcValues)) {
+        WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+        if (wpi != null) {
+          wpi.addFieldDeclarationAnnotation(fieldsWithCMV.field, OWNING);
+          typeFactory.addFinalizerForField(
+              fieldsWithCMV.field, TreeUtils.elementFromTree(methodTree));
+        }
       }
     }
   }
@@ -135,12 +160,17 @@ public class MustCallInferenceLogic {
     return successorBlock;
   }
 
+  /**
+   * A pair of a {@link Block} and a set of {@link FieldsWithCMV} on entry to the block. Each
+   * FieldsWithCMV represents a set of fields with a least upper bound of methods that were called
+   * somewhere the previous blocks.
+   */
   private static class BlockWithFields {
 
     /** The block. */
     public final Block block;
 
-    /** The dataflow facts. */
+    /** The set of FieldsWithCMV. */
     public final ImmutableSet<FieldsWithCMV> fieldsWithCMV;
 
     public BlockWithFields(Block b, Set<FieldsWithCMV> fieldsWithCMVs) {
@@ -166,9 +196,16 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * A pair of a field {@link Element} and a set of method names that were called on the field
+   * somewhere in a method body.
+   */
   private static class FieldsWithCMV {
+
+    /** The field. */
     public final Element field;
 
+    /** The set of method names that were called on the field. */
     public ImmutableSet<String> calledMethods;
 
     public FieldsWithCMV(Element f, Set<String> set) {

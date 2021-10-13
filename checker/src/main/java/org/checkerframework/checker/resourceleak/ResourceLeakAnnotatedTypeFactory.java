@@ -2,13 +2,18 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -75,7 +80,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    */
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
-  private Set<FieldToFinalizers> fieldToFinalizers = new HashSet<>();
+  private Map<Element, Set<Element>> fieldToFinalizers = new HashMap<>();
 
   /**
    * Creates a new ResourceLeakAnnotatedTypeFactory.
@@ -87,16 +92,16 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     this.postInit();
   }
 
-  public Set<FieldToFinalizers> CollectFields(ClassTree classTree) {
+  public Map<Element, Set<Element>> CollectFields(ClassTree classTree) {
     List<? extends Tree> members = classTree.getMembers();
-    Set<FieldToFinalizers> fieldsToFinalizers = new HashSet<>();
+    Map<Element, Set<Element>> fieldsToFinalizers = new HashMap<>();
     for (Tree tree : members) {
       Element elt = TreeUtils.elementFromTree(tree);
       if (elt != null
           && elt.getKind().isField()
           && ElementUtils.isFinal(elt)
           && !getMustCallValue(elt).isEmpty()) {
-        fieldsToFinalizers.add(new FieldToFinalizers(elt, new LinkedHashSet<>()));
+        fieldsToFinalizers.put(elt, new LinkedHashSet<>());
       }
     }
     return fieldsToFinalizers;
@@ -107,7 +112,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     super.setRoot(root);
   }
 
-  public Set<FieldToFinalizers> getFieldToFinalizers() {
+  public Map<Element, Set<Element>> getFieldToFinalizers() {
     return fieldToFinalizers;
   }
 
@@ -120,7 +125,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   public void postProcessClassTree(ClassTree tree) {
-    if (!fieldToFinalizers.isEmpty()) {
+    if (checker.hasOption("infer") && !fieldToFinalizers.isEmpty()) {
       List<? extends Tree> members = tree.getMembers();
       for (Tree t : members) {
         if (t.getKind() == Tree.Kind.METHOD) {
@@ -136,7 +141,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
           ControlFlowGraph cfg = CFCFGBuilder.build(this.root, met, checker, this, processingEnv);
           if (cfg != null) {
             MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(this);
-            mustCallInferenceLogic.inference(cfg);
+            mustCallInferenceLogic.inference(cfg, t);
           }
         }
       }
@@ -372,32 +377,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return createsMustCallForListValueElement;
   }
 
-  public static class FieldToFinalizers {
-    public final Element field;
-
-    public ImmutableSet<Element> finalizers;
-
-    public FieldToFinalizers(Element f, Set<Element> set) {
-      this.field = f;
-      this.finalizers = ImmutableSet.copyOf(set);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null || getClass() != obj.getClass()) {
-        return false;
-      }
-      ResourceLeakAnnotatedTypeFactory.FieldToFinalizers that =
-          (ResourceLeakAnnotatedTypeFactory.FieldToFinalizers) obj;
-      return field.equals(that.field) && this.finalizers.equals(that.finalizers);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(field, finalizers);
-    }
+  public void addFinalizerForField(Element field, Element finalizer) {
+    fieldToFinalizers.get(field).add(finalizer);
   }
 }

@@ -1119,7 +1119,7 @@ public class WholeProgramInferenceJavaParserStorage
     public VariableDeclarator declaration;
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
-
+    /** Annotations on the field declaration. */
     private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
     /**
@@ -1173,6 +1173,15 @@ public class WholeProgramInferenceJavaParserStorage
     public void transferAnnotations() {
       if (type == null) {
         return;
+      }
+
+      if (declarationAnnotations != null) {
+        ClassOrInterfaceType type = declaration.getType().asClassOrInterfaceType();
+        for (AnnotationMirror annotation : declarationAnnotations) {
+          type.addAnnotation(
+              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                  annotation));
+        }
       }
 
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
