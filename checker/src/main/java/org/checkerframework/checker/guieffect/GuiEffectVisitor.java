@@ -44,7 +44,12 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** Require that only UI code invokes code with the UI effect. */
 public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
+  /** The type of the class currently being visited. */
+  private @Nullable AnnotatedDeclaredType classType = null;
+  /** The receiver type of the enclosing method tree. */
+  private @Nullable AnnotatedDeclaredType receiverType = null;
 
+  /** Whether or not to display debugging information. */
   protected final boolean debugSpew;
 
   // effStack and currentMethods should always be the same size.
@@ -580,11 +585,6 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   // currentMethods.removeFirst();
   // effStack.removeFirst();
   // }
-
-  /** The type of the class currently being visited. */
-  private @Nullable AnnotatedDeclaredType classType = null;
-  /** The receiver type of the enclosing method tree. */
-  private @Nullable AnnotatedDeclaredType receiverType = null;
 
   @Override
   public void processClassTree(ClassTree classTree) {
