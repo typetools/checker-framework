@@ -8,6 +8,7 @@ public class IncorrectSideEffectsOnly {
 
   @SideEffectsOnly({"#2"})
   void test(Collection<Integer> cl, Collection<Integer> cl2) {
+    // :: error: incorrect.sideeffectsonly
     cl.add(9);
   }
 

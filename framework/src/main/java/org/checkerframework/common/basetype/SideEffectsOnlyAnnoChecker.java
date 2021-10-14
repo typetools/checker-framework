@@ -106,13 +106,13 @@ public class SideEffectsOnlyAnnoChecker {
         if (!sideEffectsOnlyExpressions.contains(receiverExpr)) {
           sideEffectsOnlyResult.addNotSEOnlyExpr(node, receiverExpr);
         }
-        List<JavaExpression> paramsAsLocals =
-            JavaExpression.getParametersAsLocalVariables((ExecutableElement) treeElem);
-        for (JavaExpression expr : paramsAsLocals) {
-          if (!sideEffectsOnlyExpressions.contains(expr)) {
-            sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
-          }
-        }
+        //        List<JavaExpression> paramsAsLocals =
+        //            JavaExpression.getParametersAsLocalVariables((ExecutableElement) treeElem);
+        //        for (JavaExpression expr : paramsAsLocals) {
+        //          if (!sideEffectsOnlyExpressions.contains(expr)) {
+        //            sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
+        //          }
+        //        }
       } else {
         // If the invoked method is annotated with @SideEffectsOnly,
         // add annotation values to seOnlyIncorrectExprs

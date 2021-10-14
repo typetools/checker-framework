@@ -1120,8 +1120,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getSeOnlyResult();
       if (!seOnlyIncorrectExprs.isEmpty()) {
-        for (Pair<Tree, JavaExpression> s : seOnlyIncorrectExprs)
-          checker.reportError(s.first, "incorrect.sideeffectsonly", s.second.toString());
+        for (Pair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
+          if (!sideEffectsOnlyExpressions.contains(s.second)) {
+            checker.reportError(s.first, "incorrect.sideeffectsonly", s.second.toString());
+          }
+        }
       }
     }
   }

@@ -5,10 +5,15 @@ import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class CheckSideEffectsOnly {
 
-  // :: error: incorrect.sideeffectsonly
   @SideEffectsOnly({"#2"})
   void test(Collection<Integer> cl, Collection<Integer> cl2) {
+    // :: error: incorrect.sideeffectsonly
     cl.add(9);
+    cl2.add(10);
+  }
+
+  @SideEffectsOnly({"#2"})
+  static void test1(Collection<Integer> cl, Collection<Integer> cl2) {
     cl2.add(10);
   }
 }
