@@ -188,9 +188,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** For obtaining line numbers in -Ashowchecks debugging output. */
   protected final SourcePositions positions;
 
-  /** For storing visitor state. */
-  protected final VisitorState visitorState;
-
   /** The element for java.util.Vector#copyInto. */
   private final ExecutableElement vectorCopyInto;
 
@@ -239,6 +236,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected boolean inferPurity = true;
 
+  /** The tree of the enclosing method that is currently being visited. */
+  protected @Nullable MethodTree methodTree = null;
+
   /**
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
    *     TypeHierarchy#isSubtype})
@@ -257,7 +257,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     this.checker = checker;
     this.atypeFactory = typeFactory == null ? createTypeFactory() : typeFactory;
     this.positions = trees.getSourcePositions();
-    this.visitorState = new VisitorState();
     this.typeValidator = createTypeValidator();
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
@@ -471,25 +470,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     atypeFactory.preProcessClassTree(classTree);
 
     TreePath preTreePath = atypeFactory.getVisitorTreePath();
-    AnnotatedDeclaredType preACT = visitorState.getClassType();
-    AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
-    MethodTree preMT = visitorState.getMethodTree();
+    MethodTree preMT = methodTree;
 
     // Don't use atypeFactory.getPath, because that depends on the visitor path.
     atypeFactory.setVisitorTreePath(TreePath.getPath(root, classTree));
-    visitorState.setClassType(
-        atypeFactory.getAnnotatedType(TreeUtils.elementFromDeclaration(classTree)));
-    visitorState.setMethodReceiver(null);
-    visitorState.setMethodTree(null);
+    methodTree = null;
 
     try {
       processClassTree(classTree);
       atypeFactory.postProcessClassTree(classTree);
     } finally {
       atypeFactory.setVisitorTreePath(preTreePath);
-      visitorState.setClassType(preACT);
-      visitorState.setMethodReceiver(preAMT);
-      visitorState.setMethodTree(preMT);
+      methodTree = preMT;
     }
     return null;
   }
@@ -874,10 +866,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // later checks.
     // TODO: Find a cleaner way to ensure circular AnnotatedTypeMirrors.
     AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(node).deepCopy();
-    AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
-    MethodTree preMT = visitorState.getMethodTree();
-    visitorState.setMethodReceiver(methodType.getReceiverType());
-    visitorState.setMethodTree(node);
+    MethodTree preMT = methodTree;
+    methodTree = node;
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
     warnAboutTypeAnnotationsTooEarly(node, node.getModifiers());
@@ -959,8 +949,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       return super.visitMethod(node, p);
     } finally {
-      visitorState.setMethodReceiver(preMRT);
-      visitorState.setMethodTree(preMT);
+      methodTree = preMT;
     }
   }
 
@@ -4061,7 +4050,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * expression in {@code mustSubset} there must be the same expression in {@code set}, with the
    * same (or a stronger) annotation.
    *
-   * <p>This uses field {@link #visitorState} to determine where to issue an error message.
+   * <p>This uses field {@link #methodTree} to determine where to issue an error message.
    *
    * @param overriderType the subtype
    * @param overriddenType the supertype
@@ -4091,7 +4080,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       if (!found) {
-        MethodTree methodDeclTree = visitorState.getMethodTree();
 
         String overriddenTypeString = overriddenType.getUnderlyingType().asElement().toString();
         String overriderTypeString;
@@ -4125,10 +4113,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         checker.reportError(
-            methodDeclTree,
+            methodTree,
             messageKey,
             weak.first,
-            methodDeclTree.getName(),
+            methodTree.getName(),
             overriddenTypeString,
             overriddenAnno,
             overriderTypeString,
@@ -4139,15 +4127,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Localizes some contracts -- that is, viewpoint-adapts them to some method body, according to
-   * the value of {@link #visitorState}.
+   * the value of {@link #methodTree}.
    *
    * <p>The input is a set of {@link Contract}s, each of which contains an expression string and an
    * annotation. In a {@link Contract}, Java expressions are exactly as written in source code, not
    * standardized or viewpoint-adapted.
    *
    * <p>The output is a set of pairs of {@link JavaExpression} (parsed expression string) and
-   * standardized annotation (with respect to the path of {@link #visitorState}. This method
-   * discards any contract whose expression cannot be parsed into a JavaExpression.
+   * standardized annotation (with respect to the path of {@link #methodTree}. This method discards
+   * any contract whose expression cannot be parsed into a JavaExpression.
    *
    * @param contractSet a set of contracts
    * @param methodType the type of the method that the contracts are for
@@ -4162,7 +4150,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // This is the path to a place where the contract is being used, which might or might not be
     // where the contract was defined.  For example, methodTree might be an overriding
     // definition, and the contract might be for a superclass.
-    MethodTree methodTree = visitorState.getMethodTree();
+    MethodTree methodTree = this.methodTree;
 
     StringToJavaExpression stringToJavaExpr =
         expression -> {
@@ -4456,82 +4444,5 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // r = reduce(scan(node.getImports(), p), r);
     r = reduce(scan(node.getTypeDecls(), p), r);
     return r;
-  }
-
-  /**
-   * Represents the state of a visitor. Stores the relevant information to find the type of 'this'
-   * in the visitor.
-   */
-  protected static class VisitorState {
-    /** The type of the enclosing class tree. */
-    private AnnotatedDeclaredType act;
-
-    /** The receiver type of the enclosing method tree. */
-    private AnnotatedDeclaredType mrt;
-    /** The enclosing method tree. */
-    private MethodTree mt;
-
-    public VisitorState() {
-      super();
-    }
-
-    /** Updates the type of the class currently visited. */
-    public void setClassType(AnnotatedDeclaredType act) {
-      this.act = act;
-    }
-
-    /** Updates the method receiver type currently visited. */
-    public void setMethodReceiver(AnnotatedDeclaredType mrt) {
-      this.mrt = mrt;
-    }
-
-    /** Updates the method currently visited. */
-    public void setMethodTree(MethodTree mt) {
-      this.mt = mt;
-    }
-
-    /**
-     * Returns the type of the enclosing class.
-     *
-     * @return the type of the enclosing class
-     */
-    // GUI Effect Visitor still uses.  Need to rewrite.
-    public AnnotatedDeclaredType getClassType() {
-      if (act == null) {
-        return null;
-      }
-      return act.deepCopy();
-    }
-
-    /**
-     * Returns the method receiver type of the enclosing method.
-     *
-     * @return the method receiver type of the enclosing method
-     */
-    // GUI Effect Visitor still uses.  Need to rewrite.
-    public AnnotatedDeclaredType getMethodReceiver() {
-      if (mrt == null) {
-        return null;
-      }
-      return mrt.deepCopy();
-    }
-
-    /**
-     * Returns the method tree currently visiting.
-     *
-     * @return the method tree currently visiting
-     */
-    // Interning Visitor uses.
-    public MethodTree getMethodTree() {
-      return this.mt;
-    }
-
-    @SideEffectFree
-    @Override
-    public String toString() {
-      return String.format(
-          "VisitorState: method %s (%s) / class (%s)%n",
-          (mt != null ? mt.getName() : "null"), mrt, act);
-    }
   }
 }
