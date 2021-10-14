@@ -48,6 +48,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     this.qualHierarchy = atypeFactory.getQualifierHierarchy();
   }
 
+  private boolean doProp = true;
+
   @Override
   public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
     assert type.getKind() == TypeKind.ARRAY
@@ -78,7 +80,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     TreePath path = atypeFactory.getPath(tree);
     AnnotatedTypeMirror contextType = null;
-    if (atypeFactory.getVisitorTreePath() != null && path != null && path.getParentPath() != null) {
+    if (path != null && path.getParentPath() != null) {
       Tree parentTree = path.getParentPath().getLeaf();
       if (parentTree.getKind() == Kind.ASSIGNMENT) {
         Tree var = ((AssignmentTree) parentTree).getVariable();
@@ -95,11 +97,15 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
               atypeFactory.getAnnotatedType((MethodTree) methodTree);
           contextType = methodType.getReturnType();
         }
-      } else if (parentTree.getKind() == Kind.METHOD_INVOCATION) {
+      } else if (parentTree.getKind() == Kind.METHOD_INVOCATION && doProp) {
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
-        TreePath oldPath = atypeFactory.getVisitorTreePath();
-        atypeFactory.setVisitorTreePath(null);
-        ParameterizedExecutableType m = atypeFactory.methodFromUse(methodInvocationTree);
+        doProp = false;
+        ParameterizedExecutableType m;
+        try {
+          m = atypeFactory.methodFromUse(methodInvocationTree);
+        } finally {
+          doProp = true;
+        }
         for (int i = 0; i < m.executableType.getParameterTypes().size(); i++) {
           @SuppressWarnings("interning") // Tree must be exactly the same.
           boolean foundArgument = methodInvocationTree.getArguments().get(i) == tree;
@@ -108,7 +114,6 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             break;
           }
         }
-        atypeFactory.setVisitorTreePath(oldPath);
       }
     }
     Set<? extends AnnotationMirror> post;
