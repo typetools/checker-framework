@@ -1,7 +1,5 @@
 package org.checkerframework.checker.resourceleak;
 
-import static org.checkerframework.dataflow.cfg.block.Block.BlockType.SPECIAL_BLOCK;
-
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.Tree;
@@ -113,7 +111,7 @@ public class MustCallInferenceLogic {
       Tree methodTree) {
     List<BlockImpl> successors = getSuccessors((BlockImpl) curBlock.block);
     for (Block b : successors) {
-      if (b.getType() == SPECIAL_BLOCK) {
+      if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
         findOwningFields(fieldsWithCMVs, methodTree);
       }
       BlockWithFields successor = new BlockWithFields(b, fieldsWithCMVs);
@@ -161,9 +159,9 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * A pair of a {@link Block} and a set of {@link FieldsWithCMV} on entry to the block. Each
-   * FieldsWithCMV represents a set of fields with a least upper bound of methods that were called
-   * somewhere the previous blocks.
+   * A pair of a {@link Block} and a set of FieldsWithCMV on entry to the block. Each FieldsWithCMV
+   * represents a set of fields with a least upper bound of methods that were called somewhere the
+   * previous blocks.
    */
   private static class BlockWithFields {
 
