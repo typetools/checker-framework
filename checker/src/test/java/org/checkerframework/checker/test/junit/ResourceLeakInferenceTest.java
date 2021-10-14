@@ -15,8 +15,6 @@ public class ResourceLeakInferenceTest extends CheckerFrameworkPerDirectoryTest 
         "resourceleak-inference",
         "-Anomsgtext",
         "-AwarnUnneededSuppressions",
-        "-Ainfer=ajava",
-        "-Awarns",
         "-encoding",
         "UTF-8");
   }
