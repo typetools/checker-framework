@@ -1497,7 +1497,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       }
 
       // add assignment node
-      assignmentNode = new AssignmentNode(tree, target, expression, getCurrentPath());
+      assignmentNode = new AssignmentNode(tree, target, expression);
       extendWithNode(assignmentNode);
     }
 
@@ -1523,7 +1523,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     assert tree instanceof AssignmentTree || tree instanceof VariableTree;
     target.setLValue();
     expression = assignConvert(expression, target.getType());
-    AssignmentNode assignmentNode = new AssignmentNode(tree, target, expression, getCurrentPath());
+    AssignmentNode assignmentNode = new AssignmentNode(tree, target, expression);
     extendWithNode(assignmentNode);
     return assignmentNode;
   }
@@ -1649,8 +1649,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           castNode.setInSource(false);
           extendWithNode(castNode);
 
-          AssignmentNode assignNode =
-              new AssignmentNode(tree, targetLHS, castNode, getCurrentPath());
+          AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
           extendWithNode(assignNode);
           return assignNode;
         }
@@ -1702,8 +1701,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
             // Map the compound assignment tree to an assignment node, which
             // will have the correct type.
-            AssignmentNode assignNode =
-                new AssignmentNode(tree, targetLHS, castNode, getCurrentPath());
+            AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
             extendWithNode(assignNode);
             return assignNode;
           }
@@ -1743,8 +1741,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           castNode.setInSource(false);
           extendWithNode(castNode);
 
-          AssignmentNode assignNode =
-              new AssignmentNode(tree, targetLHS, castNode, getCurrentPath());
+          AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
           extendWithNode(assignNode);
           return assignNode;
         }
@@ -1792,7 +1789,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         castNode.setInSource(false);
         extendWithNode(castNode);
 
-        AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode, getCurrentPath());
+        AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
         extendWithNode(assignNode);
         return assignNode;
       default:
@@ -2139,7 +2136,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       AssignmentTree assign = treeBuilder.buildAssignment(variableUse, switchTree.getExpression());
       handleArtificialTree(assign);
 
-      switchExpr = new AssignmentNode(assign, variableUseNode, switchExprNode, getCurrentPath());
+      switchExpr = new AssignmentNode(assign, variableUseNode, switchExprNode);
       switchExpr.setInSource(false);
       extendWithNode(switchExpr);
 
@@ -2581,7 +2578,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
       AssignmentTree assignTree = treeBuilder.buildAssignment(indexUse3, addOneTree);
       handleArtificialTree(assignTree);
-      Node assignNode = new AssignmentNode(assignTree, indexNode3, addOneNode, getCurrentPath());
+      Node assignNode = new AssignmentNode(assignTree, indexNode3, addOneNode);
       assignNode.setInSource(false);
       extendWithNode(assignNode);
 
@@ -2896,8 +2893,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // Note that getClassBody() and therefore classbody can be null.
     ClassDeclarationNode classbody = (ClassDeclarationNode) scan(tree.getClassBody(), p);
 
-    Node node =
-        new ObjectCreationNode(tree, constructorNode, arguments, classbody, getCurrentPath());
+    Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
 
     List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
     Set<TypeMirror> thrownSet =
@@ -2949,16 +2945,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         result =
             new ReturnNode(
-                tree,
-                node,
-                env.getTypeUtils(),
-                lambdaTree,
-                (MethodSymbol) overriddenElement,
-                getCurrentPath());
+                tree, node, env.getTypeUtils(), lambdaTree, (MethodSymbol) overriddenElement);
       } else {
-        result =
-            new ReturnNode(
-                tree, node, env.getTypeUtils(), (MethodTree) enclosing, getCurrentPath());
+        result = new ReturnNode(tree, node, env.getTypeUtils(), (MethodTree) enclosing);
       }
       returnNodes.add(result);
       extendWithNode(result);
@@ -3443,8 +3432,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             tempVarNode.setInSource(false);
             extendWithNode(tempVarNode);
 
-            AssignmentNode tempAssignNode =
-                new AssignmentNode(tree, tempVarNode, expr, getCurrentPath());
+            AssignmentNode tempAssignNode = new AssignmentNode(tree, tempVarNode, expr);
             tempAssignNode.setInSource(false);
             extendWithNode(tempAssignNode);
 
@@ -3521,7 +3509,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       handleArtificialTree(target);
     }
 
-    AssignmentNode assignNode = new AssignmentNode(target, expr, narrowed, getCurrentPath());
+    AssignmentNode assignNode = new AssignmentNode(target, expr, narrowed);
     assignNode.setInSource(false);
     extendWithNode(assignNode);
     return assignNode;

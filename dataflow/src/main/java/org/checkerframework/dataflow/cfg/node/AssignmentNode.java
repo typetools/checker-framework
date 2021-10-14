@@ -5,7 +5,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -30,7 +29,7 @@ public class AssignmentNode extends Node {
   protected final Node lhs;
   protected final Node rhs;
 
-  public AssignmentNode(Tree tree, Node target, Node expression, TreePath treePath) {
+  public AssignmentNode(Tree tree, Node target, Node expression) {
     super(TreeUtils.typeOf(tree));
     assert tree instanceof AssignmentTree
         || tree instanceof VariableTree
@@ -42,7 +41,7 @@ public class AssignmentNode extends Node {
     this.tree = tree;
     this.lhs = target;
     this.rhs = expression;
-    rhs.setAssignmentContext(new AssignmentLhsContext(lhs, treePath));
+    rhs.setAssignmentContext(new AssignmentLhsContext(lhs));
   }
 
   /**

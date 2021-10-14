@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,13 +28,12 @@ public class ReturnNode extends Node {
   protected final ReturnTree tree;
   protected final @Nullable Node result;
 
-  public ReturnNode(
-      ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree, TreePath treePath) {
+  public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
     super(types.getNoType(TypeKind.NONE));
     this.result = result;
     tree = t;
     if (result != null) {
-      result.setAssignmentContext(new MethodReturnContext(methodTree, treePath));
+      result.setAssignmentContext(new MethodReturnContext(methodTree));
     }
   }
 
@@ -44,13 +42,12 @@ public class ReturnNode extends Node {
       @Nullable Node result,
       Types types,
       LambdaExpressionTree lambda,
-      MethodSymbol methodSymbol,
-      TreePath treePath) {
+      MethodSymbol methodSymbol) {
     super(types.getNoType(TypeKind.NONE));
     this.result = result;
     tree = t;
     if (result != null) {
-      result.setAssignmentContext(new LambdaReturnContext(methodSymbol, treePath));
+      result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
     }
   }
 

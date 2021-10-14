@@ -188,11 +188,7 @@ public abstract class CFAbstractTransfer<
     GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
         analysis.atypeFactory;
     Tree preTree = analysis.getCurrentTree();
-    TreePath preTreePath = factory.getVisitorTreePath();
     analysis.setCurrentTree(tree);
-    if (node != null && node.getAssignmentContext() != null) {
-      factory.setVisitorTreePath(node.getAssignmentContext().getTreePath());
-    }
     AnnotatedTypeMirror at;
     if (node instanceof MethodInvocationNode
         && ((MethodInvocationNode) node).getIterableExpression() != null) {
@@ -206,7 +202,6 @@ public abstract class CFAbstractTransfer<
       at = factory.getAnnotatedType(tree);
     }
     analysis.setCurrentTree(preTree);
-    factory.setVisitorTreePath(preTreePath);
     return analysis.createAbstractValue(at);
   }
 
