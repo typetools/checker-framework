@@ -186,8 +186,13 @@ public interface WholeProgramInference {
    * @param anno the declaration annotation to add to the method
    */
   void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
-
-  void addFieldDeclarationAnnotation(Element field, AnnotationMirror anno);
+  /**
+   * Updates a field to add a declaration annotation.
+   *
+   * @param fieldElt the field to annotate
+   * @param anno the declaration annotation to add to the method
+   */
+  void addFieldDeclarationAnnotation(Element fieldElt, AnnotationMirror anno);
 
   /**
    * Writes the inferred results to a file. Ideally, it should be called at the end of the

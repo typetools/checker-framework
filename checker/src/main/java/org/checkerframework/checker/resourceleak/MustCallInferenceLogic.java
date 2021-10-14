@@ -24,39 +24,57 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** This class contains Resource Leak Checker annotation inference algorithm. TODO explain more */
 public class MustCallInferenceLogic {
 
+  /**
+   * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
+   */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
-
+  /** The @Owning annotation. */
   protected final AnnotationMirror OWNING;
 
+  /**
+   * Creates a MustCallInferenceLogic. If the Resource Leak Checker has infer option, the type
+   * factory's postProcessClassTree method would instantiate a new MustCallInferenceLogic using this
+   * constructor and then call {@link #inference(ControlFlowGraph, Tree)}.
+   *
+   * @param typeFactory the type factory
+   */
   MustCallInferenceLogic(ResourceLeakAnnotatedTypeFactory typeFactory) {
     this.typeFactory = typeFactory;
     OWNING = AnnotationBuilder.fromClass(this.typeFactory.getElementUtils(), Owning.class);
   }
 
+  /**
+   * This is the main function in the MustCallInferenceLogic. It tracks called methods for fields
+   * with non-empty @MustCall obligation of type {@link FieldWithCMVs} along all paths to regular
+   * exit point in the method body.
+   *
+   * @param cfg the control flow graph of the method to check
+   * @param methodTree the method to check
+   */
   void inference(ControlFlowGraph cfg, Tree methodTree) {
-    Set<BlockWithFields> visited = new HashSet<>();
-    Deque<BlockWithFields> worklist = new ArrayDeque<>();
+    Set<BlockWithFieldsFacts> visited = new HashSet<>();
+    Deque<BlockWithFieldsFacts> worklist = new ArrayDeque<>();
 
-    Set<FieldsWithCMV> fieldsWithCMVSTemp = new HashSet<>();
+    Set<FieldWithCMVs> initFieldsWithCMVs = new HashSet<>();
 
     for (Element field : typeFactory.getFieldToFinalizers().keySet()) {
-      fieldsWithCMVSTemp.add(new FieldsWithCMV(field, new HashSet<>()));
+      initFieldsWithCMVs.add(new FieldWithCMVs(field, new HashSet<>()));
     }
 
-    BlockWithFields entry =
-        new BlockWithFields(cfg.getEntryBlock(), ImmutableSet.copyOf(fieldsWithCMVSTemp));
+    BlockWithFieldsFacts entry =
+        new BlockWithFieldsFacts(cfg.getEntryBlock(), ImmutableSet.copyOf(initFieldsWithCMVs));
     worklist.add(entry);
     visited.add(entry);
 
     while (!worklist.isEmpty()) {
-      BlockWithFields current = worklist.remove();
+      BlockWithFieldsFacts current = worklist.remove();
 
-      Set<FieldsWithCMV> fieldsWithCMVs = new LinkedHashSet<>(current.fieldsWithCMV);
+      Set<FieldWithCMVs> fieldsWithCMVs = new LinkedHashSet<>(current.fieldsWithCMV);
 
       for (Node node : current.block.getNodes()) {
         if (node instanceof MethodInvocationNode) {
@@ -68,34 +86,43 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * Updates a set of called methods in FieldWithCMVs with a method invocation.
+   *
+   * @param mNode the MethodInvocationNode
+   * @param fieldsWithCMVs the set of FieldWithCMVs
+   */
   private void updateFieldsWithCMVsForInvocation(
-      MethodInvocationNode mNode, Set<FieldsWithCMV> fieldsWithCMVs) {
+      MethodInvocationNode mNode, Set<FieldWithCMVs> fieldsWithCMVs) {
     Node receiver = mNode.getTarget().getReceiver();
     if (receiver.getTree() != null) {
       Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
-      if (isReceiverPossibleOwningField(receiverEl)) {
+      if (typeFactory.getFieldToFinalizers().keySet().contains(receiverEl)) {
         Element method = TreeUtils.elementFromTree(mNode.getTree());
-        FieldsWithCMV fieldsWithCMV = getFieldsWithCMVs(receiverEl, fieldsWithCMVs);
+        FieldWithCMVs fieldsWithCMV = getFieldsWithCMVs(receiverEl, fieldsWithCMVs);
         if (fieldsWithCMV != null) {
           Set<String> calledMethodsnew =
               FluentIterable.from(fieldsWithCMV.calledMethods)
                   .append(method.getSimpleName().toString())
                   .toSet();
           fieldsWithCMVs.remove(fieldsWithCMV);
-          fieldsWithCMVs.add(new FieldsWithCMV(receiverEl, calledMethodsnew));
+          fieldsWithCMVs.add(new FieldWithCMVs(receiverEl, calledMethodsnew));
         }
       }
     }
   }
 
-  public boolean isReceiverPossibleOwningField(Element receiverEl) {
-    return (receiverEl.getKind().isField()
-        && ElementUtils.isFinal(receiverEl)
-        && !typeFactory.getMustCallValue(receiverEl).isEmpty());
-  }
-
-  public FieldsWithCMV getFieldsWithCMVs(Element elt, Set<FieldsWithCMV> fieldsWithCMVs) {
-    for (FieldsWithCMV fieldsWithCMV : fieldsWithCMVs) {
+  /**
+   * Gets the FieldsWithCMVs whose field is equal to the elt, if one exists in {@code
+   * fieldsWithCMVs}.
+   *
+   * @param fieldsWithCMVs set of FieldWithCMVs
+   * @param elt the field element
+   * @return the FieldWithCMVs in {@code fieldsWithCMVs} whose field is equal to {@code elt}, or
+   *     {@code null} if there is no such FieldWithCMVs
+   */
+  private FieldWithCMVs getFieldsWithCMVs(Element elt, Set<FieldWithCMVs> fieldsWithCMVs) {
+    for (FieldWithCMVs fieldsWithCMV : fieldsWithCMVs) {
       if (fieldsWithCMV.field.equals(elt)) {
         return fieldsWithCMV;
       }
@@ -103,26 +130,44 @@ public class MustCallInferenceLogic {
     return null;
   }
 
+  /**
+   * Propagates a set of FieldWithCMVs to successors, and searches for owning fields at the regular
+   * exit point.
+   *
+   * @param curBlock the current block
+   * @param fieldsWithCMVs the set of FieldWithCMVs for the current block
+   * @param visited block-FieldWithCMVs pairs already on the worklist
+   * @param worklist current worklist
+   * @param methodTree the method tree
+   */
   private void propagateRegPaths(
-      BlockWithFields curBlock,
-      Set<FieldsWithCMV> fieldsWithCMVs,
-      Set<BlockWithFields> visited,
-      Deque<BlockWithFields> worklist,
+      BlockWithFieldsFacts curBlock,
+      Set<FieldWithCMVs> fieldsWithCMVs,
+      Set<BlockWithFieldsFacts> visited,
+      Deque<BlockWithFieldsFacts> worklist,
       Tree methodTree) {
     List<BlockImpl> successors = getSuccessors((BlockImpl) curBlock.block);
     for (Block b : successors) {
       if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
         findOwningFields(fieldsWithCMVs, methodTree);
       }
-      BlockWithFields successor = new BlockWithFields(b, fieldsWithCMVs);
+      BlockWithFieldsFacts successor = new BlockWithFieldsFacts(b, fieldsWithCMVs);
       if (visited.add(successor)) {
         worklist.add(successor);
       }
     }
   }
 
-  public void findOwningFields(Set<FieldsWithCMV> fieldsWithCMVs, Tree methodTree) {
-    for (FieldsWithCMV fieldsWithCMV : fieldsWithCMVs) {
+  /**
+   * Checks all element in the fieldsWithCMVs and adds @Owning annotation on a field if the called
+   * methods set of that field in {@link FieldWithCMVs} includes all the methods in the @MustCall
+   * type of the field. It also updates fieldToFinalizers with the new detected finalizer.
+   *
+   * @param fieldsWithCMVs the set of FieldWithCMVs
+   * @param methodTree the method tree
+   */
+  private void findOwningFields(Set<FieldWithCMVs> fieldsWithCMVs, Tree methodTree) {
+    for (FieldWithCMVs fieldsWithCMV : fieldsWithCMVs) {
       List<String> mcValues = typeFactory.getMustCallValue(fieldsWithCMV.field);
       if (fieldsWithCMV.calledMethods.containsAll(mcValues)) {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
@@ -135,6 +180,11 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * Returns the non-exceptional successors of the current block.
+   *
+   * @return the successors of this current block
+   */
   private List<BlockImpl> getSuccessors(BlockImpl cur) {
     List<BlockImpl> successorBlock = new ArrayList<>();
 
@@ -160,18 +210,24 @@ public class MustCallInferenceLogic {
 
   /**
    * A pair of a {@link Block} and a set of FieldsWithCMV on entry to the block. Each FieldsWithCMV
-   * represents a set of fields with a least upper bound of methods that were called somewhere the
-   * previous blocks.
+   * represents a set of fields with a least upper bound of methods that were called somewhere in
+   * the previous blocks.
    */
-  private static class BlockWithFields {
+  private static class BlockWithFieldsFacts {
 
     /** The block. */
     public final Block block;
 
     /** The set of FieldsWithCMV. */
-    public final ImmutableSet<FieldsWithCMV> fieldsWithCMV;
+    public final ImmutableSet<FieldWithCMVs> fieldsWithCMV;
 
-    public BlockWithFields(Block b, Set<FieldsWithCMV> fieldsWithCMVs) {
+    /**
+     * Create a new BlockWithFieldsFacts.
+     *
+     * @param b the block
+     * @param fieldsWithCMVs the set of FieldWithCMVs
+     */
+    public BlockWithFieldsFacts(Block b, Set<FieldWithCMVs> fieldsWithCMVs) {
       this.block = b;
       this.fieldsWithCMV = ImmutableSet.copyOf(fieldsWithCMVs);
     }
@@ -184,7 +240,7 @@ public class MustCallInferenceLogic {
       if (o == null || getClass() != o.getClass()) {
         return false;
       }
-      BlockWithFields that = (BlockWithFields) o;
+      BlockWithFieldsFacts that = (BlockWithFieldsFacts) o;
       return block.equals(that.block) && fieldsWithCMV.equals(that.fieldsWithCMV);
     }
 
@@ -198,7 +254,7 @@ public class MustCallInferenceLogic {
    * A pair of a field {@link Element} and a set of method names that were called on the field
    * somewhere in a method body.
    */
-  private static class FieldsWithCMV {
+  private static class FieldWithCMVs {
 
     /** The field. */
     public final Element field;
@@ -206,9 +262,15 @@ public class MustCallInferenceLogic {
     /** The set of method names that were called on the field. */
     public ImmutableSet<String> calledMethods;
 
-    public FieldsWithCMV(Element f, Set<String> set) {
-      this.field = f;
-      this.calledMethods = ImmutableSet.copyOf(set);
+    /**
+     * Creates a new FieldWithCMVs.
+     *
+     * @param fieldElt the field element
+     * @param calledMethodsVals the field element
+     */
+    public FieldWithCMVs(Element fieldElt, Set<String> calledMethodsVals) {
+      this.field = fieldElt;
+      this.calledMethods = ImmutableSet.copyOf(calledMethodsVals);
     }
 
     @Override
@@ -219,7 +281,7 @@ public class MustCallInferenceLogic {
       if (obj == null || getClass() != obj.getClass()) {
         return false;
       }
-      FieldsWithCMV that = (FieldsWithCMV) obj;
+      FieldWithCMVs that = (FieldWithCMVs) obj;
       return field.equals(that.field) && this.calledMethods.equals(that.calledMethods);
     }
 

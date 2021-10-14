@@ -195,6 +195,12 @@ public class WholeProgramInferenceScenesStorage
     return methodAnnos;
   }
 
+  /**
+   * Get the annotations for a field.
+   *
+   * @param fieldElt the field
+   * @return the annotations for a field
+   */
   private AField getFieldAnnos(Element fieldElt) {
     String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
     String file = getFileForElement(fieldElt);

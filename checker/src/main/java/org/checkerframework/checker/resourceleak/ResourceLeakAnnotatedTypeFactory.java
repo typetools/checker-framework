@@ -80,6 +80,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    */
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
+  /**
+   * Map to store a set of finalizers for fields with non-empty @MustCall obligation. Keys are field
+   * elements; values are sets of method Elements that satisfy @MustCall obligation of the fields
+   * along some path to their regular exit points
+   */
   private Map<Element, Set<Element>> fieldToFinalizers = new HashMap<>();
 
   /**
@@ -92,19 +97,35 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     this.postInit();
   }
 
-  public Map<Element, Set<Element>> CollectFields(ClassTree classTree) {
+  /**
+   * Collects all the possible owning fields enclosed by the {@link ClassTree} and initializes the
+   * fieldsToFinalizers map.
+   *
+   * @param classTree a classTree
+   * @return a map storing empty-set for possible owning fields
+   */
+  private Map<Element, Set<Element>> CollectFields(ClassTree classTree) {
     List<? extends Tree> members = classTree.getMembers();
     Map<Element, Set<Element>> fieldsToFinalizers = new HashMap<>();
     for (Tree tree : members) {
       Element elt = TreeUtils.elementFromTree(tree);
-      if (elt != null
-          && elt.getKind().isField()
-          && ElementUtils.isFinal(elt)
-          && !getMustCallValue(elt).isEmpty()) {
+      if (elt != null && isElementPossibleOwningField(elt)) {
         fieldsToFinalizers.put(elt, new LinkedHashSet<>());
       }
     }
     return fieldsToFinalizers;
+  }
+
+  /**
+   * Is the given element a final field with non-empty @MustCall obligation?
+   *
+   * @param element a element
+   * @return true iff the given element is a final field with non-empty @MustCall obligation
+   */
+  private boolean isElementPossibleOwningField(Element element) {
+    return (element.getKind().isField()
+        && ElementUtils.isFinal(element)
+        && !getMustCallValue(element).isEmpty());
   }
 
   @Override
@@ -112,6 +133,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     super.setRoot(root);
   }
 
+  /** Getter method to get the fieldToFinalizers. */
   public Map<Element, Set<Element>> getFieldToFinalizers() {
     return fieldToFinalizers;
   }
@@ -377,6 +399,12 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return createsMustCallForListValueElement;
   }
 
+  /**
+   * Updates the finalizer set of the field with a new method element.
+   *
+   * @param field a field element
+   * @param finalizer a new finalizer for the field
+   */
   public void addFinalizerForField(Element field, Element finalizer) {
     fieldToFinalizers.get(field).add(finalizer);
   }

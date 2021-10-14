@@ -145,6 +145,12 @@ public class WholeProgramInferenceJavaParserStorage
     return methodAnnos;
   }
 
+  /**
+   * Get the annotations for a field.
+   *
+   * @param fieldElt a field
+   * @return the annotations for a field
+   */
   private FieldAnnos getFieldAnnos(Element fieldElt) {
     String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
     // Read in classes for the element.
@@ -1149,7 +1155,13 @@ public class WholeProgramInferenceJavaParserStorage
 
       return this.type;
     }
-
+    /**
+     * Adds a declaration annotation to this field declaration and returns whether it was a new
+     * annotation.
+     *
+     * @param annotation declaration annotation to add
+     * @return true if {@code annotation} wasn't previously stored for this field declaration
+     */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
         declarationAnnotations = new HashSet<>();
@@ -1158,6 +1170,12 @@ public class WholeProgramInferenceJavaParserStorage
       return declarationAnnotations.add(annotation);
     }
 
+    /**
+     * Returns the inferred declaration annotations on this field, or null if there are no
+     * annotations.
+     *
+     * @return the declaration annotations for this field declaration
+     */
     public Set<AnnotationMirror> getDeclarationAnnotations() {
       if (declarationAnnotations == null) {
         return Collections.emptySet();
