@@ -1291,10 +1291,10 @@ public abstract class GenericAnnotatedTypeFactory<
       final Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
-      TreePath preTreePath = getVisitorPath();
+      TreePath preTreePath = getVisitorTreePath();
 
       // Don't use getPath, because that depends on the assignmentContext path.
-      setVisitorPath(TreePath.getPath(this.root, ct));
+      setVisitorTreePath(TreePath.getPath(this.root, ct));
 
       // start with the captured store as initialization store
       initializationStaticStore = capturedStore;
@@ -1430,7 +1430,7 @@ public abstract class GenericAnnotatedTypeFactory<
           regularExitStores.put(ct, initializationStaticStore);
         }
       } finally {
-        setVisitorPath(preTreePath);
+        setVisitorTreePath(preTreePath);
       }
 
       scannedClasses.put(ct, ScanState.FINISHED);
@@ -2074,7 +2074,7 @@ public abstract class GenericAnnotatedTypeFactory<
     )
     T subFactory = (T) subchecker.getTypeFactory();
     if (subFactory != null) {
-      subFactory.setVisitorPath(getVisitorPath());
+      subFactory.setVisitorTreePath(getVisitorTreePath());
     }
     return subFactory;
   }

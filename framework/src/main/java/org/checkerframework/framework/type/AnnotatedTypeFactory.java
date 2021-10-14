@@ -3516,14 +3516,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
   }
 
-  private TreePath treePath;
+  /**
+   * A TreePath to the current tree that an external "visitor" is visiting. The visitor is either a
+   * subclass of {@link BaseTypeVisitor} or {@link
+   * org.checkerframework.framework.flow.CFAbstractTransfer}.
+   */
+  private @Nullable TreePath visitorTreePath;
 
-  public void setVisitorPath(TreePath treePath) {
-    this.treePath = treePath;
+  /**
+   * Sets the path to the tree that an external "visitor" is visiting. The visitor is either a
+   * subclass of {@link BaseTypeVisitor} or {@link
+   * org.checkerframework.framework.flow.CFAbstractTransfer}.
+   *
+   * @param visitorTreePath path to the current tree that an external "visitor" is visiting
+   */
+  public void setVisitorTreePath(@Nullable TreePath visitorTreePath) {
+    this.visitorTreePath = visitorTreePath;
   }
 
-  public TreePath getVisitorPath() {
-    return treePath;
+  /**
+   * Returns the path to the tree that an external "visitor" is visiting. The type factory does not
+   * update this value as it computes the types of any tree or element needed compute the type of
+   * the tree being visited. Therefore this path is may not be the path to the tree whose type is
+   * being computed. This method should not be used directly. Use {@link #getPath(Tree)} instead.
+   *
+   * <p>This method is used to save the previous tree path and to give a hint to {@link
+   * #getPath(Tree)} on where to look for a tree rather than searching starting at the root.
+   *
+   * @return the path to the tree that an external "visitor" is visiting
+   */
+  public @Nullable TreePath getVisitorTreePath() {
+    return visitorTreePath;
   }
 
   /**
@@ -3557,7 +3580,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return treePathCache.getPath(root, node);
     }
 
-    TreePath currentPath = treePath;
+    TreePath currentPath = visitorTreePath;
     if (currentPath == null) {
       TreePath path = TreePath.getPath(root, node);
       treePathCache.addPath(node, path);

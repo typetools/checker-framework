@@ -340,7 +340,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void scan(@Nullable Tree tree, Void p) {
     if (tree != null && getCurrentPath() != null) {
-      this.atypeFactory.setVisitorPath(new TreePath(getCurrentPath(), tree));
+      this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
     return super.scan(tree, p);
   }
@@ -470,13 +470,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     atypeFactory.preProcessClassTree(classTree);
 
-    TreePath preTreePath = atypeFactory.getVisitorPath();
+    TreePath preTreePath = atypeFactory.getVisitorTreePath();
     AnnotatedDeclaredType preACT = visitorState.getClassType();
     AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
     MethodTree preMT = visitorState.getMethodTree();
 
     // Don't use atypeFactory.getPath, because that depends on the visitor path.
-    atypeFactory.setVisitorPath(TreePath.getPath(root, classTree));
+    atypeFactory.setVisitorTreePath(TreePath.getPath(root, classTree));
     visitorState.setClassType(
         atypeFactory.getAnnotatedType(TreeUtils.elementFromDeclaration(classTree)));
     visitorState.setMethodReceiver(null);
@@ -486,7 +486,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       processClassTree(classTree);
       atypeFactory.postProcessClassTree(classTree);
     } finally {
-      atypeFactory.setVisitorPath(preTreePath);
+      atypeFactory.setVisitorTreePath(preTreePath);
       visitorState.setClassType(preACT);
       visitorState.setMethodReceiver(preAMT);
       visitorState.setMethodTree(preMT);
