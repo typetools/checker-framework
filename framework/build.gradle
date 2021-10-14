@@ -63,7 +63,7 @@ dependencies {
     // See the comment in ../build.gradle in the shadowJar block.
     implementation 'org.plumelib:plume-util:1.5.8'
     implementation 'org.plumelib:reflection-util:1.0.4'
-    implementation 'io.github.classgraph:classgraph:4.8.126'
+    implementation 'io.github.classgraph:classgraph:4.8.128'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
