@@ -26,7 +26,12 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** This class contains Resource Leak Checker annotation inference algorithm. TODO explain more */
+/**
+ * This class contains Resource Leak Checker annotation inference algorithm. For now it just
+ * contains inference logic for @Owning annotations on final owning fields. It adds @Owning
+ * annotation on a field if it finds a method that satisfies @MustCall obligation of the field along
+ * some path to the regular exit point.
+ */
 public class MustCallInferenceLogic {
 
   /**
