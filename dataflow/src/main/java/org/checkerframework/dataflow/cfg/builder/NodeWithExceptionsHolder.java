@@ -10,7 +10,7 @@ import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 
 /** An extended node of type {@code EXCEPTION_NODE}. */
-class NodeWithExceptionsHolder extends ExtendedNode {
+/*package-private*/ class NodeWithExceptionsHolder extends ExtendedNode {
 
     /** The node to hold. */
     protected final Node node;

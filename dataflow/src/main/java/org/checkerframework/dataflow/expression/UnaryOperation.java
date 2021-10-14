@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.Objects;
 
@@ -137,7 +138,7 @@ public class UnaryOperation extends JavaExpression {
             case UNARY_PLUS:
                 return "+" + operandString;
             default:
-                throw new Error("Unrecognized unary operation kind " + operationKind);
+                throw new BugInCF("Unrecognized unary operation kind " + operationKind);
         }
     }
 

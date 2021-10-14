@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.SynchronizedTree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -18,12 +18,12 @@ import javax.lang.model.util.Types;
  */
 public class SynchronizedNode extends Node {
 
-    protected final @Nullable Tree tree;
+    protected final SynchronizedTree tree;
     protected final Node expression;
     protected final boolean startOfBlock;
 
     public SynchronizedNode(
-            @Nullable Tree tree, Node expression, boolean startOfBlock, Types types) {
+            SynchronizedTree tree, Node expression, boolean startOfBlock, Types types) {
         super(types.getNoType(TypeKind.NONE));
         this.tree = tree;
         this.expression = expression;
@@ -31,7 +31,7 @@ public class SynchronizedNode extends Node {
     }
 
     @Override
-    public @Nullable Tree getTree() {
+    public SynchronizedTree getTree() {
         return tree;
     }
 

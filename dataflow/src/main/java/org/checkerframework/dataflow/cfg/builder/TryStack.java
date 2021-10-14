@@ -13,7 +13,7 @@ import javax.lang.model.type.TypeMirror;
  * program. It maps an exception type to a set of Labels and it maps a block exit (via return or
  * fall-through) to a single Label.
  */
-class TryStack {
+/*package-private*/ class TryStack {
     /** The exit label. */
     protected final Label exitLabel;
     /** The try frames. */

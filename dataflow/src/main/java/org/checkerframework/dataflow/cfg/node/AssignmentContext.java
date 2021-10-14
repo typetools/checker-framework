@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.Element;
@@ -40,7 +41,7 @@ public abstract class AssignmentContext {
             } else if (tree instanceof VariableTree) {
                 return TreeUtils.elementFromDeclaration((VariableTree) tree);
             } else {
-                throw new Error("unexpected tree");
+                throw new BugInCF("Unexpected tree: " + tree);
             }
         }
 

@@ -1,9 +1,10 @@
 package org.checkerframework.dataflow.cfg.builder;
 
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.javacutil.BugInCF;
 
 /** Storage cell for a single Label, with tracking whether it was accessed. */
-class TryFinallyScopeCell {
+/*package-private*/ class TryFinallyScopeCell {
     private @MonotonicNonNull Label label;
     private boolean accessed;
 
@@ -27,7 +28,7 @@ class TryFinallyScopeCell {
 
     public Label peekLabel() {
         if (label == null) {
-            throw new Error("called peekLabel prematurely");
+            throw new BugInCF("called peekLabel prematurely");
         }
         return label;
     }

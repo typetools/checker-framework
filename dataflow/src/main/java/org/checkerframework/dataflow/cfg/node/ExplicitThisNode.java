@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.Tree;
 
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -14,16 +13,16 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ExplicitThisNode extends ThisNode {
 
-    protected final Tree tree;
+    protected final IdentifierTree tree;
 
-    public ExplicitThisNode(Tree t) {
+    public ExplicitThisNode(IdentifierTree t) {
         super(TreeUtils.typeOf(t));
-        assert t instanceof IdentifierTree && ((IdentifierTree) t).getName().contentEquals("this");
+        assert t.getName().contentEquals("this");
         tree = t;
     }
 
     @Override
-    public Tree getTree() {
+    public IdentifierTree getTree() {
         return tree;
     }
 
@@ -34,6 +33,6 @@ public class ExplicitThisNode extends ThisNode {
 
     @Override
     public String toString() {
-        return getName();
+        return "this";
     }
 }

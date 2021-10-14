@@ -64,9 +64,11 @@ public abstract class Node implements UniqueId {
     protected final TypeMirror type;
 
     /** The unique ID for the next-created object. */
-    static final AtomicLong nextUid = new AtomicLong(0);
+    private static final AtomicLong nextUid = new AtomicLong(0);
+
     /** The unique ID of this object. */
-    final long uid = nextUid.getAndIncrement();
+    private final long uid = nextUid.getAndIncrement();
+
     /**
      * Returns the unique ID of this object.
      *

@@ -8,6 +8,7 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl;
 import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -15,10 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.type.TypeMirror;
-
-/* --------------------------------------------------------- */
-/* Phase Three */
-/* --------------------------------------------------------- */
 
 /**
  * Class that performs phase three of the translation process. In particular, the following
@@ -311,12 +308,12 @@ public class CFGTranslationPhaseThree {
                         }
                     }
                 }
-                throw new Error("Unreachable");
+                throw new BugInCF("Unreachable");
             case REGULAR_BLOCK:
                 RegularBlockImpl r = (RegularBlockImpl) pred;
                 return singleSuccessorHolder(r, cur);
             default:
-                throw new Error("Unexpected block type " + pred.getType());
+                throw new BugInCF("Unexpected block type " + pred.getType());
         }
     }
 

@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.qual.Pure;
 
-/** A basic block that has at exactly one non-exceptional successor. */
+/** A basic block that has exactly one non-exceptional successor. */
 public interface SingleSuccessorBlock extends Block {
 
     /**

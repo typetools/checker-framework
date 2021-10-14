@@ -1,3 +1,15 @@
+Version 3.18.1-eisop-2 (October ?, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+Avoid shading of string literals which broke some annotation aliasing.
+
+**Implementation details:**
+
+Small improvements and code-style clean-ups of the Dataflow Framework.
+
+
 Version 3.18.1-eisop-1 (October 7, 2021)
 -------------------------------
 

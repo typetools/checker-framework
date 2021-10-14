@@ -17,7 +17,7 @@ import javax.lang.model.util.Types;
  * A TryCatchFrame contains an ordered list of catch labels that apply to exceptions with specific
  * types.
  */
-class TryCatchFrame implements TryFrame {
+/*package-private*/ class TryCatchFrame implements TryFrame {
     /** The Types utilities. */
     protected final Types types;
 

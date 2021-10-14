@@ -200,60 +200,69 @@ import javax.lang.model.util.Types;
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
-    /** Annotation processing environment and its associated type and tree utilities. */
-    final ProcessingEnvironment env;
+    /** Annotation processing environment. */
+    protected final ProcessingEnvironment env;
 
-    final Elements elements;
-    final Types types;
-    final Trees trees;
-    public final TreeBuilder treeBuilder;
-    final AnnotationProvider annotationProvider;
+    /** Element utilities. */
+    protected final Elements elements;
+
+    /** Type utilities. */
+    protected final Types types;
+
+    /** Tree utilities. */
+    protected final Trees trees;
+
+    /** TreeBuilder instance. */
+    protected final TreeBuilder treeBuilder;
+
+    /** AnnotationProvider instance. */
+    protected final AnnotationProvider annotationProvider;
 
     /** Can assertions be assumed to be disabled? */
-    final boolean assumeAssertionsDisabled;
+    protected final boolean assumeAssertionsDisabled;
 
     /** Can assertions be assumed to be enabled? */
-    final boolean assumeAssertionsEnabled;
+    protected final boolean assumeAssertionsEnabled;
 
     /* --------------------------------------------------------- */
     /* Extended Node Types and Labels */
     /* --------------------------------------------------------- */
 
     /** Special label to identify the regular exit. */
-    final Label regularExitLabel;
+    private final Label regularExitLabel;
 
     /** Special label to identify the exceptional exit. */
-    final Label exceptionalExitLabel;
+    private final Label exceptionalExitLabel;
 
     /**
      * Current {@link TryFinallyScopeCell} to which a return statement should jump, or null if there
      * is no valid destination.
      */
-    @Nullable TryFinallyScopeCell returnTargetL;
+    private @Nullable TryFinallyScopeCell returnTargetL;
 
     /**
      * Current {@link TryFinallyScopeCell} to which a break statement with no label should jump, or
      * null if there is no valid destination.
      */
-    @Nullable TryFinallyScopeCell breakTargetL;
+    private @Nullable TryFinallyScopeCell breakTargetL;
 
     /**
      * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates two
      * CFG {@link Label}s, one for break and one for continue.
      */
-    Map<Name, Label> breakLabels;
+    private Map<Name, Label> breakLabels;
 
     /**
      * Current {@link TryFinallyScopeCell} to which a continue statement with no label should jump,
      * or null if there is no valid destination.
      */
-    @Nullable TryFinallyScopeCell continueTargetL;
+    private @Nullable TryFinallyScopeCell continueTargetL;
 
     /**
      * Map from AST label Names to CFG {@link Label}s for continues. Each labeled statement creates
      * two CFG {@link Label}s, one for break and one for continue.
      */
-    Map<Name, Label> continueLabels;
+    private Map<Name, Label> continueLabels;
 
     /** Nested scopes of try-catch blocks in force at the current program point. */
     private final TryStack tryStack;
@@ -265,26 +274,26 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * the treeLookupMap, while the Node for the post-conversion value is stored in the
      * convertedTreeLookupMap.
      */
-    final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
+    private final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
 
     /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-    final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
+    private final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
 
     /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-    final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
+    private final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
 
     /** The list of extended nodes. */
-    final ArrayList<ExtendedNode> nodeList;
+    private final ArrayList<ExtendedNode> nodeList;
 
     /** The bindings of labels to positions (i.e., indices) in the {@code nodeList}. */
-    final Map<Label, Integer> bindings;
+    private final Map<Label, Integer> bindings;
 
     /** The set of leaders (represented as indices into {@code nodeList}). */
-    final Set<Integer> leaders;
+    private final Set<Integer> leaders;
 
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
-     * something
+     * something.
      */
     private final List<ReturnNode> returnNodes;
 
@@ -292,65 +301,65 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * Class declarations that have been encountered when building the control-flow graph for a
      * method.
      */
-    final List<ClassTree> declaredClasses;
+    private final List<ClassTree> declaredClasses;
 
     /**
      * Lambdas encountered when building the control-flow graph for a method, variable initializer,
      * or initializer.
      */
-    final List<LambdaExpressionTree> declaredLambdas;
+    private final List<LambdaExpressionTree> declaredLambdas;
 
     /** The ArithmeticException type. */
-    final TypeMirror arithmeticExceptionType;
+    protected final TypeMirror arithmeticExceptionType;
 
     /** The ArrayIndexOutOfBoundsException type. */
-    final TypeMirror arrayIndexOutOfBoundsExceptionType;
+    protected final TypeMirror arrayIndexOutOfBoundsExceptionType;
 
     /** The AssertionError type. */
-    final TypeMirror assertionErrorType;
+    protected final TypeMirror assertionErrorType;
 
     /** The ClassCastException type . */
-    final TypeMirror classCastExceptionType;
+    protected final TypeMirror classCastExceptionType;
 
     /** The Iterable type (erased). */
-    final TypeMirror iterableType;
+    protected final TypeMirror iterableType;
 
     /** The NegativeArraySizeException type. */
-    final TypeMirror negativeArraySizeExceptionType;
+    protected final TypeMirror negativeArraySizeExceptionType;
 
     /** The NullPointerException type . */
-    final TypeMirror nullPointerExceptionType;
+    protected final TypeMirror nullPointerExceptionType;
 
     /** The OutOfMemoryError type. */
-    final @Nullable TypeMirror outOfMemoryErrorType;
+    protected final @Nullable TypeMirror outOfMemoryErrorType;
 
     /** The ClassCircularityError type. */
-    final @Nullable TypeMirror classCircularityErrorType;
+    protected final @Nullable TypeMirror classCircularityErrorType;
 
     /** The ClassFormatErrorType type. */
-    final @Nullable TypeMirror classFormatErrorType;
+    protected final @Nullable TypeMirror classFormatErrorType;
 
     /** The NoClassDefFoundError type. */
-    final @Nullable TypeMirror noClassDefFoundErrorType;
+    protected final @Nullable TypeMirror noClassDefFoundErrorType;
 
     /** The String type. */
-    final TypeMirror stringType;
+    protected final TypeMirror stringType;
 
     /** The Throwable type. */
-    final TypeMirror throwableType;
+    protected final TypeMirror throwableType;
 
     /**
      * Supertypes of all unchecked exceptions. The size is 2 and the contents are {@code
      * RuntimeException} and {@code Error}.
      */
-    final Set<TypeMirror> uncheckedExceptionTypes;
+    protected final Set<TypeMirror> uncheckedExceptionTypes;
 
     /**
      * Exceptions that can be thrown by array creation "new SomeType[]". The size is 2 and the
      * contents are {@code NegativeArraySizeException} and {@code OutOfMemoryError}. This list comes
      * from JLS 15.10.1 "Run-Time Evaluation of Array Creation Expressions".
      */
-    final Set<TypeMirror> newArrayExceptionTypes;
+    protected final Set<TypeMirror> newArrayExceptionTypes;
 
     /**
      * @param treeBuilder builder for new AST nodes
@@ -1304,7 +1313,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     @Override
     public Node visitAnnotation(AnnotationTree tree, Void p) {
-        throw new Error("AnnotationTree is unexpected in AST to CFG translation");
+        throw new BugInCF("AnnotationTree is unexpected in AST to CFG translation");
     }
 
     @Override
@@ -1803,7 +1812,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     targetRHS = unbox(targetLHS);
                     value = unbox(value);
                 } else {
-                    throw new Error(
+                    throw new BugInCF(
                             "Both argument to logical operation must be numeric or boolean");
                 }
 
@@ -1835,7 +1844,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 extendWithNode(assignNode);
                 return assignNode;
             default:
-                throw new Error("unexpected compound assignment type");
+                throw new BugInCF("unexpected compound assignment type");
         }
     }
 
@@ -2091,7 +2100,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     return node;
                 }
             default:
-                throw new Error("unexpected binary tree: " + kind);
+                throw new BugInCF("unexpected binary tree: " + kind);
         }
         assert r != null : "unexpected binary tree";
         extendWithNode(r);
@@ -2353,7 +2362,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     @Override
     public Node visitErroneous(ErroneousTree tree, Void p) {
-        throw new Error("ErroneousTree is unexpected in AST to CFG translation");
+        throw new BugInCF("ErroneousTree is unexpected in AST to CFG translation");
     }
 
     @Override
@@ -2823,7 +2832,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     @Override
     public Node visitImport(ImportTree tree, Void p) {
-        throw new Error("ImportTree is unexpected in AST to CFG translation");
+        throw new BugInCF("ImportTree is unexpected in AST to CFG translation");
     }
 
     @Override
@@ -2889,7 +2898,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 r = new StringLiteralNode(tree);
                 break;
             default:
-                throw new Error("unexpected literal tree");
+                throw new BugInCF("unexpected literal tree: " + tree);
         }
         assert r != null : "unexpected literal tree";
         extendWithNode(r);
@@ -2898,12 +2907,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     @Override
     public Node visitMethod(MethodTree tree, Void p) {
-        throw new Error("MethodTree is unexpected in AST to CFG translation");
+        throw new BugInCF("MethodTree is unexpected in AST to CFG translation");
     }
 
     @Override
     public Node visitModifiers(ModifiersTree tree, Void p) {
-        throw new Error("ModifiersTree is unexpected in AST to CFG translation");
+        throw new BugInCF("ModifiersTree is unexpected in AST to CFG translation");
     }
 
     @Override
@@ -3045,7 +3054,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 extendWithNode(result);
                 return result;
             } else {
-                throw new Error("Unexpected element kind: " + element.getKind());
+                throw new BugInCF("Unexpected element kind: " + element.getKind());
             }
         }
 
@@ -3097,7 +3106,17 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     @Override
     public Node visitCompilationUnit(CompilationUnitTree tree, Void p) {
-        throw new Error("CompilationUnitTree is unexpected in AST to CFG translation");
+        throw new BugInCF("CompilationUnitTree is unexpected in AST to CFG translation");
+    }
+
+    private static <A> A firstNonNull(A first, A second) {
+        if (first != null) {
+            return first;
+        } else if (second != null) {
+            return second;
+        } else {
+            throw new NullPointerException();
+        }
     }
 
     @Override
@@ -3169,8 +3188,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                         "end of try block #" + TreeUtils.treeUids.get(tree),
                         env.getTypeUtils()));
 
-        extendWithExtendedNode(
-                new UnconditionalJump(CFGBuilder.firstNonNull(finallyLabel, doneLabel)));
+        extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
         tryStack.popFrame();
 
@@ -3196,8 +3214,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                             env.getTypeUtils()));
 
             catchIndex++;
-            extendWithExtendedNode(
-                    new UnconditionalJump(CFGBuilder.firstNonNull(finallyLabel, doneLabel)));
+            extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
         }
 
         if (finallyLabel != null) {
@@ -3407,7 +3424,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     @Override
     public Node visitUnionType(UnionTypeTree tree, Void p) {
-        throw new Error("UnionTypeTree is unexpected in AST to CFG translation");
+        throw new BugInCF("UnionTypeTree is unexpected in AST to CFG translation");
     }
 
     @Override
@@ -3436,7 +3453,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     @Override
     public Node visitTypeParameter(TypeParameterTree tree, Void p) {
-        throw new Error("TypeParameterTree is unexpected in AST to CFG translation");
+        throw new BugInCF("TypeParameterTree is unexpected in AST to CFG translation");
     }
 
     @Override
@@ -3474,7 +3491,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                             result = new NumericalPlusNode(tree, expr);
                             break;
                         default:
-                            throw new Error("Unexpected kind");
+                            throw new BugInCF("Unexpected unary tree kind: " + kind);
                     }
                     extendWithNode(result);
                     break;
@@ -3553,7 +3570,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                     break;
                 }
 
-                throw new Error("Unknown kind (" + kind + ") of unary expression: " + tree);
+                throw new BugInCF("Unknown kind (" + kind + ") of unary expression: " + tree);
         }
 
         return result;

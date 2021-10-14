@@ -23,7 +23,7 @@ import java.util.Objects;
 public class ArrayAccessNode extends Node {
 
     /** The corresponding ArrayAccessTree. */
-    protected final Tree tree;
+    protected final ArrayAccessTree tree;
 
     /** The array expression being accessed. */
     protected final Node array;
@@ -45,9 +45,8 @@ public class ArrayAccessNode extends Node {
      * @param array the node for the array expression being accessed
      * @param index the node for the index used to access the array
      */
-    public ArrayAccessNode(Tree t, Node array, Node index) {
+    public ArrayAccessNode(ArrayAccessTree t, Node array, Node index) {
         super(TreeUtils.typeOf(t));
-        assert t instanceof ArrayAccessTree;
         this.tree = t;
         this.array = array;
         this.index = index;
@@ -89,7 +88,7 @@ public class ArrayAccessNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public ArrayAccessTree getTree() {
         return tree;
     }
 

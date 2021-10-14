@@ -49,6 +49,9 @@ import javax.lang.model.type.TypeMirror;
  */
 public abstract class CFGBuilder {
 
+    /** This class should never be instantiated. Protected to still allow subclasses. */
+    protected CFGBuilder() {}
+
     /**
      * Build the control flow graph of some code.
      *
@@ -135,20 +138,6 @@ public abstract class CFGBuilder {
         }
         return result.toString();
     }
-
-    static <A> A firstNonNull(A first, A second) {
-        if (first != null) {
-            return first;
-        } else if (second != null) {
-            return second;
-        } else {
-            throw new NullPointerException();
-        }
-    }
-
-    /* --------------------------------------------------------- */
-    /* Utility routines for debugging CFG building */
-    /* --------------------------------------------------------- */
 
     /**
      * Print a set of {@link Block}s and the edges between them. This is useful for examining the

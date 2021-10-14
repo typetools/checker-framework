@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.InstanceOfTree;
-import com.sun.source.tree.Tree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TypesUtils;
@@ -34,10 +33,9 @@ public class InstanceOfNode extends Node {
     protected final Types types;
 
     /** Create an InstanceOfNode. */
-    public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
+    public InstanceOfNode(InstanceOfTree tree, Node operand, TypeMirror refType, Types types) {
         super(types.getPrimitiveType(TypeKind.BOOLEAN));
-        assert tree.getKind() == Tree.Kind.INSTANCE_OF;
-        this.tree = (InstanceOfTree) tree;
+        this.tree = tree;
         this.operand = operand;
         this.refType = refType;
         this.types = types;

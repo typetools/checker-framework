@@ -12,7 +12,7 @@ package org.checkerframework.dataflow.cfg.block;
 public interface SpecialBlock extends SingleSuccessorBlock {
 
     /** The types of special basic blocks. */
-    public static enum SpecialBlockType {
+    public enum SpecialBlockType {
 
         /** The entry block of a method. */
         ENTRY,

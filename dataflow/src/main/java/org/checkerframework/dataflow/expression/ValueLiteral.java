@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.math.BigInteger;
@@ -19,7 +20,7 @@ public class ValueLiteral extends JavaExpression {
     protected final @Nullable Object value;
 
     /** The negative of Long.MIN_VALUE, which does not fit in a long. */
-    private final BigInteger NEGATIVE_LONG_MIN_VALUE = new BigInteger("9223372036854775808");
+    private static final BigInteger NEGATIVE_LONG_MIN_VALUE = new BigInteger("9223372036854775808");
 
     /**
      * Creates a ValueLiteral from the node with the given type.
@@ -52,11 +53,11 @@ public class ValueLiteral extends JavaExpression {
     public ValueLiteral negate() {
         if (TypesUtils.isIntegralPrimitive(type)) {
             if (value == null) {
-                throw new Error("null value of integral type " + type);
+                throw new BugInCF("null value of integral type " + type);
             }
             return new ValueLiteral(type, negateBoxedPrimitive(value));
         }
-        throw new Error(String.format("cannot negate: %s type=%s", this, type));
+        throw new BugInCF(String.format("cannot negate: %s type=%s", this, type));
     }
 
     /**
@@ -88,7 +89,7 @@ public class ValueLiteral extends JavaExpression {
             assert value.equals(NEGATIVE_LONG_MIN_VALUE);
             return Long.MIN_VALUE;
         }
-        throw new Error("Cannot be negated: " + o + " " + o.getClass());
+        throw new BugInCF("Cannot be negated: " + o + " " + o.getClass());
     }
 
     /**

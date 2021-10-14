@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.BugInCF;
  * </ul>
  */
 @SuppressWarnings("nullness") // TODO
-abstract class ExtendedNode {
+/*package-private*/ abstract class ExtendedNode {
 
     /** The basic block this extended node belongs to (as determined in phase two). */
     protected BlockImpl block;
@@ -69,7 +69,7 @@ abstract class ExtendedNode {
      *     or {@code EXCEPTION_NODE})
      */
     public Node getNode() {
-        throw new Error("Do not call");
+        throw new BugInCF("Do not call");
     }
 
     /**
@@ -80,7 +80,7 @@ abstract class ExtendedNode {
      *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
      */
     public Label getLabel() {
-        throw new Error("Do not call");
+        throw new BugInCF("Do not call");
     }
 
     public BlockImpl getBlock() {

@@ -23,23 +23,23 @@ import java.util.StringJoiner;
 /* --------------------------------------------------------- */
 
 /**
- * A wrapper object to pass around the result of phase one. For a documentation of the fields see
+ * A wrapper object to pass around the result of phase one. For documentation of the fields see
  * {@link CFGTranslationPhaseOne}.
  */
 public class PhaseOneResult {
 
-    final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
-    final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
-    final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
-    final UnderlyingAST underlyingAST;
-    final Map<Label, Integer> bindings;
-    final ArrayList<ExtendedNode> nodeList;
-    final Set<Integer> leaders;
-    final List<ReturnNode> returnNodes;
-    final Label regularExitLabel;
-    final Label exceptionalExitLabel;
-    final List<ClassTree> declaredClasses;
-    final List<LambdaExpressionTree> declaredLambdas;
+    /*package-private*/ final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
+    /*package-private*/ final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
+    /*package-private*/ final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
+    /*package-private*/ final UnderlyingAST underlyingAST;
+    /*package-private*/ final Map<Label, Integer> bindings;
+    /*package-private*/ final ArrayList<ExtendedNode> nodeList;
+    /*package-private*/ final Set<Integer> leaders;
+    /*package-private*/ final List<ReturnNode> returnNodes;
+    /*package-private*/ final Label regularExitLabel;
+    /*package-private*/ final Label exceptionalExitLabel;
+    /*package-private*/ final List<ClassTree> declaredClasses;
+    /*package-private*/ final List<LambdaExpressionTree> declaredLambdas;
 
     public PhaseOneResult(
             UnderlyingAST underlyingAST,

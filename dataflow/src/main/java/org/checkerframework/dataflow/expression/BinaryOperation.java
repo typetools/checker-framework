@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.Objects;
 
@@ -221,7 +222,7 @@ public class BinaryOperation extends JavaExpression {
             case XOR:
                 return "^";
             default:
-                throw new Error("unhandled " + operationKind);
+                throw new BugInCF("unhandled " + operationKind);
         }
     }
 

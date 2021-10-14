@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -35,7 +34,7 @@ public class ThrowNode extends Node {
     }
 
     @Override
-    public Tree getTree() {
+    public ThrowTree getTree() {
         return tree;
     }
 

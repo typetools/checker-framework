@@ -5,7 +5,7 @@ package org.checkerframework.dataflow.cfg.builder;
  * Labels get their names either from labeled statements in the source code or from internally
  * generated unique names.
  */
-class Label {
+/*package-private*/ class Label {
     private static int uid = 0;
 
     protected final String name;

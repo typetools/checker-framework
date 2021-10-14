@@ -21,10 +21,6 @@ public abstract class ThisNode extends Node {
         super(type);
     }
 
-    public String getName() {
-        return "this";
-    }
-
     @Override
     public boolean equals(@Nullable Object obj) {
         return obj instanceof ThisNode;
@@ -32,7 +28,7 @@ public abstract class ThisNode extends Node {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName());
+        return Objects.hash("this");
     }
 
     @Override

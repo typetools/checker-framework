@@ -54,7 +54,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
 
     @Override
     public @Nullable Node getLastNode() {
-        return null;
+        return getNode();
     }
 
     /**

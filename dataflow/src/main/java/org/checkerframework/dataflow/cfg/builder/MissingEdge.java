@@ -11,16 +11,18 @@ import javax.lang.model.type.TypeMirror;
 /* --------------------------------------------------------- */
 
 /** Represents a missing edge that will be added later. */
-class MissingEdge {
+/*package-private*/ class MissingEdge {
     /** The source of the edge. */
-    final SingleSuccessorBlockImpl source;
+    /*package-private*/ final SingleSuccessorBlockImpl source;
+
     /** The index (target?) of the edge. Null means go to exceptional exit. */
-    final @Nullable Integer index;
+    /*package-private*/ final @Nullable Integer index;
+
     /** The cause exception type, for an exceptional edge; otherwise null. */
-    final @Nullable TypeMirror cause;
+    /*package-private*/ final @Nullable TypeMirror cause;
 
     /** The flow rule for this edge. */
-    final @Nullable FlowRule flowRule;
+    /*package-private*/ final @Nullable FlowRule flowRule;
 
     /**
      * Create a new MissingEdge.
