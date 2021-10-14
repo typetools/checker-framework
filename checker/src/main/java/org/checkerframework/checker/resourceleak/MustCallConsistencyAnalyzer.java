@@ -534,7 +534,11 @@ class MustCallConsistencyAnalyzer {
     }
 
     String missingStrs = StringsPlume.join(", ", missing);
-    checker.reportError(node.getTree(), "reset.not.owning", missingStrs);
+    checker.reportError(
+        node.getTree(),
+        "reset.not.owning",
+        node.getTarget().getMethod().getSimpleName().toString(),
+        missingStrs);
   }
 
   /**
@@ -1251,6 +1255,7 @@ class MustCallConsistencyAnalyzer {
       checker.reportError(
           enclosingMethod,
           "missing.creates.mustcall.for",
+          enclosingMethodElt.getSimpleName().toString(),
           receiverString,
           ((FieldAccessNode) lhs).getFieldName());
       return;
@@ -1276,6 +1281,7 @@ class MustCallConsistencyAnalyzer {
     checker.reportError(
         enclosingMethod,
         "incompatible.creates.mustcall.for",
+        enclosingMethodElt.getSimpleName().toString(),
         receiverString,
         ((FieldAccessNode) lhs).getFieldName(),
         String.join(", ", checked));
@@ -1903,13 +1909,14 @@ class MustCallConsistencyAnalyzer {
    * along an exceptional path. These kinds of errors fall into a few categories: runtime errors,
    * errors that the JVM can issue on any statement, and errors that can be prevented by running
    * some other CF checker.
+   *
+   * <p>Package-private to permit access from {@link ResourceLeakAnalysis}.
    */
-  private static Set<String> ignoredExceptionTypes =
+  /* package-private */ static final Set<String> ignoredExceptionTypes =
       new HashSet<>(
           ImmutableSet.of(
               // Any method call has a CFG edge for Throwable/RuntimeException/Error to represent
-              // run-time
-              // misbehavior. Ignore it.
+              // run-time misbehavior. Ignore it.
               Throwable.class.getCanonicalName(),
               Error.class.getCanonicalName(),
               RuntimeException.class.getCanonicalName(),

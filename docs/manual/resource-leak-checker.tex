@@ -221,7 +221,12 @@ initialization (RAII)'' programming idiom.  Some
 destructor-like method \<d()> must satisfy the field's must-call obligation
 (and this fact must be expressed via a \<@EnsuresCalledMethods> annotation on \<d()>),
 and the enclosing class must have a \<@MustCall("d")> obligation to
-ensure the destructor is called.
+ensure the destructor is called. In addition to the \<@EnsuresCalledMethods> annotation,
+which guarantees that the field(s) it references have their must-call obligations satisfied
+on non-exceptional paths, the Resource Leak Checker requires those fields to have their must-call
+obligations satisfied on all paths in (only) the destructor, and will issue a \<destructor.exceptional.postcondition>
+error if they are not satisfied. Resolve this error by ensuring that the required methods are called
+on all exceptional paths.
 
 \textbf{Non-final, non-static owning fields} usually require one or more \<@CreatesMustCallFor> annotations
 when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
@@ -376,11 +381,56 @@ methods (including \<close()>) do not appear in the \<@CalledMethods> type quali
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
 
-% LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII
+\sectionAndLabel{Ignored exception types}{resource-leak-ignored-exceptions}
+
+The Resource Leak Checker checks that an element's must-call obligations
+are fulfilled when that element may go out of scope: at the end of its
+lexical scope or when control may be transferred to the end of its lexical
+scope, such as via a \<break> or \<continue> statement or via throwing an
+exception.  As an example of an exception, consider the following method:
+
+\begin{verbatim}
+  void foo() {
+    Socket s = ...;
+    bar();
+    s.close();
+  }
+\end{verbatim}
+
+If \<bar> is declared to throw an exception, the Resource Leak Checker
+warns that a \<Socket> may be leaked.  If \<bar> throws an exception, the
+only reference to \<s> is lost, which could lead to a resource leak.
+
+The Resource Leak Checker ignores control flow due to some exceptions.
+
+\begin{itemize}
+\item
+The Resource Leak Checker ignores run-time errors that can occur
+unpredictably at most points in the program. For example, the JVM can throw
+an \<OutOfMemoryError> on any allocation.  Similarly,
+\<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
+may occur at any reference to a class.  Such exceptions usually terminate
+the program.  Accounting for such exceptions would lead to vast numbers of
+false positive warnings, so the Resource Leak Checker assumes they are
+never thrown.  Strictly speaking, this is an unsoundness.
+
+\item
+The Resource Leak Checker also ignores exception types that can be verified
+to never occur.  In particular, the Resource Leak Checker ignores \<NullPointerException>s
+(use the Nullness Checker, \chapterpageref{nullness-checker}) and
+\<ArrayIndexOutOfBoundsException>s and \<NegativeArraySizeException>s (use the Index
+Checker, \chapterpageref{index-checker}). Other exception types may be added to this
+list in the future.  Please let us know if there is a type that you think should
+be ignored by filing an issue listing both the exception type and the
+verification tool.
+\end{itemize}
+
+% LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
 % LocalWords:  Partitioner CalledMethods AnoLightweightOwnership NotOwning
 % LocalWords:  AnoResourceAliasing MustCallAlias AnoCreatesMustCallFor
-% LocalWords:  EnsuresCalledMethods CreatesMustCallFor expr
+% LocalWords:  EnsuresCalledMethods CreatesMustCallFor expr Verification''
 % LocalWords:  closeSocket destructor'' destructor BufferedOutputStream
 % LocalWords:  AnoResourceAliases createsmustcallfor SocketContainer
-% LocalWords:  CalledMethodsBottom
+% LocalWords:  CalledMethodsBottom ArrayIndexOutOfBoundsException
+% LocalWords:  NegativeArraySizeException

@@ -343,6 +343,13 @@ public class AnnotationFileParser {
     /** The type of the record component. */
     public final AnnotatedTypeMirror type;
 
+    /**
+     * The set of all annotations on the declaration of the record component. If applicable these
+     * will be copied to the corresponding field, accessor method, and compact canonical constructor
+     * parameter.
+     */
+    private final Set<AnnotationMirror> allAnnotations;
+
     /** Whether this component has an accessor of exactly the same name in the stubs file. */
     private boolean hasAccessorInStubs = false;
 
@@ -350,9 +357,30 @@ public class AnnotationFileParser {
      * Creates a new RecordComponentStub with the given type.
      *
      * @param type the type of the record component
+     * @param allAnnotations the declaration annotations on the component
      */
-    public RecordComponentStub(AnnotatedTypeMirror type) {
+    public RecordComponentStub(AnnotatedTypeMirror type, Set<AnnotationMirror> allAnnotations) {
       this.type = type;
+      this.allAnnotations = allAnnotations;
+    }
+
+    /**
+     * Get the record component annotations that are applicable to the given element kind.
+     *
+     * @param elementKind the element kind to apply to (e.g., FIELD, METHOD)
+     * @return the set of annotations from the component that apply
+     */
+    public Set<AnnotationMirror> getAnnotationsForTarget(ElementKind elementKind) {
+      Set<AnnotationMirror> filtered = AnnotationUtils.createAnnotationSet();
+      for (AnnotationMirror annoMirror : allAnnotations) {
+        Target target = annoMirror.getAnnotationType().asElement().getAnnotation(Target.class);
+        // Only add the declaration annotation if the annotation applies to the element.
+        if (AnnotationUtils.getElementKindsForTarget(target).contains(elementKind)) {
+          // `annoMirror` is applicable to `elt`
+          filtered.add(annoMirror);
+        }
+      }
+      return filtered;
     }
 
     /**
@@ -1568,7 +1596,12 @@ public class AnnotationFileParser {
 
     annotate(fieldType, decl.getType(), decl.getAnnotations(), decl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
-    return new RecordComponentStub(fieldType);
+    Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+    for (AnnotationExpr annotation : decl.getAnnotations()) {
+      AnnotationMirror annoMirror = getAnnotation(annotation, allAnnotations);
+      annos.add(annoMirror);
+    }
+    return new RecordComponentStub(fieldType, annos);
   }
 
   /**

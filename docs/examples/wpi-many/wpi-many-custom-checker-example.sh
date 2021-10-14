@@ -70,18 +70,21 @@ export JAVA_HOME=${JAVA11_HOME}
 repolistbase=$(basename "$repolist")
 
 # DLJC will fail if these arguments are passed to it with empty values.
+# shellcheck disable=SC2154
 if [ ! "${qual_classpath}" = "" ]; then
   quals_arg='yes'
 else
   quals_arg=
 fi
 
+# shellcheck disable=SC2154
 if [ ! "${checker_classpath}" = "" ]; then
   lib_arg='yes'
 else
   lib_arg=
 fi
 
+# shellcheck disable=SC2154
 if [ ! "${custom_stubs}" = "" ]; then
   stubs_arg='yes'
 fi
