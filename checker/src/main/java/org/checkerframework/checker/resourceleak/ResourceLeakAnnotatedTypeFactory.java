@@ -133,7 +133,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     super.setRoot(root);
   }
 
-  /** Getter method to get the fieldToFinalizers. */
+  /**
+   * Getter method to get the fieldToFinalizers.
+   *
+   * @return the fieldToFinalizers field
+   */
   public Map<Element, Set<Element>> getFieldToFinalizers() {
     return fieldToFinalizers;
   }

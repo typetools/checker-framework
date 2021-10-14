@@ -188,6 +188,7 @@ public class MustCallInferenceLogic {
   /**
    * Returns the non-exceptional successors of the current block.
    *
+   * @param cur the current block
    * @return the successors of this current block
    */
   private List<BlockImpl> getSuccessors(BlockImpl cur) {
