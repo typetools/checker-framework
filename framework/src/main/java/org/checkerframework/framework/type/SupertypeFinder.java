@@ -216,11 +216,23 @@ class SupertypeFinder {
      */
     private Map<TypeVariable, AnnotatedTypeMirror> getTypeVarToTypeArg(AnnotatedDeclaredType type) {
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+      // addTypeVarsFromEnclosingTypes can't be called with `type` because it calls
+      // `directSupertypes(types)`,
+      // which then calls this method. Add the type variables from `type` and then recur on the
+      // enclosing
+      // type and super types.
       addTypeVariablesToMapping(mapping, type);
-      getTypeVarToTypeArg(type.getEnclosingType(), mapping);
+      addTypeVarsFromEnclosingTypes(type.getEnclosingType(), mapping);
       return mapping;
     }
 
+    /**
+     * Adds a mapping from a type parameter to its corresponding annotated type argument for all
+     * type parameters of {@code type}.
+     *
+     * @param mapping type variable to type argument map
+     * @param type a type
+     */
     private void addTypeVariablesToMapping(
         Map<TypeVariable, AnnotatedTypeMirror> mapping, AnnotatedDeclaredType type) {
       TypeElement enclosingTypeElement = (TypeElement) type.getUnderlyingType().asElement();
@@ -233,12 +245,20 @@ class SupertypeFinder {
       }
     }
 
-    private void getTypeVarToTypeArg(
+    /**
+     * Creates a mapping from a type parameter to its corresponding annotated type argument for all
+     * type parameters of {@code enclosing}, its enclosing types, and all super types of all {@code
+     * type}'s enclosing types.
+     *
+     * @param mapping type variable to type argument map
+     * @param enclosing a type
+     */
+    private void addTypeVarsFromEnclosingTypes(
         AnnotatedDeclaredType enclosing, Map<TypeVariable, AnnotatedTypeMirror> mapping) {
       while (enclosing != null) {
         addTypeVariablesToMapping(mapping, enclosing);
         for (AnnotatedDeclaredType enclSuper : directSupertypes(enclosing)) {
-          getTypeVarToTypeArg(enclSuper, mapping);
+          addTypeVarsFromEnclosingTypes(enclSuper, mapping);
         }
         enclosing = enclosing.getEnclosingType();
       }
