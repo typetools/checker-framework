@@ -216,28 +216,32 @@ class SupertypeFinder {
      */
     private Map<TypeVariable, AnnotatedTypeMirror> getTypeVarToTypeArg(AnnotatedDeclaredType type) {
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
-      AnnotatedDeclaredType enclosing = type;
+      addTypeVariablesToMapping(mapping, type);
+      getTypeVarToTypeArg(type.getEnclosingType(), mapping);
+      return mapping;
+    }
+
+    private void addTypeVariablesToMapping(
+        Map<TypeVariable, AnnotatedTypeMirror> mapping, AnnotatedDeclaredType type) {
+      TypeElement enclosingTypeElement = (TypeElement) type.getUnderlyingType().asElement();
+      List<? extends TypeParameterElement> typeParams = enclosingTypeElement.getTypeParameters();
+      List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+      for (int i = 0; i < type.getTypeArguments().size(); ++i) {
+        AnnotatedTypeMirror typArg = typeArgs.get(i);
+        TypeParameterElement ele = typeParams.get(i);
+        mapping.put((TypeVariable) ele.asType(), typArg);
+      }
+    }
+
+    private void getTypeVarToTypeArg(
+        AnnotatedDeclaredType enclosing, Map<TypeVariable, AnnotatedTypeMirror> mapping) {
       while (enclosing != null) {
-        TypeElement enclosingTypeElement = (TypeElement) enclosing.getUnderlyingType().asElement();
-        List<? extends TypeParameterElement> typeParams = enclosingTypeElement.getTypeParameters();
-        List<AnnotatedTypeMirror> typeArgs = enclosing.getTypeArguments();
-        for (int i = 0; i < enclosing.getTypeArguments().size(); ++i) {
-          AnnotatedTypeMirror typArg = typeArgs.get(i);
-          TypeParameterElement ele = typeParams.get(i);
-          mapping.put((TypeVariable) ele.asType(), typArg);
+        addTypeVariablesToMapping(mapping, enclosing);
+        for (AnnotatedDeclaredType enclSuper : directSupertypes(enclosing)) {
+          getTypeVarToTypeArg(enclSuper, mapping);
         }
-
-        @SuppressWarnings("interning:not.interned") // First time through type == enclosing.
-        boolean notType = enclosing != type;
-        if (notType) {
-          for (AnnotatedDeclaredType enclSuper : directSupertypes(enclosing)) {
-            mapping.putAll(getTypeVarToTypeArg(enclSuper));
-          }
-        }
-
         enclosing = enclosing.getEnclosingType();
       }
-      return mapping;
     }
 
     private List<AnnotatedDeclaredType> supertypesFromElement(
