@@ -5,6 +5,8 @@ Version 3.1?.? (November 1, 2021)
 
 **Implementation details:**
 
+Removed `org.checkerframework.framework.type.VisitorState`
+
 **Closed issues:**
 
 Version 3.18.1 (October 4, 2021)
