@@ -2,8 +2,8 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableMap;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
@@ -99,12 +99,15 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   /**
    * Collects all the possible owning fields enclosed by the {@link ClassTree} and initializes the
-   * fieldsToFinalizers map.
+   * fieldsToFinalizers map. This method is called in {@link #preProcessClassTree} to initialize
+   * this map. Then, its value set will be updated in the {@link #postProcessClassTree} with field
+   * finalizer methods. After inferring all the enclosed owning fields, then fieldsToFinalizers will
+   * be used to infer the {@code @MustCall} annotation for the enclosing class.
    *
    * @param classTree a classTree
    * @return a map storing empty-set for possible owning fields
    */
-  private Map<Element, Set<Element>> CollectFields(ClassTree classTree) {
+  private Map<Element, Set<Element>> collectFields(ClassTree classTree) {
     List<? extends Tree> members = classTree.getMembers();
     Map<Element, Set<Element>> fieldsToFinalizers = new HashMap<>();
     for (Tree tree : members) {
@@ -128,30 +131,25 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         && !getMustCallValue(element).isEmpty());
   }
 
-  @Override
-  public void setRoot(@Nullable CompilationUnitTree root) {
-    super.setRoot(root);
-  }
-
   /**
    * Getter method to get the fieldToFinalizers.
    *
-   * @return the fieldToFinalizers field
+   * @return the copy of fieldToFinalizers field
    */
   public Map<Element, Set<Element>> getFieldToFinalizers() {
-    return fieldToFinalizers;
+    return ImmutableMap.copyOf(fieldToFinalizers);
   }
 
   @Override
   public void preProcessClassTree(ClassTree classTree) {
     fieldToFinalizers.clear();
-    this.fieldToFinalizers = CollectFields(classTree);
+    this.fieldToFinalizers = collectFields(classTree);
     super.preProcessClassTree(classTree);
   }
 
   @Override
   public void postProcessClassTree(ClassTree tree) {
-    if (checker.hasOption("infer") && !fieldToFinalizers.isEmpty()) {
+    if (getWholeProgramInference() != null && !fieldToFinalizers.isEmpty()) {
       List<? extends Tree> members = tree.getMembers();
       for (Tree t : members) {
         if (t.getKind() == Tree.Kind.METHOD) {

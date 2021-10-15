@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -54,9 +55,9 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * This is the main function in the MustCallInferenceLogic. It tracks called methods for fields
-   * with non-empty @MustCall obligation of type {@link FieldWithCMVs} along all paths to regular
-   * exit point in the method body.
+   * It tracks called methods for fields with non-empty @MustCall obligation of type {@link
+   * FieldWithCMVs} along all paths to regular exit point in the method body. This is the main
+   * function in the MustCallInferenceLogic.
    *
    * @param cfg the control flow graph of the method to check
    * @param methodTree the method to check
@@ -92,7 +93,8 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Updates a set of called methods in FieldWithCMVs with a method invocation.
+   * If the receiver of {@code mNode} is a field of the containing class, updates {@code
+   * fieldsWithCMVs} to include that field and the invoked method. Otherwise, does nothing.
    *
    * @param mNode the MethodInvocationNode
    * @param fieldsWithCMVs the set of FieldWithCMVs
@@ -119,14 +121,15 @@ public class MustCallInferenceLogic {
 
   /**
    * Gets the FieldsWithCMVs whose field is equal to the elt, if one exists in {@code
-   * fieldsWithCMVs}.
+   * fieldsWithCMVs}, otherwise returns {@code null}.
    *
    * @param fieldsWithCMVs set of FieldWithCMVs
    * @param elt the field element
    * @return the FieldWithCMVs in {@code fieldsWithCMVs} whose field is equal to {@code elt}, or
    *     {@code null} if there is no such FieldWithCMVs
    */
-  private FieldWithCMVs getFieldsWithCMVs(Element elt, Set<FieldWithCMVs> fieldsWithCMVs) {
+  private @Nullable FieldWithCMVs getFieldsWithCMVs(
+      Element elt, Set<FieldWithCMVs> fieldsWithCMVs) {
     for (FieldWithCMVs fieldsWithCMV : fieldsWithCMVs) {
       if (fieldsWithCMV.field.equals(elt)) {
         return fieldsWithCMV;
@@ -136,8 +139,9 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Propagates a set of FieldWithCMVs to successors, and searches for owning fields at the regular
-   * exit point.
+   * Propagates a set of FieldWithCMVs to successors. If the successor is an exit point, then it
+   * searches for owning fields by looking at the called methods set stored in FieldWithCMVs and the
+   * must call obligation of each field.
    *
    * @param curBlock the current block
    * @param fieldsWithCMVs the set of FieldWithCMVs for the current block
@@ -164,9 +168,10 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Checks all element in the fieldsWithCMVs and adds @Owning annotation on a field if the called
-   * methods set of that field in {@link FieldWithCMVs} includes all the methods in the @MustCall
-   * type of the field. It also updates fieldToFinalizers with the new detected finalizer.
+   * Checks all element in the fieldsWithCMVs and adds an {@code @Owning} annotation on a field if
+   * the called methods set of that field in {@link FieldWithCMVs} includes all the methods in
+   * the @MustCall type of the field. It also updates fieldToFinalizers with the new detected
+   * finalizer.
    *
    * @param fieldsWithCMVs the set of FieldWithCMVs
    * @param methodTree the method tree
