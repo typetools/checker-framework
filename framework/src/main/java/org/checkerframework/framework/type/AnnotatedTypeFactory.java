@@ -3467,6 +3467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the current class type being visited by the visitor. The method uses the parameter only
    * if the most enclosing class cannot be found directly.
    *
+   * @param tree a tree
    * @return type of the most enclosing class being visited
    */
   protected final ClassTree getCurrentClassTree(Tree tree) {
@@ -3479,6 +3480,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
    *
+   * @param tree a tree
    * @return receiver type of the most enclosing method being visited
    */
   @Deprecated // Seems like this isn't used.
@@ -3510,7 +3512,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
   }
 
-  @Deprecated
+  /**
+   * Returns true if {@code tree} is within a constructor.
+   *
+   * @param tree a tree
+   * @return true if {@code tree} is within a constructor
+   */
   protected final boolean isWithinConstructor(Tree tree) {
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getPath(tree));
     return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);

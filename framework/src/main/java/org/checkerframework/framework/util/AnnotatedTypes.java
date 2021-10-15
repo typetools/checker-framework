@@ -1018,6 +1018,7 @@ public class AnnotatedTypes {
    * Return a list of the AnnotatedTypeMirror of the passed expression trees, in the same order as
    * the trees.
    *
+   * @param atypeFactory a type factory
    * @param paramTypes the parameter types to use as assignment context
    * @param trees the AST nodes
    * @return a list with the AnnotatedTypeMirror of each tree in trees

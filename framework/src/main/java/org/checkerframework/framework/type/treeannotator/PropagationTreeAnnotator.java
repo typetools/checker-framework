@@ -48,7 +48,13 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     this.qualHierarchy = atypeFactory.getQualifierHierarchy();
   }
 
-  private boolean doProp = true;
+  /**
+   * Whether to use the assignment context when computing the type of a new array expression. This
+   * is a hack to prevent infinite recursion if computing the type of the assignment context
+   * includes computing the type of the right-hand side of the assignment. This happens when the
+   * assignment is the pseudo-assignment of a method argument to a formal parameter.
+   */
+  private boolean useAssignmentContext = true;
 
   @Override
   public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
@@ -97,14 +103,14 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
               atypeFactory.getAnnotatedType((MethodTree) methodTree);
           contextType = methodType.getReturnType();
         }
-      } else if (parentTree.getKind() == Kind.METHOD_INVOCATION && doProp) {
+      } else if (parentTree.getKind() == Kind.METHOD_INVOCATION && useAssignmentContext) {
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
-        doProp = false;
+        useAssignmentContext = false;
         ParameterizedExecutableType m;
         try {
           m = atypeFactory.methodFromUse(methodInvocationTree);
         } finally {
-          doProp = true;
+          useAssignmentContext = true;
         }
         for (int i = 0; i < m.executableType.getParameterTypes().size(); i++) {
           @SuppressWarnings("interning") // Tree must be exactly the same.
