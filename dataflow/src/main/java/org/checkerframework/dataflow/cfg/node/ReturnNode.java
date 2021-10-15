@@ -23,32 +23,60 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class ReturnNode extends Node {
 
-  protected final ReturnTree tree;
+  /** The return tree. */
+  protected final ReturnTree returnTree;
+
+  /** The node of the returned expression. */
   protected final @Nullable Node result;
 
-  @Deprecated
-  public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
+  /**
+   * Creates a node for the given return statement.
+   *
+   * @param returnTree return tree
+   * @param result the returned expression
+   * @param types types util
+   */
+  public ReturnNode(ReturnTree returnTree, @Nullable Node result, Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.result = result;
-    tree = t;
+    this.returnTree = returnTree;
   }
 
-  public ReturnNode(ReturnTree t, @Nullable Node result, Types types) {
-    super(types.getNoType(TypeKind.NONE));
-    this.result = result;
-    tree = t;
-  }
-
+  /**
+   * Creates a node for the given return statement.
+   *
+   * @param returnTree return tree
+   * @param result the returned expression
+   * @param types types util
+   * @param methodTree method tree
+   * @deprecated Use {@link #ReturnNode(ReturnTree, Node, Types, LambdaExpressionTree,
+   *     MethodSymbol)} instead.
+   */
   @Deprecated
   public ReturnNode(
-      ReturnTree t,
+      ReturnTree returnTree, @Nullable Node result, Types types, MethodTree methodTree) {
+    this(returnTree, result, types);
+  }
+
+  /**
+   * Creates a node for the given return statement.
+   *
+   * @param returnTree return tree
+   * @param result the returned expression
+   * @param types types util
+   * @param lambda lambda
+   * @param methodSymbol methodSymbol
+   * @deprecated Use {@link #ReturnNode(ReturnTree, Node, Types, LambdaExpressionTree,
+   *     MethodSymbol)} instead.
+   */
+  @Deprecated
+  public ReturnNode(
+      ReturnTree returnTree,
       @Nullable Node result,
       Types types,
       LambdaExpressionTree lambda,
       MethodSymbol methodSymbol) {
-    super(types.getNoType(TypeKind.NONE));
-    this.result = result;
-    tree = t;
+    this(returnTree, result, types);
   }
 
   /** The result of the return node, {@code null} otherwise. */
@@ -58,7 +86,7 @@ public class ReturnNode extends Node {
 
   @Override
   public ReturnTree getTree() {
-    return tree;
+    return returnTree;
   }
 
   @Override
