@@ -6,6 +6,7 @@ Version 3.1?.? (November 1, 2021)
 **Implementation details:**
 
 Removed `org.checkerframework.framework.type.VisitorState`
+Removed `org.checkerframework.dataflow.cfg.node.AssignmentContext`
 
 **Closed issues:**
 

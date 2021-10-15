@@ -10,8 +10,6 @@ import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.LambdaReturnContext;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnContext;
 
 /**
  * A node for a return statement:
@@ -28,15 +26,20 @@ public class ReturnNode extends Node {
   protected final ReturnTree tree;
   protected final @Nullable Node result;
 
+  @Deprecated
   public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
     super(types.getNoType(TypeKind.NONE));
     this.result = result;
     tree = t;
-    if (result != null) {
-      result.setAssignmentContext(new MethodReturnContext(methodTree));
-    }
   }
 
+  public ReturnNode(ReturnTree t, @Nullable Node result, Types types) {
+    super(types.getNoType(TypeKind.NONE));
+    this.result = result;
+    tree = t;
+  }
+
+  @Deprecated
   public ReturnNode(
       ReturnTree t,
       @Nullable Node result,
@@ -46,9 +49,6 @@ public class ReturnNode extends Node {
     super(types.getNoType(TypeKind.NONE));
     this.result = result;
     tree = t;
-    if (result != null) {
-      result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
-    }
   }
 
   /** The result of the return node, {@code null} otherwise. */
