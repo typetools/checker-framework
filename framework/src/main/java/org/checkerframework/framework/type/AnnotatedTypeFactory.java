@@ -1825,22 +1825,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * A callback method for the AnnotatedTypeFactory subtypes to customize
-   * AnnotatedTypeMirror.substitute().
-   *
-   * @param varDecl a declaration of a type variable
-   * @param varUse a use of the same type variable
-   * @param value the new type to substitute in for the type variable
-   */
-  public void postTypeVarSubstitution(
-      AnnotatedTypeVariable varDecl, AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
-    if (!varUse.getAnnotationsField().isEmpty()
-        && !AnnotationUtils.areSame(varUse.getAnnotationsField(), varDecl.getAnnotationsField())) {
-      value.replaceAnnotations(varUse.getAnnotationsField());
-    }
-  }
-
-  /**
    * Adapt the upper bounds of the type variables of a class relative to the type instantiation. In
    * some type systems, the upper bounds depend on the instantiation of the class. For example, in
    * the Generic Universe Type system, consider a class declaration
