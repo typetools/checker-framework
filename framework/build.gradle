@@ -22,7 +22,7 @@ sourcesJar {
 
 def versions = [
         autoValue       : "1.7.4",
-        lombok          : "1.18.20",
+        lombok          : "1.18.22",
 ]
 
 configurations {
@@ -45,7 +45,7 @@ dependencies {
     // See the comment in ../build.gradle in the shadowJar block.
     implementation 'org.plumelib:plume-util:1.5.8'
     implementation 'org.plumelib:reflection-util:1.0.4'
-    implementation 'io.github.classgraph:classgraph:4.8.117'
+    implementation 'io.github.classgraph:classgraph:4.8.128'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
