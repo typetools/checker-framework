@@ -195,6 +195,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Utility class for working with {@link TypeMirror}s. */
   public final Types types;
 
+  /**
+   * A TreePath to the current tree that an external "visitor" is visiting. The visitor is either a
+   * subclass of {@link BaseTypeVisitor} or {@link
+   * org.checkerframework.framework.flow.CFAbstractTransfer}.
+   */
+  private @Nullable TreePath visitorTreePath;
+
   /** The AnnotatedFor.value argument/element. */
   private final ExecutableElement annotatedForValueElement;
   /** The EnsuresQualifier.expression field/element. */
@@ -2055,7 +2062,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       return declarationFromElement(enclosingMethodOrClass);
     }
-    return getCurrentClassTree(tree);
+    return TreePathUtil.enclosingClass(path);
   }
 
   /**
@@ -3464,26 +3471,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the current class type being visited by the visitor. The method uses the parameter only
-   * if the most enclosing class cannot be found directly.
+   * Returns the class tree enclosing {@code tree}.
    *
-   * @param tree a tree
-   * @return type of the most enclosing class being visited
+   * @param tree the tree whose enclosing class is returned
+   * @return the class tree enclosing {@code tree}
+   * @deprecated Use {@code TreePathUtil.enclosingClass(getPath(tree))} instead.
    */
+  @Deprecated
   protected final ClassTree getCurrentClassTree(Tree tree) {
     return TreePathUtil.enclosingClass(getPath(tree));
   }
 
   /**
-   * Returns the receiver type of the current method being visited, and returns null if the visited
-   * tree is not within a method or if that method has no receiver (e.g. a static method).
+   * Returns the receiver type of the method enclosing {@code tree}.
    *
    * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
    *
-   * @param tree a tree
+   * @param tree the tree used to find the enclosing method.
    * @return receiver type of the most enclosing method being visited
+   * @deprecated Use {@link #getSelfType(Tree)} instead.
    */
-  @Deprecated // Seems like this isn't used.
+  @Deprecated
   protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
     TreePath path = getPath(tree);
     if (path == null) {
@@ -3515,20 +3523,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns true if {@code tree} is within a constructor.
    *
-   * @param tree a tree
+   * @param tree the tree that might be within a constructor.
    * @return true if {@code tree} is within a constructor
    */
   protected final boolean isWithinConstructor(Tree tree) {
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getPath(tree));
     return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
   }
-
-  /**
-   * A TreePath to the current tree that an external "visitor" is visiting. The visitor is either a
-   * subclass of {@link BaseTypeVisitor} or {@link
-   * org.checkerframework.framework.flow.CFAbstractTransfer}.
-   */
-  private @Nullable TreePath visitorTreePath;
 
   /**
    * Sets the path to the tree that an external "visitor" is visiting. The visitor is either a
@@ -3544,8 +3545,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns the path to the tree that an external "visitor" is visiting. The type factory does not
    * update this value as it computes the types of any tree or element needed compute the type of
-   * the tree being visited. Therefore this path is may not be the path to the tree whose type is
-   * being computed. This method should not be used directly. Use {@link #getPath(Tree)} instead.
+   * the tree being visited. Therefore this path may not be the path to the tree whose type is being
+   * computed. This method should not be used directly. Use {@link #getPath(Tree)} instead.
    *
    * <p>This method is used to save the previous tree path and to give a hint to {@link
    * #getPath(Tree)} on where to look for a tree rather than searching starting at the root.
