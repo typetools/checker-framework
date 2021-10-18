@@ -234,6 +234,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
+  /** The @{@link SideEffectsOnly} annotation. */
   ExecutableElement sideEffectsOnlyValueElement;
   /** True if "-Ashowchecks" was passed on the command line. */
   private final boolean showchecks;

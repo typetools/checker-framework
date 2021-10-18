@@ -31,6 +31,16 @@ import org.checkerframework.javacutil.TreeUtils;
  * but not permitted by the annotation.
  */
 public class SideEffectsOnlyAnnoChecker {
+  /**
+   * Returns the computed {@code SideEffectsOnlyResult}.
+   *
+   * @param statement TreePath
+   * @param annoProvider AnnotationProvider
+   * @param sideEffectsOnlyExpressions List of JavaExpression
+   * @param processingEnv ProcessingEnvironment
+   * @param checker BaseTypeChecker
+   * @return SideEffectsOnlyResult
+   */
   public static SideEffectsOnlyResult checkSideEffectsOnly(
       TreePath statement,
       AnnotationProvider annoProvider,
@@ -44,6 +54,7 @@ public class SideEffectsOnlyAnnoChecker {
     return helper.sideEffectsOnlyResult;
   }
 
+  /** SideEffectsOnlyResult. */
   public static class SideEffectsOnlyResult {
     /**
      * List of expressions a method side-effects that are not specified in the list of arguments to
@@ -51,24 +62,50 @@ public class SideEffectsOnlyAnnoChecker {
      */
     protected final List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = new ArrayList<>(1);
 
+    /**
+     * Adds {@code t} and {@code javaExpr} as a Pair to seOnlyIncorrectExprs.
+     *
+     * @param t Tree
+     * @param javaExpr JavaExpression
+     */
     public void addNotSEOnlyExpr(Tree t, JavaExpression javaExpr) {
       seOnlyIncorrectExprs.add(Pair.of(t, javaExpr));
     }
 
+    /**
+     * Returns {@code seOnlyIncorrectExprs}.
+     *
+     * @return seOnlyIncorrectExprs
+     */
     public List<Pair<Tree, JavaExpression>> getSeOnlyResult() {
       return seOnlyIncorrectExprs;
     }
   }
 
+  /** SideEffectsOnlyCheckerHelper. */
   protected static class SideEffectsOnlyCheckerHelper extends TreePathScanner<Void, Void> {
-
+    /** Result computed by SideEffectsOnlyCheckerHelper. */
     SideEffectsOnlyResult sideEffectsOnlyResult = new SideEffectsOnlyResult();
+    /**
+     * List of expressions specified as annotation arguments in {@link SideEffectsOnly} annotation.
+     */
     List<JavaExpression> sideEffectsOnlyExpressions;
 
+    /** AnnotationProvider. */
     protected final AnnotationProvider annoProvider;
+    /** Processing Environment. */
     ProcessingEnvironment processingEnv;
+    /** BaseTypeChecker. */
     BaseTypeChecker checker;
 
+    /**
+     * Constructor for SideEffectsOnlyCheckerHelper.
+     *
+     * @param annoProvider AnnotationProvider
+     * @param sideEffectsOnlyExpressions List of JavaExpressions
+     * @param processingEnv ProcessingEnvironment
+     * @param checker BaseTypeChecker
+     */
     public SideEffectsOnlyCheckerHelper(
         AnnotationProvider annoProvider,
         List<JavaExpression> sideEffectsOnlyExpressions,
