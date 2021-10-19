@@ -73,7 +73,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -423,7 +422,8 @@ public abstract class CFAbstractTransfer<
     /**
      * Add field values to the initial store before {@code methodTree}.
      *
-     * <p>The initializer value is inserted into {@code store} if the field is private and final.
+     * <p>The initializer value is inserted into {@code store} if the field is final and the field
+     * type is immutable, as defined by {@link AnnotatedTypeFactory#isImmutable(TypeMirror)}.
      *
      * <p>The declared value is inserted into {@code store} if:
      *
@@ -439,6 +439,8 @@ public abstract class CFAbstractTransfer<
      * @param classTree the class that contains {@code methodTree}
      * @param methodTree the method or constructor tree
      */
+    // TODO: should field visibility matter? An access from outside the class might observe
+    // the declared type instead of a refined type. Issue a warning to alert users?
     private void addInitialFieldValues(S store, ClassTree classTree, MethodTree methodTree) {
         boolean isConstructor = TreeUtils.isConstructor(methodTree);
         TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
@@ -446,7 +448,7 @@ public abstract class CFAbstractTransfer<
             VariableElement varEle = fieldInitialValue.fieldDecl.getField();
             // Insert the value from the initializer of private final fields.
             if (fieldInitialValue.initializer != null
-                    && varEle.getModifiers().contains(Modifier.PRIVATE)
+                    // && varEle.getModifiers().contains(Modifier.PRIVATE)
                     && ElementUtils.isFinal(varEle)
                     && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
                 store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
