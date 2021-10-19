@@ -489,7 +489,7 @@ public class AnnotationFileUtil {
   public static boolean isCanonicalConstructor(ExecutableElement elt, Types types) {
     if (elt.getKind() == ElementKind.CONSTRUCTOR) {
       Element enclosing = elt.getEnclosingElement();
-      // Can't use RECORD enum constant as it's not available before JDK 16:
+      // Can't use RECORD enum constant as it's not available before JDK 17:
       if (enclosing.getKind().name().equals("RECORD")) {
         List<? extends Element> recordComponents =
             ElementUtils.getRecordComponents((TypeElement) enclosing);

@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit tests for the Nullness checker with records (JDK16+ only). */
+/** JUnit tests for the Nullness checker with records (JDK17+ only). */
 public class NullnessRecordsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
@@ -26,7 +26,7 @@ public class NullnessRecordsTest extends CheckerFrameworkPerDirectoryTest {
 
   @Parameters
   public static String[] getTestDirs() {
-    // Check for JDK 16+ without using a library:
+    // Check for JDK 17+ without using a library:
     if (System.getProperty("java.version").matches("^(1[6-9]|[2-9][0-9])\\..*"))
       return new String[] {"nullness-records"};
     else return new String[] {};

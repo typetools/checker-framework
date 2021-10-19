@@ -3,15 +3,19 @@ Version 3.1?.? (November 1, 2021)
 
 **User-visible changes:**
 
+Improved support for running under JDK 17.
+
 **Implementation details:**
 
 **Closed issues:**
+
 
 Version 3.18.1 (October 4, 2021)
 -------------------------------
 
 **Closed issues:**
 #4902 and #4903.
+
 
 Version 3.18.0 (September 1, 2021)
 -------------------------------
@@ -22,6 +26,7 @@ Java records are type-checked.  Thanks to Neil Brown.
 
 **Closed issues:**
 #4838, #4843, #4852, #4853, #4861, #4876, #4877, #4878, #4878, #4889, #4889.
+
 
 Version 3.17.0 (August 3, 2021)
 -------------------------------
@@ -60,12 +65,12 @@ Version 3.16.0 (July 13, 2021)
 
 **User-visible changes:**
 
-You can run the Checker Framework on a JDK 16 JVM.  You can pass the `--release
+You can run the Checker Framework on a JDK 17 JVM.  You can pass the `--release
 16` command-line argument to the compiler.  You may need to add additional
 command-line options, such as `--add-opens`; see the Checker Framework manual.
 New syntax, such as records and switch expressions, is not yet supported or
 type-checked; that will be added in a future release.  Thanks to Neil Brown for
-the JDK 16 support.
+the JDK 17 support.
 
 The Lock Checker supports a new type, `@NewObject`, for the result of a
 constructor invocation.
