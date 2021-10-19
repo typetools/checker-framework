@@ -7,6 +7,13 @@ Improved support for running under JDK 17; ended support for JDK 16.
 
 **Implementation details:**
 
+Removed `org.checkerframework.framework.type.VisitorState`
+Removed `AnnotatedTypeFactory#postTypeVarSubstitution`
+
+Deprecated methods in AnnotatedTypeFactory:
+* `getCurrentClassTree`
+* `getCurrentMethodReceiver`
+
 **Closed issues:**
 
 
