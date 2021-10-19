@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.StringsPlume;
@@ -36,16 +35,6 @@ public class ObjectCreationNode extends Node {
     this.constructor = constructor;
     this.arguments = arguments;
     this.classbody = classbody;
-
-    // set assignment contexts for parameters
-    int i = 0;
-    ExecutableElement elem = TreeUtils.elementFromUse(tree);
-    if (elem != null) {
-      for (Node arg : arguments) {
-        AssignmentContext ctx = new AssignmentContext.MethodParameterContext(elem, i++);
-        arg.setAssignmentContext(ctx);
-      }
-    }
   }
 
   public Node getConstructor() {
