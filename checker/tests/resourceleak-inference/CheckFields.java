@@ -2,7 +2,19 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-class CheckFields {
+@MustCall("finalizer") class CheckFields {
+  private final @Owning Foo checkFieldsFoo;
+
+  public CheckFields() {
+    this.checkFieldsFoo = new Foo();
+  }
+
+  @EnsuresCalledMethods(
+      value = {"this.checkFieldsFoo"},
+      methods = {"a"})
+  void finalizer() {
+    this.checkFieldsFoo.a();
+  }
 
   @MustCall("a") static class Foo {
     void a() {}

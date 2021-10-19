@@ -4,7 +4,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.Tree;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -17,18 +16,16 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.BlockImpl;
-import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
-import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This class contains Resource Leak Checker annotation inference algorithm. For now it just
+ * This class contains Resource Leak Checker annotation inference algorithm. For now, it just
  * contains inference logic for @Owning annotations on final owning fields. It adds @Owning
  * annotation on a field if it finds a method that satisfies @MustCall obligation of the field along
  * some path to the regular exit point.
@@ -39,41 +36,42 @@ public class MustCallInferenceLogic {
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
    */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
+
   /** The @Owning annotation. */
   protected final AnnotationMirror OWNING;
 
+  /** The control flow graph. */
+  private ControlFlowGraph cfg;
+
+  /** The underlying AST for the method. */
+  private UnderlyingAST.CFGMethod cfgMethod;
+
   /**
-   * Creates a MustCallInferenceLogic. If the Resource Leak Checker has infer option, the type
-   * factory's postProcessClassTree method would instantiate a new MustCallInferenceLogic using this
-   * constructor and then call {@link #inference(ControlFlowGraph, Tree)}.
+   * Creates a MustCallInferenceLogic. If the whole program inference is not null, the type
+   * factory's postAnalyze method would instantiate a new MustCallInferenceLogic using this
+   * constructor and then call {@link #inference()}.
    *
    * @param typeFactory the type factory
+   * @param cfg the ControlFlowGraph
    */
-  MustCallInferenceLogic(ResourceLeakAnnotatedTypeFactory typeFactory) {
+  MustCallInferenceLogic(ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg) {
     this.typeFactory = typeFactory;
+    this.cfg = cfg;
+    this.cfgMethod = (UnderlyingAST.CFGMethod) cfg.getUnderlyingAST();
     OWNING = AnnotationBuilder.fromClass(this.typeFactory.getElementUtils(), Owning.class);
   }
 
   /**
    * It tracks called methods for fields with non-empty @MustCall obligation of type {@link
-   * FieldWithCMVs} along all paths to regular exit point in the method body. This is the main
+   * FieldWithCMVs} along all paths to the regular exit point in the method body. This is the main
    * function in the MustCallInferenceLogic.
-   *
-   * @param cfg the control flow graph of the method to check
-   * @param methodTree the method to check
    */
-  void inference(ControlFlowGraph cfg, Tree methodTree) {
+  void inference() {
+
     Set<BlockWithFieldsFacts> visited = new HashSet<>();
     Deque<BlockWithFieldsFacts> worklist = new ArrayDeque<>();
-
-    Set<FieldWithCMVs> initFieldsWithCMVs = new HashSet<>();
-
-    for (Element field : typeFactory.getFieldToFinalizers().keySet()) {
-      initFieldsWithCMVs.add(new FieldWithCMVs(field, new HashSet<>()));
-    }
-
     BlockWithFieldsFacts entry =
-        new BlockWithFieldsFacts(cfg.getEntryBlock(), ImmutableSet.copyOf(initFieldsWithCMVs));
+        new BlockWithFieldsFacts(this.cfg.getEntryBlock(), new HashSet<>());
     worklist.add(entry);
     visited.add(entry);
 
@@ -88,7 +86,7 @@ public class MustCallInferenceLogic {
         }
       }
 
-      propagateRegPaths(current, fieldsWithCMVs, visited, worklist, methodTree);
+      propagateRegPaths(current, fieldsWithCMVs, visited, worklist);
     }
   }
 
@@ -104,7 +102,7 @@ public class MustCallInferenceLogic {
     Node receiver = mNode.getTarget().getReceiver();
     if (receiver.getTree() != null) {
       Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
-      if (typeFactory.getFieldToFinalizers().keySet().contains(receiverEl)) {
+      if (typeFactory.isElementPossibleOwningField(receiverEl)) {
         Element method = TreeUtils.elementFromTree(mNode.getTree());
         FieldWithCMVs fieldsWithCMV = getFieldsWithCMVs(receiverEl, fieldsWithCMVs);
         if (fieldsWithCMV != null) {
@@ -114,6 +112,10 @@ public class MustCallInferenceLogic {
                   .toSet();
           fieldsWithCMVs.remove(fieldsWithCMV);
           fieldsWithCMVs.add(new FieldWithCMVs(receiverEl, calledMethodsnew));
+        } else {
+          Set<String> calledMethods = new HashSet<>();
+          calledMethods.add(method.getSimpleName().toString());
+          fieldsWithCMVs.add(new FieldWithCMVs(receiverEl, calledMethods));
         }
       }
     }
@@ -139,27 +141,34 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Propagates a set of FieldWithCMVs to successors. If the successor is an exit point, then it
-   * searches for owning fields by looking at the called methods set stored in FieldWithCMVs and the
-   * must call obligation of each field.
+   * Propagates a set of FieldWithCMVs to successors. If the successor is a regular exit point, then
+   * it searches for owning fields by looking at the called methods set stored in FieldWithCMVs and
+   * the must call obligation of each field.
    *
    * @param curBlock the current block
    * @param fieldsWithCMVs the set of FieldWithCMVs for the current block
    * @param visited block-FieldWithCMVs pairs already on the worklist
    * @param worklist current worklist
-   * @param methodTree the method tree
    */
   private void propagateRegPaths(
       BlockWithFieldsFacts curBlock,
       Set<FieldWithCMVs> fieldsWithCMVs,
       Set<BlockWithFieldsFacts> visited,
-      Deque<BlockWithFieldsFacts> worklist,
-      Tree methodTree) {
-    List<BlockImpl> successors = getSuccessors((BlockImpl) curBlock.block);
+      Deque<BlockWithFieldsFacts> worklist) {
+
+    Set<Block> successors = curBlock.block.getSuccessors();
+
     for (Block b : successors) {
       if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
-        findOwningFields(fieldsWithCMVs, methodTree);
+
+        if (((SpecialBlock) b).getSpecialType() == SpecialBlock.SpecialBlockType.EXCEPTIONAL_EXIT) {
+          // Do nothing if the successor block is an exceptional exit point
+          continue;
+        }
+
+        findOwningFields(fieldsWithCMVs, cfgMethod.getMethod());
       }
+
       BlockWithFieldsFacts successor = new BlockWithFieldsFacts(b, fieldsWithCMVs);
       if (visited.add(successor)) {
         worklist.add(successor);
@@ -170,7 +179,7 @@ public class MustCallInferenceLogic {
   /**
    * Checks all element in the fieldsWithCMVs and adds an {@code @Owning} annotation on a field if
    * the called methods set of that field in {@link FieldWithCMVs} includes all the methods in
-   * the @MustCall type of the field. It also updates fieldToFinalizers with the new detected
+   * the @MustCall type of the field. It also updates classToFieldToFinalizers with the new detected
    * finalizer.
    *
    * @param fieldsWithCMVs the set of FieldWithCMVs
@@ -183,40 +192,11 @@ public class MustCallInferenceLogic {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
         if (wpi != null) {
           wpi.addFieldDeclarationAnnotation(fieldsWithCMV.field, OWNING);
-          typeFactory.addFinalizerForField(
-              fieldsWithCMV.field, TreeUtils.elementFromTree(methodTree));
+          typeFactory.updateClassToFieldToFinalizers(
+              cfgMethod.getClassTree(), fieldsWithCMV.field, TreeUtils.elementFromTree(methodTree));
         }
       }
     }
-  }
-
-  /**
-   * Returns the non-exceptional successors of the current block.
-   *
-   * @param cur the current block
-   * @return the successors of this current block
-   */
-  private List<BlockImpl> getSuccessors(BlockImpl cur) {
-    List<BlockImpl> successorBlock = new ArrayList<>();
-
-    if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
-
-      ConditionalBlock ccur = (ConditionalBlock) cur;
-
-      successorBlock.add((BlockImpl) ccur.getThenSuccessor());
-      successorBlock.add((BlockImpl) ccur.getElseSuccessor());
-
-    } else {
-      if (!(cur instanceof SingleSuccessorBlock)) {
-        throw new BugInCF("BlockImpl is neither a conditional block nor a SingleSuccessorBlock");
-      }
-
-      Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-      if (b != null) {
-        successorBlock.add((BlockImpl) b);
-      }
-    }
-    return successorBlock;
   }
 
   /**

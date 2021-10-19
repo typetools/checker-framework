@@ -2,22 +2,21 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
@@ -33,11 +32,10 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFCFGBuilder;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -81,11 +79,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
-   * Map to store a set of finalizers for fields with non-empty @MustCall obligation. Keys are field
-   * elements; values are sets of method Elements that satisfy @MustCall obligation of the fields
-   * along some path to their regular exit points
+   * Map to store a set of FieldToFinalizers for classes. Keys are class trees; values are sets of
+   * FieldToFinalizers which represents a set of method Elements that satisfy @MustCall obligation
+   * of FieldToFinalizers's field along some path to their regular exit points
    */
-  private Map<Element, Set<Element>> fieldToFinalizers = new HashMap<>();
+  Map<ClassTree, Set<FieldToFinalizers>> classToFieldToFinalizers = new HashMap<>();
 
   /**
    * Creates a new ResourceLeakAnnotatedTypeFactory.
@@ -98,79 +96,77 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
-   * Collects all the possible owning fields enclosed by the {@link ClassTree} and initializes the
-   * fieldsToFinalizers map. This method is called in {@link #preProcessClassTree} to initialize
-   * this map. Then, its value set will be updated in the {@link #postProcessClassTree} with field
-   * finalizer methods. After inferring all the enclosed owning fields, then fieldsToFinalizers will
-   * be used to infer the {@code @MustCall} annotation for the enclosing class.
-   *
-   * @param classTree a classTree
-   * @return a map storing empty-set for possible owning fields
-   */
-  private Map<Element, Set<Element>> collectFields(ClassTree classTree) {
-    List<? extends Tree> members = classTree.getMembers();
-    Map<Element, Set<Element>> fieldsToFinalizers = new HashMap<>();
-    for (Tree tree : members) {
-      Element elt = TreeUtils.elementFromTree(tree);
-      if (elt != null && isElementPossibleOwningField(elt)) {
-        fieldsToFinalizers.put(elt, new LinkedHashSet<>());
-      }
-    }
-    return fieldsToFinalizers;
-  }
-
-  /**
    * Is the given element a final field with non-empty @MustCall obligation?
    *
    * @param element a element
    * @return true iff the given element is a final field with non-empty @MustCall obligation
    */
-  private boolean isElementPossibleOwningField(Element element) {
+  boolean isElementPossibleOwningField(Element element) {
     return (element.getKind().isField()
         && ElementUtils.isFinal(element)
         && !getMustCallValue(element).isEmpty());
   }
 
   /**
-   * Getter method to get the fieldToFinalizers.
+   * Given a set of FieldToFinalizers and a field, returns the fieldToFinalizers whose field is
+   * equal to the given field if one exists in {@code fieldsToFinalizers}, otherwise returns {@code
+   * null}.
    *
-   * @return the copy of fieldToFinalizers field
+   * @param field a field
+   * @param fieldsToFinalizers a set of FieldToFinalizers
+   * @return the FieldToFinalizers in {@code fieldsToFinalizers} whose field is equal to {@code
+   *     field}, or {@code null} if there is no such FieldToFinalizers
    */
-  public Map<Element, Set<Element>> getFieldToFinalizers() {
-    return ImmutableMap.copyOf(fieldToFinalizers);
-  }
-
-  @Override
-  public void preProcessClassTree(ClassTree classTree) {
-    fieldToFinalizers.clear();
-    this.fieldToFinalizers = collectFields(classTree);
-    super.preProcessClassTree(classTree);
-  }
-
-  @Override
-  public void postProcessClassTree(ClassTree tree) {
-    if (getWholeProgramInference() != null && !fieldToFinalizers.isEmpty()) {
-      List<? extends Tree> members = tree.getMembers();
-      for (Tree t : members) {
-        if (t.getKind() == Tree.Kind.METHOD) {
-          MethodTree mt = (MethodTree) t;
-          Set<Modifier> flags = mt.getModifiers().getFlags();
-          if (flags.contains(Modifier.ABSTRACT) || flags.contains(Modifier.NATIVE)) {
-            break;
-          }
-          if (mt.getBody() == null) {
-            break;
-          }
-          CFGMethod met = new CFGMethod(mt, tree);
-          ControlFlowGraph cfg = CFCFGBuilder.build(this.root, met, checker, this, processingEnv);
-          if (cfg != null) {
-            MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(this);
-            mustCallInferenceLogic.inference(cfg, t);
-          }
-        }
+  private @Nullable FieldToFinalizers getFieldToFinalizers(
+      Element field, Set<FieldToFinalizers> fieldsToFinalizers) {
+    for (FieldToFinalizers ftf : fieldsToFinalizers) {
+      if (ftf.field.equals(field)) {
+        return ftf;
       }
     }
-    super.postProcessClassTree(tree);
+    return null;
+  }
+
+  /**
+   * Returns the set of FieldToFinalizers stored for the given key in classToFieldToFinalizers map
+   * if one exists, otherwise it adds a new entry to the map.
+   *
+   * @param classTree a classTree
+   * @return the set of FieldToFinalizers stored in classToFieldToFinalizers for the given classTree
+   */
+  private Set<FieldToFinalizers> getSetOfFieldToFinalizers(ClassTree classTree) {
+    if (!classToFieldToFinalizers.containsKey(classTree)) {
+      classToFieldToFinalizers.put(classTree, new HashSet<>());
+    }
+    return classToFieldToFinalizers.get(classTree);
+  }
+
+  /**
+   * Updates the classToFieldToFinalizers map with the new detected finalizer method for the given
+   * field.
+   *
+   * @param classTree the containing class
+   * @param field the owning field
+   * @param methodElt the new finalizer for the owning field
+   */
+  public void updateClassToFieldToFinalizers(
+      ClassTree classTree, Element field, Element methodElt) {
+    Set<FieldToFinalizers> fieldsToFinalizers = getSetOfFieldToFinalizers(classTree);
+    FieldToFinalizers fieldToFinalizers = getFieldToFinalizers(field, fieldsToFinalizers);
+
+    if (fieldToFinalizers == null) {
+      Set<Element> finalizers = new HashSet<>();
+      finalizers.add(methodElt);
+      fieldsToFinalizers.add(new FieldToFinalizers(field, finalizers));
+    } else {
+      fieldToFinalizers.finalizers.add(methodElt);
+    }
+  }
+
+  @Override
+  public void setRoot(@Nullable CompilationUnitTree root) {
+    super.setRoot(root);
+    classToFieldToFinalizers.clear();
   }
 
   @Override
@@ -194,6 +190,15 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(this, this.analysis);
     mustCallConsistencyAnalyzer.analyze(cfg);
+
+    // Inferring owning annotations for final owning fields
+    if (getWholeProgramInference() != null && cfg != null) {
+      if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
+        MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(this, cfg);
+        mustCallInferenceLogic.inference();
+      }
+    }
+
     super.postAnalyze(cfg);
     tempVarToTree.clear();
   }
@@ -401,13 +406,46 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return createsMustCallForListValueElement;
   }
 
-  /**
-   * Updates the finalizer set of the field with a new method element.
-   *
-   * @param field a field element
-   * @param finalizer a new finalizer for the field
-   */
-  public void addFinalizerForField(Element field, Element finalizer) {
-    fieldToFinalizers.get(field).add(finalizer);
+  /** A pair of a field {@link Element} and a set of finalizer methods detected for that field. */
+  static class FieldToFinalizers {
+
+    /** The field element. */
+    public final Element field;
+
+    /** The set of finalizer methods. */
+    public Set<Element> finalizers;
+
+    /**
+     * Creates a new FieldToFinalizers.
+     *
+     * @param fieldElt the field element
+     * @param finalizers the set of finalizer methods
+     */
+    public FieldToFinalizers(Element fieldElt, Set<Element> finalizers) {
+      this.field = fieldElt;
+      this.finalizers = finalizers;
+    }
+
+    @Override
+    public String toString() {
+      return "(FieldToFinalizers: field: " + field + " |||| finalizers: " + finalizers + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      FieldToFinalizers that = (FieldToFinalizers) o;
+      return field.equals(that.field);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(field);
+    }
   }
 }
