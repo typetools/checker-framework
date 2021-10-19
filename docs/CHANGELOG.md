@@ -3,7 +3,7 @@ Version 3.1?.? (November 1, 2021)
 
 **User-visible changes:**
 
-Improved support for running under JDK 17.
+Improved support for running under JDK 17; ended support for JDK 16.
 
 **Implementation details:**
 
