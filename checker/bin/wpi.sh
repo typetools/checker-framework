@@ -202,9 +202,10 @@ function configure_and_exec_dljc {
   echo "JAVA8_HOME = ${JAVA8_HOME}"
   echo "JAVA11_HOME = ${JAVA11_HOME}"
   echo "JAVA17_HOME = ${JAVA17_HOME}"
-  javac -version
+  echo "javac -version = $(javac -version)"
   echo "PWD = $(pwd)"
   echo "GRADLE_EXEC = ${GRADLE_EXEC}"
+  echo "${GRADLE_EXEC} --version = $(${GRADLE_EXEC} --version)"
 
   # Ensure the project is clean before invoking DLJC.
   # If it fails, re-run without piping output to /dev/null.
