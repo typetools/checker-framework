@@ -198,6 +198,10 @@ function configure_and_exec_dljc {
   rm -rf dljc-out
 
   echo "PATH = ${PATH}"
+  echo "JAVA_HOME = ${JAVA_HOME}"
+  echo "JAVA8_HOME = ${JAVA8_HOME}"
+  echo "JAVA11_HOME = ${JAVA11_HOME}"
+  echo "JAVA17_HOME = ${JAVA17_HOME}"
   javac -version
   echo "PWD = $(pwd)"
   echo "GRADLE_EXEC = ${GRADLE_EXEC}"
