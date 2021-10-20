@@ -1,5 +1,4 @@
-# Reinstate after https://github.com/kelloggm/wpi-many-tests-bcel-util/pull/2 is merged.
-# https://github.com/kelloggm/wpi-many-tests-bcel-util 5f1b25b75cca16dce9894ba034913f30932250c6
+https://github.com/kelloggm/wpi-many-tests-bcel-util 5f1b25b75cca16dce9894ba034913f30932250c6
 https://github.com/kelloggm/wpi-many-tests-bibtex-clean c98e656ff374e77e8246a4557cd42b78f734a625
 https://github.com/kelloggm/wpi-many-tests-html-pretty-print 3700a25225d29be033f86c3d87d41855537c1b02
 https://github.com/kelloggm/-wpi-many-tests-bibtex-clean 4aae8e31ad36a1e64e15f31ed2bd0894f7ac6fe4
