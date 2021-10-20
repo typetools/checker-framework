@@ -932,7 +932,7 @@ public class ElementUtils {
 
   /**
    * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is not
-   * available before JDK 17. On earlier JDKs, which don't support records anyway, an exception is
+   * available before JDK 16. On earlier JDKs, which don't support records anyway, an exception is
    * thrown.
    *
    * @param element the type element to call getRecordComponents on
