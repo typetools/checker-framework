@@ -112,59 +112,104 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @Nonnull}. */
   private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
       Arrays.asList(
-          // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
+          // https://developer.android.com/reference/androidx/annotation/NonNull
           "android.annotation.NonNull",
-          // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/NonNull.java
+          // https://developer.android.com/reference/android/support/annotation/NonNull
           "android.support.annotation.NonNull",
-          // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/NonNull.java
+          // https://android.googlesource.com/platform/tools/metalava/+/fcb3d99ad3fe17a266d066b28ceb6c526f7aa415/stub-annotations/src/main/java/android/support/annotation/RecentlyNonNull.java
+          "android.support.annotation.RecentlyNonNull",
+          // https://developer.android.com/reference/androidx/annotation/NonNull
           "androidx.annotation.NonNull",
           // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNonNull.java
           "androidx.annotation.RecentlyNonNull",
+          // https://android.googlesource.com/platform/sdk/+/66fcecc/common/src/com/android/annotations/NonNull.java
+          "com.android.annotations.NonNull",
+          // https://github.com/firebase/firebase-android-sdk/blob/master/firebase-database/src/main/java/com/google/firebase/database/annotations/NotNull.java
+          "com.google.firebase.database.annotations.NotNull",
+          // https://github.com/firebase/firebase-admin-java/blob/master/src/main/java/com/google/firebase/internal/NonNull.java
+          "com.google.firebase.internal.NonNull",
+          // https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/lang/NonNull.java
+          "com.mongodb.lang.NonNull",
+          // https://github.com/eclipse-ee4j/jaxb-istack-commons/blob/master/istack-commons/runtime/src/main/java/com/sun/istack/NotNull.java
+          "com.sun.istack.NotNull",
+          // https://github.com/openjdk/jdk8/blob/master/jaxws/src/share/jaxws_classes/com/sun/istack/internal/NotNull.java
           "com.sun.istack.internal.NotNull",
+          // https://github.com/pingidentity/ldapsdk/blob/master/src/com/unboundid/util/NotNull.java
+          "com.unboundid.util.NotNull",
           // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
           "edu.umd.cs.findbugs.annotations.NonNull",
+          // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/NonNull.java
+          "io.micrometer.core.lang.NonNull",
           // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
           "io.reactivex.annotations.NonNull",
           // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/NonNull.java
           "io.reactivex.rxjava3.annotations.NonNull",
-          // https://jcp.org/en/jsr/detail?id=305
+          // https://jcp.org/en/jsr/detail?id=305; no documentation at
+          // https://www.javadoc.io/doc/com.google.code.findbugs/jsr305/3.0.1/javax/annotation/Nonnull.html
           "javax.annotation.Nonnull",
           // https://javaee.github.io/javaee-spec/javadocs/javax/validation/constraints/NotNull.html
           "javax.validation.constraints.NotNull",
+          // https://android.googlesource.com/platform/libcore/+/master/luni/src/main/java/libcore/util/NonNull.java
+          "libcore.util.NonNull",
           // https://github.com/projectlombok/lombok/blob/master/src/core/lombok/NonNull.java
           "lombok.NonNull",
-          // https://search.maven.org/search?q=a:checker-compat-qual
+          // https://github.com/antlr/antlr4/blob/master/runtime/Java/src/org/antlr/v4/runtime/misc/NotNull.java
+          "org.antlr.v4.runtime.misc.NotNull",
+          // https://search.maven.org/artifact/org.checkerframework/checker-compat-qual/2.5.5/jar
           "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
           "org.checkerframework.checker.nullness.compatqual.NonNullType",
           // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
           "org.codehaus.commons.nullanalysis.NotNull",
           // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
           "org.eclipse.jdt.annotation.NonNull",
-          // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
+          // https://git.eclipse.org/c/jdt/eclipse.jdt.core.git/tree/org.eclipse.jdt.annotation/src/org/eclipse/jdt/annotation/NonNull.java
           "org.eclipse.jgit.annotations.NonNull",
-          // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/NotNull.java
+          // https://github.com/eclipse/lsp4j/blob/main/org.eclipse.lsp4j.jsonrpc/src/main/java/org/eclipse/lsp4j/jsonrpc/validation/NonNull.java
+          "org.eclipse.lsp4j.jsonrpc.validation.NonNull",
+          // https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html
           "org.jetbrains.annotations.NotNull",
           // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
           "org.jmlspecs.annotation.NonNull",
-          // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
+          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NonNull.html
           "org.netbeans.api.annotations.common.NonNull",
           // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/NonNull.java
-          "org.springframework.lang.NonNull");
+          "org.springframework.lang.NonNull",
+          // https://github.com/reactor/reactor-core/blob/main/reactor-core/src/main/java/reactor/util/annotation/NonNull.java
+          "reactor.util.annotation.NonNull");
 
   // List is in alphabetical order.  If you update it, also update
   // ../../../../../../../../docs/manual/nullness-checker.tex .
   /** Aliases for {@code @Nullable}. */
   private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
       Arrays.asList(
-          // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
-          "android.annotation.Nullable",
-          // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/Nullable.java
+          // https://developer.android.com/reference/android/support/annotation/Nullable
           "android.support.annotation.Nullable",
-          // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/androidx/annotation/Nullable.java
+          // https://android.googlesource.com/platform/tools/metalava/+/fcb3d99ad3fe17a266d066b28ceb6c526f7aa415/stub-annotations/src/main/java/android/support/annotation/RecentlyNullable.java
+          "android.support.annotation.RecentlyNullable",
+          // https://developer.android.com/reference/androidx/annotation/Nullable
           "androidx.annotation.Nullable",
           // https://android.googlesource.com/platform/tools/metalava/+/master/stub-annotations/src/main/java/androidx/annotation/RecentlyNullable.java
           "androidx.annotation.RecentlyNullable",
+          // https://android.googlesource.com/platform/sdk/+/66fcecc/common/src/com/android/annotations/Nullable.java
+          "com.android.annotations.Nullable",
+          // https://github.com/lpantano/java_seqbuster/blob/master/AdRec/src/adrec/com/beust/jcommander/internal/Nullable.java
+          "com.beust.jcommander.internal.Nullable",
+          // https://github.com/cloudendpoints/endpoints-java/blob/master/endpoints-framework/src/main/java/com/google/api/server/spi/config/Nullable.java
+          "com.google.api.server.spi.config.Nullable",
+          // https://github.com/firebase/firebase-android-sdk/blob/master/firebase-database/src/main/java/com/google/firebase/database/annotations/Nullable.java
+          "com.google.firebase.database.annotations.Nullable",
+          // https://github.com/firebase/firebase-admin-java/blob/master/src/main/java/com/google/firebase/internal/Nullable.java
+          "com.google.firebase.internal.Nullable",
+          // https://gerrit.googlesource.com/gerrit/+/refs/heads/master/java/com/google/gerrit/common/Nullable.java
+          "com.google.gerrit.common.Nullable",
+          // https://github.com/mongodb/mongo-java-driver/blob/master/driver-core/src/main/com/mongodb/lang/Nullable.java
+          "com.mongodb.lang.Nullable",
+          // https://github.com/eclipse-ee4j/jaxb-istack-commons/blob/master/istack-commons/runtime/src/main/java/com/sun/istack/Nullable.java
+          "com.sun.istack.Nullable",
+          // https://github.com/openjdk/jdk8/blob/master/jaxws/src/share/jaxws_classes/com/sun/istack/internal/Nullable.java
           "com.sun.istack.internal.Nullable",
+          // https://github.com/pingidentity/ldapsdk/blob/master/src/com/unboundid/util/Nullable.java
+          "com.unboundid.util.Nullable",
           // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
           "edu.umd.cs.findbugs.annotations.CheckForNull",
           // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html
@@ -173,6 +218,8 @@ public class NullnessAnnotatedTypeFactory
           "edu.umd.cs.findbugs.annotations.PossiblyNull",
           // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
           "edu.umd.cs.findbugs.annotations.UnknownNullness",
+          // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/Nullable.java
+          "io.micrometer.core.lang.Nullable",
           // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
           "io.reactivex.annotations.Nullable",
           // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/Nullable.java
@@ -180,6 +227,16 @@ public class NullnessAnnotatedTypeFactory
           // https://jcp.org/en/jsr/detail?id=305
           "javax.annotation.CheckForNull",
           "javax.annotation.Nullable",
+          // https://github.com/Pragmatists/JUnitParams/blob/master/src/main/java/junitparams/converters/Nullable.java
+          "junitparams.converters.Nullable",
+          // https://android.googlesource.com/platform/libcore/+/master/luni/src/main/java/libcore/util/Nullable.java
+          "libcore.util.Nullable",
+          // https://github.com/apache/avro/blob/master/lang/java/avro/src/main/java/org/apache/avro/reflect/Nullable.java
+          "org.apache.avro.reflect.Nullable",
+          // https://github.com/apache/cxf/blob/master/rt/frontend/jaxrs/src/main/java/org/apache/cxf/jaxrs/ext/Nullable.java
+          "org.apache.cxf.jaxrs.ext.Nullable",
+          // https://github.com/gatein/gatein-shindig/blob/master/java/common/src/main/java/org/apache/shindig/common/Nullable.java
+          "org.apache.shindig.common.Nullable",
           // https://search.maven.org/search?q=a:checker-compat-qual
           "org.checkerframework.checker.nullness.compatqual.NullableDecl",
           "org.checkerframework.checker.nullness.compatqual.NullableType",
@@ -187,23 +244,25 @@ public class NullnessAnnotatedTypeFactory
           "org.codehaus.commons.nullanalysis.Nullable",
           // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
           "org.eclipse.jdt.annotation.Nullable",
-          // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
+          // https://git.eclipse.org/c/jdt/eclipse.jdt.core.git/tree/org.eclipse.jdt.annotation/src/org/eclipse/jdt/annotation/Nullable.java
           "org.eclipse.jgit.annotations.Nullable",
-          // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/Nullable.java
+          // https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html
           "org.jetbrains.annotations.Nullable",
           // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
           "org.jmlspecs.annotation.Nullable",
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
           "org.jspecify.nullness.Nullable",
           "org.jspecify.nullness.NullnessUnspecified",
-          // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
+          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/CheckForNull.html
           "org.netbeans.api.annotations.common.CheckForNull",
-          // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
+          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullAllowed.html
           "org.netbeans.api.annotations.common.NullAllowed",
-          // http://bits.netbeans.org/8.2/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
+          // http://bits.netbeans.org/dev/javadoc/org-netbeans-api-annotations-common/org/netbeans/api/annotations/common/NullUnknown.html
           "org.netbeans.api.annotations.common.NullUnknown",
           // https://github.com/spring-projects/spring-framework/blob/master/spring-core/src/main/java/org/springframework/lang/Nullable.java
-          "org.springframework.lang.Nullable");
+          "org.springframework.lang.Nullable",
+          // https://github.com/reactor/reactor-core/blob/main/reactor-core/src/main/java/reactor/util/annotation/Nullable.java
+          "reactor.util.annotation.Nullable");
 
   /**
    * Creates a NullnessAnnotatedTypeFactory.
