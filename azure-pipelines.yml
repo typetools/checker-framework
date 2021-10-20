@@ -110,11 +110,11 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
 - job: inference_tests_jdk17
-  dependsOn:
-   - junit_tests_jdk11
-   - inference_tests_jdk11
-   - misc_jdk11
-   - typecheck_jdk11
+  # dependsOn:
+  #  - junit_tests_jdk11
+  #  - inference_tests_jdk11
+  #  - misc_jdk11
+  #  - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
