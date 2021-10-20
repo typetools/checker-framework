@@ -217,10 +217,8 @@ class SupertypeFinder {
     private Map<TypeVariable, AnnotatedTypeMirror> getTypeVarToTypeArg(AnnotatedDeclaredType type) {
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
       // addTypeVarsFromEnclosingTypes can't be called with `type` because it calls
-      // `directSupertypes(types)`,
-      // which then calls this method. Add the type variables from `type` and then recur on the
-      // enclosing
-      // type and super types.
+      // `directSupertypes(types)`, which then calls this method. Add the type variables from `type`
+      // and then recur on the enclosing type and super types.
       addTypeVariablesToMapping(mapping, type);
       addTypeVarsFromEnclosingTypes(type.getEnclosingType(), mapping);
       return mapping;
