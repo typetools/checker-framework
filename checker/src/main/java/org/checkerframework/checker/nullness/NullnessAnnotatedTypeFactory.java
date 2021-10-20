@@ -251,6 +251,8 @@ public class NullnessAnnotatedTypeFactory
           "org.eclipse.jgit.annotations.Nullable",
           // https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html
           "org.jetbrains.annotations.Nullable",
+          // https://github.com/JetBrains/java-annotations/blob/master/java8/src/main/java/org/jetbrains/annotations/UnknownNullability.java
+          "org.jetbrains.annotations.UnknownNullability",
           // http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/Nullable.java
           "org.jmlspecs.annotation.Nullable",
           // https://github.com/jspecify/jspecify/tree/main/src/main/java/org/jspecify/nullness
