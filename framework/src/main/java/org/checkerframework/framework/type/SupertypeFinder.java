@@ -218,8 +218,8 @@ class SupertypeFinder {
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
       // addTypeVarsFromEnclosingTypes can't be called with `type` because it calls
       // `directSupertypes(types)`, which then calls this method. Add the type variables from `type`
-      // and then recur on the enclosing type and super types.
-      addTypeVariablesToMapping(mapping, type);
+      // and then call addTypeVarsFromEnclosingTypes on the enclosing type.
+      addTypeVariablesToMapping(type, mapping);
       addTypeVarsFromEnclosingTypes(type.getEnclosingType(), mapping);
       return mapping;
     }
@@ -228,11 +228,11 @@ class SupertypeFinder {
      * Adds a mapping from a type parameter to its corresponding annotated type argument for all
      * type parameters of {@code type}.
      *
-     * @param mapping type variable to type argument map; side-effected by this method
      * @param type a type
+     * @param mapping type variable to type argument map; side-effected by this method
      */
     private void addTypeVariablesToMapping(
-        Map<TypeVariable, AnnotatedTypeMirror> mapping, AnnotatedDeclaredType type) {
+        AnnotatedDeclaredType type, Map<TypeVariable, AnnotatedTypeMirror> mapping) {
       TypeElement enclosingTypeElement = (TypeElement) type.getUnderlyingType().asElement();
       List<? extends TypeParameterElement> typeParams = enclosingTypeElement.getTypeParameters();
       List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
@@ -244,7 +244,7 @@ class SupertypeFinder {
     }
 
     /**
-     * Creates a mapping from a type parameter to its corresponding annotated type argument for all
+     * Adds a mapping from a type parameter to its corresponding annotated type argument for all
      * type parameters of {@code enclosing}, its enclosing types, and all super types of all {@code
      * type}'s enclosing types.
      *
@@ -254,7 +254,7 @@ class SupertypeFinder {
     private void addTypeVarsFromEnclosingTypes(
         AnnotatedDeclaredType enclosing, Map<TypeVariable, AnnotatedTypeMirror> mapping) {
       while (enclosing != null) {
-        addTypeVariablesToMapping(mapping, enclosing);
+        addTypeVariablesToMapping(enclosing, mapping);
         for (AnnotatedDeclaredType enclSuper : directSupertypes(enclosing)) {
           addTypeVarsFromEnclosingTypes(enclSuper, mapping);
         }
