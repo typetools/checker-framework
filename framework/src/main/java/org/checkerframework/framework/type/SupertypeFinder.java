@@ -228,7 +228,7 @@ class SupertypeFinder {
      * Adds a mapping from a type parameter to its corresponding annotated type argument for all
      * type parameters of {@code type}.
      *
-     * @param mapping type variable to type argument map
+     * @param mapping type variable to type argument map; side-effected by this method
      * @param type a type
      */
     private void addTypeVariablesToMapping(
@@ -248,7 +248,7 @@ class SupertypeFinder {
      * type parameters of {@code enclosing}, its enclosing types, and all super types of all {@code
      * type}'s enclosing types.
      *
-     * @param mapping type variable to type argument map
+     * @param mapping type variable to type argument map; side-effected by this method
      * @param enclosing a type
      */
     private void addTypeVarsFromEnclosingTypes(
