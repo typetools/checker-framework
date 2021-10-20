@@ -126,7 +126,7 @@ allprojects {
     // Keep this list in sync with the lists in CheckerMain#getExecArguments,
     // the sections with labels "javac-jdk11-non-modularized", "maven", and "sbt" in the manual
     // and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
-    complierArgsForRunningCF = [
+    compilerArgsForRunningCF = [
         // These are required in Java 17+ because the --illegal-access option is set to deny
         // by default.  None of these packages are accessed via reflection, so the module
         // only needs to be exported, but not opened.
@@ -379,7 +379,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
                 ]
         } else {
             options.fork = true
-            options.forkOptions.jvmArgs += complierArgsForRunningCF
+            options.forkOptions.jvmArgs += compilerArgsForRunningCF
        }
     }
 }
@@ -921,7 +921,7 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             } else {
-                jvmArgs += complierArgsForRunningCF
+                jvmArgs += compilerArgsForRunningCF
             }
 
             maxParallelForks = Integer.MAX_VALUE
