@@ -226,7 +226,8 @@ public class NullnessAnnotatedTypeFactory
           "io.reactivex.annotations.Nullable",
           // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/Nullable.java
           "io.reactivex.rxjava3.annotations.Nullable",
-          // https://jcp.org/en/jsr/detail?id=305
+          // https://jcp.org/en/jsr/detail?id=305; no documentation at
+          // https://www.javadoc.io/doc/com.google.code.findbugs/jsr305/3.0.1/javax/annotation/Nullable.html
           "javax.annotation.CheckForNull",
           "javax.annotation.Nullable",
           // https://github.com/Pragmatists/JUnitParams/blob/master/src/main/java/junitparams/converters/Nullable.java
