@@ -197,6 +197,11 @@ function configure_and_exec_dljc {
   # Remove old DLJC output.
   rm -rf dljc-out
 
+  echo "PATH = ${PATH}"
+  javac -version
+  echo "PWD = $(pwd)"
+  echo "GRADLE_EXEC = ${GRADLE_EXEC}"
+
   # Ensure the project is clean before invoking DLJC.
   # If it fails, re-run without piping output to /dev/null.
   eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || eval "${CLEAN_CMD}" < /dev/null
