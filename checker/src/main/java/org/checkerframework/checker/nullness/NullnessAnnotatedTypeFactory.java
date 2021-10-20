@@ -182,6 +182,8 @@ public class NullnessAnnotatedTypeFactory
   /** Aliases for {@code @Nullable}. */
   private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
       Arrays.asList(
+          // https://developer.android.com/reference/androidx/annotation/Nullable
+          "android.annotation.Nullable",
           // https://developer.android.com/reference/android/support/annotation/Nullable
           "android.support.annotation.Nullable",
           // https://android.googlesource.com/platform/tools/metalava/+/fcb3d99ad3fe17a266d066b28ceb6c526f7aa415/stub-annotations/src/main/java/android/support/annotation/RecentlyNullable.java
