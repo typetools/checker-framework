@@ -431,7 +431,7 @@ public class CheckerMain {
     } else {
       args.addAll(
           // Keep this list in sync with the lists in checker-framework/build.gradle in
-          // complierArgsForRunningCFs, the sections with labels "javac-jdk11-non-modularized",
+          // compilerArgsForRunningCFs, the sections with labels "javac-jdk11-non-modularized",
           // "maven", and "sbt" in the manual, and in the checker-framework-gradle-plugin,
           // CheckerFrameworkPlugin#applyToProject
           Arrays.asList(
