@@ -1291,18 +1291,10 @@ public abstract class GenericAnnotatedTypeFactory<
       final Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
-      TreePath preTreePath = visitorState.getPath();
-      AnnotatedDeclaredType preClassType = visitorState.getClassType();
-      ClassTree preClassTree = visitorState.getClassTree();
-      AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
-      MethodTree preMT = visitorState.getMethodTree();
+      TreePath preTreePath = getVisitorTreePath();
 
-      // Don't use getPath, because that depends on the visitorState path.
-      visitorState.setPath(TreePath.getPath(this.root, ct));
-      visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
-      visitorState.setClassTree(ct);
-      visitorState.setMethodReceiver(null);
-      visitorState.setMethodTree(null);
+      // Don't use getPath, because that depends on the assignmentContext path.
+      setVisitorTreePath(TreePath.getPath(this.root, ct));
 
       // start with the captured store as initialization store
       initializationStaticStore = capturedStore;
@@ -1438,11 +1430,7 @@ public abstract class GenericAnnotatedTypeFactory<
           regularExitStores.put(ct, initializationStaticStore);
         }
       } finally {
-        visitorState.setPath(preTreePath);
-        visitorState.setClassType(preClassType);
-        visitorState.setClassTree(preClassTree);
-        visitorState.setMethodReceiver(preAMT);
-        visitorState.setMethodTree(preMT);
+        setVisitorTreePath(preTreePath);
       }
 
       scannedClasses.put(ct, ScanState.FINISHED);
@@ -2065,8 +2053,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns the type factory used by a subchecker. Returns null if no matching subchecker was found
    * or if the type factory is null. The caller must know the exact checker class to request.
    *
-   * <p>Because the visitor state is copied, call this method each time a subfactory is needed
-   * rather than store the returned subfactory in a field.
+   * <p>Because the visitor path is copied, call this method each time a subfactory is needed rather
+   * than store the returned subfactory in a field.
    *
    * @param subCheckerClass the exact class of the subchecker
    * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
@@ -2085,14 +2073,8 @@ public abstract class GenericAnnotatedTypeFactory<
     // type.
     )
     T subFactory = (T) subchecker.getTypeFactory();
-    if (subFactory != null && subFactory.getVisitorState() != null) {
-      // Copy the visitor state so that the types are computed properly.
-      VisitorState subFactoryVisitorState = subFactory.getVisitorState();
-      subFactoryVisitorState.setPath(visitorState.getPath());
-      subFactoryVisitorState.setClassTree(visitorState.getClassTree());
-      subFactoryVisitorState.setClassType(visitorState.getClassType());
-      subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
-      subFactoryVisitorState.setMethodReceiver(visitorState.getMethodReceiver());
+    if (subFactory != null) {
+      subFactory.setVisitorTreePath(getVisitorTreePath());
     }
     return subFactory;
   }
