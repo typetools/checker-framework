@@ -165,8 +165,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
-    super.setRoot(root);
     classToFieldToFinalizers.clear();
+    super.setRoot(root);
   }
 
   @Override
