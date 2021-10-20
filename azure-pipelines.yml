@@ -184,11 +184,11 @@ jobs:
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
 - job: typecheck_jdk17
-  # dependsOn:
-  #  - junit_tests_jdk11
-  #  - nonjunit_tests_jdk11
-  #  - misc_jdk11
-  #  - typecheck_jdk11
+  dependsOn:
+   - junit_tests_jdk11
+   - nonjunit_tests_jdk11
+   - misc_jdk11
+   - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17-plus:latest
