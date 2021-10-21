@@ -57,12 +57,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2931,24 +2926,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     ReturnNode result = null;
     if (ret != null) {
       Node node = scan(ret, p);
-      TreePath enclosingPath =
-          TreePathUtil.pathTillOfKind(
-              getCurrentPath(),
-              new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION)));
-      Tree enclosing = enclosingPath.getLeaf();
-      if (enclosing.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
-        Context ctx = ((JavacProcessingEnvironment) env).getContext();
-        Element overriddenElement =
-            com.sun.tools.javac.code.Types.instance(ctx)
-                .findDescriptorSymbol(((Type) trees.getTypeMirror(enclosingPath)).tsym);
-
-        result =
-            new ReturnNode(
-                tree, node, env.getTypeUtils(), lambdaTree, (MethodSymbol) overriddenElement);
-      } else {
-        result = new ReturnNode(tree, node, env.getTypeUtils(), (MethodTree) enclosing);
-      }
+      result = new ReturnNode(tree, node, env.getTypeUtils());
       returnNodes.add(result);
       extendWithNode(result);
     }
