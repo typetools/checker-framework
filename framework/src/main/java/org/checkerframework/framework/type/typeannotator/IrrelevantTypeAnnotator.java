@@ -16,7 +16,7 @@ import javax.lang.model.type.TypeMirror;
 public class IrrelevantTypeAnnotator extends TypeAnnotator {
 
     /** Annotations to add. */
-    private Set<? extends AnnotationMirror> annotations;
+    private final Set<? extends AnnotationMirror> annotations;
 
     /**
      * Annotate every type with the annotationMirror except for those whose underlying Java type is

@@ -27,9 +27,9 @@ import javax.lang.model.element.Name;
 public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
 
     /** The DefaultQualifierForUse.value field/element. */
-    private ExecutableElement defaultQualifierForUseValueElement;
+    private final ExecutableElement defaultQualifierForUseValueElement;
     /** The NoDefaultQualifierForUse.value field/element. */
-    private ExecutableElement noDefaultQualifierForUseValueElement;
+    private final ExecutableElement noDefaultQualifierForUseValueElement;
 
     /**
      * Creates an DefaultQualifierForUseTypeAnnotator for {@code typeFactory}.
@@ -57,7 +57,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
      * Cache of elements to the set of annotations that should be applied to unannotated uses of the
      * element.
      */
-    protected Map<Element, Set<AnnotationMirror>> elementToDefaults =
+    protected final Map<Element, Set<AnnotationMirror>> elementToDefaults =
             CollectionUtils.createLRUCache(100);
 
     /** Clears all caches. */

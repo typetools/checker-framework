@@ -111,7 +111,7 @@ public class JavaExpressionParseUtil {
     private static final int PARAMETER_PREFIX_LENGTH = PARAMETER_PREFIX.length();
 
     /** A pattern that matches the start of a formal parameter in "#2" syntax. */
-    private static Pattern FORMAL_PARAMETER = Pattern.compile("#(\\d)");
+    private static final Pattern FORMAL_PARAMETER = Pattern.compile("#(\\d)");
 
     /** The replacement for a formal parameter in "#2" syntax. */
     private static final String PARAMETER_REPLACEMENT = PARAMETER_PREFIX + "$1";
@@ -1157,7 +1157,7 @@ public class JavaExpressionParseUtil {
     public static class JavaExpressionParseException extends Exception {
         private static final long serialVersionUID = 2L;
         /** The error message key. */
-        private @CompilerMessageKey String errorKey;
+        private final @CompilerMessageKey String errorKey;
         /** The arguments to the error message key. */
         public final Object[] args;
 

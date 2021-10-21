@@ -77,7 +77,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotationMirrorSet topQuals;
 
     /** Determines the instantiations for each polymorphic qualifier. */
-    private PolyCollector collector = new PolyCollector();
+    private final PolyCollector collector = new PolyCollector();
 
     /** Resolves each polymorphic qualifier by replacing it with its instantiation. */
     private final SimpleAnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirror>> replacer;

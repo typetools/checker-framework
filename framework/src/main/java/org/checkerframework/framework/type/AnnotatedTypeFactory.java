@@ -204,23 +204,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final VisitorState visitorState;
 
     /** The AnnotatedFor.value argument/element. */
-    private final ExecutableElement annotatedForValueElement;
+    protected final ExecutableElement annotatedForValueElement;
     /** The EnsuresQualifier.expression field/element. */
-    final ExecutableElement ensuresQualifierExpressionElement;
+    protected final ExecutableElement ensuresQualifierExpressionElement;
     /** The EnsuresQualifier.List.value field/element. */
-    final ExecutableElement ensuresQualifierListValueElement;
+    protected final ExecutableElement ensuresQualifierListValueElement;
     /** The EnsuresQualifierIf.expression field/element. */
-    final ExecutableElement ensuresQualifierIfExpressionElement;
+    protected final ExecutableElement ensuresQualifierIfExpressionElement;
     /** The EnsuresQualifierIf.result argument/element. */
-    final ExecutableElement ensuresQualifierIfResultElement;
+    protected final ExecutableElement ensuresQualifierIfResultElement;
     /** The EnsuresQualifierIf.List.value field/element. */
-    final ExecutableElement ensuresQualifierIfListValueElement;
+    protected final ExecutableElement ensuresQualifierIfListValueElement;
     /** The FieldInvariant.field argument/element. */
-    private final ExecutableElement fieldInvariantFieldElement;
+    protected final ExecutableElement fieldInvariantFieldElement;
     /** The FieldInvariant.qualifier argument/element. */
-    private final ExecutableElement fieldInvariantQualifierElement;
+    protected final ExecutableElement fieldInvariantQualifierElement;
     /** The HasQualifierParameter.value field/element. */
-    private final ExecutableElement hasQualifierParameterValueElement;
+    protected final ExecutableElement hasQualifierParameterValueElement;
     /** The MethodVal.className argument/element. */
     public final ExecutableElement methodValClassNameElement;
     /** The MethodVal.methodName argument/element. */
@@ -228,24 +228,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The MethodVal.params argument/element. */
     public final ExecutableElement methodValParamsElement;
     /** The NoQualifierParameter.value field/element. */
-    private final ExecutableElement noQualifierParameterValueElement;
+    protected final ExecutableElement noQualifierParameterValueElement;
     /** The RequiresQualifier.expression field/element. */
-    final ExecutableElement requiresQualifierExpressionElement;
+    protected final ExecutableElement requiresQualifierExpressionElement;
     /** The RequiresQualifier.List.value field/element. */
-    final ExecutableElement requiresQualifierListValueElement;
+    protected final ExecutableElement requiresQualifierListValueElement;
 
     /** The RequiresQualifier type. */
-    TypeMirror requiresQualifierTM;
+    protected final TypeMirror requiresQualifierTM;
     /** The RequiresQualifier.List type. */
-    TypeMirror requiresQualifierListTM;
+    protected final TypeMirror requiresQualifierListTM;
     /** The EnsuresQualifier type. */
-    TypeMirror ensuresQualifierTM;
+    protected final TypeMirror ensuresQualifierTM;
     /** The EnsuresQualifier.List type. */
-    TypeMirror ensuresQualifierListTM;
+    protected final TypeMirror ensuresQualifierListTM;
     /** The EnsuresQualifierIf type. */
-    TypeMirror ensuresQualifierIfTM;
+    protected final TypeMirror ensuresQualifierIfTM;
     /** The EnsuresQualifierIf.List type. */
-    TypeMirror ensuresQualifierIfListTM;
+    protected final TypeMirror ensuresQualifierIfListTM;
 
     /**
      * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -315,7 +315,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * one exists. Unlike {@link #ajavaTypes}, which only stores annotations on public elements,
      * this stores annotations on all element locations such as in anonymous class bodies.
      */
-    public @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
+    protected @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
 
     /**
      * A cache used to store elements whose declaration annotations have already been stored by
@@ -336,10 +336,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Map keys are canonical names of aliased annotations. */
     private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
+
     /**
      * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
      */
-    private SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
+    private final SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
             new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
 
     /**
@@ -359,13 +360,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private static class Alias {
         /** The canonical annotation (or null if copyElements == true). */
-        AnnotationMirror canonical;
+        final AnnotationMirror canonical;
         /** Whether elements should be copied over when translating to the canonical annotation. */
-        boolean copyElements;
+        final boolean copyElements;
         /** The canonical annotation name (or null if copyElements == false). */
-        @CanonicalName String canonicalName;
+        final @CanonicalName String canonicalName;
         /** Which elements should not be copied over (or null if copyElements == false). */
-        String[] ignorableElements;
+        final String[] ignorableElements;
 
         /**
          * Create an Alias with the given components.
@@ -3763,7 +3764,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type an annotated type
      * @return true if the type is a valid annotated type, false otherwise
      */
-    static final boolean validAnnotatedType(AnnotatedTypeMirror type) {
+    /*package-private*/ static final boolean validAnnotatedType(AnnotatedTypeMirror type) {
         if (type == null) {
             return false;
         }
@@ -3916,21 +3917,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 return am;
             }
         }
+        if (!checkAliases) {
+            return null;
+        }
         // Look through aliases.
-        if (checkAliases) {
-            Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases =
-                    declAliases.get(annoClass);
-            if (aliases != null) {
-                for (Class<? extends Annotation> alias : aliases.second) {
-                    for (AnnotationMirror am : declAnnos) {
-                        if (areSameByClass(am, alias)) {
-                            // TODO: need to copy over elements/fields
-                            return aliases.first;
-                        }
-                    }
+        Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases =
+                declAliases.get(annoClass);
+        if (aliases == null) {
+            return null;
+        }
+        for (Class<? extends Annotation> alias : aliases.second) {
+            for (AnnotationMirror am : declAnnos) {
+                if (areSameByClass(am, alias)) {
+                    // TODO: need to copy over elements/fields
+                    return aliases.first;
                 }
             }
         }
+
         // Not found.
         return null;
     }
@@ -4716,6 +4720,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
+    // TODO: method always returns true, pick a better name/documentation
     private boolean isFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
         if (typeMirror.getKind() == TypeKind.WILDCARD) {
             // Ignore wildcards, because they are uninferred type arguments.
@@ -4771,51 +4776,49 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         for (int i = 0; i < functionalType.getTypeArguments().size(); i++) {
             AnnotatedTypeMirror argType = functionalType.getTypeArguments().get(i);
-            if (argType.getKind() == TypeKind.WILDCARD) {
-                AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
+            if (argType.getKind() != TypeKind.WILDCARD) {
+                continue;
+            }
+            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
+            TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
 
-                TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
-
-                if (wildcardType.isUninferredTypeArgument()) {
-                    // Keep the uninferred type so that it is ignored by later subtyping and
-                    // containment checks.
-                    newTypeArguments.set(i, wildcardType);
-                } else if (isExtendsWildcard(wildcardType)) {
-                    TypeMirror correctArgType;
-                    if (sizesDiffer) {
-                        // The Java type is raw.
-                        TypeMirror typeParamUbType =
-                                bounds.get(i).getUpperBound().getUnderlyingType();
-                        correctArgType =
-                                TypesUtils.greatestLowerBound(
-                                        typeParamUbType,
-                                        wildcardUbType,
-                                        this.checker.getProcessingEnvironment());
-                    } else {
-                        correctArgType = groundTargetJavaType.getTypeArguments().get(i);
-                    }
-
-                    final AnnotatedTypeMirror newArg;
-                    if (types.isSameType(wildcardUbType, correctArgType)) {
-                        newArg = wildcardType.getExtendsBound().deepCopy();
-                    } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
-                        newArg = this.toAnnotatedType(correctArgType, false);
-                        AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
-                        newArgAsTypeVar
-                                .getUpperBound()
-                                .replaceAnnotations(
-                                        wildcardType.getExtendsBound().getAnnotations());
-                        newArgAsTypeVar
-                                .getLowerBound()
-                                .replaceAnnotations(wildcardType.getSuperBound().getAnnotations());
-                    } else {
-                        newArg = this.toAnnotatedType(correctArgType, false);
-                        newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
-                    }
-                    newTypeArguments.set(i, newArg);
+            if (wildcardType.isUninferredTypeArgument()) {
+                // Keep the uninferred type so that it is ignored by later subtyping and
+                // containment checks.
+                newTypeArguments.set(i, wildcardType);
+            } else if (isExtendsWildcard(wildcardType)) {
+                TypeMirror correctArgType;
+                if (sizesDiffer) {
+                    // The Java type is raw.
+                    TypeMirror typeParamUbType = bounds.get(i).getUpperBound().getUnderlyingType();
+                    correctArgType =
+                            TypesUtils.greatestLowerBound(
+                                    typeParamUbType,
+                                    wildcardUbType,
+                                    this.checker.getProcessingEnvironment());
                 } else {
-                    newTypeArguments.set(i, wildcardType.getSuperBound());
+                    correctArgType = groundTargetJavaType.getTypeArguments().get(i);
                 }
+
+                final AnnotatedTypeMirror newArg;
+                if (types.isSameType(wildcardUbType, correctArgType)) {
+                    newArg = wildcardType.getExtendsBound().deepCopy();
+                } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
+                    newArg = this.toAnnotatedType(correctArgType, false);
+                    AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
+                    newArgAsTypeVar
+                            .getUpperBound()
+                            .replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
+                    newArgAsTypeVar
+                            .getLowerBound()
+                            .replaceAnnotations(wildcardType.getSuperBound().getAnnotations());
+                } else {
+                    newArg = this.toAnnotatedType(correctArgType, false);
+                    newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
+                }
+                newTypeArguments.set(i, newArg);
+            } else {
+                newTypeArguments.set(i, wildcardType.getSuperBound());
             }
         }
         functionalType.setTypeArguments(newTypeArguments);
@@ -5340,9 +5343,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /** Matches addition of a constant. */
-    static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+    private static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
     /** Matches subtraction of a constant. */
-    static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
+    private static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
     /** Matches a string whose only parens are at the beginning and end of the string. */
     private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");

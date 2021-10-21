@@ -26,7 +26,7 @@ import javax.lang.model.element.AnnotationMirror;
 public class SubtypeIsSubsetQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
     /** The processing environment; used for creating annotations. */
-    ProcessingEnvironment processingEnv;
+    private final ProcessingEnvironment processingEnv;
 
     /**
      * Creates a SubtypeIsSubsetQualifierHierarchy from the given classes.

@@ -42,10 +42,10 @@ import javax.lang.model.util.ElementFilter;
 public class ContractsFromMethod {
 
     /** The QualifierArgument.value field/element. */
-    ExecutableElement qualifierArgumentValueElement;
+    protected final ExecutableElement qualifierArgumentValueElement;
 
     /** The factory that this ContractsFromMethod is associated with. */
-    protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
+    protected final GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
     /**
      * Creates a ContractsFromMethod for the given factory.

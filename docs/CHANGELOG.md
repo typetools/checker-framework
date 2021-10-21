@@ -7,7 +7,8 @@ Avoid shading of string literals which broke some annotation aliasing.
 
 **Implementation details:**
 
-Small improvements and code-style clean-ups of the Dataflow Framework.
+Small improvements and code-style clean-ups in the Dataflow Framework and
+in the core Checker Framework "framework" package.
 
 
 Version 3.18.1-eisop-1 (October 7, 2021)

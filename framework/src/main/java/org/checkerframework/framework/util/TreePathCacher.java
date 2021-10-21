@@ -81,7 +81,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
     private static class Result extends Error {
         private static final long serialVersionUID = 4948452207518392627L;
-        TreePath path;
+        final TreePath path;
 
         Result(TreePath path) {
             this.path = path;
@@ -100,7 +100,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
         if (tree != null && foundPaths.get(tree) == null) {
             TreePath current = new TreePath(path, tree);
             foundPaths.put(tree, current);
-            path = current;
+            this.path = current;
         } else {
             this.path = foundPaths.get(tree);
         }

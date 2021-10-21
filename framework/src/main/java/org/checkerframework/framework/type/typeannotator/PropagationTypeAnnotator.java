@@ -39,7 +39,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     // TypeAnnotatorUtil.eraseBoundsThenAnnotate.
     // This flag prevents infinite recursion.
     private boolean pause = false;
-    private ArrayDeque<AnnotatedDeclaredType> parents = new ArrayDeque<>();
+    private final ArrayDeque<AnnotatedDeclaredType> parents = new ArrayDeque<>();
 
     public PropagationTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);
