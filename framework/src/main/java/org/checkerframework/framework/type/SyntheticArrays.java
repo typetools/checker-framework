@@ -12,7 +12,12 @@ import javax.lang.model.type.TypeKind;
  * to a specific kind of array. There are no classes for arrays. Instead, for each type of array
  * (e.g. String[]) the compiler/JVM creates a synthetic type for them.
  */
-public class SyntheticArrays {
+public final class SyntheticArrays {
+
+    // Class cannot be instantiated.
+    private SyntheticArrays() {
+        throw new AssertionError("Class SyntheticArrays cannot be instantiated.");
+    }
 
     /**
      * Returns true if this combination of type/elem represents an array.clone.

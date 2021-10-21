@@ -25,7 +25,12 @@ import javax.lang.model.element.ExecutableElement;
  *
  * <p>This class deals with javac internals and liberally imports such classes.
  */
-public class DeclarationsIntoElements {
+public final class DeclarationsIntoElements {
+
+    // Class cannot be instantiated.
+    private DeclarationsIntoElements() {
+        throw new AssertionError("Class DeclarationsIntoElements cannot be instantiated.");
+    }
 
     /**
      * The entry point.

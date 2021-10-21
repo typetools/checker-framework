@@ -44,7 +44,12 @@ import javax.lang.model.util.Types;
  *
  * <p>This class deals with javac internals and liberally imports such classes.
  */
-public class TypesIntoElements {
+public final class TypesIntoElements {
+
+    // Class cannot be instantiated.
+    private TypesIntoElements() {
+        throw new AssertionError("Class TypesIntoElements cannot be instantiated.");
+    }
 
     /**
      * The entry point.

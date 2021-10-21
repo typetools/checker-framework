@@ -42,7 +42,12 @@ import javax.lang.model.util.Types;
  *
  * @see Types#directSupertypes(TypeMirror)
  */
-class SupertypeFinder {
+final class SupertypeFinder {
+
+    // Class cannot be instantiated.
+    private SupertypeFinder() {
+        throw new AssertionError("Class SupertypeFinder cannot be instantiated.");
+    }
 
     // Version of method below for declared types
     /**
