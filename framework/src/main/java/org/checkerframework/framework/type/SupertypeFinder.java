@@ -211,6 +211,9 @@ class SupertypeFinder {
      * type parameters of {@code type}, its enclosing types, and all super types of all {@code
      * type}'s enclosing types.
      *
+     * <p>It does not get the type parameters of the supertypes of {@code type} because the result
+     * of this method is used to substitute the type arguments of the supertypes of {@code type}.
+     *
      * @param type a type
      * @return a mapping from each type parameter to its corresponding annotated type argument
      */
