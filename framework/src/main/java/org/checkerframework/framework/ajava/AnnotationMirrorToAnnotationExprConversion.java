@@ -100,11 +100,13 @@ public class AnnotationMirrorToAnnotationExprConversion {
             Map<? extends ExecutableElement, ? extends AnnotationValue> values) {
         NodeList<MemberValuePair> convertedValues = new NodeList<>();
         AnnotationValueConverterVisitor converter = new AnnotationValueConverterVisitor();
-        for (ExecutableElement valueName : values.keySet()) {
-            AnnotationValue value = values.get(valueName);
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+                values.entrySet()) {
+            AnnotationValue value = entry.getValue();
             convertedValues.add(
                     new MemberValuePair(
-                            valueName.getSimpleName().toString(), value.accept(converter, null)));
+                            entry.getKey().getSimpleName().toString(),
+                            value.accept(converter, null)));
         }
 
         return convertedValues;

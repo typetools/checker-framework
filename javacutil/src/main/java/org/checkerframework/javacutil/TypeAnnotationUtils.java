@@ -175,11 +175,11 @@ public class TypeAnnotationUtils {
             if (!map1.keySet().equals(map2.keySet())) {
                 return false;
             }
-            for (Symbol.MethodSymbol key : map1.keySet()) {
-                Attribute attr1 = map1.get(key);
+            for (Map.Entry<Symbol.MethodSymbol, Attribute> map1entry : map1.entrySet()) {
+                Attribute attr1 = map1entry.getValue();
                 @SuppressWarnings(
                         "nullness:assignment.type.incompatible") // same keys in map1 & map2
-                @NonNull Attribute attr2 = map2.get(key);
+                @NonNull Attribute attr2 = map2.get(map1entry.getKey());
                 if (!attributeEquals(attr1, attr2, types)) {
                     return false;
                 }
