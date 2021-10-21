@@ -249,7 +249,7 @@ class SupertypeFinder {
     /**
      * Adds a mapping from a type parameter to its corresponding annotated type argument for all
      * type parameters of {@code enclosing} and its enclosing types. This method recurs on all the
-     * super type of {@code enclosing}.
+     * super types of {@code enclosing}.
      *
      * @param mapping type variable to type argument map; side-effected by this method
      * @param enclosing a type
