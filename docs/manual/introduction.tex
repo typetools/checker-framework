@@ -610,12 +610,10 @@ More sound (strict) checking: enable errors that are disabled by default
   the Checker Framework unsoundly trusts the method annotation.  See
   Section~\ref{type-refinement-purity}.
 \item \<-AcheckSideEffectsOnlyAnnotation>
-Check the bodies of methods marked
-\refqualclass{dataflow/qual}{SideEffectsOnly}
-to ensure the method side-effects a subset of the
-expressions specified as annotation arguments/elements to
-\refqualclass{dataflow/qual}{SideEffectsOnly}. See
-Section~\ref{type-refinement-purity}.
+  Check the bodies of methods marked
+  \refqualclass{dataflow/qual}{SideEffectsOnly} to ensure the method
+  side-effects at most the annotation's arguments/elements. See
+  Section~\ref{type-refinement-purity}.
 \item \<-AinvariantArrays>
   Make array subtyping invariant; that is, two arrays are subtypes of one
   another only if they have exactly the same element type.  By default,
