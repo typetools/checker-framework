@@ -6,7 +6,7 @@ JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s/
 # So check for both the error message and make sure it is for the right assignment.
 all: clean
 	- ../../../gradlew build > Out.txt 2>&1
-# TODO JDK16: Temporary hack to skip running under JDK > 11.
+# TODO JDK17: Temporary hack to skip running under JDK > 11.
 	[ ${JAVA_VER} -gt 11 ] || \
 	(grep -qF "User.java:9: error: [argument] incompatible argument for parameter y of y." Out.txt \
 	  && grep -qF "Foo.java:12: error: [assignment] incompatible types in assignment." Out.txt \

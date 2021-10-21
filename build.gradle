@@ -26,7 +26,7 @@ ext {
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
-    isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
+    isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
 
     errorproneJavacVersion = '9+181-r4173-1'
 
@@ -55,15 +55,15 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_9:
     case JavaVersion.VERSION_1_10:
     case JavaVersion.VERSION_12:
-        logger.warn("The Checker Framework has only been tested with JDK 8 and 11." +
+        logger.warn("The Checker Framework has only been tested with JDK 8, 11, and 17." +
                 " Found version " + JavaVersion.current().majorVersion);
         break;
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
-    case JavaVersion.VERSION_16:
+    case JavaVersion.VERSION_17:
         break; // Supported versions
     default:
-        throw new GradleException("Build the Checker Framework with JDK 8 or JDK 11." +
+        throw new GradleException("Build the Checker Framework with JDK 8, 11, or 17." +
                 " Found version " + JavaVersion.current().majorVersion);
 }
 
@@ -406,7 +406,7 @@ List<String> getJavaFilesToFormat(projectName) {
                 && !details.path.contains("calledmethods-delomboked")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
-                && (isJava16 || !details.path.contains("-records"))
+                && (isJava17 || !details.path.contains("-records"))
                 && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }

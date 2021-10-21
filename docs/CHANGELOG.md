@@ -3,6 +3,9 @@ Version 3.1?.? (November 1, 2021)
 
 **User-visible changes:**
 
+The Checker Framework runs under JDK 17 -- that is, it runs on a version 17 JVM.
+(Switch expressions are not yet supported.)
+
 **Implementation details:**
 
 Removed `org.checkerframework.framework.type.VisitorState`
