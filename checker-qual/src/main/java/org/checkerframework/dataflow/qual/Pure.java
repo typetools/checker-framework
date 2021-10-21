@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 public @interface Pure {
     /** The type of purity. */
-    public static enum Kind {
+    enum Kind {
         /** The method has no visible side effects. */
         SIDE_EFFECT_FREE,
 

@@ -29,7 +29,7 @@ import javax.lang.model.util.Types;
  * @see org.checkerframework.checker.nullness.KeyForPropagationTreeAnnotator
  */
 public class KeyForPropagator {
-    public static enum PropagationDirection {
+    public enum PropagationDirection {
         // transfer FROM the super type to the subtype
         TO_SUBTYPE,
 

@@ -35,7 +35,7 @@ public interface Analysis<
      * In calls to {@code Analysis#runAnalysisFor}, whether to return the store before or after the
      * given node.
      */
-    public static enum BeforeOrAfter {
+    enum BeforeOrAfter {
         /** Return the pre-store. */
         BEFORE,
         /** Return the post-store. */

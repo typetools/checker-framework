@@ -18,14 +18,14 @@ public interface Store<S extends Store<S>> {
     // as a regular unconditional store.
     // Once we have some information for both the then and else store, we
     // create a TransferInput for the block and allow it to be analyzed.
-    public static enum Kind {
+    public enum Kind {
         THEN,
         ELSE,
         BOTH
     }
 
     /** A flow rule describes how stores flow along one edge between basic blocks. */
-    public static enum FlowRule {
+    public enum FlowRule {
         /**
          * The normal case: then store flows to the then store, and else store flows to the else
          * store.
