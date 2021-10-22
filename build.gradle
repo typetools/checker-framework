@@ -780,6 +780,12 @@ subprojects {
         // 5. Add relocate lines below for the packages.
         // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
 
+        // Note that string literals are also relocated. Therefore, when the original
+        // names should be used, e.g. to load the original classes, one needs to work
+        // around the relocation. When adding a new external dependency, make
+        // sure no existing string literals are accidentally relocated.
+        // For an example work-around see NullnessAnnotatedTypeFactory#NONNULL_ALIASES.
+
         // Relocate packages that might conflict with user's classpath.
         relocate 'org.apache', 'org.checkerframework.org.apache'
         relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
