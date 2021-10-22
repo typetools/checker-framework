@@ -3,6 +3,9 @@ Version 3.1?.? (November 1, 2021)
 
 **User-visible changes:**
 
+The Checker Framework runs under JDK 17 -- that is, it runs on a version 17 JVM.
+(Switch expressions are not yet supported.)
+
 **Implementation details:**
 
 Removed `org.checkerframework.framework.type.VisitorState`
@@ -14,11 +17,13 @@ Deprecated methods in AnnotatedTypeFactory:
 
 **Closed issues:**
 
+
 Version 3.18.1 (October 4, 2021)
 -------------------------------
 
 **Closed issues:**
 #4902 and #4903.
+
 
 Version 3.18.0 (September 1, 2021)
 -------------------------------
@@ -29,6 +34,7 @@ Java records are type-checked.  Thanks to Neil Brown.
 
 **Closed issues:**
 #4838, #4843, #4852, #4853, #4861, #4876, #4877, #4878, #4878, #4889, #4889.
+
 
 Version 3.17.0 (August 3, 2021)
 -------------------------------
