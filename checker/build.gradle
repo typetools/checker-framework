@@ -711,7 +711,9 @@ task wpiManyTest(group: "Verification") {
         def typecheckFiles = fileTree(typecheckFilesDir).matching {
             include "**/*-typecheck.out"
         }
-        def expectedTypecheckFileCount = file("${project.projectDir}/tests/wpi-many/testin.txt").text.readLines().size()
+        def testinLines = file("${project.projectDir}/tests/wpi-many/testin.txt").text.readLines()
+        testinLines.removeIf { it.startsWith("#") }
+        def expectedTypecheckFileCount = testinLines.size()
         def actualTypecheckFileCount = typecheckFiles.size()
         if (actualTypecheckFileCount != expectedTypecheckFileCount) {
             println("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +

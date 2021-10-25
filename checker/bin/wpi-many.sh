@@ -155,6 +155,9 @@ cd "${OUTDIR}" || exit 5
 
 while IFS='' read -r line || [ "$line" ]
 do
+    # Skip lines that start with "#".
+    [[ $line = \#* ]] && continue
+
     REPOHASH=${line}
 
     REPO=$(echo "${REPOHASH}" | awk '{print $1}')

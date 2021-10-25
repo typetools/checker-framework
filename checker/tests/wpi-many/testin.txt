@@ -2,4 +2,5 @@ https://github.com/kelloggm/wpi-many-tests-bcel-util 9a7706607425e6fbbd2c3915364
 https://github.com/kelloggm/wpi-many-tests-bibtex-clean 703c0190ab7d7436a5be6e160667f194da44fdee
 https://github.com/kelloggm/wpi-many-tests-html-pretty-print 37e5f4fa0506690c968ec6f3e316c1d0a111bded
 https://github.com/kelloggm/-wpi-many-tests-bibtex-clean bd6c1cff1ba3fb8a6ecbbb73561ec2a43d018a79
+# Test that the commenting feature works (if it doesn't then, this line will be read and fail, as it's not a URL).
 https://github.com/kelloggm/wpi-many-tests-ensures-called-methods e1e6d4c8c5ab4190b181fcbc95b5249c3a21afae
