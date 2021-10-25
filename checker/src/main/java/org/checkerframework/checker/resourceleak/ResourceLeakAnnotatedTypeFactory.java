@@ -2,17 +2,11 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -79,13 +73,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
   /**
-   * Map to store a set of FieldToFinalizers for classes. Keys are class trees; values are sets of
-   * FieldToFinalizers which represents a set of method Elements that satisfy @MustCall obligation
-   * of FieldToFinalizers's field along some path to their regular exit points
-   */
-  Map<ClassTree, Set<FieldToFinalizers>> classToFieldToFinalizers = new HashMap<>();
-
-  /**
    * Creates a new ResourceLeakAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
@@ -105,68 +92,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return (element.getKind().isField()
         && ElementUtils.isFinal(element)
         && !getMustCallValue(element).isEmpty());
-  }
-
-  /**
-   * Given a set of FieldToFinalizers and a field, returns the fieldToFinalizers whose field is
-   * equal to the given field if one exists in {@code fieldsToFinalizers}, otherwise returns {@code
-   * null}.
-   *
-   * @param field a field
-   * @param fieldsToFinalizers a set of FieldToFinalizers
-   * @return the FieldToFinalizers in {@code fieldsToFinalizers} whose field is equal to {@code
-   *     field}, or {@code null} if there is no such FieldToFinalizers
-   */
-  private @Nullable FieldToFinalizers getFieldToFinalizers(
-      Element field, Set<FieldToFinalizers> fieldsToFinalizers) {
-    for (FieldToFinalizers ftf : fieldsToFinalizers) {
-      if (ftf.field.equals(field)) {
-        return ftf;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Returns the set of FieldToFinalizers stored for the given key in classToFieldToFinalizers map
-   * if one exists, otherwise it adds a new entry to the map.
-   *
-   * @param classTree a classTree
-   * @return the set of FieldToFinalizers stored in classToFieldToFinalizers for the given classTree
-   */
-  private Set<FieldToFinalizers> getSetOfFieldToFinalizers(ClassTree classTree) {
-    if (!classToFieldToFinalizers.containsKey(classTree)) {
-      classToFieldToFinalizers.put(classTree, new HashSet<>());
-    }
-    return classToFieldToFinalizers.get(classTree);
-  }
-
-  /**
-   * Updates the classToFieldToFinalizers map with the new detected finalizer method for the given
-   * field.
-   *
-   * @param classTree the containing class
-   * @param field the owning field
-   * @param methodElt the new finalizer for the owning field
-   */
-  public void updateClassToFieldToFinalizers(
-      ClassTree classTree, Element field, Element methodElt) {
-    Set<FieldToFinalizers> fieldsToFinalizers = getSetOfFieldToFinalizers(classTree);
-    FieldToFinalizers fieldToFinalizers = getFieldToFinalizers(field, fieldsToFinalizers);
-
-    if (fieldToFinalizers == null) {
-      Set<Element> finalizers = new HashSet<>();
-      finalizers.add(methodElt);
-      fieldsToFinalizers.add(new FieldToFinalizers(field, finalizers));
-    } else {
-      fieldToFinalizers.finalizers.add(methodElt);
-    }
-  }
-
-  @Override
-  public void setRoot(@Nullable CompilationUnitTree root) {
-    classToFieldToFinalizers.clear();
-    super.setRoot(root);
   }
 
   @Override
@@ -404,48 +329,5 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   @Override
   public ExecutableElement getCreatesMustCallForListValueElement() {
     return createsMustCallForListValueElement;
-  }
-
-  /** A pair of a field {@link Element} and a set of finalizer methods detected for that field. */
-  static class FieldToFinalizers {
-
-    /** The field element. */
-    public final Element field;
-
-    /** The set of finalizer methods. */
-    public Set<Element> finalizers;
-
-    /**
-     * Creates a new FieldToFinalizers.
-     *
-     * @param fieldElt the field element
-     * @param finalizers the set of finalizer methods
-     */
-    public FieldToFinalizers(Element fieldElt, Set<Element> finalizers) {
-      this.field = fieldElt;
-      this.finalizers = finalizers;
-    }
-
-    @Override
-    public String toString() {
-      return "(FieldToFinalizers: field: " + field + " |||| finalizers: " + finalizers + ")";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      FieldToFinalizers that = (FieldToFinalizers) o;
-      return field.equals(that.field);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(field);
-    }
   }
 }
