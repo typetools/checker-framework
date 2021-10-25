@@ -1,3 +1,5 @@
+// @above-java11-skip-test until this is fixed: https://tinyurl.com/cfissue/4934
+
 package org.checkerframework.checker.mustcall.qual;
 
 import java.lang.annotation.ElementType;

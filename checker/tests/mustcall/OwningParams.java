@@ -1,3 +1,5 @@
+// @above-java11-skip-test until this is fixed: https://tinyurl.com/cfissue/4934
+
 // Tests that parameters (including receiver parameters) marked as @Owning are still checked.
 
 import org.checkerframework.checker.mustcall.qual.*;

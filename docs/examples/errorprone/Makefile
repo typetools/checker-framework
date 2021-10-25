@@ -4,10 +4,10 @@ JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s/
 
 all: clean
 	- ../../../gradlew build > Out.txt 2>&1
-# TODO JDK16: Temporary hack to skip running under JDK > 11.  This test gets the Checker Framework from Maven Central, and that version doesn't work on JDK 16 (until the next release after this line is committed!).
+# TODO JDK17: Temporary hack to skip running under JDK > 11.  This test gets the Checker Framework from Maven Central, and that version doesn't work on JDK 17 (until the next release after this line is committed!).
 	[ ${JAVA_VER} -gt 11 ] || \
 	grep -qF "Demo.java:5: warning: [CollectionIncompatibleType] Argument 'i - 1' should not be passed to this method; its type int is not compatible with its collection's type argument Short" Out.txt
-# TODO JDK16
+# TODO JDK17
 	[ ${JAVA_VER} -gt 11 ] || \
 	grep -qF "Demo.java:6: error: [argument] incompatible argument for parameter arg0 of add." Out.txt
 
