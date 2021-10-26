@@ -1,7 +1,9 @@
 package org.checkerframework.framework.type.poly;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -30,6 +32,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorMap;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -151,6 +154,12 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     if (polyQuals.isEmpty()) {
       return;
     }
+    if (needsInference(tree.getArguments(), atypeFactory.getPath(tree))) {
+      // TODO: This is a work around.  We need to implement a way to resolve polymorphic in this
+      // case.
+      completer.visit(type);
+      return;
+    }
 
     // javac produces enum super calls with zero arguments even though the
     // method element requires two.
@@ -186,11 +195,40 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     reset();
   }
 
+  /**
+   * If the type of any {@code argTrees} requires the type of the parameter it is psuedo-assigned
+   * to, then this method returns true.
+   *
+   * @param path path to the method or constructor invocation
+   * @return true, if the type of any {@code argTrees} requires the type of the parameter it is
+   *     psuedo-assigned to
+   */
+  private boolean needsInference(List<? extends ExpressionTree> argTrees, TreePath path) {
+
+    for (ExpressionTree argTree : argTrees) {
+      if (InvocationTypeInference.outerInference(argTree, path) != argTree) {
+        return true;
+      }
+      if (TreeUtils.isPolyExpression(argTree)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public void resolve(NewClassTree tree, AnnotatedExecutableType type) {
     if (polyQuals.isEmpty()) {
       return;
     }
+
+    if (needsInference(tree.getArguments(), atypeFactory.getPath(tree))) {
+      // TODO: This is a work around.  We need to implement a way to resolve polymorphic in this
+      // case.
+      completer.visit(type);
+      return;
+    }
+
     List<AnnotatedTypeMirror> parameters =
         AnnotatedTypes.expandVarArgsParameters(atypeFactory, type, tree.getArguments());
     List<AnnotatedTypeMirror> arguments =

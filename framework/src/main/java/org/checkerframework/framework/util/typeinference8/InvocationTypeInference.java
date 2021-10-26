@@ -46,6 +46,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -54,6 +55,7 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -822,5 +824,83 @@ public class InvocationTypeInference {
 
       return null;
     }
+  }
+
+  /**
+   * Returns the outermost tree required to find the type of {@code tree}.
+   *
+   * @param tree tree that may need an outer tree to find the type
+   * @param parentPath path to the parent of {@code tree}
+   * @return the outermost tree required to find the type of {@code tree}
+   */
+  public static Tree outerInference(ExpressionTree tree, TreePath parentPath) {
+    if (!TreeUtils.isPolyExpression(tree)) {
+      return tree;
+    }
+    if (parentPath == null) {
+      return tree;
+    }
+    Tree parentTree = parentPath.getLeaf();
+    switch (parentTree.getKind()) {
+      case PARENTHESIZED:
+      case CONDITIONAL_EXPRESSION:
+        // case SWITCH_EXPRESSION:
+        return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+      case METHOD_INVOCATION:
+        MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
+        if (!methodInvocationTree.getTypeArguments().isEmpty()) {
+          return tree;
+        }
+        ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
+        if (methodElement.getTypeParameters().isEmpty()) {
+          return tree;
+        }
+        if (needsInference(methodElement, methodInvocationTree.getArguments(), tree)) {
+          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+        }
+        return tree;
+      case NEW_CLASS:
+        if (!TreeUtils.isDiamondTree(parentTree)) {
+          return tree;
+        }
+        NewClassTree newClassTree = (NewClassTree) parentTree;
+        ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
+        if (needsInference(constructor, newClassTree.getArguments(), tree)) {
+          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+        }
+        return tree;
+      case RETURN:
+        TreePath parentParentPath = parentPath.getParentPath();
+        if (parentParentPath.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+          return outerInference(
+              (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath());
+        }
+        return tree;
+      default:
+        return tree;
+    }
+  }
+
+  private static boolean needsInference(
+      ExecutableElement executableElement, List<? extends ExpressionTree> argTrees, Tree tree) {
+    int index = -1;
+    for (int i = 0; i < argTrees.size(); i++) {
+      @SuppressWarnings("interning")
+      boolean found = argTrees.get(i) == tree;
+      if (found) {
+        index = i;
+      }
+    }
+    if (index == -1) {
+      throw new BugInCF("Argument tree not found in list of arguments.");
+    }
+
+    ExecutableType executableType = (ExecutableType) executableElement.asType();
+    // There are fewer parameters than arguments if this is a var args method.
+    if (executableType.getParameterTypes().size() <= index) {
+      index = executableType.getParameterTypes().size() - 1;
+    }
+    TypeMirror param = executableType.getParameterTypes().get(index);
+    return ContainsInferenceVariable.hasAnyTypeVariable(executableType.getTypeVariables(), param);
   }
 }

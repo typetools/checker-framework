@@ -23,13 +23,13 @@ public class ContainsInferenceVariable {
 
   /** Returns true if {@code type} contains any of the type variables in {@code typeVariables}. */
   public static boolean hasAnyTypeVariable(
-      Collection<TypeVariable> typeVariables, TypeMirror type) {
+      Collection<? extends TypeVariable> typeVariables, TypeMirror type) {
     return new Visitor(typeVariables).visit(type);
   }
 
   /** Returns the type variables in {@code typeVariables} that appear in {@code type}. */
   public static LinkedHashSet<TypeVariable> getMentionedTypeVariables(
-      Collection<TypeVariable> typeVariables, TypeMirror type) {
+      Collection<? extends TypeVariable> typeVariables, TypeMirror type) {
     Visitor visitor = new Visitor(typeVariables);
     visitor.visit(type);
     return visitor.foundVariables;
@@ -39,7 +39,7 @@ public class ContainsInferenceVariable {
   static class Visitor implements TypeVisitor<Boolean, Void> {
 
     /** Type variables for which to search. */
-    private final Collection<TypeVariable> typeVariables;
+    private final Collection<? extends TypeVariable> typeVariables;
 
     /** Type variables in {@code typeVariables} that have been found. */
     // default visibility to allow direct access from getMentionedTypeVariables
@@ -48,7 +48,7 @@ public class ContainsInferenceVariable {
     /** A set of types that have been visited. Used to prevent infinite recursion. */
     private final Set<TypeMirror> visitedTypes = new HashSet<>();
 
-    Visitor(Collection<TypeVariable> variables) {
+    Visitor(Collection<? extends TypeVariable> variables) {
       typeVariables = variables;
     }
 
