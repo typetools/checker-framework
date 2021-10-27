@@ -135,17 +135,17 @@ public class SideEffectsOnlyAnnoChecker {
 
       AnnotationMirror sideEffectsOnlyAnno =
           annoProvider.getDeclAnnotation(treeElem, SideEffectsOnly.class);
-      // If the invoked method is not annotated with @SideEffectsOnly,
-      // add those arguments to seOnlyIncorrectExprs
-      // that are not present in sideEffectsOnlyExpressions.
       if (sideEffectsOnlyAnno == null) {
+        // The invoked method is not annotated with @SideEffectsOnly.
+        // Add those arguments to seOnlyIncorrectExprs
+        // that are not present in sideEffectsOnlyExpressions.
         JavaExpression receiverExpr = JavaExpression.getReceiver(node);
         if (!sideEffectsOnlyExpressions.contains(receiverExpr)) {
           sideEffectsOnlyResult.addNotSEOnlyExpr(node, receiverExpr);
         }
       } else {
-        // If the invoked method is annotated with @SideEffectsOnly,
-        // add annotation values to seOnlyIncorrectExprs
+        // The invoked method is annotated with @SideEffectsOnly.
+        // Add annotation values to seOnlyIncorrectExprs
         // that are not present in sideEffectsOnlyExpressions.
         ExecutableElement sideEffectsOnlyValueElement =
             TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
