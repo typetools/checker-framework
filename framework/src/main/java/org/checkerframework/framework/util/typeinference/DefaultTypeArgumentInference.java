@@ -124,36 +124,47 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     final TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
-    if (expressionTree.getKind() == Tree.Kind.METHOD_INVOCATION
-        || expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
-      if (java8Inference != null
-          && (!java8Inference.getContext().getAnnotatedTypeOfProperType
-              || java8Inference.getContext().pathToExpression.getLeaf()
-                  == pathToExpression.getLeaf())) {
-        // Currently inferring, dont infer again.
-        return Collections.emptyMap();
+    if (expressionTree.getKind() != Tree.Kind.METHOD_INVOCATION
+        && expressionTree.getKind() != Tree.Kind.NEW_CLASS) {
+      return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
+    }
+
+    if (java8Inference != null
+        && (!java8Inference.getContext().getAnnotatedTypeOfProperType
+            || java8Inference.getContext().pathToExpression.getLeaf()
+                == pathToExpression.getLeaf())) {
+      // Currently inferring, dont infer again.
+      return Collections.emptyMap();
+    }
+    if (java8Inference != null) {
+      java8InferenceStack.push(java8Inference);
+    }
+    try {
+      java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
+      List<Variable> result = java8Inference.infer(expressionTree, methodType);
+      if (result != null) {
+        //          System.out.println("Inferred the following for: " + expressionTree);
+        //          System.out.println("\t" + StringUtils.join("\n\t", result));
       }
-      if (java8Inference != null) {
-        java8InferenceStack.push(java8Inference);
-      }
-      try {
-        java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-        List<Variable> result = java8Inference.infer(expressionTree, methodType);
-        if (result != null) {
-          //          System.out.println("Inferred the following for: " + expressionTree);
-          //          System.out.println("\t" + StringUtils.join("\n\t", result));
-        }
-      } finally {
-        if (!java8InferenceStack.isEmpty()) {
-          java8Inference = java8InferenceStack.pop();
-        } else {
-          java8Inference = null;
-        }
+    } finally {
+      if (!java8InferenceStack.isEmpty()) {
+        java8Inference = java8InferenceStack.pop();
+      } else {
+        java8Inference = null;
       }
     }
+    return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
+  }
+
+  public Map<TypeVariable, AnnotatedTypeMirror> oldInferTypeArgs(
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree expressionTree,
+      ExecutableElement methodElem,
+      AnnotatedExecutableType methodType) {
     if (methodType == null) {
       return new HashMap<>();
     }
+    final TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
     final List<AnnotatedTypeMirror> argTypes =
         TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
