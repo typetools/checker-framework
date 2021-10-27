@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * This class contains Resource Leak Checker annotation inference algorithm. For now, it just
- * contains inference logic for @Owning annotations on final owning fields. It adds @Owning
+ * contains inference logic for owning annotations on final owning fields. It adds an @Owning
  * annotation on a field if it finds a method that satisfies @MustCall obligation of the field along
  * some path to the regular exit point.
  */
@@ -55,10 +55,10 @@ public class MustCallInferenceLogic {
    * the regular exit point in the method body.
    */
   void inference() {
-
     Set<Block> visited = new HashSet<>();
     Deque<Block> worklist = new ArrayDeque<>();
     Block entry = this.cfg.getEntryBlock();
+
     worklist.add(entry);
     visited.add(entry);
 
@@ -83,18 +83,22 @@ public class MustCallInferenceLogic {
    */
   private void checksOwningFieldForInvocation(MethodInvocationNode mNode) {
     Node receiver = mNode.getTarget().getReceiver();
-    if (receiver.getTree() != null) {
-      Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
-      if (typeFactory.isElementPossibleOwningField(receiverEl)) {
-        Element method = TreeUtils.elementFromTree(mNode.getTree());
-        List<String> mustCallValues = typeFactory.getMustCallValue(receiverEl);
-        if (mustCallValues.size() == 1
-            && mustCallValues.get(0).equals(method.getSimpleName().toString())) {
-          WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-          if (wpi != null) {
-            wpi.addFieldDeclarationAnnotation(receiverEl, OWNING);
-          }
-        }
+    if (receiver.getTree() == null) {
+      return;
+    }
+
+    Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
+
+    if (typeFactory.isElementPossibleOwningField(receiverEl)) {
+      Element method = TreeUtils.elementFromTree(mNode.getTree());
+      List<String> mustCallValues = typeFactory.getMustCallValue(receiverEl);
+
+      // Because we assumed that any must call annotation has at most one method, the following
+      // check is enough to decide whether the receiver is an owning field
+      if (mustCallValues.contains(method.getSimpleName().toString())) {
+        WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+        // wpi can't be null in this class
+        wpi.addFieldDeclarationAnnotation(receiverEl, OWNING);
       }
     }
   }
@@ -103,7 +107,7 @@ public class MustCallInferenceLogic {
    * updates worklist with the next block along all paths to the regular exit point.
    *
    * @param curBlock the current block
-   * @param visited block pairs already on the worklist
+   * @param visited set of blocks already on the worklist
    * @param worklist current worklist
    */
   private void propagateRegPaths(Block curBlock, Set<Block> visited, Deque<Block> worklist) {
@@ -118,6 +122,7 @@ public class MustCallInferenceLogic {
           continue;
         }
       }
+
       if (visited.add(b)) {
         worklist.add(b);
       }
