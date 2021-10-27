@@ -34,6 +34,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.UnionType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -830,16 +831,17 @@ public class InvocationTypeInference {
    * Returns the outermost tree required to find the type of {@code tree}.
    *
    * @param tree tree that may need an outer tree to find the type
-   * @param parentPath path to the parent of {@code tree}
+   * @param parentPath path to the parent of {@code tree} or null if no such parent exists
    * @return the outermost tree required to find the type of {@code tree}
    */
-  public static Tree outerInference(ExpressionTree tree, TreePath parentPath) {
-    if (!TreeUtils.isPolyExpression(tree)) {
-      return tree;
-    }
+  public static Tree outerInference(ExpressionTree tree, @Nullable TreePath parentPath) {
     if (parentPath == null) {
       return tree;
     }
+    if (!TreeUtils.isPolyExpression(tree)) {
+      return tree;
+    }
+
     Tree parentTree = parentPath.getLeaf();
     switch (parentTree.getKind()) {
       case PARENTHESIZED:
