@@ -24,6 +24,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -121,44 +122,63 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       ExpressionTree expressionTree,
       ExecutableElement methodElem,
       AnnotatedExecutableType methodType) {
+    if (expressionTree.getKind() != Tree.Kind.METHOD_INVOCATION
+        && expressionTree.getKind() != Tree.Kind.NEW_CLASS) {
+      // TODO: When is expressionTree not an invocation?
+      return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
+    }
+    TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
-    final TreePath pathToExpression = typeFactory.getPath(expressionTree);
-
-    if (expressionTree.getKind() == Tree.Kind.METHOD_INVOCATION
-        || expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
-      if (java8Inference != null
-          && (!java8Inference.getContext().getAnnotatedTypeOfProperType
-              || java8Inference.getContext().pathToExpression.getLeaf()
-                  == pathToExpression.getLeaf())) {
+    ExpressionTree outerTree =
+        InvocationTypeInference.outerInference(expressionTree, pathToExpression.getParentPath());
+    TreePath pathToOuterTree = typeFactory.getPath(outerTree);
+    if (java8Inference != null) {
+      if (!java8Inference.getContext().getAnnotatedTypeOfProperType) {
+        return Collections.emptyMap();
+      } else if (java8Inference.getContext().pathToExpression.getLeaf() == outerTree) {
         // Currently inferring, dont infer again.
         return Collections.emptyMap();
       }
-      if (java8Inference != null) {
-        java8InferenceStack.push(java8Inference);
-      }
-      try {
-        java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-        List<Variable> result = java8Inference.infer(expressionTree, methodType);
-        if (result != null) {
-          //          System.out.println("Inferred the following for: " + expressionTree);
-          //          System.out.println("\t" + StringUtils.join("\n\t", result));
-        }
-      } finally {
-        if (!java8InferenceStack.isEmpty()) {
-          java8Inference = java8InferenceStack.pop();
-        } else {
-          java8Inference = null;
-        }
-      }
     }
-    if (methodType == null) {
-      return new HashMap<>();
+    try {
+      pushInferenceStack(java8Inference);
+      java8Inference = new InvocationTypeInference(typeFactory, pathToOuterTree);
+      List<Variable> result = java8Inference.infer(outerTree, methodType);
+      if (result != null) {
+        //          System.out.println("Inferred the following for: " + expressionTree);
+        //          System.out.println("\t" + StringUtils.join("\n\t", result));
+      }
+    } finally {
+      java8Inference = popInferenceStack();
     }
+
+    return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
+  }
+
+  private InvocationTypeInference popInferenceStack() {
+    if (!java8InferenceStack.isEmpty()) {
+      return java8InferenceStack.pop();
+    } else {
+      return null;
+    }
+  }
+
+  void pushInferenceStack(@Nullable InvocationTypeInference java8Inference) {
+    if (java8Inference != null) {
+      java8InferenceStack.push(java8Inference);
+    }
+  }
+
+  public Map<TypeVariable, AnnotatedTypeMirror> oldInferTypeArgs(
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree expressionTree,
+      ExecutableElement methodElem,
+      AnnotatedExecutableType methodType) {
 
     final List<AnnotatedTypeMirror> argTypes =
         TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
+    final TreePath pathToExpression = typeFactory.getPath(expressionTree);
     assert pathToExpression != null;
-
     AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
     SourceChecker checker = typeFactory.getChecker();
