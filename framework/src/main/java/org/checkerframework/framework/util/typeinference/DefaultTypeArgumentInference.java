@@ -129,12 +129,33 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
     }
 
+    Map<TypeVariable, AnnotatedTypeMirror> emptyMap =
+        inferNew(typeFactory, expressionTree, methodType, pathToExpression);
+    if (emptyMap != null && emptyMap.isEmpty()) {
+      return emptyMap;
+    }
+    return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
+  }
+
+  Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results = new HashMap<>(1);
+
+  private Map<TypeVariable, AnnotatedTypeMirror> inferNew(
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree expressionTree,
+      AnnotatedExecutableType methodType,
+      TreePath pathToExpression) {
+    ExpressionTree outerTree =
+        InvocationTypeInference.outerInference(expressionTree, pathToExpression.getParentPath());
     if (java8Inference != null
         && (!java8Inference.getContext().getAnnotatedTypeOfProperType
-            || java8Inference.getContext().pathToExpression.getLeaf()
-                == pathToExpression.getLeaf())) {
-      // Currently inferring, dont infer again.
+            || java8Inference.getContext().pathToExpression.getLeaf() == outerTree)) {
+      // Inference is running and is asking for the type of the method before type arguments are
+      // substituted. So don't infere any type arguments.
       return Collections.emptyMap();
+    }
+    if (outerTree != expressionTree) {
+      typeFactory.getAnnotatedType(outerTree);
+      return results.remove(expressionTree);
     }
     if (java8Inference != null) {
       java8InferenceStack.push(java8Inference);
@@ -143,8 +164,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
       List<Variable> result = java8Inference.infer(expressionTree, methodType);
       if (result != null) {
-        //          System.out.println("Inferred the following for: " + expressionTree);
-        //          System.out.println("\t" + StringUtils.join("\n\t", result));
+        Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> convertedResult = convert(result);
+        results.replaceAll((t, v) -> convertedResult.get(t));
+        return convertedResult.get(expressionTree);
       }
     } finally {
       if (!java8InferenceStack.isEmpty()) {
@@ -153,7 +175,17 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         java8Inference = null;
       }
     }
-    return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
+    return null;
+  }
+
+  private Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> convert(List<Variable> variables) {
+    Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> map = new HashMap<>();
+    for (Variable variable : variables) {
+      Map<TypeVariable, AnnotatedTypeMirror> typeMap =
+          map.computeIfAbsent(variable.getInvocation(), k -> new HashMap<>());
+      typeMap.put(variable.getJavaType(), variable.getAnnotatedType());
+    }
+    return map;
   }
 
   public Map<TypeVariable, AnnotatedTypeMirror> oldInferTypeArgs(
