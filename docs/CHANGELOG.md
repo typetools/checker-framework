@@ -7,8 +7,8 @@ The Checker Framework runs under JDK 17 -- that is, it runs on a version 17 JVM.
 The Checker Framework also continues to run under JDK 8 and JDK 11.  New
 command-line argument `-ApermitUnsupportedJdkVersion` lets you run the Checker
 Framework on any JDK (version 8 or greater) without a warning about an
-unsupported JDK version.  Switch expressions are not yet type-checked, but the
-Checker Framework runs on code that contains switch expressions.
+unsupported JDK version.  The Checker Framework does not yet run on code that
+contains switch expressions.
 
 **Implementation details:**
 
