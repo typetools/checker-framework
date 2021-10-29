@@ -81,7 +81,7 @@ public class MustCallInferenceLogic {
    *
    * @param mNode the MethodInvocationNode
    */
-  private void checksOwningFieldForInvocation(MethodInvocationNode mNode) {
+  private void checkForMustCallInvocationOnField(MethodInvocationNode mNode) {
     Node receiver = mNode.getTarget().getReceiver();
     if (receiver.getTree() == null) {
       return;
