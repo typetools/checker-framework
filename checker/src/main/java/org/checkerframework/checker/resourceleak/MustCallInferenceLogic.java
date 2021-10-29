@@ -54,7 +54,7 @@ public class MustCallInferenceLogic {
    * It checks method invocations for fields with non-empty @MustCall obligation along all paths to
    * the regular exit point in the method body.
    */
-  void inference() {
+  void runInference() {
     Set<Block> visited = new HashSet<>();
     Deque<Block> worklist = new ArrayDeque<>();
     Block entry = this.cfg.getEntryBlock();
