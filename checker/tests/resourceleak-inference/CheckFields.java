@@ -28,9 +28,12 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 
   @MustCall("b") static class FooField {
     private final @Owning Foo finalOwningFoo;
+    private final Foo finalNotOwningFoo;
 
     public FooField() {
       this.finalOwningFoo = new Foo();
+      // :: error: required.method.not.called
+      this.finalNotOwningFoo = new Foo();
     }
 
     @EnsuresCalledMethods(
@@ -39,6 +42,15 @@ import org.checkerframework.checker.mustcall.qual.Owning;
     void b() {
       this.finalOwningFoo.a();
       this.finalOwningFoo.c();
+    }
+
+    void b2() {
+      try {
+        this.finalNotOwningFoo.c();
+        throw new Exception();
+      } catch (Exception io) {
+        this.finalNotOwningFoo.a();
+      }
     }
   }
 

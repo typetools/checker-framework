@@ -1,6 +1,7 @@
 package org.checkerframework.checker.resourceleak;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
@@ -11,10 +12,12 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.SpecialBlock;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -25,6 +28,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class MustCallInferenceLogic {
 
+  private Set<Element> owningFields = new HashSet<>();
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
    */
@@ -39,7 +43,7 @@ public class MustCallInferenceLogic {
   /**
    * Creates a MustCallInferenceLogic. If the whole program inference is not null, the type
    * factory's postAnalyze method would instantiate a new MustCallInferenceLogic using this
-   * constructor and then call {@link #inference()}.
+   * constructor and then call {@link #runInference()}.
    *
    * @param typeFactory the type factory
    * @param cfg the ControlFlowGraph
@@ -67,7 +71,7 @@ public class MustCallInferenceLogic {
 
       for (Node node : current.getNodes()) {
         if (node instanceof MethodInvocationNode) {
-          checksOwningFieldForInvocation((MethodInvocationNode) node);
+          checkForMustCallInvocationOnField((MethodInvocationNode) node);
         }
       }
 
@@ -89,16 +93,15 @@ public class MustCallInferenceLogic {
 
     Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
 
-    if (typeFactory.isElementPossibleOwningField(receiverEl)) {
+    if (typeFactory.isPossibleOwningField(receiverEl)) {
       Element method = TreeUtils.elementFromTree(mNode.getTree());
       List<String> mustCallValues = typeFactory.getMustCallValue(receiverEl);
 
       // Because we assumed that any must call annotation has at most one method, the following
       // check is enough to decide whether the receiver is an owning field
-      if (mustCallValues.contains(method.getSimpleName().toString())) {
-        WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-        // wpi can't be null in this class
-        wpi.addFieldDeclarationAnnotation(receiverEl, OWNING);
+      if (mustCallValues.size() == 1
+          && mustCallValues.contains(method.getSimpleName().toString())) {
+        owningFields.add(receiverEl);
       }
     }
   }
@@ -112,14 +115,14 @@ public class MustCallInferenceLogic {
    */
   private void propagateRegPaths(Block curBlock, Set<Block> visited, Deque<Block> worklist) {
 
-    Set<Block> successors = curBlock.getSuccessors();
+    List<Block> successors = getSuccessors(curBlock);
 
     for (Block b : successors) {
       if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
-
-        if (((SpecialBlock) b).getSpecialType() == SpecialBlock.SpecialBlockType.EXCEPTIONAL_EXIT) {
-          // Do nothing if the successor block is an exceptional exit point
-          continue;
+        WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+        for (Element fieldElt : owningFields) {
+          // wpi can't be null in this class
+          wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
         }
       }
 
@@ -127,5 +130,34 @@ public class MustCallInferenceLogic {
         worklist.add(b);
       }
     }
+  }
+
+  /**
+   * Returns the non-exceptional successors of the current block.
+   *
+   * @param cur the current block
+   * @return the successors of this current block
+   */
+  private List<Block> getSuccessors(Block cur) {
+    List<Block> successorBlock = new ArrayList<>();
+
+    if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
+
+      ConditionalBlock ccur = (ConditionalBlock) cur;
+
+      successorBlock.add(ccur.getThenSuccessor());
+      successorBlock.add(ccur.getElseSuccessor());
+
+    } else {
+      if (!(cur instanceof SingleSuccessorBlock)) {
+        throw new BugInCF("BlockImpl is neither a conditional block nor a SingleSuccessorBlock");
+      }
+
+      Block b = ((SingleSuccessorBlock) cur).getSuccessor();
+      if (b != null) {
+        successorBlock.add(b);
+      }
+    }
+    return successorBlock;
   }
 }

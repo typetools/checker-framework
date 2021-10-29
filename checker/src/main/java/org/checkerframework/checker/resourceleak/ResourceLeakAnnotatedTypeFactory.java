@@ -120,7 +120,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     if (getWholeProgramInference() != null && cfg != null) {
       if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
         MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(this, cfg);
-        mustCallInferenceLogic.inference();
+        mustCallInferenceLogic.runInference();
       }
     }
 
