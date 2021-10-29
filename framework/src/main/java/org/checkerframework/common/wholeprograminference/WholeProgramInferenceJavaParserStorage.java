@@ -462,7 +462,7 @@ public class WholeProgramInferenceJavaParserStorage
               VariableTree javacTree, EnumConstantDeclaration javaParserNode) {
             VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
             if (!elt.getKind().isField()) {
-              throw new Error();
+              throw new BugInCF(elt + " is not a field but a " + elt.getKind());
             }
 
             String enclosingClassName = ElementUtils.getEnclosingClassName(elt);

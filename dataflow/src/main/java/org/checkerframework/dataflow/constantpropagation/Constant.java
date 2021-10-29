@@ -4,6 +4,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
+import org.checkerframework.javacutil.BugInCF;
 
 public class Constant implements AbstractValue<Constant> {
 
@@ -118,7 +119,7 @@ public class Constant implements AbstractValue<Constant> {
         assert isConstant() : "@AssumeAssertion(nullness)";
         return value.toString();
       default:
-        throw new Error("Unexpected type");
+        throw new BugInCF("Unexpected type: " + type);
     }
   }
 }

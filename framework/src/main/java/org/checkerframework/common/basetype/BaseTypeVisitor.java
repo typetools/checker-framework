@@ -1540,7 +1540,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         annoSymbol = (ClassSymbol) ((JCFieldAccess) annoType).sym;
         break;
       default:
-        throw new Error("Unhandled kind: " + annoType.getKind() + " for " + anno);
+        throw new BugInCF("Unhandled kind: " + annoType.getKind() + " for " + anno);
     }
     for (AnnotationMirror metaAnno : annoSymbol.getAnnotationMirrors()) {
       if (AnnotationUtils.areSameByName(metaAnno, TARGET)) {
