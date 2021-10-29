@@ -28,6 +28,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class MustCallInferenceLogic {
 
+  /** The set of owning fields. */
   private Set<Element> owningFields = new HashSet<>();
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
