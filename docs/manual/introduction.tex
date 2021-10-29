@@ -201,6 +201,8 @@ You must have \textbf{JDK 8}, \textbf{JDK 11}, or \textbf{JDK 17} installed.
 % You must have a supported LTS JDK installed: \textbf{JDK 8}, \textbf{JDK
 % 11}, or \textbf{JDK 17}.
 The Checker Framework processes code written for any of those versions.
+(For running the Checker Framework under other JDK versions, see
+Section~\ref{permitUnsupportedJdkVersion}.)
 
 The installation process has two required steps and one
 optional step.
@@ -699,6 +701,16 @@ Type-checking modes:  enable/disable functionality
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment")> has no effect, but
   \<@SuppressWarnings("nullness:assignment")> does.
+\item \<-ApermitUnsupportedJdkVersion>
+  \label{permitUnsupportedJdkVersion}
+  Issue a note, rather than a warning, when running the Checker Framework
+  on a JDK version that the Checker Framework maintainers do not support.
+  The Checker Framework seems to work on all versions of the JDK, from JDK
+  8 onward.  However, in the past, Oracle has introduced JDK
+  incompatibilities that caused mysterious (to users) failures.  If you
+  have a problem while using this command-line argument, please do not
+  report it to the Checker Framework maintainers unless you can reproduce
+  the problem without this command-line argument.
 \end{itemize}
 
 Partially-annotated libraries
