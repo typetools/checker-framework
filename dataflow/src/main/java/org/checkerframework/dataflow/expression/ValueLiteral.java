@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** JavaExpression for literals. */
@@ -50,11 +51,11 @@ public class ValueLiteral extends JavaExpression {
   public ValueLiteral negate() {
     if (TypesUtils.isIntegralPrimitive(type)) {
       if (value == null) {
-        throw new Error("null value of integral type " + type);
+        throw new BugInCF("null value of integral type " + type);
       }
       return new ValueLiteral(type, negateBoxedPrimitive(value));
     }
-    throw new Error(String.format("cannot negate: %s type=%s", this, type));
+    throw new BugInCF(String.format("cannot negate: %s type=%s", this, type));
   }
 
   /**
@@ -86,7 +87,7 @@ public class ValueLiteral extends JavaExpression {
       assert value.equals(NEGATIVE_LONG_MIN_VALUE);
       return Long.MIN_VALUE;
     }
-    throw new Error("Cannot be negated: " + o + " " + o.getClass());
+    throw new BugInCF("Cannot be negated: " + o + " " + o.getClass());
   }
 
   /**
