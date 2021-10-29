@@ -34,7 +34,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
-- job: junit_tests_jdk16
+- job: junit_tests_jdk17
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
@@ -42,7 +42,7 @@ jobs:
    - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16:latest
+  container: mdernst/cf-ubuntu-jdk17:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -72,7 +72,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh
-- job: nonjunit_tests_jdk16
+- job: nonjunit_tests_jdk17
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
@@ -80,7 +80,7 @@ jobs:
    - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16:latest
+  container: mdernst/cf-ubuntu-jdk17:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -109,7 +109,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
-- job: inference_tests_jdk16
+- job: inference_tests_jdk17
   dependsOn:
    - junit_tests_jdk11
    - inference_tests_jdk11
@@ -117,7 +117,7 @@ jobs:
    - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16:latest
+  container: mdernst/cf-ubuntu-jdk17:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -146,7 +146,7 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
-- job: misc_jdk16
+- job: misc_jdk17
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
@@ -154,7 +154,7 @@ jobs:
    - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16-plus:latest
+  container: mdernst/cf-ubuntu-jdk17-plus:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -183,7 +183,7 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
-- job: typecheck_jdk16
+- job: typecheck_jdk17
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
@@ -191,7 +191,7 @@ jobs:
    - typecheck_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16-plus:latest
+  container: mdernst/cf-ubuntu-jdk17-plus:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -224,18 +224,18 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
-## Daikon does not yet support JDK 16.  TODO: Make Daikon run under JDK 16.
-# - job: daikon_jdk16
+## Daikon does not yet support JDK 17.  TODO: Make Daikon run under JDK 17.
+# - job: daikon_jdk17
 #   dependsOn:
 #    - junit_tests_jdk11
 #    - nonjunit_tests_jdk11
 #    - misc_jdk11
 #    - typecheck_jdk11
-#   #  ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk16" critical path.
+#   #  ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk17" critical path.
 #   #  # - daikon_jdk11
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk16:latest
+#   container: mdernst/cf-ubuntu-jdk17:latest
 #   timeoutInMinutes: 70
 #   steps:
 #   - checkout: self
@@ -266,7 +266,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
-- job: guava_jdk16
+- job: guava_jdk17
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
@@ -275,7 +275,7 @@ jobs:
    - guava_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16:latest
+  container: mdernst/cf-ubuntu-jdk17:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -305,7 +305,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
-- job: plume_lib_jdk16
+- job: plume_lib_jdk17
   dependsOn:
    - junit_tests_jdk11
    - nonjunit_tests_jdk11
@@ -314,7 +314,7 @@ jobs:
    - plume_lib_jdk11
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk16:latest
+  container: mdernst/cf-ubuntu-jdk17:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -345,7 +345,7 @@ jobs:
 #     fetchDepth: 25
 #   - bash: ./checker/bin-devel/test-downstream.sh
 #     displayName: test-downstream.sh
-# - job: downstream_jdk16
+# - job: downstream_jdk17
 #   dependsOn:
 #    - junit_tests_jdk11
 #    - nonjunit_tests_jdk11
@@ -354,7 +354,7 @@ jobs:
 #    - downstream_jdk11
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk16:latest
+#   container: mdernst/cf-ubuntu-jdk17:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25

@@ -595,7 +595,7 @@ This section shows what arguments to pass to the OpenJDK or OracleJDK
 \<javac> (\emph{not} the \<javac> wrapper script of
 Section~\ref{javac-wrapper}) to run the Checker
 Framework, if you are using JDK 9 or later.  These
-instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK 16.
+instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK 17.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
@@ -603,7 +603,7 @@ instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK
 To compile non-modularized code:
 
 % Keep list of --add-opens and --add-exports in sync with the "maven" and "SBT" sections,
-% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in compilerArgsForRunningCFs,
 % and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javac \
@@ -629,7 +629,7 @@ opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
 
 \item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
-required with JDK 16+ because the Checker Framework accesses non-exported members of these packages.
+required with JDK 17+ because the Checker Framework accesses non-exported members of these packages.
 (These are also required with JDK 11 if \<--illegal-access> is set to \<deny>.)
 
 \end{enumerate}
@@ -1354,7 +1354,7 @@ javacOptions ++= Seq(
 \subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
 
 % Keep list of --add-opens and --add-exports in sync with the "maven" and "javac-jdk11-non-modularized" sections,
-% the method CheckerMain#getExecArguments, checker-framework/build.gradle in complierArgsForRunningCFs,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in compilerArgsForRunningCFs,
 % and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javacOptions ++= Seq(
