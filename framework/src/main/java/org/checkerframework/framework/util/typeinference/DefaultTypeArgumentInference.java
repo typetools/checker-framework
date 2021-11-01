@@ -154,8 +154,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return Collections.emptyMap();
     }
     if (outerTree != expressionTree) {
-      typeFactory.getAnnotatedType(outerTree);
-      return results.remove(expressionTree);
+      return null;
+      //      typeFactory.getAnnotatedType(outerTree);
+      //      return results.remove(expressionTree);
     }
     if (java8Inference != null) {
       java8InferenceStack.push(java8Inference);
