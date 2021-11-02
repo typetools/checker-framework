@@ -139,7 +139,7 @@ public class MustCallInferenceLogic {
    * @param cur the current block
    * @return the successors of this current block
    */
-  private List<Block> getSuccessors(Block cur) {
+  private List<Block> getNormalSuccessors(Block cur) {
     List<Block> successorBlock = new ArrayList<>();
 
     if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
