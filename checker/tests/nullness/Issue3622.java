@@ -1,23 +1,19 @@
 // Test case for https://tinyurl.com/cfissue/3622
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.List;
 
 public class Issue3622 {
 
-    // These currently pass (no warnings)
-
     public class ImmutableIntList1 {
 
         @Override
-        public boolean equals(@Nullable Object obj1) {
-            if (obj1 instanceof ImmutableIntList1) {
+        public boolean equals(@Nullable Object obj) {
+            if (obj instanceof ImmutableIntList1) {
                 return true;
             } else {
-                return obj1 instanceof List;
+                return obj instanceof List;
             }
         }
     }
@@ -25,16 +21,16 @@ public class Issue3622 {
     public class ImmutableIntList2 {
 
         @Override
-        public boolean equals(@Nullable Object obj2) {
-            return obj2 instanceof ImmutableIntList2;
+        public boolean equals(@Nullable Object obj) {
+            return obj instanceof ImmutableIntList2;
         }
     }
 
     public class ImmutableIntList3 {
 
         @Override
-        public boolean equals(@Nullable Object obj3) {
-            if (obj3 instanceof ImmutableIntList3) {
+        public boolean equals(@Nullable Object obj) {
+            if (obj instanceof ImmutableIntList3) {
                 return true;
             } else {
                 return false;
@@ -42,73 +38,81 @@ public class Issue3622 {
         }
     }
 
-    public class ImmutableIntList7 {
-
-        @Override
-        public boolean equals(@Nullable Object obj7) {
-            return obj7 instanceof ImmutableIntList7 ? true : false;
-        }
-    }
-
-    public class ImmutableIntList8 {
-
-        @Override
-        public boolean equals(@Nullable Object obj8) {
-            return obj8 instanceof ImmutableIntList8 ? true : obj8 instanceof List;
-        }
-    }
-
-    public class ImmutableIntList9 {
-
-        @Override
-        public boolean equals(@Nullable Object obj9) {
-            return obj9 instanceof ImmutableIntList9
-                    ? obj9 instanceof ImmutableIntList9
-                    : obj9 instanceof ImmutableIntList9;
-        }
-    }
-
-    // These currently fail (false positive warnings)
-
     public class ImmutableIntList4 {
 
         @Override
-        @SuppressWarnings(
-                "contracts.conditional.postcondition.not.satisfied" // TODO: `if` needs the
-        // BOTH_TO_THEN treatment that ?: gets.
-        )
-        public boolean equals(@Nullable Object obj4) {
-            boolean b;
-            if (obj4 instanceof ImmutableIntList4) {
-                b = true;
-            } else {
-                b = false;
-            }
-            return b;
+        public boolean equals(@Nullable Object obj) {
+            return obj instanceof ImmutableIntList4 ? true : obj instanceof List;
         }
     }
 
     public class ImmutableIntList5 {
 
         @Override
-        @SuppressWarnings(
-                "contracts.conditional.postcondition.not.satisfied" // TODO: Need special treatment
-        // for true and false boolean  literals (cut off dead parts of graph).
-        )
-        public boolean equals(@Nullable Object obj5) {
-            return true ? obj5 instanceof ImmutableIntList5 : obj5 instanceof ImmutableIntList5;
+        public boolean equals(@Nullable Object obj) {
+            return obj instanceof ImmutableIntList5
+                    ? obj instanceof ImmutableIntList5
+                    : obj instanceof ImmutableIntList5;
         }
     }
 
     public class ImmutableIntList6 {
 
         @Override
-        @SuppressWarnings(
-                "contracts.conditional.postcondition.not.satisfied" // TODO: Need special treatment
-        // for true and false boolean  literals (cut off dead parts of graph).
-        )
-        public boolean equals(@Nullable Object obj6) {
-            return true ? obj6 instanceof ImmutableIntList6 : false;
+        public boolean equals(@Nullable Object obj) {
+            return true ? obj instanceof ImmutableIntList6 : obj instanceof ImmutableIntList6;
+        }
+    }
+
+    public class ImmutableIntList7 {
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            // :: error:  (contracts.conditional.postcondition.not.satisfied)
+            return (obj instanceof ImmutableIntList7) ? true : !(obj instanceof List);
+        }
+    }
+
+    public class ImmutableIntList8 {
+
+        @Override
+        // The ternary expression has the condition of literal `true`, so the false-expression is
+        // unreachable. However the store in the unreachable false-branch (where `obj` is @Nullable)
+        // is propagated to the merge point, which causes the false positive.
+        // TODO: prune the dead branch like https://github.com/typetools/checker-framework/pull/3389
+        @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+        public boolean equals(@Nullable Object obj) {
+            return true ? obj instanceof ImmutableIntList8 : false;
+        }
+    }
+
+    public class ImmutableIntList9 {
+
+        @Override
+        // The false expression of the tenary expression is literal `false`. In this case only the
+        // else-store after `false` should be propagated to the else-store of the merge point.
+        // TODO: adapt the way of store propagation for boolean variables. i.e. for `true`, only
+        // then-store is propagated; and for `false`, only else-store is propagated.
+        @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+        public boolean equals(@Nullable Object obj) {
+            return obj instanceof ImmutableIntList9 ? true : false;
+        }
+    }
+
+    public class ImmutableIntList10 {
+
+        @Override
+        // The false positive is because in the Nullness analysis the values of boolean variables
+        // are not stored, therefore the relation between boolean variable `b` and `obj` is not
+        // known
+        @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+        public boolean equals(@Nullable Object obj) {
+            boolean b;
+            if (obj instanceof ImmutableIntList10) {
+                b = true;
+            } else {
+                b = false;
+            }
+            return b;
         }
     }
 }

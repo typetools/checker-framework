@@ -39,10 +39,6 @@ public interface Store<S extends Store<S>> {
         THEN_TO_THEN,
         /** Else store flows to the else of successor. Then store is ignored. */
         ELSE_TO_ELSE,
-        /** Both stores flow to the then of successor. */
-        BOTH_TO_THEN,
-        /** Both stores flow to the else of successor. */
-        BOTH_TO_ELSE,
     }
 
     /**
