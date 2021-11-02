@@ -68,7 +68,7 @@ public class SideEffectsOnlyAnnoChecker {
      * @param t Tree
      * @param javaExpr JavaExpression
      */
-    public void addNotSEOnlyExpr(Tree t, JavaExpression javaExpr) {
+    public void addMutatedExpr(Tree t, JavaExpression javaExpr) {
       seOnlyIncorrectExprs.add(Pair.of(t, javaExpr));
     }
 
@@ -141,7 +141,7 @@ public class SideEffectsOnlyAnnoChecker {
         // that are not present in sideEffectsOnlyExpressions.
         JavaExpression receiverExpr = JavaExpression.getReceiver(node);
         if (!sideEffectsOnlyExpressions.contains(receiverExpr)) {
-          sideEffectsOnlyResult.addNotSEOnlyExpr(node, receiverExpr);
+          sideEffectsOnlyResult.addMutatedExpr(node, receiverExpr);
         }
       } else {
         // The invoked method is annotated with @SideEffectsOnly.
@@ -164,7 +164,7 @@ public class SideEffectsOnlyAnnoChecker {
 
         for (JavaExpression expr : sideEffectsOnlyExprInv) {
           if (!sideEffectsOnlyExpressions.contains(expr)) {
-            sideEffectsOnlyResult.addNotSEOnlyExpr(node, expr);
+            sideEffectsOnlyResult.addMutatedExpr(node, expr);
           }
         }
       }
@@ -180,7 +180,7 @@ public class SideEffectsOnlyAnnoChecker {
     public Void visitAssignment(AssignmentTree node, Void aVoid) {
       JavaExpression javaExpr = JavaExpression.fromTree(node.getVariable());
       if (!sideEffectsOnlyExpressions.contains(javaExpr)) {
-        sideEffectsOnlyResult.addNotSEOnlyExpr(node, javaExpr);
+        sideEffectsOnlyResult.addMutatedExpr(node, javaExpr);
       }
       return super.visitAssignment(node, aVoid);
     }
