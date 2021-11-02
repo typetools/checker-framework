@@ -145,7 +145,6 @@ import org.plumelib.util.UtilPlume;
   // Re-enable it after making the analysis more precise.
   // org.checkerframework.common.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
   "checkPurityAnnotations",
-  "checkSideEffectsOnlyAnnotation",
 
   // TODO: Temporary option to make array subtyping invariant,
   // which will be the new default soon.

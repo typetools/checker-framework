@@ -1052,7 +1052,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param node the method tree to check
    */
   protected void checkSideEffectsOnly(MethodTree node) {
-    if (!checker.hasOption("checkSideEffectsOnlyAnnotation")) {
+    if (!checker.hasOption("checkPurityAnnotations")) {
       return;
     }
 
