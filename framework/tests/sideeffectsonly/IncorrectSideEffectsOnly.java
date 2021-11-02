@@ -8,13 +8,13 @@ public class IncorrectSideEffectsOnly {
 
   @SideEffectsOnly({"#2"})
   void test(Collection<Integer> cl, Collection<Integer> cl2) {
-    // :: error: incorrect.sideeffectsonly
+    // :: error: purity.incorrect.sideeffectsonly
     cl.add(9);
   }
 
   @SideEffectsOnly({"#2"})
   void test1(Collection<Integer> cl, Collection<Integer> cl2) {
-    // :: error: incorrect.sideeffectsonly
+    // :: error: purity.incorrect.sideeffectsonly
     coll = cl;
   }
 }

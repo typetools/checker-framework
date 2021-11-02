@@ -7,7 +7,7 @@ public class CheckSideEffectsOnly {
 
   @SideEffectsOnly({"#2"})
   void test(Collection<Integer> cl, Collection<Integer> cl2) {
-    // :: error: incorrect.sideeffectsonly
+    // :: error: purity.incorrect.sideeffectsonly
     cl.add(9);
     cl2.add(10);
   }
