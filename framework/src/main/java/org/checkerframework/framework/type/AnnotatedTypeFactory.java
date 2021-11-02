@@ -2845,7 +2845,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case SAME:
         return exprType;
       default:
-        throw new Error("unhandled PrimitiveConversionKind");
+        throw new BugInCF("unhandled PrimitiveConversionKind");
     }
   }
 

@@ -1675,8 +1675,11 @@ public final class TreeUtils {
     // Need to suppress deprecation on JDK 12 and later:
     @SuppressWarnings("deprecation")
     ExpressionTree expression = caseTree.getExpression();
-    if (expression == null) return Collections.emptyList();
-    else return Collections.singletonList(expression);
+    if (expression == null) {
+      return Collections.emptyList();
+    } else {
+      return Collections.singletonList(expression);
+    }
   }
 
   /**

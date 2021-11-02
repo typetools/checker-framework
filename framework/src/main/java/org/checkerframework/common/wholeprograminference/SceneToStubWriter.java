@@ -72,7 +72,7 @@ public final class SceneToStubWriter {
    * <p>This is a utility class with only static methods. It is not instantiable.
    */
   private SceneToStubWriter() {
-    throw new Error("Do not instantiate");
+    throw new BugInCF("Do not instantiate");
   }
 
   /**
