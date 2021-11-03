@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// @below-java17-jdk-skip-test
+// @below-java16-jdk-skip-test
 public class LocalRecords {
     public static void foo() {
         record L(String key, @Nullable Integer value) {}

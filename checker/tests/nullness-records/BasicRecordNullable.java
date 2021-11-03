@@ -1,6 +1,6 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// @below-java17-jdk-skip-test
+// @below-java16-jdk-skip-test
 public record BasicRecordNullable(@Nullable String str) {
 
     public static BasicRecordNullable makeNonNull(String s) {
