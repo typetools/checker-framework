@@ -21,6 +21,7 @@ ext {
     // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
+
     isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
     isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
     isJava16plus = isJava16 || isJava17
@@ -260,8 +261,7 @@ allprojects {
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
                     // warnings are suppressible with a "// fall through" comment.
-                    // -classfile: classgraph jar file and https://bugs.openjdk.java.net/browse/JDK-8190452
-                    "-Xlint:-options,-fallthrough,-classfile",
+                    "-Xlint:-options,-fallthrough",
                     "-Xlint",
             ]
 
