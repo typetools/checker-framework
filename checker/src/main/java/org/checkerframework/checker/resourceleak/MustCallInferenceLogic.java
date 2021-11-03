@@ -117,7 +117,7 @@ public class MustCallInferenceLogic {
    */
   private void propagateRegPaths(Block curBlock, Set<Block> visited, Deque<Block> worklist) {
 
-    List<Block> successors = getSuccessors(curBlock);
+    List<Block> successors = getNormalSuccessors(curBlock);
 
     for (Block b : successors) {
       // If b is a special block, it must be the regular exit, since we do not propagate to
@@ -142,7 +142,7 @@ public class MustCallInferenceLogic {
    * @param cur the current block
    * @return the successors of this current block
    */
-  private List<Block> getSuccessors(Block cur) {
+  private List<Block> getNormalSuccessors(Block cur) {
     List<Block> successorBlock = new ArrayList<>();
 
     if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
