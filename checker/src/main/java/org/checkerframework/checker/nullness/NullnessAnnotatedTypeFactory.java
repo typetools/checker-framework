@@ -114,8 +114,10 @@ public class NullnessAnnotatedTypeFactory
             "signature:assignment.type.incompatible") // Class names intentionally obfuscated
     private static final List<@FullyQualifiedName String> NONNULL_ALIASES =
             Arrays.asList(
+                    // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/NonNull.java
                     // https://developer.android.com/reference/androidx/annotation/NonNull
                     "android.annotation.NonNull",
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/NonNull.java
                     // https://developer.android.com/reference/android/support/annotation/NonNull
                     "android.support.annotation.NonNull",
                     // https://android.googlesource.com/platform/tools/metalava/+/9ad32fadc5a22e1357c82b447e33ec7fecdcd8c1/stub-annotations/src/main/java/android/support/annotation/RecentlyNonNull.java
@@ -165,8 +167,9 @@ public class NullnessAnnotatedTypeFactory
                     // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/NotNull.html
                     "org.codehaus.commons.nullanalysis.NotNull",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/NonNull.html
-                    "org.eclipse.jdt.annotation.NonNull",
                     // https://git.eclipse.org/c/jdt/eclipse.jdt.core.git/tree/org.eclipse.jdt.annotation/src/org/eclipse/jdt/annotation/NonNull.java
+                    "org.eclipse.jdt.annotation.NonNull",
+                    // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/NonNull.java
                     "org.eclipse.jgit.annotations.NonNull",
                     // https://github.com/eclipse/lsp4j/blob/main/org.eclipse.lsp4j.jsonrpc/src/main/java/org/eclipse/lsp4j/jsonrpc/validation/NonNull.java
                     "org.eclipse.lsp4j.jsonrpc.validation.NonNull",
@@ -190,8 +193,10 @@ public class NullnessAnnotatedTypeFactory
             "signature:assignment.type.incompatible") // Class names intentionally obfuscated
     private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
             Arrays.asList(
+                    // https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/annotation/Nullable.java
                     // https://developer.android.com/reference/androidx/annotation/Nullable
                     "android.annotation.Nullable",
+                    // https://android.googlesource.com/platform/frameworks/support/+/master/annotations/src/main/java/android/support/annotation/Nullable.java
                     // https://developer.android.com/reference/android/support/annotation/Nullable
                     "android.support.annotation.Nullable",
                     // https://android.googlesource.com/platform/tools/metalava/+/9ad32fadc5a22e1357c82b447e33ec7fecdcd8c1/stub-annotations/src/main/java/android/support/annotation/RecentlyNullable.java
@@ -267,9 +272,11 @@ public class NullnessAnnotatedTypeFactory
                     // https://janino-compiler.github.io/janino/apidocs/org/codehaus/commons/nullanalysis/Nullable.html
                     "org.codehaus.commons.nullanalysis.Nullable",
                     // https://help.eclipse.org/neon/index.jsp?topic=/org.eclipse.jdt.doc.isv/reference/api/org/eclipse/jdt/annotation/Nullable.html
-                    "org.eclipse.jdt.annotation.Nullable",
                     // https://git.eclipse.org/c/jdt/eclipse.jdt.core.git/tree/org.eclipse.jdt.annotation/src/org/eclipse/jdt/annotation/Nullable.java
+                    "org.eclipse.jdt.annotation.Nullable",
+                    // https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit/src/org/eclipse/jgit/annotations/Nullable.java
                     "org.eclipse.jgit.annotations.Nullable",
+                    // https://github.com/JetBrains/intellij-community/blob/master/platform/annotations/java8/src/org/jetbrains/annotations/Nullable.java
                     // https://www.jetbrains.com/help/idea/nullable-and-notnull-annotations.html
                     "org.jetbrains.annotations.Nullable",
                     // https://github.com/JetBrains/java-annotations/blob/master/java8/src/main/java/org/jetbrains/annotations/UnknownNullability.java
