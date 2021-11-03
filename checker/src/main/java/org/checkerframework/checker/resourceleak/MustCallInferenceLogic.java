@@ -82,7 +82,7 @@ public class MustCallInferenceLogic {
 
   /**
    * If the receiver of {@code mNode} is a possible owning field and the method invocation satisfies
-   * the field's must call obligation, then adds owning annotation for that field.
+   * the field's must call obligation, then adds that field to owningFields set.
    *
    * @param mNode the MethodInvocationNode
    */
@@ -108,7 +108,8 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * updates worklist with the next block along all paths to the regular exit point.
+   * updates worklist with the next block along all paths to the regular exit point. If the next
+   * block is a regular exit point, adds an @Owning annotation for fields in owningFields.
    *
    * @param curBlock the current block
    * @param visited set of blocks already on the worklist
@@ -119,6 +120,8 @@ public class MustCallInferenceLogic {
     List<Block> successors = getSuccessors(curBlock);
 
     for (Block b : successors) {
+      // If b is a special block, it must be the regular exit, since we do not propagate to
+      // exceptional successors
       if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
         for (Element fieldElt : owningFields) {
