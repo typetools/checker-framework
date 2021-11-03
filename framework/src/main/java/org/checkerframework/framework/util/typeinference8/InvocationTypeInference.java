@@ -12,7 +12,6 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,7 +56,6 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -145,8 +143,7 @@ public class InvocationTypeInference {
    * @return a list of inference variables that have been instantiated
    */
   public List<Variable> infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
-    Tree assignmentContext = TreePathUtil.getAssignmentContext(context.pathToExpression);
-    if (!shouldTryInference(assignmentContext, context.pathToExpression)) {
+    if (!shouldTryInference(context.pathToExpression)) {
       return null;
     }
     ExecutableType e = InferenceFactory.getTypeOfMethodAdaptedToUse(invocation, context);
@@ -584,11 +581,10 @@ public class InvocationTypeInference {
    *
    * <p>This method should be removed once the rest of the framework uses Java 8 inference.
    *
-   * @param assignmentContext tree to which the leaf of path is assigned
    * @param path path to the method invocation
    * @return if inference should be preformed
    */
-  private boolean shouldTryInference(Tree assignmentContext, TreePath path) {
+  private boolean shouldTryInference(TreePath path) {
     if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
       return false;
     }
@@ -600,26 +596,7 @@ public class InvocationTypeInference {
       }
     }
 
-    if (assignmentContext == null) {
-      return true;
-    }
-    switch (assignmentContext.getKind()) {
-      case RETURN:
-        HashSet<Tree.Kind> kinds =
-            new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));
-        Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
-        return enclosing.getKind() != Tree.Kind.LAMBDA_EXPRESSION;
-      case METHOD_INVOCATION:
-        MethodInvocationTree methodInvocationTree = (MethodInvocationTree) assignmentContext;
-        if (methodInvocationTree.getTypeArguments().isEmpty()) {
-          ExecutableElement ele = TreeUtils.elementFromUse(methodInvocationTree);
-          return ele.getTypeParameters().isEmpty();
-        }
-        return false;
-      default:
-        return !(assignmentContext instanceof ExpressionTree
-            && TreeUtils.isPolyExpression((ExpressionTree) assignmentContext));
-    }
+    return true;
   }
 
   /**
