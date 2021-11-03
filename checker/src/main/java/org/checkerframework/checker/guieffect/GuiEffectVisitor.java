@@ -386,12 +386,10 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         receiverType = methodType.getReceiverType();
 
         // TODO: If the type we're in is a polymorphic (over effect qualifiers) type, the receiver
-        // must
-        // be @PolyUI.  Otherwise a "non-polymorphic" method of a polymorphic type could be called
-        // on a
-        // UI instance, which then gets a Safe reference to itself (unsound!) that it can then pass
-        // off
-        // elsewhere (dangerous!).  So all receivers in methods of a @PolyUIType must be @PolyUI.
+        // must be @PolyUI.  Otherwise a "non-polymorphic" method of a polymorphic type could be
+        // called on a UI instance, which then gets a Safe reference to itself (unsound!) that it
+        // can then pass off elsewhere (dangerous!).  So all receivers in methods of a @PolyUIType
+        // must be @PolyUI.
 
         // TODO: What do we do then about classes that inherit from a concrete instantiation?  If it
         // subclasses a Safe instantiation, all is well.  If it subclasses a UI instantiation, then
