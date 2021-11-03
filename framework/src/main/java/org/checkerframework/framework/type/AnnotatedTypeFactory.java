@@ -2723,7 +2723,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     newClassTree.getClassBody().getModifiers().getAnnotations();
             type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
 
-            // In Java 17+, the annotations are on the identifier, so copy them.
+            // In Java 16+, the annotations are on the identifier, so copy them.
             AnnotatedDeclaredType identifierType =
                     (AnnotatedDeclaredType)
                             TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
@@ -2731,7 +2731,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type.setEnclosingType(enclosingType);
             return type;
         } else {
-            // If newClassTree does not create an anonymous class (or if this is Java 17+),
+            // If newClassTree does not create an anonymous class (or if this is Java 16+),
             // newClassTree.getIdentifier includes the explicit annotations in this location:
             //   new @HERE Class()
             AnnotatedDeclaredType type =
