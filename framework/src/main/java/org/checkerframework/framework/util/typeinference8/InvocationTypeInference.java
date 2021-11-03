@@ -847,7 +847,12 @@ public class InvocationTypeInference {
       case PARENTHESIZED:
       case CONDITIONAL_EXPRESSION:
         // case SWITCH_EXPRESSION:
-        return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+        ExpressionTree outer =
+            outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+        if (outer == parentTree) {
+          return tree;
+        }
+        return outer;
       case METHOD_INVOCATION:
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
         if (!methodInvocationTree.getTypeArguments().isEmpty()) {

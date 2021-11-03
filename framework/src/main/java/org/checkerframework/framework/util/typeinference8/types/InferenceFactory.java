@@ -103,7 +103,8 @@ public class InferenceFactory {
       case METHOD_INVOCATION:
         MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
 
-        AnnotatedExecutableType methodType = factory.methodFromUse(methodInvocation).executableType;
+        AnnotatedExecutableType methodType =
+            factory.methodFromUseNoTypeArgInfere(methodInvocation).executableType;
 
         AnnotatedTypeMirror ex =
             assignedToExecutable(
@@ -572,7 +573,9 @@ public class InferenceFactory {
   public InvocationType getTypeOfMethodAdaptedToUse(ExpressionTree invocation) {
     AnnotatedExecutableType executableType;
     if (invocation.getKind() == Kind.METHOD_INVOCATION) {
-      executableType = typeFactory.methodFromUse((MethodInvocationTree) invocation).executableType;
+      executableType =
+          typeFactory.methodFromUseNoTypeArgInfere((MethodInvocationTree) invocation)
+              .executableType;
     } else {
       executableType = typeFactory.constructorFromUse((NewClassTree) invocation).executableType;
     }

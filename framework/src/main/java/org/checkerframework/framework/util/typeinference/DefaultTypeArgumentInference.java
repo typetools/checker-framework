@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -137,8 +138,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
   }
 
-  Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results = new HashMap<>(1);
-
   private Map<TypeVariable, AnnotatedTypeMirror> inferNew(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree expressionTree,
@@ -154,19 +153,24 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return Collections.emptyMap();
     }
     if (outerTree != expressionTree) {
-      return null;
-      //      typeFactory.getAnnotatedType(outerTree);
-      //      return results.remove(expressionTree);
+      if (outerTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+        pathToExpression = typeFactory.getPath(outerTree);
+        methodType =
+            typeFactory.methodFromUseNoTypeArgInfere((MethodInvocationTree) outerTree)
+                .executableType;
+      } else {
+        // outertree is a lambda or a diamond new class tree.  Ignore for now.
+        return null;
+      }
     }
     if (java8Inference != null) {
       java8InferenceStack.push(java8Inference);
     }
     try {
       java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-      List<Variable> result = java8Inference.infer(expressionTree, methodType);
+      List<Variable> result = java8Inference.infer(outerTree, methodType);
       if (result != null) {
         Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> convertedResult = convert(result);
-        results.replaceAll((t, v) -> convertedResult.get(t));
         return convertedResult.get(expressionTree);
       }
     } finally {

@@ -2165,7 +2165,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree the method invocation tree
    * @return the method type being invoked with tree and the (inferred) type arguments
    */
-  public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+  public final ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
+    return methodFromUse(tree, true);
+  }
+
+  public ParameterizedExecutableType methodFromUseNoTypeArgInfere(MethodInvocationTree tree) {
+    return methodFromUse(tree, false);
+  }
+
+  public ParameterizedExecutableType methodFromUse(
+      MethodInvocationTree tree, boolean inferTypeArgs) {
     ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
     AnnotatedTypeMirror receiverType = getReceiverType(tree);
     if (receiverType == null && TreeUtils.isSuperConstructorCall(tree)) {
@@ -2177,7 +2186,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       receiverType = applyCaptureConversion(receiverType);
     }
 
-    ParameterizedExecutableType result = methodFromUse(tree, methodElt, receiverType);
+    ParameterizedExecutableType result =
+        methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
     if (checker.shouldResolveReflection()
         && reflectionResolver.isReflectiveMethodInvocation(tree)) {
       result = reflectionResolver.resolveReflectiveCall(this, tree, result);
@@ -2215,9 +2225,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the method type being invoked with tree and the (inferred) type arguments
    * @see #methodFromUse(MethodInvocationTree)
    */
-  public ParameterizedExecutableType methodFromUse(
+  public final ParameterizedExecutableType methodFromUse(
       ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+    return methodFromUse(tree, methodElt, receiverType, true);
+  }
 
+  public final ParameterizedExecutableType methodFromUseNoTypeArgInference(
+      ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+    return methodFromUse(tree, methodElt, receiverType, false);
+  }
+
+  protected ParameterizedExecutableType methodFromUse(
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
     AnnotatedExecutableType memberTypeWithoutOverrides =
         getAnnotatedType(methodElt); // get unsubstituted type
     AnnotatedExecutableType memberTypeWithOverrides =
@@ -2227,10 +2249,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     AnnotatedExecutableType methodType =
         AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberTypeWithOverrides);
-    List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodType.getTypeVariables().size());
+    List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodElt.getTypeParameters().size());
 
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
-        AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
+        AnnotatedTypes.findTypeArguments(
+            processingEnv, this, tree, methodElt, methodType, inferTypeArgs);
 
     if (!typeParamToTypeArg.isEmpty()) {
       typeParamToTypeArg =

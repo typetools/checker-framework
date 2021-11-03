@@ -571,8 +571,12 @@ public class LockAnnotatedTypeFactory
 
   @Override
   public ParameterizedExecutableType methodFromUse(
-      ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
-    ParameterizedExecutableType mType = super.methodFromUse(tree, methodElt, receiverType);
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
+    ParameterizedExecutableType mType =
+        super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
 
     if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return mType;

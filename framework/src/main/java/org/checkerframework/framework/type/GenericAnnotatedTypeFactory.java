@@ -2017,8 +2017,9 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
-    ParameterizedExecutableType mType = super.methodFromUse(tree);
+  public ParameterizedExecutableType methodFromUse(
+      MethodInvocationTree tree, boolean inferTypeArg) {
+    ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArg);
     AnnotatedExecutableType method = mType.executableType;
     dependentTypesHelper.atMethodInvocation(method, tree);
     return mType;

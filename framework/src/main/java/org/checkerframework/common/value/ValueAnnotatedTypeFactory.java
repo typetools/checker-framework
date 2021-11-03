@@ -355,10 +355,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * number of possible values of the enum.
    */
   @Override
-  public ParameterizedExecutableType methodFromUse(
-      ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+  protected ParameterizedExecutableType methodFromUse(
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
 
-    ParameterizedExecutableType superPair = super.methodFromUse(tree, methodElt, receiverType);
+    ParameterizedExecutableType superPair =
+        super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
     if (ElementUtils.matchesElement(methodElt, "values")
         && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
         && ElementUtils.isStatic(methodElt)) {

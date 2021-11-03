@@ -683,7 +683,16 @@ public class AnnotatedTypes {
       final ExpressionTree expr,
       final ExecutableElement elt,
       final AnnotatedExecutableType preType) {
+    return findTypeArguments(processingEnv, atypeFactory, expr, elt, preType, true);
+  }
 
+  public static Map<TypeVariable, AnnotatedTypeMirror> findTypeArguments(
+      final ProcessingEnvironment processingEnv,
+      final AnnotatedTypeFactory atypeFactory,
+      final ExpressionTree expr,
+      final ExecutableElement elt,
+      final AnnotatedExecutableType preType,
+      boolean inferTypeArgs) {
     // Is the method a generic method?
     if (elt.getTypeParameters().isEmpty()) {
       return Collections.emptyMap();
@@ -719,9 +728,13 @@ public class AnnotatedTypes {
       }
       return typeArguments;
     } else {
-      return atypeFactory
-          .getTypeArgumentInference()
-          .inferTypeArgs(atypeFactory, expr, elt, preType);
+      if (inferTypeArgs) {
+        return atypeFactory
+            .getTypeArgumentInference()
+            .inferTypeArgs(atypeFactory, expr, elt, preType);
+      } else {
+        return Collections.emptyMap();
+      }
     }
   }
 
