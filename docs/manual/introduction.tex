@@ -196,8 +196,13 @@ Alternately, you can build the latest development version from source
 
 \textbf{Requirement:}
 % Keep in sync with build.gradle and SourceChecker.init.
-You must have \textbf{JDK 8, 11, or 17} installed.
-(The Checker Framework should work with any JDK 8--17, but we only test with JDKs 8, 11, and 17.)
+You must have \textbf{JDK 8}, \textbf{JDK 11}, or \textbf{JDK 17} installed.
+% Possible replacement for the above.
+% You must have a supported LTS JDK installed: \textbf{JDK 8}, \textbf{JDK
+% 11}, or \textbf{JDK 17}.
+The Checker Framework processes code written for any of those versions.
+(For running the Checker Framework under other JDK versions, see
+Section~\ref{permitUnsupportedJdkVersion}.)
 
 The installation process has two required steps and one
 optional step.
@@ -207,7 +212,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.18.1-eisop1.zip}
+  \url{https://checkerframework.org/checker-framework-3.19.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -696,6 +701,16 @@ Type-checking modes:  enable/disable functionality
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment.type.incompatible")> has no effect, but
   \<@SuppressWarnings("nullness:assignment.type.incompatible")> does.
+\item \<-ApermitUnsupportedJdkVersion>
+  \label{permitUnsupportedJdkVersion}
+  Issue a note, rather than a warning, when running the Checker Framework
+  on a JDK version that the Checker Framework maintainers do not support.
+  The Checker Framework seems to work on all versions of the JDK, from JDK
+  8 onward.  However, in the past, Oracle has introduced JDK
+  incompatibilities that caused mysterious (to users) failures.  If you
+  have a problem while using this command-line argument, please do not
+  report it to the Checker Framework maintainers unless you can reproduce
+  the problem without this command-line argument.
 \end{itemize}
 
 Partially-annotated libraries
@@ -1632,7 +1647,7 @@ or suppress warnings.
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse fenum propkey forName
+% LocalWords:  callees Xmx unconfuse fenum propkey forName de step1 step2
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
 % LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext m2
 % LocalWords:  AignoreRawTypeArguments AsuggestPureMethods ApermitMissingJdk
@@ -1654,9 +1669,9 @@ or suppress warnings.
 % LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
 % LocalWords:  EnsuresNonNull EnsuresNonNullIf checkername orElseThrow
 % LocalWords:  ArequirePrefixInWarningSuppressions MaybePresent checker''
-% LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
+% LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties step3
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
 % LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors AutoValue
 % LocalWords:  specification'' AwarnUnneededSuppressionsExceptions
-% LocalWords:  requireNonNull
+% LocalWords:  requireNonNull ApermitUnsupportedJdkVersion AstubWarnNote

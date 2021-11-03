@@ -54,7 +54,7 @@ public class RawTypeTest {
             m2(c);
         }
 
-        @SuppressWarnings("removal") // AccessController in JDK 17
+        @SuppressWarnings("removal") // AccessController is deprecated for removal in Java 17
         public void m4() {
             AccessController.doPrivileged(
                     new PrivilegedAction<Object>() {

@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -75,8 +76,8 @@ public class FieldAccess extends JavaExpression {
         this.field = fieldElement;
         String fieldName = fieldElement.toString();
         if (fieldName.equals("class") || fieldName.equals("this")) {
-            Error e =
-                    new Error(
+            BugInCF e =
+                    new BugInCF(
                             String.format(
                                     "bad field name \"%s\" in new FieldAccess(%s, %s, %s)%n",
                                     fieldName, receiver, type, fieldElement));

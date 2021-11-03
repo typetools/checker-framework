@@ -75,7 +75,7 @@ public class AnnotationFileUtil {
                 case AJAVA:
                     return false;
                 default:
-                    throw new Error("unhandled case " + this);
+                    throw new BugInCF("unhandled case " + this);
             }
         }
 
@@ -94,7 +94,7 @@ public class AnnotationFileUtil {
                 case AJAVA:
                     return false;
                 default:
-                    throw new Error("unhandled case " + this);
+                    throw new BugInCF("unhandled case " + this);
             }
         }
 
@@ -113,7 +113,7 @@ public class AnnotationFileUtil {
                 case AJAVA:
                     return true;
                 default:
-                    throw new Error("unhandled case " + this);
+                    throw new BugInCF("unhandled case " + this);
             }
         }
     }

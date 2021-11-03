@@ -6,7 +6,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -68,13 +67,6 @@ public class MethodInvocationNode extends Node {
         this.target = target;
         this.arguments = arguments;
         this.treePath = treePath;
-
-        // set assignment contexts for parameters
-        int i = 0;
-        for (Node arg : arguments) {
-            AssignmentContext ctx = new MethodParameterContext(target.getMethod(), i++);
-            arg.setAssignmentContext(ctx);
-        }
     }
 
     public MethodInvocationNode(MethodAccessNode target, List<Node> arguments, TreePath treePath) {

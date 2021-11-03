@@ -1008,7 +1008,7 @@ public class AnnotationFileParser {
                     } else if (decl instanceof EnumConstantDeclaration) {
                         processEnumConstant((EnumConstantDeclaration) decl, (VariableElement) elt);
                     } else {
-                        throw new Error(
+                        throw new BugInCF(
                                 "Unexpected decl type "
                                         + decl.getClass()
                                         + " for ENUM_CONSTANT kind, original: "
