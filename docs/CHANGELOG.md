@@ -1,4 +1,4 @@
-Version 3.19.0-eisop-1 (November ?, 2021)
+Version 3.19.0-eisop-1 (November 4, 2021)
 -------------------------------
 
 **User-visible changes:**
@@ -15,7 +15,7 @@ Small improvements and code-style clean-ups in the Dataflow Framework and
 in the core Checker Framework "framework" package.
 
 **Closed issues:**
-eisop#121.
+eisop#121, typetools#4923.
 
 
 Version 3.19.0 (November 1, 2021)
