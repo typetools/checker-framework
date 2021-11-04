@@ -54,7 +54,7 @@ public class ReturnNode extends Node {
      * @param methodTree method tree
      * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types)} instead.
      */
-    @Deprecated
+    @Deprecated // 2021-11-01
     public ReturnNode(
             ReturnTree returnTree, @Nullable Node result, Types types, MethodTree methodTree) {
         this(returnTree, result, types);
@@ -70,7 +70,7 @@ public class ReturnNode extends Node {
      * @param methodSymbol methodSymbol
      * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types)} instead.
      */
-    @Deprecated
+    @Deprecated // 2021-11-01
     public ReturnNode(
             ReturnTree returnTree,
             @Nullable Node result,
