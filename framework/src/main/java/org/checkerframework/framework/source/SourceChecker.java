@@ -229,6 +229,7 @@ import javax.tools.Diagnostic.Kind;
     "requirePrefixInWarningSuppressions",
 
     // Permit running under JDKs other than those the Checker Framework officially supports.
+    // Also see "noJreVersionCheck" option.
     "permitUnsupportedJdkVersion",
 
     // Ignore annotations in bytecode that have invalid annotation locations.
@@ -301,6 +302,7 @@ import javax.tools.Diagnostic.Kind;
     "nomsgtext",
 
     // Do not perform a JRE version check.
+    // Also see "permitUnsupportedJdkVersion" option.
     "noJreVersionCheck",
 
     /// Format of messages

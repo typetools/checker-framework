@@ -711,6 +711,14 @@ Type-checking modes:  enable/disable functionality
   have a problem while using this command-line argument, please do not
   report it to the Checker Framework maintainers unless you can reproduce
   the problem without this command-line argument.
+  Also see the \<-AnoJreVersionCheck> option below.
+\item \<-AnoJreVersionCheck>
+  Completely disable the JDK version check and issue neither a warning nor
+  a note. This is useful to allow Checker Framework tests to run on any
+  JDK, but could also be useful when the warning/note is redundant for a
+  user.
+  See comments for \<-ApermitUnsupportedJdkVersion> option above.
+
 \end{itemize}
 
 Partially-annotated libraries
