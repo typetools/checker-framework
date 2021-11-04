@@ -629,7 +629,7 @@ opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
 
 \item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
-required with JDK 17+ because the Checker Framework accesses non-exported members of these packages.
+required with JDK 16+ because the Checker Framework accesses non-exported members of these packages.
 (These are also required with JDK 11 if \<--illegal-access> is set to \<deny>.)
 
 \end{enumerate}
