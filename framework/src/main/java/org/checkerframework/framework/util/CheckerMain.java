@@ -437,15 +437,12 @@ public class CheckerMain {
             args.addAll(
                     // Keep this list in sync with the lists in checker-framework/build.gradle in
                     // compilerArgsForRunningCFs, the sections with labels
-                    // "javac-jdk11-non-modularized",
-                    // "maven", and "sbt" in the manual, and in the checker-framework-gradle-plugin,
-                    // CheckerFrameworkPlugin#applyToProject
+                    // "javac-jdk11-non-modularized", "maven", and "sbt" in the manual, and in the
+                    // checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
                     Arrays.asList(
                             // These are required in Java 17+ because the --illegal-access option is
-                            // set to deny
-                            // by default.  None of these packages are accessed via reflection, so
-                            // the module
-                            // only needs to be exported, but not opened.
+                            // set to deny by default.  None of these packages are accessed via
+                            // reflection, so the module only needs to be exported, but not opened.
                             "--add-exports",
                             "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
                             "--add-exports",
