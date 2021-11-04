@@ -18,6 +18,31 @@ in the core Checker Framework "framework" package.
 eisop#121.
 
 
+Version 3.19.0 (November 1, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 17 -- that is, it runs on a version 17 JVM.
+The Checker Framework also continues to run under JDK 8 and JDK 11.  New
+command-line argument `-ApermitUnsupportedJdkVersion` lets you run the Checker
+Framework on any JDK (version 8 or greater) without a warning about an
+unsupported JDK version.  The Checker Framework does not yet run on code that
+contains switch expressions.
+
+**Implementation details:**
+
+Removed `org.checkerframework.framework.type.VisitorState`
+Removed `AnnotatedTypeFactory#postTypeVarSubstitution`
+
+Deprecated methods in AnnotatedTypeFactory:
+* `getCurrentClassTree`
+* `getCurrentMethodReceiver`
+
+**Closed issues:**
+#4932, #4924, #4908, #3014.
+
+
 Version 3.18.1-eisop-1 (October 7, 2021)
 -------------------------------
 

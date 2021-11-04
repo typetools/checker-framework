@@ -3,7 +3,7 @@ warning: No processor claimed any of these annotations: org.checkerframework.che
 #
 # This is in method fqBinaryNameToType, but there are no calls to it, so WPI didn't infer a type for its formal parameter.
 #
-src/main/java/org/plumelib/bcelutil/BcelUtil.java:777: error: [argument.type.incompatible] incompatible argument for parameter typename of parseFqBinaryName.
+src/main/java/org/plumelib/bcelutil/BcelUtil.java:779: error: [argument.type.incompatible] incompatible argument for parameter typename of parseFqBinaryName.
         Signatures.ClassnameAndDimensions.parseFqBinaryName(classname);
                                                             ^
   found   : @SignatureUnknown String

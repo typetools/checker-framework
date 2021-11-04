@@ -60,7 +60,7 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_15:
     case JavaVersion.VERSION_16:
     case JavaVersion.VERSION_18:
-        logger.warn("The Checker Framework has only been tested with JDKs 8, 11, and 17." +
+        logger.warn("The Checker Framework has only been tested with JDK 8, 11, and 17." +
                 " Found version " + JavaVersion.current().majorVersion);
         break;
     case JavaVersion.VERSION_1_8:
@@ -102,7 +102,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.18.1-eisop1'
+    version '3.19.0'
 
     repositories {
         mavenCentral()

@@ -6,8 +6,6 @@ import com.sun.source.tree.ReturnTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.LambdaReturnContext;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnContext;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,30 +26,58 @@ import javax.lang.model.util.Types;
  */
 public class ReturnNode extends Node {
 
-    protected final ReturnTree tree;
+    /** The return tree. */
+    protected final ReturnTree returnTree;
+
+    /** The node of the returned expression. */
     protected final @Nullable Node result;
 
-    public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
+    /**
+     * Creates a node for the given return statement.
+     *
+     * @param returnTree return tree
+     * @param result the returned expression
+     * @param types types util
+     */
+    public ReturnNode(ReturnTree returnTree, @Nullable Node result, Types types) {
         super(types.getNoType(TypeKind.NONE));
         this.result = result;
-        tree = t;
-        if (result != null) {
-            result.setAssignmentContext(new MethodReturnContext(methodTree));
-        }
+        this.returnTree = returnTree;
     }
 
+    /**
+     * Creates a node for the given return statement.
+     *
+     * @param returnTree return tree
+     * @param result the returned expression
+     * @param types types util
+     * @param methodTree method tree
+     * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types)} instead.
+     */
+    @Deprecated // 2021-11-01
     public ReturnNode(
-            ReturnTree t,
+            ReturnTree returnTree, @Nullable Node result, Types types, MethodTree methodTree) {
+        this(returnTree, result, types);
+    }
+
+    /**
+     * Creates a node for the given return statement.
+     *
+     * @param returnTree return tree
+     * @param result the returned expression
+     * @param types types util
+     * @param lambda lambda
+     * @param methodSymbol methodSymbol
+     * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types)} instead.
+     */
+    @Deprecated // 2021-11-01
+    public ReturnNode(
+            ReturnTree returnTree,
             @Nullable Node result,
             Types types,
             LambdaExpressionTree lambda,
             MethodSymbol methodSymbol) {
-        super(types.getNoType(TypeKind.NONE));
-        this.result = result;
-        tree = t;
-        if (result != null) {
-            result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
-        }
+        this(returnTree, result, types);
     }
 
     /** The result of the return node, {@code null} otherwise. */
@@ -61,7 +87,7 @@ public class ReturnNode extends Node {
 
     @Override
     public ReturnTree getTree() {
-        return tree;
+        return returnTree;
     }
 
     @Override

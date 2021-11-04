@@ -7,7 +7,6 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.AssignmentLhsContext;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Arrays;
@@ -43,7 +42,6 @@ public class AssignmentNode extends Node {
         this.tree = tree;
         this.lhs = target;
         this.rhs = expression;
-        rhs.setAssignmentContext(new AssignmentLhsContext(lhs));
     }
 
     /**

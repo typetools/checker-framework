@@ -275,7 +275,7 @@ public class SystemUtil {
         if (value.equals("false")) {
             return false;
         }
-        throw new Error(
+        throw new UserError(
                 String.format(
                         "Value for system property %s should be boolean, but is \"%s\".",
                         key, value));

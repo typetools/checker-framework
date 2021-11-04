@@ -228,6 +228,10 @@ import javax.tools.Diagnostic.Kind;
     // java.lang.String)
     "requirePrefixInWarningSuppressions",
 
+    // Permit running under JDKs other than those the Checker Framework officially supports.
+    // Also see "noJreVersionCheck" option.
+    "permitUnsupportedJdkVersion",
+
     // Ignore annotations in bytecode that have invalid annotation locations.
     // See https://github.com/typetools/checker-framework/issues/2173
     // org.checkerframework.framework.type.ElementAnnotationApplier.apply
@@ -298,6 +302,7 @@ import javax.tools.Diagnostic.Kind;
     "nomsgtext",
 
     // Do not perform a JRE version check.
+    // Also see "permitUnsupportedJdkVersion" option.
     "noJreVersionCheck",
 
     /// Format of messages
@@ -545,7 +550,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 && jreVersion != 11
                 && jreVersion != 17) {
             message(
-                    Kind.WARNING,
+                    (hasOption("permitUnsupportedJdkVersion") ? Kind.NOTE : Kind.WARNING),
                     "Use JDK 8, 11, or 17 to run the Checker Framework.  You are using version %d.",
                     jreVersion);
         }

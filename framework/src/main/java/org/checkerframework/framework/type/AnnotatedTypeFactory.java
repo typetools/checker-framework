@@ -200,8 +200,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Utility class for working with {@link TypeMirror}s. */
     public final Types types;
 
-    /** The state of the visitor. */
-    protected final VisitorState visitorState;
+    /**
+     * A TreePath to the current tree that an external "visitor" is visiting. The visitor is either
+     * a subclass of {@link BaseTypeVisitor} or {@link
+     * org.checkerframework.framework.flow.CFAbstractTransfer}.
+     */
+    private @Nullable TreePath visitorTreePath;
 
     /** The AnnotatedFor.value argument/element. */
     protected final ExecutableElement annotatedForValueElement;
@@ -532,7 +536,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.trees = Trees.instance(processingEnv);
         this.elements = processingEnv.getElementUtils();
         this.types = processingEnv.getTypeUtils();
-        this.visitorState = new VisitorState();
 
         this.supportedQuals = new HashSet<>();
         this.supportedQualNames = new HashSet<>();
@@ -1872,25 +1875,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * A callback method for the AnnotatedTypeFactory subtypes to customize
-     * AnnotatedTypeMirror.substitute().
-     *
-     * @param varDecl a declaration of a type variable
-     * @param varUse a use of the same type variable
-     * @param value the new type to substitute in for the type variable
-     */
-    public void postTypeVarSubstitution(
-            AnnotatedTypeVariable varDecl,
-            AnnotatedTypeVariable varUse,
-            AnnotatedTypeMirror value) {
-        if (!varUse.getAnnotationsField().isEmpty()
-                && !AnnotationUtils.areSame(
-                        varUse.getAnnotationsField(), varDecl.getAnnotationsField())) {
-            value.replaceAnnotations(varUse.getAnnotationsField());
-        }
-    }
-
-    /**
      * Adapt the upper bounds of the type variables of a class relative to the type instantiation.
      * In some type systems, the upper bounds depend on the instantiation of the class. For example,
      * in the Generic Universe Type system, consider a class declaration
@@ -2114,7 +2098,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             return declarationFromElement(enclosingMethodOrClass);
         }
-        return getCurrentClassTree(tree);
+        return TreePathUtil.enclosingClass(path);
     }
 
     /**
@@ -2941,7 +2925,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             case SAME:
                 return exprType;
             default:
-                throw new Error("unhandled PrimitiveConversionKind");
+                throw new BugInCF("unhandled PrimitiveConversionKind");
         }
     }
 
@@ -3091,15 +3075,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                                 narrowedTypeMirror, this, type.isDeclaration());
         narrowed.addAnnotations(type.getAnnotations());
         return narrowed;
-    }
-
-    /**
-     * Returns the VisitorState instance used by the factory to infer types.
-     *
-     * @return the VisitorState instance used by the factory to infer types
-     */
-    public VisitorState getVisitorState() {
-        return this.visitorState;
     }
 
     // **********************************************************************
@@ -3575,73 +3550,90 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the current class type being visited by the visitor. The method uses the parameter
-     * only if the most enclosing class cannot be found directly.
+     * Returns the class tree enclosing {@code tree}.
      *
-     * @return type of the most enclosing class being visited
+     * @param tree the tree whose enclosing class is returned
+     * @return the class tree enclosing {@code tree}
+     * @deprecated Use {@code TreePathUtil.enclosingClass(getPath(tree))} instead.
      */
-    // This method is used to wrap access to visitorState
+    @Deprecated // 2021-11-01
     protected final ClassTree getCurrentClassTree(Tree tree) {
-        if (visitorState.getClassTree() != null) {
-            return visitorState.getClassTree();
-        }
         return TreePathUtil.enclosingClass(getPath(tree));
     }
 
-    protected final AnnotatedDeclaredType getCurrentClassType(Tree tree) {
-        return getAnnotatedType(getCurrentClassTree(tree));
-    }
-
     /**
-     * Returns the receiver type of the current method being visited, and returns null if the
-     * visited tree is not within a method or if that method has no receiver (e.g. a static method).
+     * Returns the receiver type of the method enclosing {@code tree}.
      *
      * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
      *
+     * @param tree the tree used to find the enclosing method.
      * @return receiver type of the most enclosing method being visited
+     * @deprecated Use {@link #getSelfType(Tree)} instead.
      */
+    @Deprecated // 2021-11-01
     protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
-        AnnotatedDeclaredType res = visitorState.getMethodReceiver();
-        if (res == null) {
-            TreePath path = getPath(tree);
-            if (path != null) {
-                @SuppressWarnings("interning:assignment.type.incompatible") // used for == test
-                @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
-                ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
+        TreePath path = getPath(tree);
+        if (path == null) {
+            return null;
+        }
+        @SuppressWarnings("interning:assignment") // used for == test
+        @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
 
-                boolean found = false;
+        boolean found = false;
 
-                for (Tree member : enclosingClass.getMembers()) {
-                    if (member.getKind() == Tree.Kind.METHOD) {
-                        if (member == enclosingMethod) {
-                            found = true;
-                        }
-                    }
-                }
-
-                if (found && enclosingMethod != null) {
-                    AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
-                    res = method.getReceiverType();
-                    // TODO: three tests fail if one adds the following, which would make sense, or
-                    // not?
-                    // visitorState.setMethodReceiver(res);
-                } else {
-                    // We are within an anonymous class or field initializer
-                    res = this.getAnnotatedType(enclosingClass);
+        for (Tree member : enclosingClass.getMembers()) {
+            if (member.getKind() == Tree.Kind.METHOD) {
+                if (member == enclosingMethod) {
+                    found = true;
                 }
             }
         }
-        return res;
+
+        if (found && enclosingMethod != null) {
+            AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
+            return method.getReceiverType();
+        } else {
+            // We are within an anonymous class or field initializer
+            return this.getAnnotatedType(enclosingClass);
+        }
     }
 
+    /**
+     * Returns true if {@code tree} is within a constructor.
+     *
+     * @param tree the tree that might be within a constructor.
+     * @return true if {@code tree} is within a constructor
+     */
     protected final boolean isWithinConstructor(Tree tree) {
-        if (visitorState.getClassType() != null) {
-            return visitorState.getMethodTree() != null
-                    && TreeUtils.isConstructor(visitorState.getMethodTree());
-        }
-
         MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getPath(tree));
         return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
+    }
+
+    /**
+     * Sets the path to the tree that an external "visitor" is visiting. The visitor is either a
+     * subclass of {@link BaseTypeVisitor} or {@link
+     * org.checkerframework.framework.flow.CFAbstractTransfer}.
+     *
+     * @param visitorTreePath path to the current tree that an external "visitor" is visiting
+     */
+    public void setVisitorTreePath(@Nullable TreePath visitorTreePath) {
+        this.visitorTreePath = visitorTreePath;
+    }
+
+    /**
+     * Returns the path to the tree that an external "visitor" is visiting. The type factory does
+     * not update this value as it computes the types of any tree or element needed compute the type
+     * of the tree being visited. Therefore this path may not be the path to the tree whose type is
+     * being computed. This method should not be used directly. Use {@link #getPath(Tree)} instead.
+     *
+     * <p>This method is used to save the previous tree path and to give a hint to {@link
+     * #getPath(Tree)} on where to look for a tree rather than searching starting at the root.
+     *
+     * @return the path to the tree that an external "visitor" is visiting
+     */
+    public @Nullable TreePath getVisitorTreePath() {
+        return visitorTreePath;
     }
 
     /**
@@ -3675,7 +3667,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return treePathCache.getPath(root, node);
         }
 
-        TreePath currentPath = visitorState.getPath();
+        TreePath currentPath = visitorTreePath;
         if (currentPath == null) {
             TreePath path = TreePath.getPath(root, node);
             treePathCache.addPath(node, path);

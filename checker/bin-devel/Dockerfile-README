@@ -49,12 +49,12 @@ export PROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
-export JDKVER=jdk16
+export JDKVER=jdk17
 export PROJECT=cf
 create_upload_docker_image
 
 export OS=ubuntu
-export JDKVER=jdk16-plus
+export JDKVER=jdk17-plus
 export PROJECT=cf
 create_upload_docker_image
 

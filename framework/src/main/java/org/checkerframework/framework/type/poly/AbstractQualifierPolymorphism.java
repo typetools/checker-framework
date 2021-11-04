@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -169,7 +170,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgsParameters(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
-                AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
+                CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
         AnnotationMirrorMap<AnnotationMirror> instantiationMapping =
                 collector.visit(arguments, parameters);
@@ -203,7 +204,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         List<AnnotatedTypeMirror> parameters =
                 AnnotatedTypes.expandVarArgsParameters(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments =
-                AnnotatedTypes.getAnnotatedTypes(atypeFactory, parameters, tree.getArguments());
+                CollectionsPlume.mapList(atypeFactory::getAnnotatedType, tree.getArguments());
 
         AnnotationMirrorMap<AnnotationMirror> instantiationMapping =
                 collector.visit(arguments, parameters);

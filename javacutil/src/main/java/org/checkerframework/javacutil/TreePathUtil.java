@@ -27,7 +27,7 @@ public final class TreePathUtil {
 
     /** Do not instantiate; this class is a collection of static methods. */
     private TreePathUtil() {
-        throw new Error("Class TreeUtils cannot be instantiated.");
+        throw new BugInCF("Class TreeUtils cannot be instantiated.");
     }
 
     ///
