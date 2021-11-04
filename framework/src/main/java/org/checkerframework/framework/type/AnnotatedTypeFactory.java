@@ -3556,7 +3556,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the class tree enclosing {@code tree}
      * @deprecated Use {@code TreePathUtil.enclosingClass(getPath(tree))} instead.
      */
-    @Deprecated
+    @Deprecated // 2021-11-01
     protected final ClassTree getCurrentClassTree(Tree tree) {
         return TreePathUtil.enclosingClass(getPath(tree));
     }
@@ -3570,7 +3570,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return receiver type of the most enclosing method being visited
      * @deprecated Use {@link #getSelfType(Tree)} instead.
      */
-    @Deprecated
+    @Deprecated // 2021-11-01
     protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
         TreePath path = getPath(tree);
         if (path == null) {

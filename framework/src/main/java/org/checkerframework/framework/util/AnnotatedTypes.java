@@ -1053,7 +1053,7 @@ public class AnnotatedTypes {
      * @return a list with the AnnotatedTypeMirror of each tree in trees
      * @deprecated use CollectionsPlume.mapList(atypeFactory::getAnnotatedType, trees) instead.
      */
-    @Deprecated
+    @Deprecated // 2021-11-01
     public static List<AnnotatedTypeMirror> getAnnotatedTypes(
             AnnotatedTypeFactory atypeFactory,
             List<AnnotatedTypeMirror> paramTypes,
