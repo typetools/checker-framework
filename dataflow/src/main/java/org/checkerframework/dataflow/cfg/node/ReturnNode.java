@@ -52,8 +52,7 @@ public class ReturnNode extends Node {
      * @param result the returned expression
      * @param types types util
      * @param methodTree method tree
-     * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types, LambdaExpressionTree,
-     *     MethodSymbol)} instead.
+     * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types)} instead.
      */
     @Deprecated
     public ReturnNode(
@@ -69,8 +68,7 @@ public class ReturnNode extends Node {
      * @param types types util
      * @param lambda lambda
      * @param methodSymbol methodSymbol
-     * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types, LambdaExpressionTree,
-     *     MethodSymbol)} instead.
+     * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types)} instead.
      */
     @Deprecated
     public ReturnNode(
