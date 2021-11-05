@@ -89,9 +89,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
     @Override
     public boolean isReflectiveMethodInvocation(MethodInvocationTree tree) {
-        return ((provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), Invoke.class) != null
+        return provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), Invoke.class) != null
                 || provider.getDeclAnnotation(TreeUtils.elementFromTree(tree), NewInstance.class)
-                        != null));
+                        != null;
     }
 
     @Override
