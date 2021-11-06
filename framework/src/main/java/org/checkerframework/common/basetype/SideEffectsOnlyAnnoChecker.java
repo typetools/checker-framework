@@ -135,8 +135,8 @@ public class SideEffectsOnlyAnnoChecker {
 
       AnnotationMirror sideEffectsOnlyAnno =
           annoProvider.getDeclAnnotation(treeElem, SideEffectsOnly.class);
+      // The invoked method is not annotated with @SideEffectsOnly; Report an error.
       if (sideEffectsOnlyAnno == null) {
-        // The invoked method is not annotated with @SideEffectsOnly; Report an error.
         checker.reportError(node, "purity.incorrect.sideeffectsonly", node);
       } else {
         // The invoked method is annotated with @SideEffectsOnly.
