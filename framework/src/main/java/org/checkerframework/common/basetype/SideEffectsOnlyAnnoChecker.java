@@ -34,12 +34,13 @@ public class SideEffectsOnlyAnnoChecker {
   /**
    * Returns the computed {@code SideEffectsOnlyResult}.
    *
-   * @param statement TreePath
-   * @param annoProvider AnnotationProvider
-   * @param sideEffectsOnlyExpressions List of JavaExpression
-   * @param processingEnv ProcessingEnvironment
-   * @param checker BaseTypeChecker
-   * @return SideEffectsOnlyResult
+   * @param statement the statement to check
+   * @param annoProvider the annotation provider
+   * @param sideEffectsOnlyExpressions List of JavaExpressions that are provided as annotation
+   *     values to {@link SideEffectsOnly}
+   * @param processingEnv The processing environment
+   * @param checker the checker to use
+   * @return SideEffectsOnlyResult returns the result of {@link SideEffectsOnlyAnnoChecker}
    */
   public static SideEffectsOnlyResult checkSideEffectsOnly(
       TreePath statement,
@@ -54,31 +55,34 @@ public class SideEffectsOnlyAnnoChecker {
     return helper.sideEffectsOnlyResult;
   }
 
-  /** SideEffectsOnlyResult. */
+  /**
+   * Result of the {@link SideEffectsOnlyAnnoChecker}. Can be queried to get the list of mutated
+   * expressions.
+   */
   public static class SideEffectsOnlyResult {
     /**
      * List of expressions a method side-effects that are not specified in the list of arguments to
      * {@link SideEffectsOnly}.
      */
-    protected final List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = new ArrayList<>(1);
+    protected final List<Pair<Tree, JavaExpression>> mutatedExprs = new ArrayList<>(1);
 
     /**
-     * Adds {@code t} and {@code javaExpr} as a Pair to seOnlyIncorrectExprs.
+     * Adds {@code t} and {@code javaExpr} as a Pair to mutatedExprs.
      *
-     * @param t Tree
-     * @param javaExpr JavaExpression
+     * @param t The expression that is mutated
+     * @param javaExpr The corresponding Java expression that is mutated
      */
     public void addMutatedExpr(Tree t, JavaExpression javaExpr) {
-      seOnlyIncorrectExprs.add(Pair.of(t, javaExpr));
+      mutatedExprs.add(Pair.of(t, javaExpr));
     }
 
     /**
-     * Returns {@code seOnlyIncorrectExprs}.
+     * Returns {@code mutatedExprs}.
      *
-     * @return seOnlyIncorrectExprs
+     * @return mutatedExprs
      */
     public List<Pair<Tree, JavaExpression>> getSeOnlyResult() {
-      return seOnlyIncorrectExprs;
+      return mutatedExprs;
     }
   }
 
