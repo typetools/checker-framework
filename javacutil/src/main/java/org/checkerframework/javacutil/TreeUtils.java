@@ -1660,6 +1660,7 @@ public final class TreeUtils {
    * @return the list of expressions in the case
    */
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
+    // Could also test against JDK version number, which is likely more efficient.
     try {
       Method method = CaseTree.class.getDeclaredMethod("getExpressions");
       @SuppressWarnings({"unchecked", "nullness"})
