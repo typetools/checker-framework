@@ -4420,7 +4420,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * classes, as specified in the {@code checker.skipUses} property.
    *
    * <p>It returns true if exprTree is a method invocation or a field access to a class whose
-   * qualified name matches @{link checker.skipUses} expression.
+   * qualified name matches {@code checker.skipUses} expression.
    *
    * @param exprTree any expression tree
    * @return true if checker should not test exprTree
