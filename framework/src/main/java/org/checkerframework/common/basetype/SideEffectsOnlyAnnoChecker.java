@@ -34,12 +34,12 @@ public class SideEffectsOnlyAnnoChecker {
   /**
    * Returns the computed {@code SideEffectsOnlyResult}.
    *
-   * @param statement the statement to check
-   * @param annoProvider the annotation provider
+   * @param statement The statement to check
+   * @param annoProvider The annotation provider
    * @param sideEffectsOnlyExpressions List of JavaExpressions that are provided as annotation
    *     values to {@link SideEffectsOnly}
    * @param processingEnv The processing environment
-   * @param checker the checker to use
+   * @param checker The checker to use
    * @return SideEffectsOnlyResult returns the result of {@link SideEffectsOnlyAnnoChecker}
    */
   public static SideEffectsOnlyResult checkSideEffectsOnly(
@@ -86,7 +86,10 @@ public class SideEffectsOnlyAnnoChecker {
     }
   }
 
-  /** SideEffectsOnlyCheckerHelper. */
+  /**
+   * Class that visits that visits various nodes and computes mutated expressions that are not
+   * specified as annotation values to {@link SideEffectsOnly}.
+   */
   protected static class SideEffectsOnlyCheckerHelper extends TreePathScanner<Void, Void> {
     /** Result computed by SideEffectsOnlyCheckerHelper. */
     SideEffectsOnlyResult sideEffectsOnlyResult = new SideEffectsOnlyResult();
@@ -95,20 +98,21 @@ public class SideEffectsOnlyAnnoChecker {
      */
     List<JavaExpression> sideEffectsOnlyExpressions;
 
-    /** AnnotationProvider. */
+    /** The annotation provider. */
     protected final AnnotationProvider annoProvider;
-    /** Processing Environment. */
+    /** The processing environment. */
     ProcessingEnvironment processingEnv;
-    /** BaseTypeChecker. */
+    /** The checker to use. */
     BaseTypeChecker checker;
 
     /**
      * Constructor for SideEffectsOnlyCheckerHelper.
      *
-     * @param annoProvider AnnotationProvider
-     * @param sideEffectsOnlyExpressions List of JavaExpressions
-     * @param processingEnv ProcessingEnvironment
-     * @param checker BaseTypeChecker
+     * @param annoProvider The annotation provider
+     * @param sideEffectsOnlyExpressions List of JavaExpressions that are provided as annotation
+     *     values to {@link SideEffectsOnly}
+     * @param processingEnv The processing environment
+     * @param checker The checker to use
      */
     public SideEffectsOnlyCheckerHelper(
         AnnotationProvider annoProvider,
