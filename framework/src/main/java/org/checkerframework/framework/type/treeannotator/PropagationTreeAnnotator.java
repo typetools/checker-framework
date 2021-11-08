@@ -12,16 +12,17 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
@@ -106,17 +107,25 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       } else if (parentTree.getKind() == Kind.METHOD_INVOCATION && useAssignmentContext) {
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
         useAssignmentContext = false;
-        ParameterizedExecutableType m;
+        AnnotatedExecutableType m;
         try {
-          m = atypeFactory.methodFromUse(methodInvocationTree);
+          if (atypeFactory.shouldCache
+              && methodInvocationToType.containsKey(methodInvocationTree)) {
+            m = methodInvocationToType.get(methodInvocationTree);
+          } else {
+            m = atypeFactory.methodFromUse(methodInvocationTree).executableType;
+            if (atypeFactory.shouldCache) {
+              methodInvocationToType.put(methodInvocationTree, m);
+            }
+          }
         } finally {
           useAssignmentContext = true;
         }
-        for (int i = 0; i < m.executableType.getParameterTypes().size(); i++) {
+        for (int i = 0; i < m.getParameterTypes().size(); i++) {
           @SuppressWarnings("interning") // Tree must be exactly the same.
           boolean foundArgument = methodInvocationTree.getArguments().get(i) == tree;
           if (foundArgument) {
-            contextType = m.executableType.getParameterTypes().get(i);
+            contextType = m.getParameterTypes().get(i);
             break;
           }
         }
@@ -160,6 +169,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     return null;
   }
+
+  /** A mapping from {@code MethodInvocationTree} to its {@code AnnotatedExecutableType}. */
+  private final Map<MethodInvocationTree, AnnotatedExecutableType> methodInvocationToType =
+      CollectionUtils.createLRUCache(300);
 
   @Override
   public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
