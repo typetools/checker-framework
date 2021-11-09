@@ -4,4 +4,4 @@ https://github.com/kelloggm/wpi-many-tests-html-pretty-print 37e5f4fa0506690c968
 https://github.com/kelloggm/-wpi-many-tests-bibtex-clean bd6c1cff1ba3fb8a6ecbbb73561ec2a43d018a79
 # Test that the commenting feature works (if it doesn't then, this line will be read and fail, as it's not a URL).
 https://github.com/kelloggm/wpi-many-tests-ensures-called-methods e1e6d4c8c5ab4190b181fcbc95b5249c3a21afae
-https://github.com/Nargeshdb/wpi-owning-field e357cb04299298425b29a58a7598378b39e43a57
+https://github.com/Nargeshdb/wpi-many-tests-owning-field e357cb04299298425b29a58a7598378b39e43a57
