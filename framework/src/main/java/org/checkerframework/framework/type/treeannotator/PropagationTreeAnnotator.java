@@ -57,6 +57,17 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    */
   private boolean useAssignmentContext = true;
 
+  /**
+   * A mapping from {@code MethodInvocationTree} to the type of its declaration adapted to the call
+   * site. This is a cache used when getting the type of a new array expression that is an argument
+   * to a method. Getting the call-site-adapted type of a method also gets the type of all the
+   * arguments at the call site. (This happens both for resolving polymorphic methods and for method
+   * type argument inference.) {@link #useAssignmentContext} is used to prevent infinite recursion
+   * and this cache is used to improve performance.
+   */
+  private final Map<MethodInvocationTree, AnnotatedExecutableType> methodInvocationToType =
+      CollectionUtils.createLRUCache(300);
+
   @Override
   public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
     assert type.getKind() == TypeKind.ARRAY
@@ -115,7 +126,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
           } else {
             m = atypeFactory.methodFromUse(methodInvocationTree).executableType;
             if (atypeFactory.shouldCache) {
-              // methodInvocationToType.put(methodInvocationTree, m);
+              methodInvocationToType.put(methodInvocationTree, m);
             }
           }
         } finally {
@@ -169,10 +180,6 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     return null;
   }
-
-  /** A mapping from {@code MethodInvocationTree} to its {@code AnnotatedExecutableType}. */
-  private final Map<MethodInvocationTree, AnnotatedExecutableType> methodInvocationToType =
-      CollectionUtils.createLRUCache(300);
 
   @Override
   public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
