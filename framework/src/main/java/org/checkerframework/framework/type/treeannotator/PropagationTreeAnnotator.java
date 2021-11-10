@@ -115,7 +115,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
           } else {
             m = atypeFactory.methodFromUse(methodInvocationTree).executableType;
             if (atypeFactory.shouldCache) {
-              methodInvocationToType.put(methodInvocationTree, m);
+              // methodInvocationToType.put(methodInvocationTree, m);
             }
           }
         } finally {
