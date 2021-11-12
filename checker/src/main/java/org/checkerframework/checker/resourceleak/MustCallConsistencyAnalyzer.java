@@ -999,8 +999,8 @@ class MustCallConsistencyAnalyzer {
   /**
    * Returns true if must-call type of node only contains close.
    *
-   * @param node the node
-   * @return
+   * @param node the node.
+   * @return true if must-call type of node only contains close.
    */
   boolean isJustCloseable(Node node) {
     MustCallAnnotatedTypeFactory mcAtf =
