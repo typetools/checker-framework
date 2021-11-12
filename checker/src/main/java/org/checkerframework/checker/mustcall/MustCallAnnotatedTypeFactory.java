@@ -161,7 +161,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *     identical to anno
    */
   // Package private to permit usage from the visitor in the common assignment check.
-  /* package-private */ AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
+  public AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
     if (anno == null || AnnotationUtils.areSame(anno, BOTTOM)) {
       return BOTTOM;
     } else if (!AnnotationUtils.areSameByName(
