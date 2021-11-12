@@ -991,7 +991,7 @@ public class JavaExpressionParseUtil {
         case XOR:
           return Tree.Kind.XOR;
         default:
-          throw new Error("unhandled " + op);
+          throw new BugInCF("unhandled " + op);
       }
     }
 

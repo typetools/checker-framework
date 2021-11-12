@@ -69,7 +69,7 @@ abstract class ExtendedNode {
    *     or {@code EXCEPTION_NODE})
    */
   public Node getNode() {
-    throw new Error("Do not call");
+    throw new BugInCF("Do not call");
   }
 
   /**
@@ -80,7 +80,7 @@ abstract class ExtendedNode {
    *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP})
    */
   public Label getLabel() {
-    throw new Error("Do not call");
+    throw new BugInCF("Do not call");
   }
 
   public BlockImpl getBlock() {

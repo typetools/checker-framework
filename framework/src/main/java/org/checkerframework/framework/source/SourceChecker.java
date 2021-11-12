@@ -224,6 +224,9 @@ import org.plumelib.util.UtilPlume;
   // java.lang.String)
   "requirePrefixInWarningSuppressions",
 
+  // Permit running under JDKs other than those the Checker Framework officially supports.
+  "permitUnsupportedJdkVersion",
+
   // Ignore annotations in bytecode that have invalid annotation locations.
   // See https://github.com/typetools/checker-framework/issues/2173
   // org.checkerframework.framework.type.ElementAnnotationApplier.apply
@@ -536,7 +539,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     int jreVersion = SystemUtil.getJreVersion();
     if (jreVersion != 8 && jreVersion != 11 && jreVersion != 17) {
       message(
-          Kind.WARNING,
+          (hasOption("permitUnsupportedJdkVersion") ? Kind.NOTE : Kind.WARNING),
           "Use JDK 8, 11, or 17 to run the Checker Framework.  You are using version %d.",
           jreVersion);
     }

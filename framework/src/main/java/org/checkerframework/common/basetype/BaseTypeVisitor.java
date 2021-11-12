@@ -1540,7 +1540,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         annoSymbol = (ClassSymbol) ((JCFieldAccess) annoType).sym;
         break;
       default:
-        throw new Error("Unhandled kind: " + annoType.getKind() + " for " + anno);
+        throw new BugInCF("Unhandled kind: " + annoType.getKind() + " for " + anno);
     }
     for (AnnotationMirror metaAnno : annoSymbol.getAnnotationMirrors()) {
       if (AnnotationUtils.areSameByName(metaAnno, TARGET)) {
@@ -4420,7 +4420,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * classes, as specified in the {@code checker.skipUses} property.
    *
    * <p>It returns true if exprTree is a method invocation or a field access to a class whose
-   * qualified name matches @{link checker.skipUses} expression.
+   * qualified name matches {@code checker.skipUses} expression.
    *
    * @param exprTree any expression tree
    * @return true if checker should not test exprTree

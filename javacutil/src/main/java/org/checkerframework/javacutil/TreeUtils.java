@@ -1682,6 +1682,7 @@ public final class TreeUtils {
    * @return the list of expressions in the case
    */
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
+    // Could also test against JDK version number, which is likely more efficient.
     try {
       Method method = CaseTree.class.getDeclaredMethod("getExpressions");
       @SuppressWarnings({"unchecked", "nullness"})
@@ -1697,8 +1698,11 @@ public final class TreeUtils {
     // Need to suppress deprecation on JDK 12 and later:
     @SuppressWarnings("deprecation")
     ExpressionTree expression = caseTree.getExpression();
-    if (expression == null) return Collections.emptyList();
-    else return Collections.singletonList(expression);
+    if (expression == null) {
+      return Collections.emptyList();
+    } else {
+      return Collections.singletonList(expression);
+    }
   }
 
   /**
