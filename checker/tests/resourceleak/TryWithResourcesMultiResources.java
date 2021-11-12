@@ -21,6 +21,7 @@ public class TryWithResourcesMultiResources {
     }
   }
 
+  // If "new OuterResource" throws an exception, then the socket won't be released.
   public void multiResourcesWrong(String address, int port) {
     // :: error: required.method.not.called
     try (OuterResource outer = new OuterResource(new Socket(address, port))) {
