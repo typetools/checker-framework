@@ -1,3 +1,5 @@
+// Based on a false positive reported on the BibTeX project
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -5,7 +7,7 @@ import org.plumelib.util.EntryReader;
 import org.plumelib.util.UtilPlume;
 
 @SuppressWarnings("deprecation")
-public final class BibtexCleanReport {
+public final class TryWithResourcesFP {
   public static void main(String[] args) {
     for (String filename : args) {
       File inFile = new File(filename);

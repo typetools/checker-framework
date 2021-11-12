@@ -988,7 +988,7 @@ class MustCallConsistencyAnalyzer {
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
         removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
-    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isJustCloseable(rhs)) {
+    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
       removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
@@ -997,12 +997,13 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if must-call type of node only contains close.
+   * Returns true if must-call type of node only contains close. This is a helper method for
+   * handling try-with-resources statements.
    *
    * @param node the node.
    * @return true if must-call type of node only contains close.
    */
-  boolean isJustCloseable(Node node) {
+  boolean isMustCallClose(Node node) {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
