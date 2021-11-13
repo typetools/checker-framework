@@ -89,7 +89,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   protected final AnnotationMirrorMap<AnnotationMirror> polyInstantiationForQualifierParameter =
       new AnnotationMirrorMap<>();
 
-  /** The visit method returns ture if the passed type has any polymorphic qualifiers. */
+  /** The visit method returns true if the passed type has any polymorphic qualifiers. */
   protected final SimpleAnnotatedTypeScanner<Boolean, Void> polyScanner;
 
   /**
