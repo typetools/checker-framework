@@ -234,6 +234,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * command line.
    */
   private final boolean checkPurity;
+  /** True if "-AcheckPurityAnnotations" was passed on the command line. */
+  private final boolean checkSideEffectsOnly;
   /**
    * True if purity annotations should be inferred. Should be set to false if both the Lock Checker
    * (or some other checker that overrides {@link CFAbstractStore#isSideEffectFree} in a
@@ -276,6 +278,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
     checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
+    checkSideEffectsOnly = checker.hasOption("checkPurityAnnotations");
   }
 
   /**
@@ -894,7 +897,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkPurity(node);
-      checkSideEffectsOnly(node);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(node);
@@ -967,11 +969,64 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
    * AnnotatedTypeMirror.AnnotatedDeclaredType)}.
    *
+   * <p>If the method {@code node} is annotated with {@link SideEffectsOnly}, check that the method
+   * side-effects a subset of the expressions specified as annotation arguments/elements to {@link
+   * SideEffectsOnly}.
+   *
    * @param node the method tree to check
    */
   protected void checkPurity(MethodTree node) {
     if (!checkPurity) {
       return;
+    }
+
+    TreePath body = atypeFactory.getPath(node.getBody());
+
+    if (checkSideEffectsOnly) {
+      if (body == null) {
+        return;
+      } else {
+        @Nullable Element methodDeclElem = TreeUtils.elementFromTree(node);
+        AnnotationMirror sefOnlyAnnotation =
+            atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
+        if (sefOnlyAnnotation == null) {
+          return;
+        }
+        List<String> sideEffectsOnlyExpressionStrings =
+            AnnotationUtils.getElementValueArray(
+                sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+        List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
+        for (String st : sideEffectsOnlyExpressionStrings) {
+          try {
+            JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, node, checker);
+            sideEffectsOnlyExpressions.add(exprJe);
+          } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+            checker.report(st, ex.getDiagMessage());
+            return;
+          }
+        }
+
+        if (sideEffectsOnlyExpressions.isEmpty()) {
+          return;
+        }
+
+        SideEffectsOnlyAnnoChecker.SideEffectsOnlyResult sefOnlyResult =
+            SideEffectsOnlyAnnoChecker.checkSideEffectsOnly(
+                body,
+                atypeFactory,
+                sideEffectsOnlyExpressions,
+                atypeFactory.getProcessingEnv(),
+                checker);
+
+        List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getSeOnlyResult();
+        if (!seOnlyIncorrectExprs.isEmpty()) {
+          for (Pair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
+            if (!sideEffectsOnlyExpressions.contains(s.second)) {
+              checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
+            }
+          }
+        }
+      }
     }
 
     if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
@@ -991,7 +1046,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    TreePath body = atypeFactory.getPath(node.getBody());
     PurityResult r;
     if (body == null) {
       r = new PurityResult();
@@ -1044,64 +1098,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
   }
 
-  /**
-   * If the method {@code node} is annotated with {@link SideEffectsOnly}, checks that the method
-   * side-effects a subset of the expressions specified as annotation arguments/elements to {@link
-   * SideEffectsOnly}.
-   *
-   * @param node the method tree to check
-   */
-  protected void checkSideEffectsOnly(MethodTree node) {
-    if (!checker.hasOption("checkPurityAnnotations")) {
-      return;
-    }
-
-    TreePath body = atypeFactory.getPath(node.getBody());
-    if (body == null) {
-      return;
-    } else {
-      @Nullable Element methodDeclElem = TreeUtils.elementFromTree(node);
-      AnnotationMirror sefOnlyAnnotation =
-          atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
-      if (sefOnlyAnnotation == null) {
-        return;
-      }
-      List<String> sideEffectsOnlyExpressionStrings =
-          AnnotationUtils.getElementValueArray(
-              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-      List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
-      for (String st : sideEffectsOnlyExpressionStrings) {
-        try {
-          JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, node, checker);
-          sideEffectsOnlyExpressions.add(exprJe);
-        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-          checker.report(st, ex.getDiagMessage());
-          return;
-        }
-      }
-
-      if (sideEffectsOnlyExpressions.isEmpty()) {
-        return;
-      }
-
-      SideEffectsOnlyAnnoChecker.SideEffectsOnlyResult sefOnlyResult =
-          SideEffectsOnlyAnnoChecker.checkSideEffectsOnly(
-              body,
-              atypeFactory,
-              sideEffectsOnlyExpressions,
-              atypeFactory.getProcessingEnv(),
-              checker);
-
-      List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getSeOnlyResult();
-      if (!seOnlyIncorrectExprs.isEmpty()) {
-        for (Pair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
-          if (!sideEffectsOnlyExpressions.contains(s.second)) {
-            checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
-          }
-        }
-      }
-    }
-  }
+  //  /**
+  //   *
+  //   *
+  //   * @param node the method tree to check
+  //   */
+  //  protected void checkSideEffectsOnly(MethodTree node) {
+  //
+  //  }
 
   /**
    * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
