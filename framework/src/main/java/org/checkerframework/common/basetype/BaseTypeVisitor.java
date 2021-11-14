@@ -1098,15 +1098,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
   }
 
-  //  /**
-  //   *
-  //   *
-  //   * @param node the method tree to check
-  //   */
-  //  protected void checkSideEffectsOnly(MethodTree node) {
-  //
-  //  }
-
   /**
    * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
    * class, then a conflicting.annos error will also be issued by {@link
