@@ -36,7 +36,7 @@ public class MustCallInferenceLogic {
    */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
 
-  /** The {@code &#064;Owning} annotation. */
+  /** The {@link Owning} annotation. */
   protected final AnnotationMirror OWNING;
 
   /** The control flow graph. */
