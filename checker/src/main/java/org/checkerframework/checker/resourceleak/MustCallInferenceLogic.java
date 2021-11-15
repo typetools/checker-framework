@@ -21,10 +21,10 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This class contains the Resource Leak Checker's annotation inference algorithm. For now, it just
- * contains inference logic for owning annotations on final owning fields. It adds an @Owning
- * annotation on a field if it finds a method that satisfies the @MustCall obligation of the field
- * along some path to the regular exit point.
+ * This class contains the Resource Leak Checker's annotation inference algorithm. It contains
+ * inference logic for owning annotations on final owning fields. It adds an @Owning annotation on a
+ * field if it finds a method that satisfies the @MustCall obligation of the field along some path
+ * to the regular exit point.
  */
 public class MustCallInferenceLogic {
 
@@ -36,7 +36,7 @@ public class MustCallInferenceLogic {
    */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
 
-  /** The {@code &#064;Owning} annotation. */
+  /** The {@code @Owning} annotation. */
   protected final AnnotationMirror OWNING;
 
   /** The control flow graph. */
