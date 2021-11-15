@@ -160,8 +160,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @return a MustCall annotation that does not have "close" as one of its values, but is otherwise
    *     identical to anno
    */
-  // Package private to permit usage from the visitor in the common assignment check.
-  /* package-private */ AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
+  public AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
     if (anno == null || AnnotationUtils.areSame(anno, BOTTOM)) {
       return BOTTOM;
     } else if (!AnnotationUtils.areSameByName(
