@@ -146,8 +146,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     ExpressionTree outerTree =
         InvocationTypeInference.outerInference(expressionTree, pathToExpression.getParentPath());
     if (java8Inference != null
-        && (!java8Inference.getContext().getAnnotatedTypeOfProperType
-            || java8Inference.getContext().pathToExpression.getLeaf() == outerTree)) {
+        && java8Inference.getContext().pathToExpression.getLeaf() == outerTree) {
       // Inference is running and is asking for the type of the method before type arguments are
       // substituted. So don't infere any type arguments.
       return Collections.emptyMap();

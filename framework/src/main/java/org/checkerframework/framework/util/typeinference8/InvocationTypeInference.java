@@ -591,9 +591,7 @@ public class InvocationTypeInference {
     if (path.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION) {
       MethodInvocationTree tree = (MethodInvocationTree) path.getLeaf();
       ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-      if (TreeUtils.isPolyExpression(receiver)) {
-        return false;
-      }
+      return !TreeUtils.isPolyExpression(receiver);
     }
 
     return true;

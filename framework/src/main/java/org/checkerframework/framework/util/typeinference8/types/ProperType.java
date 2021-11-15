@@ -45,9 +45,7 @@ public class ProperType extends AbstractType {
 
   public ProperType(ExpressionTree tree, Java8InferenceContext context) {
     super(context);
-    context.getAnnotatedTypeOfProperType = true;
     AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(tree);
-    context.getAnnotatedTypeOfProperType = false;
 
     TypeMirror properType = TreeUtils.typeOf(tree);
     this.type = verifyTypeKinds(type, properType);
@@ -56,9 +54,7 @@ public class ProperType extends AbstractType {
 
   public ProperType(VariableTree varTree, Java8InferenceContext context) {
     super(context);
-    context.getAnnotatedTypeOfProperType = true;
     AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(varTree);
-    context.getAnnotatedTypeOfProperType = false;
     TypeMirror properType = TreeUtils.typeOf(varTree);
     this.type = verifyTypeKinds(type, properType);
     this.properType = properType;
@@ -85,7 +81,7 @@ public class ProperType extends AbstractType {
     }
 
     if (typeMirror.getKind() != atm.getKind()) {
-      throw new BugInCF("type: %s atm: %s", typeMirror, atm.getUnderlyingType());
+      throw new BugInCF("type: %s annotated type: %s", typeMirror, atm.getUnderlyingType());
     }
     return atm;
   }
