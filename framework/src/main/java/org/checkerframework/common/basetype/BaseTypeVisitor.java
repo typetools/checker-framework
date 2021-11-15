@@ -982,6 +982,77 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     TreePath body = atypeFactory.getPath(node.getBody());
 
+    //    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, node) &&
+    // !checkSideEffectsOnly) {
+    //      // There is nothing to check.
+    //      return;
+    //    }
+
+    if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
+      // check "no" purity
+      EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+      // @Deterministic makes no sense for a void method or constructor
+      boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
+      if (isDeterministic) {
+        if (TreeUtils.isConstructor(node)) {
+          checker.reportWarning(node, "purity.deterministic.constructor");
+        } else if (TreeUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
+          checker.reportWarning(node, "purity.deterministic.void.method");
+        }
+      }
+
+      PurityResult r;
+      if (body == null) {
+        r = new PurityResult();
+      } else {
+        r =
+            PurityChecker.checkPurity(
+                body,
+                atypeFactory,
+                checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure"),
+                checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure"));
+      }
+      if (!r.isPure(kinds)) {
+        reportPurityErrors(r, node, kinds);
+      }
+
+      if (suggestPureMethods && !TreeUtils.isSynthetic(node)) {
+        // Issue a warning if the method is pure, but not annotated as such.
+        EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
+        additionalKinds.removeAll(kinds);
+        if (TreeUtils.isConstructor(node)) {
+          additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+        }
+        if (!additionalKinds.isEmpty()) {
+          if (infer) {
+            if (inferPurity) {
+              WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+              ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
+              if (additionalKinds.size() == 2) {
+                wpi.addMethodDeclarationAnnotation(methodElt, PURE);
+              } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
+              } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+                wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
+              } else {
+                throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+              }
+            }
+          } else {
+            if (additionalKinds.size() == 2) {
+              checker.reportWarning(node, "purity.more.pure", node.getName());
+            } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+              checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
+            } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+              checker.reportWarning(node, "purity.more.deterministic", node.getName());
+            } else {
+              throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+            }
+          }
+        }
+      }
+    }
+
     if (checkSideEffectsOnly) {
       if (body == null) {
         return;
@@ -1024,74 +1095,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!sideEffectsOnlyExpressions.contains(s.second)) {
               checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
             }
-          }
-        }
-      }
-    }
-
-    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
-      // There is nothing to check.
-      return;
-    }
-
-    // check "no" purity
-    EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
-    // @Deterministic makes no sense for a void method or constructor
-    boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
-    if (isDeterministic) {
-      if (TreeUtils.isConstructor(node)) {
-        checker.reportWarning(node, "purity.deterministic.constructor");
-      } else if (TreeUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
-        checker.reportWarning(node, "purity.deterministic.void.method");
-      }
-    }
-
-    PurityResult r;
-    if (body == null) {
-      r = new PurityResult();
-    } else {
-      r =
-          PurityChecker.checkPurity(
-              body,
-              atypeFactory,
-              checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure"),
-              checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure"));
-    }
-    if (!r.isPure(kinds)) {
-      reportPurityErrors(r, node, kinds);
-    }
-
-    if (suggestPureMethods && !TreeUtils.isSynthetic(node)) {
-      // Issue a warning if the method is pure, but not annotated as such.
-      EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
-      additionalKinds.removeAll(kinds);
-      if (TreeUtils.isConstructor(node)) {
-        additionalKinds.remove(Pure.Kind.DETERMINISTIC);
-      }
-      if (!additionalKinds.isEmpty()) {
-        if (infer) {
-          if (inferPurity) {
-            WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-            ExecutableElement methodElt = TreeUtils.elementFromDeclaration(node);
-            if (additionalKinds.size() == 2) {
-              wpi.addMethodDeclarationAnnotation(methodElt, PURE);
-            } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-              wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
-            } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-              wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
-            } else {
-              throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-            }
-          }
-        } else {
-          if (additionalKinds.size() == 2) {
-            checker.reportWarning(node, "purity.more.pure", node.getName());
-          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            checker.reportWarning(node, "purity.more.sideeffectfree", node.getName());
-          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-            checker.reportWarning(node, "purity.more.deterministic", node.getName());
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
           }
         }
       }
