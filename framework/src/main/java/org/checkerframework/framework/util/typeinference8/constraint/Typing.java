@@ -294,7 +294,7 @@ public class Typing extends Constraint {
       if (ConstraintSet.TRUE == r) {
         return ConstraintSet.TRUE;
       }
-      return (((ProperType) S).isAssignable((ProperType) T));
+      return ((ProperType) S).isAssignable((ProperType) T);
     } else if (S.isProper() && S.getTypeKind().isPrimitive()) {
       return new Typing(((ProperType) S).boxType(), T, Kind.TYPE_COMPATIBILITY);
     } else if (T.isProper() && T.getTypeKind().isPrimitive()) {
