@@ -21,10 +21,10 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This class contains Resource Leak Checker annotation inference algorithm. For now, it just
+ * This class contains the Resource Leak Checker's annotation inference algorithm. For now, it just
  * contains inference logic for owning annotations on final owning fields. It adds an @Owning
- * annotation on a field if it finds a method that satisfies @MustCall obligation of the field along
- * some path to the regular exit point.
+ * annotation on a field if it finds a method that satisfies the @MustCall obligation of the field
+ * along some path to the regular exit point.
  */
 public class MustCallInferenceLogic {
 
@@ -36,16 +36,16 @@ public class MustCallInferenceLogic {
    */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
 
-  /** The @Owning annotation. */
+  /** The {@code &#064;Owning} annotation. */
   protected final AnnotationMirror OWNING;
 
   /** The control flow graph. */
   private ControlFlowGraph cfg;
 
   /**
-   * Creates a MustCallInferenceLogic. If the whole program inference is not null, the type
-   * factory's postAnalyze method would instantiate a new MustCallInferenceLogic using this
-   * constructor and then call {@link #runInference()}.
+   * Creates a MustCallInferenceLogic. If the type factory has whole program inference enabled, its
+   * postAnalyze method should instantiate a new MustCallInferenceLogic using this constructor and
+   * then call {@link #runInference()}.
    *
    * @param typeFactory the type factory
    * @param cfg the ControlFlowGraph
@@ -57,8 +57,12 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * It checks method invocations for fields with non-empty @MustCall obligation along all paths to
-   * the regular exit point in the method body.
+   * Runs the inference algorithm on the contents of the {@link #cfg} field.
+   *
+   * <p>Operationally, it checks method invocations for fields with non-empty @MustCall obligations
+   * along all paths to the regular exit point in the method body of the method represented by
+   * {@link #cfg}, and updates the {@link #owningFields} set if it discovers an owning field whose
+   * must-call obligations were satisfied along one of the checked paths.
    */
   void runInference() {
     Set<Block> visited = new HashSet<>();
@@ -82,8 +86,9 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * If the receiver of {@code mNode} is a possible owning field and the method invocation satisfies
-   * the field's must call obligation, then adds that field to owningFields set.
+   * If the receiver of {@code mNode} is a candidate owning field and the method invocation
+   * satisfies the field's must-call obligation, then adds that field to the {@link #owningFields}
+   * set.
    *
    * @param mNode the MethodInvocationNode
    */
@@ -95,12 +100,12 @@ public class MustCallInferenceLogic {
 
     Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
 
-    if (receiverEl != null && typeFactory.isPossibleOwningField(receiverEl)) {
+    if (receiverEl != null && typeFactory.isCandidateOwningField(receiverEl)) {
       Element method = TreeUtils.elementFromTree(mNode.getTree());
       List<String> mustCallValues = typeFactory.getMustCallValue(receiverEl);
 
-      // Because we assumed that any must call annotation has at most one method, the following
-      // check is enough to decide whether the receiver is an owning field
+      // This assumes that any MustCall annotation has at most one element.
+      // TODO: generalize this to MustCall annotations with more than one element.
       if (mustCallValues.size() == 1
           && mustCallValues.contains(method.getSimpleName().toString())) {
         owningFields.add(receiverEl);
@@ -109,8 +114,9 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * updates worklist with the next block along all paths to the regular exit point. If the next
-   * block is a regular exit point, adds an @Owning annotation for fields in owningFields.
+   * Updates {@code worklist} with the next block along all paths to the regular exit point. If the
+   * next block is a regular exit point, adds an {@literal @}Owning annotation for fields in {@link
+   * #owningFields}.
    *
    * @param curBlock the current block
    * @param visited set of blocks already on the worklist
@@ -122,11 +128,11 @@ public class MustCallInferenceLogic {
 
     for (Block b : successors) {
       // If b is a special block, it must be the regular exit, since we do not propagate to
-      // exceptional successors
+      // exceptional successors.
       if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+        assert wpi != null : "MustCallInference is running without WPI.";
         for (Element fieldElt : owningFields) {
-          // wpi can't be null in this class
           wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
         }
       }
