@@ -148,7 +148,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     if (java8Inference != null
         && java8Inference.getContext().pathToExpression.getLeaf() == outerTree) {
       // Inference is running and is asking for the type of the method before type arguments are
-      // substituted. So don't infere any type arguments.
+      // substituted. So don't infere any type arguments.  This happens when getting the type of a
+      // lambda's returned expression.
       return Collections.emptyMap();
     }
     if (outerTree != expressionTree) {
