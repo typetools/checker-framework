@@ -130,10 +130,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
     }
 
-    Map<TypeVariable, AnnotatedTypeMirror> emptyMap =
+    Map<TypeVariable, AnnotatedTypeMirror> newInferenceResult =
         inferNew(typeFactory, expressionTree, methodType, pathToExpression);
-    if (emptyMap != null && emptyMap.isEmpty()) {
-      return emptyMap;
+    if (newInferenceResult != null) {
+      return newInferenceResult;
     }
     return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
   }
@@ -188,7 +188,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     for (Variable variable : variables) {
       Map<TypeVariable, AnnotatedTypeMirror> typeMap =
           map.computeIfAbsent(variable.getInvocation(), k -> new HashMap<>());
-      typeMap.put(variable.getJavaType(), variable.getAnnotatedType());
+      typeMap.put(variable.getJavaType(), variable.getInstantiation().getAnnotatedType());
     }
     return map;
   }

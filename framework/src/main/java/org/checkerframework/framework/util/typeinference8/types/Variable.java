@@ -188,6 +188,10 @@ public class Variable extends AbstractType {
     return "a" + id;
   }
 
+  public ProperType getInstantiation() {
+    return variableBounds.getInstantiation();
+  }
+
   /** in case the first attempt at resolution fails. */
   public void save() {
     variableBounds.save();

@@ -179,6 +179,7 @@ public class InvocationTypeInference {
   }
 
   Set<ExpressionTree> treesInInference = new HashSet<>();
+
   /**
    * Perform invocation type inference on {@code invocation}. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
