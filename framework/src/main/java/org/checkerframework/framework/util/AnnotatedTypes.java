@@ -24,10 +24,12 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -496,14 +498,21 @@ public class AnnotatedTypes {
     if (!mappings.isEmpty()) {
       memberType = atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
     }
-    if (receiverType.getKind() == TypeKind.DECLARED) {
+
+    if (receiverType.getKind() == TypeKind.DECLARED && member.getKind() == ElementKind.METHOD) {
       TypeMirror s =
           types.asMemberOf(((AnnotatedDeclaredType) receiverType).getUnderlyingType(), member);
-      AnnotatedTypeMirror t =
-          AnnotatedTypeMirror.createType(s, atypeFactory, memberType.isDeclaration());
-      if (t.getKind() == TypeKind.EXECUTABLE) {
-        ((AnnotatedExecutableType) t).setElement((ExecutableElement) member);
-      }
+      @SuppressWarnings("UnusedVariable")
+      TypeMirror re = ((ExecutableType) s).getReceiverType();
+      AnnotatedExecutableType t =
+          (AnnotatedExecutableType)
+              AnnotatedTypeMirror.createType(s, atypeFactory, memberType.isDeclaration());
+      AnnotatedDeclaredType r =
+          (AnnotatedDeclaredType)
+              AnnotatedTypeMirror.createType(receiverType.getUnderlyingType(), atypeFactory, false);
+      t.setReceiverType(r);
+      t.setElement((ExecutableElement) member);
+
       atypeFactory.initializeAtm(t);
       atypeFactory.replaceAnnotations(memberType, t);
       return t;
