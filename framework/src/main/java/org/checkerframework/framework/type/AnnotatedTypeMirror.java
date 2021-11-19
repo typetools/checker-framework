@@ -1241,7 +1241,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param receiverType the receiver type
      */
-    void setReceiverType(AnnotatedDeclaredType receiverType) {
+    public void setReceiverType(AnnotatedDeclaredType receiverType) {
       this.receiverType = receiverType;
     }
 
