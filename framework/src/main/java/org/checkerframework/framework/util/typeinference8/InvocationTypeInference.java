@@ -47,7 +47,6 @@ import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
-import org.checkerframework.framework.util.typeinference8.types.InferenceFactory;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -146,11 +145,10 @@ public class InvocationTypeInference {
     if (!shouldTryInference(context.pathToExpression)) {
       return null;
     }
-    ExecutableType e = InferenceFactory.getTypeOfMethodAdaptedToUse(invocation, context);
-    // TODO: The captured types will differ, should I use the underlying type instead?
-    // ExecutableType e = methodType.getUnderlyingType();
+
     List<Variable> result;
     try {
+      ExecutableType e = methodType.getUnderlyingType();
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
       result = inferInternal(invocation, invocationType);
     } catch (FalseBoundException ex) {

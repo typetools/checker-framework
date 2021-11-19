@@ -496,6 +496,18 @@ public class AnnotatedTypes {
     if (!mappings.isEmpty()) {
       memberType = atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
     }
+    if (receiverType.getKind() == TypeKind.DECLARED) {
+      TypeMirror s =
+          types.asMemberOf(((AnnotatedDeclaredType) receiverType).getUnderlyingType(), member);
+      AnnotatedTypeMirror t =
+          AnnotatedTypeMirror.createType(s, atypeFactory, memberType.isDeclaration());
+      if (t.getKind() == TypeKind.EXECUTABLE) {
+        ((AnnotatedExecutableType) t).setElement((ExecutableElement) member);
+      }
+      atypeFactory.initializeAtm(t);
+      atypeFactory.replaceAnnotations(memberType, t);
+      return t;
+    }
 
     return memberType;
   }

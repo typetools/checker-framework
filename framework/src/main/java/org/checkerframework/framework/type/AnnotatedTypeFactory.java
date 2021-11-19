@@ -2256,8 +2256,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             processingEnv, this, tree, methodElt, methodType, inferTypeArgs);
 
     if (!typeParamToTypeArg.isEmpty()) {
-      typeParamToTypeArg =
-          captureMethodTypeArgs(typeParamToTypeArg, memberTypeWithOverrides.getTypeVariables());
+      typeParamToTypeArg = captureMethodTypeArgs(typeParamToTypeArg, methodType.getTypeVariables());
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
         if (typeParamToTypeArg.get(tv.getUnderlyingType()) == null) {
           throw new BugInCF(
