@@ -59,11 +59,11 @@ else
   has_java11="yes"
 fi
 
-# shellcheck disable=SC2153 # testing for JAVA16_HOME, not a typo of JAVA_HOME
-if [ "${JAVA16_HOME}" = "" ]; then
-  has_java16="no"
+# shellcheck disable=SC2153 # testing for JAVA17_HOME, not a typo of JAVA_HOME
+if [ "${JAVA17_HOME}" = "" ]; then
+  has_java17="no"
 else
-  has_java16="yes"
+  has_java17="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
@@ -76,9 +76,9 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA11_HOME="${JAVA_HOME}"
       has_java11="yes"
     fi
-    if [ "${has_java16}" = "no" ] && [ "${java_version}" = 16 ]; then
-      export JAVA16_HOME="${JAVA_HOME}"
-      has_java16="yes"
+    if [ "${has_java17}" = "no" ] && [ "${java_version}" = 17 ]; then
+      export JAVA17_HOME="${JAVA_HOME}"
+      has_java17="yes"
     fi
 fi
 
@@ -92,13 +92,13 @@ if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
     exit 7
 fi
 
-if [ "${has_java16}" = "yes" ] && [ ! -d "${JAVA16_HOME}" ]; then
-    echo "JAVA16_HOME is set to a non-existent directory ${JAVA16_HOME}"
+if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
+    echo "JAVA17_HOME is set to a non-existent directory ${JAVA17_HOME}"
     exit 7
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java16}" = "no" ]; then
-    echo "No Java 8, 11, or 16 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA16_HOME must be set."
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ]; then
+    echo "No Java 8, 11, or 17 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA17_HOME must be set."
     exit 8
 fi
 
@@ -175,8 +175,8 @@ function configure_and_exec_dljc {
     JDK_VERSION_ARG="--jdkVersion 8"
   elif [ "${JAVA_HOME}" = "${JAVA11_HOME}" ]; then
     JDK_VERSION_ARG="--jdkVersion 11"
-  elif [ "${JAVA_HOME}" = "${JAVA16_HOME}" ]; then
-    JDK_VERSION_ARG="--jdkVersion 16"
+  elif [ "${JAVA_HOME}" = "${JAVA17_HOME}" ]; then
+    JDK_VERSION_ARG="--jdkVersion 17"
   else
     # Default to the latest LTS release.  (Probably better to compute the version.)
     JDK_VERSION_ARG="--jdkVersion 11"
@@ -284,13 +284,13 @@ cd "${DIR}" || exit 5
 JAVA_HOME_BACKUP="${JAVA_HOME}"
 
 # For the first run, use the Java versions in ascending priority order: 8 if
-# it's available, otherwise 11, otherwise 16.
+# it's available, otherwise 11, otherwise 17.
 if [ "${has_java8}" = "yes" ]; then
   export JAVA_HOME="${JAVA8_HOME}"
 elif [ "${has_java11}" = "yes" ]; then
   export JAVA_HOME="${JAVA11_HOME}"
-elif [ "${has_java16}" = "yes" ]; then
-  export JAVA_HOME="${JAVA16_HOME}"
+elif [ "${has_java17}" = "yes" ]; then
+  export JAVA_HOME="${JAVA17_HOME}"
 fi
 configure_and_exec_dljc "$@"
 
@@ -305,14 +305,14 @@ if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java11}" = "yes" ]; then
   fi
 fi
 
-# If results still aren't available, then re-run with Java 16 if it is available
-# and the first run used Java 8 or Java 11 (since Java 16 has the lowest priority,
+# If results still aren't available, then re-run with Java 17 if it is available
+# and the first run used Java 8 or Java 11 (since Java 17 has the lowest priority,
 # the first run using Java 8 or Java 11 is equivalent to either of these being
 # available).
-if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java16}" = "yes" ]; then
+if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java17}" = "yes" ]; then
   if [ "${has_java11}" = "yes" ] || [ "${has_java8}" = "yes" ]; then
-    export JAVA_HOME="${JAVA16_HOME}"
-    echo "couldn't build using Java 11 or Java 8; trying Java 16"
+    export JAVA_HOME="${JAVA17_HOME}"
+    echo "couldn't build using Java 11 or Java 8; trying Java 17"
     configure_and_exec_dljc "$@"
   fi
 fi

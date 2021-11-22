@@ -1948,7 +1948,7 @@ Typical use is:
 
 \begin{Verbatim}
 javac -processor mypackage.MyProcessor -Aflowdotdir=. MyClass.java
-for dotfile in *.dot; do dot -Tpdf -o $dotfile.pdf $dotfile; done
+for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \end{Verbatim}
 
 \noindent
@@ -1964,7 +1964,8 @@ entry and exit point of the method).
 \subsubsectionAndLabel{Creating a CFG while running a type-checker}{creating-debugging-dataflow-graph-with-typechecker}
 
 To create a CFG while running a type-checker, use the following
-command-line options.
+command-line options. \\
+(See above for typical usage.)
 
 \begin{itemize}
 
