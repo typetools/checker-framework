@@ -1,6 +1,6 @@
 plugins {
     // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
-    id "com.gorylenko.gradle-git-properties" version "2.3.1"
+    id "com.gorylenko.gradle-git-properties" version "2.4.0-rc1"
 }
 sourceSets {
     main {
