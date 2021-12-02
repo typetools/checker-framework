@@ -1691,19 +1691,19 @@ public final class TreeUtils {
    * @param caseTree the case expression to get the body from
    * @return the body of the case tree
    */
-  public static Tree caseTreeGetBody(CaseTree caseTree) {
+  public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
     try {
       Method method = CaseTree.class.getDeclaredMethod("getBody");
       @SuppressWarnings({"unchecked", "nullness"})
       Tree result = (Tree) method.invoke(caseTree);
       return result;
-    } catch (NoSuchMethodException e) {
-      // Must be on JDK 11 or earlier
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      // May as well fall back to old method
+    } catch (NoSuchMethodException
+        | IllegalAccessException
+        | IllegalArgumentException
+        | InvocationTargetException e) {
+      // Just assume that the case tree is of the form case <expression> : statement(s)
+      return null;
     }
-
-    return null;
   }
 
   public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
