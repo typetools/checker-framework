@@ -9,7 +9,7 @@ plugins {
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id "net.ltgt.errorprone" version "2.0.2"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.1.0' apply false
+    id 'org.ajoberstar.grgit' version '4.1.1' apply false
 }
 apply plugin: "de.undercouch.download"
 
