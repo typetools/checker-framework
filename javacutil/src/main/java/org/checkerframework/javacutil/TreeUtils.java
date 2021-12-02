@@ -1684,6 +1684,42 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the body of the case statement if it is of the form {@code case <expression> ->
+   * <expression>}. This method should only be called if {@link CaseTree#getStatements()} returns
+   * null.
+   *
+   * @param caseTree the case expression to get the body from
+   * @return the body of the case tree
+   */
+  public static Tree caseTreeGetBody(CaseTree caseTree) {
+    try {
+      Method method = CaseTree.class.getDeclaredMethod("getBody");
+      @SuppressWarnings({"unchecked", "nullness"})
+      Tree result = (Tree) method.invoke(caseTree);
+      return result;
+    } catch (NoSuchMethodException e) {
+      // Must be on JDK 11 or earlier
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      // May as well fall back to old method
+    }
+
+    return null;
+  }
+
+  public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
+    try {
+      Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
+      Method getExpressionMethod = switchExpressionClass.getMethod("getExpression");
+      return (ExpressionTree) getExpressionMethod.invoke(switchExpressionTree);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | InvocationTargetException
+        | IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  /**
    * Returns true if the given method/constructor invocation is a varargs invocation.
    *
    * @param tree a method/constructor invocation

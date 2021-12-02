@@ -148,6 +148,7 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -468,6 +469,59 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    * @param tree the newly created Tree
    */
   public void handleArtificialTree(Tree tree) {}
+
+  @Override
+  public Node scan(Tree tree, Void p) {
+    if (tree == null) {
+      return null;
+    }
+    // Features added between JDK 12 and JDK 17 inclusive.
+    // Must use String comparison to support compiling on JDK 11 and earlier:
+    switch (tree.getKind().name()) {
+        //        case "BINDING_PATTERN":
+        //          return visitBindingPattern17(path.getLeaf(), p);
+      case "SWITCH_EXPRESSION":
+        return visitSwitchExpression17(tree, p);
+        //        case "YIELD":
+        //          return visitYield17(path.getLeaf(), p);
+      default:
+        return super.scan(tree, p);
+    }
+  }
+
+  //  /**
+  //   * Visit a BindingPatternTree.
+  //   *
+  //   * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
+  //   * @param p parameter
+  //   * @return the result of visiting the binding pattern tree
+  //   */
+  //  public abstract Node visitBindingPattern17(Tree bindingPatternTree, Void p);
+
+  /**
+   * Visit a SwitchExpressionTree
+   *
+   * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the switch expression tree
+   */
+  public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
+    ExpressionTree expression = TreeUtils.switchExpressionTreeGetExpression(switchExpressionTree);
+    Node expressionNode = scan(expression, p);
+    // TODO: Scan cases. This will include adding a visitYield17 method.
+    return new SwitchExpressionNode(
+        (ExpressionTree) switchExpressionTree, expressionNode, Collections.emptyList());
+  }
+
+  //
+  //  /**
+  //   * Visit a YieldTree.
+  //   *
+  //   * @param yieldTree a YieldTree, typed as Tree to be backward-compatible
+  //   * @param p parameter
+  //   * @return the result of visiting the yield tree
+  //   */
+  //  public abstract Node visitYield17(Tree yieldTree, Void p);
 
   /* --------------------------------------------------------- */
   /* Nodes and Labels Management */
@@ -2190,8 +2244,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
       }
       addLabelForNextNode(thisBodyL);
-      for (StatementTree stmt : tree.getStatements()) {
-        scan(stmt, null);
+      if (tree.getStatements() != null) {
+        for (StatementTree stmt : tree.getStatements()) {
+          scan(stmt, null);
+        }
+      } else {
+        scan(TreeUtils.caseTreeGetBody(tree), null);
       }
       extendWithExtendedNode(new UnconditionalJump(nextBodyL));
       addLabelForNextNode(nextCaseL);
