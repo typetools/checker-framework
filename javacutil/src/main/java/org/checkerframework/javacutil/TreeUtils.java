@@ -1694,9 +1694,7 @@ public final class TreeUtils {
   public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
     try {
       Method method = CaseTree.class.getDeclaredMethod("getBody");
-      @SuppressWarnings({"unchecked", "nullness"})
-      Tree result = (Tree) method.invoke(caseTree);
-      return result;
+      return (Tree) method.invoke(caseTree);
     } catch (NoSuchMethodException
         | IllegalAccessException
         | IllegalArgumentException
