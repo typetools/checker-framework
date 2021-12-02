@@ -650,7 +650,7 @@ public class InferenceFactory {
         (ExecutableElement) TreeUtils.elementFromTree(memRef);
 
     if (enclosingType.getKind() == TypeKind.DECLARED) {
-      AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);
+      enclosingType = AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);
     }
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}

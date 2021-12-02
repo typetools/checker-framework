@@ -19,6 +19,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -4464,10 +4465,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public Pair<AnnotatedTypeMirror, AnnotatedExecutableType> getFnInterfaceFromTree(Tree tree) {
 
     // Functional interface
+    // This is the target type of "tree"
     AnnotatedTypeMirror functionalInterfaceType = getFunctionalInterfaceType(tree);
+    if (!TreeUtils.isImplicitlyTypedLambda(tree) && tree.getKind() == Kind.LAMBDA_EXPRESSION) {
+      // TODO: https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.3
+    }
     if (functionalInterfaceType.getKind() == TypeKind.DECLARED) {
-      makeGroundTargetType(
-          (AnnotatedDeclaredType) functionalInterfaceType, (DeclaredType) TreeUtils.typeOf(tree));
+      functionalInterfaceType =
+          makeGroundTargetType(
+              (AnnotatedDeclaredType) functionalInterfaceType,
+              (DeclaredType) TreeUtils.typeOf(tree));
     }
 
     // Functional method
@@ -4651,10 +4658,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param functionalType the functional interface type
    * @param groundTargetJavaType the Java type as found by javac
    */
-  private void makeGroundTargetType(
+  private AnnotatedDeclaredType makeGroundTargetType(
       AnnotatedDeclaredType functionalType, DeclaredType groundTargetJavaType) {
     if (functionalType.getTypeArguments().isEmpty()) {
-      return;
+      return functionalType;
     }
 
     List<AnnotatedTypeParameterBounds> bounds =
@@ -4715,6 +4722,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // When the groundTargetJavaType is different from the underlying type of functionalType, only
     // the main annotations are copied.  Add default annotations in places without annotations.
     addDefaultAnnotations(functionalType);
+    return functionalType;
   }
 
   /**

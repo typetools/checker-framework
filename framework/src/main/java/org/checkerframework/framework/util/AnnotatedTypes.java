@@ -29,7 +29,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -502,15 +501,10 @@ public class AnnotatedTypes {
     if (receiverType.getKind() == TypeKind.DECLARED && member.getKind() == ElementKind.METHOD) {
       TypeMirror s =
           types.asMemberOf(((AnnotatedDeclaredType) receiverType).getUnderlyingType(), member);
-      @SuppressWarnings("UnusedVariable")
-      TypeMirror re = ((ExecutableType) s).getReceiverType();
       AnnotatedExecutableType t =
           (AnnotatedExecutableType)
               AnnotatedTypeMirror.createType(s, atypeFactory, memberType.isDeclaration());
-      AnnotatedDeclaredType r =
-          (AnnotatedDeclaredType)
-              AnnotatedTypeMirror.createType(receiverType.getUnderlyingType(), atypeFactory, false);
-      t.setReceiverType(r);
+      t.setReceiverType((AnnotatedDeclaredType) receiverType.deepCopy());
       t.setElement((ExecutableElement) member);
 
       atypeFactory.initializeAtm(t);

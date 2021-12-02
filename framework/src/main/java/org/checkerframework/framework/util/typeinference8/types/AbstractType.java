@@ -5,8 +5,10 @@ import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -223,10 +225,10 @@ public abstract class AbstractType {
     if (functionType == null) {
       ExecutableType elementType = TypesUtils.findFunctionType(getJavaType(), context.env);
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-      AnnotatedDeclaredType copy = (AnnotatedDeclaredType) getAnnotatedType().deepCopy();
-      makeGround(copy, typeFactory);
+      AnnotatedDeclaredType groundType =
+          makeGround((AnnotatedDeclaredType) getAnnotatedType(), typeFactory);
       AnnotatedExecutableType aet =
-          AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, copy, element);
+          AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, groundType, element);
       functionType = Pair.of(aet, elementType);
     }
     return functionType;
@@ -290,29 +292,33 @@ public abstract class AbstractType {
   // TODO: This method is named make ground, but is actually implements non-wildcard
   // parameterization as defined in
   // https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html#jls-9.9
-  static void makeGround(AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
+  static AnnotatedDeclaredType makeGround(
+      AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
     Element e = type.getUnderlyingType().asElement();
     AnnotatedDeclaredType decl = typeFactory.getAnnotatedType((TypeElement) e);
     Iterator<AnnotatedTypeMirror> bounds = decl.getTypeArguments().iterator();
 
-    List<AnnotatedTypeMirror> newTypeArgs = new ArrayList<>();
+    //    typeFactory.getTypeVarSubstitutor().substitute()
+    Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg = new HashMap<>();
     for (AnnotatedTypeMirror pn : type.getTypeArguments()) {
       AnnotatedTypeVariable typeVariable = (AnnotatedTypeVariable) bounds.next();
       if (pn.getKind() != TypeKind.WILDCARD) {
-        newTypeArgs.add(pn);
+        typeVarToTypeArg.put(typeVariable.getUnderlyingType(), pn);
         continue;
       }
       AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) pn;
       if (wildcardType.getSuperBound().getKind() == TypeKind.NULL) {
         // › If Ai is a upper-bounded wildcard ? extends Ui, then Ti = glb(Ui, Bi)
-        newTypeArgs.add(
+        typeVarToTypeArg.put(
+            typeVariable.getUnderlyingType(),
             AnnotatedTypes.annotatedGLB(
                 typeFactory, typeVariable.getUpperBound(), wildcardType.getExtendsBound()));
       } else {
-        newTypeArgs.add(wildcardType.getSuperBound());
+        typeVarToTypeArg.put(typeVariable.getUnderlyingType(), wildcardType.getSuperBound());
       }
     }
-    type.setTypeArguments(newTypeArgs);
+    return (AnnotatedDeclaredType)
+        typeFactory.getTypeVarSubstitutor().substitute(typeVarToTypeArg, decl.asUse());
   }
 
   /**
