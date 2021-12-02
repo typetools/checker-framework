@@ -2,7 +2,7 @@
 // A "case label" uses the ":" syntax.
 // The two cannot be mixed.
 
-// @below-java11-jdk-skip-test
+// @below-java17-jdk-skip-test
 
 import java.time.DayOfWeek;
 
