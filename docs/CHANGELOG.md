@@ -12,6 +12,13 @@ The dataflow framework can be run on code that contains switch expressions, but
 it does not yet analyze the cases in a switch expression. A future version will
 do so.
 
+Removed methods and classes that have been deprecated for more than one year:
+ * Old way of constructing qualifier hierarchies
+ * `@SuppressWarningsKeys`
+ * `RegularBlock.getContents()`
+ * `TestUtilities.testBooleanProperty()`
+ * `CFAbstractTransfer.getValueWithSameAnnotations()`
+
 **Closed issues:**
 
 
