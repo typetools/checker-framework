@@ -134,7 +134,8 @@ public abstract class CheckerFrameworkPerDirectoryTest {
     this.testDir = "tests" + File.separator + testDir;
     this.classpathExtra = classpathExtra;
     this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
-    //    this.checkerOptions.add("-AajavaChecks");
+    // TODO: uncomment this.  The tests are crashing on switch expressions.
+    // this.checkerOptions.add("-AajavaChecks");
   }
 
   @Test
