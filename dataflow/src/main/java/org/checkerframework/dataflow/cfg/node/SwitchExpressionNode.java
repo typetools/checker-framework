@@ -26,7 +26,9 @@ public class SwitchExpressionNode extends Node {
    */
   protected final ExpressionTree tree;
 
+  /** The expression of the switch expression. */
   protected final Node expression;
+
   protected final List<Node> cases;
 
   public SwitchExpressionNode(ExpressionTree tree, Node expression, List<Node> cases) {

@@ -41,6 +41,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.TypeExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
@@ -140,6 +141,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -409,8 +411,20 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     for (int i = 0; i < treeExpressions.size(); i++) {
       treeExpressions.get(i).accept(this, labels.get(i));
     }
+    if (javacTree.getStatements() == null) {
+      Tree javacBody = TreeUtils.caseTreeGetBody(javacTree);
+      Statement nodeBody = node.getStatement(0);
+      if (javacBody.getKind() == Kind.EXPRESSION_STATEMENT) {
+        javacBody.accept(this, node.getStatement(0));
+      } else if (nodeBody.isExpressionStmt()) {
+        javacBody.accept(this, nodeBody.asExpressionStmt().getExpression());
+      } else {
+        javacBody.accept(this, nodeBody);
+      }
+    } else {
+      processStatements(javacTree.getStatements(), node.getStatements());
+    }
 
-    processStatements(javacTree.getStatements(), node.getStatements());
     return null;
   }
 
@@ -1227,15 +1241,17 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     return null;
   }
 
-  /**
-   * Visit a SwitchExpressionTree
-   *
-   * @param tree a SwitchExpressionTree, typed as Tree to be backward-compatible
-   * @param node a SwitchExpr, typed as Node to be backward-compatible
-   * @return nothing
-   */
-  public Void visitSwitchExpression17(Tree tree, Node node) {
-    // TODO
+  public Void visitSwitchExpression17(Tree javacTree, Node javaParserNode) {
+    SwitchExpr node = castNode(SwitchExpr.class, javaParserNode, javacTree);
+    processSwitchExpression(javacTree, node);
+
+    // Switch expressions are always parenthesized in javac but never in JavaParser.
+    ExpressionTree expression =
+        ((ParenthesizedTree) TreeUtils.switchExpressionTreeGetExpression(javacTree))
+            .getExpression();
+    expression.accept(this, node.getSelector());
+
+    visitLists(TreeUtils.switchExpressionTreeGetCases(javacTree), node.getEntries());
     return null;
   }
 
@@ -2035,6 +2051,14 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param javaParserNode corresponding JavaParser node
    */
   public abstract void processSwitch(SwitchTree javacTree, SwitchStmt javaParserNode);
+
+  /**
+   * Process a {@code SwitchExpressionTree}.
+   *
+   * @param javacTree tree to process
+   * @param javaParserNode corresponding JavaParser node
+   */
+  public abstract void processSwitchExpression(Tree javacTree, SwitchExpr javaParserNode);
 
   /**
    * Process a {@code SynchronizedTree}.

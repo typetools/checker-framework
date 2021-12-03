@@ -175,7 +175,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
   public AnnotatedTypeMirror visitSwitchExpressionTree17(Tree node, AnnotatedTypeFactory f) {
     // TODO: Properly compute the type from the cases.
-    return f.type(node);
+    AnnotatedTypeMirror result = f.type(node);
+    result.addAnnotations(f.getQualifierHierarchy().getTopAnnotations());
+    return result;
   }
 
   @Override

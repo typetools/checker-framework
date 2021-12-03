@@ -1,9 +1,16 @@
-Version 3.1?.? (December 1, 2021)
+Version 3.20.1 (December 6, 2021)
 -------------------------------
 
 **User-visible changes:**
 
+The Checker Framework now runs on code that contains switch expression, but
+treats them conservatively. A future version will improve precision.
+
 **Implementation details:**
+
+The dataflow framework can be run on code that contains switch expressions and
+it has a new node `SwitchExpressionNode`.  However, dataflow does not yet
+analyze the cases in a switch expression. A future version will do so.
 
 **Closed issues:**
 

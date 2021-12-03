@@ -511,6 +511,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // TODO: Scan cases. This will include adding a visitYield17 method.
     return new SwitchExpressionNode(
         (ExpressionTree) switchExpressionTree, expressionNode, Collections.emptyList());
+
+    //     return new MarkerNode(
+    //        switchExpressionTree,
+    //        "start of switch statement #" + TreeUtils.treeUids.get(switchExpressionTree),
+    //        env.getTypeUtils());
   }
 
   //

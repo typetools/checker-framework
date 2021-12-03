@@ -37,6 +37,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -346,6 +347,9 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
 
   @Override
   public void processSwitch(SwitchTree javacTree, SwitchStmt javaParserNode) {}
+
+  @Override
+  public void processSwitchExpression(Tree javacTree, SwitchExpr javaParserNode) {}
 
   @Override
   public void processSynchronized(SynchronizedTree javacTree, SynchronizedStmt javaParserNode) {}
