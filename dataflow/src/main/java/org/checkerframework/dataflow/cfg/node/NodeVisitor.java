@@ -123,8 +123,6 @@ public interface NodeVisitor<R, P> {
 
   R visitTypeCast(TypeCastNode n, P p);
 
-  R visitSwitchExpression(SwitchExpressionNode switchExpressionNode, P p);
-
   // Blocks
 
   R visitSynchronized(SynchronizedNode n, P p);

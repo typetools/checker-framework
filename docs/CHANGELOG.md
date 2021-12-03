@@ -8,9 +8,9 @@ treats them conservatively. A future version will improve precision.
 
 **Implementation details:**
 
-The dataflow framework can be run on code that contains switch expressions and
-it has a new node `SwitchExpressionNode`.  However, dataflow does not yet
-analyze the cases in a switch expression. A future version will do so.
+The dataflow framework can be run on code that contains switch expressions, but
+it does not yet analyze the cases in a switch expression. A future version will
+do so.
 
 **Closed issues:**
 

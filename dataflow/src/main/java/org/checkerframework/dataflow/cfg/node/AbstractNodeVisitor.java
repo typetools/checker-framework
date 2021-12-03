@@ -300,11 +300,6 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     return visitNode(n, p);
   }
 
-  @Override
-  public R visitSwitchExpression(SwitchExpressionNode n, P p) {
-    return visitNode(n, p);
-  }
-
   // Statements
   @Override
   public R visitAssertionError(AssertionErrorNode n, P p) {
