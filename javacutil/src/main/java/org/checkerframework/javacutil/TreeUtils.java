@@ -1704,35 +1704,6 @@ public final class TreeUtils {
     }
   }
 
-  public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
-    try {
-      Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
-      Method getExpressionMethod = switchExpressionClass.getMethod("getExpression");
-      return (ExpressionTree) getExpressionMethod.invoke(switchExpressionTree);
-    } catch (ClassNotFoundException
-        | NoSuchMethodException
-        | InvocationTargetException
-        | IllegalAccessException e) {
-      return null;
-    }
-  }
-
-  public static List<? extends CaseTree> switchExpressionTreeGetCases(Tree switchExpressionTree) {
-    try {
-      Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
-      Method getCasesMethod = switchExpressionClass.getMethod("getCases");
-      @SuppressWarnings("unchecked")
-      List<? extends CaseTree> cases =
-          (List<? extends CaseTree>) getCasesMethod.invoke(switchExpressionTree);
-      return cases;
-    } catch (ClassNotFoundException
-        | NoSuchMethodException
-        | InvocationTargetException
-        | IllegalAccessException e) {
-      return null;
-    }
-  }
-
   /**
    * Returns true if the given method/constructor invocation is a varargs invocation.
    *
