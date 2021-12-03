@@ -408,7 +408,7 @@ List<String> getJavaFilesToFormat(projectName) {
                 && !details.path.contains("build")
                 && (isJava17 || !details.path.contains("-records"))
                 && (isJava17 || !details.path.contains("java17"))
-            && details.name.endsWith('.java')) {
+                && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
