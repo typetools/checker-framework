@@ -2328,15 +2328,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return prefixes;
     }
 
-    @SuppressWarnings("deprecation") // SuppressWarningsKeys was renamed to SuppressWarningsPrefix
-    SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
-    if (annotation != null) {
-      for (String prefix : annotation.value()) {
-        prefixes.add(prefix);
-      }
-      return prefixes;
-    }
-
     // No @SuppressWarningsPrefixes annotation, by default infer key from class name.
     String defaultPrefix = getDefaultSuppressWarningsPrefix();
     prefixes.add(defaultPrefix);

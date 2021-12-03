@@ -1,9 +1,16 @@
-Version 3.1?.? (December 1, 2021)
--------------------------------
+Version 3.20.0 (December 1, 2021)
+---------------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+Removed methods and classes that have been deprecated for more than one year:
+ * Old way of constructing qualifier hierarchies
+ * `@SuppressWarningsKeys`
+ * `RegularBlock.getContents()`
+ * `TestUtilities.testBooleanProperty()`
+ * `CFAbstractTransfer.getValueWithSameAnnotations()`
 
 **Closed issues:**
 
