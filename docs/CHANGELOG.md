@@ -11,7 +11,7 @@ conservatively. A future version will improve precision.
 
 The dataflow framework can be run on code that contains switch expressions and
 switch statements that use the new `->` case syntax, but it does not yet
-analyze the cases in a switch expression and it treats `->` as `:`.. A future
+analyze the cases in a switch expression and it treats `->` as `:`. A future
 version will do so.
 
 Removed methods and classes that have been deprecated for more than one year:
