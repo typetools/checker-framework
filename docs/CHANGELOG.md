@@ -1,4 +1,4 @@
-Version 3.20.1 (December 6, 2021)
+Version 3.20.0 (December 6, 2021)
 -------------------------------
 
 **User-visible changes:**
@@ -22,6 +22,7 @@ Removed methods and classes that have been deprecated for more than one year:
  * `CFAbstractTransfer.getValueWithSameAnnotations()`
 
 **Closed issues:**
+#4911, #4948, #4965.
 
 
 Version 3.19.0 (November 1, 2021)
