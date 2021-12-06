@@ -469,6 +469,46 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    */
   public void handleArtificialTree(Tree tree) {}
 
+  @Override
+  public Node scan(Tree tree, Void p) {
+    if (tree == null) {
+      return null;
+    }
+    // Must use String comparison to support compiling on JDK 11 and earlier.
+    if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+      return visitSwitchExpression17(tree, p);
+    }
+    return super.scan(tree, p);
+
+    // TODO: Do we need to support yield trees and binding patterns to?
+    // Features added between JDK 12 and JDK 17 inclusive.
+    // switch (tree.getKind().name()) {
+    //   case "BINDING_PATTERN":
+    //     return visitBindingPattern17(path.getLeaf(), p);
+    //   case "SWITCH_EXPRESSION":
+    //     return visitSwitchExpression17(tree, p);
+    //   case "YIELD":
+    //     return visitYield17(path.getLeaf(), p);
+    //   default:
+    //     return super.scan(tree, p);
+    // }
+  }
+
+  /**
+   * Visit a SwitchExpressionTree
+   *
+   * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the switch expression tree
+   */
+  public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
+    // TODO: Analyze switch expressions properly.
+    return new MarkerNode(
+        switchExpressionTree,
+        "switch expression tree; not analyzed #" + TreeUtils.treeUids.get(switchExpressionTree),
+        env.getTypeUtils());
+  }
+
   /* --------------------------------------------------------- */
   /* Nodes and Labels Management */
   /* --------------------------------------------------------- */
@@ -2190,8 +2230,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
       }
       addLabelForNextNode(thisBodyL);
-      for (StatementTree stmt : tree.getStatements()) {
-        scan(stmt, null);
+      if (tree.getStatements() != null) {
+        for (StatementTree stmt : tree.getStatements()) {
+          scan(stmt, null);
+        }
+      } else {
+        scan(TreeUtils.caseTreeGetBody(tree), null);
       }
       extendWithExtendedNode(new UnconditionalJump(nextBodyL));
       addLabelForNextNode(nextCaseL);

@@ -1,9 +1,18 @@
-Version 3.20.0 (December 1, 2021)
----------------------------------
+Version 3.20.1 (December 6, 2021)
+-------------------------------
 
 **User-visible changes:**
 
+The Checker Framework now runs on code that contains switch expressions and
+switch statements that use the new `->` case syntax, but treats them
+conservatively. A future version will improve precision.
+
 **Implementation details:**
+
+The dataflow framework can be run on code that contains switch expressions and
+switch statements that use the new `->` case syntax, but it does not yet
+analyze the cases in a switch expression and it treats `->` as `:`.. A future
+version will do so.
 
 Removed methods and classes that have been deprecated for more than one year:
  * Old way of constructing qualifier hierarchies

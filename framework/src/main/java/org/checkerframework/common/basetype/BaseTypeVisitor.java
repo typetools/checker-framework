@@ -76,6 +76,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.JavaFileObject;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -359,6 +360,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     Map<Tree, com.github.javaparser.ast.Node> treePairs = new HashMap<>();
+    JavaFileObject f = root.getSourceFile();
+    if (f.toUri().getPath().contains("java17")) {
+      // Skip java17 files because they may contain switch expressions which aren't supported.
+      return;
+    }
     try (InputStream reader = root.getSourceFile().openInputStream()) {
       CompilationUnit javaParserRoot = JavaParserUtil.parseCompilationUnit(reader);
       JavaParserUtil.concatenateAddedStringLiterals(javaParserRoot);
