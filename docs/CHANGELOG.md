@@ -3,7 +3,7 @@ Version 3.20.1 (December 6, 2021)
 
 **User-visible changes:**
 
-The Checker Framework now runs on code that contains switch expression and
+The Checker Framework now runs on code that contains switch expressions and
 switch statements that use the new `->` case syntax, but treats them
 conservatively. A future version will improve precision.
 
