@@ -590,6 +590,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
   }
 
+  @Override
+  public void addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(field)) {
+      return;
+    }
+
+    String file = storage.getFileForElement(field);
+    boolean isNewAnnotation = storage.addFieldDeclarationAnnotation(field, anno);
+    if (isNewAnnotation) {
+      storage.setFileModified(file);
+    }
+  }
+
   /**
    * Updates the set of annotations in a location in a program.
    *

@@ -10,9 +10,16 @@ plugins {
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id 'net.ltgt.errorprone' version '2.0.2'
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.1.0' apply false
+    id 'org.ajoberstar.grgit' version '4.1.1' apply false
     // https://docs.gradle.org/current/userguide/eclipse_plugin.html
     id 'eclipse'
+}
+apply plugin: "de.undercouch.download"
+
+import org.ajoberstar.grgit.Grgit
+
+repositories {
+    mavenCentral()
 }
 
 ext {
@@ -35,7 +42,7 @@ ext {
     // afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.23.0.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.23.1.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -102,7 +109,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.19.0-eisop1'
+    version '3.20.0'
 
     repositories {
         mavenCentral()
@@ -430,6 +437,7 @@ List<String> getJavaFilesToFormat(projectName) {
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
                 && (isJava16plus || !details.path.contains("-records"))
+                && (isJava17 || !details.path.contains("java17"))
                 && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
@@ -716,7 +724,7 @@ subprojects {
         //  * Uncomment "-Werror"
         //  * Don't edit framework/build.gradle to use the same version number
         //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.9.0'
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.10.0'
 
         // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
         // Update the next two version numbers in tandem.  Get the Error Prone version from the "compile

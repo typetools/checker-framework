@@ -1709,6 +1709,7 @@ public final class TreeUtils {
      * @return the list of expressions in the case
      */
     public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
+        // Could also test against JDK version number, which is likely more efficient.
         try {
             if (atLeastJava12) {
                 @SuppressWarnings({"unchecked", "nullness"})
@@ -1729,6 +1730,27 @@ public final class TreeUtils {
             Error err = new AssertionError("Unexpected error in caseTreeGetExpressions");
             err.initCause(e);
             throw err;
+        }
+    }
+
+    /**
+     * Returns the body of the case statement if it is of the form {@code case <expression> ->
+     * <expression>}. This method should only be called if {@link CaseTree#getStatements()} returns
+     * null.
+     *
+     * @param caseTree the case expression to get the body from
+     * @return the body of the case tree
+     */
+    public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
+        try {
+            Method method = CaseTree.class.getDeclaredMethod("getBody");
+            return (Tree) method.invoke(caseTree);
+        } catch (NoSuchMethodException
+                | IllegalAccessException
+                | IllegalArgumentException
+                | InvocationTargetException e) {
+            // Just assume that the case tree is of the form case <expression> : statement(s)
+            return null;
         }
     }
 

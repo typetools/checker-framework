@@ -47,6 +47,7 @@ import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1001,8 +1002,9 @@ class MustCallConsistencyAnalyzer {
 
     /**
      * Updates a set of Obligations to account for an assignment. Assigning to an owning field might
-     * remove Obligations, assigning to a new local variable might modify an Obligation (by
-     * increasing the size of its resource alias set), etc.
+     * remove Obligations, assigning to a resource variable might remove obligations, assigning to a
+     * new local variable might modify an Obligation (by increasing the size of its resource alias
+     * set), etc.
      *
      * @param obligations the set of Obligations to update
      * @param assignmentNode the assignment
@@ -1034,10 +1036,27 @@ class MustCallConsistencyAnalyzer {
                     && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
                 removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
             }
+        } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
+            removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
         } else if (lhs instanceof LocalVariableNode) {
             LocalVariableNode lhsVar = (LocalVariableNode) lhs;
             updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
         }
+    }
+
+    /**
+     * Returns true if must-call type of node only contains close. This is a helper method for
+     * handling try-with-resources statements.
+     *
+     * @param node the node.
+     * @return true if must-call type of node only contains close.
+     */
+    boolean isMustCallClose(Node node) {
+        MustCallAnnotatedTypeFactory mcAtf =
+                typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+        AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
+        AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+        return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
     }
 
     /**

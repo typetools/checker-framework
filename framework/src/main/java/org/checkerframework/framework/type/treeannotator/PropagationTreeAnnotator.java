@@ -14,16 +14,17 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -58,6 +59,17 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
      * assignment is the pseudo-assignment of a method argument to a formal parameter.
      */
     private boolean useAssignmentContext = true;
+
+    /**
+     * A mapping from {@code MethodInvocationTree} to the type of its declaration adapted to the
+     * call site. This is a cache used when getting the type of a new array expression that is an
+     * argument to a method. Getting the call-site-adapted type of a method also gets the type of
+     * all the arguments at the call site. (This happens both for resolving polymorphic methods and
+     * for method type argument inference.) {@link #useAssignmentContext} is used to prevent
+     * infinite recursion and this cache is used to improve performance.
+     */
+    private final Map<MethodInvocationTree, AnnotatedExecutableType> methodInvocationToType =
+            CollectionUtils.createLRUCache(300);
 
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
@@ -109,17 +121,25 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             } else if (parentTree.getKind() == Kind.METHOD_INVOCATION && useAssignmentContext) {
                 MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
                 useAssignmentContext = false;
-                ParameterizedExecutableType m;
+                AnnotatedExecutableType m;
                 try {
-                    m = atypeFactory.methodFromUse(methodInvocationTree);
+                    if (atypeFactory.shouldCache
+                            && methodInvocationToType.containsKey(methodInvocationTree)) {
+                        m = methodInvocationToType.get(methodInvocationTree);
+                    } else {
+                        m = atypeFactory.methodFromUse(methodInvocationTree).executableType;
+                        if (atypeFactory.shouldCache) {
+                            methodInvocationToType.put(methodInvocationTree, m);
+                        }
+                    }
                 } finally {
                     useAssignmentContext = true;
                 }
-                for (int i = 0; i < m.executableType.getParameterTypes().size(); i++) {
+                for (int i = 0; i < m.getParameterTypes().size(); i++) {
                     @SuppressWarnings("interning") // Tree must be exactly the same.
                     boolean foundArgument = methodInvocationTree.getArguments().get(i) == tree;
                     if (foundArgument) {
-                        contextType = m.executableType.getParameterTypes().get(i);
+                        contextType = m.getParameterTypes().get(i);
                         break;
                     }
                 }

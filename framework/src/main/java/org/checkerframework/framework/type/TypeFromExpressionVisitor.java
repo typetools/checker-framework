@@ -169,6 +169,29 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
+    public AnnotatedTypeMirror defaultAction(Tree tree, AnnotatedTypeFactory f) {
+        if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+            return visitSwitchExpressionTree17(tree, f);
+        }
+        return super.defaultAction(tree, f);
+    }
+
+    /**
+     * Compute the type of the switch expression tree.
+     *
+     * @param switchExpressionTree SwitchExpressionTree; typed as Tree to be backward-compatible
+     * @param f AnnotatedTypeFactory
+     * @return the type of the switch expression
+     */
+    public AnnotatedTypeMirror visitSwitchExpressionTree17(
+            Tree switchExpressionTree, AnnotatedTypeFactory f) {
+        // TODO: Properly compute the type from the cases.
+        AnnotatedTypeMirror result = f.type(switchExpressionTree);
+        result.addAnnotations(f.getQualifierHierarchy().getTopAnnotations());
+        return result;
+    }
+
+    @Override
     public AnnotatedTypeMirror visitIdentifier(IdentifierTree node, AnnotatedTypeFactory f) {
         if (node.getName().contentEquals("this") || node.getName().contentEquals("super")) {
             AnnotatedDeclaredType res = f.getSelfType(node);

@@ -93,6 +93,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected final AnnotationMirrorMap<AnnotationMirror> polyInstantiationForQualifierParameter =
             new AnnotationMirrorMap<>();
 
+    /** The visit method returns true if the passed type has any polymorphic qualifiers. */
+    protected final SimpleAnnotatedTypeScanner<Boolean, Void> polyScanner;
+
     /**
      * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
      * querying type qualifiers and the given factory for getting annotated types. Subclasses need
@@ -134,6 +137,19 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                             replace(type, map);
                             return null;
                         });
+
+        this.polyScanner =
+                new SimpleAnnotatedTypeScanner<>(
+                        (type, notused) -> {
+                            for (AnnotationMirror a : type.getAnnotations()) {
+                                if (qualHierarchy.isPolymorphicQualifier(a)) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        },
+                        Boolean::logicalOr,
+                        false);
     }
 
     /**
@@ -149,6 +165,15 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     /**
+     * Returns true if {@code type} has any polymorphic qualifiers
+     *
+     * @param type a type that might have polymorphic qualifiers
+     * @return true if {@code type} has any polymorphic qualifiers
+     */
+    protected boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
+        return polyScanner.visit(type);
+    }
+    /**
      * Resolves polymorphism annotations for the given type.
      *
      * @param tree the tree associated with the type
@@ -156,7 +181,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      */
     @Override
     public void resolve(MethodInvocationTree tree, AnnotatedExecutableType type) {
-        if (polyQuals.isEmpty()) {
+        if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
             return;
         }
 
@@ -198,7 +223,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
     @Override
     public void resolve(NewClassTree tree, AnnotatedExecutableType type) {
-        if (polyQuals.isEmpty()) {
+        if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
             return;
         }
         List<AnnotatedTypeMirror> parameters =
@@ -229,7 +254,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     @Override
     public void resolve(
             VariableElement field, AnnotatedTypeMirror owner, AnnotatedTypeMirror type) {
-        if (polyQuals.isEmpty()) {
+        if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
             return;
         }
         AnnotationMirrorMap<AnnotationMirror> matchingMapping = new AnnotationMirrorMap<>();
@@ -251,12 +276,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     @Override
     public void resolve(
             AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
-        for (AnnotationMirror type : functionalInterface.getReturnType().getAnnotations()) {
-            if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(type)) {
-                // functional interface has a polymorphic qualifier, so they should not be resolved
-                // on memberReference.
-                return;
-            }
+        if (hasPolymorphicQualifiers(functionalInterface.getReturnType())) {
+            // functional interface has a polymorphic qualifier, so they should not be resolved
+            // on memberReference.
+            return;
+        }
+        if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(memberReference)) {
+            return;
         }
         AnnotationMirrorMap<AnnotationMirror> instantiationMapping;
 
