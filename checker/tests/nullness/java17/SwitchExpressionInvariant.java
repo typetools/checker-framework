@@ -9,8 +9,8 @@ public class SwitchExpressionInvariant {
   void method(
       List<@NonNull String> nonnullStrings, List<@Nullable String> nullableStrings, int fenum) {
 
-    // :: error: (assignment)
     List<@NonNull String> list =
+        // :: error: (assignment)
         switch (fenum) {
             // :: error: (switch.expression)
           case 1 -> nonnullStrings;
