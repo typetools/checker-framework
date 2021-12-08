@@ -1705,6 +1705,78 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the expression of {@code switchExpressionTree}. For example
+   *
+   * <pre>
+   *   switch ( <em>expression</em> ) { ... }
+   * </pre>
+   *
+   * @param switchExpressionTree the switch expression whose expression is returned
+   * @return the expression of {@code switchExpressionTree}
+   */
+  public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
+    try {
+      Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
+      Method getExpressionMethod = switchExpressionClass.getMethod("getExpression");
+      return (ExpressionTree) getExpressionMethod.invoke(switchExpressionTree);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | InvocationTargetException
+        | IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the cases of {@code switchExpressionTree}. For example
+   *
+   * <pre>
+   *   switch ( <em>expression</em> ) {
+   *     <em>cases</em>
+   *   }
+   * </pre>
+   *
+   * @param switchExpressionTree the switch expression whose cases are returned
+   * @return the cases of {@code switchExpressionTree}
+   */
+  public static List<? extends CaseTree> switchExpressionTreeGetCases(Tree switchExpressionTree) {
+    try {
+      Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
+      Method getCasesMethod = switchExpressionClass.getMethod("getCases");
+      @SuppressWarnings("unchecked")
+      List<? extends CaseTree> cases =
+          (List<? extends CaseTree>) getCasesMethod.invoke(switchExpressionTree);
+      return cases;
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | InvocationTargetException
+        | IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the value (expression) for {@code yieldTree}.
+   *
+   * @param yieldTree the yield tree
+   * @return the value (expression) for {@code yieldTree}.
+   */
+  public static ExpressionTree yieldTreeGetValue(Tree yieldTree) {
+    try {
+      Class<?> yieldTreeClass = Class.forName("com.sun.source.tree.YieldTree");
+      Method getCasesMethod = yieldTreeClass.getMethod("getValue");
+      @SuppressWarnings("nullness")
+      ExpressionTree expressionTree = (ExpressionTree) getCasesMethod.invoke(yieldTree);
+      return expressionTree;
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | InvocationTargetException
+        | IllegalAccessException e) {
+      return null;
+    }
+  }
+
+  /**
    * Returns true if the given method/constructor invocation is a varargs invocation.
    *
    * @param tree a method/constructor invocation
