@@ -2145,7 +2145,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               },
               (r1, r2) -> null);
 
-      scanner.visitSwitchValueExpressions(switchExpressionTree, null);
+      scanner.scanSwitchExpression(switchExpressionTree, null);
     }
     super.scan(switchExpressionTree, null);
   }

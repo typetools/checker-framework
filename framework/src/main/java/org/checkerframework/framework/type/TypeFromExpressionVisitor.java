@@ -198,7 +198,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
               }
               return AnnotatedTypes.leastUpperBound(f, type1, type2, switchTypeMirror);
             });
-    return luber.visitSwitchValueExpressions(switchExpressionTree, null);
+    return luber.scanSwitchExpression(switchExpressionTree, null);
   }
 
   @Override

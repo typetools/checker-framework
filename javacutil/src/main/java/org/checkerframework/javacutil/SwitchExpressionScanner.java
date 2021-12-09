@@ -12,80 +12,63 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Scan the given switch expression and calls {@link #visitSwitchValueExpression(ExpressionTree,
- * Object)} on each expression that is a possible value of the switch expression. {@link
- * #combineResults(Object, Object)} is called to combine the results of visiting a switch value
- * expression.
+ * A class that calls visits each result expression of a switch expression and calls {@link
+ * #visitSwitchResultExpression(ExpressionTree, Object)} on each result expression. The result of
+ * each method call is combined using {@link #combineResults(Object, Object)}. Call {@link
+ * #scanSwitchExpression(Tree, Object)} to start scanning the switch expression.
  *
- * @param <R> result of {@link #visitSwitchValueExpression(ExpressionTree, Object)}
- * @param <P> parameter to pass to {@link #visitSwitchValueExpression(ExpressionTree, Object)}
+ * <p>{@link FunctionalSwitchExpressionScanner} can be used to pass functions for to use for {@link
+ * #visitSwitchResultExpression(ExpressionTree, Object)} and {@link #combineResults(Object,
+ * Object)}.
+ *
+ * @param <R> the type of the result of {@link #visitSwitchResultExpression(ExpressionTree, Object)}
+ * @param <P> the type of the parameter to pass to {@link
+ *     #visitSwitchResultExpression(ExpressionTree, Object)}
  */
 public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
 
-  public static class FunctionalSwitchExpressionScanner<R1, P1>
-      extends SwitchExpressionScanner<R1, P1> {
-    private final BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunction;
-    private final BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc;
-
-    public FunctionalSwitchExpressionScanner(
-        BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunction,
-        BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc) {
-      this.switchValueExpressionFunction = switchValueExpressionFunction;
-      this.combineResultFunc = combineResultFunc;
-    }
-
-    @Override
-    protected R1 visitSwitchValueExpression(ExpressionTree valueTree, P1 p1) {
-      return switchValueExpressionFunction.apply(valueTree, p1);
-    }
-
-    @Override
-    protected R1 combineResults(@Nullable R1 r1, @Nullable R1 r2) {
-      return combineResultFunc.apply(r1, r2);
-    }
-  }
-
   /**
-   * This method is called for each value expression of the switch expression passed in {@link
-   * #visitSwitchValueExpressions(Tree, Object)}.
+   * This method is called for each result expression of the switch expression passed in {@link
+   * #scanSwitchExpression(Tree, Object)}.
    *
-   * @param valueTree a tree that is a possible value of the switch expression
+   * @param resultExpressionTree a result expression of the switch expressions currently being
+   *     scanned
    * @param p a parameter
-   * @return the result of visiting the value expression
+   * @return the result of visiting the result expression
    */
-  protected abstract R visitSwitchValueExpression(ExpressionTree valueTree, P p);
+  protected abstract R visitSwitchResultExpression(ExpressionTree resultExpressionTree, P p);
 
   /**
    * This method combines the result of two calls to {@link
-   * #visitSwitchValueExpression(ExpressionTree, Object)} or {@code null} and the result of one call
-   * to {@link #visitSwitchValueExpression(ExpressionTree, Object)}.
+   * #visitSwitchResultExpression(ExpressionTree, Object)} or {@code null} and the result of one
+   * call to {@link #visitSwitchResultExpression(ExpressionTree, Object)}.
    *
-   * @param r1 a possibly null result returned by {@link #visitSwitchValueExpression(ExpressionTree,
-   *     Object)}
-   * @param r2 a possibly null result returned by {@link #visitSwitchValueExpression(ExpressionTree,
-   *     Object)}
+   * @param r1 a possibly null result returned by {@link
+   *     #visitSwitchResultExpression(ExpressionTree, Object)}
+   * @param r2 a possibly null result returned by {@link
+   *     #visitSwitchResultExpression(ExpressionTree, Object)}
    * @return the combination of {@code r1} and {@code r2}
    */
   protected abstract R combineResults(@Nullable R r1, @Nullable R r2);
 
   /**
-   * Scan the given switch expression and calls {@link #visitSwitchValueExpression(ExpressionTree,
-   * Object)} on each expression that is a possible value of the switch expression. {@link
-   * #combineResults(Object, Object)} is called to combine the results of visiting a switch value
-   * expression.
+   * Scan the given switch expression and calls {@link #visitSwitchResultExpression(ExpressionTree,
+   * Object)} on each result expression of the switch expression. {@link #combineResults(Object,
+   * Object)} is called to combine the results of visiting a switch result expression.
    *
    * @param switchExpression a switch expression tree
-   * @param p the parameter to pass to {@link #visitSwitchValueExpression(ExpressionTree, Object)}
-   * @return the result of calling {@link #visitSwitchValueExpression(ExpressionTree, Object)} on
-   *     each value expression of {@code switchExpression} and combining the results using {@link
+   * @param p the parameter to pass to {@link #visitSwitchResultExpression(ExpressionTree, Object)}
+   * @return the result of calling {@link #visitSwitchResultExpression(ExpressionTree, Object)} on
+   *     each result expression of {@code switchExpression} and combining the results using {@link
    *     #combineResults(Object, Object)}
    */
-  public R visitSwitchValueExpressions(Tree switchExpression, P p) {
+  public R scanSwitchExpression(Tree switchExpression, P p) {
     assert switchExpression.getKind().name().equals("SWITCH_EXPRESSION");
     List<? extends CaseTree> caseTrees = TreeUtils.switchExpressionTreeGetCases(switchExpression);
     R result = null;
     for (CaseTree caseTree : caseTrees) {
       if (caseTree.getStatements() != null) {
+        // Scan for yield statements.
         result = combineResults(result, yieldVisitor.scan(caseTree.getStatements(), p));
       } else {
         @SuppressWarnings(
@@ -93,10 +76,12 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         // a body.
         @NonNull Tree body = TreeUtils.caseTreeGetBody(caseTree);
         if (body.getKind() == Kind.BLOCK) {
+          // Scan for yield statements.
           result = combineResults(result, yieldVisitor.scan(((BlockTree) body).getStatements(), p));
         } else if (body.getKind() != Kind.THROW) {
+          // The expression is the result expression.
           ExpressionTree expressionTree = (ExpressionTree) body;
-          result = combineResults(result, visitSwitchValueExpression(expressionTree, p));
+          result = combineResults(result, visitSwitchResultExpression(expressionTree, p));
         }
       }
     }
@@ -109,14 +94,14 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
 
   /**
    * A scanner that visits all the yield trees in a given tree and calls {@link
-   * #visitSwitchValueExpression(ExpressionTree, Object)} on the expression in the yield trees. It
+   * #visitSwitchResultExpression(ExpressionTree, Object)} on the expression in the yield trees. It
    * does not descend into switch expressions.
    */
   protected YieldVisitor yieldVisitor = new YieldVisitor();
 
   /**
    * A scanner that visits all the yield trees in a given tree and calls {@link
-   * #visitSwitchValueExpression(ExpressionTree, Object)} on the expression in the yield trees. It
+   * #visitSwitchResultExpression(ExpressionTree, Object)} on the expression in the yield trees. It
    * does not descend into switch expressions.
    */
   protected class YieldVisitor extends TreeScanner<@Nullable R, P> {
@@ -131,7 +116,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         return null;
       } else if (tree.getKind().name().equals("YIELD")) {
         ExpressionTree value = TreeUtils.yieldTreeGetValue(tree);
-        return visitSwitchValueExpression(value, p);
+        return visitSwitchResultExpression(value, p);
       }
       return super.scan(tree, p);
     }
@@ -139,6 +124,48 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
     @Override
     public R reduce(R r1, R r2) {
       return combineResults(r1, r2);
+    }
+  }
+
+  /**
+   * An implementation of {@link SwitchExpressionScanner} that uses functions {@link
+   * #visitSwitchResultExpression(ExpressionTree, Object)} and {@link #combineResults(Object,
+   * Object)}.
+   *
+   * @param <R1> the type result of {@link #visitSwitchResultExpression(ExpressionTree, Object)}
+   * @param <P1> the type of the parameter to pass to {@link
+   *     #visitSwitchResultExpression(ExpressionTree, Object)}
+   */
+  public static class FunctionalSwitchExpressionScanner<R1, P1>
+      extends SwitchExpressionScanner<R1, P1> {
+
+    /** The function to use for {@link #visitSwitchResultExpression(ExpressionTree, Object)}. */
+    private final BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunction;
+    /** The function to use for {@link #visitSwitchResultExpression(ExpressionTree, Object)}. */
+    private final BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc;
+
+    /**
+     * Creates a {@link FunctionalSwitchExpressionScanner} with that uses the given functions.
+     *
+     * @param switchValueExpressionFunc the function called on each switch result expression
+     * @param combineResultFunc the function used to combine the result of multiple calls to {@code
+     *     switchValueExpressionFunc}
+     */
+    public FunctionalSwitchExpressionScanner(
+        BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunc,
+        BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc) {
+      this.switchValueExpressionFunction = switchValueExpressionFunc;
+      this.combineResultFunc = combineResultFunc;
+    }
+
+    @Override
+    protected R1 visitSwitchResultExpression(ExpressionTree resultExpressionTree, P1 p1) {
+      return switchValueExpressionFunction.apply(resultExpressionTree, p1);
+    }
+
+    @Override
+    protected R1 combineResults(@Nullable R1 r1, @Nullable R1 r2) {
+      return combineResultFunc.apply(r1, r2);
     }
   }
 }
