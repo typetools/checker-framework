@@ -7,7 +7,6 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.IntersectionTypeTree;
@@ -30,7 +29,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -39,6 +37,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
+import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -185,29 +184,21 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
    */
   public AnnotatedTypeMirror visitSwitchExpressionTree17(
       Tree switchExpressionTree, AnnotatedTypeFactory f) {
-    // TODO: Properly compute the type from the cases.
     TypeMirror switchTypeMirror = TreeUtils.typeOf(switchExpressionTree);
-    SwitchExpressionScanner<AnnotatedTypeMirror, Void> scanner =
-        new SwitchExpressionScanner<AnnotatedTypeMirror, Void>() {
-          @Override
-          public AnnotatedTypeMirror visitSwitchValueExpression(
-              ExpressionTree valueTree, Void unused) {
-            return f.getAnnotatedType(valueTree);
-          }
-
-          @Override
-          public AnnotatedTypeMirror combineResults(
-              @Nullable AnnotatedTypeMirror r1, @Nullable AnnotatedTypeMirror r2) {
-            if (r1 == null) {
-              return r2;
-            } else if (r2 == null) {
-              return r1;
-            }
-            return AnnotatedTypes.leastUpperBound(f, r1, r2, switchTypeMirror);
-          }
-        };
-
-    return scanner.visitSwitchValueExpressions(switchExpressionTree, null);
+    SwitchExpressionScanner<AnnotatedTypeMirror, Void> luber =
+        new FunctionalSwitchExpressionScanner<>(
+            // Function applied to each result expression of the switch expression.
+            (valueTree, unused) -> f.getAnnotatedType(valueTree),
+            // Function used to combine the types of each result expression.
+            (type1, type2) -> {
+              if (type1 == null) {
+                return type2;
+              } else if (type2 == null) {
+                return type1;
+              }
+              return AnnotatedTypes.leastUpperBound(f, type1, type2, switchTypeMirror);
+            });
+    return luber.visitSwitchValueExpressions(switchExpressionTree, null);
   }
 
   @Override

@@ -139,6 +139,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
+import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -2126,6 +2127,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * This method validates the type of the switch expression and issues an error is the type of a
    * value that the switch expression can result is not a subtype of the switch type.
    *
+   * <p>If a subclass overrides this method, it must call {@code super.scan(switchExpressionTree,
+   * null)} so that the blocks and statements in the cases are checked.
+   *
    * @param switchExpressionTree a {@code SwitchExpressionTree}
    */
   public void visitSwitchExpression17(Tree switchExpressionTree) {
@@ -2133,19 +2137,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (valid) {
       AnnotatedTypeMirror switchType = atypeFactory.getAnnotatedType(switchExpressionTree);
       SwitchExpressionScanner<Void, Void> scanner =
-          new SwitchExpressionScanner<Void, Void>() {
-            @Override
-            protected Void visitSwitchValueExpression(ExpressionTree valueTree, Void unused) {
-              BaseTypeVisitor.this.commonAssignmentCheck(
-                  switchType, valueTree, "switch.expression");
-              return null;
-            }
+          new FunctionalSwitchExpressionScanner<>(
+              (ExpressionTree valueTree, Void unused) -> {
+                BaseTypeVisitor.this.commonAssignmentCheck(
+                    switchType, valueTree, "switch.expression");
+                return null;
+              },
+              (r1, r2) -> null);
 
-            @Override
-            protected Void combineResults(@Nullable Void r1, @Nullable Void r2) {
-              return null;
-            }
-          };
       scanner.visitSwitchValueExpressions(switchExpressionTree, null);
     }
     super.scan(switchExpressionTree, null);

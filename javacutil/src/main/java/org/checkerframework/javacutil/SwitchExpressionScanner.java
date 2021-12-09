@@ -7,6 +7,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreeScanner;
 import java.util.List;
+import java.util.function.BiFunction;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -19,6 +21,29 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @param <P> parameter to pass to {@link #visitSwitchValueExpression(ExpressionTree, Object)}
  */
 public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
+
+  public static class FunctionalSwitchExpressionScanner<R1, P1>
+      extends SwitchExpressionScanner<R1, P1> {
+    private final BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunction;
+    private final BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc;
+
+    public FunctionalSwitchExpressionScanner(
+        BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunction,
+        BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc) {
+      this.switchValueExpressionFunction = switchValueExpressionFunction;
+      this.combineResultFunc = combineResultFunc;
+    }
+
+    @Override
+    protected R1 visitSwitchValueExpression(ExpressionTree valueTree, P1 p1) {
+      return switchValueExpressionFunction.apply(valueTree, p1);
+    }
+
+    @Override
+    protected R1 combineResults(@Nullable R1 r1, @Nullable R1 r2) {
+      return combineResultFunc.apply(r1, r2);
+    }
+  }
 
   /**
    * This method is called for each value expression of the switch expression passed in {@link
@@ -61,18 +86,25 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
     R result = null;
     for (CaseTree caseTree : caseTrees) {
       if (caseTree.getStatements() != null) {
-        result = combineResults(result, scanner.scan(caseTree.getStatements(), p));
+        result = combineResults(result, yieldVisitor.scan(caseTree.getStatements(), p));
       } else {
-        Tree body = TreeUtils.caseTreeGetBody(caseTree);
+        @SuppressWarnings(
+            "nullness:assignment") // if caseTree.getStatement returned null, so the case must have
+        // a body.
+        @NonNull Tree body = TreeUtils.caseTreeGetBody(caseTree);
         if (body.getKind() == Kind.BLOCK) {
-          result = combineResults(result, scanner.scan(((BlockTree) body).getStatements(), p));
+          result = combineResults(result, yieldVisitor.scan(((BlockTree) body).getStatements(), p));
         } else if (body.getKind() != Kind.THROW) {
           ExpressionTree expressionTree = (ExpressionTree) body;
           result = combineResults(result, visitSwitchValueExpression(expressionTree, p));
         }
       }
     }
-    return result;
+    @SuppressWarnings(
+        "nullness:assignment") // switch expressions must have at least one case that results in a
+    // value, so {@code result} must be nonnull.
+    @NonNull R nonNullResult = result;
+    return nonNullResult;
   }
 
   /**
@@ -80,26 +112,33 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
    * #visitSwitchValueExpression(ExpressionTree, Object)} on the expression in the yield trees. It
    * does not descend into switch expressions.
    */
-  protected TreeScanner<R, P> scanner =
-      new TreeScanner<R, P>() {
-        @Override
-        public R scan(Tree tree, P p) {
-          if (tree == null) {
-            return null;
-          }
-          if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
-            // Don't scan nested switch expressions.
-            return null;
-          } else if (tree.getKind().name().equals("YIELD")) {
-            ExpressionTree value = TreeUtils.yieldTreeGetValue(tree);
-            return visitSwitchValueExpression(value, p);
-          }
-          return super.scan(tree, p);
-        }
+  protected YieldVisitor yieldVisitor = new YieldVisitor();
 
-        @Override
-        public R reduce(R r1, R r2) {
-          return combineResults(r1, r2);
-        }
-      };
+  /**
+   * A scanner that visits all the yield trees in a given tree and calls {@link
+   * #visitSwitchValueExpression(ExpressionTree, Object)} on the expression in the yield trees. It
+   * does not descend into switch expressions.
+   */
+  protected class YieldVisitor extends TreeScanner<@Nullable R, P> {
+
+    @Override
+    public @Nullable R scan(Tree tree, P p) {
+      if (tree == null) {
+        return null;
+      }
+      if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+        // Don't scan nested switch expressions.
+        return null;
+      } else if (tree.getKind().name().equals("YIELD")) {
+        ExpressionTree value = TreeUtils.yieldTreeGetValue(tree);
+        return visitSwitchValueExpression(value, p);
+      }
+      return super.scan(tree, p);
+    }
+
+    @Override
+    public R reduce(R r1, R r2) {
+      return combineResults(r1, r2);
+    }
+  }
 }

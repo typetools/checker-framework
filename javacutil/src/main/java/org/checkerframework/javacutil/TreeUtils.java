@@ -1718,12 +1718,21 @@ public final class TreeUtils {
     try {
       Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
       Method getExpressionMethod = switchExpressionClass.getMethod("getExpression");
-      return (ExpressionTree) getExpressionMethod.invoke(switchExpressionTree);
+      ExpressionTree expressionTree =
+          (ExpressionTree) getExpressionMethod.invoke(switchExpressionTree);
+      if (expressionTree != null) {
+        return expressionTree;
+      }
+      throw new BugInCF(
+          "TreeUtils.switchExpressionTreeGetExpression: expression is null for tree: %s",
+          switchExpressionTree);
     } catch (ClassNotFoundException
         | NoSuchMethodException
         | InvocationTargetException
         | IllegalAccessException e) {
-      return null;
+      throw new BugInCF(
+          "TreeUtils.switchExpressionTreeGetExpression: reflection failed for tree: %s",
+          switchExpressionTree, e);
     }
   }
 
@@ -1746,12 +1755,19 @@ public final class TreeUtils {
       @SuppressWarnings("unchecked")
       List<? extends CaseTree> cases =
           (List<? extends CaseTree>) getCasesMethod.invoke(switchExpressionTree);
-      return cases;
+      if (cases != null) {
+        return cases;
+      }
+      throw new BugInCF(
+          "TreeUtils.switchExpressionTreeGetCases: cases is null for tree: %s",
+          switchExpressionTree);
     } catch (ClassNotFoundException
         | NoSuchMethodException
         | InvocationTargetException
         | IllegalAccessException e) {
-      return null;
+      throw new BugInCF(
+          "TreeUtils.switchExpressionTreeGetCases: reflection failed for tree: %s",
+          switchExpressionTree, e);
     }
   }
 
@@ -1765,14 +1781,17 @@ public final class TreeUtils {
     try {
       Class<?> yieldTreeClass = Class.forName("com.sun.source.tree.YieldTree");
       Method getCasesMethod = yieldTreeClass.getMethod("getValue");
-      @SuppressWarnings("nullness")
       ExpressionTree expressionTree = (ExpressionTree) getCasesMethod.invoke(yieldTree);
-      return expressionTree;
+      if (expressionTree != null) {
+        return expressionTree;
+      }
+      throw new BugInCF("TreeUtils.yieldTreeGetValue: expression is null for tree: %s", yieldTree);
     } catch (ClassNotFoundException
         | NoSuchMethodException
         | InvocationTargetException
         | IllegalAccessException e) {
-      return null;
+      throw new BugInCF(
+          "TreeUtils.yieldTreeGetValue: reflection failed for tree: %s", yieldTree, e);
     }
   }
 
