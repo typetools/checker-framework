@@ -35,7 +35,7 @@ public class SwitchExpressionTyping {
         };
 
     @IntVal(1) int o2 =
-         // :: error: (assignment)
+        // :: error: (assignment)
         switch (s) {
           case "Hello?" -> 1;
           case "Hello" -> 1;
