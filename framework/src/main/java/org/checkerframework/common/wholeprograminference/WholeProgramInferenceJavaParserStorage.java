@@ -1155,6 +1155,7 @@ public class WholeProgramInferenceJavaParserStorage
 
       return this.type;
     }
+
     /**
      * Adds a declaration annotation to this field declaration and returns whether it was a new
      * annotation.

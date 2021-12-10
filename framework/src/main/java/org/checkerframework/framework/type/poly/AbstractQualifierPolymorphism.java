@@ -173,6 +173,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
         return polyScanner.visit(type);
     }
+
     /**
      * Resolves polymorphism annotations for the given type.
      *
