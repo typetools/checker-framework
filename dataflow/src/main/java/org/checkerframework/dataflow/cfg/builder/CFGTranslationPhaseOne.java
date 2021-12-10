@@ -503,6 +503,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    */
   public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
     // TODO: Analyze switch expressions properly.
+    SwitchBuilder switchBuilder = new SwitchBuilder(switchExpressionTree);
+    switchBuilder.build();
     return new MarkerNode(
         switchExpressionTree,
         "switch expression tree; not analyzed #" + TreeUtils.treeUids.get(switchExpressionTree),
@@ -2128,7 +2130,20 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    */
   private class SwitchBuilder {
     /** The switch tree. */
-    private final SwitchTree switchTree;
+    private final Tree switchTree;
+
+    /** The case trees of {@code switchTree} */
+    private final List<? extends CaseTree> caseTrees;
+
+    /**
+     * The Tree for the selector expression.
+     *
+     * <pre>
+     *   switch ( <em> selector expression</em> ) { ... }
+     * </pre>
+     */
+    private final ExpressionTree selectorExpressionTree;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
     /** The Node for the switch expression. */
@@ -2137,13 +2152,21 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     /**
      * Construct a SwitchBuilder.
      *
-     * @param tree a switch tree
+     * @param switchTree a switch tree
      */
-    private SwitchBuilder(SwitchTree tree) {
-      this.switchTree = tree;
+    private SwitchBuilder(Tree switchTree) {
+      this.switchTree = switchTree;
+      if (switchTree instanceof SwitchTree) {
+        SwitchTree switchStatementTree = (SwitchTree) switchTree;
+        this.caseTrees = switchStatementTree.getCases();
+        this.selectorExpressionTree = switchStatementTree.getExpression();
+      } else {
+        this.caseTrees = TreeUtils.switchExpressionTreeGetCases(switchTree);
+        this.selectorExpressionTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
+      }
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
-      this.caseBodyLabels = new Label[switchTree.getCases().size() + 1];
+      this.caseBodyLabels = new Label[caseTrees.size() + 1];
     }
 
     /** Build up the CFG for the switchTree. */
@@ -2189,7 +2212,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
       Integer defaultIndex = null;
       for (int i = 0; i < cases; ++i) {
-        CaseTree caseTree = switchTree.getCases().get(i);
+        CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.caseTreeGetExpressions(caseTree).isEmpty()) {
           defaultIndex = i;
         } else {
@@ -2200,7 +2223,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         // The checks of all cases must happen before the default case, therefore we build the
         // default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
-        buildCase(switchTree.getCases().get(defaultIndex), defaultIndex);
+        buildCase(caseTrees.get(defaultIndex), defaultIndex);
       }
 
       addLabelForNextNode(breakTargetL.peekLabel());

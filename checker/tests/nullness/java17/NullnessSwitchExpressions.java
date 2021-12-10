@@ -51,8 +51,6 @@ public class NullnessSwitchExpressions {
             String s = null;
             if (day == Day.THURSDAY) {
               s = "hello";
-              // TODO: This is a false positive.
-              // :: error: (dereference.of.nullable)
               s.toString();
             }
             yield s;
