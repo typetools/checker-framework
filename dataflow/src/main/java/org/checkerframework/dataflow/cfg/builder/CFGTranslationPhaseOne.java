@@ -149,6 +149,7 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -250,6 +251,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
   /** Nested scopes of try-catch blocks in force at the current program point. */
   private final TryStack tryStack;
+
+  private SwitchBuilder switchBuilder;
 
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
@@ -476,23 +479,29 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       return null;
     }
     // Must use String comparison to support compiling on JDK 11 and earlier.
-    if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
-      return visitSwitchExpression17(tree, p);
+    //     Features added between JDK 12 and JDK 17 inclusive.
+    switch (tree.getKind().name()) {
+        // case "BINDING_PATTERN":
+        //  return visitBindingPattern17(path.getLeaf(), p);
+      case "SWITCH_EXPRESSION":
+        return visitSwitchExpression17(tree, p);
+      case "YIELD":
+        return visitYield17(tree, p);
+      default:
+        return super.scan(tree, p);
     }
-    return super.scan(tree, p);
-
-    // TODO: Do we need to support yield trees and binding patterns to?
-    // Features added between JDK 12 and JDK 17 inclusive.
-    // switch (tree.getKind().name()) {
-    //   case "BINDING_PATTERN":
-    //     return visitBindingPattern17(path.getLeaf(), p);
-    //   case "SWITCH_EXPRESSION":
-    //     return visitSwitchExpression17(tree, p);
-    //   case "YIELD":
-    //     return visitYield17(path.getLeaf(), p);
-    //   default:
-    //     return super.scan(tree, p);
-    // }
+  }
+  /**
+   * Visit a SwitchExpressionTree
+   *
+   * @param yieldTree a YieldTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the switch expression tree
+   */
+  public Node visitYield17(Tree yieldTree, Void p) {
+    ExpressionTree resultExpression = TreeUtils.yieldTreeGetValue(yieldTree);
+    switchBuilder.buildUseOfSwitchExprVar(resultExpression);
+    return null;
   }
 
   /**
@@ -2172,7 +2181,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /** Build up the CFG for the switchTree. */
-    public LocalVariableNode build() {
+    public SwitchExpressionNode build() {
+      SwitchBuilder oldSwitchBuilder = switchBuilder;
+      switchBuilder = this;
       TryFinallyScopeCell oldBreakTargetL = breakTargetL;
       breakTargetL = new TryFinallyScopeCell(new Label());
       int cases = caseBodyLabels.length - 1;
@@ -2185,12 +2196,13 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
       buildSwitchExpressionVar();
 
-      // Build CFG for the cases.
-      extendWithNode(
-          new MarkerNode(
-              switchTree,
-              "start of switch statement #" + TreeUtils.treeUids.get(switchTree),
-              env.getTypeUtils()));
+      if (switchTree.getKind() == Kind.SWITCH) {
+        extendWithNode(
+            new MarkerNode(
+                switchTree,
+                "start of switch statement #" + TreeUtils.treeUids.get(switchTree),
+                env.getTypeUtils()));
+      }
 
       Integer defaultIndex = null;
       for (int i = 0; i < cases; ++i) {
@@ -2210,13 +2222,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
       addLabelForNextNode(breakTargetL.peekLabel());
       breakTargetL = oldBreakTargetL;
+      if (switchTree.getKind() == Kind.SWITCH) {
+        extendWithNode(
+            new MarkerNode(
+                switchTree,
+                "end of switch statement #" + TreeUtils.treeUids.get(switchTree),
+                env.getTypeUtils()));
+      }
 
-      extendWithNode(
-          new MarkerNode(
-              switchTree,
-              "end of switch statement #" + TreeUtils.treeUids.get(switchTree),
-              env.getTypeUtils()));
-
+      switchBuilder = oldSwitchBuilder;
       if (switchExprVarTree != null) {
         IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
         handleArtificialTree(switchExprVarUseTree);
@@ -2224,7 +2238,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         LocalVariableNode switchExprVarUseNode = new LocalVariableNode(switchExprVarUseTree);
         switchExprVarUseNode.setInSource(false);
         extendWithNode(switchExprVarUseNode);
-        return switchExprVarUseNode;
+        SwitchExpressionNode switchExpressionNode =
+            new SwitchExpressionNode(
+                TreeUtils.typeOf(switchTree), switchTree, switchExprVarUseNode);
+        extendWithNode(switchExpressionNode);
+        return switchExpressionNode;
       } else {
         return null;
       }
@@ -2334,6 +2352,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           new AssignmentNode(assign, switchExprVarUseNode, resultExprNode);
       assignmentNode.setInSource(false);
       extendWithNode(assignmentNode);
+
+      assert breakTargetL != null : "no target for yield statement";
+      extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
     }
   }
 
