@@ -2181,31 +2181,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       }
       caseBodyLabels[cases] = breakTargetL.peekLabel();
 
-      // Create a synthetic variable to which the switch selector expression will be assigned
-      TypeMirror selectorExprType = TreeUtils.typeOf(selectorExprTree);
-      VariableTree selectorVarTree =
-          treeBuilder.buildVariableDecl(selectorExprType, uniqueName("switch"), findOwner(), null);
-      handleArtificialTree(selectorVarTree);
-
-      VariableDeclarationNode selectorVarNode = new VariableDeclarationNode(selectorVarTree);
-      selectorVarNode.setInSource(false);
-      extendWithNode(selectorVarNode);
-
-      IdentifierTree selectorVarUseTree = treeBuilder.buildVariableUse(selectorVarTree);
-      handleArtificialTree(selectorVarUseTree);
-
-      LocalVariableNode selectorVarUseNode = new LocalVariableNode(selectorVarUseTree);
-      selectorVarUseNode.setInSource(false);
-      extendWithNode(selectorVarUseNode);
-
-      Node selectorExprNode = unbox(scan(selectorExprTree, null));
-
-      AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
-      handleArtificialTree(assign);
-
-      selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
-      selectorExprAssignment.setInSource(false);
-      extendWithNode(selectorExprAssignment);
+      buildSelector();
 
       // Build CFG for the cases.
       extendWithNode(
@@ -2238,6 +2214,40 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
               switchTree,
               "end of switch statement #" + TreeUtils.treeUids.get(switchTree),
               env.getTypeUtils()));
+    }
+
+    /**
+     * Builds the CFG for the selector expression. It also creates a synthetic variable and assigns
+     * the selector expression to the variable. This assignment node is stored in {@link
+     * #selectorExprAssignment}. It can later be used to refine the selector expression in case
+     * bodies.
+     */
+    private void buildSelector() {
+      // Create a synthetic variable to which the switch selector expression will be assigned
+      TypeMirror selectorExprType = TreeUtils.typeOf(selectorExprTree);
+      VariableTree selectorVarTree =
+          treeBuilder.buildVariableDecl(selectorExprType, uniqueName("switch"), findOwner(), null);
+      handleArtificialTree(selectorVarTree);
+
+      VariableDeclarationNode selectorVarNode = new VariableDeclarationNode(selectorVarTree);
+      selectorVarNode.setInSource(false);
+      extendWithNode(selectorVarNode);
+
+      IdentifierTree selectorVarUseTree = treeBuilder.buildVariableUse(selectorVarTree);
+      handleArtificialTree(selectorVarUseTree);
+
+      LocalVariableNode selectorVarUseNode = new LocalVariableNode(selectorVarUseTree);
+      selectorVarUseNode.setInSource(false);
+      extendWithNode(selectorVarUseNode);
+
+      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+
+      AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
+      handleArtificialTree(assign);
+
+      selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
+      selectorExprAssignment.setInSource(false);
+      extendWithNode(selectorExprAssignment);
     }
 
     private void buildCase(CaseTree tree, int index) {
