@@ -2159,6 +2159,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     private AssignmentNode selectorExprAssignment;
 
+    /**
+     * If {@link #switchTree} is a switch expression, then this is the synthetic variable tree that
+     * all results of {@code #switchTree} are assigned. Other, this is null.
+     */
     private @Nullable VariableTree switchExprVarTree;
 
     /**
