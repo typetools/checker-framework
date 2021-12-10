@@ -168,6 +168,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         return AnnotatedTypes.leastUpperBound(f, trueType, falseType, alub);
     }
 
+    // TODO: remove method and instead use JCP to add version-specific methods
+    // Switch expressions first appeared in 12, standard in 14, so don't use 17.
     @Override
     public AnnotatedTypeMirror defaultAction(Tree tree, AnnotatedTypeFactory f) {
         if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {

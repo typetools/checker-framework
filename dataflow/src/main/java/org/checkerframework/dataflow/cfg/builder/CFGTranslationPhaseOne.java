@@ -486,6 +486,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     public void handleArtificialTree(Tree tree) {}
 
+    // TODO: remove method and instead use JCP to add version-specific methods.
+    // Switch expressions first appeared in 12, standard in 14, so don't use 17.
     @Override
     public Node scan(Tree tree, Void p) {
         if (tree == null) {
