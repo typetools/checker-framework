@@ -362,7 +362,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * has the "ajavaChecks" option.
      *
      * <p>Parse the current source file with JavaParser and check that the AST can be matched with
-     * the Tree prodoced by javac. Crash if not.
+     * the Tree produced by javac. Crash if not.
      *
      * <p>Subclasses may override this method to disable the test if even the option is provided.
      */
@@ -375,6 +375,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         JavaFileObject f = root.getSourceFile();
         if (f.toUri().getPath().contains("java17")) {
             // Skip java17 files because they may contain switch expressions which aren't supported.
+            // TODO: don't skip.
             return;
         }
         try (InputStream reader = root.getSourceFile().openInputStream()) {
