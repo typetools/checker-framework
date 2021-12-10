@@ -2159,9 +2159,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       caseBodyLabels[cases] = breakTargetL.peekLabel();
 
       // Create a synthetic variable to which the switch selector expression will be assigned
-      TypeMirror selectorExprTree = TreeUtils.typeOf(switchTree.getExpression());
+      TypeMirror selectorExprType = TreeUtils.typeOf(switchTree.getExpression());
       VariableTree selectorVarTree =
-          treeBuilder.buildVariableDecl(selectorExprTree, uniqueName("switch"), findOwner(), null);
+          treeBuilder.buildVariableDecl(selectorExprType, uniqueName("switch"), findOwner(), null);
       handleArtificialTree(selectorVarTree);
 
       VariableDeclarationNode selectorVarNode = new VariableDeclarationNode(selectorVarTree);
