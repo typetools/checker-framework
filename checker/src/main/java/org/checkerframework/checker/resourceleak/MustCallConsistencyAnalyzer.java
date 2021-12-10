@@ -1051,7 +1051,7 @@ class MustCallConsistencyAnalyzer {
      * @param node the node.
      * @return true if must-call type of node only contains close.
      */
-    boolean isMustCallClose(Node node) {
+    private boolean isMustCallClose(Node node) {
         MustCallAnnotatedTypeFactory mcAtf =
                 typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());

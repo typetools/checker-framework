@@ -91,7 +91,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
      * @param element a element
      * @return true iff the given element is a final field with non-empty @MustCall obligation
      */
-    boolean isCandidateOwningField(Element element) {
+    /*package-private*/ boolean isCandidateOwningField(Element element) {
         return (element.getKind().isField()
                 && ElementUtils.isFinal(element)
                 && !getMustCallValue(element).isEmpty());
