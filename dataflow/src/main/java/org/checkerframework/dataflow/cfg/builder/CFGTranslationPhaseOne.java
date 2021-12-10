@@ -46,6 +46,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -504,11 +505,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
     // TODO: Analyze switch expressions properly.
     SwitchBuilder switchBuilder = new SwitchBuilder(switchExpressionTree);
-    switchBuilder.build();
-    return new MarkerNode(
-        switchExpressionTree,
-        "switch expression tree; not analyzed #" + TreeUtils.treeUids.get(switchExpressionTree),
-        env.getTypeUtils());
+    return switchBuilder.build();
   }
 
   /* --------------------------------------------------------- */
@@ -2146,10 +2143,13 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
+
     /**
      * The Node for the assignment of the switch selector expression to a synthetic local variable.
      */
     private AssignmentNode selectorExprAssignment;
+
+    private @Nullable VariableTree switchExprVarTree;
 
     /**
      * Construct a SwitchBuilder.
@@ -2172,7 +2172,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /** Build up the CFG for the switchTree. */
-    public void build() {
+    public LocalVariableNode build() {
       TryFinallyScopeCell oldBreakTargetL = breakTargetL;
       breakTargetL = new TryFinallyScopeCell(new Label());
       int cases = caseBodyLabels.length - 1;
@@ -2182,6 +2182,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       caseBodyLabels[cases] = breakTargetL.peekLabel();
 
       buildSelector();
+
+      buildSwitchExpressionVar();
 
       // Build CFG for the cases.
       extendWithNode(
@@ -2214,6 +2216,18 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
               switchTree,
               "end of switch statement #" + TreeUtils.treeUids.get(switchTree),
               env.getTypeUtils()));
+
+      if (switchExprVarTree != null) {
+        IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
+        handleArtificialTree(switchExprVarUseTree);
+
+        LocalVariableNode switchExprVarUseNode = new LocalVariableNode(switchExprVarUseTree);
+        switchExprVarUseNode.setInSource(false);
+        extendWithNode(switchExprVarUseNode);
+        return switchExprVarUseNode;
+      } else {
+        return null;
+      }
     }
 
     /**
@@ -2250,6 +2264,26 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       extendWithNode(selectorExprAssignment);
     }
 
+    /**
+     * If {@link #switchTree} is a switch expression tree, this method creates a synthetic variable
+     * whose value is the value of the switch expression.
+     */
+    private void buildSwitchExpressionVar() {
+      if (switchTree.getKind() == Kind.SWITCH) {
+        // A switch statement does not have a value, so do nothing.
+        return;
+      }
+      TypeMirror switchExprType = TreeUtils.typeOf(switchTree);
+      switchExprVarTree =
+          treeBuilder.buildVariableDecl(
+              switchExprType, uniqueName("switchExpr"), findOwner(), null);
+      handleArtificialTree(switchExprVarTree);
+
+      VariableDeclarationNode switchExprVarNode = new VariableDeclarationNode(switchExprVarTree);
+      switchExprVarNode.setInSource(false);
+      extendWithNode(switchExprVarNode);
+    }
+
     private void buildCase(CaseTree tree, int index) {
       final Label thisBodyL = caseBodyLabels[index];
       final Label nextBodyL = caseBodyLabels[index + 1];
@@ -2272,10 +2306,34 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           scan(stmt, null);
         }
       } else {
-        scan(TreeUtils.caseTreeGetBody(tree), null);
+        Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
+        if (bodyTree instanceof ExpressionTree) {
+          buildUseOfSwitchExprVar((ExpressionTree) bodyTree);
+        } else {
+          scan(bodyTree, null);
+        }
       }
       extendWithExtendedNode(new UnconditionalJump(nextBodyL));
       addLabelForNextNode(nextCaseL);
+    }
+
+    void buildUseOfSwitchExprVar(ExpressionTree resultExpression) {
+      IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
+      handleArtificialTree(switchExprVarUseTree);
+
+      LocalVariableNode switchExprVarUseNode = new LocalVariableNode(switchExprVarUseTree);
+      switchExprVarUseNode.setInSource(false);
+      extendWithNode(switchExprVarUseNode);
+
+      Node resultExprNode = unbox(scan(resultExpression, null));
+
+      AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
+      handleArtificialTree(assign);
+
+      AssignmentNode assignmentNode =
+          new AssignmentNode(assign, switchExprVarUseNode, resultExprNode);
+      assignmentNode.setInSource(false);
+      extendWithNode(assignmentNode);
     }
   }
 
