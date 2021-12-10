@@ -1131,7 +1131,7 @@ public abstract class CFAbstractTransfer<
 
     for (Node caseOperand : n.getCaseOperands()) {
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
       result =
           strengthenAnnotationOfEqualTo(
