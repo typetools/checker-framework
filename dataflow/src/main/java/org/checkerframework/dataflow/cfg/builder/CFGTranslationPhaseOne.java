@@ -2353,7 +2353,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /**
-     *
+     * Does the following for each result expression of a switch expression:
      *
      * <ol>
      *   <li>Builds the CFG for the switch expression result.

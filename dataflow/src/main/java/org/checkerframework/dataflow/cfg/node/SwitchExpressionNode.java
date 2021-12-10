@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+/** A node for a switch expression. */
 public class SwitchExpressionNode extends Node {
 
   /** The switch expression tree corresponding to this node. */
