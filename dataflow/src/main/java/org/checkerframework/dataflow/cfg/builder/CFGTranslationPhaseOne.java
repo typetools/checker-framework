@@ -2142,7 +2142,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      *   switch ( <em> selector expression</em> ) { ... }
      * </pre>
      */
-    private final ExpressionTree selectorExpressionTree;
+    private final ExpressionTree selectorExprTree;
 
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
@@ -2161,10 +2161,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       if (switchTree instanceof SwitchTree) {
         SwitchTree switchStatementTree = (SwitchTree) switchTree;
         this.caseTrees = switchStatementTree.getCases();
-        this.selectorExpressionTree = switchStatementTree.getExpression();
+        this.selectorExprTree = switchStatementTree.getExpression();
       } else {
         this.caseTrees = TreeUtils.switchExpressionTreeGetCases(switchTree);
-        this.selectorExpressionTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
+        this.selectorExprTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
       }
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
@@ -2182,7 +2182,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       caseBodyLabels[cases] = breakTargetL.peekLabel();
 
       // Create a synthetic variable to which the switch selector expression will be assigned
-      TypeMirror selectorExprType = TreeUtils.typeOf(switchTree.getExpression());
+      TypeMirror selectorExprType = TreeUtils.typeOf(selectorExprTree);
       VariableTree selectorVarTree =
           treeBuilder.buildVariableDecl(selectorExprType, uniqueName("switch"), findOwner(), null);
       handleArtificialTree(selectorVarTree);
@@ -2198,10 +2198,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = unbox(scan(switchTree.getExpression(), null));
+      Node selectorExprNode = unbox(scan(selectorExprTree, null));
 
-      AssignmentTree assign =
-          treeBuilder.buildAssignment(selectorVarUseTree, switchTree.getExpression());
+      AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
 
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
