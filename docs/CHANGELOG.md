@@ -28,6 +28,8 @@ Removed methods and classes that have been deprecated for more than one year:
 Version 3.19.0-eisop-1 (November 4, 2021)
 -------------------------------
 
+**User-visible changes:**
+
 Avoid shading of string literals which broke some annotation aliasing.
 Add more nullness annotation aliases.
 
