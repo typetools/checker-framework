@@ -28,7 +28,7 @@ public class ValueSwitchExprNeedsDataflow {
   void method1(int selector) {
 
     @IntVal(3) int value1 =
-    // :: error: (assignment)
+        // :: error: (assignment)
         switch (selector) {
           case 1:
             yield 1 + 2;
@@ -37,7 +37,7 @@ public class ValueSwitchExprNeedsDataflow {
         };
 
     @IntVal(3) int value2 =
-    // :: error: (assignment)
+        // :: error: (assignment)
         switch (selector) {
           case 1 -> 1 + 2;
           default -> 1 + 1;
