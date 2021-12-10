@@ -1709,7 +1709,6 @@ public final class TreeUtils {
      * @return the list of expressions in the case
      */
     public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
-        // Could also test against JDK version number, which is likely more efficient.
         try {
             if (atLeastJava12) {
                 @SuppressWarnings({"unchecked", "nullness"})
@@ -1742,15 +1741,20 @@ public final class TreeUtils {
      * @return the body of the case tree
      */
     public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
-        try {
-            Method method = CaseTree.class.getDeclaredMethod("getBody");
-            return (Tree) method.invoke(caseTree);
-        } catch (NoSuchMethodException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
-            // Just assume that the case tree is of the form case <expression> : statement(s)
-            return null;
+        if (atLeastJava12) {
+            try {
+                Method method = CaseTree.class.getDeclaredMethod("getBody");
+                return (Tree) method.invoke(caseTree);
+            } catch (NoSuchMethodException
+                    | IllegalAccessException
+                    | IllegalArgumentException
+                    | InvocationTargetException e) {
+                Error err = new AssertionError("Unexpected error in caseTreeGetBody");
+                err.initCause(e);
+                throw err;
+            }
+        } else {
+            throw new AssertionError("caseTreeGetBody requires at least Java 12");
         }
     }
 
