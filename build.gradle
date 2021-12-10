@@ -14,13 +14,6 @@ plugins {
     // https://docs.gradle.org/current/userguide/eclipse_plugin.html
     id 'eclipse'
 }
-apply plugin: "de.undercouch.download"
-
-import org.ajoberstar.grgit.Grgit
-
-repositories {
-    mavenCentral()
-}
 
 ext {
     release = false
