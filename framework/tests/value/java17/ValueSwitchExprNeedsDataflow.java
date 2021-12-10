@@ -1,3 +1,4 @@
+// @below-java17-jdk-skip-test
 import org.checkerframework.common.value.qual.IntVal;
 
 public class ValueSwitchExprNeedsDataflow {
