@@ -23,8 +23,10 @@ public class CaseNode extends Node {
 
   /** The tree for this node. */
   protected final CaseTree tree;
-  /** The switch expression that contains this node. */
-  protected final Node switchExpr;
+  /**
+   * The Node for the assignment of the switch selector expression to a synthetic local variable.
+   */
+  protected final AssignmentNode selectorExprAssignment;
   /**
    * The case expressions to match the switch expression against: the operands of (possibly
    * multiple) case labels.
@@ -35,20 +37,27 @@ public class CaseNode extends Node {
    * Create a new CaseNode.
    *
    * @param tree the tree for this node
-   * @param switchExpr the switch expression
+   * @param selectorExprAssignment the switch expression
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param types a factory of utility methods for operating on types
    */
-  public CaseNode(CaseTree tree, Node switchExpr, List<Node> caseExprs, Types types) {
+  public CaseNode(
+      CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
     super(types.getNoType(TypeKind.NONE));
     assert tree.getKind() == Tree.Kind.CASE;
     this.tree = tree;
-    this.switchExpr = switchExpr;
+    this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
   }
 
-  public Node getSwitchOperand() {
-    return switchExpr;
+  /**
+   * The Node for the assignment of the switch selector expression to a synthetic local variable.
+   * This is used to refine the type of the switch selector expression in a case block.
+   *
+   * @return the assignment of the switch selector expression to a synthetic local variable
+   */
+  public AssignmentNode getSwitchOperand() {
+    return selectorExprAssignment;
   }
 
   /**
