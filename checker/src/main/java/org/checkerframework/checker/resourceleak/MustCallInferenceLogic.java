@@ -1,7 +1,6 @@
 package org.checkerframework.checker.resourceleak;
 
 import org.checkerframework.checker.mustcall.qual.Owning;
-import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -31,7 +30,7 @@ import javax.lang.model.element.Element;
 public class MustCallInferenceLogic {
 
     /** The set of owning fields. */
-    private Set<Element> owningFields = new HashSet<>();
+    private final Set<Element> owningFields = new HashSet<>();
 
     /**
      * The type factory for the Resource Leak Checker, which is used to access the Must Call
@@ -43,7 +42,7 @@ public class MustCallInferenceLogic {
     protected final AnnotationMirror OWNING;
 
     /** The control flow graph. */
-    private ControlFlowGraph cfg;
+    private final ControlFlowGraph cfg;
 
     /**
      * Creates a MustCallInferenceLogic. If the type factory has whole program inference enabled,
@@ -53,7 +52,8 @@ public class MustCallInferenceLogic {
      * @param typeFactory the type factory
      * @param cfg the ControlFlowGraph
      */
-    MustCallInferenceLogic(ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg) {
+    /*package-private*/ MustCallInferenceLogic(
+            ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg) {
         this.typeFactory = typeFactory;
         this.cfg = cfg;
         OWNING = AnnotationBuilder.fromClass(this.typeFactory.getElementUtils(), Owning.class);
@@ -67,7 +67,7 @@ public class MustCallInferenceLogic {
      * represented by {@link #cfg}, and updates the {@link #owningFields} set if it discovers an
      * owning field whose must-call obligations were satisfied along one of the checked paths.
      */
-    void runInference() {
+    /*package-private*/ void runInference() {
         Set<Block> visited = new HashSet<>();
         Deque<Block> worklist = new ArrayDeque<>();
         Block entry = this.cfg.getEntryBlock();
@@ -133,11 +133,13 @@ public class MustCallInferenceLogic {
             // If b is a special block, it must be the regular exit, since we do not propagate to
             // exceptional successors.
             if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
-                WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-                assert wpi != null : "MustCallInference is running without WPI.";
-                for (Element fieldElt : owningFields) {
-                    wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
-                }
+                /* NO-AFU actual whole class unused
+                              WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+                              assert wpi != null : "MustCallInference is running without WPI.";
+                              for (Element fieldElt : owningFields) {
+                                  wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
+                              }
+                */
             }
 
             if (visited.add(b)) {
