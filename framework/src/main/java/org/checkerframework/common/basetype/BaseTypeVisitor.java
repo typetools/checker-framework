@@ -2124,7 +2124,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * This method validates the type of the switch expression and issues an error is the type of a
+   * This method validates the type of the switch expression. It issues an error if the type of a
    * value that the switch expression can result is not a subtype of the switch type.
    *
    * <p>If a subclass overrides this method, it must call {@code super.scan(switchExpressionTree,
