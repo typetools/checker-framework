@@ -825,7 +825,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // TODO: This cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
     // transfer input.
     List<Node> caseNodes = n.getCaseOperands();
-    AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+    AssignmentNode assign = n.getSwitchOperand();
     Node switchNode = assign.getExpression();
     for (Node caseNode : caseNodes) {
       refineSubtrahendWithOffset(switchNode, caseNode, false, in, result.getThenStore());

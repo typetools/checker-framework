@@ -2131,8 +2131,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     private final SwitchTree switchTree;
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
-    /** The Node for the switch expression. */
-    private Node switchExpr;
+    /**
+     * The Node for the assignment of the switch selector expression to a synthetic local variable.
+     */
+    private AssignmentNode selectorExprAssignment;
 
     /**
      * Construct a SwitchBuilder.
@@ -2156,31 +2158,34 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       }
       caseBodyLabels[cases] = breakTargetL.peekLabel();
 
-      TypeMirror switchExprType = TreeUtils.typeOf(switchTree.getExpression());
-      VariableTree variable =
-          treeBuilder.buildVariableDecl(switchExprType, uniqueName("switch"), findOwner(), null);
-      handleArtificialTree(variable);
+      // Create a synthetic variable to which the switch selector expression will be assigned
+      TypeMirror selectorExprTree = TreeUtils.typeOf(switchTree.getExpression());
+      VariableTree selectorVarTree =
+          treeBuilder.buildVariableDecl(selectorExprTree, uniqueName("switch"), findOwner(), null);
+      handleArtificialTree(selectorVarTree);
 
-      VariableDeclarationNode variableNode = new VariableDeclarationNode(variable);
-      variableNode.setInSource(false);
-      extendWithNode(variableNode);
+      VariableDeclarationNode selectorVarNode = new VariableDeclarationNode(selectorVarTree);
+      selectorVarNode.setInSource(false);
+      extendWithNode(selectorVarNode);
 
-      IdentifierTree variableUse = treeBuilder.buildVariableUse(variable);
-      handleArtificialTree(variableUse);
+      IdentifierTree selectorVarUseTree = treeBuilder.buildVariableUse(selectorVarTree);
+      handleArtificialTree(selectorVarUseTree);
 
-      LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
-      variableUseNode.setInSource(false);
-      extendWithNode(variableUseNode);
+      LocalVariableNode selectorVarUseNode = new LocalVariableNode(selectorVarUseTree);
+      selectorVarUseNode.setInSource(false);
+      extendWithNode(selectorVarUseNode);
 
-      Node switchExprNode = unbox(scan(switchTree.getExpression(), null));
+      Node selectorExprNode = unbox(scan(switchTree.getExpression(), null));
 
-      AssignmentTree assign = treeBuilder.buildAssignment(variableUse, switchTree.getExpression());
+      AssignmentTree assign =
+          treeBuilder.buildAssignment(selectorVarUseTree, switchTree.getExpression());
       handleArtificialTree(assign);
 
-      switchExpr = new AssignmentNode(assign, variableUseNode, switchExprNode);
-      switchExpr.setInSource(false);
-      extendWithNode(switchExpr);
+      selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
+      selectorExprAssignment.setInSource(false);
+      extendWithNode(selectorExprAssignment);
 
+      // Build CFG for the cases.
       extendWithNode(
           new MarkerNode(
               switchTree,
@@ -2225,7 +2230,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         for (ExpressionTree exprTree : exprTrees) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(tree, switchExpr, exprs, env.getTypeUtils());
+        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
       }
