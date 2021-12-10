@@ -2210,6 +2210,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 env.getTypeUtils()));
       }
 
+      // Build CFG for the cases.
       Integer defaultIndex = null;
       for (int i = 0; i < cases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
@@ -2308,6 +2309,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       extendWithNode(switchExprVarNode);
     }
 
+    /**
+     * Build the CGF for the case tree, {@code tree}.
+     *
+     * @param tree a case tree whose CFG is built
+     * @param index the index of the case tree in {@link #caseBodyLabels}
+     */
     private void buildCase(CaseTree tree, int index) {
       final Label thisBodyL = caseBodyLabels[index];
       final Label nextBodyL = caseBodyLabels[index + 1];
