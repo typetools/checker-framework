@@ -240,11 +240,11 @@ class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Does this Obligation contain any resource aliases that were derived from
-     * {@link MustCallAlias} parameters?
+     * Does this Obligation contain any resource aliases that were derived from {@link
+     * MustCallAlias} parameters?
      *
-     * @return the logical or of the {@link ResourceAlias#derivedFromMustCallAliasParam}
-     *         fields of this Obligation's resource aliases
+     * @return the logical or of the {@link ResourceAlias#derivedFromMustCallAliasParam} fields of
+     *     this Obligation's resource aliases
      */
     public boolean derivedFromMustCallAlias() {
       for (ResourceAlias ra : resourceAliases) {
@@ -379,22 +379,22 @@ class MustCallConsistencyAnalyzer {
     public final Tree tree;
 
     /**
-     * Was this ResourceAlias derived from a parameter to a method that was annotated
-     * as {@link MustCallAlias}? If so, the obligation containing this resource alias
-     * must be discharged only in one of the following ways:
+     * Was this ResourceAlias derived from a parameter to a method that was annotated as {@link
+     * MustCallAlias}? If so, the obligation containing this resource alias must be discharged only
+     * in one of the following ways:
+     *
      * <ul>
-     *   <li>it is passed to another method or constructor in an @MustCallAlias position, and
-     *   then the containing method returns that method’s result, or the call is a super()
-     *   constructor call annotated with {@link MustCallAlias}, or</li>
-     *   <li>it is stored in an owning field of the class under analysis</li>
+     *   <li>it is passed to another method or constructor in an @MustCallAlias position, and then
+     *       the containing method returns that method’s result, or the call is a super()
+     *       constructor call annotated with {@link MustCallAlias}, or
+     *   <li>it is stored in an owning field of the class under analysis
      * </ul>
      */
     public final boolean derivedFromMustCallAliasParam;
 
     /**
-     * Create a new resource alias. This constructor should only be used
-     * if the resource alias was not derived from a method parameter annotated
-     * as {@link MustCallAlias}.
+     * Create a new resource alias. This constructor should only be used if the resource alias was
+     * not derived from a method parameter annotated as {@link MustCallAlias}.
      *
      * @param reference the local variable
      * @param tree the tree
@@ -408,10 +408,11 @@ class MustCallConsistencyAnalyzer {
      *
      * @param reference the local variable
      * @param tree the tree
-     * @param derivedFromMustCallAliasParam true iff this resource alias was created because
-     *                                      of an {@link MustCallAlias} parameter
+     * @param derivedFromMustCallAliasParam true iff this resource alias was created because of an
+     *     {@link MustCallAlias} parameter
      */
-    public ResourceAlias(LocalVariable reference, Tree tree, boolean derivedFromMustCallAliasParam) {
+    public ResourceAlias(
+        LocalVariable reference, Tree tree, boolean derivedFromMustCallAliasParam) {
       this.reference = reference;
       this.tree = tree;
       this.derivedFromMustCallAliasParam = derivedFromMustCallAliasParam;
@@ -753,8 +754,11 @@ class MustCallConsistencyAnalyzer {
           Obligation obligationContainingMustCallAlias =
               getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
           if (obligationContainingMustCallAlias != null) {
-            ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree,
-                obligationContainingMustCallAlias.derivedFromMustCallAlias());
+            ResourceAlias tmpVarAsResourceAlias =
+                new ResourceAlias(
+                    new LocalVariable(tmpVar),
+                    tree,
+                    obligationContainingMustCallAlias.derivedFromMustCallAlias());
             Set<ResourceAlias> newResourceAliasSet =
                 FluentIterable.from(obligationContainingMustCallAlias.resourceAliases)
                     .append(tmpVarAsResourceAlias)
@@ -1045,11 +1049,13 @@ class MustCallConsistencyAnalyzer {
         if (enclosingCtr != null && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR) {
           removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
         } else {
-          removeObligationsContainingVarIfNotDerivedFromMustCallAlias(obligations, (LocalVariableNode) rhs);
+          removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
+              obligations, (LocalVariableNode) rhs);
         }
       }
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
-      removeObligationsContainingVarIfNotDerivedFromMustCallAlias(obligations, (LocalVariableNode) rhs);
+      removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
+          obligations, (LocalVariableNode) rhs);
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
@@ -1086,13 +1092,14 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Remove any Obligations that contain {@code var} in their resource-alias set, if those
-   * resources were not derived from an {@link MustCallAlias} parameter.
+   * Remove any Obligations that contain {@code var} in their resource-alias set, if those resources
+   * were not derived from an {@link MustCallAlias} parameter.
    *
    * @param obligations the set of Obligations
    * @param var a variable
    */
-  private void removeObligationsContainingVarIfNotDerivedFromMustCallAlias(Set<Obligation> obligations, LocalVariableNode var) {
+  private void removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
+      Set<Obligation> obligations, LocalVariableNode var) {
     Obligation obligationForVar = getObligationForVar(obligations, var);
     while (obligationForVar != null && !obligationForVar.derivedFromMustCallAlias()) {
       obligations.remove(obligationForVar);
@@ -1660,9 +1667,11 @@ class MustCallConsistencyAnalyzer {
           // issued, because such a parameter should not go out of scope without its obligation
           // being resolved some other way.
           if (obligation.derivedFromMustCallAlias()) {
-            checker.reportError(obligation.resourceAliases.asList().get(0),
+            checker.reportError(
+                obligation.resourceAliases.asList().get(0).tree,
                 "mustcallalias.out.of.scope",
                 exitReasonForErrorMessage);
+            continue;
           }
 
           // Which stores from the called-methods and must-call checkers are used in
@@ -1821,12 +1830,15 @@ class MustCallConsistencyAnalyzer {
       for (VariableTree param : method.getParameters()) {
         Element paramElement = TreeUtils.elementFromDeclaration(param);
         boolean hasMustCallAlias = typeFactory.hasMustCallAlias(paramElement);
-        if (hasMustCallAlias || (typeFactory.declaredTypeHasMustCall(param)
+        if (hasMustCallAlias
+            || (typeFactory.declaredTypeHasMustCall(param)
                 && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
                 && paramElement.getAnnotation(Owning.class) != null)) {
           result.add(
               new Obligation(
-                  ImmutableSet.of(new ResourceAlias(new LocalVariable(paramElement), param, hasMustCallAlias))));
+                  ImmutableSet.of(
+                      new ResourceAlias(
+                          new LocalVariable(paramElement), param, hasMustCallAlias))));
           // Increment numMustCall for each @Owning parameter tracked by the enclosing method.
           incrementNumMustCall(paramElement);
         }
