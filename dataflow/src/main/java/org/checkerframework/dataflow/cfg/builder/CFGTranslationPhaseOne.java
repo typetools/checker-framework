@@ -252,6 +252,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   /** Nested scopes of try-catch blocks in force at the current program point. */
   private final TryStack tryStack;
 
+  /** SwitchBuild for the current switch. Used to match yield statements to enclosing switches. */
   private SwitchBuilder switchBuilder;
 
   /**
@@ -500,7 +501,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    */
   public Node visitYield17(Tree yieldTree, Void p) {
     ExpressionTree resultExpression = TreeUtils.yieldTreeGetValue(yieldTree);
-    switchBuilder.buildUseOfSwitchExprVar(resultExpression);
+    switchBuilder.buildSwitchExpressionResult(resultExpression);
     return null;
   }
 
@@ -2180,8 +2181,13 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       this.caseBodyLabels = new Label[caseTrees.size() + 1];
     }
 
-    /** Build up the CFG for the switchTree. */
-    public SwitchExpressionNode build() {
+    /**
+     * Build up the CFG for the switchTree.
+     *
+     * @return if the switch is a switch expression, then a {@link SwitchExpressionNode}; otherwise,
+     *     null
+     */
+    public @Nullable SwitchExpressionNode build() {
       SwitchBuilder oldSwitchBuilder = switchBuilder;
       switchBuilder = this;
       TryFinallyScopeCell oldBreakTargetL = breakTargetL;
@@ -2326,7 +2332,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       } else {
         Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
         if (bodyTree instanceof ExpressionTree) {
-          buildUseOfSwitchExprVar((ExpressionTree) bodyTree);
+          buildSwitchExpressionResult((ExpressionTree) bodyTree);
         } else {
           scan(bodyTree, null);
         }
@@ -2335,7 +2341,20 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       addLabelForNextNode(nextCaseL);
     }
 
-    void buildUseOfSwitchExprVar(ExpressionTree resultExpression) {
+    /**
+     *
+     *
+     * <ol>
+     *   <li>Builds the CFG for the switch expression result.
+     *   <li>Creates an assignment node for the assignment of {@code resultExpression} to {@code
+     *       switchExprVarTree}.
+     *   <li>Adds an unconditional jump to {@link #breakTargetL} (the end of the switch expression.
+     * </ol>
+     *
+     * @param resultExpression the result of a switch expression; either from a yield or an
+     *     expression in a case rule.
+     */
+    void buildSwitchExpressionResult(ExpressionTree resultExpression) {
       IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
       handleArtificialTree(switchExprVarUseTree);
 
@@ -2343,7 +2362,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       switchExprVarUseNode.setInSource(false);
       extendWithNode(switchExprVarUseNode);
 
-      Node resultExprNode = unbox(scan(resultExpression, null));
+      Node resultExprNode = scan(resultExpression, null);
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
       handleArtificialTree(assign);
