@@ -2228,6 +2228,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       extendWithNode(selectorExprAssignment);
     }
 
+    /**
+     * Build the CGF for the case tree, {@code tree}.
+     *
+     * @param tree a case tree whose CFG is built
+     * @param index the index of the case tree in {@link #caseBodyLabels}
+     */
     private void buildCase(CaseTree tree, int index) {
       final Label thisBodyL = caseBodyLabels[index];
       final Label nextBodyL = caseBodyLabels[index + 1];
