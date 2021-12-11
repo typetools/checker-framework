@@ -12,9 +12,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * A class that calls visits each result expression of a switch expression and calls {@link
- * #visitSwitchResultExpression(ExpressionTree, Object)} on each result expression. The result of
- * each method call is combined using {@link #combineResults(Object, Object)}. Call {@link
+ * A class that visits each result expression of a switch expression and calls {@link
+ * #visitSwitchResultExpression(ExpressionTree, Object)} on each result expression. The results of
+ * these method calls are combined using {@link #combineResults(Object, Object)}. Call {@link
  * #scanSwitchExpression(Tree, Object)} to start scanning the switch expression.
  *
  * <p>{@link FunctionalSwitchExpressionScanner} can be used to pass functions for to use for {@link
@@ -31,7 +31,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
    * This method is called for each result expression of the switch expression passed in {@link
    * #scanSwitchExpression(Tree, Object)}.
    *
-   * @param resultExpressionTree a result expression of the switch expressions currently being
+   * @param resultExpressionTree a result expression of the switch expression currently being
    *     scanned
    * @param p a parameter
    * @return the result of visiting the result expression
@@ -52,9 +52,9 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
   protected abstract R combineResults(@Nullable R r1, @Nullable R r2);
 
   /**
-   * Scan the given switch expression and calls {@link #visitSwitchResultExpression(ExpressionTree,
+   * Scans the given switch expression and calls {@link #visitSwitchResultExpression(ExpressionTree,
    * Object)} on each result expression of the switch expression. {@link #combineResults(Object,
-   * Object)} is called to combine the results of visiting a switch result expression.
+   * Object)} is called to combine the results of visiting multiple switch result expressions.
    *
    * @param switchExpression a switch expression tree
    * @param p the parameter to pass to {@link #visitSwitchResultExpression(ExpressionTree, Object)}
@@ -72,8 +72,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         result = combineResults(result, yieldVisitor.scan(caseTree.getStatements(), p));
       } else {
         @SuppressWarnings(
-            "nullness:assignment") // if caseTree.getStatement returned null, so the case must have
-        // a body.
+            "nullness:assignment") // caseTree.getStatements() == null, so the case has a body.
         @NonNull Tree body = TreeUtils.caseTreeGetBody(caseTree);
         if (body.getKind() == Kind.BLOCK) {
           // Scan for yield statements.
@@ -86,8 +85,9 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
       }
     }
     @SuppressWarnings(
-        "nullness:assignment") // switch expressions must have at least one case that results in a
+        "nullness:assignment" // switch expressions must have at least one case that results in a
     // value, so {@code result} must be nonnull.
+    )
     @NonNull R nonNullResult = result;
     return nonNullResult;
   }
@@ -145,7 +145,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
     private final BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc;
 
     /**
-     * Creates a {@link FunctionalSwitchExpressionScanner} with that uses the given functions.
+     * Creates a {@link FunctionalSwitchExpressionScanner} that uses the given functions.
      *
      * @param switchValueExpressionFunc the function called on each switch result expression
      * @param combineResultFunc the function used to combine the result of multiple calls to {@code
