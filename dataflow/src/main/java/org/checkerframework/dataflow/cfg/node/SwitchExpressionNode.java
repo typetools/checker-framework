@@ -15,7 +15,7 @@ public class SwitchExpressionNode extends Node {
 
   /**
    * This is a variable created by dataflow to which each result expression of the switch expression
-   * is assigned. Its value should be used for the value of the switch expression
+   * is assigned. Its value should be used for the value of the switch expression.
    */
   private final LocalVariableNode switchExpressionVar;
 
@@ -24,9 +24,9 @@ public class SwitchExpressionNode extends Node {
    *
    * @param type the type of the node
    * @param switchExpressionTree the tree for this node
-   * @param switchExpressionVar This is a variable created by dataflow to which each result
-   *     expression of the switch expression is assigned. Its value should be used for the value of
-   *     the switch expression
+   * @param switchExpressionVar a variable created by dataflow to which each result expression of
+   *     the switch expression is assigned. Its value should be used for the value of the switch
+   *     expression
    */
   public SwitchExpressionNode(
       TypeMirror type, Tree switchExpressionTree, LocalVariableNode switchExpressionVar) {
