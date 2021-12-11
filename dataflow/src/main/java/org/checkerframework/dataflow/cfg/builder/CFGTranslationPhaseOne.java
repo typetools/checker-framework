@@ -2131,8 +2131,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     private final SwitchTree switchTree;
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
-    /** The Node for the switch expression. */
-    private Node switchExpr;
+    /**
+     * The Node for the assignment of the switch selector expression to a synthetic local variable.
+     */
+    private AssignmentNode selectorExprAssignment;
 
     /**
      * Construct a SwitchBuilder.
@@ -2156,31 +2158,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       }
       caseBodyLabels[cases] = breakTargetL.peekLabel();
 
-      TypeMirror switchExprType = TreeUtils.typeOf(switchTree.getExpression());
-      VariableTree variable =
-          treeBuilder.buildVariableDecl(switchExprType, uniqueName("switch"), findOwner(), null);
-      handleArtificialTree(variable);
+      buildSelector();
 
-      VariableDeclarationNode variableNode = new VariableDeclarationNode(variable);
-      variableNode.setInSource(false);
-      extendWithNode(variableNode);
-
-      IdentifierTree variableUse = treeBuilder.buildVariableUse(variable);
-      handleArtificialTree(variableUse);
-
-      LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
-      variableUseNode.setInSource(false);
-      extendWithNode(variableUseNode);
-
-      Node switchExprNode = unbox(scan(switchTree.getExpression(), null));
-
-      AssignmentTree assign = treeBuilder.buildAssignment(variableUse, switchTree.getExpression());
-      handleArtificialTree(assign);
-
-      switchExpr = new AssignmentNode(assign, variableUseNode, switchExprNode);
-      switchExpr.setInSource(false);
-      extendWithNode(switchExpr);
-
+      // Build CFG for the cases.
       extendWithNode(
           new MarkerNode(
               switchTree,
@@ -2213,6 +2193,47 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
               env.getTypeUtils()));
     }
 
+    /**
+     * Builds the CFG for the selector expression. It also creates a synthetic variable and assigns
+     * the selector expression to the variable. This assignment node is stored in {@link
+     * #selectorExprAssignment}. It can later be used to refine the selector expression in case
+     * bodies.
+     */
+    private void buildSelector() {
+      // Create a synthetic variable to which the switch selector expression will be assigned
+      TypeMirror selectorExprType = TreeUtils.typeOf(switchTree.getExpression());
+      VariableTree selectorVarTree =
+          treeBuilder.buildVariableDecl(selectorExprType, uniqueName("switch"), findOwner(), null);
+      handleArtificialTree(selectorVarTree);
+
+      VariableDeclarationNode selectorVarNode = new VariableDeclarationNode(selectorVarTree);
+      selectorVarNode.setInSource(false);
+      extendWithNode(selectorVarNode);
+
+      IdentifierTree selectorVarUseTree = treeBuilder.buildVariableUse(selectorVarTree);
+      handleArtificialTree(selectorVarUseTree);
+
+      LocalVariableNode selectorVarUseNode = new LocalVariableNode(selectorVarUseTree);
+      selectorVarUseNode.setInSource(false);
+      extendWithNode(selectorVarUseNode);
+
+      Node selectorExprNode = unbox(scan(switchTree.getExpression(), null));
+
+      AssignmentTree assign =
+          treeBuilder.buildAssignment(selectorVarUseTree, switchTree.getExpression());
+      handleArtificialTree(assign);
+
+      selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
+      selectorExprAssignment.setInSource(false);
+      extendWithNode(selectorExprAssignment);
+    }
+
+    /**
+     * Build the CGF for the case tree, {@code tree}.
+     *
+     * @param tree a case tree whose CFG is built
+     * @param index the index of the case tree in {@link #caseBodyLabels}
+     */
     private void buildCase(CaseTree tree, int index) {
       final Label thisBodyL = caseBodyLabels[index];
       final Label nextBodyL = caseBodyLabels[index + 1];
@@ -2225,7 +2246,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         for (ExpressionTree exprTree : exprTrees) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(tree, switchExpr, exprs, env.getTypeUtils());
+        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
       }

@@ -1705,14 +1705,14 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the expression of {@code switchExpressionTree}. For example
+   * Returns the selector expression of {@code switchExpressionTree}. For example
    *
    * <pre>
    *   switch ( <em>expression</em> ) { ... }
    * </pre>
    *
-   * @param switchExpressionTree the switch expression whose expression is returned
-   * @return the expression of {@code switchExpressionTree}
+   * @param switchExpressionTree the switch expression whose selector expression is returned
+   * @return the selector expression of {@code switchExpressionTree}
    */
   public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
     try {
