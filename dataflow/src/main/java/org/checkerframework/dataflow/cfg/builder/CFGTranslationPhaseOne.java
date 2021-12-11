@@ -252,7 +252,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   /** Nested scopes of try-catch blocks in force at the current program point. */
   private final TryStack tryStack;
 
-  /** SwitchBuild for the current switch. Used to match yield statements to enclosing switches. */
+  /** SwitchBuilder for the current switch. Used to match yield statements to enclosing switches. */
   private SwitchBuilder switchBuilder;
 
   /**
@@ -493,7 +493,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
   }
   /**
-   * Visit a SwitchExpressionTree
+   * Visit a SwitchExpressionTree.
    *
    * @param yieldTree a YieldTree, typed as Tree to be backward-compatible
    * @param p parameter
@@ -2161,7 +2161,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     /**
      * If {@link #switchTree} is a switch expression, then this is the synthetic variable tree that
-     * all results of {@code #switchTree} are assigned. Other, this is null.
+     * all results of {@code #switchTree} are assigned. Otherwise, this is null.
      */
     private @Nullable VariableTree switchExprVarTree;
 
@@ -2314,7 +2314,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /**
-     * Build the CGF for the case tree, {@code tree}.
+     * Build the CFG for the case tree, {@code tree}.
      *
      * @param tree a case tree whose CFG is built
      * @param index the index of the case tree in {@link #caseBodyLabels}
@@ -2359,11 +2359,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      *   <li>Builds the CFG for the switch expression result.
      *   <li>Creates an assignment node for the assignment of {@code resultExpression} to {@code
      *       switchExprVarTree}.
-     *   <li>Adds an unconditional jump to {@link #breakTargetL} (the end of the switch expression.
+     *   <li>Adds an unconditional jump to {@link #breakTargetL} (the end of the switch expression).
      * </ol>
      *
      * @param resultExpression the result of a switch expression; either from a yield or an
-     *     expression in a case rule.
+     *     expression in a case rule
      */
     void buildSwitchExpressionResult(ExpressionTree resultExpression) {
       IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
