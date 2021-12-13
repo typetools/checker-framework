@@ -7,7 +7,7 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
 class MustCallAliasPassthroughWrong1 extends FilterInputStream {
-  // :: error: required.method.not.called
+  // :: error: mustcallalias.out.of.scope
   @MustCallAlias MustCallAliasPassthroughWrong1(@MustCallAlias InputStream is) {
     super(null);
   }
