@@ -6,11 +6,12 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 
 /** A node for a switch expression. */
 public class SwitchExpressionNode extends Node {
 
-  /** The switch expression tree corresponding to this node. */
+  /** The {@code SwitchExpressionTree} corresponding to this node. */
   private final Tree switchExpressionTree;
 
   /**
@@ -23,7 +24,7 @@ public class SwitchExpressionNode extends Node {
    * Creates a new SwitchExpressionNoode.
    *
    * @param type the type of the node
-   * @param switchExpressionTree the tree for this node
+   * @param switchExpressionTree the {@code SwitchExpressionTree} for this node
    * @param switchExpressionVar a variable created by dataflow to which each result expression of
    *     the switch expression is assigned. Its value should be used for the value of the switch
    *     expression
@@ -31,6 +32,13 @@ public class SwitchExpressionNode extends Node {
   public SwitchExpressionNode(
       TypeMirror type, Tree switchExpressionTree, LocalVariableNode switchExpressionVar) {
     super(type);
+
+    if (switchExpressionTree.getKind().name().equals("SWITCH_EXPRESSION")) {
+      throw new BugInCF(
+          "switchExpressionTree is not a SwitchExpressionTree found tree with kind %s instead.",
+          switchExpressionTree.getKind());
+    }
+
     this.switchExpressionTree = switchExpressionTree;
     this.switchExpressionVar = switchExpressionVar;
   }

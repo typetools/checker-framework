@@ -46,7 +46,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -2132,11 +2131,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   }
 
   /**
-   * Helper class for handling switch statements, including all their substatements such as case
-   * labels.
+   * Helper class for handling switch statements and switch expressions, including all their
+   * substatements such as case labels.
    */
   private class SwitchBuilder {
-    /** The switch tree. */
+
+    /**
+     * The tree for the switch statement or switch expression. Its type may be {{@link SwitchTree}
+     * or {@code SwitchExpressionTree}}
+     */
     private final Tree switchTree;
 
     /** The case trees of {@code switchTree} */
@@ -2168,7 +2171,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     /**
      * Construct a SwitchBuilder.
      *
-     * @param switchTree a switch tree
+     * @param switchTree a {@link SwitchTree} or a {@code SwitchExpressionTree}
      */
     private SwitchBuilder(Tree switchTree) {
       this.switchTree = switchTree;
@@ -2206,7 +2209,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
       buildSwitchExpressionVar();
 
-      if (switchTree.getKind() == Kind.SWITCH) {
+      if (switchTree.getKind() == Tree.Kind.SWITCH) {
+        // It's a switch statement, not a switch expression.
         extendWithNode(
             new MarkerNode(
                 switchTree,
@@ -2233,7 +2237,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
       addLabelForNextNode(breakTargetL.peekLabel());
       breakTargetL = oldBreakTargetL;
-      if (switchTree.getKind() == Kind.SWITCH) {
+      if (switchTree.getKind() == Tree.Kind.SWITCH) {
+        // It's a switch statement, not a switch expression.
         extendWithNode(
             new MarkerNode(
                 switchTree,
@@ -2242,7 +2247,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       }
 
       switchBuilder = oldSwitchBuilder;
-      if (switchExprVarTree != null) {
+      if (switchTree.getKind() != Tree.Kind.SWITCH) {
+        // It's a switch expression, not a switch statement.
         IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
         handleArtificialTree(switchExprVarUseTree);
 
@@ -2298,7 +2304,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * whose value is the value of the switch expression.
      */
     private void buildSwitchExpressionVar() {
-      if (switchTree.getKind() == Kind.SWITCH) {
+      if (switchTree.getKind() == Tree.Kind.SWITCH) {
         // A switch statement does not have a value, so do nothing.
         return;
       }
@@ -2342,7 +2348,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         }
       } else {
         Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
-        if (bodyTree instanceof ExpressionTree) {
+        if (switchTree.getKind() != Tree.Kind.SWITCH && bodyTree instanceof ExpressionTree) {
           buildSwitchExpressionResult((ExpressionTree) bodyTree);
         } else {
           scan(bodyTree, null);
@@ -2353,7 +2359,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     /**
-     * Does the following for each result expression of a switch expression:
+     * Does the following for the result expression of a switch expression, {@code
+     * resultExpression}:
      *
      * <ol>
      *   <li>Builds the CFG for the switch expression result.
