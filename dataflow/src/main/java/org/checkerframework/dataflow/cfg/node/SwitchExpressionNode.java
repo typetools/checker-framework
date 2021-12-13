@@ -33,7 +33,7 @@ public class SwitchExpressionNode extends Node {
       TypeMirror type, Tree switchExpressionTree, LocalVariableNode switchExpressionVar) {
     super(type);
 
-    if (switchExpressionTree.getKind().name().equals("SWITCH_EXPRESSION")) {
+    if (!switchExpressionTree.getKind().name().equals("SWITCH_EXPRESSION")) {
       throw new BugInCF(
           "switchExpressionTree is not a SwitchExpressionTree found tree with kind %s instead.",
           switchExpressionTree.getKind());
