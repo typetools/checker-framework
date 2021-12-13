@@ -68,12 +68,15 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
     R result = null;
     for (CaseTree caseTree : caseTrees) {
       if (caseTree.getStatements() != null) {
-        // Scan for yield statements.
+        // This case is a switch labeled statement group, so scan the statements for yield
+        // statements.
         result = combineResults(result, yieldVisitor.scan(caseTree.getStatements(), p));
       } else {
         @SuppressWarnings(
             "nullness:assignment") // caseTree.getStatements() == null, so the case has a body.
         @NonNull Tree body = TreeUtils.caseTreeGetBody(caseTree);
+        // This case is a switch rule, so its body is either an expression, block, or throw.
+        // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28.2.
         if (body.getKind() == Kind.BLOCK) {
           // Scan for yield statements.
           result = combineResults(result, yieldVisitor.scan(((BlockTree) body).getStatements(), p));
@@ -128,9 +131,9 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
   }
 
   /**
-   * An implementation of {@link SwitchExpressionScanner} that uses functions {@link
-   * #visitSwitchResultExpression(ExpressionTree, Object)} and {@link #combineResults(Object,
-   * Object)}.
+   * An implementation of {@link SwitchExpressionScanner} that uses functions passed to the
+   * constructor for {@link #visitSwitchResultExpression(ExpressionTree, Object)} and {@link
+   * #combineResults(Object, Object)}.
    *
    * @param <R1> the type result of {@link #visitSwitchResultExpression(ExpressionTree, Object)}
    * @param <P1> the type of the parameter to pass to {@link
