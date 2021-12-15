@@ -1242,6 +1242,13 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     return null;
   }
 
+  /**
+   * Visit a switch expression.
+   *
+   * @param javacTree switch expression tree
+   * @param javaParserNode java parser node
+   * @return null
+   */
   public Void visitSwitchExpression17(Tree javacTree, Node javaParserNode) {
     SwitchExpr node = castNode(SwitchExpr.class, javaParserNode, javacTree);
     processSwitchExpression(javacTree, node);

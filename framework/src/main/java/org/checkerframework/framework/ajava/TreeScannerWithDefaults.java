@@ -383,6 +383,13 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
     return super.visitSwitch(tree, p);
   }
 
+  /**
+   * Visit a switch expression tree.
+   *
+   * @param tree switch expression tree
+   * @param p null
+   * @return null
+   */
   public Void visitSwitchExpression17(Tree tree, Void p) {
     defaultAction(tree);
     return super.scan(tree, p);
@@ -454,6 +461,13 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
     return super.visitWildcard(tree, p);
   }
 
+  /**
+   * Visit a yield tree.
+   *
+   * @param tree a yield tree
+   * @param p null
+   * @return null
+   */
   public Void visitYield17(Tree tree, Void p) {
     defaultAction(tree);
     return super.scan(tree, p);
