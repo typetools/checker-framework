@@ -776,9 +776,6 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       // This occurs in a member reference like MyClass::myMember. The MyClass is wrapped in a
       // TypeExpr.
       javacTree.accept(this, ((TypeExpr) javaParserNode).getType());
-    } else if (javaParserNode instanceof VariableDeclarator) {
-      // This is a bug in yield statements.
-      processIdentifier(javacTree, ((VariableDeclarator) javaParserNode).getName());
     } else {
       throwUnexpectedNodeType(javacTree, javaParserNode);
     }
