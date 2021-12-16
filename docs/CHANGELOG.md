@@ -3,6 +3,8 @@ Version 3.21.0 (December 17, 2021)
 
 **User-visible changes:**
 
+The Checker Framework now more precisely computes the type of a switch expression.
+
 **Implementation details:**
 
 **Closed issues:**
