@@ -1125,18 +1125,20 @@ public abstract class CFAbstractTransfer<
     }
   }
 
-  /**
-   * A case produces no value, but it may imply some facts about the argument to the switch
-   * statement.
-   */
+  /** A case produces no value, but it may imply some facts about switch selector expression. */
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    TransferResult<V, S> result =
-        new ConditionalTransferResult<>(
-            finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
-
+    TransferResult<V, S> lubResult = null;
+    // Case operands are the case constants. For example, A, B and C in case A, B, C:.
+    // This method refines the type of the selector expression and the synthetic variable that
+    // represents the selector expression to the type of the case constant if it is more precise.
+    // If there are multiple case constants then a new store is created for each case constant and
+    // then they are lubbed. This method returns the lubbed result.
     for (Node caseOperand : n.getCaseOperands()) {
+      TransferResult<V, S> result =
+          new ConditionalTransferResult<>(
+              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
@@ -1147,8 +1149,19 @@ public abstract class CFAbstractTransfer<
       result =
           strengthenAnnotationOfEqualTo(
               result, caseOperand, assign.getTarget(), caseValue, switchValue, false);
+
+      // Lub the result of one case label constant with the result of the others.
+      if (lubResult == null) {
+        lubResult = result;
+      } else {
+        S thenStore = lubResult.getThenStore().leastUpperBound(result.getThenStore());
+        S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
+        lubResult =
+            new ConditionalTransferResult<>(
+                null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
+      }
     }
-    return result;
+    return lubResult;
   }
 
   /**
