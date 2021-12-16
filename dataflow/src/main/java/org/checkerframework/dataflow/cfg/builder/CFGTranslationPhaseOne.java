@@ -2136,8 +2136,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   private class SwitchBuilder {
 
     /**
-     * The tree for the switch statement or switch expression. Its type may be {{@link SwitchTree}
-     * or {@code SwitchExpressionTree}}
+     * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree} or
+     * {@code SwitchExpressionTree}}
      */
     private final Tree switchTree;
 
