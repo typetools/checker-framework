@@ -512,7 +512,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    * @return the result of visiting the switch expression tree
    */
   public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
-    // TODO: Analyze switch expressions properly.
     SwitchBuilder switchBuilder = new SwitchBuilder(switchExpressionTree);
     return switchBuilder.build();
   }
@@ -2137,8 +2136,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   private class SwitchBuilder {
 
     /**
-     * The tree for the switch statement or switch expression. Its type may be {{@link SwitchTree}
-     * or {@code SwitchExpressionTree}}
+     * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree} or
+     * {@code SwitchExpressionTree}}
      */
     private final Tree switchTree;
 

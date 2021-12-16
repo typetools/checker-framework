@@ -1,3 +1,18 @@
+Version 3.21.0 (December 17, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+The Checker Framework now more precisely computes the type of a switch expression.
+
+**Implementation details:**
+
+The dataflow framework now analyzes switch expressions and switch statements that use the new `->`
+case syntax. To do so, a new node, SwitchExpressionNode, was added.
+
+**Closed issues:**
+
+
 Version 3.20.0 (December 6, 2021)
 -------------------------------
 
