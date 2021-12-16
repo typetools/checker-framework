@@ -51,7 +51,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
-import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
@@ -661,12 +660,6 @@ public abstract class CFAbstractTransfer<
     return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
   }
 
-  @Override
-  public TransferResult<V, S> visitSwitchExpressionNode(
-      SwitchExpressionNode n, TransferInput<V, S> vsTransferInput) {
-    return visitLocalVariable(n.getSwitchExpressionVar(), vsTransferInput);
-  }
-
   /** Reverse the role of the 'thenStore' and 'elseStore'. */
   @Override
   public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
@@ -1125,20 +1118,18 @@ public abstract class CFAbstractTransfer<
     }
   }
 
-  /** A case produces no value, but it may imply some facts about switch selector expression. */
+  /**
+   * A case produces no value, but it may imply some facts about the argument to the switch
+   * statement.
+   */
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    TransferResult<V, S> lubResult = null;
-    // Case operands are the case constants. For example, A, B and C in case A, B, C:.
-    // This method refines the type of the selector expression and the synthetic variable that
-    // represents the selector expression to the type of the case constant if it is more precise.
-    // If there are multiple case constants then a new store is created for each case constant and
-    // then they are lubbed. This method returns the lubbed result.
+    TransferResult<V, S> result =
+        new ConditionalTransferResult<>(
+            finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
+
     for (Node caseOperand : n.getCaseOperands()) {
-      TransferResult<V, S> result =
-          new ConditionalTransferResult<>(
-              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
@@ -1149,19 +1140,8 @@ public abstract class CFAbstractTransfer<
       result =
           strengthenAnnotationOfEqualTo(
               result, caseOperand, assign.getTarget(), caseValue, switchValue, false);
-
-      // Lub the result of one case label constant with the result of the others.
-      if (lubResult == null) {
-        lubResult = result;
-      } else {
-        S thenStore = lubResult.getThenStore().leastUpperBound(result.getThenStore());
-        S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
-        lubResult =
-            new ConditionalTransferResult<>(
-                null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
-      }
     }
-    return lubResult;
+    return result;
   }
 
   /**

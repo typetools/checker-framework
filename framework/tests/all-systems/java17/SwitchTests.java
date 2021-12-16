@@ -159,13 +159,4 @@ class SwitchTests {
     }
     return numDays;
   }
-
-  void switchStatementsWithExpression(int selector) {
-    switch (selector) {
-      case 1 -> "hello".toString();
-      default -> "goodbye".toString();
-    }
-    switch (selector) {
-    }
-  }
 }
