@@ -51,6 +51,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
@@ -658,6 +659,12 @@ public abstract class CFAbstractTransfer<
     }
     V finishedValue = finishValue(resultValue, thenStore, elseStore);
     return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
+  }
+
+  @Override
+  public TransferResult<V, S> visitSwitchExpressionNode(
+      SwitchExpressionNode n, TransferInput<V, S> vsTransferInput) {
+    return visitLocalVariable(n.getSwitchExpressionVar(), vsTransferInput);
   }
 
   /** Reverse the role of the 'thenStore' and 'elseStore'. */
