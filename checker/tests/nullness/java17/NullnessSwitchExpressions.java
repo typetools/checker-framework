@@ -36,8 +36,6 @@ public class NullnessSwitchExpressions {
           default -> throw new IllegalStateException("Invalid day: " + day);
         };
 
-    // TODO: This is a false positive.
-    // :: error: (dereference.of.nullable)
     o.toString();
   }
 
@@ -51,8 +49,6 @@ public class NullnessSwitchExpressions {
             String s = null;
             if (day == Day.THURSDAY) {
               s = "hello";
-              // TODO: This is a false positive.
-              // :: error: (dereference.of.nullable)
               s.toString();
             }
             yield s;
