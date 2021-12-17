@@ -2342,18 +2342,25 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       }
       addLabelForNextNode(thisBodyL);
       if (tree.getStatements() != null) {
+        // This is a switch labeled statement groups.
         for (StatementTree stmt : tree.getStatements()) {
           scan(stmt, null);
         }
+        // Handle possible fall through by adding jump to next body.
+        extendWithExtendedNode(new UnconditionalJump(nextBodyL));
       } else {
+        // This is a switch rule.
         Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
         if (switchTree.getKind() != Tree.Kind.SWITCH && bodyTree instanceof ExpressionTree) {
           buildSwitchExpressionResult((ExpressionTree) bodyTree);
         } else {
           scan(bodyTree, null);
+          // Switch rules never fall through so add jump to the break target.
+          assert breakTargetL != null : "no target for case statement";
+          extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
         }
       }
-      extendWithExtendedNode(new UnconditionalJump(nextBodyL));
+
       addLabelForNextNode(nextCaseL);
     }
 
@@ -2388,8 +2395,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           new AssignmentNode(assign, switchExprVarUseNode, resultExprNode);
       assignmentNode.setInSource(false);
       extendWithNode(assignmentNode);
-
-      assert breakTargetL != null : "no target for yield statement";
+      // Switch rules never fall through so add jump to the break target.
+      assert breakTargetL != null : "no target for case statement";
       extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
     }
   }
