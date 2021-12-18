@@ -45,6 +45,10 @@ public class TestUtilities {
     public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
     /** True if the JVM is version 11 or lower. */
     public static final boolean IS_AT_MOST_11_JVM = SystemUtil.getJreVersion() <= 11;
+    /** True if the JVM is version 14 or above. */
+    public static final boolean IS_AT_LEAST_14_JVM = SystemUtil.getJreVersion() >= 14;
+    /** True if the JVM is version 14 or lower. */
+    public static final boolean IS_AT_MOST_14_JVM = SystemUtil.getJreVersion() <= 14;
     /** True if the JVM is version 16 or above. */
     public static final boolean IS_AT_LEAST_16_JVM = SystemUtil.getJreVersion() >= 16;
     /** True if the JVM is version 16 or lower. */
@@ -237,11 +241,13 @@ public class TestUtilities {
             if (nextLine.contains("@skip-test")
                     || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
                     || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
-                    || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))
+                    || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-jdk-skip-test"))
+                    || (!IS_AT_LEAST_14_JVM && nextLine.contains("@below-java14-jdk-skip-test"))
+                    || (!IS_AT_MOST_14_JVM && nextLine.contains("@above-java14-jdk-skip-test"))
                     || (!IS_AT_LEAST_16_JVM && nextLine.contains("@below-java16-jdk-skip-test"))
-                    || (!IS_AT_MOST_16_JVM && nextLine.contains("@above-java16-skip-test"))
+                    || (!IS_AT_MOST_16_JVM && nextLine.contains("@above-java16-jdk-skip-test"))
                     || (!IS_AT_LEAST_17_JVM && nextLine.contains("@below-java17-jdk-skip-test"))
-                    || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-skip-test"))) {
+                    || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-jdk-skip-test"))) {
                 in.close();
                 return false;
             }

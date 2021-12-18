@@ -21,10 +21,15 @@ ext {
     // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
-
+    isJava14 = JavaVersion.current() == JavaVersion.VERSION_14
+    isJava15 = JavaVersion.current() == JavaVersion.VERSION_15
     isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
     isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
-    isJava16plus = isJava16 || isJava17
+
+    isJava17plus = isJava17
+    isJava16plus = isJava16 || isJava17plus
+    isJava15plus = isJava15 || isJava16plus
+    isJava14plus = isJava14 || isJava14plus
 
     errorproneJavacVersion = '9+181-r4173-1'
 
@@ -430,7 +435,10 @@ List<String> getJavaFilesToFormat(projectName) {
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
                 && (isJava16plus || !details.path.contains("-records"))
-                && (isJava17 || !details.path.contains("java17"))
+                // TODO: directories should be renamed `-switchexpr` or some such,
+                // as they  only contain examples for switch expressions, which were
+                // added in Java 14, not Java 17.
+                && (isJava14plus || !details.path.contains("java17"))
                 && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
