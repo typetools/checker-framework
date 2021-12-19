@@ -188,6 +188,14 @@ public interface WholeProgramInference {
   void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
+   * Updates a field to add a declaration annotation.
+   *
+   * @param fieldElt the field to annotate
+   * @param anno the declaration annotation to add to the field
+   */
+  void addFieldDeclarationAnnotation(Element fieldElt, AnnotationMirror anno);
+
+  /**
    * Writes the inferred results to a file. Ideally, it should be called at the end of the
    * type-checking process. In practice, it is called after each class, because we don't know which
    * class will be the last one in the type-checking process.

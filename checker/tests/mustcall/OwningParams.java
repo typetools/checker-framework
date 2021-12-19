@@ -1,4 +1,4 @@
-// @above-java11-skip-test until this is fixed: https://tinyurl.com/cfissue/4934
+// @above-java11-jdk-skip-test until this is fixed: https://tinyurl.com/cfissue/4934
 // Use of @Owning on receiver parameter doesn't work in Java 17+.
 // The TODO comment below might indicate that it also doesn't work before.
 

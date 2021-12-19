@@ -145,6 +145,21 @@ public class WholeProgramInferenceJavaParserStorage
     return methodAnnos;
   }
 
+  /**
+   * Get the annotations for a field.
+   *
+   * @param fieldElt a field
+   * @return the annotations for a field
+   */
+  private FieldAnnos getFieldAnnos(Element fieldElt) {
+    String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
+    // Read in classes for the element.
+    getFileForElement(fieldElt);
+    ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    FieldAnnos fieldAnnos = classAnnos.fields.get(fieldElt.getSimpleName().toString());
+    return fieldAnnos;
+  }
+
   @Override
   public AnnotatedTypeMirror getParameterAnnotations(
       ExecutableElement methodElt,
@@ -255,6 +270,16 @@ public class WholeProgramInferenceJavaParserStorage
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(methodElt));
+    }
+    return isNewAnnotation;
+  }
+
+  @Override
+  public boolean addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+    FieldAnnos fieldAnnos = getFieldAnnos(field);
+    boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
+    if (isNewAnnotation) {
+      modifiedFiles.add(getFileForElement(field));
     }
     return isNewAnnotation;
   }
@@ -1100,6 +1125,8 @@ public class WholeProgramInferenceJavaParserStorage
     public VariableDeclarator declaration;
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
+    /** Annotations on the field declaration. */
+    private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
     /**
      * Creates a wrapper for the given field declaration.
@@ -1130,12 +1157,50 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
+     * Adds a declaration annotation to this field declaration and returns whether it was a new
+     * annotation.
+     *
+     * @param annotation declaration annotation to add
+     * @return true if {@code annotation} wasn't previously stored for this field declaration
+     */
+    public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
+      if (declarationAnnotations == null) {
+        declarationAnnotations = new HashSet<>();
+      }
+
+      return declarationAnnotations.add(annotation);
+    }
+
+    /**
+     * Returns the inferred declaration annotations on this field, or an empty set if there are no
+     * annotations.
+     *
+     * @return the declaration annotations for this field declaration
+     */
+    public Set<AnnotationMirror> getDeclarationAnnotations() {
+      if (declarationAnnotations == null) {
+        return Collections.emptySet();
+      }
+
+      return Collections.unmodifiableSet(declarationAnnotations);
+    }
+
+    /**
      * Transfers all annotations inferred by whole program inference on this field to the JavaParser
      * nodes for that field.
      */
     public void transferAnnotations() {
       if (type == null) {
         return;
+      }
+
+      if (declarationAnnotations != null) {
+        ClassOrInterfaceType type = declaration.getType().asClassOrInterfaceType();
+        for (AnnotationMirror annotation : declarationAnnotations) {
+          type.addAnnotation(
+              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                  annotation));
+        }
       }
 
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);

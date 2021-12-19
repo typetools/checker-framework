@@ -25,9 +25,12 @@ public class CaseNode extends Node {
 
     /** The tree for this node. */
     protected final CaseTree tree;
-    /** The switch expression. */
+    /** The switch expression that contains this node. */
     protected final Node switchExpr;
-    /** The case expression to match the switch expression against. */
+    /**
+     * The case expressions to match the switch expression against: the operands of (possibly
+     * multiple) case labels.
+     */
     protected final List<Node> caseExprs;
 
     /**

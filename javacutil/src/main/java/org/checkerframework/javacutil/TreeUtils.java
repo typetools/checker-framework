@@ -1733,6 +1733,32 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns the body of the case statement if it is of the form {@code case <expression> ->
+     * <expression>}. This method should only be called if {@link CaseTree#getStatements()} returns
+     * null.
+     *
+     * @param caseTree the case expression to get the body from
+     * @return the body of the case tree
+     */
+    public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
+        if (atLeastJava12) {
+            try {
+                Method method = CaseTree.class.getDeclaredMethod("getBody");
+                return (Tree) method.invoke(caseTree);
+            } catch (NoSuchMethodException
+                    | IllegalAccessException
+                    | IllegalArgumentException
+                    | InvocationTargetException e) {
+                Error err = new AssertionError("Unexpected error in caseTreeGetBody");
+                err.initCause(e);
+                throw err;
+            }
+        } else {
+            throw new AssertionError("caseTreeGetBody requires at least Java 12");
+        }
+    }
+
+    /**
      * Returns true if the given method/constructor invocation is a varargs invocation.
      *
      * @param tree a method/constructor invocation

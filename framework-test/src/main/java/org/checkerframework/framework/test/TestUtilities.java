@@ -45,6 +45,10 @@ public class TestUtilities {
     public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.getJreVersion() >= 11;
     /** True if the JVM is version 11 or lower. */
     public static final boolean IS_AT_MOST_11_JVM = SystemUtil.getJreVersion() <= 11;
+    /** True if the JVM is version 14 or above. */
+    public static final boolean IS_AT_LEAST_14_JVM = SystemUtil.getJreVersion() >= 14;
+    /** True if the JVM is version 14 or lower. */
+    public static final boolean IS_AT_MOST_14_JVM = SystemUtil.getJreVersion() <= 14;
     /** True if the JVM is version 16 or above. */
     public static final boolean IS_AT_LEAST_16_JVM = SystemUtil.getJreVersion() >= 16;
     /** True if the JVM is version 16 or lower. */
@@ -237,11 +241,13 @@ public class TestUtilities {
             if (nextLine.contains("@skip-test")
                     || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
                     || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
-                    || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))
+                    || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-jdk-skip-test"))
+                    || (!IS_AT_LEAST_14_JVM && nextLine.contains("@below-java14-jdk-skip-test"))
+                    || (!IS_AT_MOST_14_JVM && nextLine.contains("@above-java14-jdk-skip-test"))
                     || (!IS_AT_LEAST_16_JVM && nextLine.contains("@below-java16-jdk-skip-test"))
-                    || (!IS_AT_MOST_16_JVM && nextLine.contains("@above-java16-skip-test"))
+                    || (!IS_AT_MOST_16_JVM && nextLine.contains("@above-java16-jdk-skip-test"))
                     || (!IS_AT_LEAST_17_JVM && nextLine.contains("@below-java17-jdk-skip-test"))
-                    || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-skip-test"))) {
+                    || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-jdk-skip-test"))) {
                 in.close();
                 return false;
             }
@@ -477,34 +483,6 @@ public class TestUtilities {
         } catch (IOException e) {
             throw new RuntimeException("Could not make directory: " + dir + ": " + e.getMessage());
         }
-    }
-
-    /**
-     * Return true if the system property is set to "true". Return false if the system property is
-     * not set or is set to "false". Otherwise, errs.
-     *
-     * @param key system property to check
-     * @return true if the system property is set to "true". Return false if the system property is
-     *     not set or is set to "false". Otherwise, errs.
-     * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String)} instead.
-     */
-    @Deprecated // 2020-04-30
-    public static boolean testBooleanProperty(String key) {
-        return testBooleanProperty(key, false);
-    }
-
-    /**
-     * If the system property is set, return its boolean value; otherwise return {@code
-     * defaultValue}. Errs if the system property is set to a non-boolean value.
-     *
-     * @param key system property to check
-     * @param defaultValue value to use if the property is not set
-     * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
-     * @deprecated Use {@link SystemUtil#getBooleanSystemProperty(String, boolean)} instead.
-     */
-    @Deprecated // 2020-04-30
-    public static boolean testBooleanProperty(String key, boolean defaultValue) {
-        return SystemUtil.getBooleanSystemProperty(key, defaultValue);
     }
 
     /**

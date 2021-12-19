@@ -138,6 +138,16 @@ public interface WholeProgramInferenceStorage<T> {
   public boolean addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
+   * Updates a field to add a declaration annotation.
+   *
+   * @param fieldElt the field
+   * @param anno the declaration annotation to add to the field
+   * @return true if {@code anno} is a new declaration annotation for {@code fieldElt}, false
+   *     otherwise
+   */
+  public boolean addFieldDeclarationAnnotation(Element fieldElt, AnnotationMirror anno);
+
+  /**
    * Obtain the type from a storage location.
    *
    * @param typeMirror the underlying type for the result
