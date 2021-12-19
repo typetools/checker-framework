@@ -29,7 +29,7 @@ ext {
     isJava17plus = isJava17
     isJava16plus = isJava16 || isJava17plus
     isJava15plus = isJava15 || isJava16plus
-    isJava14plus = isJava14 || isJava14plus
+    isJava14plus = isJava14 || isJava15plus
 
     errorproneJavacVersion = '9+181-r4173-1'
 
