@@ -36,8 +36,6 @@ public class NullnessSwitchArrows {
             default -> throw new IllegalStateException("Invalid day: " + day);
         }
 
-        // TODO: this is a false positive.  It works for case: statements; see below.
-        // :: error: (dereference.of.nullable)
         o.toString();
     }
 

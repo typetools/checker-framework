@@ -1759,6 +1759,100 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns the selector expression of {@code switchExpressionTree}. For example
+     *
+     * <pre>
+     *   switch ( <em>expression</em> ) { ... }
+     * </pre>
+     *
+     * @param switchExpressionTree the switch expression whose selector expression is returned
+     * @return the selector expression of {@code switchExpressionTree}
+     */
+    public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
+        try {
+            Class<?> switchExpressionClass =
+                    Class.forName("com.sun.source.tree.SwitchExpressionTree");
+            Method getExpressionMethod = switchExpressionClass.getMethod("getExpression");
+            ExpressionTree expressionTree =
+                    (ExpressionTree) getExpressionMethod.invoke(switchExpressionTree);
+            if (expressionTree != null) {
+                return expressionTree;
+            }
+            throw new BugInCF(
+                    "TreeUtils.switchExpressionTreeGetExpression: expression is null for tree: %s",
+                    switchExpressionTree);
+        } catch (ClassNotFoundException
+                | NoSuchMethodException
+                | InvocationTargetException
+                | IllegalAccessException e) {
+            throw new BugInCF(
+                    "TreeUtils.switchExpressionTreeGetExpression: reflection failed for tree: %s",
+                    switchExpressionTree, e);
+        }
+    }
+
+    /**
+     * Returns the cases of {@code switchExpressionTree}. For example
+     *
+     * <pre>
+     *   switch ( <em>expression</em> ) {
+     *     <em>cases</em>
+     *   }
+     * </pre>
+     *
+     * @param switchExpressionTree the switch expression whose cases are returned
+     * @return the cases of {@code switchExpressionTree}
+     */
+    public static List<? extends CaseTree> switchExpressionTreeGetCases(Tree switchExpressionTree) {
+        try {
+            Class<?> switchExpressionClass =
+                    Class.forName("com.sun.source.tree.SwitchExpressionTree");
+            Method getCasesMethod = switchExpressionClass.getMethod("getCases");
+            @SuppressWarnings("unchecked")
+            List<? extends CaseTree> cases =
+                    (List<? extends CaseTree>) getCasesMethod.invoke(switchExpressionTree);
+            if (cases != null) {
+                return cases;
+            }
+            throw new BugInCF(
+                    "TreeUtils.switchExpressionTreeGetCases: cases is null for tree: %s",
+                    switchExpressionTree);
+        } catch (ClassNotFoundException
+                | NoSuchMethodException
+                | InvocationTargetException
+                | IllegalAccessException e) {
+            throw new BugInCF(
+                    "TreeUtils.switchExpressionTreeGetCases: reflection failed for tree: %s",
+                    switchExpressionTree, e);
+        }
+    }
+
+    /**
+     * Returns the value (expression) for {@code yieldTree}.
+     *
+     * @param yieldTree the yield tree
+     * @return the value (expression) for {@code yieldTree}.
+     */
+    public static ExpressionTree yieldTreeGetValue(Tree yieldTree) {
+        try {
+            Class<?> yieldTreeClass = Class.forName("com.sun.source.tree.YieldTree");
+            Method getCasesMethod = yieldTreeClass.getMethod("getValue");
+            ExpressionTree expressionTree = (ExpressionTree) getCasesMethod.invoke(yieldTree);
+            if (expressionTree != null) {
+                return expressionTree;
+            }
+            throw new BugInCF(
+                    "TreeUtils.yieldTreeGetValue: expression is null for tree: %s", yieldTree);
+        } catch (ClassNotFoundException
+                | NoSuchMethodException
+                | InvocationTargetException
+                | IllegalAccessException e) {
+            throw new BugInCF(
+                    "TreeUtils.yieldTreeGetValue: reflection failed for tree: %s", yieldTree, e);
+        }
+    }
+
+    /**
      * Returns true if the given method/constructor invocation is a varargs invocation.
      *
      * @param tree a method/constructor invocation

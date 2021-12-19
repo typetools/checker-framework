@@ -32,6 +32,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SwitchExpressionScanner;
+import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -181,16 +183,30 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     /**
      * Compute the type of the switch expression tree.
      *
-     * @param switchExpressionTree SwitchExpressionTree; typed as Tree to be backward-compatible
-     * @param f AnnotatedTypeFactory
+     * @param switchExpressionTree a SwitchExpressionTree; typed as Tree so method signature is
+     *     backward-compatible
+     * @param f an AnnotatedTypeFactory
      * @return the type of the switch expression
      */
     public AnnotatedTypeMirror visitSwitchExpressionTree17(
             Tree switchExpressionTree, AnnotatedTypeFactory f) {
-        // TODO: Properly compute the type from the cases.
-        AnnotatedTypeMirror result = f.type(switchExpressionTree);
-        result.addAnnotations(f.getQualifierHierarchy().getTopAnnotations());
-        return result;
+        TypeMirror switchTypeMirror = TreeUtils.typeOf(switchExpressionTree);
+        SwitchExpressionScanner<AnnotatedTypeMirror, Void> luber =
+                new FunctionalSwitchExpressionScanner<>(
+                        // Function applied to each result expression of the switch expression.
+                        (valueTree, unused) -> f.getAnnotatedType(valueTree),
+                        // Function used to combine the types of each result expression.
+                        (type1, type2) -> {
+                            if (type1 == null) {
+                                return type2;
+                            } else if (type2 == null) {
+                                return type1;
+                            } else {
+                                return AnnotatedTypes.leastUpperBound(
+                                        f, type1, type2, switchTypeMirror);
+                            }
+                        });
+        return luber.scanSwitchExpression(switchExpressionTree, null);
     }
 
     @Override

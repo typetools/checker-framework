@@ -208,6 +208,14 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     }
 
     @Override
+    public Void visitSwitchExpression17(Tree tree, Void p) {
+        super.visitSwitchExpression17(tree, p);
+        // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not.
+        trees.remove(TreeUtils.switchExpressionTreeGetExpression(tree));
+        return null;
+    }
+
+    @Override
     public Void visitSynchronized(SynchronizedTree tree, Void p) {
         super.visitSynchronized(tree, p);
         // javac surrounds synchronized expressions in a ParenthesizedTree but JavaParser does not.
@@ -378,6 +386,14 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
         }
 
         return super.visitVariable(tree, p);
+    }
+
+    @Override
+    public Void visitYield17(Tree tree, Void p) {
+        // JavaParser does not parse yields correctly:
+        // https://github.com/javaparser/javaparser/issues/3364
+        // So skip yields.
+        return null;
     }
 
     /**

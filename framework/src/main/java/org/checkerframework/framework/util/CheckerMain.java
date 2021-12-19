@@ -544,7 +544,11 @@ public class CheckerMain {
      */
     private List<String> jarFiles(String directory) {
         File dir = new File(directory);
-        return Arrays.asList(dir.list((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR")));
+        String[] jarFiles = dir.list((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
+        if (jarFiles == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(jarFiles);
     }
 
     /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */

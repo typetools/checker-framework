@@ -91,6 +91,8 @@ public interface NodeVisitor<R, P> {
 
     R visitTernaryExpression(TernaryExpressionNode n, P p);
 
+    R visitSwitchExpressionNode(SwitchExpressionNode n, P p);
+
     R visitAssignment(AssignmentNode n, P p);
 
     R visitLocalVariable(LocalVariableNode n, P p);

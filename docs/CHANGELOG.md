@@ -1,3 +1,19 @@
+Version 3.21.0 (December 17, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+The Checker Framework now more precisely computes the type of a switch expression.
+
+**Implementation details:**
+
+The dataflow framework now analyzes switch expressions and switch statements
+that use the new `->` case syntax. To do so, a new node, SwitchExpressionNode,
+was added.
+
+**Closed issues:**
+#2373, #4934, #4977, #4979, #4987.
+
 Version 3.20.0 (December 6, 2021)
 -------------------------------
 
@@ -11,7 +27,7 @@ conservatively. A future version will improve precision.
 
 The dataflow framework can be run on code that contains switch expressions and
 switch statements that use the new `->` case syntax, but it does not yet
-analyze the cases in a switch expression and it treats `->` as `:`.. A future
+analyze the cases in a switch expression and it treats `->` as `:`. A future
 version will do so.
 
 Removed methods and classes that have been deprecated for more than one year:

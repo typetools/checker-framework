@@ -37,11 +37,6 @@ verify.  Please submit an
 \href{https://github.com/typetools/checker-framework/issues}{issue} if you
 discover this.
 
-The paper ``Verifying Object Construction''~\cite{KelloggRSSE2020} (ICSE 2020,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/object-construction-icse2020-abstract.html})
-describes the Called Methods Checker in more detail.  (The paper uses an
-earlier name, ``Object Construction Checker''.)
-
 
 \sectionAndLabel{How to run the Called Methods Checker}{called-methods-run-checker}
 
@@ -302,3 +297,12 @@ To improve precision, you can specify the
 instructs the checker to treat provably-safe calls to the \<withFilters>
 method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or
 \<withImageIds> methods.
+
+
+\sectionAndLabel{More information}{called-methods-more-information}
+
+The paper ``Verifying Object Construction''~\cite{KelloggRSSE2020} (ICSE 2020,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/object-construction-icse2020-abstract.html})
+gives more information about the Called Methods Checker, such as
+theoretical underpinnings and results of experiments.  (The paper uses an
+earlier name, ``Object Construction Checker''.)
