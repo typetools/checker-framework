@@ -15,7 +15,7 @@ public class SwitchExpressionInvariant {
         List<@NonNull String> list =
                 // :: error: (assignment.type.incompatible)
                 switch (fenum) {
-                        // :: error: (switch.expressioni.type.incompatible)
+                        // :: error: (switch.expression.type.incompatible)
                     case 1 -> nonnullStrings;
                     default -> nullableStrings;
                 };
