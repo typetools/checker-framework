@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java14-jdk-skip-test
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -13,16 +13,16 @@ public class SwitchExpressionInvariant {
             int fenum) {
 
         List<@NonNull String> list =
-                // :: error: (assignment)
+                // :: error: (assignment.type.incompatible)
                 switch (fenum) {
-                        // :: error: (switch.expression)
+                        // :: error: (switch.expressioni.type.incompatible)
                     case 1 -> nonnullStrings;
                     default -> nullableStrings;
                 };
 
         List<@Nullable String> list2 =
                 switch (fenum) {
-                        // :: error: (switch.expression)
+                        // :: error: (switch.expression.type.incompatible)
                     case 1 -> nonnullStrings;
                     default -> nullableStrings;
                 };

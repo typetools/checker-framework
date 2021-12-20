@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java14-jdk-skip-test
 import org.checkerframework.common.value.qual.IntVal;
 
 public class ValueSwitchStatementRules {
@@ -11,7 +11,7 @@ public class ValueSwitchStatementRules {
                 field = 42;
                 @IntVal(42) int copyField = field;
             case 2:
-                // :: error: (assignment)
+                // :: error: (assignment.type.incompatible)
                 @IntVal(300) int copyField2 = field;
         }
 

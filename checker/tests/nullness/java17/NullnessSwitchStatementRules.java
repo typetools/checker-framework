@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java14-jdk-skip-test
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class NullnessSwitchStatementRules {

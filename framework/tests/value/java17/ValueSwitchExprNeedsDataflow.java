@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java14-jdk-skip-test
 import org.checkerframework.common.value.qual.IntVal;
 
 public class ValueSwitchExprNeedsDataflow {
@@ -28,7 +28,7 @@ public class ValueSwitchExprNeedsDataflow {
     void method1(int selector) {
 
         @IntVal(3) int value1 =
-                // :: error: (assignment)
+                // :: error: (assignment.type.incompatible)
                 switch (selector) {
                     case 1:
                         yield 1 + 2;
@@ -37,7 +37,7 @@ public class ValueSwitchExprNeedsDataflow {
                 };
 
         @IntVal(3) int value2 =
-                // :: error: (assignment)
+                // :: error: (assignment.type.incompatible)
                 switch (selector) {
                     case 1 -> 1 + 2;
                     default -> 1 + 1;

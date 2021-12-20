@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java14-jdk-skip-test
 import org.checkerframework.common.value.qual.IntVal;
 
 public class SwitchExpressionTyping {
@@ -35,7 +35,7 @@ public class SwitchExpressionTyping {
                 };
 
         @IntVal(1) int o2 =
-                // :: error: (assignment)
+                // :: error: (assignment.type.incompatible)
                 switch (s) {
                     case "Hello?" -> 1;
                     case "Hello" -> 1;
