@@ -512,6 +512,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 return super.scan(tree, p);
         }
     }
+
     /**
      * Visit a SwitchExpressionTree.
      *
@@ -533,8 +534,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      * @return the result of visiting the switch expression tree
      */
     public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
-        SwitchBuilder switchBuilder = new SwitchBuilder(switchExpressionTree);
-        return switchBuilder.build();
+        SwitchBuilder oldSwitchBuilder = switchBuilder;
+        switchBuilder = new SwitchBuilder(switchExpressionTree);
+        Node res = switchBuilder.build();
+        switchBuilder = oldSwitchBuilder;
+        return res;
     }
 
     /* --------------------------------------------------------- */
@@ -2256,8 +2260,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
          *     otherwise, null
          */
         public @Nullable SwitchExpressionNode build() {
-            SwitchBuilder oldSwitchBuilder = switchBuilder;
-            switchBuilder = this;
             TryFinallyScopeCell oldBreakTargetL = breakTargetL;
             breakTargetL = new TryFinallyScopeCell(new Label());
             int cases = caseBodyLabels.length - 1;
@@ -2307,7 +2309,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                                 env.getTypeUtils()));
             }
 
-            switchBuilder = oldSwitchBuilder;
             if (switchTree.getKind() != Tree.Kind.SWITCH) {
                 // It's a switch expression, not a switch statement.
                 IdentifierTree switchExprVarUseTree =
@@ -2449,7 +2450,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
          * @param resultExpression the result of a switch expression; either from a yield or an
          *     expression in a case rule
          */
-        void buildSwitchExpressionResult(ExpressionTree resultExpression) {
+        /* package-private */ void buildSwitchExpressionResult(ExpressionTree resultExpression) {
             IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
             handleArtificialTree(switchExprVarUseTree);
 
