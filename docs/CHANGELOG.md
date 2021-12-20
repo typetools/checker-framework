@@ -7,7 +7,7 @@ The Checker Framework now more precisely computes the type of a switch expressio
 
 **Implementation details:**
 
-The dataflow framework now analyzes switch expressions and switch statements
+The Dataflow Framework now analyzes switch expressions and switch statements
 that use the new `->` case syntax. To do so, a new node, SwitchExpressionNode,
 was added.
 
@@ -25,7 +25,7 @@ conservatively. A future version will improve precision.
 
 **Implementation details:**
 
-The dataflow framework can be run on code that contains switch expressions and
+The Dataflow Framework can be run on code that contains switch expressions and
 switch statements that use the new `->` case syntax, but it does not yet
 analyze the cases in a switch expression and it treats `->` as `:`. A future
 version will do so.
