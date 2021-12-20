@@ -11,7 +11,7 @@ class UnsoundnessTest {
         // If the CF and Lombok are ever able to work in the same invocation of javac
         // (i.e. without delomboking first), then this error should be changed back to an
         // expected error by re-adding the leading "::".
-        // error: (assignment)
+        // error: (assignment.type.incompatible)
         builder().foo(null).build();
     }
 }
