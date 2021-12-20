@@ -1781,7 +1781,9 @@ public final class TreeUtils {
     public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
         if (atLeastJava12) {
             try {
-                return (Tree) CASETREE_GETBODY.invoke(caseTree);
+                @SuppressWarnings("nullness")
+                Tree ret = (Tree) CASETREE_GETBODY.invoke(caseTree);
+                return ret;
             } catch (IllegalAccessException
                     | IllegalArgumentException
                     | InvocationTargetException e) {
@@ -1805,6 +1807,7 @@ public final class TreeUtils {
     public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
         if (atLeastJava12) {
             try {
+                @SuppressWarnings("nullness")
                 ExpressionTree expressionTree =
                         (ExpressionTree) SWITCHEXPRTREE_GETEXPRESSION.invoke(switchExpressionTree);
                 if (expressionTree != null) {
@@ -1838,7 +1841,7 @@ public final class TreeUtils {
     public static List<? extends CaseTree> switchExpressionTreeGetCases(Tree switchExpressionTree) {
         if (atLeastJava12) {
             try {
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings({"unchecked", "nullness"})
                 List<? extends CaseTree> cases =
                         (List<? extends CaseTree>)
                                 SWITCHEXPRTREE_GETCASES.invoke(switchExpressionTree);
@@ -1867,6 +1870,7 @@ public final class TreeUtils {
     public static ExpressionTree yieldTreeGetValue(Tree yieldTree) {
         if (atLeastJava13) {
             try {
+                @SuppressWarnings("nullness")
                 ExpressionTree expressionTree =
                         (ExpressionTree) YIELDTREE_GETVALUE.invoke(yieldTree);
                 if (expressionTree != null) {
