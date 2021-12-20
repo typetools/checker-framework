@@ -75,6 +75,7 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
      */
     public abstract void defaultAction(Tree tree);
 
+    // TODO: use JCP to add version-specific behavior
     @Override
     public Void scan(Tree tree, Void unused) {
         if (tree != null) {

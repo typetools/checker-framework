@@ -67,6 +67,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
      *     #combineResults(Object, Object)}
      */
     public R scanSwitchExpression(Tree switchExpression, P p) {
+        // TODO: use JCP to add version-specific behavior
         assert switchExpression.getKind().name().equals("SWITCH_EXPRESSION");
         List<? extends CaseTree> caseTrees =
                 TreeUtils.switchExpressionTreeGetCases(switchExpression);
@@ -109,7 +110,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
      * #visitSwitchResultExpression(ExpressionTree, Object)} on the expression in the yield trees.
      * It does not descend into switch expressions.
      */
-    protected YieldVisitor yieldVisitor = new YieldVisitor();
+    protected final YieldVisitor yieldVisitor = new YieldVisitor();
 
     /**
      * A scanner that visits all the yield trees in a given tree and calls {@link
@@ -118,6 +119,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
      */
     protected class YieldVisitor extends TreeScanner<@Nullable R, P> {
 
+        // TODO: use JCP to add version-specific behavior
         @Override
         public @Nullable R scan(Tree tree, P p) {
             if (tree == null) {
