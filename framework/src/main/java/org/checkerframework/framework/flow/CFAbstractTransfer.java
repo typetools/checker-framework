@@ -1185,8 +1185,7 @@ public abstract class CFAbstractTransfer<
         // represents the selector expression to the type of the case constant if it is more
         // precise.
         // If there are multiple case constants then a new store is created for each case constant
-        // and
-        // then they are lubbed. This method returns the lubbed result.
+        // and then they are lubbed. This method returns the lubbed result.
         for (Node caseOperand : n.getCaseOperands()) {
             TransferResult<V, S> result =
                     new ConditionalTransferResult<>(
