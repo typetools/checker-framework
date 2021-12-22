@@ -491,6 +491,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         return super.scan(tree, p);
     }
   }
+
   /**
    * Visit a SwitchExpressionTree.
    *
@@ -2431,25 +2432,55 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     Label falseStart = new Label();
     Label merge = new Label();
 
+    VariableTree condExprVarTree =
+        treeBuilder.buildVariableDecl(exprType, uniqueName("condExpr"), findOwner(), null);
+    VariableDeclarationNode condExprVarNode = new VariableDeclarationNode(condExprVarTree);
+    condExprVarNode.setInSource(false);
+    extendWithNode(condExprVarNode);
+
     Node condition = unbox(scan(tree.getCondition(), p));
     ConditionalJump cjump = new ConditionalJump(trueStart, falseStart);
     extendWithExtendedNode(cjump);
 
     addLabelForNextNode(trueStart);
-    Node trueExpr = scan(tree.getTrueExpression(), p);
-    trueExpr = conditionalExprPromotion(trueExpr, exprType);
+    ExpressionTree trueExprTree = tree.getTrueExpression();
+    Node trueExprNode = scan(trueExprTree, p);
+    trueExprNode = conditionalExprPromotion(trueExprNode, exprType);
+
+    extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
+
     extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
 
     addLabelForNextNode(falseStart);
-    Node falseExpr = scan(tree.getFalseExpression(), p);
-    falseExpr = conditionalExprPromotion(falseExpr, exprType);
+    ExpressionTree falseExprTree = tree.getFalseExpression();
+    Node falseExprNode = scan(falseExprTree, p);
+    falseExprNode = conditionalExprPromotion(falseExprNode, exprType);
+
+    extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
+
     extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
 
     addLabelForNextNode(merge);
-    Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);
+    Node node = new TernaryExpressionNode(tree, condition, trueExprNode, falseExprNode);
     extendWithNode(node);
 
     return node;
+  }
+
+  private void extendWithAssignmentForConditionalExpr(
+      VariableTree condExprVarTree, ExpressionTree caseExpression, Node caseExprNode) {
+    IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(condExprVarTree);
+    handleArtificialTree(condExprVarUseTree);
+    LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
+    condExprVarUseNode.setInSource(false);
+    extendWithNode(condExprVarUseNode);
+
+    AssignmentTree assign = treeBuilder.buildAssignment(condExprVarUseTree, caseExpression);
+    handleArtificialTree(assign);
+
+    AssignmentNode assignmentNode = new AssignmentNode(assign, condExprVarUseNode, caseExprNode);
+    assignmentNode.setInSource(false);
+    extendWithNode(assignmentNode);
   }
 
   @Override
