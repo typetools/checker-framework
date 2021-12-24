@@ -11,7 +11,7 @@ public class MustCallAliasImplWrong2 implements Closeable {
 
     final /*@Owning*/ Closeable foo;
 
-    // :: error: required.method.not.called
+    // :: error: mustcallalias.out.of.scope
     public @MustCallAlias MustCallAliasImplWrong2(@MustCallAlias Closeable foo) {
         this.foo = foo;
     }

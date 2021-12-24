@@ -37,6 +37,7 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -65,6 +66,7 @@ import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
+import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.IntersectionType;
@@ -493,6 +495,11 @@ public abstract class JointVisitorWithDefaultAction extends JointJavacJavaParser
     }
 
     @Override
+    public void processSwitchExpression(Tree javacTree, SwitchExpr javaParserNode) {
+        defaultJointAction(javacTree, javaParserNode);
+    }
+
+    @Override
     public void processSynchronized(SynchronizedTree javacTree, SynchronizedStmt javaParserNode) {
         defaultJointAction(javacTree, javaParserNode);
     }
@@ -559,6 +566,11 @@ public abstract class JointVisitorWithDefaultAction extends JointJavacJavaParser
 
     @Override
     public void processWildcard(WildcardTree javacTree, WildcardType javaParserNode) {
+        defaultJointAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processYield(Tree javacTree, YieldStmt javaParserNode) {
         defaultJointAction(javacTree, javaParserNode);
     }
 
