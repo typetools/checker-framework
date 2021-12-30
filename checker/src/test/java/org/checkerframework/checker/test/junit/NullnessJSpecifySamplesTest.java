@@ -41,7 +41,7 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "../../../jspecify/samples",
-                Collections.singletonList("../../jspecify/build/libs/jspecify-0.1.0-SNAPSHOT.jar"),
+                Collections.singletonList("../../jspecify/build/libs/jspecify-0.0.0-SNAPSHOT.jar"),
                 "-Anomsgtext");
     }
 
