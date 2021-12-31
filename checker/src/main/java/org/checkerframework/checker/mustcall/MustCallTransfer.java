@@ -212,6 +212,12 @@ public class MustCallTransfer extends CFTransfer {
    * @return a temporary variable node representing {@code node} that can be placed into a store
    */
   private @Nullable LocalVariableNode getOrCreateTempVar(Node node) {
+    if (node instanceof TernaryExpressionNode) {
+      TernaryExpressionNode ternaryExpressionNode = (TernaryExpressionNode) node;
+      LocalVariableNode ternaryExpressionVar = ternaryExpressionNode.getTernaryExpressionVar();
+      atypeFactory.tempVars.put(node.getTree(), ternaryExpressionVar);
+      return ternaryExpressionVar;
+    }
     LocalVariableNode localVariableNode = atypeFactory.tempVars.get(node.getTree());
     if (localVariableNode == null) {
       VariableTree temp = createTemporaryVar(node);

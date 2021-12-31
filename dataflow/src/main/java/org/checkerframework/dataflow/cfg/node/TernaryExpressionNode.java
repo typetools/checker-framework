@@ -61,7 +61,7 @@ public class TernaryExpressionNode extends Node {
    *
    * @return the variable for this ternary expression
    */
-  public Node getTernaryExpressionVar() {
+  public LocalVariableNode getTernaryExpressionVar() {
     return ternaryExpressionVar;
   }
 
