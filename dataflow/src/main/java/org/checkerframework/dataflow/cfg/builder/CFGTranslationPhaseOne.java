@@ -2461,7 +2461,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
 
     addLabelForNextNode(merge);
-    Node node = new TernaryExpressionNode(tree, condition, trueExprNode, falseExprNode);
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = addVarUse(condExprVarTree);
+    Node node =
+        new TernaryExpressionNode(
+            tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.second);
     extendWithNode(node);
 
     return node;
@@ -2469,18 +2472,24 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
   private void extendWithAssignmentForConditionalExpr(
       VariableTree condExprVarTree, ExpressionTree caseExpression, Node caseExprNode) {
-    IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(condExprVarTree);
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = addVarUse(condExprVarTree);
+
+    AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExpression);
+    handleArtificialTree(assign);
+
+    AssignmentNode assignmentNode =
+        new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode);
+    assignmentNode.setInSource(false);
+    extendWithNode(assignmentNode);
+  }
+
+  private Pair<IdentifierTree, LocalVariableNode> addVarUse(VariableTree varTree) {
+    IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(varTree);
     handleArtificialTree(condExprVarUseTree);
     LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
     condExprVarUseNode.setInSource(false);
     extendWithNode(condExprVarUseNode);
-
-    AssignmentTree assign = treeBuilder.buildAssignment(condExprVarUseTree, caseExpression);
-    handleArtificialTree(assign);
-
-    AssignmentNode assignmentNode = new AssignmentNode(assign, condExprVarUseNode, caseExprNode);
-    assignmentNode.setInSource(false);
-    extendWithNode(assignmentNode);
+    return Pair.of(condExprVarUseTree, condExprVarUseNode);
   }
 
   @Override

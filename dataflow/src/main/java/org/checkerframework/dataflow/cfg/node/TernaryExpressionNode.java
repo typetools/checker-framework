@@ -22,14 +22,25 @@ public class TernaryExpressionNode extends Node {
   protected final Node thenOperand;
   protected final Node elseOperand;
 
+  /**
+   * This is a variable created by dataflow to which each case expression of the ternary expression
+   * is assigned. Its value should be used for the value of the switch expression.
+   */
+  private final LocalVariableNode ternaryExpressionVar;
+
   public TernaryExpressionNode(
-      ConditionalExpressionTree tree, Node condition, Node thenOperand, Node elseOperand) {
+      ConditionalExpressionTree tree,
+      Node condition,
+      Node thenOperand,
+      Node elseOperand,
+      LocalVariableNode ternaryExpressionVar) {
     super(TreeUtils.typeOf(tree));
     assert tree.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION;
     this.tree = tree;
     this.condition = condition;
     this.thenOperand = thenOperand;
     this.elseOperand = elseOperand;
+    this.ternaryExpressionVar = ternaryExpressionVar;
   }
 
   public Node getConditionOperand() {
@@ -42,6 +53,16 @@ public class TernaryExpressionNode extends Node {
 
   public Node getElseOperand() {
     return elseOperand;
+  }
+
+  /**
+   * This is a variable created by dataflow to which each case expression of the ternary expression
+   * is assigned. Its value should be used for the value of the switch expression.
+   *
+   * @return the variable for this ternary expression
+   */
+  public Node getTernaryExpressionVar() {
+    return ternaryExpressionVar;
   }
 
   @Override
