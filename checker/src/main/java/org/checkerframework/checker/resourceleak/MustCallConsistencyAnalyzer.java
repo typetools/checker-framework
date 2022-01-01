@@ -1143,6 +1143,10 @@ class MustCallConsistencyAnalyzer {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
         }
         if (aliasForAssignment == null) {
+          // It is possible to observe assignments to temporary variables, e.g.,
+          // synthetic assignments to ternary expression variables in the CFG.  For such
+          // cases, use the tree associated with the temp var for the resource alias,
+          // as that is the tree where errors should be reported.
           Tree treeForAlias =
               typeFactory.isTempVar(lhsVar)
                   ? typeFactory.getTreeForTempVar(lhsVar)

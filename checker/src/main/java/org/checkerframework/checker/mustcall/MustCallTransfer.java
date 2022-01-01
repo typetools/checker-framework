@@ -213,6 +213,8 @@ public class MustCallTransfer extends CFTransfer {
    */
   private @Nullable LocalVariableNode getOrCreateTempVar(Node node) {
     if (node instanceof TernaryExpressionNode) {
+      // Use the synthetic variable created during CFG construction instead of creating a
+      // new temporary variable
       TernaryExpressionNode ternaryExpressionNode = (TernaryExpressionNode) node;
       LocalVariableNode ternaryExpressionVar = ternaryExpressionNode.getTernaryExpressionVar();
       atypeFactory.tempVars.put(node.getTree(), ternaryExpressionVar);
