@@ -2432,6 +2432,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     Label falseStart = new Label();
     Label merge = new Label();
 
+    // create a synthetic variable for the value of the conditional expression
     VariableTree condExprVarTree =
         treeBuilder.buildVariableDecl(exprType, uniqueName("condExpr"), findOwner(), null);
     VariableDeclarationNode condExprVarNode = new VariableDeclarationNode(condExprVarTree);
@@ -2461,7 +2462,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
 
     addLabelForNextNode(merge);
-    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = addVarUse(condExprVarTree);
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
+        extendWithVarUseNode(condExprVarTree);
     Node node =
         new TernaryExpressionNode(
             tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.second);
@@ -2470,11 +2472,21 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     return node;
   }
 
+  /**
+   * Extend the CFG with an assignment for either the true or false case of a conditional
+   * expression, assigning the value of the expression for the case to the synthetic variable for
+   * the conditional expression
+   *
+   * @param condExprVarTree tree for synthetic variable for conditional expression
+   * @param caseExprTree expression tree for the case
+   * @param caseExprNode node for the case
+   */
   private void extendWithAssignmentForConditionalExpr(
-      VariableTree condExprVarTree, ExpressionTree caseExpression, Node caseExprNode) {
-    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = addVarUse(condExprVarTree);
+      VariableTree condExprVarTree, ExpressionTree caseExprTree, Node caseExprNode) {
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
+        extendWithVarUseNode(condExprVarTree);
 
-    AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExpression);
+    AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExprTree);
     handleArtificialTree(assign);
 
     AssignmentNode assignmentNode =
@@ -2483,7 +2495,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     extendWithNode(assignmentNode);
   }
 
-  private Pair<IdentifierTree, LocalVariableNode> addVarUse(VariableTree varTree) {
+  /**
+   * Extend the CFG with a {@link LocalVariableNode} representing a use of some variable
+   *
+   * @param varTree tree for the variable
+   * @return a pair whose first element is the synthetic {@link IdentifierTree} for the use, and
+   *     whose second element is the {@link LocalVariableNode} representing the use
+   */
+  private Pair<IdentifierTree, LocalVariableNode> extendWithVarUseNode(VariableTree varTree) {
     IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(varTree);
     handleArtificialTree(condExprVarUseTree);
     LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
