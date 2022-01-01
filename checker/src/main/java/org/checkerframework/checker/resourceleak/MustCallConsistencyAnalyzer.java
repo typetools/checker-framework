@@ -1143,7 +1143,11 @@ class MustCallConsistencyAnalyzer {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
         }
         if (aliasForAssignment == null) {
-          aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
+          Tree treeForAlias =
+              typeFactory.isTempVar(lhsVar)
+                  ? typeFactory.getTreeForTempVar(lhsVar)
+                  : node.getTree();
+          aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), treeForAlias);
         }
         newResourceAliasesForObligation.add(aliasForAssignment);
         // Remove temp vars from tracking once they are assigned to another location.

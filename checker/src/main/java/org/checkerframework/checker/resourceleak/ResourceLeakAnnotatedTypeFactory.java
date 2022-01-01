@@ -211,6 +211,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return tempVarToTree.containsKey(node);
   }
 
+  /* package-private */ Tree getTreeForTempVar(Node node) {
+    return tempVarToTree.get(node);
+  }
   /**
    * Registers a temporary variable by adding it to this type factory's tempvar map.
    *
