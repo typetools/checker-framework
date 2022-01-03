@@ -481,7 +481,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public void handleArtificialTree(Tree tree) {}
 
   /**
-   * Returns the current path for the node, as built up by the currently active set of scan calls.
+   * Returns the current path for the tree currently being scanned.
    *
    * @return the current path
    */
@@ -489,6 +489,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return path;
   }
 
+  /** Path to the tree currently being scanned. */
   private TreePath path;
 
   @Override
@@ -498,7 +499,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     TreePath prev = path;
-    if (path.getLeaf() != tree) {
+    @SuppressWarnings("interning:not.interned") // Looking for exact match.
+    boolean treeIsLeaf = path.getLeaf() != tree;
+    if (treeIsLeaf) {
       path = new TreePath(path, tree);
     }
     try {
