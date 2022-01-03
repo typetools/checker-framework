@@ -178,7 +178,11 @@ public class MustCallTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitTernaryExpression(
       TernaryExpressionNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
-    updateStoreWithTempVar(result, node);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      atypeFactory.tempVars.put(node.getTree(), node.getTernaryExpressionVar());
+    }
     return result;
   }
 
