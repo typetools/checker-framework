@@ -3,6 +3,10 @@ Version 3.?.? (?, 2021)
 
 **User-visible changes:**
 
+The Checker Framework Gradle Plugin now works incrementally:  if you change just
+one source file, then Gradle will recompile just that file rather than all
+files.
+
 **Implementation details:**
 
 **Closed issues:**
