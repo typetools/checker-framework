@@ -424,7 +424,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
     // traverse AST of the method body
     this.path = bodyPath;
-    try {
+    try { // "finally" clause is "this.path = null"
       Node finalNode = scan(path.getLeaf(), null);
 
       // If we are building the CFG for a lambda with a single expression as the body, then
@@ -442,8 +442,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Add marker to indicate that the next block will be the exit block.
       // Note: if there is a return statement earlier in the method (which is always the case for
       // non-void methods), then this is not strictly necessary. However, it is also not a problem,
-      // as
-      // it will just generate a degenerate control graph case that will be removed in a later
+      // as it will just generate a degenerate control graph case that will be removed in a later
       // phase.
       nodeList.add(new UnconditionalJump(regularExitLabel));
 
