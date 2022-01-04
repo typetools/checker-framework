@@ -55,7 +55,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -191,7 +191,7 @@ import org.plumelib.util.CollectionsPlume;
  * (which might only be a jump).
  */
 @SuppressWarnings("nullness") // TODO
-public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
+public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** Annotation processing environment and its associated type and tree utilities. */
   final ProcessingEnvironment env;
@@ -423,39 +423,45 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    */
   public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
     // traverse AST of the method body
-    Node finalNode = scan(bodyPath, null);
+    this.path = bodyPath;
+    try { // "finally" clause is "this.path = null"
+      Node finalNode = scan(path.getLeaf(), null);
 
-    // If we are building the CFG for a lambda with a single expression as the body, then
-    // add an extra node for the result of that lambda
-    if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
-      LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
-      if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
-        Node resultNode =
-            new LambdaResultExpressionNode(
-                (ExpressionTree) lambdaTree.getBody(), finalNode, env.getTypeUtils());
-        extendWithNode(resultNode);
+      // If we are building the CFG for a lambda with a single expression as the body, then
+      // add an extra node for the result of that lambda
+      if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+        LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
+        if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+          Node resultNode =
+              new LambdaResultExpressionNode(
+                  (ExpressionTree) lambdaTree.getBody(), finalNode, env.getTypeUtils());
+          extendWithNode(resultNode);
+        }
       }
+
+      // Add marker to indicate that the next block will be the exit block.
+      // Note: if there is a return statement earlier in the method (which is always the case for
+      // non-void methods), then this is not strictly necessary. However, it is also not a problem,
+      // as it will just generate a degenerate control graph case that will be removed in a later
+      // phase.
+      nodeList.add(new UnconditionalJump(regularExitLabel));
+
+      return new PhaseOneResult(
+          underlyingAST,
+          treeLookupMap,
+          convertedTreeLookupMap,
+          unaryAssignNodeLookupMap,
+          nodeList,
+          bindings,
+          leaders,
+          returnNodes,
+          regularExitLabel,
+          exceptionalExitLabel,
+          declaredClasses,
+          declaredLambdas);
+    } finally {
+      this.path = null;
     }
-
-    // Add marker to indicate that the next block will be the exit block.
-    // Note: if there is a return statement earlier in the method (which is always the case for
-    // non-void methods), then this is not strictly necessary. However, it is also not a problem, as
-    // it will just generate a degenerate control graph case that will be removed in a later phase.
-    nodeList.add(new UnconditionalJump(regularExitLabel));
-
-    return new PhaseOneResult(
-        underlyingAST,
-        treeLookupMap,
-        convertedTreeLookupMap,
-        unaryAssignNodeLookupMap,
-        nodeList,
-        bindings,
-        leaders,
-        returnNodes,
-        regularExitLabel,
-        exceptionalExitLabel,
-        declaredClasses,
-        declaredLambdas);
   }
 
   public PhaseOneResult process(CompilationUnitTree root, UnderlyingAST underlyingAST) {
@@ -473,22 +479,45 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    */
   public void handleArtificialTree(Tree tree) {}
 
+  /**
+   * Returns the current path for the tree currently being scanned.
+   *
+   * @return the current path
+   */
+  public TreePath getCurrentPath() {
+    return path;
+  }
+
+  /** Path to the tree currently being scanned. */
+  private TreePath path;
+
   @Override
   public Node scan(Tree tree, Void p) {
     if (tree == null) {
       return null;
     }
-    // Must use String comparison to support compiling on JDK 11 and earlier.
-    //     Features added between JDK 12 and JDK 17 inclusive.
-    switch (tree.getKind().name()) {
-        // case "BINDING_PATTERN":
-        //  return visitBindingPattern17(path.getLeaf(), p);
-      case "SWITCH_EXPRESSION":
-        return visitSwitchExpression17(tree, p);
-      case "YIELD":
-        return visitYield17(tree, p);
-      default:
-        return super.scan(tree, p);
+
+    TreePath prev = path;
+    @SuppressWarnings("interning:not.interned") // Looking for exact match.
+    boolean treeIsLeaf = path.getLeaf() != tree;
+    if (treeIsLeaf) {
+      path = new TreePath(path, tree);
+    }
+    try {
+      // Must use String comparison to support compiling on JDK 11 and earlier.
+      //     Features added between JDK 12 and JDK 17 inclusive.
+      switch (tree.getKind().name()) {
+          // case "BINDING_PATTERN":
+          //  return visitBindingPattern17(path.getLeaf(), p);
+        case "SWITCH_EXPRESSION":
+          return visitSwitchExpression17(tree, p);
+        case "YIELD":
+          return visitYield17(tree, p);
+        default:
+          return tree.accept(this, p);
+      }
+    } finally {
+      path = prev;
     }
   }
 
