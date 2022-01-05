@@ -512,6 +512,7 @@ public class AnnotatedTypes {
     AnnotatedDeclaredType enclosingType = atypeFactory.getAnnotatedType(enclosingClassOfElem);
     AnnotatedDeclaredType base =
         (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, enclosingType);
+    base = (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(base);
 
     final List<AnnotatedTypeVariable> ownerParams =
         new ArrayList<>(enclosingType.getTypeArguments().size());
