@@ -9,10 +9,12 @@ class NullnessIssue4996 {
 
   class Client {
     Object getFrom(CaptureOuter<?> o) {
+      // :: error: (return)
       return o.get();
     }
 
     Object getFrom(CaptureOuter<?>.Inner o) {
+      // :: error: (return)
       return o.get();
     }
   }
