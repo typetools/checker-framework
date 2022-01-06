@@ -11,7 +11,7 @@ set -e
 # Need to keep checked files in sync with getJavaFilesToFormat in build.gradle.
 # Otherwise `./gradlew reformat` might not reformat a file that this
 # hook complains about.
-CHANGED_JAVA_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/nullness-javac-errors/' | grep -v 'dataflow/manual/examples/' ) || true
+CHANGED_JAVA_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/nullness-javac-errors/' | grep -v 'dataflow/manual/examples/' | grep -v '/java17/') || true
 # echo "CHANGED_JAVA_FILES=${CHANGED_JAVA_FILES}"
 if [ -n "$CHANGED_JAVA_FILES" ]; then
     ./gradlew getCodeFormatScripts -q

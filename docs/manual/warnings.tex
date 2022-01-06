@@ -537,7 +537,7 @@ smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 \sectionAndLabel{\code{-AskipUses} and \code{-AonlyUses} command-line options}{askipuses}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
-class, or suppress all errors and warnings except those at uses of a given
+class, or suppress all errors and warnings \emph{except} those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
 the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
 You can also use these options to affect entire packages or directories/folders.
@@ -586,7 +586,7 @@ refined in the future.  Oftentimes \code{-AskipUses} is more useful.
 \sectionAndLabel{\code{-AskipDefs} and \code{-AonlyDefs} command-line options}{askipdefs}
 
 You can suppress all errors and warnings in the \emph{definition} of a given
-class, or suppress all errors and warnings except those in the definition
+class, or suppress all errors and warnings \emph{except} those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} or \code{-AonlyUses} command-line option,
 see~\ref{askipuses}.)
