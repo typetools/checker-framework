@@ -338,9 +338,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** The checker to use for option handling and resource management. */
     protected final BaseTypeChecker checker;
 
-    /** Map keys are canonical names of aliased annotations. */
-    private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
-
     /**
      * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
      */
@@ -355,6 +352,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public void initializeAtm(AnnotatedTypeMirror type) {
         atmInitializer.visit(type);
     }
+
+    /** Map keys are canonical names of aliased annotations. */
+    private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
+
+    /**
+     * A map from the canonical name of an annotation to the set of canonical names of annotations
+     * with the same meaning, as well as the annotation mirror that should be used.
+     */
+    private final Map<
+                    @FullyQualifiedName String,
+                    Pair<AnnotationMirror, Set<@FullyQualifiedName String>>>
+            declAliases = new HashMap<>();
 
     /**
      * Information about one annotation alias.
@@ -418,15 +427,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
     }
-
-    /**
-     * A map from the class of an annotation to the set of classes for annotations with the same
-     * meaning, as well as the annotation mirror that should be used.
-     */
-    private final Map<
-                    Class<? extends Annotation>,
-                    Pair<AnnotationMirror, Set<Class<? extends Annotation>>>>
-            declAliases = new HashMap<>();
 
     /** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -3402,12 +3402,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * must be the same.
      *
      * <p>The point of {@code annotationToUse} is that it may include elements/fields.
+     *
+     * @param alias the class of the alias annotation
+     * @param annotation the class of the canonical annotation
+     * @param annotationToUse the annotation mirror to use
      */
     protected void addAliasedDeclAnnotation(
             Class<? extends Annotation> alias,
             Class<? extends Annotation> annotation,
             AnnotationMirror annotationToUse) {
-        Pair<AnnotationMirror, Set<Class<? extends Annotation>>> pair = declAliases.get(annotation);
+        addAliasedDeclAnnotation(
+                alias.getCanonicalName(), annotation.getCanonicalName(), annotationToUse);
+    }
+
+    /**
+     * Add the annotation {@code alias} as an alias for the declaration annotation {@code
+     * annotation}, where the annotation mirror {@code annotationToUse} will be used instead. If
+     * multiple calls are made with the same {@code annotation}, then the {@code annotationToUse}
+     * must be the same.
+     *
+     * <p>The point of {@code annotationToUse} is that it may include elements/fields.
+     *
+     * @param alias the fully-qualified name of the alias annotation
+     * @param annotation the fully-qualified name of the canonical annotation
+     * @param annotationToUse the annotation mirror to use
+     */
+    protected void addAliasedDeclAnnotation(
+            @FullyQualifiedName String alias,
+            @FullyQualifiedName String annotation,
+            AnnotationMirror annotationToUse) {
+        Pair<AnnotationMirror, Set<@FullyQualifiedName String>> pair = declAliases.get(annotation);
         if (pair != null) {
             if (!AnnotationUtils.areSame(annotationToUse, pair.first)) {
                 throw new BugInCF(
@@ -3417,7 +3441,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             pair = Pair.of(annotationToUse, new HashSet<>());
             declAliases.put(annotation, pair);
         }
-        Set<Class<? extends Annotation>> aliases = pair.second;
+        Set<@FullyQualifiedName String> aliases = pair.second;
         aliases.add(alias);
     }
 
@@ -3864,11 +3888,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>This is the private implementation of the same-named, public method.
      *
-     * <p>An option is provided to not to check for aliases of annotations. For example, an
-     * annotated type factory may use aliasing for a pair of annotations for convenience while
-     * needing in some cases to determine a strict ordering between them, such as when determining
-     * whether the annotations on an overrider method are more specific than the annotations of an
-     * overridden method.
+     * <p>An option is provided not to check for aliases of annotations. For example, an annotated
+     * type factory may use aliasing for a pair of annotations for convenience while needing in some
+     * cases to determine a strict ordering between them, such as when determining whether the
+     * annotations on an overrider method are more specific than the annotations of an overridden
+     * method.
      *
      * @param elt the element to retrieve the annotation from
      * @param annoClass the class the annotation to retrieve
@@ -3878,10 +3902,32 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private AnnotationMirror getDeclAnnotation(
             Element elt, Class<? extends Annotation> annoClass, boolean checkAliases) {
+        return getDeclAnnotation(elt, annoClass.getCanonicalName(), checkAliases);
+    }
+
+    /**
+     * Returns the actual annotation mirror used to annotate this element, whose name equals the
+     * passed canonical annotation name (or is an alias for it). Returns null if none exists. May
+     * return the canonical annotation that annotationName is an alias for.
+     *
+     * <p>An option is provided not to check for aliases of annotations. For example, an annotated
+     * type factory may use aliasing for a pair of annotations for convenience while needing in some
+     * cases to determine a strict ordering between them, such as when determining whether the
+     * annotations on an overrider method are more specific than the annotations of an overridden
+     * method.
+     *
+     * @param elt the element to retrieve the annotation from
+     * @param annoName the canonical annotation name to retrieve
+     * @param checkAliases whether to return an annotation mirror for an alias of the requested
+     *     annotation class name
+     * @return the annotation mirror for the requested annotation, or null if not found
+     */
+    private AnnotationMirror getDeclAnnotation(
+            Element elt, @FullyQualifiedName String annoName, boolean checkAliases) {
         Set<AnnotationMirror> declAnnos = getDeclAnnotations(elt);
 
         for (AnnotationMirror am : declAnnos) {
-            if (areSameByClass(am, annoClass)) {
+            if (AnnotationUtils.areSameByName(am, annoName)) {
                 return am;
             }
         }
@@ -3889,14 +3935,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
         // Look through aliases.
-        Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases =
-                declAliases.get(annoClass);
+        Pair<AnnotationMirror, Set<@FullyQualifiedName String>> aliases = declAliases.get(annoName);
         if (aliases == null) {
             return null;
         }
-        for (Class<? extends Annotation> alias : aliases.second) {
+        for (@FullyQualifiedName String alias : aliases.second) {
             for (AnnotationMirror am : declAnnos) {
-                if (areSameByClass(am, alias)) {
+                if (AnnotationUtils.areSameByName(am, alias)) {
                     // TODO: need to copy over elements/fields
                     return aliases.first;
                 }
