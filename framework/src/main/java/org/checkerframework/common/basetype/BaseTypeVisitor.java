@@ -526,25 +526,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         Tree ext = classTree.getExtendsClause();
         if (ext != null) {
-            for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
-                if (superType.getUnderlyingType().asElement().getKind().isClass()) {
-                    validateType(ext, superType);
-                    break;
-                }
-            }
+            AnnotatedTypeMirror superClass = atypeFactory.getTypeOfExtendsImplements(ext);
+            validateType(ext, superClass);
         }
 
         List<? extends Tree> impls = classTree.getImplementsClause();
         if (impls != null) {
             for (Tree im : impls) {
-                for (AnnotatedDeclaredType superType : classType.directSupertypes()) {
-                    if (superType.getUnderlyingType().asElement().getKind().isInterface()
-                            && types.isSameType(
-                                    superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
-                        validateType(im, superType);
-                        break;
-                    }
-                }
+                AnnotatedTypeMirror superInterface = atypeFactory.getTypeOfExtendsImplements(im);
+                validateType(im, superInterface);
             }
         }
 
