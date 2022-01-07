@@ -26,6 +26,9 @@ import java.lang.annotation.Target;
  * &nbsp; class MyClass { ... }
  * </pre>
  *
+ * <p>Defaults on a package also apply to subpackages, unless the {@code applyToSubpackages} field
+ * is set to false.
+ *
  * <p>This annotation currently has no effect in stub files.
  *
  * @see org.checkerframework.framework.qual.TypeUseLocation
@@ -62,6 +65,13 @@ public @interface DefaultQualifier {
      * @return the locations to which the annotation should be applied
      */
     TypeUseLocation[] locations() default {TypeUseLocation.ALL};
+
+    /**
+     * When used on a package, whether the defaults should also apply to subpackages.
+     *
+     * @return whether the default should be inherited by subpackages
+     */
+    boolean applyToSubpackages() default true;
 
     /**
      * A wrapper annotation that makes the {@link DefaultQualifier} annotation repeatable.
