@@ -9,12 +9,12 @@ class NullnessIssue4996 {
 
     class Client {
         Object getFrom(CaptureOuter<?> o) {
-            // :: error: (return)
+            // :: error: (return.type.incompatible)
             return o.get();
         }
 
         Object getFrom(CaptureOuter<?>.Inner o) {
-            // :: error: (return)
+            // :: error: (return.type.incompatible)
             return o.get();
         }
     }
