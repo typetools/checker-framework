@@ -1,4 +1,4 @@
-Version 3.21.0-eisop-1 (January ?, 2022)
+Version 3.21.1-eisop-1 (January ?, 2022)
 -------------------------------
 
 **User-visible changes:**
@@ -9,9 +9,20 @@ current behavior the default is `true`.
 
 **Implementation details:**
 
-
 **Closed issues:**
 
+
+Version 3.21.1 (January 7, 2022)
+-------------------------------
+
+**User-visible changes:**
+
+The Checker Framework Gradle Plugin now works incrementally:  if you change just
+one source file, then Gradle will recompile just that file rather than all
+files.
+
+**Closed issues:**
+#2401, #4994, #4995, #4996.
 
 
 Version 3.21.0 (December 17, 2021)

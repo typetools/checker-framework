@@ -28,6 +28,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -217,6 +218,18 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         return tempVarToTree.containsKey(node);
     }
 
+    /**
+     * Gets the tree for a temporary variable
+     *
+     * @param node a node for a temporary variable
+     * @return the tree for {@code node}
+     */
+    /* package-private */ Tree getTreeForTempVar(Node node) {
+        if (!tempVarToTree.containsKey(node)) {
+            throw new TypeSystemError(node + " must be a temporary variable");
+        }
+        return tempVarToTree.get(node);
+    }
     /**
      * Registers a temporary variable by adding it to this type factory's tempvar map.
      *

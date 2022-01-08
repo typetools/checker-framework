@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -37,7 +36,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -388,12 +386,7 @@ class MustCallConsistencyAnalyzer {
          */
         public final LocalVariable reference;
 
-        /**
-         * The tree at which {@code reference} was assigned. The tree's primary purpose is error
-         * reporting. It is also used to determine if this resource alias is one of the expressions
-         * in a ternary expression, which are treated specially by the algorithm (see {@link
-         * #handleTernarySuccIfNeeded(Set, Block, Block)}).
-         */
+        /** The tree at which {@code reference} was assigned, for the purpose of error reporting */
         public final Tree tree;
 
         /**
@@ -886,22 +879,19 @@ class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Checks if {@code node} is either directly enclosed by a {@link TypeCastNode} or is the then
-     * or else operand of a {@link TernaryExpressionNode}, by looking at the successor block in the
-     * CFG. These are all the cases where the enclosing operator is a "no-op" that evaluates to the
-     * same value as {@code node} (in the appropriate case for a ternary expression). This method is
-     * only used within {@link #propagateObligationsToSuccessorBlocks(Set, Block, Set, Deque)} to
-     * ensure Obligations are propagated to cast / ternary nodes properly. It relies on the
-     * assumption that a {@link TypeCastNode} or {@link TernaryExpressionNode} will only appear in a
-     * CFG as the first node in a block.
+     * Checks if {@code node} is either directly enclosed by a {@link TypeCastNode}, by looking at
+     * the successor block in the CFG. In this case the enclosing operator is a "no-op" that
+     * evaluates to the same value as {@code node}. This method is only used within {@link
+     * #propagateObligationsToSuccessorBlocks(Set, Block, Set, Deque)} to ensure Obligations are
+     * propagated to cast nodes properly. It relies on the assumption that a {@link TypeCastNode}
+     * will only appear in a CFG as the first node in a block.
      *
      * @param node the CFG node
      * @return {@code true} if {@code node} is in a {@link SingleSuccessorBlock} {@code b}, the
-     *     first {@link Node} in {@code b}'s successor block is a {@link TypeCastNode} or a {@link
-     *     TernaryExpressionNode}, and {@code node} is an operand of the successor node; {@code
-     *     false} otherwise
+     *     first {@link Node} in {@code b}'s successor block is a {@link TypeCastNode}, and {@code
+     *     node} is an operand of the successor node; {@code false} otherwise
      */
-    private boolean inCastOrTernary(Node node) {
+    private boolean inCast(Node node) {
         if (!(node.getBlock() instanceof SingleSuccessorBlock)) {
             return false;
         }
@@ -912,10 +902,6 @@ class MustCallConsistencyAnalyzer {
                 Node succNode = succNodes.get(0);
                 if (succNode instanceof TypeCastNode) {
                     return ((TypeCastNode) succNode).getOperand().equals(node);
-                } else if (succNode instanceof TernaryExpressionNode) {
-                    TernaryExpressionNode ternaryExpressionNode = (TernaryExpressionNode) succNode;
-                    return ternaryExpressionNode.getThenOperand().equals(node)
-                            || ternaryExpressionNode.getElseOperand().equals(node);
                 }
             }
         }
@@ -1193,8 +1179,15 @@ class MustCallConsistencyAnalyzer {
                             new LinkedHashSet<>(obligation.resourceAliases);
                 }
                 if (aliasForAssignment == null) {
-                    aliasForAssignment =
-                            new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
+                    // It is possible to observe assignments to temporary variables, e.g.,
+                    // synthetic assignments to ternary expression variables in the CFG.  For such
+                    // cases, use the tree associated with the temp var for the resource alias,
+                    // as that is the tree where errors should be reported.
+                    Tree treeForAlias =
+                            typeFactory.isTempVar(lhsVar)
+                                    ? typeFactory.getTreeForTempVar(lhsVar)
+                                    : node.getTree();
+                    aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), treeForAlias);
                 }
                 newResourceAliasesForObligation.add(aliasForAssignment);
                 // Remove temp vars from tracking once they are assigned to another location.
@@ -1637,10 +1630,9 @@ class MustCallConsistencyAnalyzer {
             Block successor = successorAndExceptionType.first;
             // If nonnull, currentBlock is an ExceptionBlock.
             TypeMirror exceptionType = successorAndExceptionType.second;
-            Set<Obligation> curObligations =
-                    handleTernarySuccIfNeeded(obligations, currentBlock, successor);
             // successorObligations eventually contains the Obligations to propagate to successor.
-            // The loop below mutates it.
+            // The
+            // loop below mutates it.
             Set<Obligation> successorObligations = new LinkedHashSet<>();
             // A detailed reason to give in the case that the last resource alias of an Obligation
             // goes out of scope without a called-methods type that satisfies the corresponding
@@ -1659,10 +1651,11 @@ class MustCallConsistencyAnalyzer {
                                     + exceptionType;
             // Computed outside the Obligation loop for efficiency.
             CFStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
-            for (Obligation obligation : curObligations) {
+            for (Obligation obligation : obligations) {
                 // This boolean is true if there is no evidence that the Obligation does not go out
-                // of scope - that is, if there is definitely a resource alias that is in scope in
-                // the successor.
+                // of
+                // scope - that is, if there is definitely a resource alias that is in scope in the
+                // successor.
                 boolean obligationGoesOutOfScopeBeforeSuccessor = true;
                 for (ResourceAlias resourceAlias : obligation.resourceAliases) {
                     if (aliasInScopeInSuccessor(regularStoreOfSuccessor, resourceAlias)) {
@@ -1705,15 +1698,16 @@ class MustCallConsistencyAnalyzer {
                     }
 
                     // Always propagate the Obligation to the successor if current block represents
-                    // code nested in a cast or ternary expression.  Without this logic, the
-                    // analysis may report a false positive when the Obligation represents a
-                    // temporary variable for a nested expression, as the temporary may not appear
-                    // in the successor store and hence seems to be going out of scope.  The
-                    // temporary will be handled with special logic; casts are unwrapped at various
-                    // points in the analysis, and ternary expressions are handled by
-                    // handleTernarySuccIfNeeded.
-                    if (currentBlockNodes.size() == 1
-                            && inCastOrTernary(currentBlockNodes.get(0))) {
+                    // code
+                    // nested
+                    // in a cast.  Without this logic, the analysis may report a false
+                    // positive when the Obligation represents a temporary variable for a nested
+                    // expression, as the temporary may not appear in the successor store and hence
+                    // seems to
+                    // be going out of scope.  The temporary will be handled with special logic;
+                    // casts are
+                    // unwrapped at various points in the analysis.
+                    if (currentBlockNodes.size() == 1 && inCast(currentBlockNodes.get(0))) {
                         successorObligations.add(obligation);
                         continue;
                     }
@@ -1804,11 +1798,7 @@ class MustCallConsistencyAnalyzer {
 
     /**
      * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that
-     * is, there is a value for it in {@code successorStore}. Also returns true if {@code
-     * alias.tree} is a {@link ConditionalExpressionTree}. This special rule for a {@link
-     * ConditionalExpressionTree} is to accommodate the handling of ternary expressions, because the
-     * analysis tracks the temporary variable for the expression at the program point before that
-     * expression; see {@link #handleTernarySuccIfNeeded(Set, Block, Block)}.
+     * is, there is a value for it in {@code successorStore}.
      *
      * @param successorStore the regular store of the successor block
      * @param alias the resource alias to check
@@ -1816,56 +1806,7 @@ class MustCallConsistencyAnalyzer {
      *     checking algorithm in the successor block from which the store came
      */
     private boolean aliasInScopeInSuccessor(CFStore successorStore, ResourceAlias alias) {
-        return successorStore.getValue(alias.reference) != null
-                || alias.tree instanceof ConditionalExpressionTree;
-    }
-
-    /**
-     * Handles control-flow to a block starting with a {@link TernaryExpressionNode}.
-     *
-     * <p>In the Checker Framework's CFG, a ternary expression is represented as a {@link
-     * org.checkerframework.dataflow.cfg.block.ConditionalBlock}, whose successor blocks are the two
-     * cases of the ternary expression. The {@link TernaryExpressionNode} is the first node in the
-     * successor block of the two cases.
-     *
-     * <p>To handle this representation, the control-flow transition from a node for a ternary
-     * expression case <em>c</em> to the successor {@link TernaryExpressionNode} <em>t</em> is
-     * treated as a pseudo-assignment from <em>c</em> to the temporary variable for <em>t</em>. With
-     * this handling, the Obligations reaching the successor node of <em>t</em> will properly
-     * account for the execution of case <em>c</em>.
-     *
-     * <p>If the successor block does not begin with a {@link TernaryExpressionNode} that needs to
-     * be handled, this method simply returns {@code obligations}.
-     *
-     * @param obligations the Obligations before the control-flow transition
-     * @param pred the predecessor block, potentially corresponding to the ternary expression case
-     * @param succ the successor block, potentially starting with a {@link TernaryExpressionNode}
-     * @return a new set of Obligations to account for the {@link TernaryExpressionNode}, or just
-     *     {@code obligations} if no handling is required.
-     */
-    private Set<Obligation> handleTernarySuccIfNeeded(
-            Set<Obligation> obligations, Block pred, Block succ) {
-        List<Node> succNodes = succ.getNodes();
-        if (succNodes.isEmpty() || !(succNodes.get(0) instanceof TernaryExpressionNode)) {
-            return obligations;
-        }
-        TernaryExpressionNode ternaryNode = (TernaryExpressionNode) succNodes.get(0);
-        LocalVariableNode ternaryTempVar = typeFactory.getTempVarForNode(ternaryNode);
-        if (ternaryTempVar == null) {
-            return obligations;
-        }
-        List<Node> predNodes = pred.getNodes();
-        // Right-hand side of the pseudo-assignment to the ternary expression temporary variable.
-        Node rhs = NodeUtils.removeCasts(predNodes.get(predNodes.size() - 1));
-        if (!(rhs instanceof LocalVariableNode)) {
-            rhs = typeFactory.getTempVarForNode(rhs);
-            if (rhs == null) {
-                return obligations;
-            }
-        }
-        Set<Obligation> newDefs = new LinkedHashSet<>(obligations);
-        updateObligationsForPseudoAssignment(newDefs, ternaryNode, ternaryTempVar, rhs);
-        return newDefs;
+        return successorStore.getValue(alias.reference) != null;
     }
 
     /**

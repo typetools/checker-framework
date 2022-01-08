@@ -55,7 +55,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -195,7 +195,7 @@ import javax.lang.model.util.Types;
  * (which might only be a jump).
  */
 @SuppressWarnings("nullness") // TODO
-public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
+public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     /** Annotation processing environment. */
     protected final ProcessingEnvironment env;
@@ -438,43 +438,51 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
         // traverse AST of the method body
-        Node finalNode = scan(bodyPath, null);
+        this.path = bodyPath;
+        try { // "finally" clause is "this.path = null"
+            Node finalNode = scan(path.getLeaf(), null);
 
-        // If we are building the CFG for a lambda with a single expression as the body, then
-        // add an extra node for the result of that lambda
-        if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
-            LambdaExpressionTree lambdaTree =
-                    ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
-            if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
-                Node resultNode =
-                        new LambdaResultExpressionNode(
-                                (ExpressionTree) lambdaTree.getBody(),
-                                finalNode,
-                                env.getTypeUtils());
-                extendWithNode(resultNode);
+            // If we are building the CFG for a lambda with a single expression as the body, then
+            // add an extra node for the result of that lambda
+            if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+                LambdaExpressionTree lambdaTree =
+                        ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
+                if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+                    Node resultNode =
+                            new LambdaResultExpressionNode(
+                                    (ExpressionTree) lambdaTree.getBody(),
+                                    finalNode,
+                                    env.getTypeUtils());
+                    extendWithNode(resultNode);
+                }
             }
+
+            // Add marker to indicate that the next block will be the exit block.
+            // Note: if there is a return statement earlier in the method (which is always the case
+            // for
+            // non-void methods), then this is not strictly necessary. However, it is also not a
+            // problem,
+            // as it will just generate a degenerate control graph case that will be removed in a
+            // later
+            // phase.
+            nodeList.add(new UnconditionalJump(regularExitLabel));
+
+            return new PhaseOneResult(
+                    underlyingAST,
+                    treeLookupMap,
+                    convertedTreeLookupMap,
+                    unaryAssignNodeLookupMap,
+                    nodeList,
+                    bindings,
+                    leaders,
+                    returnNodes,
+                    regularExitLabel,
+                    exceptionalExitLabel,
+                    declaredClasses,
+                    declaredLambdas);
+        } finally {
+            this.path = null;
         }
-
-        // Add marker to indicate that the next block will be the exit block.
-        // Note: if there is a return statement earlier in the method (which is always the case for
-        // non-void methods), then this is not strictly necessary. However, it is also not a
-        // problem, as it will just generate a degenerate control graph case that will be removed
-        // in a later phase.
-        nodeList.add(new UnconditionalJump(regularExitLabel));
-
-        return new PhaseOneResult(
-                underlyingAST,
-                treeLookupMap,
-                convertedTreeLookupMap,
-                unaryAssignNodeLookupMap,
-                nodeList,
-                bindings,
-                leaders,
-                returnNodes,
-                regularExitLabel,
-                exceptionalExitLabel,
-                declaredClasses,
-                declaredLambdas);
     }
 
     public PhaseOneResult process(CompilationUnitTree root, UnderlyingAST underlyingAST) {
@@ -492,24 +500,48 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
      */
     public void handleArtificialTree(Tree tree) {}
 
+    /**
+     * Returns the current path for the tree currently being scanned.
+     *
+     * @return the current path
+     */
+    public TreePath getCurrentPath() {
+        return path;
+    }
+
+    /** Path to the tree currently being scanned. */
+    private TreePath path;
+
     // TODO: remove method and instead use JCP to add version-specific methods.
     // Switch expressions first appeared in 12, standard in 14, so don't use 17.
+    // TODO: look into changing back to TreePathScanner and removing path/getCurrentPath.
     @Override
     public Node scan(Tree tree, Void p) {
         if (tree == null) {
             return null;
         }
-        // Must use String comparison to support compiling on JDK 11 and earlier.
-        //     Features added between JDK 12 and JDK 17 inclusive.
-        switch (tree.getKind().name()) {
-                // case "BINDING_PATTERN":
-                //  return visitBindingPattern17(path.getLeaf(), p);
-            case "SWITCH_EXPRESSION":
-                return visitSwitchExpression17(tree, p);
-            case "YIELD":
-                return visitYield17(tree, p);
-            default:
-                return super.scan(tree, p);
+
+        TreePath prev = path;
+        @SuppressWarnings("interning:not.interned") // Looking for exact match.
+        boolean treeIsLeaf = path.getLeaf() != tree;
+        if (treeIsLeaf) {
+            path = new TreePath(path, tree);
+        }
+        try {
+            // Must use String comparison to support compiling on JDK 11 and earlier.
+            //     Features added between JDK 12 and JDK 17 inclusive.
+            switch (tree.getKind().name()) {
+                    // case "BINDING_PATTERN":
+                    //  return visitBindingPattern17(path.getLeaf(), p);
+                case "SWITCH_EXPRESSION":
+                    return visitSwitchExpression17(tree, p);
+                case "YIELD":
+                    return visitYield17(tree, p);
+                default:
+                    return tree.accept(this, p);
+            }
+        } finally {
+            path = prev;
         }
     }
 
@@ -2504,25 +2536,84 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         Label falseStart = new Label();
         Label merge = new Label();
 
+        // create a synthetic variable for the value of the conditional expression
+        VariableTree condExprVarTree =
+                treeBuilder.buildVariableDecl(exprType, uniqueName("condExpr"), findOwner(), null);
+        VariableDeclarationNode condExprVarNode = new VariableDeclarationNode(condExprVarTree);
+        condExprVarNode.setInSource(false);
+        extendWithNode(condExprVarNode);
+
         Node condition = unbox(scan(tree.getCondition(), p));
         ConditionalJump cjump = new ConditionalJump(trueStart, falseStart);
         extendWithExtendedNode(cjump);
 
         addLabelForNextNode(trueStart);
-        Node trueExpr = scan(tree.getTrueExpression(), p);
-        trueExpr = conditionalExprPromotion(trueExpr, exprType);
+        ExpressionTree trueExprTree = tree.getTrueExpression();
+        Node trueExprNode = scan(trueExprTree, p);
+        trueExprNode = conditionalExprPromotion(trueExprNode, exprType);
+
+        extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
+
         extendWithExtendedNode(new UnconditionalJump(merge));
 
         addLabelForNextNode(falseStart);
-        Node falseExpr = scan(tree.getFalseExpression(), p);
-        falseExpr = conditionalExprPromotion(falseExpr, exprType);
+        ExpressionTree falseExprTree = tree.getFalseExpression();
+        Node falseExprNode = scan(falseExprTree, p);
+        falseExprNode = conditionalExprPromotion(falseExprNode, exprType);
+
+        extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
+
         extendWithExtendedNode(new UnconditionalJump(merge));
 
         addLabelForNextNode(merge);
-        Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);
+        Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
+                extendWithVarUseNode(condExprVarTree);
+        Node node =
+                new TernaryExpressionNode(
+                        tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.second);
         extendWithNode(node);
 
         return node;
+    }
+
+    /**
+     * Extend the CFG with an assignment for either the true or false case of a conditional
+     * expression, assigning the value of the expression for the case to the synthetic variable for
+     * the conditional expression
+     *
+     * @param condExprVarTree tree for synthetic variable for conditional expression
+     * @param caseExprTree expression tree for the case
+     * @param caseExprNode node for the case
+     */
+    private void extendWithAssignmentForConditionalExpr(
+            VariableTree condExprVarTree, ExpressionTree caseExprTree, Node caseExprNode) {
+        Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
+                extendWithVarUseNode(condExprVarTree);
+
+        AssignmentTree assign =
+                treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExprTree);
+        handleArtificialTree(assign);
+
+        AssignmentNode assignmentNode =
+                new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode);
+        assignmentNode.setInSource(false);
+        extendWithNode(assignmentNode);
+    }
+
+    /**
+     * Extend the CFG with a {@link LocalVariableNode} representing a use of some variable
+     *
+     * @param varTree tree for the variable
+     * @return a pair whose first element is the synthetic {@link IdentifierTree} for the use, and
+     *     whose second element is the {@link LocalVariableNode} representing the use
+     */
+    private Pair<IdentifierTree, LocalVariableNode> extendWithVarUseNode(VariableTree varTree) {
+        IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(varTree);
+        handleArtificialTree(condExprVarUseTree);
+        LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
+        condExprVarUseNode.setInSource(false);
+        extendWithNode(condExprVarUseNode);
+        return Pair.of(condExprVarUseTree, condExprVarUseNode);
     }
 
     @Override
