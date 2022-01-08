@@ -459,12 +459,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
             // Add marker to indicate that the next block will be the exit block.
             // Note: if there is a return statement earlier in the method (which is always the case
-            // for
-            // non-void methods), then this is not strictly necessary. However, it is also not a
-            // problem,
-            // as it will just generate a degenerate control graph case that will be removed in a
-            // later
-            // phase.
+            // for non-void methods), then this is not strictly necessary. However, it is also not a
+            // problem, as it will just generate a degenerate control graph case that will be
+            // removed in a later phase.
             nodeList.add(new UnconditionalJump(regularExitLabel));
 
             return new PhaseOneResult(

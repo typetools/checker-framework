@@ -1631,8 +1631,7 @@ class MustCallConsistencyAnalyzer {
             // If nonnull, currentBlock is an ExceptionBlock.
             TypeMirror exceptionType = successorAndExceptionType.second;
             // successorObligations eventually contains the Obligations to propagate to successor.
-            // The
-            // loop below mutates it.
+            // The loop below mutates it.
             Set<Obligation> successorObligations = new LinkedHashSet<>();
             // A detailed reason to give in the case that the last resource alias of an Obligation
             // goes out of scope without a called-methods type that satisfies the corresponding
@@ -1653,9 +1652,8 @@ class MustCallConsistencyAnalyzer {
             CFStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
             for (Obligation obligation : obligations) {
                 // This boolean is true if there is no evidence that the Obligation does not go out
-                // of
-                // scope - that is, if there is definitely a resource alias that is in scope in the
-                // successor.
+                // of scope - that is, if there is definitely a resource alias that is in scope in
+                // the successor.
                 boolean obligationGoesOutOfScopeBeforeSuccessor = true;
                 for (ResourceAlias resourceAlias : obligation.resourceAliases) {
                     if (aliasInScopeInSuccessor(regularStoreOfSuccessor, resourceAlias)) {
@@ -1698,15 +1696,11 @@ class MustCallConsistencyAnalyzer {
                     }
 
                     // Always propagate the Obligation to the successor if current block represents
-                    // code
-                    // nested
-                    // in a cast.  Without this logic, the analysis may report a false
+                    // code nested in a cast.  Without this logic, the analysis may report a false
                     // positive when the Obligation represents a temporary variable for a nested
                     // expression, as the temporary may not appear in the successor store and hence
-                    // seems to
-                    // be going out of scope.  The temporary will be handled with special logic;
-                    // casts are
-                    // unwrapped at various points in the analysis.
+                    // seems to be going out of scope.  The temporary will be handled with special
+                    // logic; casts are unwrapped at various points in the analysis.
                     if (currentBlockNodes.size() == 1 && inCast(currentBlockNodes.get(0))) {
                         successorObligations.add(obligation);
                         continue;
@@ -1738,18 +1732,15 @@ class MustCallConsistencyAnalyzer {
                     // 2. if the current block has one or more nodes, always use the CM store after
                     //    the last node. To decide which MC store to use:
                     //    2a. if the last node in the block is the invocation of an
-                    // @CreatesMustCallFor
-                    //        method that might throw an exception, and the consistency check is for
-                    //        an exceptional path, use the MC store immediately before the method
-                    // invocation,
-                    //        because the method threw an exception rather than finishing and
-                    // therefore did
-                    //        not actually create any must-call obligation, so the MC store after
-                    // might
-                    //        contain must-call obligations that do not need to be fulfilled along
-                    // this path.
-                    //        2b. in all other cases, use the MC store from after the last node in
-                    // the block.
+                    //        @CreatesMustCallFor method that might throw an exception, and the
+                    //        consistency check is for an exceptional path, use the MC store
+                    //        immediately before the method invocation, because the method threw an
+                    //        exception rather than finishing and therefore did not actually create
+                    //        any must-call obligation, so the MC store after might contain
+                    //        must-call obligations that do not need to be fulfilled along this
+                    //        path.
+                    //    2b. in all other cases, use the MC store from after the last node in
+                    //        the block.
                     CFStore mcStore, cmStore;
                     if (currentBlockNodes.size()
                             == 0 /* currentBlock is special or conditional */) {
@@ -1763,7 +1754,8 @@ class MustCallConsistencyAnalyzer {
                                         obligationGoesOutOfScopeBeforeSuccessor,
                                         currentBlock, // 1a. (MC)
                                         successor); // 1b. (MC)
-                    } else { // In this case, current block has at least one node.
+                    } else {
+                        // In this case, current block has at least one node.
                         // Use the called-methods store immediately after the last node in
                         // currentBlock.
                         Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)

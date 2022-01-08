@@ -112,8 +112,7 @@ class TernaryExpressions {
         // :: error: required.method.not.called
         Object toStringAndClone = b ? new Sub1() : new Sub2();
         // at this point, for soundness, we should be responsible for calling both toString and
-        // clone on
-        // obj...
+        // clone on obj...
         toStringAndClone.toString();
     }
 }
