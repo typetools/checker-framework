@@ -213,11 +213,10 @@ TreeAnnotator
     If the release did not add, remove, or rename any type qualifiers, no changes are required.
     Those instructions do not work on macOS, so you may need to use buffalo to make the changes.
   </li>
-  <li> <strong>Make Randoop use the latest Checker Framework version.</strong>
-    Make a <a href="https://github.com/randoop/randoop/pulls">pull request</a> to <a href="https://github.com/randoop/randoop">Randoop</a>, changing this line In Randoop's <code>build.gradle</code> file:
-<pre>
-def checkerFrameworkVersion = "..." // Checker Framework version
-</pre>
+  <li> <strong>Make Daikon use the latest Checker Framework version.</strong>
+
+    Follow the  instructions in
+    <a href="https://github.com/codespecs/daikon/blob/master/java/lib/README">java/lib/README</a> to update the Checker Framework version number in Daikon.
   </li>
 </ol>
 
