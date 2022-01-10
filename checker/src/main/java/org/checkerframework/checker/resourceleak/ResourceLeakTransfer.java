@@ -12,6 +12,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFStore;
@@ -46,6 +47,18 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
       rlTypeFactory.addTempVar(node.getTernaryExpressionVar(), node.getTree());
+    }
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
+      SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      rlTypeFactory.addTempVar(node.getSwitchExpressionVar(), node.getTree());
     }
     return result;
   }
