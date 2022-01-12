@@ -4826,6 +4826,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // that case.
           replaceAnnotations(
               ((AnnotatedWildcardType) uncapturedTypeArg).getSuperBound(), capturedTypeArg);
+          capturedTypeArg.replaceAnnotations(uncapturedTypeArg.getEffectiveAnnotations());
         }
       } else {
         // The type argument is not a wildcard.

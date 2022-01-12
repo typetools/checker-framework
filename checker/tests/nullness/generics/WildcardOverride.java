@@ -11,6 +11,7 @@ interface ToOverride<T> {
 
 public class WildcardOverride implements ToOverride<Object> {
   @Override
+  // :: error: (override.param)
   public int transform(List<Object> function) {
     return 0;
   }
