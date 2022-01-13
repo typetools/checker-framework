@@ -580,27 +580,45 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
       for (int i = 0; i < numTypeArgs; i++) {
         AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);
-        if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())
-            && type.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
-          AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
+        if (type.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
           AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type.getTypeArguments().get(i);
-          // Substitute the captured type variables with their wildcards. Without this, the
-          // isSubtype check crashes because wildcards aren't comparable with type variables.
-          AnnotatedTypeMirror catpureTypeVarUB =
-              atypeFactory
-                  .getTypeVarSubstitutor()
-                  .substituteWithoutCopyingTypeArguments(
-                      typeVarToWildcard, capturedTypeVar.getUpperBound());
-          if (!atypeFactory
-              .getTypeHierarchy()
-              .isSubtype(catpureTypeVarUB, wildcard.getExtendsBound())) {
-            checker.reportError(
-                tree.getTypeArguments().get(i),
-                "type.argument",
-                element.getTypeParameters().get(i),
-                element.getSimpleName(),
-                wildcard.getExtendsBound(),
-                capturedTypeVar.getUpperBound());
+          if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())) {
+            AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
+            // Substitute the captured type variables with their wildcards. Without this, the
+            // isSubtype check crashes because wildcards aren't comparable with type variables.
+            AnnotatedTypeMirror catpureTypeVarUB =
+                atypeFactory
+                    .getTypeVarSubstitutor()
+                    .substituteWithoutCopyingTypeArguments(
+                        typeVarToWildcard, capturedTypeVar.getUpperBound());
+            if (!atypeFactory
+                .getTypeHierarchy()
+                .isSubtype(catpureTypeVarUB, wildcard.getExtendsBound())) {
+              checker.reportError(
+                  tree.getTypeArguments().get(i),
+                  "type.argument",
+                  element.getTypeParameters().get(i),
+                  element.getSimpleName(),
+                  wildcard.getExtendsBound(),
+                  capturedTypeVar.getUpperBound());
+            }
+          } else if (AnnotatedTypes.isExplicitlySuperBounded(wildcard)) {
+            if (!(atypeFactory
+                    .getQualifierHierarchy()
+                    .isSubtype(
+                        wildcard.getSuperBound().getEffectiveAnnotations(),
+                        wildcard.getExtendsBound().getAnnotations())
+                && atypeFactory
+                    .getQualifierHierarchy()
+                    .isSubtype(
+                        wildcard.getExtendsBound().getAnnotations(),
+                        wildcard.getSuperBound().getEffectiveAnnotations()))) {
+              checker.reportError(
+                  tree.getTypeArguments().get(i),
+                  "super.wildcard",
+                  wildcard.getExtendsBound(),
+                  wildcard.getSuperBound());
+            }
           }
         }
       }

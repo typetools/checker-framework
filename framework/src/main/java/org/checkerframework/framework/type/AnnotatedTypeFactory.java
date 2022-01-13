@@ -4826,14 +4826,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // that case.
           replaceAnnotations(
               ((AnnotatedWildcardType) uncapturedTypeArg).getSuperBound(), capturedTypeArg);
-          capturedTypeArg.replaceAnnotations(uncapturedTypeArg.getEffectiveAnnotations());
         }
       } else {
         // The type argument is not a wildcard.
         // typeVarTypeMirror is the type parameter for which uncapturedTypeArg is a type argument.
         typeVarToAnnotatedTypeArg.put(typeVarTypeMirror, uncapturedTypeArg);
         if (uncapturedTypeArg.getKind() == TypeKind.TYPEVAR) {
-          // If the type arg is a type variable also add it to the typeVarToAnnotatedTypeArg map, so
+          // If the type arg is a type variable also add it to the typeVarToAnnotatedTypeArg map,
+          // sox
           // that references to the type variable are substituted.
           AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) uncapturedTypeArg;
           typeVarToAnnotatedTypeArg.put(typeVar.getUnderlyingType(), typeVar);

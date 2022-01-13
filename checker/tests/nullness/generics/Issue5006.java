@@ -1,5 +1,3 @@
-import org.checkerframework.checker.nullness.qual.NonNull;
-
 public class Issue5006 {
 
   static class C<T> {
@@ -14,21 +12,7 @@ public class Issue5006 {
 
   interface Y extends X {
     @Override
-    // :: error: (override.return)
+    // :: error: (super.wildcard)
     C<? super Object> get();
-  }
-
-  interface Z extends Y {
-    @Override
-    C<Object> get();
-  }
-
-  interface Q {
-    C<? super Object> get();
-  }
-
-  interface R extends Q {
-    @Override
-    C<@NonNull Object> get();
   }
 }
