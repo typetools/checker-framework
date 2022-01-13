@@ -4833,8 +4833,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         typeVarToAnnotatedTypeArg.put(typeVarTypeMirror, uncapturedTypeArg);
         if (uncapturedTypeArg.getKind() == TypeKind.TYPEVAR) {
           // If the type arg is a type variable also add it to the typeVarToAnnotatedTypeArg map,
-          // sox
-          // that references to the type variable are substituted.
+          // so that references to the type variable are substituted.
           AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) uncapturedTypeArg;
           typeVarToAnnotatedTypeArg.put(typeVar.getUnderlyingType(), typeVar);
         }
