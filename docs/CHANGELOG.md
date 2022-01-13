@@ -3,6 +3,8 @@ Version 3.21.0-eisop-1 (January ?, 2022)
 
 **User-visible changes:**
 
+Improved support for `NullMarked` default annotation.
+
 `DefaultQualifier` supports the new `applyToSubpackages` annotation attribute
 to decide whether a default should also apply to subpackages. To preserve the
 current behavior the default is `true`.

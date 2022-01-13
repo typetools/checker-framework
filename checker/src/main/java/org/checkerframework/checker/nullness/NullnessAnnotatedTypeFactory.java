@@ -29,6 +29,8 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -326,6 +328,17 @@ public class NullnessAnnotatedTypeFactory
         addAliasedTypeAnnotation(
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
+
+        AnnotationMirror nullMarkedDefaultQual =
+                new AnnotationBuilder(processingEnv, DefaultQualifier.class)
+                        .setValue("value", NonNull.class)
+                        .setValue("locations", new TypeUseLocation[] {TypeUseLocation.UPPER_BOUND})
+                        .setValue("applyToSubpackages", false)
+                        .build();
+        addAliasedDeclAnnotation(
+                "org.jspecify.nullness.NullMarked",
+                DefaultQualifier.class.getCanonicalName(),
+                nullMarkedDefaultQual);
 
         boolean permitClearProperty =
                 checker.getLintOption(
