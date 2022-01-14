@@ -1251,6 +1251,18 @@ but written for regular possibly-null Java references.
 To use the \refclass{checker/nullness/util}{Opt} class, the
 \<checker-util.jar> file must be on the classpath at run time.
 
+It is true that \<Optional> can express types that cannot be expressed via
+nullness annotations. Nullability cannot be composed, while \<Optional>
+can. This is most importantly in code that uses generics. When a generic
+method with type paramter \code{T} accepts an optional argument of type
+\code{@Nullable T}, it is impossible to distinguish whether the argument
+is null because the user chose not to provide it, or because the underlying
+type \code{T} also allows null. These two situations often have completely
+different meanings. A simple example of such a situation is when
+a command line parameter can be absent, empty, or non-empty. In summary,
+for a concrete class it is often simpler to use nullness annotations,
+while applying \code{@Nullable} to a type variable always risks
+conflating two semantically distinct occurrences of null.
 
 \sectionAndLabel{Initialization Checker}{initialization-checker}
 
