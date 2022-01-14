@@ -915,8 +915,9 @@ If your code is already annotated with a different nullness
 annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
 as if you had written the corresponding annotation from the
-Nullness Checker, as described in Figures~\ref{fig-nullness-refactoring-nonnull}
-and \ref{fig-nullness-refactoring-nullable}.
+Nullness Checker, as described in Figures~\ref{fig-nullness-refactoring-nonnull},
+\ref{fig-nullness-refactoring-nullable}, and
+\ref{fig-nullness-refactoring-polynull}.
 If the other annotation is a declaration annotation, it may be moved; see
 Section~\ref{declaration-annotations-moved}.
 
@@ -1044,6 +1045,27 @@ $\Rightarrow$
 \caption{Correspondence between other nullness annotations and the
   Checker Framework's \<Nullable> annotation.}
 \label{fig-nullness-refactoring-nullable}
+\end{figure}
+
+% See comments above previous table.
+\begin{figure}
+\begin{center}
+\begin{tabular}{ll}
+\begin{tabular}{|l|l|}
+\hline
+ ~com.google.protobuf.Internal.ProtoPassThroughNullness~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.nullness.qual.PolyNull~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other nullness annotations and the
+  Checker Framework's \<PolyNull> annotation.}
+\label{fig-nullness-refactoring-polynull}
 \end{figure}
 
 %% Removed, because it's tedious and should be obvious to a decent programmer.
