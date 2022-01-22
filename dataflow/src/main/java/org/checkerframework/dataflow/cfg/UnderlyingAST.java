@@ -6,6 +6,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.StringsPlume;
 import org.plumelib.util.UniqueId;
 
@@ -126,7 +127,7 @@ public abstract class UnderlyingAST implements UniqueId {
     private final ClassTree classTree;
 
     /** The enclosing method of the lambda. */
-    private final MethodTree method;
+    private final @Nullable MethodTree method;
 
     /**
      * Create a new CFGLambda.
@@ -135,7 +136,8 @@ public abstract class UnderlyingAST implements UniqueId {
      * @param classTree the enclosing class of the lambda
      * @param method the enclosing method of the lambda
      */
-    public CFGLambda(LambdaExpressionTree lambda, ClassTree classTree, MethodTree method) {
+    public CFGLambda(
+        LambdaExpressionTree lambda, ClassTree classTree, @Nullable MethodTree method) {
       super(Kind.LAMBDA);
       this.lambda = lambda;
       this.method = method;
@@ -179,7 +181,7 @@ public abstract class UnderlyingAST implements UniqueId {
      *
      * @return the enclosing method of the lambda
      */
-    public MethodTree getMethod() {
+    public @Nullable MethodTree getMethod() {
       return method;
     }
 
@@ -189,7 +191,7 @@ public abstract class UnderlyingAST implements UniqueId {
      * @return the name of the enclosing method of the lambda
      */
     public String getMethodName() {
-      return method.getName().toString();
+      return method == null ? "no enclosing method" : method.getName().toString();
     }
 
     @Override
