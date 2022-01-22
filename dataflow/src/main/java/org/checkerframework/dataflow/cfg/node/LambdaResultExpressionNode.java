@@ -12,9 +12,9 @@ import org.checkerframework.javacutil.TreeUtils;
 public class LambdaResultExpressionNode extends Node {
 
   protected final ExpressionTree tree;
-  protected final @Nullable Node result;
+  protected final Node result;
 
-  public LambdaResultExpressionNode(ExpressionTree t, @Nullable Node result, Types types) {
+  public LambdaResultExpressionNode(ExpressionTree t, Node result, Types types) {
     super(TreeUtils.typeOf(t));
     this.result = result;
     tree = t;
@@ -24,7 +24,7 @@ public class LambdaResultExpressionNode extends Node {
    * Returns the final node of the CFG corresponding to the lambda expression body (see {@link
    * #getTree()}).
    */
-  public @Nullable Node getResult() {
+  public Node getResult() {
     return result;
   }
 
@@ -44,10 +44,7 @@ public class LambdaResultExpressionNode extends Node {
 
   @Override
   public String toString() {
-    if (result != null) {
-      return "-> " + result;
-    }
-    return "-> ()";
+    return "-> " + result;
   }
 
   @Override
@@ -70,10 +67,6 @@ public class LambdaResultExpressionNode extends Node {
 
   @Override
   public Collection<Node> getOperands() {
-    if (result == null) {
-      return Collections.emptyList();
-    } else {
-      return Collections.singletonList(result);
-    }
+    return Collections.singletonList(result);
   }
 }
