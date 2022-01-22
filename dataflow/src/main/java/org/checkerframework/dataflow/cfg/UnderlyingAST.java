@@ -179,7 +179,7 @@ public abstract class UnderlyingAST implements UniqueId {
     /**
      * Returns the enclosing method of the lambda.
      *
-     * @return the enclosing method of the lambda
+     * @return the enclosing method of the lambda, or {@code null} if there is no enclosing method
      */
     public @Nullable MethodTree getMethod() {
       return method;
@@ -188,7 +188,8 @@ public abstract class UnderlyingAST implements UniqueId {
     /**
      * Returns the name of the enclosing method of the lambda.
      *
-     * @return the name of the enclosing method of the lambda
+     * @return the name of the enclosing method of the lambda, or {@code null} if there is no
+     *     enclosing method
      */
     public @Nullable String getMethodName() {
       return method == null ? null : method.getName().toString();
