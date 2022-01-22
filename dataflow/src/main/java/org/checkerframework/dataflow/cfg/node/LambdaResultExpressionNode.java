@@ -31,6 +31,8 @@ public class LambdaResultExpressionNode extends Node {
   /**
    * Returns the final node of the CFG corresponding to the lambda expression body (see {@link
    * #getTree()}).
+   *
+   * @return the final node of the CFG corresponding to the lambda expression body
    */
   public Node getResult() {
     return result;
@@ -39,6 +41,9 @@ public class LambdaResultExpressionNode extends Node {
   /**
    * Returns the {@link ExpressionTree} corresponding to the body of a lambda expression with an
    * expression body (e.g. X for ({@code o -> X}) where X is an expression and not a {...} block).
+   *
+   * @return the {@link ExpressionTree} corresponding to the body of a lambda expression with an
+   *     expression body
    */
   @Override
   public ExpressionTree getTree() {
