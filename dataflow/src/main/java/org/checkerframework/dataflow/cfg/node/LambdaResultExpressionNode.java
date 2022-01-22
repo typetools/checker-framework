@@ -4,17 +4,25 @@ import com.sun.source.tree.ExpressionTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** A node for the single expression body of a single expression lambda. */
 public class LambdaResultExpressionNode extends Node {
 
+  /** tree for the lambda expression body */
   protected final ExpressionTree tree;
+
+  /** final CFG node corresponding to the lambda expression body */
   protected final Node result;
 
-  public LambdaResultExpressionNode(ExpressionTree t, Node result, Types types) {
+  /**
+   * Creates a LambdaResultExpressionNode
+   *
+   * @param t tree for the lambda expression body
+   * @param result final CFG node corresponding to the lambda expression body
+   */
+  public LambdaResultExpressionNode(ExpressionTree t, Node result) {
     super(TreeUtils.typeOf(t));
     this.result = result;
     tree = t;
