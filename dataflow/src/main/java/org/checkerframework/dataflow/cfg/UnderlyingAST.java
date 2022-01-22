@@ -190,8 +190,8 @@ public abstract class UnderlyingAST implements UniqueId {
      *
      * @return the name of the enclosing method of the lambda
      */
-    public String getMethodName() {
-      return method == null ? "no enclosing method" : method.getName().toString();
+    public @Nullable String getMethodName() {
+      return method == null ? null : method.getName().toString();
     }
 
     @Override
