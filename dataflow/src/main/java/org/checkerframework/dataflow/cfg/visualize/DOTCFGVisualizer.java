@@ -237,8 +237,7 @@ public class DOTCFGVisualizer<
         srcLoc.append("::");
         srcLoc.append(methodName);
         srcLoc.append("(");
-        // suppress since if methodName != null, cfgLambda.getMethod() cannot be null
-        @SuppressWarnings("nullness")
+        @SuppressWarnings("nullness") // if methodName != null, then cfgLambda.getMethod() != null
         @NonNull MethodTree method = cfgLambda.getMethod();
         srcLoc.append(method.getParameters());
         srcLoc.append(")");
