@@ -433,8 +433,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
         if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
           Node resultNode =
-              new LambdaResultExpressionNode(
-                  (ExpressionTree) lambdaTree.getBody(), finalNode, env.getTypeUtils());
+              new LambdaResultExpressionNode((ExpressionTree) lambdaTree.getBody(), finalNode);
           extendWithNode(resultNode);
         }
       }
