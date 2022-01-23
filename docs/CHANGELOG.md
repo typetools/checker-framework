@@ -5,6 +5,8 @@ Version 3.2?.? (February 1, 2022)
 
 **Implementation details:**
 
+Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
+
 **Closed issues:**
 
 
