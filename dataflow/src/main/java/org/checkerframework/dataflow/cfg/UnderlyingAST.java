@@ -127,20 +127,20 @@ public abstract class UnderlyingAST implements UniqueId {
     private final ClassTree classTree;
 
     /** The enclosing method of the lambda. */
-    private final @Nullable MethodTree method;
+    private final @Nullable MethodTree enclosingMethod;
 
     /**
      * Create a new CFGLambda.
      *
      * @param lambda the lambda expression
      * @param classTree the enclosing class of the lambda
-     * @param method the enclosing method of the lambda
+     * @param enclosingMethod the enclosing method of the lambda
      */
     public CFGLambda(
-        LambdaExpressionTree lambda, ClassTree classTree, @Nullable MethodTree method) {
+        LambdaExpressionTree lambda, ClassTree classTree, @Nullable MethodTree enclosingMethod) {
       super(Kind.LAMBDA);
       this.lambda = lambda;
-      this.method = method;
+      this.enclosingMethod = enclosingMethod;
       this.classTree = classTree;
     }
 
@@ -180,9 +180,32 @@ public abstract class UnderlyingAST implements UniqueId {
      * Returns the enclosing method of the lambda.
      *
      * @return the enclosing method of the lambda, or {@code null} if there is no enclosing method
+     * @deprecated use #getEnclosingMethod()
      */
+    @Deprecated // 2022-01-23
     public @Nullable MethodTree getMethod() {
-      return method;
+      return enclosingMethod;
+    }
+
+    /**
+     * Returns the enclosing method of the lambda.
+     *
+     * @return the enclosing method of the lambda, or {@code null} if there is no enclosing method
+     */
+    public @Nullable MethodTree getEnclosingMethod() {
+      return enclosingMethod;
+    }
+
+    /**
+     * Returns the name of the enclosing method of the lambda.
+     *
+     * @return the name of the enclosing method of the lambda, or {@code null} if there is no
+     *     enclosing method
+     * @deprecated use #getEnclosingMethodName()
+     */
+    @Deprecated // 2022-01-23
+    public @Nullable String getMethodName() {
+      return enclosingMethod == null ? null : enclosingMethod.getName().toString();
     }
 
     /**
@@ -191,8 +214,8 @@ public abstract class UnderlyingAST implements UniqueId {
      * @return the name of the enclosing method of the lambda, or {@code null} if there is no
      *     enclosing method
      */
-    public @Nullable String getMethodName() {
-      return method == null ? null : method.getName().toString();
+    public @Nullable String getEnclosingMethodName() {
+      return enclosingMethod == null ? null : enclosingMethod.getName().toString();
     }
 
     @Override

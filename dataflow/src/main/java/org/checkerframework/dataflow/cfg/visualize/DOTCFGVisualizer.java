@@ -221,24 +221,24 @@ public class DOTCFGVisualizer<
     } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
       CFGLambda cfgLambda = (CFGLambda) ast;
       String clsName = cfgLambda.getSimpleClassName();
-      String methodName = cfgLambda.getMethodName();
+      String enclosingMethodName = cfgLambda.getEnclosingMethodName();
       long uid = TreeUtils.treeUids.get(cfgLambda.getCode());
       outFile.append(clsName);
       outFile.append("-");
-      if (methodName != null) {
-        outFile.append(methodName);
+      if (enclosingMethodName != null) {
+        outFile.append(enclosingMethodName);
         outFile.append("-");
       }
       outFile.append(uid);
 
       srcLoc.append("<");
       srcLoc.append(clsName);
-      if (methodName != null) {
+      if (enclosingMethodName != null) {
         srcLoc.append("::");
-        srcLoc.append(methodName);
+        srcLoc.append(enclosingMethodName);
         srcLoc.append("(");
-        @SuppressWarnings("nullness") // if methodName != null, then cfgLambda.getMethod() != null
-        @NonNull MethodTree method = cfgLambda.getMethod();
+        @SuppressWarnings("nullness") // enclosingMethodName != null => getEnclosingMethod() != null
+        @NonNull MethodTree method = cfgLambda.getEnclosingMethod();
         srcLoc.append(method.getParameters());
         srcLoc.append(")");
       }
