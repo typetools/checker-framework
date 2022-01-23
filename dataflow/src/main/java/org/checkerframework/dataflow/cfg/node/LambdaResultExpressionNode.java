@@ -10,14 +10,14 @@ import org.checkerframework.javacutil.TreeUtils;
 /** A node for the single expression body of a single expression lambda. */
 public class LambdaResultExpressionNode extends Node {
 
-  /** tree for the lambda expression body */
+  /** Tree for the lambda expression body. */
   protected final ExpressionTree tree;
 
-  /** final CFG node corresponding to the lambda expression body */
+  /** Final CFG node corresponding to the lambda expression body. */
   protected final Node result;
 
   /**
-   * Creates a LambdaResultExpressionNode
+   * Creates a LambdaResultExpressionNode.
    *
    * @param t tree for the lambda expression body
    * @param result final CFG node corresponding to the lambda expression body
