@@ -27,7 +27,7 @@ public @interface QualifierForLiterals {
   /**
    * A string literal that matches any of these patterns has this qualifier.
    *
-   * <p>If patterns for multiple qualifers match, then the string literal is given the greatest
+   * <p>If patterns for multiple qualifiers match, then the string literal is given the greatest
    * lower bound of all the matches.
    */
   String[] stringPatterns() default {};
