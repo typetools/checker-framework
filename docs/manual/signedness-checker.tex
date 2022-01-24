@@ -295,6 +295,14 @@ an \<@Unsigned> variable.
     }
 \end{Verbatim}
 
+Note that type-checking produces a different result for \<int x = u1 / u2;>
+here than in the similar example in
+Section~\ref{signedness-checker-rationale}.  In
+Section~\ref{signedness-checker-rationale}, the method is reading fields,
+and all it knows is the declared type of the field.  In 20.4, the method is
+reading a local variable, and dataflow (that is, flow-sensitive type
+refinement) refines the types of local variables.
+
 
 \sectionAndLabel{Other signedness annotations}{signedness-other-annotations}
 
