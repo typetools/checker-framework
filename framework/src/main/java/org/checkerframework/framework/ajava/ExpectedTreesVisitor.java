@@ -69,6 +69,14 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   }
 
   @Override
+  public Void visitBindingPattern17(Tree tree, Void p) {
+    super.visitBindingPattern17(tree, p);
+    // JavaPaser doesn't have a node for the VariableTree.
+    trees.remove(TreeUtils.bindingPatternTreeGetVariable(tree));
+    return null;
+  }
+
+  @Override
   public Void visitClass(ClassTree tree, Void p) {
     defaultAction(tree);
     scan(tree.getModifiers(), p);
