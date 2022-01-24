@@ -6,7 +6,7 @@ public class EncryptionDemo {
     private final int OFFSET = 13;
 
     public @Encrypted String encrypt(String text) {
-        @Encrypted String encryptedText = new @Encrypted String();
+        @Encrypted String encryptedText = "";
         for (char character : text.toCharArray()) {
             encryptedText += encryptCharacter(character);
         }
