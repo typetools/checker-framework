@@ -15,7 +15,6 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 import org.plumelib.util.CollectionsPlume;
 
@@ -31,6 +30,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -1591,12 +1591,120 @@ public class AnnotationUtils {
      */
     @SideEffectFree
     public static String toStringSimple(Set<AnnotationMirror> annos) {
-        DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
         StringJoiner result = new StringJoiner(" ");
         for (AnnotationMirror am : annos) {
-            result.add(defaultAnnotationFormatter.formatAnnotationMirror(am));
+            result.add(toStringSimple(am));
         }
         return result.toString();
+    }
+
+    /**
+     * Returns a string representation of the annotation mirror, using simple (not fully-qualified)
+     * names.
+     *
+     * @param am annotation to format
+     * @return the string representation, using simple (not fully-qualified) names
+     */
+    @SideEffectFree
+    public static String toStringSimple(AnnotationMirror am) {
+        StringBuilder sb = new StringBuilder();
+        toStringSimple(am, sb);
+        return sb.toString();
+    }
+
+    /**
+     * Appends a string representation of the annotation mirror, using simple (not fully-qualified)
+     * names, to the StringBuilder.
+     *
+     * @param am annotation to format
+     * @param sb StringBuilder to which the string representation of am, using simple (not
+     *     fully-qualified) names, is appended
+     */
+    public static void toStringSimple(AnnotationMirror am, StringBuilder sb) {
+        sb.append("@");
+        sb.append(am.getAnnotationType().asElement().getSimpleName());
+        Map<ExecutableElement, AnnotationValue> args = removeDefaultValues(am.getElementValues());
+        if (!args.isEmpty()) {
+            sb.append("(");
+            boolean oneValue = false;
+            if (args.size() == 1) {
+                Map.Entry<ExecutableElement, AnnotationValue> first =
+                        args.entrySet().iterator().next();
+                if (first.getKey().getSimpleName().contentEquals("value")) {
+                    formatAnnotationMirrorArg(first.getValue(), sb);
+                    oneValue = true;
+                }
+            }
+            if (!oneValue) {
+                boolean notfirst = false;
+                for (Map.Entry<ExecutableElement, AnnotationValue> arg : args.entrySet()) {
+                    if (!"{}".equals(arg.getValue().toString())) {
+                        if (notfirst) {
+                            sb.append(", ");
+                        }
+                        notfirst = true;
+                        sb.append(arg.getKey().getSimpleName() + "=");
+                        formatAnnotationMirrorArg(arg.getValue(), sb);
+                    }
+                }
+            }
+            sb.append(")");
+        }
+    }
+
+    /**
+     * Returns a new map that only has the values in {@code elementValues} that are not the same as
+     * the default value.
+     *
+     * @param elementValues a mapping of annotation element to annotation value
+     * @return a new map with only the not default default values of {@code elementValues}
+     */
+    private static Map<ExecutableElement, AnnotationValue> removeDefaultValues(
+            Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {
+        Map<ExecutableElement, AnnotationValue> nonDefaults = new LinkedHashMap<>();
+        elementValues.forEach(
+                (element, value) -> {
+                    if (element.getDefaultValue() == null
+                            || !Objects.equals(
+                                    value.getValue(), element.getDefaultValue().getValue())) {
+                        nonDefaults.put(element, value);
+                    }
+                });
+        return nonDefaults;
+    }
+
+    /**
+     * A helper method to print AnnotationValues (annotation arguments), without showing full
+     * package names.
+     *
+     * @param av AnnotationValue to print
+     * @param sb StringBuilder to modify
+     */
+    private static void formatAnnotationMirrorArg(AnnotationValue av, StringBuilder sb) {
+        Object val = av.getValue();
+        if (List.class.isAssignableFrom(val.getClass())) {
+            @SuppressWarnings("unchecked")
+            List<AnnotationValue> vallist = (List<AnnotationValue>) val;
+            if (vallist.size() == 1) {
+                formatAnnotationMirrorArg(vallist.get(0), sb);
+            } else {
+                sb.append('{');
+                boolean notfirst = false;
+                for (AnnotationValue nav : vallist) {
+                    if (notfirst) {
+                        sb.append(", ");
+                    }
+                    notfirst = true;
+                    formatAnnotationMirrorArg(nav, sb);
+                }
+                sb.append('}');
+            }
+        } else if (VariableElement.class.isAssignableFrom(val.getClass())) {
+            VariableElement ve = (VariableElement) val;
+            sb.append(ve.getEnclosingElement().getSimpleName() + "." + ve.getSimpleName());
+        } else {
+            sb.append(av.toString());
+        }
     }
 
     /**

@@ -11,6 +11,15 @@ current behavior the default is `true`.
 
 **Implementation details:**
 
+Moved files AnnotationFormatter.java and DefaultAnnotationFormatter.java from
+javacutil/src/main/java/org/checkerframework/javacutil/ to
+framework/src/main/java/org/checkerframework/framework/util/.
+typetools PR 3821 incorrectly moved these files, without adapting their
+packages, leading to framework classes in javacutil.
+The AnnotationFormatter depends on the InvisibleQualifier framework
+annotation, so should be in that project.
+Added additional toStringSimple methods to AnnotationUtils to format
+AnnotationMirrors without depending on the framework project.
 
 **Closed issues:**
 
