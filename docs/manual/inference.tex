@@ -152,7 +152,7 @@ each round of inference appear in directories labeled \<iteration0>, \<iteration
 The full syntax for invoking \<wpi.sh> is
 
 \begin{Verbatim}
-  wpi.sh [-d PROJECTDIR] [-t TIMEOUT] [-b EXTRA_BUILD_ARGS] -- [DLJC-ARGS]
+  wpi.sh [-d PROJECTDIR] [-t TIMEOUT] [-c COMPILE_CMD] [-b EXTRA_BUILD_ARGS] [-g GRADLECACHEDIR] -- [DLJC-ARGS]
 \end{Verbatim}
 
 Arguments in square brackets are optional.
@@ -164,7 +164,15 @@ Here is an explanation of the arguments:
   or Maven buildfile. The default is the current working directory.
 
 \item[-t TIMEOUT]
-  The timeout for running the checker, in seconds
+  The timeout for running the checker, in seconds.
+
+\item[-c COMPILE\_CMD]
+  The command to use to invoke the build system to compile
+  the target project. The default is chosen based on the build
+  system (e.g., \<compileJava> for Gradle, \<compile> for Maven, etc.).
+  When running WPI on a single module of a multi-module project,
+  you might want to use this option (possibly in combination with \<-b>, below),
+  depending on the setup of the target project.
 
 \item[-b EXTRA\_BUILD\_ARGS]
   Extra arguments to pass to the build script invocation. This argument

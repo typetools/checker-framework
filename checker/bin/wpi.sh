@@ -9,7 +9,7 @@
 set -eo pipefail
 # not set -u, because this script checks variables directly
 
-while getopts "d:t:b:g:" opt; do
+while getopts "d:t:b:g:c:" opt; do
   case $opt in
     d) DIR="$OPTARG"
        ;;
@@ -18,6 +18,8 @@ while getopts "d:t:b:g:" opt; do
     b) EXTRA_BUILD_ARGS="$OPTARG"
        ;;
     g) GRADLECACHEDIR="$OPTARG"
+       ;;
+    c) COMPILE_CMD="$OPTARG"
        ;;
     \?) # echo "Invalid option -$OPTARG" >&2
        ;;
@@ -135,6 +137,9 @@ fi
 function configure_and_exec_dljc {
 
   if [ -f build.gradle ]; then
+      if [ "${COMPILE_CMD}" = "" ]; then
+        COMPILE_CMD="compileJava"
+      fi
       if [ -f gradlew ]; then
         chmod +x gradlew
         GRADLE_EXEC="./gradlew"
@@ -145,8 +150,11 @@ function configure_and_exec_dljc {
         mkdir "${GRADLECACHEDIR}"
       fi
       CLEAN_CMD="${GRADLE_EXEC} clean -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
-      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+      BUILD_CMD="${GRADLE_EXEC} clean ${COMPILE_CMD} -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
   elif [ -f pom.xml ]; then
+      if [ "${COMPILE_CMD}" = "" ]; then
+        COMPILE_CMD="compile"
+      fi
       if [ -f mvnw ]; then
         chmod +x mvnw
         MVN_EXEC="./mvnw"
@@ -156,15 +164,18 @@ function configure_and_exec_dljc {
       # if running on Java 8, need /jre at the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
+          BUILD_CMD="${MVN_EXEC} clean ${COMPILE_CMD} -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
       else
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+          BUILD_CMD="${MVN_EXEC} clean ${COMPILE_CMD} -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
       fi
   elif [ -f build.xml ]; then
     # TODO: test these more thoroughly
+    if [ "${COMPILE_CMD}" = "" ]; then
+      COMPILE_CMD="compile"
+    fi
     CLEAN_CMD="ant clean ${EXTRA_BUILD_ARGS}"
-    BUILD_CMD="ant clean compile ${EXTRA_BUILD_ARGS}"
+    BUILD_CMD="ant clean ${COMPILE_CMD} ${EXTRA_BUILD_ARGS}"
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
       WPI_RESULTS_AVAILABLE="no build file found for ${REPO_NAME}"
