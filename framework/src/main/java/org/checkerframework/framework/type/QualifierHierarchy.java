@@ -168,7 +168,8 @@ public interface QualifierHierarchy {
      */
     // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
     // collection version of LUB below.
-    @Nullable AnnotationMirror leastUpperBound(AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+    @Nullable AnnotationMirror leastUpperBound(
+            AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
     /**
      * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
@@ -257,7 +258,8 @@ public interface QualifierHierarchy {
      */
     // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
     // collection version of LUB below.
-    @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+    @Nullable AnnotationMirror greatestLowerBound(
+            AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
     /**
      * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the

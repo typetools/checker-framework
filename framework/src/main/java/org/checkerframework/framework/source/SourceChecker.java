@@ -1604,7 +1604,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     /** Compute the set of supported lint options. */
     protected Set<String> createSupportedLintOptions() {
-        @Nullable SupportedLintOptions sl = this.getClass().getAnnotation(SupportedLintOptions.class);
+        @Nullable SupportedLintOptions sl =
+                this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null) {
             return Collections.emptySet();
