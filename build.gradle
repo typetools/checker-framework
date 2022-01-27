@@ -55,6 +55,9 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_9:
     case JavaVersion.VERSION_1_10:
     case JavaVersion.VERSION_12:
+    case JavaVersion.VERSION_18:
+    case JavaVersion.VERSION_19:
+    case JavaVersion.VERSION_20:
         logger.warn("The Checker Framework has only been tested with JDK 8, 11, and 17." +
                 " Found version " + JavaVersion.current().majorVersion);
         break;
