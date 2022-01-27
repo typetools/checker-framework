@@ -12,6 +12,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -1701,6 +1702,52 @@ public final class TreeUtils {
         | InvocationTargetException e) {
       // Just assume that the case tree is of the form case <expression> : statement(s)
       return null;
+    }
+  }
+
+  /**
+   * Returns the binding variable of {@code bindingPatternTree}.
+   *
+   * @param bindingPatternTree the BindingPatternTree whose binding variable is returned
+   * @return the binding variable of {@code bindingPatternTree}
+   */
+  public static VariableTree bindingPatternTreeGetVariable(Tree bindingPatternTree) {
+    try {
+      Class<?> bindingPatternClass = Class.forName("com.sun.source.tree.BindingPatternTree");
+      Method getVariableMethod = bindingPatternClass.getMethod("getVariable");
+      VariableTree variableTree = (VariableTree) getVariableMethod.invoke(bindingPatternTree);
+      if (variableTree != null) {
+        return variableTree;
+      }
+      throw new BugInCF(
+          "TreeUtils.bindingPatternTreeGetVariable: variable is null for tree: %s",
+          bindingPatternTree);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | InvocationTargetException
+        | IllegalAccessException e) {
+      throw new BugInCF(
+          "TreeUtils.bindingPatternTreeGetVariable: reflection failed for tree: %s",
+          bindingPatternTree, e);
+    }
+  }
+
+  /**
+   * Returns the pattern of {@code instanceOfTree} tree or null if the instanceof does not have a
+   * pattern.
+   *
+   * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
+   * @return the {@code PatternTree} of {@code instanceOfTree} or null if is doesn't exist
+   */
+  public static @Nullable Tree instanceOfGetPattern(InstanceOfTree instanceOfTree) {
+    try {
+      Method getPatternMethod = InstanceOfTree.class.getMethod("getPattern");
+      return (Tree) getPatternMethod.invoke(instanceOfTree);
+    } catch (NoSuchMethodException e) {
+      return null;
+    } catch (InvocationTargetException | IllegalAccessException e) {
+      throw new BugInCF(
+          "TreeUtils.instanceOfGetPattern: reflection failed for tree: %s", instanceOfTree, e);
     }
   }
 
