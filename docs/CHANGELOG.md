@@ -3,6 +3,9 @@ Version 3.2?.? (February 1, 2022)
 
 **User-visible changes:**
 
+The `wpi.sh` script supports non-standard names for build system compile targets
+via the new `-c` command-line option.
+
 **Implementation details:**
 
 Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
