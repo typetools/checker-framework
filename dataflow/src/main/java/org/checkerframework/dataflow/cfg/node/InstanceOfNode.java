@@ -38,9 +38,21 @@ public class InstanceOfNode extends Node {
     this(tree, operand, null, refType, types);
   }
 
-  /** Create an InstanceOfNode. */
+  /**
+   * Create an InstanceOfNode.
+   *
+   * @param tree instanceof tree
+   * @param operand the expression in the instance of tree
+   * @param bindingVariable the binding variable or null if there is none
+   * @param refType the type in the instance of
+   * @param types types util
+   */
   public InstanceOfNode(
-      Tree tree, Node operand, LocalVariableNode bindingVariable, TypeMirror refType, Types types) {
+      Tree tree,
+      Node operand,
+      @Nullable LocalVariableNode bindingVariable,
+      TypeMirror refType,
+      Types types) {
     super(types.getPrimitiveType(TypeKind.BOOLEAN));
     assert tree.getKind() == Tree.Kind.INSTANCE_OF;
     this.tree = (InstanceOfTree) tree;
@@ -54,6 +66,11 @@ public class InstanceOfNode extends Node {
     return operand;
   }
 
+  /**
+   * Returns the binding variable for this instance of, or null if one does not exist.
+   *
+   * @return the binding variable for this instance of, or null if one does not exist
+   */
   public @Nullable LocalVariableNode getBindingVariable() {
     return bindingVariable;
   }
