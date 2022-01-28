@@ -1,4 +1,4 @@
-Version 3.21.1-eisop-1 (January ?, 2022)
+Version 3.21.1-eisop-1 (February ?, 2022)
 -------------------------------
 
 **User-visible changes:**
@@ -25,8 +25,8 @@ Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
 used as a statement.
 
 **Closed issues:**
-
 typetools #3281
+
 
 Version 3.21.1 (January 7, 2022)
 -------------------------------
