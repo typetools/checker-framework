@@ -9,7 +9,8 @@ public class TaintingBindingVariable {
     }
   }
   void bar2( Object o) {
-    if (o instanceof @Untainted String s) { // error or warning?
+    // :: warning: (instanceof.pattern.unsafe)
+    if (o instanceof @Untainted String s) {
       @Untainted String f = s;
     }
   }
