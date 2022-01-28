@@ -75,7 +75,17 @@ public class InstanceOfNode extends Node {
 
   @Override
   public String toString() {
-    return "(" + getOperand() + " instanceof " + TypesUtils.simpleTypeName(getRefType()) + ")";
+    if (bindingVariable == null) {
+      return "(" + getOperand() + " instanceof " + TypesUtils.simpleTypeName(getRefType()) + ")";
+    } else {
+      return "("
+          + getOperand()
+          + " instanceof "
+          + TypesUtils.simpleTypeName(getRefType())
+          + " "
+          + getBindingVariable()
+          + ")";
+    }
   }
 
   @Override
