@@ -214,6 +214,12 @@ TreeAnnotator
     Those instructions do not work on macOS, so you may need to use the
     <a href="#release_docker">Release Docker image</a> to make the changes.
   </li>
+  <li> <strong>Make Randoop use the latest Checker Framework version.</strong>
+    Make a <a href="https://github.com/randoop/randoop/pulls">pull request</a> to <a href="https://github.com/randoop/randoop">Randoop</a>, changing this line In Randoop's <code>build.gradle</code> file:
+<pre>
+def checkerFrameworkVersion = "..." // Checker Framework version
+</pre>
+  </li>
 </ol>
 
   <h2 id="continuous-integration">Continuous integration tests</h2>
