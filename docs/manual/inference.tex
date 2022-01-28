@@ -158,7 +158,7 @@ override the defaults used by \<wpi.sh>. For example, suppose that you wanted to
 \<zookeeper-server> module only. Without \<wpi.sh>, one might use the following command:
 \<mvn -B --projects zookeeper-server --also-make install -DskipTests>. To use this command via
 \<wpi.sh>, use the following:
-\<sh wpi.sh -b "-B --projects zookeeper-server --also-make" -c "install -DskipTests" -- resourceleak>.
+\<sh wpi.sh -b "-B --projects zookeeper-server --also-make" -c "install -DskipTests" -- --checker resourceleak>.
 
 The full syntax for invoking \<wpi.sh> is
 
@@ -181,6 +181,11 @@ Here is an explanation of the arguments:
   The name(s) of the build system target(s) used to compile
   the target project. The default is chosen based on the build
   system (e.g., \<compileJava> for Gradle, \<compile> for Maven, etc.).
+  This argument is passed directly to the build system when compiling the
+  target project, so it can also include command-line arguments that only
+  apply to the compilation targets (and not other targets like \<clean>);
+  for general command-line arguments that apply to all targets, use the
+  \<-b> option instead.
   When running WPI on a single module of a multi-module project,
   you might want to use this option (possibly in combination with \<-b>, below),
   depending on the setup of the target project.
