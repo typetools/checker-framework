@@ -149,10 +149,21 @@ you can find their location by examining the \<-Ajava> argument
 to the last \<javac> command that was run. The annotation files generated in
 each round of inference appear in directories labeled \<iteration0>, \<iteration1>, etc.
 
+The \<wpi.sh> script is most useful when analyzing projects that follow the standard
+conventions of their build system for single-module projects. When analyzing a project
+that requires non-standard build system commands, use the \<-c> and \<-b> options to
+override the defaults used by \<wpi.sh>. For example, suppose that you wanted to use
+\<wpi.sh> to infer annotations for the Resource Leak Checker on
+\ahref{https://github.com/apache/zookeeper}{Apache Zookeeper's}
+\<zookeeper-server> module only. Without \<wpi.sh>, one might use the following command:
+\<mvn -B --projects zookeeper-server --also-make install -DskipTests>. To use this command via
+\<wpi.sh>, use the following:
+\<sh wpi.sh -b "-B --projects zookeeper-server --also-make" -c "install -DskipTests" -- resourceleak>.
+
 The full syntax for invoking \<wpi.sh> is
 
 \begin{Verbatim}
-  wpi.sh [-d PROJECTDIR] [-t TIMEOUT] [-c COMPILE_CMD] [-b EXTRA_BUILD_ARGS] [-g GRADLECACHEDIR] -- [DLJC-ARGS]
+  wpi.sh [-d PROJECTDIR] [-t TIMEOUT] [-c COMPILATION_TARGET] [-b EXTRA_BUILD_ARGS] [-g GRADLECACHEDIR] -- [DLJC-ARGS]
 \end{Verbatim}
 
 Arguments in square brackets are optional.
@@ -166,19 +177,21 @@ Here is an explanation of the arguments:
 \item[-t TIMEOUT]
   The timeout for running the checker, in seconds.
 
-\item[-c COMPILE\_CMD]
-  The command to use to invoke the build system to compile
+\item[-c COMPILATION\_TARGET]
+  The name(s) of the build system target(s) used to compile
   the target project. The default is chosen based on the build
   system (e.g., \<compileJava> for Gradle, \<compile> for Maven, etc.).
   When running WPI on a single module of a multi-module project,
   you might want to use this option (possibly in combination with \<-b>, below),
   depending on the setup of the target project.
+  The argument may contain spaces and is re-tokenized by the shell.
 
 \item[-b EXTRA\_BUILD\_ARGS]
   Extra arguments to pass to the build script invocation. This argument
-  will be passed to the build commands, such as
+  will be passed to compilation tasks, such as
   \<ant compile>, \<gradle compileJava>, or \<mvn compile>.
-  It is also passed to other build system commands, such as
+  The main difference between this option and \<-t> is that the values
+  of the \<-b> option are also passed to other, non-compilation build system commands, such as
   \<ant clean>, \<gradle clean>, or \<mvn clean>.
   % An alternative would be to permit it to be passed multiple times, and
   % not re-tokenize it.
