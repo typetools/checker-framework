@@ -33,7 +33,14 @@ public class InstanceOfNode extends Node {
   /** For Types.isSameType. */
   protected final Types types;
 
-  /** Create an InstanceOfNode. */
+  /**
+   * Create an InstanceOfNode.
+   *
+   * @param tree instanceof tree
+   * @param operand the expression in the instance of tree
+   * @param refType the type in the instance of
+   * @param types types util
+   */
   public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
     this(tree, operand, null, refType, types);
   }
@@ -75,7 +82,11 @@ public class InstanceOfNode extends Node {
     return bindingVariable;
   }
 
-  /** The reference type being tested against. */
+  /**
+   * The reference type being tested against.
+   *
+   * @return the reference type
+   */
   public TypeMirror getRefType() {
     return refType;
   }
