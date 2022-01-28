@@ -410,6 +410,8 @@ public class NullnessVisitor
       }
       if (AnnotationUtils.containsSame(annotations, NONNULL)) {
         checker.reportWarning(tree, "instanceof.nonnull.redundant");
+        // Don't call super because it will issue an incorrect instanceof.unsafe warning.
+        return null;
       }
     }
     return super.visitInstanceOf(tree, p);

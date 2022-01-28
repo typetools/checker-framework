@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.livevariable;
 
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.BackwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -23,7 +22,7 @@ public class LiveVarTransfer
 
   @Override
   public LiveVarStore initialNormalExitStore(
-      UnderlyingAST underlyingAST, @Nullable List<ReturnNode> returnNodes) {
+      UnderlyingAST underlyingAST, List<ReturnNode> returnNodes) {
     return new LiveVarStore();
   }
 
