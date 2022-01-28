@@ -161,6 +161,22 @@ public interface NodeVisitor<R, P> {
     // Marker nodes
     R visitMarker(MarkerNode n, P p);
 
-    // Anonymous/inner/nested class declaration within a method
+    /**
+     * Visits an anonymous/inner/nested class declaration within a method.
+     *
+     * @param classDeclarationNode the {@link ClassDeclarationNode} to be visited
+     * @param p the argument for the operation implemented by this visitor
+     * @return the return value of the operation implemented by this visitor
+     */
     R visitClassDeclaration(ClassDeclarationNode classDeclarationNode, P p);
+
+    /**
+     * Visits an expression that is used as a statement. This node is a marker after the expression
+     * node(s).
+     *
+     * @param n the {@link ExpressionStatementNode} to be visited
+     * @param p the argument for the operation implemented by this visitor
+     * @return the return value of the operation implemented by this visitor
+     */
+    R visitExpressionStatement(ExpressionStatementNode n, P p);
 }

@@ -3,14 +3,30 @@ Version 3.21.1-eisop-1 (January ?, 2022)
 
 **User-visible changes:**
 
+Improved support for `NullMarked` default annotation.
+
 `DefaultQualifier` supports the new `applyToSubpackages` annotation attribute
 to decide whether a default should also apply to subpackages. To preserve the
 current behavior the default is `true`.
 
 **Implementation details:**
 
+Moved files AnnotationFormatter.java and DefaultAnnotationFormatter.java from
+javacutil/src/main/java/org/checkerframework/javacutil/ to
+framework/src/main/java/org/checkerframework/framework/util/.
+typetools PR 3821 incorrectly moved these files, without adapting their
+packages, leading to framework classes in javacutil.
+The AnnotationFormatter depends on the InvisibleQualifier framework
+annotation, so should be in that project.
+Added additional toStringSimple methods to AnnotationUtils to format
+AnnotationMirrors without depending on the framework project.
+
+Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
+used as a statement.
+
 **Closed issues:**
 
+typetools #3281
 
 Version 3.21.1 (January 7, 2022)
 -------------------------------
@@ -40,6 +56,7 @@ was added.
 
 **Closed issues:**
 #2373, #4934, #4977, #4979, #4987.
+
 
 Version 3.20.0 (December 6, 2021)
 -------------------------------

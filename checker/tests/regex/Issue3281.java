@@ -1,10 +1,10 @@
 // Test case for Issue 3281:
 // https://github.com/typetools/checker-framework/issues/3281
 
-// @skip-test until the bug is fixed
-
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.regex.util.RegexUtil;
+
+import java.util.regex.Pattern;
 
 public class Issue3281 {
 
@@ -44,6 +44,7 @@ public class Issue3281 {
     void m4(String s, String s2) {
         RegexUtil.isRegex(s);
         if (RegexUtil.isRegex(s2)) {
+            // :: error: (argument.type.incompatible)
             Pattern.compile(s);
         }
     }
@@ -63,4 +64,18 @@ public class Issue3281 {
             f = s;
         }
     }
+
+    void foo(String s1, String s2) {
+        bar(
+                RegexUtil.isRegex(s1),
+                // :: error: (argument.type.incompatible)
+                Pattern.compile(s1));
+        boolean b;
+        bar(
+                b = RegexUtil.isRegex(s2),
+                // :: error: (argument.type.incompatible)
+                Pattern.compile(s2));
+    }
+
+    void bar(boolean b, Object o) {}
 }

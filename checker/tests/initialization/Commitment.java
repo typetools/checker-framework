@@ -36,8 +36,9 @@ public class Commitment {
         b = "";
     }
 
+    public
     // :: error: (nullness.on.constructor)
-    public @Nullable Commitment(char i) {
+    @Nullable Commitment(char i) {
         a = "";
         t = "";
         b = "";

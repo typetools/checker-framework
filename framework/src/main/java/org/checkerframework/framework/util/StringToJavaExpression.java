@@ -59,7 +59,8 @@ public interface StringToJavaExpression {
      * @throws JavaExpressionParseException if {@code stringExpr} cannot be parsed to a {@code
      *     JavaExpression}
      */
-    @Nullable JavaExpression toJavaExpression(String stringExpr) throws JavaExpressionParseException;
+    @Nullable JavaExpression toJavaExpression(String stringExpr)
+            throws JavaExpressionParseException;
 
     /**
      * Parses a string to a {@link JavaExpression} as if it were written at {@code typeElement}.

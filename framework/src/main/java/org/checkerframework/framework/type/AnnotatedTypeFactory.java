@@ -70,6 +70,7 @@ import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
+import org.checkerframework.framework.util.TypeInformationPresenter;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
@@ -516,6 +517,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private AnnotatedDeclaredType iterableDeclType;
 
     /**
+     * If the option "lspTypeInfo" is defined, this presenter will report the type information of
+     * every type-checked class. This information can be visualized by an editor/IDE that supports
+     * LSP.
+     */
+    private final TypeInformationPresenter typeInformationPresenter;
+
+    /**
      * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
      * root. (These parameters are required so that the factory may conduct the appropriate
      * annotation-gathering analyses on certain tree types.)
@@ -573,6 +581,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
+
+        if (checker.hasOption("lspTypeInfo")) {
+            this.typeInformationPresenter = new TypeInformationPresenter(this);
+        } else {
+            this.typeInformationPresenter = null;
+        }
 
         /* NO-AFU
                if (checker.hasOption("infer")) {
@@ -1319,6 +1333,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
+
+        if (typeInformationPresenter != null) {
+            typeInformationPresenter.process(tree);
+        }
+
         /* NO-AFU
                if (wholeProgramInference != null) {
                    // Write out the results of whole-program inference, just once for each class.  As soon

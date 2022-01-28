@@ -82,6 +82,7 @@ import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
 import org.checkerframework.dataflow.cfg.node.DoubleLiteralNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
+import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
@@ -2679,7 +2680,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     @Override
     public Node visitExpressionStatement(ExpressionStatementTree tree, Void p) {
-        return scan(tree.getExpression(), p);
+        ExpressionTree exprTree = tree.getExpression();
+        scan(exprTree, p);
+        extendWithNode(new ExpressionStatementNode(exprTree));
+        return null;
     }
 
     @Override
