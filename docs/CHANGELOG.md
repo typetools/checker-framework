@@ -21,8 +21,12 @@ annotation, so should be in that project.
 Added additional toStringSimple methods to AnnotationUtils to format
 AnnotationMirrors without depending on the framework project.
 
+Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
+used as a statement.
+
 **Closed issues:**
 
+typetools #3281
 
 
 Version 3.21.0 (December 17, 2021)
@@ -40,6 +44,7 @@ was added.
 
 **Closed issues:**
 #2373, #4934, #4977, #4979, #4987.
+
 
 Version 3.20.0 (December 6, 2021)
 -------------------------------

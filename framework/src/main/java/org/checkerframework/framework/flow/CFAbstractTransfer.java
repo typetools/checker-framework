@@ -23,6 +23,7 @@ import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
@@ -1337,6 +1338,14 @@ public abstract class CFAbstractTransfer<
         TransferResult<V, S> result = super.visitStringConversion(n, p);
         result.setResultValue(p.getValueOfSubNode(n.getOperand()));
         return result;
+    }
+
+    @Override
+    public TransferResult<V, S> visitExpressionStatement(
+            ExpressionStatementNode n, TransferInput<V, S> vsTransferInput) {
+        // Merge the input
+        S info = vsTransferInput.getRegularStore();
+        return new RegularTransferResult<>(finishValue(null, info), info);
     }
 
     /**

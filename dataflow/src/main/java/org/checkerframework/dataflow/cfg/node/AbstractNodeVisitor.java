@@ -385,4 +385,9 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     public R visitMarker(MarkerNode n, P p) {
         return visitNode(n, p);
     }
+
+    @Override
+    public R visitExpressionStatement(ExpressionStatementNode n, P p) {
+        return visitNode(n, p);
+    }
 }

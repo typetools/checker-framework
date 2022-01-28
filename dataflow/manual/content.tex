@@ -850,10 +850,14 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \code{AssertionError} & & \code{assert x != null : "Hey"} \\
         \midrule
 
+        \code{ExpressionStatement} & An expression that is used as a statement. & \code{m();} \\
+        \midrule
+
         \code{Marker} & No-op nodes used to annotate a CFG with
         information of the underlying Java source code.  Mostly useful
         for debugging and visualization. An example is indicating the
-        start/end of switch statements. & \\ \midrule
+        start/end of switch statements. & \\
+        \midrule
 
         \code{NullChk} & Null checks inserted by javac & \\
         \midrule
