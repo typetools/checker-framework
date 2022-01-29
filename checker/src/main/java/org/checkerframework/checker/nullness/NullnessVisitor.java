@@ -384,13 +384,16 @@ public class NullnessVisitor
         // the CFGBuilder will have generated one branch for which asserts are assumed to be
         // enabled.
 
-        boolean doVisitAssert = true;
+        boolean doVisitAssert;
 
         if (checker.hasOption("assumeAssertionsAreEnabled")
                 || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, node)) {
             doVisitAssert = true;
         } else if (checker.hasOption("assumeAssertionsAreDisabled")) {
             doVisitAssert = false;
+        } else {
+            // no option given -> visit
+            doVisitAssert = true;
         }
 
         if (doVisitAssert) {
