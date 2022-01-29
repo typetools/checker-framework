@@ -198,9 +198,8 @@ public abstract class AbstractAnalysis<
             // check that 'n' is a subnode of 'node'. Check immediate operands
             // first for efficiency.
             assert !n.isLValue() : "Did not expect an lvalue, but got " + n;
-            if (currentNode == n
-                    || (!currentNode.getOperands().contains(n)
-                            && !currentNode.getTransitiveOperands().contains(n))) {
+            if (!currentNode.getOperands().contains(n)
+                    && !currentNode.getTransitiveOperands().contains(n)) {
                 return null;
             }
             // fall through when the current node is not 'n', and 'n' is not a subnode.
