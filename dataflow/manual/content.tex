@@ -989,7 +989,8 @@ about node-tree mapping, see \autoref{sec:conversions}.
 \label{sec:cond-stores}
 
 The Dataflow Framework extracts information from control-flow splits
-that occur in \code{if}, \code{for}, \code{while}, and \code{switch} statements.  In order to have
+that occur in \code{if}, \code{for}, \code{while}, and \code{switch}
+statements and in conditional operator expressions.  In order to have
 the information available at the split, we eagerly produce two stores
 contained in a \code{ConditionalTransferResult} after certain
 boolean-valued expressions.  The stores are called the \emph{then} and
@@ -1007,6 +1008,9 @@ because they cannot maintain the distinction between them.  Merging
 just means taking the least upper bound of the two stores and it
 happens automatically by calling \code{TransferInput.getRegularStore}.
 
+Assignments usually merge conditional stores. For the translation of
+conditional operator expressions, a special non-merging assignment
+node is used (see \autoref{sec:cond-exp} below).
 
 \subsubsection{Branches}
 
@@ -1073,6 +1077,20 @@ containing \code{b1 || (b2 || b3)}.
 
 \flow{CFGConditionalOr}{.33}{1.33}{Example of a conditional or expression
   (\code{||}) with short-circuiting and more precise flow rules.}
+
+
+Conditional operator expressions (using the ternary conditional operator
+\code{? :}, cf. \jlsref{15.25}) use an additional synthetic local
+variable in the CFG. The second (then) and third (else) expressions are
+assigned to this local variable. In contrast to other assignments, this
+assignment does not merge the stores, to allow the propagation of
+conditional stores from these sub-expressions.
+The \code{TernaryExpressionNode} at the merge of the two branches can
+then either be treated like a local variable read or return a
+conditional store.
+
+\flow{CFGConditionalOpExpr}{.33}{.33}{Example of a conditional operator
+  expression (\code{? :}).}
 
 
 \subsubsection{Implicit \code{this} access}

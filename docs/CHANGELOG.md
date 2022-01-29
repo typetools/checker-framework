@@ -24,6 +24,13 @@ AnnotationMirrors without depending on the framework project.
 Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
 used as a statement.
 
+To correctly handle ternary expressions, support synthetic AssignmentNodes that
+do not merge stores. These synthetic assignments are used for the assignments
+to the synthetic variables in a ternary expression.
+(typetools PR #5000 48f2652bc8bf4801b2e750cd92325583939f2f52 added synthetic
+variables for ternary expressions to the CFG. This broke how the Nullness
+Checker handles ternary expressions, leading to false positives.)
+
 **Closed issues:**
 typetools #3281
 

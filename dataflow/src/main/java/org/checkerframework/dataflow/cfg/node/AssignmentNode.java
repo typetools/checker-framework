@@ -23,14 +23,42 @@ import java.util.Objects;
  * </pre>
  *
  * We allow assignments without corresponding AST {@link Tree}s.
+ *
+ * <p>Some desugarings create additional assignments to synthetic local variables. Such assignment
+ * nodes are marked as synthetic to allow special handling in transfer functions.
  */
 public class AssignmentNode extends Node {
 
+    /** The underlying assignment tree. */
     protected final Tree tree;
+    /** The node for the LHS of the assignment tree. */
     protected final Node lhs;
+    /** The node for the RHS of the assignment tree. */
     protected final Node rhs;
 
+    /** Whether the assignment node is synthetic */
+    protected final boolean synthetic;
+
+    /**
+     * Create a (non-synthetic) AssignmentNode.
+     *
+     * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
+     * @param target the lhs of {@code tree}
+     * @param expression the rhs of {@code tree}
+     */
     public AssignmentNode(Tree tree, Node target, Node expression) {
+        this(tree, target, expression, false);
+    }
+
+    /**
+     * Create an AssignmentNode.
+     *
+     * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
+     * @param target the lhs of {@code tree}
+     * @param expression the rhs of {@code tree}
+     * @param synthetic whether the assignment node is synthetic
+     */
+    public AssignmentNode(Tree tree, Node target, Node expression, boolean synthetic) {
         super(TreeUtils.typeOf(tree));
         assert tree instanceof AssignmentTree
                 || tree instanceof VariableTree
@@ -42,6 +70,7 @@ public class AssignmentNode extends Node {
         this.tree = tree;
         this.lhs = target;
         this.rhs = expression;
+        this.synthetic = synthetic;
     }
 
     /**
@@ -62,6 +91,16 @@ public class AssignmentNode extends Node {
         return tree;
     }
 
+    /**
+     * Check if the assignment node is synthetic, e.g. the synthetic assignment in a ternary
+     * expression.
+     *
+     * @return true if the assignment node is synthetic
+     */
+    public boolean isSynthetic() {
+        return synthetic;
+    }
+
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
         return visitor.visitAssignment(this, p);
@@ -69,7 +108,7 @@ public class AssignmentNode extends Node {
 
     @Override
     public String toString() {
-        return getTarget() + " = " + getExpression();
+        return getTarget() + " = " + getExpression() + (synthetic ? " (synthetic)" : "");
     }
 
     @Override
