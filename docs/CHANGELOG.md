@@ -21,6 +21,13 @@ annotation, so should be in that project.
 Added additional toStringSimple methods to AnnotationUtils to format
 AnnotationMirrors without depending on the framework project.
 
+AnnotatedTypeFactory: removed field `artificialTreeToEnclosingElementMap` and
+final methods `getEnclosingElementForArtificialTree` and
+`setEnclosingElementForArtificialTree`. The new final method
+`setPathForArtificialTree` is used by `CFCFGBuilder` to update the mapping. Now
+all trees, including artificial trees, have a correct path and enclosing
+element.
+
 Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
 used as a statement.
 

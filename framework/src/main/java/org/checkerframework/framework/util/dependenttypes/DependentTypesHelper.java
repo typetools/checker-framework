@@ -38,6 +38,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
 
 import java.lang.annotation.Annotation;
@@ -437,8 +438,31 @@ public class DependentTypesHelper {
         }
 
         TreePath pathToVariableDecl = factory.getPath(declarationTree);
-        if (pathToVariableDecl == null) {
-            // If this is a synthetic created by dataflow, the path will be null.
+        assert pathToVariableDecl != null;
+
+        if (variableElt instanceof DetachedVarSymbol) {
+            // Skip standardizing the Java expression in annotations of artificial variables,
+            // because artificial variables are created and initialized with standardized Java
+            // expressions.
+            // For example, for the following code fragment from
+            //   Nullness test case checker/tests/nullness-asserts/NonNullMapValue.java
+            //
+            //    ...
+            //    static HashMap<Integer, Date> call_hashmap = new HashMap<>();
+            //
+            //    public foo() {
+            //        for (Integer i : call_hashmap.keySet()) {
+            //            @NonNull Date d = call_hashmap.get(i);
+            //        }
+            //    }
+            //    ...
+            //
+            //
+            // the CFGBuilder creates the initialized artificial iterator as follows:
+            //      iter#num0 = NonNullMapValue.call_hashmap.keySet().iterator()
+            // Therefore, for the Map Key Checker, the type of the variable "i" is
+            // @KeyFor({"NonNullMapValue.call_hashmap"}), the string in which is already
+            // standardized.
             return;
         }
         switch (variableElt.getKind()) {

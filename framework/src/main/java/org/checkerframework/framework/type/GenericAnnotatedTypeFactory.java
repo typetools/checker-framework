@@ -481,8 +481,6 @@ public abstract class GenericAnnotatedTypeFactory<
             if (factory.subcheckerSharedCFG != null) {
                 factory.subcheckerSharedCFG.clear();
             }
-            // The same applies to this map.
-            factory.artificialTreeToEnclosingElementMap.clear();
         }
     }
 

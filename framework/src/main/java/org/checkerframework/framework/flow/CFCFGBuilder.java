@@ -1,13 +1,12 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AssertTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -21,7 +20,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -153,19 +151,21 @@ public class CFCFGBuilder extends CFGBuilder {
             return super.assumeAssertionsEnabledFor(tree);
         }
 
+        /**
+         * {@inheritDoc}
+         *
+         * <p>Assigns a path to the artificial tree.
+         *
+         * @param tree the newly created Tree
+         */
         @Override
         public void handleArtificialTree(Tree tree) {
-            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-            if (enclosingMethod != null) {
-                Element methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
-                factory.setEnclosingElementForArtificialTree(tree, methodElement);
-            } else {
-                ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-                if (enclosingClass != null) {
-                    Element classElement = TreeUtils.elementFromDeclaration(enclosingClass);
-                    factory.setEnclosingElementForArtificialTree(tree, classElement);
-                }
-            }
+            // Create a new child of the current path and assign to the artificial tree.
+            // Although intuitively, using the sibling of the current path as the artificial tree
+            // path makes more sense, it has the risk of improperly changing the defaulting scope
+            // of the artificial tree.
+            TreePath artificialPath = new TreePath(getCurrentPath(), tree);
+            factory.setPathForArtificialTree(tree, artificialPath);
         }
 
         @Override

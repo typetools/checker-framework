@@ -495,9 +495,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from a Tree to its TreePath. Shared between all instances. */
     private final TreePathCacher treePathCache;
 
-    /** Mapping from CFG-generated trees to their enclosing elements. */
-    protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
-
     /**
      * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue
      * 979.
@@ -553,7 +550,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.cacheDeclAnnos = new HashMap<>();
 
-        this.artificialTreeToEnclosingElementMap = new HashMap<>();
         // get the shared instance from the checker
         this.treePathCache = checker.getTreePathCacher();
 
@@ -889,12 +885,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         // Do not clear here. Only the primary checker should clear this cache.
         // treePathCache.clear();
-
-        // setRoot in a GenericAnnotatedTypeFactory will clear this;
-        // if this isn't a GenericATF, then it must clear it itself.
-        if (!(this instanceof GenericAnnotatedTypeFactory)) {
-            artificialTreeToEnclosingElementMap.clear();
-        }
 
         if (shouldCache) {
             // Clear the caches with trees because once the compilation unit changes,
@@ -2063,9 +2053,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the innermost enclosing method or class tree of {@code tree}. If {@code tree} is
-     * artificial (that is, created by dataflow), then {@link #artificialTreeToEnclosingElementMap}
-     * is used to find the enclosing tree.
+     * Returns the innermost enclosing method or class tree of {@code tree}. Since artificial trees
+     * are assigned to be the child node of the original tree, their enclosing trees are found the
+     * same way as normal trees.
      *
      * <p>If the tree is inside an annotation, then {@code null} is returned.
      *
@@ -2083,17 +2073,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
             return enclosing;
         }
-        Element e = getEnclosingElementForArtificialTree(tree);
-        if (e != null) {
-            Element enclosingMethodOrClass = e;
-            while (enclosingMethodOrClass != null
-                    && enclosingMethodOrClass.getKind() != ElementKind.METHOD
-                    && !enclosingMethodOrClass.getKind().isClass()
-                    && !enclosingMethodOrClass.getKind().isInterface()) {
-                enclosingMethodOrClass = enclosingMethodOrClass.getEnclosingElement();
-            }
-            return declarationFromElement(enclosingMethodOrClass);
-        }
+
         return TreePathUtil.enclosingClass(path);
     }
 
@@ -3679,10 +3659,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
 
-        if (artificialTreeToEnclosingElementMap.containsKey(node)) {
-            return null;
-        }
-
         if (treePathCache.isCached(node)) {
             return treePathCache.getPath(root, node);
         }
@@ -3744,30 +3720,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Gets the {@link Element} representing the declaration of the method enclosing a tree node.
-     * This feature is used to record the enclosing methods of {@link Tree}s that are created
-     * internally by the checker.
-     *
-     * <p>TODO: Find a better way to store information about enclosing Trees.
-     *
-     * @param node the {@link Tree} to get the enclosing method for
-     * @return the method {@link Element} enclosing the argument, or null if none has been recorded
-     */
-    public final Element getEnclosingElementForArtificialTree(Tree node) {
-        return artificialTreeToEnclosingElementMap.get(node);
-    }
-
-    /**
-     * Adds the given mapping from a synthetic (generated) tree to its enclosing element.
+     * Set the tree path for the given artificial tree.
      *
      * <p>See {@code
      * org.checkerframework.framework.flow.CFCFGBuilder.CFCFGTranslationPhaseOne.handleArtificialTree(Tree)}.
      *
-     * @param tree artifical tree
-     * @param enclosing element that encloses {@code tree}
+     * @param tree the artificial {@link Tree} to set the path for
+     * @param path the {@link TreePath} for the artificial tree
      */
-    public final void setEnclosingElementForArtificialTree(Tree tree, Element enclosing) {
-        artificialTreeToEnclosingElementMap.put(tree, enclosing);
+    public final void setPathForArtificialTree(Tree tree, TreePath path) {
+        treePathCache.addPath(tree, path);
     }
 
     /**
