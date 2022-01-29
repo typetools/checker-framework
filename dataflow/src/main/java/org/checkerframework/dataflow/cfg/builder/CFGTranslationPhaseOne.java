@@ -597,7 +597,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             Set<Node> exp = treeLookupMap.get(enclosingParens);
             if (exp == null) {
                 treeLookupMap.put(enclosingParens, new IdentityMostlySingleton<>(node));
-            } else if (!existing.contains(node)) {
+            } else if (!exp.contains(node)) {
                 exp.add(node);
             }
             enclosingParens = parenMapping.get(enclosingParens);
