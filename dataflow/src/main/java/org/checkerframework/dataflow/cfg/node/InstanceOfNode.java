@@ -27,7 +27,7 @@ public class InstanceOfNode extends Node {
   /** The tree associated with this node. */
   protected final InstanceOfTree tree;
 
-  /** The node of the binding variable is one exists. */
+  /** The node of the binding variable if one exists. */
   protected final @Nullable LocalVariableNode bindingVariable;
 
   /** For Types.isSameType. */
@@ -37,8 +37,8 @@ public class InstanceOfNode extends Node {
    * Create an InstanceOfNode.
    *
    * @param tree instanceof tree
-   * @param operand the expression in the instance of tree
-   * @param refType the type in the instance of
+   * @param operand the expression in the instanceof tree
+   * @param refType the type in the instanceof
    * @param types types util
    */
   public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
@@ -49,9 +49,9 @@ public class InstanceOfNode extends Node {
    * Create an InstanceOfNode.
    *
    * @param tree instanceof tree
-   * @param operand the expression in the instance of tree
+   * @param operand the expression in the instanceof tree
    * @param bindingVariable the binding variable or null if there is none
-   * @param refType the type in the instance of
+   * @param refType the type in the instanceof
    * @param types types util
    */
   public InstanceOfNode(
@@ -74,9 +74,9 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * Returns the binding variable for this instance of, or null if one does not exist.
+   * Returns the binding variable for this instanceof, or null if one does not exist.
    *
-   * @return the binding variable for this instance of, or null if one does not exist
+   * @return the binding variable for this instanceof, or null if one does not exist
    */
   public @Nullable LocalVariableNode getBindingVariable() {
     return bindingVariable;
@@ -103,17 +103,12 @@ public class InstanceOfNode extends Node {
 
   @Override
   public String toString() {
-    if (bindingVariable == null) {
-      return "(" + getOperand() + " instanceof " + TypesUtils.simpleTypeName(getRefType()) + ")";
-    } else {
-      return "("
-          + getOperand()
-          + " instanceof "
-          + TypesUtils.simpleTypeName(getRefType())
-          + " "
-          + getBindingVariable()
-          + ")";
-    }
+    return "("
+        + getOperand()
+        + " instanceof "
+        + TypesUtils.simpleTypeName(getRefType())
+        + (bindingVariable == null ? "" : " " + getBindingVariable())
+        + ")";
   }
 
   @Override
