@@ -1162,17 +1162,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         if (isRightNumeric && isLeftNumeric && isSubtype) {
             node = widen(node, varType);
-            nodeType = node.getType();
         } else if (isRightReference && isLeftReference && isSubtype) {
             // widening reference conversion is a no-op, but if it
             // applies, then later conversions do not.
         } else if (isRightPrimitive && isLeftReference) {
             if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
                 node = narrowAndBox(node, varType);
-                nodeType = node.getType();
             } else {
                 node = box(node);
-                nodeType = node.getType();
             }
         } else if (isRightBoxed && isLeftPrimitive) {
             node = unbox(node);
@@ -1180,14 +1177,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
             if (types.isSubtype(nodeType, varType) && !types.isSameType(nodeType, varType)) {
                 node = widen(node, varType);
-                nodeType = node.getType();
             }
         } else if (isRightPrimitive && isLeftPrimitive) {
             if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
                 node = narrow(node, varType);
-                nodeType = node.getType();
             }
         }
+        // node might have been re-assigned; if nodeType is needed, set it again
+        // nodeType = node.getType();
 
         // TODO: if checkers need to know about null references of
         // a particular type, add logic for them here.
