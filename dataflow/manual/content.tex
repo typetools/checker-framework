@@ -775,7 +775,7 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \code{MethodInvocation} & Note that access and invocation are distinct. & \code{hashCode()} \\
         \midrule
 
-        & Arithmetic and logical operations. & \\
+        & Arithmetic and logical operations & \\
         \code{BitwiseAnd} & & a \& \code{b} \\
         \code{BitwiseComplement} & & \verb|~b| \\
         \code{BitwiseOr} & & \code{a | b} \\
@@ -806,13 +806,13 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \code{GreaterThanOrEqual} & & \code{x >= y} \\
         \code{LessThan} & & \code{x < y} \\
         \code{LessThanOrEqual} & & \code{x <= y} \\
+        \midrule
 
+        \code{SwitchExpression} & A switch expression (not statement!) & \\
         \code{Case} & Case of a switch.  Acts as an equality test. & \\
         \midrule
 
         \code{Assignment} & & \code{x = 1} \\
-%        \midrule
-
         \code{StringConcatenateAssignment} & A compound assignment. & \code{s += ".txt"} \\
         \midrule
 
@@ -824,7 +824,7 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \code{InstanceOf} & & \code{x instanceof Float} \\
         \midrule
 
-        & Conversion nodes. & \\
+        & Conversion nodes & \\
         \code{NarrowingConversion} & Implicit conversion. & \\
         \code{StringConversion} & Might be implicit. & \code{obj.toString()} \\
         \code{WideningConversion} & Implicit conversion. & \\
@@ -1141,6 +1141,7 @@ to be disabled.
 
 \subsubsection{Varargs method invocation}
 \label{sec:varargs}
+
 In Java, varargs in method or constructor invocation is compiled
 as new array creation (cf.\ \jlsref{15.12.4.2}). For example,
 \code{m(1, 2, 3)} will be compiled as \code{m(new int[]\{1, 2, 3\})}
@@ -1153,21 +1154,32 @@ the formal parameter, or if \code{null} is given as the actual varargs argument.
 
 \subsubsection{Default case and fall through for switch statement}
 \label{sec:default-switch}
+
 A switch statement is handled as a chain of \code{CaseNode} and nodes in
 the case. \code{CaseNode} makes a branch by comparing the equality of
 the expression of the switch statement and the expression of the case.
-Note that the expression of a switch statement must be executed just only
+Note that the expression of a switch statement must be executed only
 once at the beginning of the switch statement. To refer to its value, a fake variable
-is created and it is assigned to a fake variable. \code{THEN_TO_BOTH}
-edge goes to nodes in the case and \code{ELSE_TO_BOTH} edge goes to next
-\code{CaseNode}. When a next is default case, it goes to nodes in the default
+is created and it is assigned to a fake variable. A \code{THEN_TO_BOTH}
+edge goes to nodes in the case and a \code{ELSE_TO_BOTH} edge goes to the next
+\code{CaseNode}. When the next case is the default case, it goes to nodes in the default
 case. If a break statement is in nodes, it creates an edge to next node of
 the switch statement. If there is any possibility of fall-through, an edge
-to the first of nodes in the next case is created after nodes in the case.
+to the first node in the next case is created after nodes in the case.
 For example, see \autoref{fig:CFGSwitch}. The fake variable named \code{switch#num0}
-is created and each of case nodes creates the branches.
+is created and each case node creates the branches.
 
 \flow{CFGSwitch}{.21}{1.45}{Example of a switch statement with case, default and fall through.}
+
+\subsubsection{Switch expressions}
+\label{sec:switch-expr}
+
+A switch expression is translated similarly to a switch statement.
+An additional fake variable \code{switchExpr} is used to store the value
+from the cases. The \code{SwitchExpressionNode} itself can then be
+handled like a read of that variable.
+
+% TODO: add an example
 
 \subsubsection{Handling \code{finally} blocks}
 \label{sec:try-finally}
