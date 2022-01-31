@@ -6,9 +6,6 @@ Version 3.2?.? (February 1, 2022)
 The `wpi.sh` script supports non-standard names for build system compile targets
 via the new `-c` command-line option.
 
-The Checker Framework now more precisely computes and checks the type of the
-pattern variable in a pattern match instanceof.
-
 **Implementation details:**
 
 Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
