@@ -11,7 +11,7 @@ public class WildcardAnnos {
   // @Nullable List<? super @NonNull String extends @Nullable Object> l3 = null;
   @Nullable List<@Nullable ? super @NonNull String> l3 = null;
 
-  // The bounds need to have the same annotations because capture conversion,
+  // The bounds need to have the same annotations because capture conversion
   // converts the type argument to just Object.
   // :: error: (super.wildcard)
   @Nullable List<@Nullable ? super @NonNull Object> l3b = null;
