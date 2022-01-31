@@ -319,6 +319,7 @@ def build_checker_framework_release(
         "checker-framework-manual",
         "checker-framework-dataflow-manual",
         "checker-framework-webpage.html",
+
     )
 
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
