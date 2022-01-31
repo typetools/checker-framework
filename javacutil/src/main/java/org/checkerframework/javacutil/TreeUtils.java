@@ -231,11 +231,12 @@ public final class TreeUtils {
   @Pure
   public static @Nullable Element elementFromTree(Tree tree) {
     if (tree == null) {
-      throw new BugInCF("InternalUtils.symbol: tree is null");
+      throw new BugInCF("TreeUtils.elementFromTree: tree is null");
     }
 
     if (!(tree instanceof JCTree)) {
-      throw new BugInCF("InternalUtils.symbol: tree is not a valid Javac tree");
+      throw new BugInCF(
+          "TreeUtils.elementFromTree: tree is not a valid Javac tree but a " + tree.getClass());
     }
 
     if (isExpressionTree(tree)) {
@@ -367,7 +368,7 @@ public final class TreeUtils {
   public static ExecutableElement constructor(NewClassTree tree) {
 
     if (!(tree instanceof JCTree.JCNewClass)) {
-      throw new BugInCF("InternalUtils.constructor: not a javac internal tree");
+      throw new BugInCF("TreeUtils.constructor: not a javac internal tree");
     }
 
     JCNewClass newClassTree = (JCNewClass) tree;
@@ -887,7 +888,7 @@ public final class TreeUtils {
       Class<?> type, String methodName, ProcessingEnvironment env, String... paramTypes) {
     String typeName = type.getCanonicalName();
     if (typeName == null) {
-      throw new BugInCF("class %s has no canonical name", type);
+      throw new BugInCF("TreeUtils.getMethod: class %s has no canonical name", type);
     }
     return getMethod(typeName, methodName, env, paramTypes);
   }
@@ -1661,7 +1662,8 @@ public final class TreeUtils {
    * @return the list of expressions in the case
    */
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
-    // Could also test against JDK version number, which is likely more efficient.
+    // Could also test against JDK version number (or use a variable), which is likely more
+    // efficient.
     try {
       Method method = CaseTree.class.getDeclaredMethod("getExpressions");
       @SuppressWarnings({"unchecked", "nullness"})
