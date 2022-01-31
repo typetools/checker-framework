@@ -1,5 +1,5 @@
 Version 3.2?.? (February 1, 2022)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -14,7 +14,7 @@ Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
 
 
 Version 3.21.1 (January 7, 2022)
--------------------------------
+--------------------------------
 
 **User-visible changes:**
 
@@ -27,7 +27,7 @@ files.
 
 
 Version 3.21.0 (December 17, 2021)
--------------------------------
+----------------------------------
 
 **User-visible changes:**
 
@@ -43,7 +43,7 @@ was added.
 #2373, #4934, #4977, #4979, #4987.
 
 Version 3.20.0 (December 6, 2021)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -70,7 +70,7 @@ Removed methods and classes that have been deprecated for more than one year:
 
 
 Version 3.19.0 (November 1, 2021)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -95,14 +95,14 @@ Deprecated methods in AnnotatedTypeFactory:
 
 
 Version 3.18.1 (October 4, 2021)
--------------------------------
+--------------------------------
 
 **Closed issues:**
 #4902 and #4903.
 
 
 Version 3.18.0 (September 1, 2021)
--------------------------------
+----------------------------------
 
 **User-visible changes:**
 
