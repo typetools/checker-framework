@@ -52,7 +52,7 @@ public class UpperBoundDefaulting {
         @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
 
         // Upper bound: GLB(@UbExplicit, @UbImplicit), Lower bound: @UbBottom.
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible = elbList;
 
         @UbTop MyArrayList<@UbExplicit ? super @UbBottom String> iebLowerBoundCompatible = elbList;
