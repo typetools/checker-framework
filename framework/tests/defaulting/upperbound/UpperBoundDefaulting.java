@@ -6,10 +6,10 @@ package defaulting.upperbound;
 import org.checkerframework.framework.testchecker.defaulting.UpperBoundQual.*;
 
 // Upper bound: @UbExplicit, Lower bound: @UbBottom.
-class MyArrayList<MAL extends String> {}
+class MyArrayList<MAL extends CharSequence> {}
 
 // Upper bound: @UbExplicit, Lower bound: @UbBottom.
-class MyExplicitArray<MEA extends String> {}
+class MyExplicitArray<MEA extends CharSequence> {}
 
 public class UpperBoundDefaulting {
 
@@ -28,11 +28,12 @@ public class UpperBoundDefaulting {
 
     public void implicitsWildcard(MyArrayList<?> myArrayList) {
 
-        @UbTop MyArrayList<@UbBottom ? extends @UbTop String> iwLowerBoundIncompatible = myArrayList;
+        @UbTop MyArrayList<@UbBottom ? extends @UbTop CharSequence> iwLowerBoundIncompatible = myArrayList;
 
-        @UbTop MyArrayList<@UbBottom ? extends @UbExplicit String> iwLowerBoundCompatible = myArrayList;
+        @UbTop MyArrayList<@UbBottom ? extends @UbExplicit CharSequence> iwLowerBoundCompatible =
+                myArrayList;
 
-        @UbTop MyArrayList<@UbBottom ? extends @UbImplicit String> iwLowerBoundStillCompatible =
+        @UbTop MyArrayList<@UbBottom ? extends @UbImplicit CharSequence> iwLowerBoundStillCompatible =
                 // :: error: (assignment.type.incompatible)
                 myArrayList;
     }
@@ -51,6 +52,7 @@ public class UpperBoundDefaulting {
         @UbTop MyArrayList<@UbTop ? super @UbBottom String> iebLowerBoundIncompatible = elbList;
 
         // Upper bound: GLB(@UbExplicit, @UbImplicit), Lower bound: @UbBottom.
+        // :: error: (assignment)
         @UbTop MyArrayList<@UbImplicit ? super @UbBottom String> iebLowerBoundStillIncompatible = elbList;
 
         @UbTop MyArrayList<@UbExplicit ? super @UbBottom String> iebLowerBoundCompatible = elbList;

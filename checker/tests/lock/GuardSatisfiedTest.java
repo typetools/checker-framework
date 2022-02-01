@@ -249,7 +249,7 @@ public class GuardSatisfiedTest {
 
     void testGuardSatisfiedOnWildCardSuperBound(
             // :: error: (guardsatisfied.location.disallowed)
-            MyParameterizedClass1<? super @GuardSatisfied Object> l) {}
+            MyParameterizedClass1<? super @GuardSatisfied String> l) {}
 
     @GuardSatisfied(1) Object testGuardSatisfiedOnParameters(
             @GuardSatisfied GuardSatisfiedTest this,

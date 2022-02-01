@@ -411,20 +411,22 @@ public class NullnessVisitor
     }
 
     @Override
-    public Void visitInstanceOf(InstanceOfTree node, Void p) {
+    public Void visitInstanceOf(InstanceOfTree tree, Void p) {
         // The "reference type" is the type after "instanceof".
-        Tree refTypeTree = node.getType();
+        Tree refTypeTree = tree.getType();
         if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
             List<? extends AnnotationMirror> annotations =
                     TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
             if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
-                checker.reportError(node, "instanceof.nullable");
+                checker.reportError(tree, "instanceof.nullable");
             }
             if (AnnotationUtils.containsSame(annotations, NONNULL)) {
-                checker.reportWarning(node, "instanceof.nonnull.redundant");
+                checker.reportWarning(tree, "instanceof.nonnull.redundant");
+                // Don't call super because it will issue an incorrect instanceof.unsafe warning.
+                return null;
             }
         }
-        return super.visitInstanceOf(node, p);
+        return super.visitInstanceOf(tree, p);
     }
 
     /**

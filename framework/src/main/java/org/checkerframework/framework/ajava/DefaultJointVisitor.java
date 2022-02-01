@@ -34,6 +34,7 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
@@ -165,6 +166,9 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
 
     @Override
     public void processBinary(BinaryTree javacTree, BinaryExpr javaParserNode) {}
+
+    @Override
+    public void processBindingPattern(Tree javacTree, PatternExpr javaParserNode) {}
 
     @Override
     public void processBlock(BlockTree javacTree, BlockStmt javaParserNode) {}

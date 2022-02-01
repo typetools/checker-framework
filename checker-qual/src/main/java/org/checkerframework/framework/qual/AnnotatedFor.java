@@ -9,7 +9,8 @@ import java.lang.annotation.Target;
 /**
  * Indicates that this class has been annotated for the given type system. For example,
  * {@code @AnnotatedFor({"nullness", "regex"})} indicates that the class has been annotated with
- * annotations such as {@code @Nullable} and {@code @Regex}.
+ * annotations such as {@code @Nullable} and {@code @Regex}. The argument to {@code AnnotatedFor} is
+ * not an annotation name, but a checker name.
  *
  * <p>You should only use this annotation in a partially-annotated library. There is no point to
  * using it in a fully-annotated library nor in an application that does not export APIs for

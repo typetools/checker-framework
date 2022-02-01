@@ -12,6 +12,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -307,11 +308,13 @@ public final class TreeUtils {
     @Pure
     public static @Nullable Element elementFromTree(Tree tree) {
         if (tree == null) {
-            throw new BugInCF("symbol: tree is null");
+            throw new BugInCF("TreeUtils.elementFromTree: tree is null");
         }
 
         if (!(tree instanceof JCTree)) {
-            throw new BugInCF("symbol: tree is not a valid Javac tree");
+            throw new BugInCF(
+                    "TreeUtils.elementFromTree: tree is not a valid Javac tree but a "
+                            + tree.getClass());
         }
 
         if (isExpressionTree(tree)) {
@@ -444,7 +447,7 @@ public final class TreeUtils {
     public static ExecutableElement constructor(NewClassTree tree) {
 
         if (!(tree instanceof JCTree.JCNewClass)) {
-            throw new BugInCF("constructor: not a javac internal tree");
+            throw new BugInCF("TreeUtils.constructor: not a javac internal tree");
         }
 
         JCNewClass newClassTree = (JCNewClass) tree;
@@ -967,7 +970,7 @@ public final class TreeUtils {
             Class<?> type, String methodName, ProcessingEnvironment env, String... paramTypes) {
         String typeName = type.getCanonicalName();
         if (typeName == null) {
-            throw new BugInCF("getMethod: class %s has no canonical name", type);
+            throw new BugInCF("TreeUtils.getMethod: class %s has no canonical name", type);
         }
         return getMethod(typeName, methodName, env, paramTypes);
     }
@@ -1791,6 +1794,53 @@ public final class TreeUtils {
             }
         } else {
             throw new BugInCF("caseTreeGetBody: requires at least Java 12");
+        }
+    }
+
+    /**
+     * Returns the binding variable of {@code bindingPatternTree}.
+     *
+     * @param bindingPatternTree the BindingPatternTree whose binding variable is returned
+     * @return the binding variable of {@code bindingPatternTree}
+     */
+    public static VariableTree bindingPatternTreeGetVariable(Tree bindingPatternTree) {
+        try {
+            Class<?> bindingPatternClass = Class.forName("com.sun.source.tree.BindingPatternTree");
+            Method getVariableMethod = bindingPatternClass.getMethod("getVariable");
+            VariableTree variableTree = (VariableTree) getVariableMethod.invoke(bindingPatternTree);
+            if (variableTree != null) {
+                return variableTree;
+            }
+            throw new BugInCF(
+                    "TreeUtils.bindingPatternTreeGetVariable: variable is null for tree: %s",
+                    bindingPatternTree);
+        } catch (ClassNotFoundException
+                | NoSuchMethodException
+                | InvocationTargetException
+                | IllegalAccessException e) {
+            throw new BugInCF(
+                    "TreeUtils.bindingPatternTreeGetVariable: reflection failed for tree: %s",
+                    bindingPatternTree, e);
+        }
+    }
+
+    /**
+     * Returns the pattern of {@code instanceOfTree} tree or null if the instanceof does not have a
+     * pattern.
+     *
+     * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
+     * @return the {@code PatternTree} of {@code instanceOfTree} or null if is doesn't exist
+     */
+    public static @Nullable Tree instanceOfGetPattern(InstanceOfTree instanceOfTree) {
+        try {
+            Method getPatternMethod = InstanceOfTree.class.getMethod("getPattern");
+            return (Tree) getPatternMethod.invoke(instanceOfTree);
+        } catch (NoSuchMethodException e) {
+            return null;
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new BugInCF(
+                    "TreeUtils.instanceOfGetPattern: reflection failed for tree: %s",
+                    instanceOfTree, e);
         }
     }
 

@@ -17,6 +17,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -186,6 +187,18 @@ public class MustCallTransfer extends CFTransfer {
             // Add the synthetic variable created during CFG construction to the temporary
             // variable map (rather than creating a redundant temp var)
             atypeFactory.tempVars.put(node.getTree(), node.getTernaryExpressionVar());
+        }
+        return result;
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
+            SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
+        TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+        if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+            // Add the synthetic variable created during CFG construction to the temporary
+            // variable map (rather than creating a redundant temp var)
+            atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
         }
         return result;
     }

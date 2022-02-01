@@ -398,8 +398,10 @@ defaults and type-checking warnings are issued.
 may be passed to the \<-processor> command-line argument:  the
 fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
+The argument to \refqualclass{framework/qual}{AnnotatedFor} is not an
+annotation name, but a checker name.
 Writing \<@AnnotatedFor> on a class doesn't necessarily mean that you wrote
-any annotations, but that the user examined the source code and verified
+any annotations, but that you examined the source code and verified
 that all appropriate annotations are present.
 
 \begin{sloppypar}

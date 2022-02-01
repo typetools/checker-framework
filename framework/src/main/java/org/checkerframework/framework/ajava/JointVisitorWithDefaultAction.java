@@ -34,6 +34,7 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
@@ -191,6 +192,11 @@ public abstract class JointVisitorWithDefaultAction extends JointJavacJavaParser
 
     @Override
     public void processBinary(BinaryTree javacTree, BinaryExpr javaParserNode) {
+        defaultJointAction(javacTree, javaParserNode);
+    }
+
+    @Override
+    public void processBindingPattern(Tree javacTree, PatternExpr javaParserNode) {
         defaultJointAction(javacTree, javaParserNode);
     }
 

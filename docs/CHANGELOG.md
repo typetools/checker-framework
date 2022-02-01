@@ -42,8 +42,27 @@ Checker handles ternary expressions, leading to false positives.)
 typetools #3281
 
 
+Version 3.21.2 (February 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+The `wpi.sh` script supports non-standard names for build system compile targets
+via the new `-c` command-line option.
+
+The Checker Framework now more precisely computes and checks the type of the
+pattern variable in a pattern match instanceof.
+
+**Implementation details:**
+
+Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
+
+**Closed issues:**
+#4615, #4993, #5006, #5007, #5008, #5013, #5016, #5021.
+
+
 Version 3.21.1 (January 7, 2022)
--------------------------------
+--------------------------------
 
 **User-visible changes:**
 
@@ -56,7 +75,7 @@ files.
 
 
 Version 3.21.0 (December 17, 2021)
--------------------------------
+----------------------------------
 
 **User-visible changes:**
 
@@ -73,7 +92,7 @@ was added.
 
 
 Version 3.20.0 (December 6, 2021)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -120,7 +139,7 @@ eisop#121, typetools#4923.
 
 
 Version 3.19.0 (November 1, 2021)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -153,7 +172,7 @@ Add more aliases for nullness annotations; fix manual formatting (#105).
 
 
 Version 3.18.1 (October 4, 2021)
--------------------------------
+--------------------------------
 
 **Closed issues:**
 #4902 and #4903.
@@ -180,7 +199,7 @@ Changes to `AnnotatedTypeMirror`:
 
 
 Version 3.18.0 (September 1, 2021)
--------------------------------
+----------------------------------
 
 **User-visible changes:**
 

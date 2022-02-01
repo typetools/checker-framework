@@ -35,6 +35,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -465,7 +466,12 @@ public class DependentTypesHelper {
             // standardized.
             return;
         }
-        switch (variableElt.getKind()) {
+        ElementKind variableKind = variableElt.getKind();
+        if (ElementUtils.isBindingVariable(variableElt)) {
+            // Treat binding variables the same as local variables.
+            variableKind = ElementKind.LOCAL_VARIABLE;
+        }
+        switch (variableKind) {
             case PARAMETER:
                 TreePath pathTillEnclTree =
                         TreePathUtil.pathTillOfKind(pathToVariableDecl, METHOD_OR_LAMBDA);

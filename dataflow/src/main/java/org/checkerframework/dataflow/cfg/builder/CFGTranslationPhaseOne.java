@@ -451,9 +451,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
                     Node resultNode =
                             new LambdaResultExpressionNode(
-                                    (ExpressionTree) lambdaTree.getBody(),
-                                    finalNode,
-                                    env.getTypeUtils());
+                                    (ExpressionTree) lambdaTree.getBody(), finalNode);
                     extendWithNode(resultNode);
                 }
             }
@@ -529,8 +527,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             // Must use String comparison to support compiling on JDK 11 and earlier.
             //     Features added between JDK 12 and JDK 17 inclusive.
             switch (tree.getKind().name()) {
-                    // case "BINDING_PATTERN":
-                    //  return visitBindingPattern17(path.getLeaf(), p);
+                case "BINDING_PATTERN":
+                    return visitBindingPattern17(path.getLeaf(), p);
                 case "SWITCH_EXPRESSION":
                     return visitSwitchExpression17(tree, p);
                 case "YIELD":
@@ -569,6 +567,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node res = switchBuilder.build();
         switchBuilder = oldSwitchBuilder;
         return res;
+    }
+
+    /**
+     * Visit a BindingPatternTree
+     *
+     * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
+     * @param p parameter
+     * @return the result of visiting the binding pattern tree
+     */
+    public Node visitBindingPattern17(Tree bindingPatternTree, Void p) {
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+        TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
+        Node receiver = new ImplicitThisNode(classElem.asType());
+        VariableTree varTree = TreeUtils.bindingPatternTreeGetVariable(bindingPatternTree);
+        LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
+        extendWithNode(varNode);
+        return varNode;
     }
 
     /* --------------------------------------------------------- */
@@ -3748,7 +3763,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     public Node visitInstanceOf(InstanceOfTree tree, Void p) {
         Node operand = scan(tree.getExpression(), p);
         TypeMirror refType = TreeUtils.typeOf(tree.getType());
-        InstanceOfNode node = new InstanceOfNode(tree, operand, refType, types);
+        Tree binding = TreeUtils.instanceOfGetPattern(tree);
+        LocalVariableNode bindingNode =
+                (LocalVariableNode) ((binding == null) ? null : scan(binding, p));
+
+        InstanceOfNode node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
         extendWithNode(node);
         return node;
     }

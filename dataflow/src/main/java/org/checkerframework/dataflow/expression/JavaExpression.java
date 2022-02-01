@@ -530,6 +530,9 @@ public abstract class JavaExpression {
                 }
                 return new FieldAccess(fieldAccessExpression, typeOfEle, (VariableElement) ele);
             default:
+                if (ElementUtils.isBindingVariable(ele)) {
+                    return new LocalVariable(ele);
+                }
                 throw new BugInCF(
                         "Unexpected kind of VariableTree: kind: %s element: %s",
                         ele.getKind(), ele);

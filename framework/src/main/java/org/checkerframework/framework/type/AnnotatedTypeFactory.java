@@ -4979,9 +4979,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             (AnnotatedTypeVariable) capturedTypeArg);
                 } else {
                     // Javac used a declared type instead of a captured type variable.  This seems
-                    // to happen when the bounds of the captured type variable would have been
-                    // identical. This seems to be a violation of the JLS, but javac does this, so
-                    // the Checker Framework must handle that case.
+                    // to happen
+                    // when the bounds of the captured type variable would have been identical. This
+                    // seems to
+                    // be a violation of the JLS, but javac does this, so the Checker Framework must
+                    // handle
+                    // that case. (See https://bugs.openjdk.java.net/browse/JDK-8054309.)
                     replaceAnnotations(
                             ((AnnotatedWildcardType) uncapturedTypeArg).getSuperBound(),
                             capturedTypeArg);
