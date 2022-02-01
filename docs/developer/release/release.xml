@@ -27,11 +27,11 @@
 
     <target name="update-checker-framework-versions" description="updates version info in Checker Framework documents and build configs">
 
-        <fail unless="checker"            message="checker property is not set!"   />
+        <fail unless="checker"             message="checker property is not set!"   />
         <fail unless="release.ver"         message="release.ver property is not set!"/>
         <fail unless="afu.properties"      message="afu.properties property is not set!"/>
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
-        <fail unless="afu.version"    message="afu.version not set"/>
+        <fail unless="afu.version"         message="afu.version not set"/>
 
         <property name="cf.docs"             value="${checker}/../docs"                      />
         <property name="checker.manual"      value="${cf.docs}/manual"                       />
@@ -194,7 +194,7 @@
     </target>
 
     <target name="zip-maven-examples" description="Create a zip archive for the directory checker/examples/MavenExample.">
-        <fail unless="checker"    message="checker property is not set!" />
+        <fail unless="checker"     message="checker property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version is not set!" />
@@ -224,10 +224,10 @@
         <property name="cf.docs"          value="${checker}/../docs" />
         <property name="checker.manual"   value="${cf.docs}/manual" />
         <property name="checker.logo"     value="${cf.docs}/logo" />
-        <property name="developer.dir"   value="${cf.docs}/developer" />
+        <property name="developer.dir"    value="${cf.docs}/developer" />
         <property name="dataflow.manual"  value="${checker}/../dataflow/manual" />
         <property name="checker.tutorial" value="${cf.docs}/tutorial" />
-        <property name="dest.dir.manual"         value="${dest.dir}/manual" />
+        <property name="dest.dir.manual"  value="${dest.dir}/manual" />
         <property name="web.root"         value="${dest.dir}/../.." />
 
         <copy file="${cf.docs}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
