@@ -852,7 +852,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         processInstanceOf(javacTree, node);
         javacTree.getExpression().accept(this, node.getExpression());
         if (node.getPattern().isPresent()) {
-            Tree bindingPattern = TreeUtils.instanceOfGetPattern(javacTree);
+            Tree bindingPattern = TreeUtils.instanceOfTreeGetPattern(javacTree);
             visitBindingPattern17(bindingPattern, node.getPattern().get());
         } else {
             javacTree.getType().accept(this, node.getType());
