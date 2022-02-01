@@ -1,4 +1,4 @@
-Version 3.2?.? (February 1, 2022)
+Version 3.21.2 (February 1, 2022)
 ---------------------------------
 
 **User-visible changes:**
@@ -14,7 +14,7 @@ pattern variable in a pattern match instanceof.
 Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
 
 **Closed issues:**
-
+#4615, #4993, #5006, #5007, #5008, #5013, #5016, #5021.
 
 Version 3.21.1 (January 7, 2022)
 --------------------------------
