@@ -597,9 +597,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                         AnnotatedTypeVariable capturedTypeVar =
                                 (AnnotatedTypeVariable) captureTypeArg;
                         // Substitute the captured type variables with their wildcards. Without
-                        // this, the
-                        // isSubtype check crashes because wildcards aren't comparable with type
-                        // variables.
+                        // this, the isSubtype check crashes because wildcards aren't comparable
+                        // with type variables.
                         AnnotatedTypeMirror catpureTypeVarUB =
                                 atypeFactory
                                         .getTypeVarSubstitutor()
@@ -618,17 +617,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                         }
                     } else if (AnnotatedTypes.isExplicitlySuperBounded(wildcard)) {
                         // If the super bound of the wildcard is the same as the upper bound of the
-                        // type
-                        // parameter, then javac uses the bound rather than creating a fresh type
-                        // variable.
+                        // type parameter, then javac uses the bound rather than creating a fresh
+                        // type variable.
                         // (See https://bugs.openjdk.java.net/browse/JDK-8054309.)
                         // In this case, the Checker Framework uses the annotations on the super
-                        // bound of the
-                        // wildcard and ignores the annotations on the extends bound. So, issue a
-                        // warning if
-                        // the annotations on the extends bound are not the same as the annotations
-                        // on the super
-                        // bound.
+                        // bound of the wildcard and ignores the annotations on the extends bound.
+                        // So, issue a warning if the annotations on the extends bound are not the
+                        // same as the annotations on the super bound.
                         if (!(atypeFactory
                                         .getQualifierHierarchy()
                                         .isSubtype(
