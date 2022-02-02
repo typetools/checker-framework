@@ -1,3 +1,12 @@
+Version 3.21.2 (March 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
 Version 3.21.2 (February 1, 2022)
 ---------------------------------
 
