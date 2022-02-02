@@ -1,5 +1,5 @@
-Version 3.21.2-eisop-1 (February 1, 2022)
--------------------------------
+Version 3.21.2-eisop1 (February 2, 2022)
+----------------------------------------
 
 **User-visible changes:**
 
@@ -118,8 +118,8 @@ Removed methods and classes that have been deprecated for more than one year:
 #4911, #4948, #4965.
 
 
-Version 3.19.0-eisop-1 (November 4, 2021)
--------------------------------
+Version 3.19.0-eisop1 (November 4, 2021)
+----------------------------------------
 
 **User-visible changes:**
 
@@ -163,8 +163,8 @@ Deprecated methods in AnnotatedTypeFactory:
 #4932, #4924, #4908, #3014.
 
 
-Version 3.18.1-eisop-1 (October 7, 2021)
--------------------------------
+Version 3.18.1-eisop1 (October 7, 2021)
+---------------------------------------
 
 **User-visible changes:**
 
@@ -179,7 +179,7 @@ Version 3.18.1 (October 4, 2021)
 
 
 Version 3.18.0-eisop1 (September 23, 2021)
---------------------------------------
+------------------------------------------
 
 The new `-AnoJreVersionCheck` command-line argument can be used to not get
 a warning about running the Checker Framework on an unsupported JRE version.
