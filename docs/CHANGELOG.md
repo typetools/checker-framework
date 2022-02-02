@@ -1,4 +1,4 @@
-Version 3.21.1-eisop-1 (February ?, 2022)
+Version 3.21.2-eisop-1 (February 1, 2022)
 -------------------------------
 
 **User-visible changes:**
@@ -39,7 +39,7 @@ variables for ternary expressions to the CFG. This broke how the Nullness
 Checker handles ternary expressions, leading to false positives.)
 
 **Closed issues:**
-typetools #3281
+typetools#3281.
 
 
 Version 3.21.2 (February 1, 2022)
