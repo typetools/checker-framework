@@ -253,7 +253,7 @@ This section describes how to create an annotated library.
     Add a line in its main README to indicate that this is an annotated
     version of the library.  That line should also indicate how to obtain
     the corresponding upstream version (typically a git tag
-    \ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#annotated-library-version-numbers}{corresponding
+    \ahref{https://checkerframework.org/manual/developer-manual.html#annotated-library-version-numbers}{corresponding
       to a release}), so that others can see exactly what edits you have
     made.
 
@@ -398,8 +398,10 @@ defaults and type-checking warnings are issued.
 may be passed to the \<-processor> command-line argument:  the
 fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
+The argument to \refqualclass{framework/qual}{AnnotatedFor} is not an
+annotation name, but a checker name.
 Writing \<@AnnotatedFor> on a class doesn't necessarily mean that you wrote
-any annotations, but that the user examined the source code and verified
+any annotations, but that you examined the source code and verified
 that all appropriate annotations are present.
 
 \begin{sloppypar}

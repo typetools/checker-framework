@@ -216,7 +216,7 @@ public abstract class CFAbstractTransfer<
 
   /** The initial store maps method formal parameters to their currently most refined type. */
   @Override
-  public S initialStore(UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
+  public S initialStore(UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
     if (underlyingAST.getKind() != UnderlyingAST.Kind.LAMBDA
         && underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
       if (fixedInitialStore != null) {
@@ -967,6 +967,15 @@ public abstract class CFAbstractTransfer<
           in.getRegularStore().insertOrRefine(expr, anno);
         }
         return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
+      }
+    }
+    // TODO: Should this be an else if?
+    if (node.getBindingVariable() != null) {
+      JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
+      AnnotatedTypeMirror expType =
+          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+      for (AnnotationMirror anno : expType.getAnnotations()) {
+        in.getRegularStore().insertOrRefine(expr, anno);
       }
     }
     return result;

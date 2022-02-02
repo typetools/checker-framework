@@ -224,6 +224,7 @@
         <property name="cf.docs"          value="${checker}/../docs" />
         <property name="checker.manual"   value="${cf.docs}/manual" />
         <property name="checker.logo"     value="${cf.docs}/logo" />
+        <property name="developer.dir"   value="${cf.docs}/developer" />
         <property name="dataflow.manual"  value="${checker}/../dataflow/manual" />
         <property name="checker.tutorial" value="${cf.docs}/tutorial" />
         <property name="dest.dir.manual"         value="${dest.dir}/manual" />
@@ -238,6 +239,8 @@
         <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir.manual}/${manual.name}.pdf"/>
 
         <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir.manual}/${dataflow.manual.name}.pdf" failonerror="false"/>
+        <copy file="${developer.dir}/developer-manual.html"  tofile="${dest.dir.manual}/developer-manual.html" failonerror="false"/>
+        <copy file="${developer.dir}/gsoc-ideas.html"  tofile="${dest.dir.manual}/gsoc-ideas.html" failonerror="false"/>
 
         <copy todir="${dest.dir.manual}" flatten="true">
             <fileset dir="${checker.manual}">

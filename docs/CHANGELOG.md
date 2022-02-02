@@ -1,5 +1,5 @@
-Version 3.2?.? (February 1, 2022)
--------------------------------
+Version 3.21.2 (March 1, 2022)
+---------------------------------
 
 **User-visible changes:**
 
@@ -7,9 +7,26 @@ Version 3.2?.? (February 1, 2022)
 
 **Closed issues:**
 
+Version 3.21.2 (February 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+The `wpi.sh` script supports non-standard names for build system compile targets
+via the new `-c` command-line option.
+
+The Checker Framework now more precisely computes and checks the type of the
+pattern variable in a pattern match instanceof.
+
+**Implementation details:**
+
+Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
+
+**Closed issues:**
+#4615, #4993, #5006, #5007, #5008, #5013, #5016, #5021.
 
 Version 3.21.1 (January 7, 2022)
--------------------------------
+--------------------------------
 
 **User-visible changes:**
 
@@ -22,7 +39,7 @@ files.
 
 
 Version 3.21.0 (December 17, 2021)
--------------------------------
+----------------------------------
 
 **User-visible changes:**
 
@@ -38,7 +55,7 @@ was added.
 #2373, #4934, #4977, #4979, #4987.
 
 Version 3.20.0 (December 6, 2021)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -65,7 +82,7 @@ Removed methods and classes that have been deprecated for more than one year:
 
 
 Version 3.19.0 (November 1, 2021)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -90,14 +107,14 @@ Deprecated methods in AnnotatedTypeFactory:
 
 
 Version 3.18.1 (October 4, 2021)
--------------------------------
+--------------------------------
 
 **Closed issues:**
 #4902 and #4903.
 
 
 Version 3.18.0 (September 1, 2021)
--------------------------------
+----------------------------------
 
 **User-visible changes:**
 

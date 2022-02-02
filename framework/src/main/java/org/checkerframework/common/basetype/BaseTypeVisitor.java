@@ -78,7 +78,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -2384,20 +2383,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   @Override
-  public Void visitInstanceOf(InstanceOfTree node, Void p) {
+  public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
-    Tree refTypeTree = node.getType();
-    validateTypeOf(refTypeTree);
-    if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-      AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
-      AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(node.getExpression());
-      if (!refType.hasAnnotation(NonNull.class)
-          && atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
-          && !refType.getAnnotations().equals(expType.getAnnotations())) {
-        checker.reportWarning(node, "instanceof.unsafe", expType, refType);
+    Tree patternTree = TreeUtils.instanceOfGetPattern(tree);
+    if (patternTree != null) {
+      VariableTree variableTree = TreeUtils.bindingPatternTreeGetVariable(patternTree);
+      validateTypeOf(variableTree);
+      if (variableTree.getModifiers() != null) {
+        AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+        AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
+        if (!atypeFactory.getTypeHierarchy().isSubtype(expType, variableType)) {
+          checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
+        }
+      }
+    } else {
+      Tree refTypeTree = tree.getType();
+      validateTypeOf(refTypeTree);
+      if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+        AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
+        AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
+        if (atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
+            && !refType.getAnnotations().equals(expType.getAnnotations())) {
+          checker.reportWarning(tree, "instanceof.unsafe", expType, refType);
+        }
       }
     }
-    return super.visitInstanceOf(node, p);
+
+    return super.visitInstanceOf(tree, p);
   }
 
   /**

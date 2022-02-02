@@ -462,8 +462,9 @@ public class AnnotationFileElementTypes {
           // if there is no accessor in the stubs file:
           RecordComponentStub recordComponentStub =
               recordComponentType.componentsByName.get(elt.getSimpleName().toString());
-          if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs())
+          if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs()) {
             replaceAnnotations(memberType.getReturnType(), recordComponentStub.type);
+          }
         }
       }
     } else if (elt.getKind() == ElementKind.CONSTRUCTOR) {

@@ -7,9 +7,9 @@ public class SameTypeBounds {
   static class MyGen<T> {}
 
   void test1(MyGen<Object> p) {
-    // TODO: error: invalid type
     // The upper and lower bound must have the same annotation because the bounds are collasped
     // during capture conversion.
+    // :: error: (super.wildcard)
     MyGen<? super Object> o = p;
     // :: error: (assignment)
     p = o;
@@ -35,8 +35,9 @@ public class SameTypeBounds {
 
   class Gen<E extends MyClass> {}
 
+  // :: error: (super.wildcard)
   void test3(Gen<MyClass> p, Gen<? super MyClass> p2) {
-    // TODO: error: invalid type
+    // :: error: (super.wildcard)
     Gen<? super MyClass> o = p;
     o = p2;
     // :: error: (assignment)
