@@ -2392,7 +2392,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (variableTree.getModifiers() != null) {
         AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-        if (!atypeFactory.getTypeHierarchy().isSubtype(expType, variableType)) {
+        if (!isTypeCastSafe(variableType, expType)) {
           checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
         }
       }
