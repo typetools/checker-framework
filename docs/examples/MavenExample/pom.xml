@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.checkerframework</groupId>
+  <groupId>io.github.eisop</groupId>
   <artifactId>MavenExample</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -26,8 +26,7 @@
     </dependency>
     <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
-      <!-- After next release, then: io.github.eisop -->
-      <groupId>org.checkerframework</groupId>
+      <groupId>io.github.eisop</groupId>
       <artifactId>checker-qual</artifactId>
       <version>${checkerFrameworkVersion}</version>
     </dependency>
@@ -90,8 +89,7 @@
               </compilerArguments>
               <annotationProcessorPaths>
                 <path>
-                  <!-- Until next release, then: io.github.eisop -->
-                  <groupId>org.checkerframework</groupId>
+                  <groupId>io.github.eisop</groupId>
                   <artifactId>checker</artifactId>
                   <version>${checkerFrameworkVersion}</version>
                 </path>
@@ -109,7 +107,7 @@
       </build>
       <dependencies>
         <dependency>
-          <groupId>org.checkerframework</groupId>
+          <groupId>io.github.eisop</groupId>
           <artifactId>checker</artifactId>
           <version>${checkerFrameworkVersion}</version>
         </dependency>

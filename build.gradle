@@ -107,7 +107,7 @@ allprojects {
     apply plugin: 'de.undercouch.download'
     apply plugin: 'net.ltgt.errorprone'
 
-    group 'org.checkerframework'
+    group 'io.github.eisop'
 
     // Increment the minor version (second number) rather than just the patch
     // level (third number) if:
