@@ -586,12 +586,12 @@ def main(argv):
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
             + "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
-            + "Make a pull request to the Checker Framework that\n"
+        )
+        continue_or_exit(
+            "Make a pull request to the Checker Framework that\n"
             + "updates the version number of the Checker Framework"
-            + "Gradle Plugin in docs/example/lombok and docs/example/errorprone\n"
-            + "to the new version. Do not wait until the Gradle plugin\n"
-            + "has been released. Instead, make the pull request right\n"
-            + "away even though the tests will fail."
+            + "Gradle Plugin in docs/example/lombok and docs/example/errorprone .\n"
+            + "The pull request's tests will fail; you will merge it in a day."
         )
 
         print_step("Push Step 14. Prep for next Checker Framework release.")  # MANUAL
