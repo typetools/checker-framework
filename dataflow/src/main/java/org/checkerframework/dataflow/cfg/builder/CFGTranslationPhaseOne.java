@@ -46,6 +46,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1512,9 +1513,38 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return nearest owner element of current tree
    */
   private Element findOwner() {
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-    if (enclosingMethod != null) {
-      return TreeUtils.elementFromDeclaration(enclosingMethod);
+    Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
+    if (enclosingMethodOrLambda != null) {
+      if (enclosingMethodOrLambda.getKind() == Kind.METHOD) {
+        return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
+      } else {
+        // The current path is in a lambda tree.  In this case the owner is either a method or
+        // an initializer block.
+        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
+        if (!lambdaTree.getParameters().isEmpty()) {
+          // If there is a lambda parameter, just us the same owner.
+          return TreeUtils.elementFromDeclaration(lambdaTree.getParameters().get(0))
+              .getEnclosingElement();
+        }
+        // If there are no lambda parameters then if the lambda is enclosed in a method, that's the
+        // owner.
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+        if (enclosingMethod != null) {
+          return TreeUtils.elementFromDeclaration(enclosingMethod);
+        }
+
+        // If the lambda is not enclosed in a method, then the owner should be a constructor. javac
+        // seems to use the last constructor in the list.
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+        TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
+        ExecutableElement constructor = null;
+        for (Element enclosing : typeElement.getEnclosedElements()) {
+          if (enclosing.getKind() == ElementKind.CONSTRUCTOR) {
+            constructor = (ExecutableElement) enclosing;
+          }
+        }
+        return constructor;
+      }
     } else {
       ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
       return TreeUtils.elementFromDeclaration(enclosingClass);
