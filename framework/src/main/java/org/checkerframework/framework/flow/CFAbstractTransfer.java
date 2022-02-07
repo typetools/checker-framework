@@ -318,15 +318,15 @@ public abstract class CFAbstractTransfer<
         // Find any enclosing element of the lambda (using trees).
         // Then go up the elements to find an initializer element (which can't be found with the
         // tree).
-        TreePath loopPath = factory.getPath(lambda.getLambdaTree()).getParentPath();
+        TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
         Element anEnclosingElement = null;
-        while (loopPath.getLeaf() != enclosingTree) {
-          Element sym = TreeUtils.elementFromTree(loopPath.getLeaf());
+        while (loopTree.getLeaf() != enclosingTree) {
+          Element sym = TreeUtils.elementFromTree(loopTree.getLeaf());
           if (sym != null) {
             anEnclosingElement = sym;
             break;
           }
-          loopPath = loopPath.getParentPath();
+          loopTree = loopTree.getParentPath();
         }
         while (anEnclosingElement != null
             && !anEnclosingElement.equals(TreeUtils.elementFromTree(enclosingTree))) {
