@@ -1508,7 +1508,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Find nearest owner element(Method or Class) which holds current tree.
+   * Find nearest owner element (Method or Class) which holds current tree.
    *
    * @return nearest owner element of current tree
    */
@@ -1522,7 +1522,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // an initializer block.
         LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
         if (!lambdaTree.getParameters().isEmpty()) {
-          // If there is a lambda parameter, just us the same owner.
+          // If there is a lambda parameter, use the same owner.
           return TreeUtils.elementFromDeclaration(lambdaTree.getParameters().get(0))
               .getEnclosingElement();
         }
@@ -1534,7 +1534,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         // If the lambda is not enclosed in a method, then the owner should be a constructor. javac
-        // seems to use the last constructor in the list. (If the lambda is in a initializer of a
+        // seems to use the last constructor in the list. (If the lambda is in an initializer of a
         // static field then the owner should be a static initializer block, but there doesn't seem
         // to be a way to get a reference to the static initializer element.)
         ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
