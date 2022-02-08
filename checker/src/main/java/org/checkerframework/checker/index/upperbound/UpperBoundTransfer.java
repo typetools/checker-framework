@@ -110,10 +110,10 @@ import javax.lang.model.type.TypeMirror;
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     /** The type factory associated with this transfer function. */
-    private UpperBoundAnnotatedTypeFactory atypeFactory;
+    private final UpperBoundAnnotatedTypeFactory atypeFactory;
 
     /** The int TypeMirror. */
-    TypeMirror intTM;
+    private final TypeMirror intTM;
 
     /**
      * Creates a new UpperBoundTransfer.

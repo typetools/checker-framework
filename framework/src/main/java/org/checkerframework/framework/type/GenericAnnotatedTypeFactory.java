@@ -343,6 +343,7 @@ public abstract class GenericAnnotatedTypeFactory<
         this.initializationStaticStore = null;
 
         this.cfgVisualizer = createCFGVisualizer();
+        this.handleCFGViz = checker.hasOption("flowdotdir") || checker.hasOption("cfgviz");
 
         if (shouldCache) {
             int cacheSize = getCacheSize();
@@ -1588,13 +1589,16 @@ public abstract class GenericAnnotatedTypeFactory<
         handleCFGViz(cfg);
     }
 
+    /** Whether handling CFG visualization is necessary. */
+    private final boolean handleCFGViz;
+
     /**
      * Handle the visualization of the CFG, if necessary.
      *
      * @param cfg the CFG
      */
     protected void handleCFGViz(ControlFlowGraph cfg) {
-        if (checker.hasOption("flowdotdir") || checker.hasOption("cfgviz")) {
+        if (handleCFGViz) {
             getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), analysis);
         }
     }

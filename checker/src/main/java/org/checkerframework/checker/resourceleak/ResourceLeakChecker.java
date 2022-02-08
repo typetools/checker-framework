@@ -36,13 +36,13 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
      * The number of expressions with must-call obligations that were checked. Incremented only if
      * the {@link #COUNT_MUST_CALL} command-line option was supplied.
      */
-    int numMustCall = 0;
+    /*package-private*/ int numMustCall = 0;
 
     /**
      * The number of must-call-related errors issued. The count of verified must-call expressions is
      * the difference between this and {@link #numMustCall}.
      */
-    int numMustCallFailed = 0;
+    private int numMustCallFailed = 0;
 
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {

@@ -350,7 +350,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type annotated type mirror
      */
-    public void initializeAtm(AnnotatedTypeMirror type) {
+    /*package-private*/ void initializeAtm(AnnotatedTypeMirror type) {
         atmInitializer.visit(type);
     }
 
@@ -5266,6 +5266,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     new IdentityHashMap<>();
             visit(type.getLowerBound(), mapping);
             visit(type.getUpperBound(), mapping);
+            this.capturedTypeVarToAnnotatedTypeVar = null;
         }
 
         @Override
@@ -5344,7 +5345,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
     /** Matches a string whose only parens are at the beginning and end of the string. */
-    private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+    private static final Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
 
     /**
      * Given an expression, split it into a subexpression and a constant offset. For example:
