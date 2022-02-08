@@ -662,6 +662,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
       return;
     }
+
+    // If the rhsATM and the lhsATM have different kinds (which can happen e.g. when
+    // an array type is substituted for a type parameter), do not attempt to update
+    // the inferred type, because this method is written with the assumption
+    // that rhsATM and lhsATM are the same kind.
+    if (rhsATM.getKind() != lhsATM.getKind()) {
+      return;
+    }
+
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
     updateAtmWithLub(rhsATM, atmFromStorage);

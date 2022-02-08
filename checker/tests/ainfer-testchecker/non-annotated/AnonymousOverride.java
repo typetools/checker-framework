@@ -4,11 +4,12 @@
 class AnonymousOverride {
   public static void main(String[] args) {
     (new SpecialThread<String>() {
-      @Override
-      public void run() {
-        System.out.println("starting a thread!");
-      }
-    }).start();
+          @Override
+          public void run() {
+            System.out.println("starting a thread!");
+          }
+        })
+        .start();
   }
 
   private static class SpecialThread<T extends Object> extends Thread {
