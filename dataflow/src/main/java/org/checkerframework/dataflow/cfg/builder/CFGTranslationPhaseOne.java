@@ -1534,7 +1534,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         // If the lambda is not enclosed in a method, then the owner should be a constructor. javac
-        // seems to use the last constructor in the list.
+        // seems to use the last constructor in the list. (If the lambda is in a initializer of a
+        // static field then the owner should be a static initializer block, but there doesn't seem
+        // to be a way to get a reference to the static initializer element.)
         ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
         TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
         ExecutableElement constructor = null;
