@@ -1,3 +1,20 @@
+Version 3.21.2-eisop2 (February ?, 2022)
+----------------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Changed `AnnotatedTypeFactory.initializeAtm` from public to package
+private visibility. Nobody outside the package should call this method.
+
+Changed `CFAbstractTransfer.insertIntoStores` from public to protected
+visibility. It is only meant as a utility method for use within a
+transfer function.
+
+**Closed issues:**
+
+
 Version 3.21.2-eisop1 (February 2, 2022)
 ----------------------------------------
 

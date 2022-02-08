@@ -86,7 +86,7 @@ public abstract class UBQualifier {
     }
 
     /** A cache for the {@link #nCopiesEmptyStringCache} method. */
-    private static List<List<String>> nCopiesEmptyStringCache = new ArrayList<>(10);
+    private static final List<List<String>> nCopiesEmptyStringCache = new ArrayList<>(10);
 
     static {
         nCopiesEmptyStringCache.add(Collections.emptyList());
@@ -1264,7 +1264,7 @@ public abstract class UBQualifier {
         }
 
         /** Functional interface that operates on {@link OffsetEquation}s. */
-        interface OffsetEquationFunction {
+        private interface OffsetEquationFunction {
             /**
              * Returns the result of the computation or null if the passed equation should be
              * removed.
@@ -1314,11 +1314,12 @@ public abstract class UBQualifier {
     public static class UpperBoundLiteralQualifier extends UBQualifier {
 
         /** Represents the value -1. */
-        public static UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
+        public static final UpperBoundLiteralQualifier NEGATIVEONE =
+                new UpperBoundLiteralQualifier(-1);
         /** Represents the value 0. */
-        public static UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
+        public static final UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
         /** Represents the value 1. */
-        public static UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
+        public static final UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
 
         /**
          * Creates a new UpperBoundLiteralQualifier, without using cached values.
@@ -1349,14 +1350,14 @@ public abstract class UBQualifier {
         }
 
         /** The integer value. */
-        int value;
+        private final int value;
 
         /**
          * Returns the integer value.
          *
          * @return the integer value
          */
-        int getValue() {
+        public int getValue() {
             return value;
         }
 
@@ -1407,7 +1408,7 @@ public abstract class UBQualifier {
     /** The top type qualifier. */
     public static class UpperBoundUnknownQualifier extends UBQualifier {
         /** The canonical representative. */
-        static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
+        public static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
         /** This class is a singleton. */
         private UpperBoundUnknownQualifier() {}
@@ -1438,8 +1439,13 @@ public abstract class UBQualifier {
         }
     }
 
+    /** The bottom qualifier. */
     private static class UpperBoundBottomQualifier extends UBQualifier {
-        static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
+        /** The canonical representative. */
+        public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
+
+        /** This class is a singleton. */
+        private UpperBoundBottomQualifier() {}
 
         @Override
         public boolean isBottom() {
@@ -1467,8 +1473,12 @@ public abstract class UBQualifier {
         }
     }
 
+    /** The polymorphic qualifier. */
     private static class PolyQualifier extends UBQualifier {
-        static final UBQualifier POLY = new PolyQualifier();
+        public static final UBQualifier POLY = new PolyQualifier();
+
+        /** This class is a singleton. */
+        private PolyQualifier() {}
 
         @Override
         @Pure

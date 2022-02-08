@@ -1375,7 +1375,7 @@ public abstract class CFAbstractTransfer<
      * @param target the receiver whose value should be modified
      * @param newAnno the new value
      */
-    public static void insertIntoStores(
+    protected static void insertIntoStores(
             TransferResult<CFValue, CFStore> result,
             JavaExpression target,
             AnnotationMirror newAnno) {

@@ -16,7 +16,7 @@ import java.util.Map;
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
     /** Information about variables gathered so far. */
-    Map<Node, Constant> contents;
+    private final Map<Node, Constant> contents;
 
     /** Creates a new ConstantPropagationStore. */
     public ConstantPropagationStore() {
@@ -146,14 +146,14 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     @Override
     public String toString() {
         // only output local variable information
-        Map<Node, Constant> contentsWithoutLocalVars =
+        Map<Node, Constant> contentsLocalVars =
                 new LinkedHashMap<>(CollectionsPlume.mapCapacity(contents));
         for (Map.Entry<Node, Constant> e : contents.entrySet()) {
             if (e.getKey() instanceof LocalVariableNode) {
-                contentsWithoutLocalVars.put(e.getKey(), e.getValue());
+                contentsLocalVars.put(e.getKey(), e.getValue());
             }
         }
-        return contentsWithoutLocalVars.toString();
+        return contentsLocalVars.toString();
     }
 
     @Override
