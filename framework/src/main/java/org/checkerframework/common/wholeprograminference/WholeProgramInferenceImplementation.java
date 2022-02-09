@@ -668,7 +668,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // the inferred type, because this method is written with the assumption
     // that rhsATM and lhsATM are the same kind.
     if (rhsATM.getKind() != lhsATM.getKind()) {
-      return;
+      // The one difference in kinds situation that this method can account for is the RHS being
+      // a literal null expression.
+      if (!(rhsATM instanceof AnnotatedNullType)) {
+        return;
+      }
     }
 
     AnnotatedTypeMirror atmFromStorage =
