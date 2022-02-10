@@ -122,9 +122,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(node)) {
-          if (leftOpType.hasAnnotation(Unsigned.class)) {
+          if (!atypeFactory
+              .getQualifierHierarchy()
+              .isSubtype(leftOpType.getAnnotation(), atypeFactory.SIGNED)) {
             checker.reportError(leftOp, "unsigned.concat");
-          } else if (rightOpType.hasAnnotation(Unsigned.class)) {
+          } else if (!atypeFactory
+              .getQualifierHierarchy()
+              .isSubtype(rightOpType.getAnnotation(), atypeFactory.SIGNED)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
@@ -231,7 +235,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(node)) {
-          if (exprType.hasAnnotation(Unsigned.class)) {
+          if (!atypeFactory
+              .getQualifierHierarchy()
+              .isSubtype(exprType.getAnnotation(), atypeFactory.SIGNED)) {
             checker.reportError(node.getExpression(), "unsigned.concat");
           }
           break;

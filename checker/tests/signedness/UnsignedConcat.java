@@ -1,7 +1,9 @@
 import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public class UnsignedConcat {
+  @UnknownSignedness int unknown = -3;
   @Unsigned short unsignedShort = -2;
   @Unsigned int unsignedInt = -2;
   @Signed short signedShort = -2;
@@ -18,6 +20,9 @@ public class UnsignedConcat {
     String s2b = "" + unsignedInt + "";
     String s3 = "" + signedShort;
     String s4 = "" + signedInt;
+    // :: error: (unsigned.concat)
+    String s5 = "" + unknown;
+    String s6 = "" + -1;
   }
 
   void test2(String s) {
@@ -27,5 +32,8 @@ public class UnsignedConcat {
     s += +unsignedInt;
     s += "" + signedShort;
     s += signedInt;
+    // :: error: (unsigned.concat)
+    s += unknown;
+    s += 9;
   }
 }
