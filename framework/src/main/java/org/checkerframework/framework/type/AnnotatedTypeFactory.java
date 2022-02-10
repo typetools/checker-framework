@@ -4646,11 +4646,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.typeVariablesFromUse(
             functionalType, (TypeElement) functionalType.getUnderlyingType().asElement());
 
-    List<AnnotatedTypeMirror> newTypeArguments = new ArrayList<>(functionalType.getTypeArguments());
     boolean sizesDiffer =
         functionalType.getTypeArguments().size() != groundTargetJavaType.getTypeArguments().size();
-
+    DeclaredType declaredType =
+        (DeclaredType) functionalType.getUnderlyingType().asElement().asType();
+    Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg =
+        new HashMap<>(functionalType.getTypeArguments().size());
     for (int i = 0; i < functionalType.getTypeArguments().size(); i++) {
+      TypeVariable typeVariable = (TypeVariable) declaredType.getTypeArguments().get(i);
       AnnotatedTypeMirror argType = functionalType.getTypeArguments().get(i);
       if (argType.getKind() == TypeKind.WILDCARD) {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
@@ -4660,7 +4663,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (wildcardType.isUninferredTypeArgument()) {
           // Keep the uninferred type so that it is ignored by later subtyping and containment
           // checks.
-          newTypeArguments.set(i, wildcardType);
+          typeVarToTypeArg.put(typeVariable, wildcardType);
         } else if (isExtendsWildcard(wildcardType)) {
           TypeMirror correctArgType;
           if (sizesDiffer) {
@@ -4689,18 +4692,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             newArg = this.toAnnotatedType(correctArgType, false);
             newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
           }
-          newTypeArguments.set(i, newArg);
+
+          typeVarToTypeArg.put(typeVariable, newArg);
         } else {
-          newTypeArguments.set(i, wildcardType.getSuperBound());
+          typeVarToTypeArg.put(typeVariable, wildcardType.getSuperBound());
         }
+      } else {
+        typeVarToTypeArg.put(typeVariable, argType);
       }
     }
-    functionalType.setTypeArguments(newTypeArguments);
+    AnnotatedDeclaredType newFunc =
+        (AnnotatedDeclaredType)
+            AnnotatedTypeMirror.createType(declaredType, this, functionalType.isDeclaration());
+    initializeAtm(newFunc);
+    newFunc = (AnnotatedDeclaredType) getTypeVarSubstitutor().substitute(typeVarToTypeArg, newFunc);
+    newFunc.addAnnotations(functionalType.getAnnotations());
 
     // When the groundTargetJavaType is different from the underlying type of functionalType, only
     // the main annotations are copied.  Add default annotations in places without annotations.
-    addDefaultAnnotations(functionalType);
-    return functionalType;
+    addDefaultAnnotations(newFunc);
+    return newFunc;
   }
 
   /**
