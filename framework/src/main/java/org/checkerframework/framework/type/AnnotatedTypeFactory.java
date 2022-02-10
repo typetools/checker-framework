@@ -4648,6 +4648,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     boolean sizesDiffer =
         functionalType.getTypeArguments().size() != groundTargetJavaType.getTypeArguments().size();
+
+    // This is the declared type of the functional type meaning that the type arguments are the
+    // type parameters.
     DeclaredType declaredType =
         (DeclaredType) functionalType.getUnderlyingType().asElement().asType();
     Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg =
@@ -4701,17 +4704,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         typeVarToTypeArg.put(typeVariable, argType);
       }
     }
-    AnnotatedDeclaredType newFunc =
+
+    // The ground functional type must be created using type variable substitution or else the
+    // underlying type will not match the annotated type.
+    AnnotatedDeclaredType groundFunctionalType =
         (AnnotatedDeclaredType)
             AnnotatedTypeMirror.createType(declaredType, this, functionalType.isDeclaration());
-    initializeAtm(newFunc);
-    newFunc = (AnnotatedDeclaredType) getTypeVarSubstitutor().substitute(typeVarToTypeArg, newFunc);
-    newFunc.addAnnotations(functionalType.getAnnotations());
+    initializeAtm(groundFunctionalType);
+    groundFunctionalType =
+        (AnnotatedDeclaredType)
+            getTypeVarSubstitutor().substitute(typeVarToTypeArg, groundFunctionalType);
+    groundFunctionalType.addAnnotations(functionalType.getAnnotations());
 
     // When the groundTargetJavaType is different from the underlying type of functionalType, only
     // the main annotations are copied.  Add default annotations in places without annotations.
-    addDefaultAnnotations(newFunc);
-    return newFunc;
+    addDefaultAnnotations(groundFunctionalType);
+    return groundFunctionalType;
   }
 
   /**
