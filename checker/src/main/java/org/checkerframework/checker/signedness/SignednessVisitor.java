@@ -11,6 +11,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -119,6 +120,17 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         }
         break;
 
+      case PLUS:
+        if (TreeUtils.isStringConcatenation(node)) {
+          if (leftOpType.hasAnnotation(Unsigned.class)) {
+            checker.reportError(leftOp, "unsigned.concat");
+          } else if (rightOpType.hasAnnotation(Unsigned.class)) {
+            checker.reportError(rightOp, "unsigned.concat");
+          }
+          break;
+        }
+        // Other plus binary trees should be handled in the default case.
+        // fall through
       default:
         if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
           checker.reportError(node, "operation.mixed.unsignedlhs", kind, leftOpType, rightOpType);
@@ -217,6 +229,15 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
       case LEFT_SHIFT_ASSIGNMENT:
         break;
 
+      case PLUS_ASSIGNMENT:
+        if (TreeUtils.isStringCompoundConcatenation(node)) {
+          if (exprType.hasAnnotation(Unsigned.class)) {
+            checker.reportError(node.getExpression(), "unsigned.concat");
+          }
+          break;
+        }
+        // Other plus binary trees should be handled in the default case.
+        // fall through
       default:
         if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
           checker.reportError(
