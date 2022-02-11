@@ -111,13 +111,11 @@ public class DefaultsSignedness {
     conLong = testLong;
 
     // Test floats
-    // :: error: (anno.on.irrelevant)
     @Signed float sinFloat;
 
     sinFloat = testFloat;
 
     // Test doubles
-    // :: error: (anno.on.irrelevant)
     @Signed double sinDouble;
 
     sinDouble = testDouble;
@@ -173,12 +171,12 @@ public class DefaultsSignedness {
   public void UnknownSignedness(Object testObj, @Unsigned int unsigned, @Signed int signed) {
 
     @UnknownSignedness Object unkObj;
-    @Signed Object sinObj;
+    @Unsigned Object unsinObj;
 
     unkObj = testObj;
 
     // :: error: (assignment)
-    sinObj = testObj;
+    unsinObj = testObj;
   }
 
   public void booleanProblem(@Unsigned int unsigned, @Signed int signed) {
