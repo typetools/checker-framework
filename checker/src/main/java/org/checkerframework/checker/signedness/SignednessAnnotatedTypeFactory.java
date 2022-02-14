@@ -274,6 +274,19 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.replaceAnnotations(lht.getAnnotations());
           }
           break;
+        case PLUS:
+          if (TreeUtils.isStringConcatenation(tree)) {
+            TypeMirror lht = TreeUtils.typeOf(tree.getLeftOperand());
+            TypeMirror rht = TreeUtils.typeOf(tree.getRightOperand());
+
+            if (lht.getKind() == TypeKind.CHAR
+                || TypesUtils.isDeclaredOfName(lht, "java.lang.Character")
+                || rht.getKind() == TypeKind.CHAR
+                || TypesUtils.isDeclaredOfName(rht, "java.lang.Character")) {
+              type.replaceAnnotation(SIGNED);
+            }
+          }
+          break;
         default:
           // Do nothing
       }
@@ -283,6 +296,14 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isStringCompoundConcatenation(tree)) {
+        TypeMirror expr = TreeUtils.typeOf(tree.getExpression());
+
+        if (expr.getKind() == TypeKind.CHAR
+            || TypesUtils.isDeclaredOfName(expr, "java.lang.Character")) {
+          type.replaceAnnotation(SIGNED);
+        }
+      }
       annotateBooleanAsUnknownSignedness(type);
       return null;
     }

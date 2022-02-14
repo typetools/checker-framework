@@ -9,7 +9,7 @@ public class UnsignedConcat {
   @Signed short signedShort = -2;
   @Signed int signedInt = -2;
 
-  void test1() {
+  void test1(char c, Character charObj) {
     // :: error: (unsigned.concat)
     String s1 = "" + unsignedShort;
     // :: error: (unsigned.concat)
@@ -23,9 +23,12 @@ public class UnsignedConcat {
     // :: error: (unsigned.concat)
     String s5 = "" + unknown;
     String s6 = "" + -1;
+
+    String s7 = "" + c;
+    String s8 = "" + charObj;
   }
 
-  void test2(String s) {
+  void test2(String s, char c, Character charObj) {
     // :: error: (unsigned.concat)
     // :: error: (compound.assignment)
     s += unsignedShort;
@@ -38,5 +41,7 @@ public class UnsignedConcat {
     // :: error: (compound.assignment)
     s += unknown;
     s += 9;
+    s += c;
+    s += charObj;
   }
 }

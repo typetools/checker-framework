@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -17,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -127,13 +129,18 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(node)) {
-          if (!atypeFactory
-              .getQualifierHierarchy()
-              .isSubtype(leftOpType.getAnnotation(), atypeFactory.SIGNED)) {
+          if (leftOpType.getKind() != TypeKind.CHAR
+              && !TypesUtils.isDeclaredOfName(leftOpType.getUnderlyingType(), "java.lang.Character")
+              && !atypeFactory
+                  .getQualifierHierarchy()
+                  .isSubtype(leftOpType.getAnnotation(), atypeFactory.SIGNED)) {
             checker.reportError(leftOp, "unsigned.concat");
-          } else if (!atypeFactory
-              .getQualifierHierarchy()
-              .isSubtype(rightOpType.getAnnotation(), atypeFactory.SIGNED)) {
+          } else if (rightOpType.getKind() != TypeKind.CHAR
+              && !TypesUtils.isDeclaredOfName(
+                  rightOpType.getUnderlyingType(), "java.lang.Character")
+              && !atypeFactory
+                  .getQualifierHierarchy()
+                  .isSubtype(rightOpType.getAnnotation(), atypeFactory.SIGNED)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
@@ -240,6 +247,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(node)) {
+          if (exprType.getKind() == TypeKind.CHAR
+              || TypesUtils.isDeclaredOfName(exprType.getUnderlyingType(), "java.lang.Character")) {
+            break;
+          }
           if (!atypeFactory
               .getQualifierHierarchy()
               .isSubtype(exprType.getAnnotation(), atypeFactory.SIGNED)) {
