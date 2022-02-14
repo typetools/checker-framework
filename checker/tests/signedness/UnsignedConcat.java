@@ -27,12 +27,15 @@ public class UnsignedConcat {
 
   void test2(String s) {
     // :: error: (unsigned.concat)
+    // :: error: (compound.assignment)
     s += unsignedShort;
     // :: error: (unsigned.concat)
+    // :: error: (compound.assignment)
     s += +unsignedInt;
     s += "" + signedShort;
     s += signedInt;
     // :: error: (unsigned.concat)
+    // :: error: (compound.assignment)
     s += unknown;
     s += 9;
   }
