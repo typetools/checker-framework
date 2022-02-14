@@ -40,9 +40,13 @@ public class SignednessAssignments {
   }
 
   void assignmentsShort() {
+    // :: error: (assignment)
     @SignedPositive short i1 = sb;
+    // :: error: (assignment)
     @SignedPositive short i2 = ub;
+    // :: error: (assignment)
     @SignedPositive short i3 = sB;
+    // :: error: (assignment)
     @SignedPositive short i4 = uB;
 
     @Signed short i9 = ss;
@@ -65,17 +69,27 @@ public class SignednessAssignments {
   }
 
   void assignmentsInt() {
+    // :: error: (assignment)
     @SignedPositive int i1 = sb;
+    // :: error: (assignment)
     @SignedPositive int i2 = ub;
+    // :: error: (assignment)
     @SignedPositive int i3 = sB;
+    // :: error: (assignment)
     @SignedPositive int i4 = uB;
 
+    // :: error: (assignment)
     @SignedPositive int i6 = uc;
+    // :: error: (assignment)
     @SignedPositive int i8 = uC;
 
+    // :: error: (assignment)
     @SignedPositive int i9 = ss;
+    // :: error: (assignment)
     @SignedPositive int i10 = us;
+    // :: error: (assignment)
     @SignedPositive int i11 = sS;
+    // :: error: (assignment)
     @SignedPositive int i12 = uS;
 
     @Signed int i13 = si;
@@ -90,22 +104,36 @@ public class SignednessAssignments {
   }
 
   void assignmentsLong() {
+    // :: error: (assignment)
     @SignedPositive long i1 = sb;
+    // :: error: (assignment)
     @SignedPositive long i2 = ub;
+    // :: error: (assignment)
     @SignedPositive long i3 = sB;
+    // :: error: (assignment)
     @SignedPositive long i4 = uB;
 
+    // :: error: (assignment)
     @SignedPositive long i6 = uc;
+    // :: error: (assignment)
     @SignedPositive long i8 = uC;
 
+    // :: error: (assignment)
     @SignedPositive long i9 = ss;
+    // :: error: (assignment)
     @SignedPositive long i10 = us;
+    // :: error: (assignment)
     @SignedPositive long i11 = sS;
+    // :: error: (assignment)
     @SignedPositive long i12 = uS;
 
+    // :: error: (assignment)
     @SignedPositive long i13 = si;
+    // :: error: (assignment)
     @SignedPositive long i14 = ui;
+    // :: error: (assignment)
     @SignedPositive long i15 = sI;
+    // :: error: (assignment)
     @SignedPositive long i16 = uI;
 
     @Signed long i17 = sl;

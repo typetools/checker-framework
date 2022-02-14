@@ -199,20 +199,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       result.add(UNSIGNED);
       return result;
     }
-    AnnotationMirror anno = annos.iterator().next();
-    if (AnnotationUtils.areSame(anno, POLY_SIGNED)) {
-      return annos;
-    } else if (getQualifierHierarchy().isSubtype(anno, UNSIGNED)) {
-      // TODO: A future enhancement will make the widened type indicate the unsigned basetype
-      // from which it was widened.
-      result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
-      return result;
-    } else {
-      // TODO: A future enhancement will make the widened type indicate the signed basetype
-      // from which it was widened.
-      result.add(SIGNEDNESS_GLB);
-      return result;
-    }
+    return annos;
   }
 
   @Override
