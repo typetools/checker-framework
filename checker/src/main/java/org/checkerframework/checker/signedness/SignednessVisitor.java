@@ -129,18 +129,17 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(node)) {
+          AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotations().iterator().next();
+          AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotations().iterator().next();
+
           if (leftOpType.getKind() != TypeKind.CHAR
               && !TypesUtils.isDeclaredOfName(leftOpType.getUnderlyingType(), "java.lang.Character")
-              && !atypeFactory
-                  .getQualifierHierarchy()
-                  .isSubtype(leftOpType.getAnnotation(), atypeFactory.SIGNED)) {
+              && !atypeFactory.getQualifierHierarchy().isSubtype(leftAnno, atypeFactory.SIGNED)) {
             checker.reportError(leftOp, "unsigned.concat");
           } else if (rightOpType.getKind() != TypeKind.CHAR
               && !TypesUtils.isDeclaredOfName(
                   rightOpType.getUnderlyingType(), "java.lang.Character")
-              && !atypeFactory
-                  .getQualifierHierarchy()
-                  .isSubtype(rightOpType.getAnnotation(), atypeFactory.SIGNED)) {
+              && !atypeFactory.getQualifierHierarchy().isSubtype(rightAnno, atypeFactory.SIGNED)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
@@ -251,9 +250,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
               || TypesUtils.isDeclaredOfName(exprType.getUnderlyingType(), "java.lang.Character")) {
             break;
           }
-          if (!atypeFactory
-              .getQualifierHierarchy()
-              .isSubtype(exprType.getAnnotation(), atypeFactory.SIGNED)) {
+          AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();
+          if (!atypeFactory.getQualifierHierarchy().isSubtype(anno, atypeFactory.SIGNED)) {
             checker.reportError(node.getExpression(), "unsigned.concat");
           }
           break;
