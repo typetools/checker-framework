@@ -56,9 +56,6 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  //  /** The @UnknownSignedness annotation. */
-  //  private final AnnotationMirror UNKNOWN_SIGNEDNESS =
-  //      AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
   /** The @Signed annotation. */
   protected final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
   /** The @Unsigned annotation. */
