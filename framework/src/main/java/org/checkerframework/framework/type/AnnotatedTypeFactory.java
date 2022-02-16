@@ -4635,6 +4635,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @see "JLS 9.9"
    * @param functionalType the functional interface type
    * @param groundTargetJavaType the Java type as found by javac
+   * @return the grounded functional type
    */
   private AnnotatedDeclaredType makeGroundTargetType(
       AnnotatedDeclaredType functionalType, DeclaredType groundTargetJavaType) {
