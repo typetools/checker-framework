@@ -508,12 +508,13 @@ public class AnnotatedTypes {
     }
 
     if (receiverType.getKind() == TypeKind.DECLARED && member.getKind() == ElementKind.METHOD) {
-      TypeMirror s =
-          types.asMemberOf(((AnnotatedDeclaredType) receiverType).getUnderlyingType(), member);
+      AnnotatedDeclaredType capturedReceiver =
+          (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(receiverType);
+      TypeMirror s = types.asMemberOf(capturedReceiver.getUnderlyingType(), member);
       AnnotatedExecutableType t =
           (AnnotatedExecutableType)
               AnnotatedTypeMirror.createType(s, atypeFactory, memberType.isDeclaration());
-      t.setReceiverType((AnnotatedDeclaredType) receiverType.deepCopy());
+      t.setReceiverType(capturedReceiver.deepCopy());
       t.setElement((ExecutableElement) member);
 
       atypeFactory.initializeAtm(t);
