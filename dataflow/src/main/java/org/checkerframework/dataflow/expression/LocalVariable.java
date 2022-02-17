@@ -70,7 +70,7 @@ public class LocalVariable extends JavaExpression {
 
   @Override
   public int hashCode() {
-    return element.hashCode();
+    return vs.hashCode();
   }
 
   @Override
