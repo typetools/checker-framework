@@ -246,13 +246,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(node)) {
-          if (exprType.getKind() == TypeKind.CHAR
-              || TypesUtils.isDeclaredOfName(exprType.getUnderlyingType(), "java.lang.Character")) {
-            break;
-          }
-          AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();
-          if (!atypeFactory.getQualifierHierarchy().isSubtype(anno, atypeFactory.SIGNED)) {
-            checker.reportError(node.getExpression(), "unsigned.concat");
+          if (exprType.getKind() != TypeKind.CHAR
+              && !TypesUtils.isDeclaredOfName(
+                  exprType.getUnderlyingType(), "java.lang.Character")) {
+            AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(anno, atypeFactory.SIGNED)) {
+              checker.reportError(node.getExpression(), "unsigned.concat");
+            }
           }
           break;
         }
