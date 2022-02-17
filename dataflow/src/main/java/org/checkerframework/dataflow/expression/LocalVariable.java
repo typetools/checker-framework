@@ -56,7 +56,7 @@ public class LocalVariable extends JavaExpression {
    * @return true if the two elements are the same
    */
   protected static boolean sameElement(Element element1, Element element2) {
-    return element1.equals(element2);
+    return vs1.equals(vs2);
   }
 
   /**
