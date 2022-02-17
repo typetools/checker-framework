@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.util.Objects;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -57,11 +56,7 @@ public class LocalVariable extends JavaExpression {
    * @return true if the two elements are the same
    */
   protected static boolean sameElement(Element element1, Element element2) {
-    VarSymbol vs1 = (VarSymbol) element1;
-    VarSymbol vs2 = (VarSymbol) element2;
-    // The owner of a lambda parameter is the enclosing method, so a local variable and a lambda
-    // parameter might have the same name and the same owner. Use pos to differentiate this case.
-    return vs1.pos == vs2.pos && vs1.name == vs2.name && vs1.owner.equals(vs2.owner);
+    return vs1.equals(vs2);
   }
 
   /**
@@ -75,8 +70,7 @@ public class LocalVariable extends JavaExpression {
 
   @Override
   public int hashCode() {
-    VarSymbol vs = (VarSymbol) element;
-    return Objects.hash(vs.pos, vs.name, vs.owner);
+    return vs.hashCode();
   }
 
   @Override
