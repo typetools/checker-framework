@@ -111,11 +111,13 @@ public class DefaultsSignedness {
     conLong = testLong;
 
     // Test floats
+    // :: error: (anno.on.irrelevant)
     @Signed float sinFloat;
 
     sinFloat = testFloat;
 
     // Test doubles
+    // :: error: (anno.on.irrelevant)
     @Signed double sinDouble;
 
     sinDouble = testDouble;
