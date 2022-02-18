@@ -122,7 +122,10 @@ Signedness Checker treats it in one of the following ways:
     All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
     to \refqualclass{checker/signedness/qual}{Signed}.
     \item
-    All other expressions default to \refqualclass{checker/signedness/qual}{UnknownSignedness}.
+    All \code{char} and \code{Character} variables default to
+    \refqualclass{checker/signedness/qual}{Unsigned}.
+    \item
+    All other expressions default to \refqualclass{checker/signedness/qual}{Signed}.
 
 \end{itemize}
 

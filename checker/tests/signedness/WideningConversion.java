@@ -106,7 +106,7 @@ public class WideningConversion {
   }
 
   void to_string() {
-    // would like this to get 'incompatible argument for concatenation'
+    // :: error: (operation.mixed.unsignedrhs)
     String s1 = "" + us1;
     // :: error: (argument)
     String s2 = String.valueOf(us2);
