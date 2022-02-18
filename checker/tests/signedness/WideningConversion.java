@@ -106,7 +106,7 @@ public class WideningConversion {
   }
 
   void to_string() {
-    // :: error: (operation.mixed.unsignedrhs)
+    // :: error: (unsigned.concat)
     String s1 = "" + us1;
     // :: error: (argument)
     String s2 = String.valueOf(us2);
