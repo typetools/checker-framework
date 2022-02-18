@@ -14,6 +14,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -211,7 +212,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
-      updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
+      updateAnnotationSet(
+          paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file, methodElt);
     }
   }
 
@@ -273,7 +275,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
       String file = storage.getFileForElement(methodElt);
       updateAnnotationSet(
-          preOrPostConditionAnnos, TypeUseLocation.FIELD, inferredType, fieldDeclType, file, false);
+          preOrPostConditionAnnos,
+          TypeUseLocation.FIELD,
+          inferredType,
+          fieldDeclType,
+          file,
+          false,
+          methodElt);
     }
     // Method parameters (other than the receiver parameter "this"):
     // This loop is 1-indexed to match the syntax used in annotation arguments.
@@ -309,7 +317,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             inferredType,
             declType,
             file,
-            false);
+            false,
+            methodElt);
       }
     }
     // Receiver parameter ("this"):
@@ -339,7 +348,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
               inferredType,
               declaredType,
               file,
-              false);
+              false,
+              methodElt);
         }
       }
     }
@@ -379,7 +389,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
-      updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
+      updateAnnotationSet(
+          paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file, methodElt);
     }
 
     AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
@@ -387,7 +398,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(methodTree).getReceiverType();
       if (paramATM != null) {
         T receiver = storage.getReceiverAnnotations(methodElt, paramATM, atypeFactory);
-        updateAnnotationSet(receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file);
+        updateAnnotationSet(receiver, TypeUseLocation.RECEIVER, argADT, paramATM, file, methodElt);
       }
     }
   }
@@ -419,7 +430,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     T paramAnnotations =
         storage.getParameterAnnotations(methodElt, i, paramATM, paramElt, atypeFactory);
     String file = storage.getFileForElement(methodElt);
-    updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
+    updateAnnotationSet(
+        paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file, paramElt);
   }
 
   @Override
@@ -464,7 +476,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
     T fieldAnnotations = storage.getFieldAnnotations(element, fieldName, lhsATM, atypeFactory);
 
-    updateAnnotationSet(fieldAnnotations, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
+    updateAnnotationSet(fieldAnnotations, TypeUseLocation.FIELD, rhsATM, lhsATM, file, element);
   }
 
   /**
@@ -532,7 +544,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         ((GenericAnnotatedTypeFactory) atypeFactory).getDependentTypesHelper();
     dependentTypesHelper.delocalize(rhsATM, methodDeclTree);
     T returnTypeAnnos = storage.getReturnAnnotations(methodElt, lhsATM, atypeFactory);
-    updateAnnotationSet(returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file);
+    updateAnnotationSet(
+        returnTypeAnnos, TypeUseLocation.RETURN, rhsATM, lhsATM, file, methodDeclTree);
 
     // Now, update return types of overridden methods based on the implementation we just saw.
     // This inference is similar to the inference procedure for method parameters: both are
@@ -571,7 +584,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           TypeUseLocation.RETURN,
           rhsATM,
           overriddenMethodReturnType,
-          superClassFile);
+          superClassFile,
+          overriddenMethodElement);
     }
   }
 
@@ -621,14 +635,16 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param lhsATM the LHS of the annotated type on the source code
    * @param file the annotation file containing the executable; used for marking the scene as
    *     modified (needing to be written to disk)
+   * @param sourceLocation the location at which to issue a warning, if a type mismatch occurs
    */
   protected void updateAnnotationSet(
       T annotationsToUpdate,
       TypeUseLocation defLoc,
       AnnotatedTypeMirror rhsATM,
       AnnotatedTypeMirror lhsATM,
-      String file) {
-    updateAnnotationSet(annotationsToUpdate, defLoc, rhsATM, lhsATM, file, true);
+      String file,
+      Object sourceLocation) {
+    updateAnnotationSet(annotationsToUpdate, defLoc, rhsATM, lhsATM, file, true, sourceLocation);
   }
 
   /**
@@ -651,6 +667,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *     (needing to be written to disk)
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
+   * @param sourceLocation the source location at which to report errors, if a type mismatch occurs
    */
   protected void updateAnnotationSet(
       T annotationsToUpdate,
@@ -658,7 +675,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       AnnotatedTypeMirror rhsATM,
       AnnotatedTypeMirror lhsATM,
       String file,
-      boolean ignoreIfAnnotated) {
+      boolean ignoreIfAnnotated,
+      Object sourceLocation) {
     if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
       return;
     }
@@ -671,6 +689,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // The one difference in kinds situation that this method can account for is the RHS being
       // a literal null expression.
       if (!(rhsATM instanceof AnnotatedNullType)) {
+
+        // If an unexpected combination of kinds occurs, issue a warning to aid in
+        // debugging rather than silently proceeding. There are tests for the combinations of
+        // kinds checked below, so no warning is issued in those cases.
+        if (lhsATM.getKind() == TypeKind.DECLARED && rhsATM.getKind() == TypeKind.WILDCARD) {
+          // WildcardReturn.java
+        } else if (lhsATM.getKind() == TypeKind.TYPEVAR && rhsATM.getKind() == TypeKind.ARRAY) {
+          // ArrayAndTypevar.java
+        } else if (lhsATM.getKind() == TypeKind.TYPEVAR && rhsATM.getKind() == TypeKind.DECLARED) {
+          // TypeVariablesTest.java
+        } else {
+          this.atypeFactory
+              .getChecker()
+              .reportWarning(
+                  sourceLocation, "wpi.unexpected.typekind", lhsATM.getKind(), rhsATM.getKind());
+        }
+
         return;
       }
     }
