@@ -65,6 +65,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import scenelib.annotations.util.JVMNames;
 
 /**
@@ -332,7 +333,9 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
-    if (newATM.getKind() == TypeKind.ARRAY) {
+    // Must check both new and current in case a varargs entry was mistakenly not
+    // an array the first time it is updated.
+    if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
       AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
       AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
       AnnotatedArrayType aatToUpdate = (AnnotatedArrayType) typeToUpdate;
@@ -871,12 +874,35 @@ public class WholeProgramInferenceJavaParserStorage
             new ArrayList<>(Collections.nCopies(declaration.getParameters().size(), null));
       }
 
-      if (parameterTypes.get(index) == null) {
-        parameterTypes.set(
-            index, AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false));
+      if (index >= parameterTypes.size()) {
+        // Handle varargs
+        AnnotatedTypeMirror varargsType = parameterTypes.get(parameterTypes.size() - 1);
+        if (varargsType == null) {
+          varargsType =
+              AnnotatedTypeMirror.createType(
+                  TypesUtils.createArrayType(type.getUnderlyingType(), atf.types), atf, false);
+          parameterTypes.set(parameterTypes.size() - 1, varargsType);
+        } else if (varargsType.getKind() != TypeKind.ARRAY) {
+          // This is a kludge, because there isn't enough information at this point to determine for
+          // sure whether the last "in-range" parameter was an array or the first varargs
+          // element. If it was the first varargs element, then varargsType might not be an
+          // array, so create an array type that wraps varargsType instead, and insert it
+          // back into parameterTypes.
+          AnnotatedTypeMirror componentType = varargsType;
+          varargsType =
+              AnnotatedTypeMirror.createType(
+                  TypesUtils.createArrayType(type.getUnderlyingType(), atf.types), atf, false);
+          ((AnnotatedArrayType) varargsType).setComponentType(componentType);
+          parameterTypes.set(parameterTypes.size() - 1, varargsType);
+        }
+        return varargsType;
+      } else {
+        if (parameterTypes.get(index) == null) {
+          parameterTypes.set(
+              index, AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false));
+        }
+        return parameterTypes.get(index);
       }
-
-      return parameterTypes.get(index);
     }
 
     /**
