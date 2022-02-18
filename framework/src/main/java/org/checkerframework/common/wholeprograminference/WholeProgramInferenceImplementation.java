@@ -205,8 +205,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
 
-      VariableElement ve = methodElt.getParameters().get(i);
+      VariableElement ve;
+      boolean varargsParam = i >= methodElt.getParameters().size();
+      // If the access would be out-of-bounds, that means that the executable element must
+      // be a varargs method.
+      if (varargsParam) {
+        assert methodElt.isVarArgs();
+        ve = methodElt.getParameters().get(methodElt.getParameters().size() - 1);
+      } else {
+        ve = methodElt.getParameters().get(i);
+      }
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
+      if (varargsParam) {
+        paramATM = ((AnnotatedArrayType) paramATM).getComponentType();
+      }
       AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
