@@ -7,7 +7,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -60,13 +59,11 @@ public class LocalVariable extends JavaExpression {
   protected static boolean sameElement(Element element1, Element element2) {
     VarSymbol vs1 = (VarSymbol) element1;
     VarSymbol vs2 = (VarSymbol) element2;
-    // The code below isn't just return vs1.equals(vs2) because an element might be
-    // different between subcheckers.  The owner of a lambda parameter is the enclosing
-    // method, so a local variable and a lambda parameter might have the same name and the
-    // same owner.  pos is used to differentiate this case.
-    return vs1.pos == vs2.pos
-        && vs1.name.contentEquals(vs2.name)
-        && vs1.owner.toString().equals(vs2.owner.toString());
+    // If a LocalVariable is created via JavaExpressionParseUtil#parse, then `vs1.equals(vs2)` will
+    // not return true even if the elements represent the same local variable.
+    // The owner of a lambda parameter is the enclosing method, so a local variable and a lambda
+    // parameter might have the same name and the same owner. Use pos to differentiate this case.
+    return vs1.pos == vs2.pos && vs1.name == vs2.name && vs1.owner.equals(vs2.owner);
   }
 
   /**
@@ -81,10 +78,7 @@ public class LocalVariable extends JavaExpression {
   @Override
   public int hashCode() {
     VarSymbol vs = (VarSymbol) element;
-    return Objects.hash(
-        vs.name.toString(),
-        TypeAnnotationUtils.unannotatedType(vs.type).toString(),
-        vs.owner.toString());
+    return Objects.hash(vs.pos, vs.name, vs.owner);
   }
 
   @Override
