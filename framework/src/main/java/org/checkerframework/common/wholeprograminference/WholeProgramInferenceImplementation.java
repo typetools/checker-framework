@@ -45,6 +45,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This is the primary implementation of {@link
@@ -216,10 +217,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         ve = methodElt.getParameters().get(i);
       }
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
-      if (varargsParam) {
-        paramATM = ((AnnotatedArrayType) paramATM).getComponentType();
-      }
       AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
+      if (varargsParam) {
+        // argATM needs to be turned into an array type, so that the type structure
+        // matches paramATM.
+        AnnotatedTypeMirror argArray =
+            AnnotatedTypeMirror.createType(
+                TypesUtils.createArrayType(argATM.getUnderlyingType(), atypeFactory.types),
+                atypeFactory,
+                false);
+        ((AnnotatedArrayType) argArray).setComponentType(argATM);
+        argATM = argArray;
+      }
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
