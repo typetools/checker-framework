@@ -876,33 +876,15 @@ public class WholeProgramInferenceJavaParserStorage
 
       if (index >= parameterTypes.size()) {
         // Handle varargs
-        AnnotatedTypeMirror varargsType = parameterTypes.get(parameterTypes.size() - 1);
-        if (varargsType == null) {
-          varargsType =
-              AnnotatedTypeMirror.createType(
-                  TypesUtils.createArrayType(type.getUnderlyingType(), atf.types), atf, false);
-          parameterTypes.set(parameterTypes.size() - 1, varargsType);
-        } else if (varargsType.getKind() != TypeKind.ARRAY) {
-          // This is a kludge, because there isn't enough information at this point to determine for
-          // sure whether the last "in-range" parameter was an array or the first varargs
-          // element. If it was the first varargs element, then varargsType might not be an
-          // array, so create an array type that wraps varargsType instead, and insert it
-          // back into parameterTypes.
-          AnnotatedTypeMirror componentType = varargsType;
-          varargsType =
-              AnnotatedTypeMirror.createType(
-                  TypesUtils.createArrayType(type.getUnderlyingType(), atf.types), atf, false);
-          ((AnnotatedArrayType) varargsType).setComponentType(componentType);
-          parameterTypes.set(parameterTypes.size() - 1, varargsType);
-        }
-        return varargsType;
-      } else {
-        if (parameterTypes.get(index) == null) {
-          parameterTypes.set(
-              index, AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false));
-        }
-        return parameterTypes.get(index);
+        index = parameterTypes.size() - 1;
       }
+
+      if (parameterTypes.get(index) == null) {
+        parameterTypes.set(
+            index, AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false));
+      }
+      return parameterTypes.get(index);
+
     }
 
     /**

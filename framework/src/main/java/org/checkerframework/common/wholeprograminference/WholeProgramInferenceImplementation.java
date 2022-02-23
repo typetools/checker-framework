@@ -207,11 +207,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       Tree argTree = arg.getTree();
 
       VariableElement ve;
-      boolean varargsParam = i >= methodElt.getParameters().size();
-      // If the access would be out-of-bounds, that means that the executable element must
-      // be a varargs method.
+      boolean varargsParam = i >= methodElt.getParameters().size() - 1 && methodElt.isVarArgs();
       if (varargsParam) {
-        assert methodElt.isVarArgs();
         ve = methodElt.getParameters().get(methodElt.getParameters().size() - 1);
       } else {
         ve = methodElt.getParameters().get(i);
