@@ -78,9 +78,7 @@ public class SignednessAssignments {
     // :: error: (assignment)
     @SignedPositive int i4 = uB;
 
-    // :: error: (assignment)
     @SignedPositive int i6 = uc;
-    // :: error: (assignment)
     @SignedPositive int i8 = uC;
 
     // :: error: (assignment)
@@ -113,9 +111,7 @@ public class SignednessAssignments {
     // :: error: (assignment)
     @SignedPositive long i4 = uB;
 
-    // :: error: (assignment)
     @SignedPositive long i6 = uc;
-    // :: error: (assignment)
     @SignedPositive long i8 = uC;
 
     // :: error: (assignment)
