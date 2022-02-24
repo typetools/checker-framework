@@ -65,7 +65,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 import scenelib.annotations.util.JVMNames;
 
 /**
@@ -884,7 +883,6 @@ public class WholeProgramInferenceJavaParserStorage
             index, AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false));
       }
       return parameterTypes.get(index);
-
     }
 
     /**

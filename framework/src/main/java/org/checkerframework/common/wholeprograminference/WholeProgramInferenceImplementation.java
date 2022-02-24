@@ -14,6 +14,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -216,15 +217,30 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
       AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
       if (varargsParam) {
-        // argATM needs to be turned into an array type, so that the type structure
+        // Check whether argATM needs to be turned into an array type, so that the type structure
         // matches paramATM.
-        AnnotatedTypeMirror argArray =
-            AnnotatedTypeMirror.createType(
-                TypesUtils.createArrayType(argATM.getUnderlyingType(), atypeFactory.types),
-                atypeFactory,
-                false);
-        ((AnnotatedArrayType) argArray).setComponentType(argATM);
-        argATM = argArray;
+        boolean expandArgATM = false;
+        if (argATM.getKind() == TypeKind.ARRAY) {
+          int argATMDepth = AnnotatedTypes.getArrayDepth((AnnotatedArrayType) argATM);
+          // This unchecked cast is safe because the declared type of a varargs parameter
+          // is guaranteed to be an array of some kind.
+          int paramATMDepth = AnnotatedTypes.getArrayDepth((AnnotatedArrayType) paramATM);
+          if (paramATMDepth != argATMDepth) {
+            assert argATMDepth + 1 == paramATMDepth;
+            expandArgATM = true;
+          }
+        } else {
+          expandArgATM = true;
+        }
+        if (expandArgATM) {
+          AnnotatedTypeMirror argArray =
+              AnnotatedTypeMirror.createType(
+                  TypesUtils.createArrayType(argATM.getUnderlyingType(), atypeFactory.types),
+                  atypeFactory,
+                  false);
+          ((AnnotatedArrayType) argArray).setComponentType(argATM);
+          argATM = argArray;
+        }
       }
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
