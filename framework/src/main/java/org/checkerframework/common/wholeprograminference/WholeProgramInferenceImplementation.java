@@ -243,8 +243,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
       }
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
+      // If storage.getParameterAnnotations receives an index that's larger than the size
+      // of the parameter list, scenes-backed inference can create duplicate entries
+      // for the varargs parameter (it indexes inferred annotations by the parameter number).
+      int paramIndex = varargsParam ? methodElt.getParameters().size() - 1 : i;
       T paramAnnotations =
-          storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
+          storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
   }
