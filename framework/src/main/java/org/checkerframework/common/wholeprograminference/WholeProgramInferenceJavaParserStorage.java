@@ -332,9 +332,7 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
-    // Must check both new and current in case a varargs entry was mistakenly not
-    // an array the first time it is updated.
-    if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
+    if (newATM.getKind() == TypeKind.ARRAY) {
       AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
       AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
       AnnotatedArrayType aatToUpdate = (AnnotatedArrayType) typeToUpdate;
@@ -882,6 +880,7 @@ public class WholeProgramInferenceJavaParserStorage
         parameterTypes.set(
             index, AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false));
       }
+
       return parameterTypes.get(index);
     }
 
