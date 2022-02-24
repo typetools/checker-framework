@@ -136,6 +136,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    // Don't infer types for code that can't be annotated anyway.
+    if (!storage.hasStorageLocationForMethod(constructorElt)) {
+      return;
+    }
+
     List<Node> arguments = objectCreationNode.getArguments();
     updateInferredExecutableParameterTypes(constructorElt, arguments);
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
