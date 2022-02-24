@@ -871,11 +871,6 @@ public class WholeProgramInferenceJavaParserStorage
             new ArrayList<>(Collections.nCopies(declaration.getParameters().size(), null));
       }
 
-      if (index >= parameterTypes.size()) {
-        // Handle varargs
-        index = parameterTypes.size() - 1;
-      }
-
       if (parameterTypes.get(index) == null) {
         parameterTypes.set(
             index, AnnotatedTypeMirror.createType(type.getUnderlyingType(), atf, false));
