@@ -54,45 +54,56 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-    description 'Test the live variable analysis test for dataflow framework.'
-    inputs.file('tests/live-variable/Expected.txt')
-    inputs.file('tests/live-variable/Test.java')
+/**
+ * Create a task to run a dataflow analysis demo
+ * @param taskName the taskName for the created task
+ * @param dirName the directory name of the test file
+ * @param className the fully-qualified name of the test class
+ * @return
+ */
+def testDataflowAnalysis(taskName, dirName, className) {
+    tasks.create(name: taskName, dependsOn: [assemble, compileTestJava], group: 'Verification') {
+        description "Run the ${dirName} dataflow framework test."
+        inputs.file("tests/${dirName}/Expected.txt")
+        inputs.file("tests/${dirName}/Test.java")
 
-    outputs.file('tests/live-variable/Out.txt')
-    outputs.file('tests/live-variable/Test.class')
+        outputs.file("tests/${dirName}/Out.txt")
+        outputs.file("tests/${dirName}/Test.class")
 
-    delete('tests/live-variable/Out.txt')
-    delete('tests/live-variable/Test.class')
-    doLast {
-        javaexec {
-            workingDir = 'tests/live-variable'
-            if (!JavaVersion.current().java9Compatible) {
-                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+        delete("tests/${dirName}/Out.txt")
+        delete("tests/${dirName}/Test.class")
+        doLast {
+            javaexec {
+                workingDir = "tests/${dirName}"
+                if (!JavaVersion.current().java9Compatible) {
+                    jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+                }
+                else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+                    jvmArgs += [
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                        "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+                    ]
+                }
+
+                classpath = sourceSets.test.runtimeClasspath
+                classpath += sourceSets.test.output
+                mainClass = "${className}"
             }
-            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-                jvmArgs += [
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
-                ]
+            exec {
+                workingDir = "tests/${dirName}"
+                executable 'diff'
+                args = ['-u', 'Expected.txt', 'Out.txt']
             }
-
-            classpath = sourceSets.test.runtimeClasspath
-            classpath += sourceSets.test.output
-            mainClass = 'livevar.LiveVariable'
-        }
-        exec {
-            workingDir = 'tests/live-variable'
-            executable 'diff'
-            args = ['-u', 'Expected.txt', 'Out.txt']
         }
     }
 }
+
+testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable")
 
 task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification') {
     description 'Test issue 3447 test case for backward analysis.'
