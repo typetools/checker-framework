@@ -63,8 +63,7 @@ public class LocalVariable extends JavaExpression {
         VarSymbol vs1 = (VarSymbol) element1;
         VarSymbol vs2 = (VarSymbol) element2;
         // If a LocalVariable is created via JavaExpressionParseUtil#parse, then `vs1.equals(vs2)`
-        // will
-        // not return true even if the elements represent the same local variable.
+        // will not return true even if the elements represent the same local variable.
         // The owner of a lambda parameter is the enclosing method, so a local variable and a lambda
         // parameter might have the same name and the same owner. Use pos to differentiate this
         // case.

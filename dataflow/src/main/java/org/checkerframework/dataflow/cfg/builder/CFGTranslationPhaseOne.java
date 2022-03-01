@@ -1563,8 +1563,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
             } else {
                 // The current path is in a lambda tree.  In this case the owner is either a method
-                // or
-                // an initializer block.
+                // or an initializer block.
                 LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
                 if (!lambdaTree.getParameters().isEmpty()) {
                     // If there is a lambda parameter, use the same owner.
@@ -1572,20 +1571,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                             .getEnclosingElement();
                 }
                 // If there are no lambda parameters then if the lambda is enclosed in a method,
-                // that's the
-                // owner.
+                // that's the owner.
                 MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
                 if (enclosingMethod != null) {
                     return TreeUtils.elementFromDeclaration(enclosingMethod);
                 }
 
                 // If the lambda is not enclosed in a method, then the owner should be a
-                // constructor. javac
-                // seems to use the last constructor in the list. (If the lambda is in an
-                // initializer of a
-                // static field then the owner should be a static initializer block, but there
-                // doesn't seem
-                // to be a way to get a reference to the static initializer element.)
+                // constructor. javac seems to use the last constructor in the list. (If the lambda
+                // is in an initializer of a static field then the owner should be a static
+                // initializer block, but there doesn't seem to be a way to get a reference to the
+                // static initializer element.)
                 ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
                 TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
                 ExecutableElement constructor = null;
