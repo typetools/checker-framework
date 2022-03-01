@@ -177,7 +177,7 @@ public class DefaultsSignedness {
 
         unkObj = testObj;
 
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         unsinObj = testObj;
     }
 

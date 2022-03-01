@@ -40,13 +40,13 @@ public class SignednessAssignments {
     }
 
     void assignmentsShort() {
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive short i1 = sb;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive short i2 = ub;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive short i3 = sB;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive short i4 = uB;
 
         @Signed short i9 = ss;
@@ -69,25 +69,25 @@ public class SignednessAssignments {
     }
 
     void assignmentsInt() {
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i1 = sb;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i2 = ub;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i3 = sB;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i4 = uB;
 
         @SignedPositive int i6 = uc;
         @SignedPositive int i8 = uC;
 
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i9 = ss;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i10 = us;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i11 = sS;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive int i12 = uS;
 
         @Signed int i13 = si;
@@ -102,34 +102,34 @@ public class SignednessAssignments {
     }
 
     void assignmentsLong() {
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i1 = sb;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i2 = ub;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i3 = sB;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i4 = uB;
 
         @SignedPositive long i6 = uc;
         @SignedPositive long i8 = uC;
 
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i9 = ss;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i10 = us;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i11 = sS;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i12 = uS;
 
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i13 = si;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i14 = ui;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i15 = sI;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @SignedPositive long i16 = uI;
 
         @Signed long i17 = sl;

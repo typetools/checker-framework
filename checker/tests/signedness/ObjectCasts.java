@@ -50,7 +50,7 @@ public class ObjectCasts {
     }
 
     Object castIntegerToObject2(@Unsigned Integer o) {
-        // :: error: (return)
+        // :: error: (return.type.incompatible)
         return (Object) o;
     }
 

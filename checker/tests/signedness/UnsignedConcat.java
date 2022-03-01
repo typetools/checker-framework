@@ -30,15 +30,15 @@ public class UnsignedConcat {
 
     void test2(String s, char c, Character charObj) {
         // :: error: (unsigned.concat)
-        // :: error: (compound.assignment)
+        // :: error: (compound.assignment.type.incompatible)
         s += unsignedShort;
         // :: error: (unsigned.concat)
-        // :: error: (compound.assignment)
+        // :: error: (compound.assignment.type.incompatible)
         s += +unsignedInt;
         s += "" + signedShort;
         s += signedInt;
         // :: error: (unsigned.concat)
-        // :: error: (compound.assignment)
+        // :: error: (compound.assignment.type.incompatible)
         s += unknownInt;
         s += 9;
         s += c;

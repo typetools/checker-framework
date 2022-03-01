@@ -45,17 +45,17 @@ public class WideningConversion {
 
         @Unsigned int ui;
         ui = c1 + c2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         ui = c1 + i2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         ui = i1 + c2;
         // :: error: (assignment.type.incompatible)
         ui = i1 + i2;
 
         ui = c1 + c2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         ui = c1 + si2;
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         ui = si1 + c2;
         // :: error: (assignment.type.incompatible)
         ui = si1 + si2;
@@ -98,9 +98,9 @@ public class WideningConversion {
     void to_string() {
         // :: error: (unsigned.concat)
         String s1 = "" + us1;
-        // :: error: (argument)
+        // :: error: (argument.type.incompatible)
         String s2 = String.valueOf(us2);
-        // :: error: (argument)
+        // :: error: (argument.type.incompatible)
         String s3 = Short.toString(us1);
     }
 }
