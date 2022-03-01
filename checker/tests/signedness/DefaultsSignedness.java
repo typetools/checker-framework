@@ -173,12 +173,12 @@ public class DefaultsSignedness {
     public void UnknownSignedness(Object testObj, @Unsigned int unsigned, @Signed int signed) {
 
         @UnknownSignedness Object unkObj;
-        @Signed Object sinObj;
+        @Unsigned Object unsinObj;
 
         unkObj = testObj;
 
-        // :: error: (assignment.type.incompatible)
-        sinObj = testObj;
+        // :: error: (assignment)
+        unsinObj = testObj;
     }
 
     public void booleanProblem(@Unsigned int unsigned, @Signed int signed) {

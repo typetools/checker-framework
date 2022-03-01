@@ -119,30 +119,15 @@ Signedness Checker treats it in one of the following ways:
     All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
     to \refqualclass{checker/signedness/qual}{SignednessGlb}.
     \item
-    All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
-    to \refqualclass{checker/signedness/qual}{Signed}.
+    All \code{char} and \code{Character} expressions default to
+    \refqualclass{checker/signedness/qual}{Unsigned}.
     \item
-    All other expressions default to \refqualclass{checker/signedness/qual}{UnknownSignedness}.
+    All \code{char} and \code{Character} variables default to
+    \refqualclass{checker/signedness/qual}{Unsigned}.
+    \item
+    All other expressions default to \refqualclass{checker/signedness/qual}{Signed}.
 
 \end{itemize}
-
-
-\subsectionAndLabel{Widening conversions}{signedness-checker-widening-conversions}
-
-Figure~\ref{fig-signedness-hierarchy} shows the type qualifier hierarchy.
-When upcasting among integral types, the expression has type
-\<@SignedPositive> because the value is guaranteed to be within the signed
-positive range.  For example:
-
-\begin{Verbatim}
-@Signed int sint;
-@Unsigned int uint;
-@SignedPositive long splong1 = sint;   // legal
-@SignedPositive long splong2 = uint;   // legal
-... (long) sint ...   // this expression has type @SignedPositive long
-... (long) uint ...   // this expression has type @SignedPositive long
-\end{Verbatim}
-
 
 \sectionAndLabel{Prohibited operations}{signedness-checker-prohibited-operations}
 

@@ -11,7 +11,17 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+
+import java.util.Collections;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -128,6 +138,32 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 }
                 break;
 
+            case PLUS:
+                if (TreeUtils.isStringConcatenation(node)) {
+                    AnnotationMirror leftAnno =
+                            leftOpType.getEffectiveAnnotations().iterator().next();
+                    AnnotationMirror rightAnno =
+                            rightOpType.getEffectiveAnnotations().iterator().next();
+
+                    if (leftOpType.getKind() != TypeKind.CHAR
+                            && !TypesUtils.isDeclaredOfName(
+                                    leftOpType.getUnderlyingType(), "java.lang.Character")
+                            && !atypeFactory
+                                    .getQualifierHierarchy()
+                                    .isSubtype(leftAnno, atypeFactory.SIGNED)) {
+                        checker.reportError(leftOp, "unsigned.concat");
+                    } else if (rightOpType.getKind() != TypeKind.CHAR
+                            && !TypesUtils.isDeclaredOfName(
+                                    rightOpType.getUnderlyingType(), "java.lang.Character")
+                            && !atypeFactory
+                                    .getQualifierHierarchy()
+                                    .isSubtype(rightAnno, atypeFactory.SIGNED)) {
+                        checker.reportError(rightOp, "unsigned.concat");
+                    }
+                    break;
+                }
+                // Other plus binary trees should be handled in the default case.
+                // fall through
             default:
                 if (leftOpType.hasAnnotation(Unsigned.class)
                         && rightOpType.hasAnnotation(Signed.class)) {
@@ -231,6 +267,23 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             case LEFT_SHIFT_ASSIGNMENT:
                 break;
 
+            case PLUS_ASSIGNMENT:
+                if (TreeUtils.isStringCompoundConcatenation(node)) {
+                    if (exprType.getKind() != TypeKind.CHAR
+                            && !TypesUtils.isDeclaredOfName(
+                                    exprType.getUnderlyingType(), "java.lang.Character")) {
+                        AnnotationMirror anno =
+                                exprType.getEffectiveAnnotations().iterator().next();
+                        if (!atypeFactory
+                                .getQualifierHierarchy()
+                                .isSubtype(anno, atypeFactory.SIGNED)) {
+                            checker.reportError(node.getExpression(), "unsigned.concat");
+                        }
+                    }
+                    break;
+                }
+                // Other plus binary trees should be handled in the default case.
+                // fall through
             default:
                 if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
                     checker.reportError(
@@ -251,5 +304,19 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
         }
         return super.visitCompoundAssignment(node, p);
+    }
+
+    @Override
+    protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+        return Collections.singleton(atypeFactory.SIGNED);
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
+
+    @Override
+    protected boolean shouldWarnAboutIrrelevantJavaTypes() {
+        return true;
     }
 }

@@ -494,6 +494,15 @@ public class WholeProgramInferenceJavaParserStorage
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(enclosingClassName);
             String fieldName = javacTree.getName().toString();
             enclosingClass.enumConstants.add(fieldName);
+
+            // Ensure that if an enum constant defines a class, that class gets registered properly.
+            // See e.g. https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9.1 for
+            // the specification of an enum constant, which does permit it to define an anonymous
+            // class.
+            NewClassTree constructor = (NewClassTree) javacTree.getInitializer();
+            if (constructor.getClassBody() != null) {
+              addClass(constructor.getClassBody());
+            }
           }
 
           @Override

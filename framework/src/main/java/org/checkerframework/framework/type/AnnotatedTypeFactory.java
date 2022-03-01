@@ -4558,9 +4558,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Functional interface
         AnnotatedTypeMirror functionalInterfaceType = getFunctionalInterfaceType(tree);
         if (functionalInterfaceType.getKind() == TypeKind.DECLARED) {
-            makeGroundTargetType(
-                    (AnnotatedDeclaredType) functionalInterfaceType,
-                    (DeclaredType) TreeUtils.typeOf(tree));
+            functionalInterfaceType =
+                    makeGroundTargetType(
+                            (AnnotatedDeclaredType) functionalInterfaceType,
+                            (DeclaredType) TreeUtils.typeOf(tree));
         }
 
         // Functional method
@@ -4751,11 +4752,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @see "JLS 9.9"
      * @param functionalType the functional interface type
      * @param groundTargetJavaType the Java type as found by javac
+     * @return the grounded functional type
      */
-    private void makeGroundTargetType(
+    private AnnotatedDeclaredType makeGroundTargetType(
             AnnotatedDeclaredType functionalType, DeclaredType groundTargetJavaType) {
         if (functionalType.getTypeArguments().isEmpty()) {
-            return;
+            return functionalType;
         }
 
         List<AnnotatedTypeParameterBounds> bounds =
@@ -4763,65 +4765,89 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         functionalType,
                         (TypeElement) functionalType.getUnderlyingType().asElement());
 
-        List<AnnotatedTypeMirror> newTypeArguments =
-                new ArrayList<>(functionalType.getTypeArguments());
         boolean sizesDiffer =
                 functionalType.getTypeArguments().size()
                         != groundTargetJavaType.getTypeArguments().size();
 
+        // This is the declared type of the functional type meaning that the type arguments are the
+        // type parameters.
+        DeclaredType declaredType =
+                (DeclaredType) functionalType.getUnderlyingType().asElement().asType();
+        Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg =
+                new HashMap<>(functionalType.getTypeArguments().size());
         for (int i = 0; i < functionalType.getTypeArguments().size(); i++) {
+            TypeVariable typeVariable = (TypeVariable) declaredType.getTypeArguments().get(i);
             AnnotatedTypeMirror argType = functionalType.getTypeArguments().get(i);
-            if (argType.getKind() != TypeKind.WILDCARD) {
-                continue;
-            }
-            AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
-            TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
 
-            if (wildcardType.isUninferredTypeArgument()) {
-                // Keep the uninferred type so that it is ignored by later subtyping and
-                // containment checks.
-                newTypeArguments.set(i, wildcardType);
-            } else if (isExtendsWildcard(wildcardType)) {
-                TypeMirror correctArgType;
-                if (sizesDiffer) {
-                    // The Java type is raw.
-                    TypeMirror typeParamUbType = bounds.get(i).getUpperBound().getUnderlyingType();
-                    correctArgType =
-                            TypesUtils.greatestLowerBound(
-                                    typeParamUbType,
-                                    wildcardUbType,
-                                    this.checker.getProcessingEnvironment());
-                } else {
-                    correctArgType = groundTargetJavaType.getTypeArguments().get(i);
-                }
+            if (argType.getKind() == TypeKind.WILDCARD) {
+                AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) argType;
 
-                final AnnotatedTypeMirror newArg;
-                if (types.isSameType(wildcardUbType, correctArgType)) {
-                    newArg = wildcardType.getExtendsBound().deepCopy();
-                } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
-                    newArg = this.toAnnotatedType(correctArgType, false);
-                    AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
-                    newArgAsTypeVar
-                            .getUpperBound()
-                            .replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
-                    newArgAsTypeVar
-                            .getLowerBound()
-                            .replaceAnnotations(wildcardType.getSuperBound().getAnnotations());
+                TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
+
+                if (wildcardType.isUninferredTypeArgument()) {
+                    // Keep the uninferred type so that it is ignored by later subtyping and
+                    // containment
+                    // checks.
+                    typeVarToTypeArg.put(typeVariable, wildcardType);
+                } else if (isExtendsWildcard(wildcardType)) {
+                    TypeMirror correctArgType;
+                    if (sizesDiffer) {
+                        // The Java type is raw.
+                        TypeMirror typeParamUbType =
+                                bounds.get(i).getUpperBound().getUnderlyingType();
+                        correctArgType =
+                                TypesUtils.greatestLowerBound(
+                                        typeParamUbType,
+                                        wildcardUbType,
+                                        this.checker.getProcessingEnvironment());
+                    } else {
+                        correctArgType = groundTargetJavaType.getTypeArguments().get(i);
+                    }
+
+                    final AnnotatedTypeMirror newArg;
+                    if (types.isSameType(wildcardUbType, correctArgType)) {
+                        newArg = wildcardType.getExtendsBound().deepCopy();
+                    } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
+                        newArg = this.toAnnotatedType(correctArgType, false);
+                        AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
+                        newArgAsTypeVar
+                                .getUpperBound()
+                                .replaceAnnotations(
+                                        wildcardType.getExtendsBound().getAnnotations());
+                        newArgAsTypeVar
+                                .getLowerBound()
+                                .replaceAnnotations(wildcardType.getSuperBound().getAnnotations());
+                    } else {
+                        newArg = this.toAnnotatedType(correctArgType, false);
+                        newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
+                    }
+
+                    typeVarToTypeArg.put(typeVariable, newArg);
                 } else {
-                    newArg = this.toAnnotatedType(correctArgType, false);
-                    newArg.replaceAnnotations(wildcardType.getExtendsBound().getAnnotations());
+                    typeVarToTypeArg.put(typeVariable, wildcardType.getSuperBound());
                 }
-                newTypeArguments.set(i, newArg);
             } else {
-                newTypeArguments.set(i, wildcardType.getSuperBound());
+                typeVarToTypeArg.put(typeVariable, argType);
             }
         }
-        functionalType.setTypeArguments(newTypeArguments);
+
+        // The ground functional type must be created using type variable substitution or else the
+        // underlying type will not match the annotated type.
+        AnnotatedDeclaredType groundFunctionalType =
+                (AnnotatedDeclaredType)
+                        AnnotatedTypeMirror.createType(
+                                declaredType, this, functionalType.isDeclaration());
+        initializeAtm(groundFunctionalType);
+        groundFunctionalType =
+                (AnnotatedDeclaredType)
+                        getTypeVarSubstitutor().substitute(typeVarToTypeArg, groundFunctionalType);
+        groundFunctionalType.addAnnotations(functionalType.getAnnotations());
 
         // When the groundTargetJavaType is different from the underlying type of functionalType,
-        // only the main annotations are copied.  Add default annotations in places without
-        // annotations.
-        addDefaultAnnotations(functionalType);
+        // only
+        // the main annotations are copied.  Add default annotations in places without annotations.
+        addDefaultAnnotations(groundFunctionalType);
+        return groundFunctionalType;
     }
 
     /**

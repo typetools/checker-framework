@@ -17,7 +17,6 @@ import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignedPositiveFromUnsigned;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
-import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -29,6 +28,9 @@ import org.checkerframework.common.value.qual.IntRangeFromPositive;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -42,6 +44,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -56,11 +59,8 @@ import javax.lang.model.type.TypeMirror;
  */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** The @UnknownSignedness annotation. */
-    private final AnnotationMirror UNKNOWN_SIGNEDNESS =
-            AnnotationBuilder.fromClass(elements, UnknownSignedness.class);
     /** The @Signed annotation. */
-    private final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+    protected final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
     /** The @Unsigned annotation. */
     private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
     /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
@@ -204,20 +204,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             result.add(UNSIGNED);
             return result;
         }
-        AnnotationMirror anno = annos.iterator().next();
-        if (AnnotationUtils.areSame(anno, POLY_SIGNED)) {
-            return annos;
-        } else if (getQualifierHierarchy().isSubtype(anno, UNSIGNED)) {
-            // TODO: A future enhancement will make the widened type indicate the unsigned basetype
-            // from which it was widened.
+        if ((widenedTypeKind == TypeKind.INT || widenedTypeKind == TypeKind.LONG)
+                && typeKind == TypeKind.CHAR) {
             result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
             return result;
-        } else {
-            // TODO: A future enhancement will make the widened type indicate the signed basetype
-            // from which it was widened.
-            result.add(SIGNEDNESS_GLB);
-            return result;
         }
+        return annos;
     }
 
     @Override
@@ -267,7 +259,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private void annotateBooleanAsUnknownSignedness(AnnotatedTypeMirror type) {
             switch (type.getKind()) {
                 case BOOLEAN:
-                    type.addAnnotation(UNKNOWN_SIGNEDNESS);
+                    type.addAnnotation(SIGNED);
                     break;
                 default:
                     // Nothing for other cases.
@@ -290,6 +282,19 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         type.replaceAnnotations(lht.getAnnotations());
                     }
                     break;
+                case PLUS:
+                    if (TreeUtils.isStringConcatenation(tree)) {
+                        TypeMirror lht = TreeUtils.typeOf(tree.getLeftOperand());
+                        TypeMirror rht = TreeUtils.typeOf(tree.getRightOperand());
+
+                        if (lht.getKind() == TypeKind.CHAR
+                                || TypesUtils.isDeclaredOfName(lht, "java.lang.Character")
+                                || rht.getKind() == TypeKind.CHAR
+                                || TypesUtils.isDeclaredOfName(rht, "java.lang.Character")) {
+                            type.replaceAnnotation(SIGNED);
+                        }
+                    }
+                    break;
                 default:
                     // Do nothing
             }
@@ -299,9 +304,31 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+            if (TreeUtils.isStringCompoundConcatenation(tree)) {
+                TypeMirror expr = TreeUtils.typeOf(tree.getExpression());
+
+                if (expr.getKind() == TypeKind.CHAR
+                        || TypesUtils.isDeclaredOfName(expr, "java.lang.Character")) {
+                    type.replaceAnnotation(SIGNED);
+                }
+            }
             annotateBooleanAsUnknownSignedness(type);
             return null;
         }
+    }
+
+    @Override
+    protected void adaptGetClassReturnTypeToReceiver(
+            AnnotatedExecutableType getClassType,
+            AnnotatedTypeMirror receiverType,
+            ExpressionTree tree) {
+        super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType, tree);
+        // Make the captured wildcard always @Signed, regardless of the declared type.
+        final AnnotatedDeclaredType returnAdt =
+                (AnnotatedDeclaredType) getClassType.getReturnType();
+        final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+        AnnotatedTypeVariable classWildcardArg = (AnnotatedTypeVariable) typeArgs.get(0);
+        classWildcardArg.getUpperBound().replaceAnnotation(SIGNED);
     }
 
     @Override
@@ -592,4 +619,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
+    @Override
+    public boolean isRelevant(TypeMirror tm) {
+        if (TypesUtils.isFloatingPoint(tm)) {
+            return false;
+        }
+        return true;
+    }
 }
