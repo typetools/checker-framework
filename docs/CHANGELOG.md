@@ -1,11 +1,8 @@
-Version 3.21.2 (March 1, 2022)
+Version 3.21.3 (March 1, 2022)
 ---------------------------------
 
-**User-visible changes:**
-
-**Implementation details:**
-
 **Closed issues:**
+#2847, #4965, #5039, #5042, #5047.
 
 Version 3.21.2 (February 1, 2022)
 ---------------------------------
