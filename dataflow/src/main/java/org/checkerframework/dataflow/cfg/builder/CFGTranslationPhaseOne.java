@@ -46,7 +46,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1557,9 +1556,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @return nearest owner element of current tree
      */
     private Element findOwner() {
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+        if (enclosingMethod != null) {
+            return TreeUtils.elementFromDeclaration(enclosingMethod);
+        } else {
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+            return TreeUtils.elementFromDeclaration(enclosingClass);
+        }
+    }
+
+    /* typetools uses this much more complicated logic to fix issue #5042.
+     * That tests works in eisop without this change; not sure whether there would
+     * be any benefit in this change.
+    private Element findOwner() {
         Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
         if (enclosingMethodOrLambda != null) {
-            if (enclosingMethodOrLambda.getKind() == Kind.METHOD) {
+            if (enclosingMethodOrLambda.getKind() == Tree.Kind.METHOD) {
                 return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
             } else {
                 // The current path is in a lambda tree.  In this case the owner is either a method
@@ -1597,6 +1609,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             return TreeUtils.elementFromDeclaration(enclosingClass);
         }
     }
+    */
 
     /**
      * Translates an assertion statement to the correct CFG nodes. The translation assumes that
