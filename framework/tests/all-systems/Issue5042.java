@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.function.Function;
 
-@SuppressWarnings("initializedfields") // The fields are intialized.
+@SuppressWarnings("initializedfields") // The fields are initialized.
 public class Issue5042 {
     interface PromptViewModel {
         boolean isPending();
