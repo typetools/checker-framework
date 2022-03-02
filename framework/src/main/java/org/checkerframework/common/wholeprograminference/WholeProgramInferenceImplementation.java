@@ -14,6 +14,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -45,6 +46,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This is the primary implementation of {@link
@@ -134,6 +136,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    // Don't infer types for code that can't be annotated anyway.
+    if (!storage.hasStorageLocationForMethod(constructorElt)) {
+      return;
+    }
+
     List<Node> arguments = objectCreationNode.getArguments();
     updateInferredExecutableParameterTypes(constructorElt, arguments);
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
@@ -205,12 +212,56 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
 
-      VariableElement ve = methodElt.getParameters().get(i);
+      VariableElement ve;
+      boolean varargsParam = i >= methodElt.getParameters().size() - 1 && methodElt.isVarArgs();
+      if (varargsParam && this.atypeFactory.wpiOutputFormat == OutputFormat.JAIF) {
+        // The AFU's annotator.Main produces a non-compilable source file when JAIF-based WPI
+        // tries to output an annotated varargs parameter, such as when running the test
+        // checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
+        // Until that bug is fixed, do not attempt to infer information about varargs parameters
+        // in JAIF mode.
+        return;
+      }
+      if (varargsParam) {
+        ve = methodElt.getParameters().get(methodElt.getParameters().size() - 1);
+      } else {
+        ve = methodElt.getParameters().get(i);
+      }
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
       AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
+      if (varargsParam) {
+        // Check whether argATM needs to be turned into an array type, so that the type structure
+        // matches paramATM.
+        boolean expandArgATM = false;
+        if (argATM.getKind() == TypeKind.ARRAY) {
+          int argATMDepth = AnnotatedTypes.getArrayDepth((AnnotatedArrayType) argATM);
+          // This unchecked cast is safe because the declared type of a varargs parameter
+          // is guaranteed to be an array of some kind.
+          int paramATMDepth = AnnotatedTypes.getArrayDepth((AnnotatedArrayType) paramATM);
+          if (paramATMDepth != argATMDepth) {
+            assert argATMDepth + 1 == paramATMDepth;
+            expandArgATM = true;
+          }
+        } else {
+          expandArgATM = true;
+        }
+        if (expandArgATM) {
+          AnnotatedTypeMirror argArray =
+              AnnotatedTypeMirror.createType(
+                  TypesUtils.createArrayType(argATM.getUnderlyingType(), atypeFactory.types),
+                  atypeFactory,
+                  false);
+          ((AnnotatedArrayType) argArray).setComponentType(argATM);
+          argATM = argArray;
+        }
+      }
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
+      // If storage.getParameterAnnotations receives an index that's larger than the size
+      // of the parameter list, scenes-backed inference can create duplicate entries
+      // for the varargs parameter (it indexes inferred annotations by the parameter number).
+      int paramIndex = varargsParam ? methodElt.getParameters().size() - 1 : i;
       T paramAnnotations =
-          storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
+          storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
   }
