@@ -323,7 +323,6 @@ Buck is a build system maintained by Facebook.
 Buck has support for annotation processors, but that support is
 undocumented because the Buck maintainers may change the syntax in the
 future and they don't wish to ever change anything that is documented.
-
 You can learn more about Buck and annotation processors at these URLs:
 {\codesize\url{https://stackoverflow.com/questions/32915721/documentation-for-annotation-processors-buck}},
 {\codesize\url{https://github.com/facebook/buck/issues/85}}.
@@ -331,15 +330,13 @@ You can learn more about Buck and annotation processors at these URLs:
 In order to use Checker Framework with Buck on JDK 8, you first need
 to place the Error Prone JDK 9 compiler in Buck's bootclasspath
 (further explanation in Section~\ref{javac-jdk8}).  To do so,
-follow the instructions on this page:
-
-{\codesize\url{https://github.com/uber/okbuck/wiki/Using-Error-Prone-with-Buck-and-OkBuck#using-error-prone-javac-on-jdk-8}}
-
+follow the instructions on this page: \\
+{\codesize\url{https://github.com/uber/okbuck/wiki/Using-Error-Prone-with-Buck-and-OkBuck#using-error-prone-javac-on-jdk-8}} \\
 You only need to follow the instructions to use Error Prone javac on
 that page, not the instructions to enable Error Prone.
 
-Once you have completed those steps, here is an example \<BUCK> build
-file showing how to enable Checker Framework:
+Here is an example \<BUCK> build
+file showing how to enable the Checker Framework:
 
 \begin{Verbatim}
 prebuilt_jar(
@@ -365,6 +362,35 @@ java_library (
 )
 \end{Verbatim}
 
+
+\subsectionAndLabel{Troubleshooting}{buck-troubleshooting}
+
+Use \<--verbose 8> to see diagnostic output including a command line that
+ought to be equivalent to Buck's use of an in-process Java compiler.
+For example, you might run
+
+\begin{Verbatim}
+./buck clean
+./buck fetch //...
+./buck build --verbose 8 //app:main
+\end{Verbatim}
+
+However, the command lines that buck prints with \<-v 8> is \emph{not} what
+Buck actually executes.  Buck's invocation of the Checker Framework may
+produce errors that cannot be reproduced from the command line.  This is
+because Buck uses
+\href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/jvm/java/Jsr199Javac.java}{in-process
+  compilation}, potentially multi-threaded, and because Buck may use use
+\href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/util/ClassLoaderCache.java}{multiple
+  classloaders} that are cached.
+
+You can force Buck to run an external javac, thus behaving exactly like the
+command line that its diagnostics print.  Use the configuration flag \<-c
+tools.javac=\emph{path-to-javac}>, for example:
+
+\begin{Verbatim}
+./buck-exe clean && ./buck-exe fetch //... && ./buck-exe build //app:main -c tools.javac=$(which javac)
+\end{Verbatim}
 
 
 \sectionAndLabel{Command line, via Checker Framework javac wrapper}{javac-wrapper}
