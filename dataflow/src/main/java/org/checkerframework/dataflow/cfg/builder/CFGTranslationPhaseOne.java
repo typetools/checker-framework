@@ -1551,7 +1551,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
-     * Find nearest owner element(Method or Class) which holds current tree.
+     * Find nearest owner element (Method or Class) which holds current tree.
      *
      * @return nearest owner element of current tree
      */
@@ -1564,6 +1564,52 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             return TreeUtils.elementFromDeclaration(enclosingClass);
         }
     }
+
+    /* typetools uses this much more complicated logic to fix issue #5042.
+     * That tests works in eisop without this change; not sure whether there would
+     * be any benefit in this change.
+    private Element findOwner() {
+        Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
+        if (enclosingMethodOrLambda != null) {
+            if (enclosingMethodOrLambda.getKind() == Tree.Kind.METHOD) {
+                return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
+            } else {
+                // The current path is in a lambda tree.  In this case the owner is either a method
+                // or an initializer block.
+                LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
+                if (!lambdaTree.getParameters().isEmpty()) {
+                    // If there is a lambda parameter, use the same owner.
+                    return TreeUtils.elementFromDeclaration(lambdaTree.getParameters().get(0))
+                            .getEnclosingElement();
+                }
+                // If there are no lambda parameters then if the lambda is enclosed in a method,
+                // that's the owner.
+                MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+                if (enclosingMethod != null) {
+                    return TreeUtils.elementFromDeclaration(enclosingMethod);
+                }
+
+                // If the lambda is not enclosed in a method, then the owner should be a
+                // constructor. javac seems to use the last constructor in the list. (If the lambda
+                // is in an initializer of a static field then the owner should be a static
+                // initializer block, but there doesn't seem to be a way to get a reference to the
+                // static initializer element.)
+                ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+                TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
+                ExecutableElement constructor = null;
+                for (Element enclosing : typeElement.getEnclosedElements()) {
+                    if (enclosing.getKind() == ElementKind.CONSTRUCTOR) {
+                        constructor = (ExecutableElement) enclosing;
+                    }
+                }
+                return constructor;
+            }
+        } else {
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+            return TreeUtils.elementFromDeclaration(enclosingClass);
+        }
+    }
+    */
 
     /**
      * Translates an assertion statement to the correct CFG nodes. The translation assumes that

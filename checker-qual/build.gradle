@@ -4,7 +4,7 @@ buildscript {
     }
     dependencies {
         // Create OSGI bundles
-        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:6.1.0"
+        classpath "biz.aQute.bnd:biz.aQute.bnd.gradle:6.2.0"
         // Don't add implementation dependencies; checker-qual.jar should have no dependencies.
     }
 }

@@ -113,7 +113,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.21.2-eisop1'
+    version '3.21.3'
 
     repositories {
         mavenCentral()

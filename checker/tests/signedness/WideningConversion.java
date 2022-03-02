@@ -11,6 +11,8 @@ public class WideningConversion {
     @Signed int si2;
     @Unsigned int ui1;
     @Unsigned int ui2;
+    @Unsigned short us1;
+    @Unsigned short us2;
 
     void compare() {
         boolean b;
@@ -91,5 +93,14 @@ public class WideningConversion {
         c = (char) (c1 + ui2);
         c = (char) (ui1 + c2);
         c = (char) (ui1 + ui2);
+    }
+
+    void to_string() {
+        // :: error: (unsigned.concat)
+        String s1 = "" + us1;
+        // :: error: (argument.type.incompatible)
+        String s2 = String.valueOf(us2);
+        // :: error: (argument.type.incompatible)
+        String s3 = Short.toString(us1);
     }
 }

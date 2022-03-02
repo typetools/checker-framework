@@ -496,6 +496,10 @@ public class QualifierDefaults {
 
         for (Tree t : path) {
             switch (TreeUtils.getKindRecordAsClass(t)) {
+                case ANNOTATED_TYPE:
+                case ANNOTATION:
+                    // If the tree is in an annotation, then there is no relevant scope.
+                    return null;
                 case VARIABLE:
                     VariableTree vtree = (VariableTree) t;
                     ExpressionTree vtreeInit = vtree.getInitializer();

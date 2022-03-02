@@ -2489,7 +2489,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (variableTree.getModifiers() != null) {
                 AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
                 AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-                if (!atypeFactory.getTypeHierarchy().isSubtype(expType, variableType)) {
+                if (!isTypeCastSafe(variableType, expType)) {
                     checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
                 }
             }
@@ -2571,7 +2571,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     public void warnAboutIrrelevantJavaTypes(
             @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
-        if (atypeFactory.relevantJavaTypes == null) {
+        if (!shouldWarnAboutIrrelevantJavaTypes()) {
             return;
         }
 
@@ -2613,6 +2613,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     return;
             }
         }
+    }
+
+    /**
+     * Returns true if the checker should issue warnings about irrelevant java types.
+     *
+     * @return true if the checker should issue warnings about irrelevant java types
+     */
+    protected boolean shouldWarnAboutIrrelevantJavaTypes() {
+        return atypeFactory.relevantJavaTypes != null;
     }
 
     /**

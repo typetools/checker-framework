@@ -1,5 +1,5 @@
-Version 3.21.2-eisop2 (February ?, 2022)
-----------------------------------------
+Version 3.21.3-eisop1 (March ?, 2022)
+-------------------------------------
 
 **User-visible changes:**
 
@@ -13,6 +13,13 @@ visibility. It is only meant as a utility method for use within a
 transfer function.
 
 **Closed issues:**
+
+
+Version 3.21.3 (March 1, 2022)
+------------------------------
+
+**Closed issues:**
+#2847, #4965, #5039, #5042, #5047.
 
 
 Version 3.21.2-eisop1 (February 2, 2022)
