@@ -4786,8 +4786,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
                 if (wildcardType.isUninferredTypeArgument()) {
                     // Keep the uninferred type so that it is ignored by later subtyping and
-                    // containment
-                    // checks.
+                    // containment checks.
                     typeVarToTypeArg.put(typeVariable, wildcardType);
                 } else if (isExtendsWildcard(wildcardType)) {
                     TypeMirror correctArgType;
@@ -4844,8 +4843,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         groundFunctionalType.addAnnotations(functionalType.getAnnotations());
 
         // When the groundTargetJavaType is different from the underlying type of functionalType,
-        // only
-        // the main annotations are copied.  Add default annotations in places without annotations.
+        // only the main annotations are copied.  Add default annotations in places without
+        // annotations.
         addDefaultAnnotations(groundFunctionalType);
         return groundFunctionalType;
     }
