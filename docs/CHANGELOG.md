@@ -1,6 +1,10 @@
 Version 3.21.3-eisop1 (March ?, 2022)
 -------------------------------------
 
+**User-visible changes:**
+
+**Implementation details:**
+
 Changed `AnnotatedTypeFactory.initializeAtm` from public to package
 private visibility. Nobody outside the package should call this method.
 
