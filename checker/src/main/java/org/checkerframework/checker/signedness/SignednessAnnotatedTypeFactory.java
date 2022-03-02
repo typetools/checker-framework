@@ -199,6 +199,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       result.add(UNSIGNED);
       return result;
     }
+    if ((widenedTypeKind == TypeKind.INT || widenedTypeKind == TypeKind.LONG)
+        && typeKind == TypeKind.CHAR) {
+      result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
+      return result;
+    }
     return annos;
   }
 
