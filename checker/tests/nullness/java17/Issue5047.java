@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java16-jdk-skip-test
 // Test case for issue #5047: https://tinyurl.com/cfissue/5047
 
 import org.checkerframework.checker.nullness.qual.Nullable;

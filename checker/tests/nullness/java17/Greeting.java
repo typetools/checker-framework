@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java16-jdk-skip-test
 // Test case for https://github.com/typetools/checker-framework/issues/5039
 package com.example.hello_world;
 
