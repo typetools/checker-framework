@@ -5,25 +5,25 @@ public class CharComparisons {
   @Unsigned byte b;
 
   void unsignedComparison(char c, @Unsigned byte b) {
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     boolean res = c > b;
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     res = c >= b;
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     res = c < b;
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     res = c <= b;
     res = c == b;
   }
 
   void unsignedComparisonFields() {
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     boolean res = this.c > this.b;
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     res = this.c >= this.b;
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     res = this.c < this.b;
-    // :: error: (comparison.unsignedlhs)
+    // :: error: (comparison.unsignedrhs)
     res = this.c <= this.b;
     res = this.c == this.b;
   }
