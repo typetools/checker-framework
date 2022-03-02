@@ -1,5 +1,4 @@
 import de.undercouch.gradle.tasks.download.Download
-import org.ajoberstar.grgit.Grgit
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
@@ -9,8 +8,6 @@ plugins {
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id 'net.ltgt.errorprone' version '2.0.2'
-    // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.1.1' apply false
     // https://docs.gradle.org/current/userguide/eclipse_plugin.html
     id 'eclipse'
 }
@@ -657,6 +654,7 @@ task getCodeFormatScripts() {
     }
 }
 
+/* Remove unused dependency on grgit, which doesn't work on Java 8 as of version 5.0.0
 // This implementation is preferable to the above because it does work in Gradle rather than in bash.
 // However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97 .
 // No group so it does not show up in the output of `gradlew tasks`
@@ -673,6 +671,7 @@ task getCodeFormatScriptsInGradle {
         }
     }
 }
+*/
 
 // No group so it does not show up in the output of `gradlew tasks`
 task getPlumeScripts() {
