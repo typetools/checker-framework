@@ -389,7 +389,7 @@ command line that its diagnostics print.  Use the configuration flag \<-c
 tools.javac=\emph{path-to-javac}>, for example:
 
 \begin{Verbatim}
-./buck-exe clean && ./buck-exe fetch //... && ./buck-exe build //app:main -c tools.javac=$(which javac)
+./buck clean && ./buck fetch //... && ./buck build //app:main -c tools.javac=$(which javac)
 \end{Verbatim}
 
 
