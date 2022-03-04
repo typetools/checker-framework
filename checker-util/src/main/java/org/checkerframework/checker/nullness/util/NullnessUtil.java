@@ -17,8 +17,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * <pre>import static org.checkerframework.checker.nullness.util.NullnessUtil.*;</pre>
  *
  * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
- * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
- * project.
+ * checker-qual.jar}, along with your binaries. Or, you can copy this class into your own project.
  */
 @SuppressWarnings({
   "nullness", // Nullness utilities are trusted regarding nullness.

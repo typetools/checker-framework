@@ -746,7 +746,7 @@ public class NullnessAnnotatedTypeFactory
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
    * because they may apply to inner types.
    *
-   * @param annoTrees a list of annotations that the the Java parser attached to the variable/method
+   * @param annoTrees a list of annotations that the Java parser attached to the variable/method
    *     declaration; null if this type is not from such a location. This is a list of extra
    *     annotations to check, in addition to those on the type.
    * @param typeTree the type whose annotations to test
