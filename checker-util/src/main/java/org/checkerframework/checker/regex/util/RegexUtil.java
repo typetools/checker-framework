@@ -23,8 +23,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
  * regular expression</a> in the Checker Framework manual.
  *
  * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
- * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
- * project.
+ * checker-qual.jar}, along with your binaries. Or, you can copy this class into your own project.
  */
 @AnnotatedFor("nullness")
 public final class RegexUtil {
