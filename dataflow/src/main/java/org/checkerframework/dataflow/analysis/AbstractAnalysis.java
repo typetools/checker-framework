@@ -256,9 +256,6 @@ public abstract class AbstractAnalysis<
     if (cfg == null) {
       return null;
     }
-    if (isRunning) {
-      return cfg.getTreeLookup().get(t);
-    }
     return cfg.getNodesCorrespondingToTree(t);
   }
 
@@ -268,7 +265,15 @@ public abstract class AbstractAnalysis<
     if (t == currentTree) {
       return null;
     }
-    Set<Node> nodesCorrespondingToTree = getNodesForTree(t);
+    V result = getValueHelper(getNodesForTree(t));
+    if (result == null) {
+      result = getValueHelper(cfg.getTreeLookup().get(t));
+    }
+    return result;
+  }
+
+  private @Nullable V getValueHelper(Set<Node> nodesCorrespondingToTree) {
+
     if (nodesCorrespondingToTree == null) {
       return null;
     }
@@ -284,6 +289,7 @@ public abstract class AbstractAnalysis<
         merged = merged.leastUpperBound(v);
       }
     }
+
     return merged;
   }
 
