@@ -1689,7 +1689,8 @@ public abstract class GenericAnnotatedTypeFactory<
     return varargtype;
   }
 
-  /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
+  /**
+   * Returns the type of a right-hand side of an assignment for unary operation like prefix or
    * postfix increment or decrement.
    *
    * @param tree unary operation tree for compound assignment

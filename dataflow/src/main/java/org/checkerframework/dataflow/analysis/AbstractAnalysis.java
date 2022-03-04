@@ -256,6 +256,9 @@ public abstract class AbstractAnalysis<
     if (cfg == null) {
       return null;
     }
+    if (isRunning) {
+      return cfg.getTreeLookup().get(t);
+    }
     return cfg.getNodesCorrespondingToTree(t);
   }
 
