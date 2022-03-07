@@ -261,7 +261,7 @@ public abstract class AbstractAnalysis<
 
   @Override
   public @Nullable V getValue(Tree t) {
-    // we don't have a org.checkerframework.dataflow fact about the current node yet
+    // Dataflow is analyzing the tree, so no value is available.
     if (t == currentTree) {
       return null;
     }
@@ -272,11 +272,11 @@ public abstract class AbstractAnalysis<
     return result;
   }
 
-  private @Nullable V getValueHelper(Set<Node> nodesCorrespondingToTree) {
-
+  private @Nullable V getValueHelper(@Nullable Set<Node> nodesCorrespondingToTree) {
     if (nodesCorrespondingToTree == null) {
       return null;
     }
+
     V merged = null;
     for (Node aNode : nodesCorrespondingToTree) {
       if (aNode.isLValue()) {
