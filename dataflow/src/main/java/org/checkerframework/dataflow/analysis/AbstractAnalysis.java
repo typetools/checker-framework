@@ -262,23 +262,29 @@ public abstract class AbstractAnalysis<
   @Override
   public @Nullable V getValue(Tree t) {
     // Dataflow is analyzing the tree, so no value is available.
-    if (t == currentTree) {
+    if (t == currentTree || cfg == null) {
       return null;
     }
-    V result = getValueHelper(getNodesForTree(t));
+    V result = getValue(getNodesForTree(t));
     if (result == null) {
-      result = getValueHelper(cfg.getTreeLookup().get(t));
+      result = getValue(cfg.getTreeLookup().get(t));
     }
     return result;
   }
 
-  private @Nullable V getValueHelper(@Nullable Set<Node> nodesCorrespondingToTree) {
-    if (nodesCorrespondingToTree == null) {
+  /**
+   * Returns the least upper bound of the values of {@code nodes}.
+   *
+   * @param nodes a set of nodes
+   * @return the least upper bound of the values of {@code nodes}
+   */
+  private @Nullable V getValue(@Nullable Set<Node> nodes) {
+    if (nodes == null) {
       return null;
     }
 
     V merged = null;
-    for (Node aNode : nodesCorrespondingToTree) {
+    for (Node aNode : nodes) {
       if (aNode.isLValue()) {
         return null;
       }
