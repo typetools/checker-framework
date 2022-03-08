@@ -26,7 +26,6 @@
   <li><a href="#evaluate-type-system">Evaluate a type system or a Checker Framework feature</a>
     <ul>
       <li><a href="#case-study-signature">Signature strings</a></li>
-      <li><a href="#case-study-signedness">Signed and unsigned numbers</a></li>
       <li><a href="#optional-case-study">Java's Optional class</a></li>
       <li><a href="#Whole-program_type_inference">Whole-program type inference</a></li>
       <li><a href="#determinism">Determinism</a></li>
@@ -535,83 +534,6 @@ some other library, properly handles signature strings.
     string format is not defined.
   </li>
 </ul>
-
-
-<h2 id="case-study-signedness">Signed and unsigned numbers</h2>
-
-<p>
-  The <a href="https://checkerframework.org/manual/#signedness-checker">Signedness
-  Checker</a> ensures that you do not misuse unsigned values, such as
-  by mixing signed and unsigned values in a computation or by performing a
-  meaningless operation.
-</p>
-
-<p>
-  Perform a case study of the Signedness Checker, in order to detect errors
-  or guarantee that code is correct.
-</p>
-
-<p>
-  A good way to find projects that use unsigned arithmetic is to find a library that supports unsigned
-  arithmetic, then search on GitHub for projects that use that library.
-</p>
-
-<p>
-  Here are some relevant libraries.
-</p>
-<ul>
-  <li>In the JDK's <code>Integer</code>
-  and <code>Long</code>, these include
-   <code>compareUnsigned</code>,
-   <code>divideUnsigned</code>,
-   <code>parseUnsignedInt</code>,
-   <code>remainderUnsigned</code>, and
-   <code>toUnsignedLong</code>.
-   <br/>
-   Classes like <code>DataInputStream</code>, <code>ObjectInputStream</code>,
-   and <code>RandomAccessFile</code> have <code>readUnsignedByte</code>.
-   <br/>
-   <code>Arrays</code> has <code>compareUnsigned</code>.
-   The JDK is already annotated; search for <code>@Unsigned</code> within
-   <a href="https://github.com/typetools/jdk">https://github.com/typetools/jdk</a>.
-  </li>
-  <li>
-    In Guava, see
-  its <a href="https://github.com/google/guava/wiki/PrimitivesExplained#unsigned-support">unsigned
-  support</a>, such
-  as <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a>,
-  <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLong.html">UnsignedLong</a>,
-  <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLongs.html">UnsignedLongs</a>,
-  etc.
-   Guava is already annotated; search for <code>@Unsigned</code> within
-   <a href="https://github.com/typetools/guava">https://github.com/typetools/guava</a>.
-  </li>
-  <li>The <a href="https://github.com/jOOQ/jOOU">jOOU</a> library consists of support for unsigned
-      integers.</li>
-</ul>
-
-<p>
-  Another possibility is to find Java projects that <em>could</em> use an
-  unsigned arithmetic library but do not.  For
-  example, <a href="https://github.com/bcgit/bc-java">bc-java</a> defines
-  its own unsigned libraries, and some other programs might do direct bit
-  manipulation.
-</p>
-  <!-- Not a good choice because this is just example code, not an actively-maintained project.
-  <li>Project
-  Nayuki: <a href="https://www.nayuki.io/page/forcing-a-files-crc-to-any-value">CRC</a>, <a href="https://www.nayuki.io/page/notepadcrypt-format-decryptor-java">crypt</a>, <a href="https://www.nayuki.io/page/native-hash-functions-for-java">hash</a>.</li>
-  -->
-  <!-- Not a good choice because it is not under active development:
-  <li><a href="https://bytonic.de/html/jake2.html">Jake2</a></li>
-   -->
-
-<p>
-  Your case studies will show the need for enhancements to the Signedness
-  Checker.  For example, the Signedness Checker does not currently handle
-  boxed integers and BigInteger; these haven't yet come up in case studies
-  but could be worthwhile enhancements.  You may also need to
-  write more annotations for libraries such as the JDK.
-</p>
 
 
 <h2 id="optional-case-study">Java's Optional class</h2>
