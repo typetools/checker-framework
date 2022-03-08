@@ -28,7 +28,6 @@
       <li><a href="#case-study-signature">Signature strings</a></li>
       <li><a href="#optional-case-study">Java's Optional class</a></li>
       <li><a href="#Whole-program_type_inference">Whole-program type inference</a></li>
-      <li><a href="#determinism">Determinism</a></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
       <li><a href="#compare-other-tools">Comparison to other tools</a></li>
       <li><a href="#case-study-android-support">Android support annotations</a></li>
@@ -575,25 +574,6 @@ a <a href="https://checkerframework.org/manual/#whole-program-inference">whole-p
     inference</a> that inserts type qualifiers in the user's program.
 It works well on some programs, but needs more enhancements to work well on
 all programs.
-</p>
-
-
-<h2 id="determinism">Determinism</h2>
-
-<p>
-Programs are easier to use and debug if their output is deterministic.  For
-example, it is easier to test a deterministic program, because
-nondeterminism can lead to flaky tests that sometimes succeed and sometimes
-fail.  As another example, it is easier for a user or programmer to compare
-two deterministic executions than two nondeterministic executions.
-</p>
-
-<p>
-  We have created a prototype Determinism Checker.  It is documented in
-  this <a href="https://checkerframework.org/determinism-checker-manual/manual.html#determinism-checker">draft
-  manual chapter</a>, and its implementation is in
-<a href="https://github.com/t-rasmud/checker-framework/tree/nondet-checker">t-rasmud/nondet-checker</a>.
-You will do a case study of this type system.
 </p>
 
 
