@@ -704,5 +704,3 @@ Framework Inference vs. Julia, to understand when each one is worth using.
   but could be worthwhile enhancements.  You may also need to
   write more annotations for libraries such as the JDK.
 </p>
-
-
