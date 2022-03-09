@@ -143,6 +143,10 @@ public class WholeProgramInferenceJavaParserStorage
     // Read in classes for the element.
     getFileForElement(methodElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      System.out.println("about to throw an NPE because of an unfound class");
+      System.out.println("class name: " + className);
+    }
     CallableDeclarationAnnos methodAnnos =
         classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
     return methodAnnos;
@@ -171,6 +175,14 @@ public class WholeProgramInferenceJavaParserStorage
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
+    if (methodAnnos == null) {
+      // When processing anonymous inner classes outside their compilation units,
+      // it might not have been possible to create an appropriate CallableDeclarationAnnos:
+      // no element would have been available, causing the computed method signature to
+      // be incorrect. In this case, abort looking up annotations - inference will fail,
+      // because even if WPI inferred something, it couldn't be printed.
+      return paramATM;
+    }
     return methodAnnos.getParameterTypeInitialized(paramATM, i, atypeFactory);
   }
 
@@ -180,6 +192,10 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeMirror paramATM,
       AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return paramATM;
+    }
     return methodAnnos.getReceiverType(paramATM, atypeFactory);
   }
 
@@ -187,6 +203,10 @@ public class WholeProgramInferenceJavaParserStorage
   public AnnotatedTypeMirror getReturnAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return atm;
+    }
     return methodAnnos.getReturnType(atm, atypeFactory);
   }
 
@@ -244,6 +264,10 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return declaredType;
+    }
     return methodAnnos.getPreconditionsForExpression(expression, declaredType, atypeFactory);
   }
 
@@ -262,6 +286,10 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeMirror declaredType,
       AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return declaredType;
+    }
     return methodAnnos.getPostconditionsForExpression(expression, declaredType, atypeFactory);
   }
 
@@ -270,6 +298,10 @@ public class WholeProgramInferenceJavaParserStorage
       ExecutableElement methodElt, AnnotationMirror anno) {
 
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(methodElt));
@@ -439,10 +471,25 @@ public class WholeProgramInferenceJavaParserStorage
               // elementFromTree returns null instead of crashing when no element exists for
               // the class tree, which can happen for certain kinds of anonymous classes, such as
               // Ordering$1 in PolyCollectorTypeVar.java in the all-systems test suite.
-              // addClass() below assumes that such an element exists.
+              // addClass(ClassTree) below assumes that such an element exists.
               Element classElt = TreeUtils.elementFromTree(body);
               if (classElt != null) {
                 addClass(body);
+              } else {
+                // If such an element does not exist, compute the name of the class, instead.
+                // This method of computing the name is not 100% guaranteed to be reliable,
+                // but it should be sufficient for WPI's purposes here: if the wrong name
+                // is computed, the worst outcome is a false positive because WPI inferred an
+                // untrue annotation.
+                String className;
+                if ("".equals(body.getSimpleName().toString().trim())) {
+                  // TODO: compute this value correctly
+                  className = javaParserClass.getFullyQualifiedName().get() + "$1";
+                } else {
+                  className = javaParserClass.getFullyQualifiedName().get() + "$" + body.getSimpleName().toString();
+                }
+                System.out.println("adding an inner class using a computed class name: " + className);
+                addClass(body, className);
               }
             }
           }
@@ -455,15 +502,24 @@ public class WholeProgramInferenceJavaParserStorage
            *
            * @param tree tree to add
            */
-          private void addClass(ClassTree tree) {
-            TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-            String className = ElementUtils.getBinaryName(classElt);
+          private void addClass(ClassTree tree, @Nullable String classNameKey) {
+            String className;
+            if (classNameKey == null) {
+              TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
+              className = ElementUtils.getBinaryName(classElt);
+            } else {
+              className = classNameKey;
+            }
             ClassOrInterfaceAnnos typeWrapper = new ClassOrInterfaceAnnos();
             if (!classToAnnos.containsKey(className)) {
               classToAnnos.put(className, typeWrapper);
             }
 
             sourceAnnos.types.add(typeWrapper);
+          }
+
+          private void addClass(ClassTree tree) {
+            addClass(tree, null);
           }
 
           @Override
