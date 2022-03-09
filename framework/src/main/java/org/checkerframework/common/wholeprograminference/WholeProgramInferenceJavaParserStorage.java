@@ -44,6 +44,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.TreeInfo;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -431,14 +434,24 @@ public class WholeProgramInferenceJavaParserStorage
 
           @Override
           public void processNewClass(NewClassTree javacTree, ObjectCreationExpr javaParserNode) {
-            if (javacTree.getClassBody() != null) {
-              addClass(javacTree.getClassBody());
+            ClassTree body = javacTree.getClassBody();
+            if (body != null) {
+              // elementFromTree returns null instead of crashing when no element exists for
+              // the class tree, which can happen for certain kinds of anonymous classes, such as
+              // Ordering$1 in PolyCollectorTypeVar.java in the all-systems test suite.
+              // addClass() below assumes that such an element exists.
+              Element classElt = TreeUtils.elementFromTree(body);
+              if (classElt != null) {
+                addClass(body);
+              }
             }
           }
 
           /**
            * Creates a wrapper around the class for {@code tree} and stores it in {@code
            * sourceAnnos}.
+           *
+           * This method assumes that there is an Element corresponding to {@code tree}.
            *
            * @param tree tree to add
            */
@@ -472,7 +485,15 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
-            ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
+            Element element = TreeUtils.elementFromTree(javacTree);
+            if (element == null) {
+              // elt can be null if there is no element corresponding to the method,
+              // which happens for certain kinds of anonymous classes, such as Ordering$1 in
+              // PolyCollectorTypeVar.java in the all-systems test suite.
+              return;
+            }
+            // If elt is non-null, it is guaranteed to be an executable element.
+            ExecutableElement elt = (ExecutableElement) element;
             String className = ElementUtils.getEnclosingClassName(elt);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
             String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
