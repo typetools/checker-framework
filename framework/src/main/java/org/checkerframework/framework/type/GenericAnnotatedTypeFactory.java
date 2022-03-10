@@ -1690,10 +1690,10 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the type of a right-hand side of an assignment for unary operation like prefix or
-   * postfix increment or decrement.
+   * Returns the type of {@code v + 1} or {@code v - 1} where {@code v} is the expression in the
+   * postfixed increment or decrement expression.
    *
-   * @param tree unary operation tree for compound assignment
+   * @param tree a postfixed increment or decrement tree
    * @return AnnotatedTypeMirror of a right-hand side of an assignment for unary operation
    */
   public AnnotatedTypeMirror getAnnotatedTypeRhsUnaryAssign(UnaryTree tree) {
