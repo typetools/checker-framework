@@ -98,7 +98,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * An inference can be attempted without success for example because the current storage system
    * does not support placing annotation in the location for which an annotation was inferred.
    */
-  private final boolean showFailedInferences;
+  private final boolean showWpiFailedInferences;
 
   /** The storage for the inferred annotations. */
   private WholeProgramInferenceStorage<T> storage;
@@ -112,19 +112,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param atypeFactory the associated type factory
    * @param storage the storage used for inferred annotations and for writing output files
-   * @param showFailedInferences whether the -AshowWPIFailedInferences argument was passed to the
-   *     checker, and therefore whether to print debugging messages when inference fails
+   * @param showWpiFailedInferences whether the {@code -AshowWpiFailedInferences} argument was
+   *     passed to the checker, and therefore whether to print debugging messages when inference
+   *     fails
    */
   public WholeProgramInferenceImplementation(
       AnnotatedTypeFactory atypeFactory,
       WholeProgramInferenceStorage<T> storage,
-      boolean showFailedInferences) {
+      boolean showWpiFailedInferences) {
     this.atypeFactory = atypeFactory;
     this.storage = storage;
     boolean isNullness =
         atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     this.ignoreNullAssignments = !isNullness;
-    this.showFailedInferences = showFailedInferences;
+    this.showWpiFailedInferences = showWpiFailedInferences;
   }
 
   /**
@@ -683,7 +684,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // The one difference in kinds situation that this method can account for is the RHS being
       // a literal null expression.
       if (!(rhsATM instanceof AnnotatedNullType)) {
-        if (showFailedInferences) {
+        if (showWpiFailedInferences) {
           printFailedInferenceDebugMessage(
               "type structure mismatch, so cannot transfer inferred type"
                   + "to declared type.\nDeclared type kind: "
@@ -715,13 +716,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
   /**
    * Prints a debugging message about a failed inference. Must only be called after {@link
-   * #showFailedInferences} has been checked, to avoid constructing the debugging message eagerly.
+   * #showWpiFailedInferences} has been checked, to avoid constructing the debugging message
+   * eagerly.
    *
    * @param reason a message describing the reason an inference was unsuccessful, which will be
    *     displayed to the user
    */
   private void printFailedInferenceDebugMessage(String reason) {
-    assert showFailedInferences;
+    assert showWpiFailedInferences;
     // TODO: it would be nice if this message also included a line number
     // for the file being analyzed, but I don't know how to get that information
     // here, given that this message is called from places where only the annotated
