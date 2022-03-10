@@ -2150,14 +2150,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** Performs assignability check. */
   @Override
   public Void visitUnary(UnaryTree tree, Void p) {
-    Tree.Kind nodeKind = tree.getKind();
-    if (nodeKind == Tree.Kind.PREFIX_DECREMENT
-        || nodeKind == Tree.Kind.PREFIX_INCREMENT
-        || nodeKind == Tree.Kind.POSTFIX_DECREMENT
-        || nodeKind == Tree.Kind.POSTFIX_INCREMENT) {
+    Tree.Kind treeKind = tree.getKind();
+    if (treeKind == Tree.Kind.PREFIX_DECREMENT
+        || treeKind == Tree.Kind.PREFIX_INCREMENT
+        || treeKind == Tree.Kind.POSTFIX_DECREMENT
+        || treeKind == Tree.Kind.POSTFIX_INCREMENT) {
+      // Check the assignment that occurs at the increment/decrement. i.e:
+      // exp = exp + 1 or exp = exp - 1
       AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(tree.getExpression());
       AnnotatedTypeMirror valueType;
-      if (nodeKind == Tree.Kind.POSTFIX_DECREMENT || nodeKind == Tree.Kind.POSTFIX_INCREMENT) {
+      if (treeKind == Tree.Kind.POSTFIX_DECREMENT || treeKind == Tree.Kind.POSTFIX_INCREMENT) {
         // For postfixed increments or decrements, the type of the tree the type of the expression
         // before 1 is added or subtracted. So, use a special method to get the type after 1 has
         // been added or subtracted.
@@ -2168,7 +2170,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         valueType = atypeFactory.getAnnotatedType(tree);
       }
       String errorKey =
-          (nodeKind == Tree.Kind.PREFIX_INCREMENT || nodeKind == Tree.Kind.POSTFIX_INCREMENT)
+          (treeKind == Tree.Kind.PREFIX_INCREMENT || treeKind == Tree.Kind.POSTFIX_INCREMENT)
               ? "unary.increment"
               : "unary.decrement";
       commonAssignmentCheck(varType, valueType, tree, errorKey);

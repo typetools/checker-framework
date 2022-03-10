@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg.builder;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
@@ -12,7 +13,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
@@ -28,7 +28,7 @@ public class PhaseOneResult {
 
   final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
   final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
-  final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
+  final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
   final UnderlyingAST underlyingAST;
   final Map<Label, Integer> bindings;
   final ArrayList<ExtendedNode> nodeList;
@@ -43,7 +43,7 @@ public class PhaseOneResult {
       UnderlyingAST underlyingAST,
       IdentityHashMap<Tree, Set<Node>> treeLookupMap,
       IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap,
-      IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap,
+      IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap,
       ArrayList<ExtendedNode> nodeList,
       Map<Label, Integer> bindings,
       Set<Integer> leaders,
@@ -55,7 +55,7 @@ public class PhaseOneResult {
     this.underlyingAST = underlyingAST;
     this.treeLookupMap = treeLookupMap;
     this.convertedTreeLookupMap = convertedTreeLookupMap;
-    this.unaryAssignNodeLookupMap = unaryAssignNodeLookupMap;
+    this.postfixLookupMap = postfixLookupMap;
     this.nodeList = nodeList;
     this.bindings = bindings;
     this.leaders = leaders;
@@ -130,7 +130,7 @@ public class PhaseOneResult {
             String.format("%n  "), String.format("PhaseOneResult{%n  "), String.format("%n  }"));
     result.add("treeLookupMap=" + mapToString(treeLookupMap));
     result.add("convertedTreeLookupMap=" + mapToString(convertedTreeLookupMap));
-    result.add("unaryAssignNodeLookupMap=" + mapToString(unaryAssignNodeLookupMap));
+    result.add("postfixLookupMap=" + mapToString(postfixLookupMap));
     result.add("underlyingAST=" + underlyingAST);
     result.add("bindings=" + bindings);
     result.add("nodeList=" + CFGBuilder.extendedNodeCollectionToStringDebug(nodeList));
