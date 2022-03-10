@@ -2151,12 +2151,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitUnary(UnaryTree node, Void p) {
     Tree.Kind nodeKind = node.getKind();
-    if ((nodeKind == Tree.Kind.PREFIX_DECREMENT)
-        || (nodeKind == Tree.Kind.PREFIX_INCREMENT)
-        || (nodeKind == Tree.Kind.POSTFIX_DECREMENT)
-        || (nodeKind == Tree.Kind.POSTFIX_INCREMENT)) {
+    if (nodeKind == Tree.Kind.PREFIX_DECREMENT
+        || nodeKind == Tree.Kind.PREFIX_INCREMENT
+        || nodeKind == Tree.Kind.POSTFIX_DECREMENT
+        || nodeKind == Tree.Kind.POSTFIX_INCREMENT) {
       AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(node.getExpression());
-      AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedTypeRhsUnaryAssign(node);
+      AnnotatedTypeMirror valueType;
+      if (nodeKind == Tree.Kind.POSTFIX_DECREMENT || nodeKind == Tree.Kind.POSTFIX_INCREMENT) {
+        valueType = atypeFactory.getAnnotatedTypeRhsUnaryAssign(node);
+      } else {
+        valueType = atypeFactory.getAnnotatedType(node);
+      }
       String errorKey =
           (nodeKind == Tree.Kind.PREFIX_INCREMENT || nodeKind == Tree.Kind.POSTFIX_INCREMENT)
               ? "unary.increment"
