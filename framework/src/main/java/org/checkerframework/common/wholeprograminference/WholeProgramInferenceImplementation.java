@@ -47,6 +47,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import scenelib.annotations.util.JVMNames;
 
 /**
  * This is the primary implementation of {@link
@@ -151,6 +152,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // Don't infer types for code that can't be annotated anyway.
     if (!storage.hasStorageLocationForMethod(constructorElt)) {
+      if (showWpiFailedInferences) {
+        printFailedInferenceDebugMessage(
+            "WPI could not store information"
+                + "about this constructor: "
+                + JVMNames.getJVMMethodSignature(constructorElt));
+      }
       return;
     }
 
@@ -233,6 +240,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
         // Until that bug is fixed, do not attempt to infer information about varargs parameters
         // in JAIF mode.
+        if (showWpiFailedInferences) {
+          printFailedInferenceDebugMessage(
+              "Annotations cannot be placed on varargs parametersin -Ainfer=jaifs mode, because the"
+                  + " JAIF format does not correctly support it.\n"
+                  + "The signature of the method whose varargs parameter was not annotated is: "
+                  + JVMNames.getJVMMethodSignature(methodElt));
+        }
         return;
       }
       if (varargsParam) {
