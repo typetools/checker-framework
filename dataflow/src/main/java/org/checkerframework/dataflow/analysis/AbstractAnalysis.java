@@ -170,7 +170,7 @@ public abstract class AbstractAnalysis<
           "AbstractAnalysis::getResult() shouldn't be called when the analysis is running.");
     }
     return new AnalysisResult<>(
-        nodeValues, inputs, cfg.getTreeLookup(), cfg.getUnaryAssignNodeLookup(), finalLocalValues);
+        nodeValues, inputs, cfg.getTreeLookup(), cfg.getPostfixNodeLookup(), finalLocalValues);
   }
 
   @Override

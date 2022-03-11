@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import com.google.common.collect.Ordering;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -56,7 +57,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -1690,18 +1690,18 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the type of a right-hand side of an assignment for unary operation like prefix or
-   * postfix increment or decrement.
+   * Returns the type of {@code v + 1} or {@code v - 1} where {@code v} is the expression in the
+   * postfixed increment or decrement expression.
    *
-   * @param tree unary operation tree for compound assignment
+   * @param tree a postfixed increment or decrement tree
    * @return AnnotatedTypeMirror of a right-hand side of an assignment for unary operation
    */
   public AnnotatedTypeMirror getAnnotatedTypeRhsUnaryAssign(UnaryTree tree) {
     if (!useFlow) {
       return getAnnotatedType(tree);
     }
-    AssignmentNode n = flowResult.getAssignForUnaryTree(tree);
-    return getAnnotatedType(n.getExpression().getTree());
+    BinaryTree binaryTree = flowResult.getPostfixBinaryTree(tree);
+    return getAnnotatedType(binaryTree);
   }
 
   @Override
