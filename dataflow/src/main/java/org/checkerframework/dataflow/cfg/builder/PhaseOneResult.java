@@ -20,23 +20,61 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 /* Phase One */
 /* --------------------------------------------------------- */
 
-/**
- * A wrapper object to pass around the result of phase one. For a documentation of the fields see
- * {@link CFGTranslationPhaseOne}.
- */
+/** A wrapper object to pass around the result of phase one. */
 public class PhaseOneResult {
 
-  final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
-  final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
-  final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
+  /** AST for which the CFG is to be built. */
   final UnderlyingAST underlyingAST;
-  final Map<Label, Integer> bindings;
+
+  /**
+   * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
+   * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
+   * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in the
+   * treeLookupMap, while the Node for the post-conversion value is stored in the
+   * convertedTreeLookupMap.
+   */
+  final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
+
+  /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
+  final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
+
+  /**
+   * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
+   * tree that {@code v + 1} or {@code v - 1}.
+   */
+  final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
+
+  /** The list of extended nodes. */
   final ArrayList<ExtendedNode> nodeList;
+
+  /** The bindings of labels to positions (i.e., indices) in the {@code nodeList}. */
+  final Map<Label, Integer> bindings;
+
+  /** The set of leaders (represented as indices into {@code nodeList}). */
   final Set<Integer> leaders;
-  final List<ReturnNode> returnNodes;
+
+  /**
+   * All return nodes (if any) encountered. Only includes return statements that actually return
+   * something.
+   */
+  private final List<ReturnNode> returnNodes;
+
+  /** Special label to identify the regular exit. */
   final Label regularExitLabel;
+
+  /** Special label to identify the exceptional exit. */
   final Label exceptionalExitLabel;
+
+  /**
+   * Class declarations that have been encountered when building the control-flow graph for a
+   * method.
+   */
   final List<ClassTree> declaredClasses;
+
+  /**
+   * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
+   * initializer.
+   */
   final List<LambdaExpressionTree> declaredLambdas;
 
   public PhaseOneResult(
