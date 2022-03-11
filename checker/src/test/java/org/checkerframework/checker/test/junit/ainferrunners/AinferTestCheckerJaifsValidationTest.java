@@ -20,7 +20,8 @@ public class AinferTestCheckerJaifsValidationTest extends CheckerFrameworkPerDir
         AinferTestChecker.class,
         "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
-        "-Awarns");
+        "-Awarns",
+        "-AskipDefs=TestPure");
   }
 
   @Override

@@ -24,7 +24,8 @@ public class AinferTestCheckerStubsValidationTest extends CheckerFrameworkPerDir
         "-Astubs=tests/ainfer-testchecker/inference-output",
         // "-AstubDebug",
         "-AmergeStubsWithSource",
-        "-Awarns");
+        "-Awarns",
+        "-AskipDefs=TestPure");
   }
 
   @Override
