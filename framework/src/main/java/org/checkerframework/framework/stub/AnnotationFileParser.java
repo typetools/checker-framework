@@ -2808,7 +2808,7 @@ public class AnnotationFileParser {
    * the map value. Otherwise put the key and the annos in the map.
    *
    * @param key a name (actually declaration element string)
-   * @param annos the the set of declaration annotations on it, as written in the annotation file
+   * @param annos the set of declaration annotations on it, as written in the annotation file
    */
   private void putOrAddToDeclAnnos(String key, Set<AnnotationMirror> annos) {
     Set<AnnotationMirror> stored = annotationFileAnnos.declAnnos.get(key);

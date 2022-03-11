@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * {@link Nullable} is a type annotation that makes no commitments about whether the value is {@code
  * null}. Equivalently, the type includes the {@code null} value.
  *
- * <p>The Nullness Checker issues an error if {@code null} is assigned an an expression of {@link
+ * <p>The Nullness Checker issues an error if {@code null} is assigned an expression of {@link
  * NonNull} type.
  *
  * <p>Programmers typically write {@code @Nullable} to indicate that the value is not known to be

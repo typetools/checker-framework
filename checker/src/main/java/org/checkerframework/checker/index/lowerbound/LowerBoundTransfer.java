@@ -785,7 +785,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
    * Returns true if the argument is the @Positive type annotation.
    *
    * @param anm the annotation to test
-   * @return true if the the argument is the @Positive type annotation
+   * @return true if the argument is the @Positive type annotation
    */
   private boolean isPositive(AnnotationMirror anm) {
     return aTypeFactory.areSameByClass(anm, Positive.class);
@@ -795,7 +795,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
    * Returns true if the argument is the @NonNegative type annotation (or a stronger one).
    *
    * @param anm the annotation to test
-   * @return true if the the argument is the @NonNegative type annotation
+   * @return true if the argument is the @NonNegative type annotation
    */
   private boolean isNonNegative(AnnotationMirror anm) {
     return aTypeFactory.areSameByClass(anm, NonNegative.class) || isPositive(anm);
@@ -805,7 +805,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
    * Returns true if the argument is the @GTENegativeOne type annotation (or a stronger one).
    *
    * @param anm the annotation to test
-   * @return true if the the argument is the @GTENegativeOne type annotation
+   * @return true if the argument is the @GTENegativeOne type annotation
    */
   private boolean isGTEN1(AnnotationMirror anm) {
     return aTypeFactory.areSameByClass(anm, GTENegativeOne.class) || isNonNegative(anm);
