@@ -42,7 +42,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
-   * tree that {@code v + 1} or {@code v - 1}.
+   * tree that is {@code v + 1} or {@code v - 1}.
    */
   protected final IdentityHashMap<UnaryTree, BinaryTree> postfixLookup;
 

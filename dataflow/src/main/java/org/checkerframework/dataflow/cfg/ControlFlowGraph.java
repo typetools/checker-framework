@@ -87,7 +87,7 @@ public class ControlFlowGraph implements UniqueId {
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
-   * tree that {@code v + 1} or {@code v - 1}.
+   * tree that is {@code v + 1} or {@code v - 1}.
    */
   protected final IdentityHashMap<UnaryTree, BinaryTree> postfixNodeLookup;
 

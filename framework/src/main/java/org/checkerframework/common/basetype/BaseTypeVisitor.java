@@ -2155,7 +2155,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         || treeKind == Tree.Kind.PREFIX_INCREMENT
         || treeKind == Tree.Kind.POSTFIX_DECREMENT
         || treeKind == Tree.Kind.POSTFIX_INCREMENT) {
-      // Check the assignment that occurs at the increment/decrement. i.e:
+      // Check the assignment that occurs at the increment/decrement. i.e.:
       // exp = exp + 1 or exp = exp - 1
       AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(tree.getExpression());
       AnnotatedTypeMirror valueType;

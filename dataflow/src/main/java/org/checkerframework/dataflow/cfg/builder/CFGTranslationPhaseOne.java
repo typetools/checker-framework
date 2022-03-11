@@ -269,7 +269,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
-   * tree that {@code v + 1} or {@code v - 1}.
+   * tree that is {@code v + 1} or {@code v - 1}.
    */
   final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
 
