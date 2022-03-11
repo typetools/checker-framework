@@ -57,7 +57,7 @@ public class PhaseOneResult {
    * All return nodes (if any) encountered. Only includes return statements that actually return
    * something.
    */
-  private final List<ReturnNode> returnNodes;
+  final List<ReturnNode> returnNodes;
 
   /** Special label to identify the regular exit. */
   final Label regularExitLabel;
