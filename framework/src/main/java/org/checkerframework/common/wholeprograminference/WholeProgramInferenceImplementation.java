@@ -419,6 +419,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // An ArrayCreationNode with a null tree is created when the
       // parameter is a variable-length list. We are ignoring it for now.
       // See Issue 682: https://github.com/typetools/checker-framework/issues/682
+      if (showWpiFailedInferences) {
+        printFailedInferenceDebugMessage(
+            "Could not update from formal parameter "
+                + "assignment, because an ArrayCreationNode with a null tree is created when "
+                + "the parameter is a variable-length list.\nParameter: "
+                + paramElt);
+      }
       return;
     }
 
@@ -431,6 +438,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // rather than the lambda itself (which has no element). WPI
       // does not support inferring types for lambda parameters, so
       // ignore it.
+      if (showWpiFailedInferences) {
+        printFailedInferenceDebugMessage(
+            "Could not update from formal "
+                + "parameter assignment inside a lambda expression, because lambda parameters "
+                + "cannot be annotated.\nParameter: "
+                + paramElt);
+      }
       return;
     }
 
