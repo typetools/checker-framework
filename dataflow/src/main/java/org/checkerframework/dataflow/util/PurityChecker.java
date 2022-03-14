@@ -321,6 +321,7 @@ public class PurityChecker {
      * @param variable the lhs to check
      */
     protected void assignmentCheck(ExpressionTree variable) {
+      variable = TreeUtils.withoutParens(variable);
       if (TreeUtils.isFieldAccess(variable)) {
         // lhs is a field access
         purityResult.addNotBothReason(variable, "assign.field");

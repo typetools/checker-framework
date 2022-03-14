@@ -138,14 +138,13 @@ public class WholeProgramInferenceJavaParserStorage
    * @param methodElt the method or constructor
    * @return the annotations for a method or constructor
    */
-  private CallableDeclarationAnnos getMethodAnnos(ExecutableElement methodElt) {
+  private @Nullable CallableDeclarationAnnos getMethodAnnos(ExecutableElement methodElt) {
     String className = ElementUtils.getEnclosingClassName(methodElt);
     // Read in classes for the element.
     getFileForElement(methodElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
     if (classAnnos == null) {
-      System.out.println("about to throw an NPE because of an unfound class");
-      System.out.println("class name: " + className);
+      return null;
     }
     CallableDeclarationAnnos methodAnnos =
         classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
