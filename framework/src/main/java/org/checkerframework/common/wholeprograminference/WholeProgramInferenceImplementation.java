@@ -273,6 +273,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           expandArgATM = true;
         }
         if (expandArgATM) {
+          if (argATM.getKind() == TypeKind.WILDCARD) {
+            if (showWpiFailedInferences) {
+              printFailedInferenceDebugMessage("Javac cannot create an array type " +
+                  "from a wildcard, so WPI did not attempt to infer a type for an array " +
+                  "parameter. The signature of the method whose parameter had inference " +
+                  "skipped is: " + JVMNames.getJVMMethodSignature(methodElt));
+            }
+            return;
+          }
           AnnotatedTypeMirror argArray =
               AnnotatedTypeMirror.createType(
                   TypesUtils.createArrayType(argATM.getUnderlyingType(), atypeFactory.types),
