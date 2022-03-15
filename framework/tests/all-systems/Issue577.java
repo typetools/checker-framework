@@ -53,6 +53,7 @@ class UnionAsMemberOf {
 
   void bar() throws MyExceptionA, MyExceptionB {}
 
+  @SuppressWarnings("ainfertest") // only check WPI for crashes
   void foo1(MyInterface<Throwable> param) throws Throwable {
     try {
       bar();

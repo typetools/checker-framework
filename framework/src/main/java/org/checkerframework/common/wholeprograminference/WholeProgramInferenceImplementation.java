@@ -861,9 +861,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
         // break;
       case ARRAY:
-        updateAtmWithLub(
-            ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-            ((AnnotatedArrayType) ajavaATM).getComponentType());
+        AnnotatedTypeMirror sourceCodeComponent = ((AnnotatedArrayType) sourceCodeATM).getComponentType();
+        AnnotatedTypeMirror ajavaComponent = ((AnnotatedArrayType) ajavaATM).getComponentType();
+        if (sourceCodeComponent.getKind() == ajavaComponent.getKind()) {
+          updateAtmWithLub(sourceCodeComponent, ajavaComponent);
+        } else {
+          if (showWpiFailedInferences) {
+            printFailedInferenceDebugMessage("attempted to update the component type of " +
+                "an array type, but found an unexpected difference in type structure.\nLHS kind: " +
+                sourceCodeComponent.getKind() + "\nRHS kind: " + ajavaComponent.getKind());
+            break;
+          }
+        }
         break;
         // case DECLARED:
         // Inferring annotations on type arguments is not supported, so no need to recur on generic
