@@ -280,6 +280,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   @Override
+  protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    if (atypeFactory.isNotNumberOrChar(castType)) {
+      return true;
+    }
+    return super.isTypeCastSafe(castType, exprType);
+  }
+
+  @Override
   protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
     return Collections.singleton(atypeFactory.SIGNED);
   }

@@ -9,6 +9,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -318,6 +319,50 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       annotateBooleanAsUnknownSignedness(type);
       return null;
     }
+
+    @Override
+    public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
+      // Don't change the annotation on a cast with an explicit annotation.
+      if (type.getAnnotations().isEmpty()) {
+        if (isNotNumberOrChar(type)) {
+          AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
+          if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
+              && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
+            type.addAnnotation(SIGNED);
+          }
+        }
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if {@code type} underlying type isn't a number or a char nor is it a super type of
+   * one.
+   *
+   * @param type a type
+   * @return true if {@code type} underlying type isn't a number or a char nor is it a super type of
+   *     one
+   */
+  public boolean isNotNumberOrChar(AnnotatedTypeMirror type) {
+
+    TypeMirror serializableTM =
+        elements.getTypeElement(Serializable.class.getCanonicalName()).asType();
+    TypeMirror comparableTM = elements.getTypeElement(Comparable.class.getCanonicalName()).asType();
+    TypeMirror numberTM = elements.getTypeElement(Number.class.getCanonicalName()).asType();
+    if (type.getKind().isPrimitive()) {
+      return false;
+    }
+    if (type.getKind() == TypeKind.DECLARED
+        || type.getKind() == TypeKind.TYPEVAR
+        || type.getKind() == TypeKind.WILDCARD) {
+      TypeMirror erasedType = types.erasure(type.getUnderlyingType());
+      return !(TypesUtils.isBoxedPrimitive(erasedType)
+          || types.isSubtype(erasedType, numberTM)
+          || types.isSubtype(erasedType, comparableTM)
+          || types.isSubtype(erasedType, serializableTM));
+    }
+    return true;
   }
 
   @Override
