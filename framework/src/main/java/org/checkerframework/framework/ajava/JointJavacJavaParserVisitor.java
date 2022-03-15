@@ -642,6 +642,16 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     CompilationUnit node = castNode(CompilationUnit.class, javaParserNode, javacTree);
     processCompilationUnit(javacTree, node);
     visitOptional(javacTree.getPackage(), node.getPackageDeclaration());
+
+    // Ajava files are permitted to have larger import lists than the corresponding source file,
+    // so #visitLists is inappropriate: it requires them to be identical.
+    // TODO: figure out what to do instead
+    if (javacTree.getImports().size() != node.getImports().size()) {
+        System.out.println("about to crash, because javacTrees and javaParserNodes aren't the same " +
+            "size");
+      System.out.println("compilation unit: " + javacTree);
+      System.out.println("javaparser: " + javaParserNode);
+    }
     visitLists(javacTree.getImports(), node.getImports());
     visitLists(javacTree.getTypeDecls(), node.getTypes());
     return null;

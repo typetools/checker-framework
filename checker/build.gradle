@@ -468,6 +468,16 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
             line.contains('// :: error:') || line.contains('// :: warning:') ? null : line
         }
     }
+
+    // This is necessary because otherwise the path to the all-systems tests won't match their
+    // corresponding annotation files, leading to warnings about classes in annotation files not
+    // being found.
+    copy {
+        from files("tests/${testdir}/annotated/all-systems")
+        into file("tests/${testdir}/annotated")
+    }
+    delete("tests/${testdir}/annotated/all-systems")
+
     // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
     delete("tests/${testdir}/annotated/ExpectedErrors.java")
     copy {
