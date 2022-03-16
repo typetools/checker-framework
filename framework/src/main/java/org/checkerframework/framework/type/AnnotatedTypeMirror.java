@@ -1085,7 +1085,7 @@ public abstract class AnnotatedTypeMirror {
       AnnotatedDeclaredType erased =
           (AnnotatedDeclaredType)
               AnnotatedTypeMirror.createType(
-                  atypeFactory.types.erasure(underlyingType), atypeFactory, declaration);
+                  atypeFactory.types.erasure(underlyingType), atypeFactory, false);
       erased.addAnnotations(this.getAnnotations());
       AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
       AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();
