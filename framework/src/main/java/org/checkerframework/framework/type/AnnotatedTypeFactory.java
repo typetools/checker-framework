@@ -582,14 +582,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                   + inferArg
                   + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
       }
+      boolean showWpiFailedInferences = checker.hasOption("showWpiFailedInferences");
       if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
-                this, new WholeProgramInferenceJavaParserStorage(this));
+                this, new WholeProgramInferenceJavaParserStorage(this), showWpiFailedInferences);
       } else {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<ATypeElement>(
-                this, new WholeProgramInferenceScenesStorage(this));
+                this, new WholeProgramInferenceScenesStorage(this), showWpiFailedInferences);
       }
       if (!checker.hasOption("warns")) {
         // Without -Awarns, the inference output may be incomplete, because javac halts

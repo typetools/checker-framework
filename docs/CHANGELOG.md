@@ -1,4 +1,4 @@
-Version 3.21.2 (March 1, 2022)
+Version 3.21.4 (April 1, 2022)
 ---------------------------------
 
 **User-visible changes:**
@@ -6,6 +6,14 @@ Version 3.21.2 (March 1, 2022)
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.21.3 (March 1, 2022)
+---------------------------------
+
+**Closed issues:**
+#2847, #4965, #5039, #5042, #5047.
+
 
 Version 3.21.2 (February 1, 2022)
 ---------------------------------
@@ -4097,7 +4105,7 @@ Code Changes
     fixed generic and array handling of @ReadOnly
     fixed @RoMaybe resolution of receivers at method invocation
     fixed parsing of parenthesized trees and conditional trees
-    added initial support for for-enhanced loop
+    added initial support for enhanced-for loop
     fixed constructor behavior on @ReadOnly classes
     added checks for annotations on primitive types inside arrays
 

@@ -16,11 +16,8 @@ public class WideningConversion {
 
   void compare() {
     boolean b;
-    // :: error: (comparison.unsignedlhs)
     b = c1 > c2;
-    // :: error: (comparison.unsignedlhs)
     b = c1 > i2;
-    // :: error: (comparison.unsignedrhs)
     b = i1 > c2;
     b = i1 > i2;
   }
@@ -28,23 +25,16 @@ public class WideningConversion {
   void plus() {
     // Not just "int si" because it's defaulted to TOP so every assignment would work.
     @Signed int si;
-    // :: error: (assignment)
     si = c1 + c2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedlhs)
     si = c1 + i2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedrhs)
     si = i1 + c2;
     si = i1 + i2;
 
-    // :: error: (assignment)
     si = c1 + c2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedlhs)
     si = c1 + si2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedrhs)
     si = si1 + c2;
     si = si1 + si2;
 
-    // :: error: (assignment)
     si = c1 + c2;
     // :: error: (assignment)
     si = c1 + ui2;
@@ -55,17 +45,17 @@ public class WideningConversion {
 
     @Unsigned int ui;
     ui = c1 + c2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedlhs)
+    // :: error: (assignment)
     ui = c1 + i2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedrhs)
+    // :: error: (assignment)
     ui = i1 + c2;
     // :: error: (assignment)
     ui = i1 + i2;
 
     ui = c1 + c2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedlhs)
+    // :: error: (assignment)
     ui = c1 + si2;
-    // :: error: (assignment) :: error: (operation.mixed.unsignedrhs)
+    // :: error: (assignment)
     ui = si1 + c2;
     // :: error: (assignment)
     ui = si1 + si2;
@@ -84,17 +74,17 @@ public class WideningConversion {
 
     char c;
     c = (char) (c1 + c2);
-    // :: warning: (cast.unsafe) :: error: (operation.mixed.unsignedlhs)
+    // :: warning: (cast.unsafe)
     c = (char) (c1 + i2);
-    // :: warning: (cast.unsafe) :: error: (operation.mixed.unsignedrhs)
+    // :: warning: (cast.unsafe)
     c = (char) (i1 + c2);
     // :: warning: (cast.unsafe)
     c = (char) (i1 + i2);
 
     c = (char) (c1 + c2);
-    // :: warning: (cast.unsafe) :: error: (operation.mixed.unsignedlhs)
+    // :: warning: (cast.unsafe)
     c = (char) (c1 + si2);
-    // :: warning: (cast.unsafe) :: error: (operation.mixed.unsignedrhs)
+    // :: warning: (cast.unsafe)
     c = (char) (si1 + c2);
     // :: warning: (cast.unsafe)
     c = (char) (si1 + si2);
@@ -106,7 +96,7 @@ public class WideningConversion {
   }
 
   void to_string() {
-    // would like this to get 'incompatible argument for concatenation'
+    // :: error: (unsigned.concat)
     String s1 = "" + us1;
     // :: error: (argument)
     String s2 = String.valueOf(us2);
