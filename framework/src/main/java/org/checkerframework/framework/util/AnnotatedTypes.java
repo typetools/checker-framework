@@ -509,7 +509,7 @@ public class AnnotatedTypes {
 
     if (receiverType.getKind() == TypeKind.DECLARED && member.getKind() == ElementKind.METHOD) {
       AnnotatedDeclaredType capturedReceiver =
-          (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(receiverType);
+          ((AnnotatedExecutableType) memberType).getReceiverType();
       TypeMirror s = types.asMemberOf(capturedReceiver.getUnderlyingType(), member);
       AnnotatedExecutableType t =
           (AnnotatedExecutableType)
