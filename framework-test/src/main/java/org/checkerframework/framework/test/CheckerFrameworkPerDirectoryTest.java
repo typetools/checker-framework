@@ -181,39 +181,4 @@ public abstract class CheckerFrameworkPerDirectoryTest {
   public List<String> customizeOptions(List<String> previousOptions) {
     return previousOptions;
   }
-
-  /**
-   * Do not typecheck any file ending with the given String.
-   * Use this routine to avoid typechecking files in the all-systems
-   * test suite that are problematic for one typechecker. For example,
-   * this routine is useful when running the all-systems tests using WPI,
-   * because some all-systems tests have expected errors that become warnings
-   * during a WPI run (because of -Awarns) and so must be excluded.
-   *
-   * This code takes advantage of the mutability of the {@link #testFiles}
-   * field.
-   *
-   * @param endswith a string that the absolute path of the target file that should not
-   *                 be typechecked ends with. Usually, this takes the form
-   *                 "all-systems/ProblematicFile.java".
-   */
-  protected void doNotTypecheck(String endswith) {
-    int removeIndex = -1;
-    for (int i = 0; i < testFiles.size(); i++) {
-      File f = testFiles.get(i);
-      if (f.getAbsolutePath().endsWith(endswith)) {
-        if (removeIndex != -1) {
-          Assert.fail("When attempting to exclude a file, found more than one " +
-              "match in the test suite. Check the test code and use a more-specific " +
-              "removal key. Attempting to exclude: " + endswith);
-        }
-        removeIndex = i;
-      }
-    }
-    // This test code can run for every subdirectory of the all-systems tests, so there is no
-    // guarantee that the file to be excluded will be found.
-    if (removeIndex != -1) {
-      testFiles.remove(removeIndex);
-    }
-  }
 }

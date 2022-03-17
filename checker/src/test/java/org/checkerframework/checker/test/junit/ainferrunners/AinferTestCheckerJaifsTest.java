@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.checker.testchecker.ainfer.AinferTestChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkWPIPerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -15,7 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
  * the expected ones. The errors on .java files must be ignored.
  */
 @Category(AinferTestCheckerJaifsTest.class)
-public class AinferTestCheckerJaifsTest extends CheckerFrameworkPerDirectoryTest {
+public class AinferTestCheckerJaifsTest extends CheckerFrameworkWPIPerDirectoryTest {
   /** @param testFiles the files containing test code, which will be type-checked */
   public AinferTestCheckerJaifsTest(List<File> testFiles) {
     super(
