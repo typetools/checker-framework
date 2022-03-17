@@ -358,9 +358,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         || type.getKind() == TypeKind.WILDCARD) {
       TypeMirror erasedType = types.erasure(type.getUnderlyingType());
       return !(TypesUtils.isBoxedPrimitive(erasedType)
-          || types.isSubtype(erasedType, numberTM)
-          || types.isSubtype(erasedType, comparableTM)
-          || types.isSubtype(erasedType, serializableTM));
+          || TypesUtils.isObject(erasedType)
+          || TypesUtils.isErasedSubtype(numberTM, erasedType, types)
+          || TypesUtils.isErasedSubtype(serializableTM, erasedType, types)
+          || TypesUtils.isErasedSubtype(comparableTM, erasedType, types));
     }
     return true;
   }
