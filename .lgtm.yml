@@ -16,4 +16,4 @@ extraction:
     - (cd ${LGTM_WORKSPACE}/annotation-tools/annotation-file-utilities; ./gradlew assemble)
     index:
       build_command:
-      - ./gradlew assemble --console=plain --warning-mode=all --no-daemon
+      - ./gradlew assemble --console=plain --warning-mode=all
