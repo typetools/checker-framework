@@ -1,6 +1,6 @@
 // Testcase for Issue759
 // https://github.com/typetools/checker-framework/issues/759
-@SuppressWarnings({"nullness", "unchecked"}) // See checker/test/nullness/Issue759.java
+@SuppressWarnings({"nullness", "unchecked", "ainfertest", "value"}) // See checker/test/nullness/Issue759.java; ainfertest and value are suppressed because WPI errors shouldn't be issued here, just checked for crashes
 public class Issue759 {
   void possibleValues(final Class<? extends Enum> enumType) {
     lowercase(enumType.getEnumConstants());

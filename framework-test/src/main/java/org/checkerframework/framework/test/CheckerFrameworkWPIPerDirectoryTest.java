@@ -5,6 +5,11 @@ import org.checkerframework.common.value.qual.StringVal;
 import org.junit.Assert;
 import javax.annotation.processing.AbstractProcessor;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,16 +26,6 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
    * The directory where .ajava files are found.
    */
   private static final String INFERENCE_BASE_DIR = "tests/ainfer-testchecker/inference-output/";
-
-  /**
-   * The suffix of all ainfer-testchecker ajava files.
-   */
-  private static final String AINFER_TEST_CHECKER_SUFFIX = "-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker";
-
-  /**
-   * The suffix of all Value Checker ajava files.
-   */
-  private static final String VALUE_CHECKER_SUFFIX = "-org.checkerframework.common.value.ValueChecker";
 
   /**
    * The number of letters in ".java", used when stripping off the extension from
@@ -127,23 +122,43 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
 
   /**
    * Generates the correct argument to the -Aajava or -Astubs CF option corresponding to
-   * the source file {@code f} and the wpi output type.
-   * @param f a java source file
+   * the source file {@code sourceFile} and the wpi output type.
+   * @param sourceFile a java source file
    * @param extension the extension to use: either .astub or .ajava
    * @return the ajava argument for the corresponding ajava files, if there are any
    */
-  private static String annotationFilenameFromSourceFile(File f, @StringVal({".astub", ".ajava"}) String extension) {
-    String fileBaseName = f.getName().substring(0, f.getName().length() - DOT_JAVA_LETTER_COUNT);
-    File ainferTestCheckerFile = new File(INFERENCE_BASE_DIR + fileBaseName + AINFER_TEST_CHECKER_SUFFIX + extension);
-    File valueCheckerFile = new File(INFERENCE_BASE_DIR + fileBaseName + VALUE_CHECKER_SUFFIX + extension);
-    if (ainferTestCheckerFile.exists() && valueCheckerFile.exists()) {
-      return ainferTestCheckerFile + ":" + valueCheckerFile;
-    } else if (ainferTestCheckerFile.exists()) {
-      return ainferTestCheckerFile.toString();
-    } else if (valueCheckerFile.exists()) {
-      return valueCheckerFile.toString();
-    } else {
-      return "";
+  private static String annotationFilenameFromSourceFile(File sourceFile, @StringVal({".astub", ".ajava"}) String extension) {
+    String fileBaseName = sourceFile.getName().substring(0, sourceFile.getName().length() - DOT_JAVA_LETTER_COUNT);
+    StringBuilder sb = new StringBuilder();
+    // Find all the annotation files associated with this class name. This approach is necessary
+    // because (1) some tests are in packages, which will be included in the annotation file names,
+    // and (2) separate astub files are generated for inner classes.
+    try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(
+        Paths.get(INFERENCE_BASE_DIR), "*" + fileBaseName + "{-,$}*" + extension)) {
+      dirStream.forEach(f -> appendFilename(sb, f));
+    } catch (IOException ignored) {
+
+    }
+    // remove the last ":"
+    if (sb.length() > 0) {
+      sb.deleteCharAt(sb.length() - 1);
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Helper routine to append the name of {@code f} to {@code sb}, followed by a colon.
+   * For use in constructing classpath-like arguments.
+   *
+   * @param sb a StringBuilder
+   * @param f a path to a file
+   */
+  private static void appendFilename(StringBuilder sb, Path f) {
+    // The Annotation File Parser unhelpfully issues an error about any annotation definition in
+    // an annotation file, so we'll simply not bother typechecking Issue4083 from the all-systems
+    // tests, because it contains an annotation definition.
+    if (!f.toString().contains("Issue4083$Annotation")) {
+      sb.append(f).append(":");
     }
   }
 
