@@ -369,21 +369,20 @@ public class NullnessTransfer
 
     // Refine result to @NonNull if n is an invocation of Map.get, the argument is a key for
     // the map, and the map's value type is not @Nullable.
-    if (keyForTypeFactory != null && keyForTypeFactory.isMapGet(n)) {
-      String mapName = JavaExpression.fromNode(receiver).toString();
-      AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
-
-      if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))
-          && !hasNullableValueType(receiverType)) {
-        makeNonNull(result, n);
-        refineToNonNull(result);
+    if (nullnessTypeFactory.isMapGet(n)) {
+      boolean isKeyFor;
+      if (keyForTypeFactory != null) {
+        String mapName = JavaExpression.fromNode(receiver).toString();
+        isKeyFor = keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0));
+      } else {
+        isKeyFor = analysis.getTypeFactory().getChecker().hasOption("assumeKeyFor");
       }
-    } else if (analysis.getTypeFactory().getChecker().hasOption("assumeKeyFor")
-        && nullnessTypeFactory.isMapGet(n)) {
-      AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
-      if (!hasNullableValueType(receiverType)) {
-        makeNonNull(result, n);
-        refineToNonNull(result);
+      if (isKeyFor) {
+        AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());
+        if (!hasNullableValueType(receiverType)) {
+          makeNonNull(result, n);
+          refineToNonNull(result);
+        }
       }
     }
 
