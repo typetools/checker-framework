@@ -1161,8 +1161,11 @@ tests, wrap the \code{<configuration>...</configuration>} within
 To compile without using the Checker Framework, pass
 \<-P '!checkerframework>
 on the Maven command line.
-It should also work to pass
-\<-P '!checkerframework-jdk9orlater' or \<-P '!checkerframework-java8'>.
+%% Per GitHub user danibs in
+%% https://github.com/typetools/checker-framework/issues/5086,
+%% this does not seem to work.
+% It should also work to pass
+% \<-P '!checkerframework-jdk9orlater' or \<-P '!checkerframework-java8'>.
 
 % TODO: Figure out why, and then remove this paragraph.
 Warning:  adding
