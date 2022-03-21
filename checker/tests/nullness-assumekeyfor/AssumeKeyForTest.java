@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -6,6 +7,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class AssumeKeyForTest {
 
   void m1(Map<String, Integer> m, String k) {
+    @NonNull Integer x = m.get(k);
+  }
+
+  void m1b(HashMap<String, Integer> m, String k) {
     @NonNull Integer x = m.get(k);
   }
 
@@ -31,6 +36,11 @@ public class AssumeKeyForTest {
   }
 
   void m7(Map<String, @Nullable Integer> m, @KeyFor("#1") String k) {
+    // :: error: (assignment)
+    @NonNull Integer x = m.get(k);
+  }
+
+  void m7b(HashMap<String, @Nullable Integer> m, @KeyFor("#1") String k) {
     // :: error: (assignment)
     @NonNull Integer x = m.get(k);
   }
