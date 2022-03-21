@@ -144,6 +144,7 @@ public class WholeProgramInferenceJavaParserStorage
     getFileForElement(methodElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
     if (classAnnos == null) {
+      System.out.println("cannot get MethodAnnos for: " + methodElt);
       return null;
     }
     CallableDeclarationAnnos methodAnnos =
@@ -180,6 +181,7 @@ public class WholeProgramInferenceJavaParserStorage
       // no element would have been available, causing the computed method signature to
       // be incorrect. In this case, abort looking up annotations - inference will fail,
       // because even if WPI inferred something, it couldn't be printed.
+      System.out.println("failed to look up parameter type for: " + ve + " in method " + methodElt);
       return paramATM;
     }
     return methodAnnos.getParameterTypeInitialized(paramATM, i, atypeFactory);
@@ -193,6 +195,7 @@ public class WholeProgramInferenceJavaParserStorage
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
       // See the comment on the similar exception in #getParameterAnnotations, above.
+      System.out.println("failed to look up receiver for " + methodElt);
       return paramATM;
     }
     return methodAnnos.getReceiverType(paramATM, atypeFactory);
@@ -204,6 +207,7 @@ public class WholeProgramInferenceJavaParserStorage
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
       // See the comment on the similar exception in #getParameterAnnotations, above.
+      System.out.println("failed to look up return type for " + methodElt);
       return atm;
     }
     return methodAnnos.getReturnType(atm, atypeFactory);
@@ -265,6 +269,7 @@ public class WholeProgramInferenceJavaParserStorage
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
     if (methodAnnos == null) {
       // See the comment on the similar exception in #getParameterAnnotations, above.
+      System.out.println("failed to look up preconditions for: " + methodElement);
       return declaredType;
     }
     return methodAnnos.getPreconditionsForExpression(expression, declaredType, atypeFactory);
@@ -286,6 +291,7 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeFactory atypeFactory) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElement);
     if (methodAnnos == null) {
+      System.out.println("failed to look up postcondition for: " + methodElement);
       // See the comment on the similar exception in #getParameterAnnotations, above.
       return declaredType;
     }
@@ -299,6 +305,7 @@ public class WholeProgramInferenceJavaParserStorage
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
     if (methodAnnos == null) {
       // See the comment on the similar exception in #getParameterAnnotations, above.
+      System.out.println("cannot add method declaration anno");
       return false;
     }
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotation(anno);
@@ -545,6 +552,7 @@ public class WholeProgramInferenceJavaParserStorage
               // elt can be null if there is no element corresponding to the method,
               // which happens for certain kinds of anonymous classes, such as Ordering$1 in
               // PolyCollectorTypeVar.java in the all-systems test suite.
+              System.out.println("cannot add callable declaration for " + javacTree);
               return;
             }
             // If elt is non-null, it is guaranteed to be an executable element.
@@ -587,6 +595,7 @@ public class WholeProgramInferenceJavaParserStorage
             // class located in a source file. If this check returns false, then the
             // below call to TreeUtils.elementFromDeclaration causes a crash.
             if (TreeUtils.elementFromTree(javacTree) == null) {
+              System.out.println("cannot process a variable declaration: " + javacTree);
               return;
             }
 
