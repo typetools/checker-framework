@@ -47,6 +47,8 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -104,6 +106,10 @@ public class NullnessAnnotatedTypeFactory
 
   /** Cache for the nullness annotations. */
   protected final Set<Class<? extends Annotation>> nullnessAnnos;
+
+  /** The Map.get method. */
+  private final ExecutableElement mapGet =
+      TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
 
   // List is in alphabetical order.  If you update it, also update
   // ../../../../../../../../docs/manual/nullness-checker.tex
@@ -926,5 +932,15 @@ public class NullnessAnnotatedTypeFactory
     builder.setValue("value", new String[] {expression});
     AnnotationMirror am = builder.build();
     return am;
+  }
+
+  /**
+   * Returns true if {@code node} is an invocation of Map.get.
+   *
+   * @param node a node
+   * @return true if {@code node} is an invocation of Map.get
+   */
+  public boolean isMapGet(Node node) {
+    return NodeUtils.isMethodInvocation(node, mapGet, getProcessingEnv());
   }
 }
