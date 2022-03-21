@@ -242,7 +242,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // in JAIF mode.
         if (showWpiFailedInferences) {
           printFailedInferenceDebugMessage(
-              "Annotations cannot be placed on varargs parametersin -Ainfer=jaifs mode, because the"
+              "Annotations cannot be placed on varargs parameters in -Ainfer=jaifs mode, because the"
                   + " JAIF format does not correctly support it.\n"
                   + "The signature of the method whose varargs parameter was not annotated is: "
                   + JVMNames.getJVMMethodSignature(methodElt));
