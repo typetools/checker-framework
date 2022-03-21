@@ -515,7 +515,9 @@ public class CheckerMain {
 
   /**
    * Given a path element that might be a wildcard, return a list of the elements it expands to. If
-   * the element isn't a wildcard, return a singleton list containing the argument.
+   * the element isn't a wildcard, return a singleton list containing the argument. Since the
+   * original argument list is placed after 'com.sun.tools.javac.Main' in the new command line, the
+   * JVM doesn't do wildcard expansion of jar files in any classpaths in the original argument list.
    */
   private List<String> expandWildcards(String pathElement) {
     if (pathElement.equals("*")) {
@@ -540,6 +542,10 @@ public class CheckerMain {
     String[] jarFiles = dir.list((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
     if (jarFiles == null) {
       return Collections.emptyList();
+    }
+    // concat directory with jar file path to give full path
+    for (int i = 0; i < jarFiles.length; i++) {
+      jarFiles[i] = directory + jarFiles[i];
     }
     return Arrays.asList(jarFiles);
   }
