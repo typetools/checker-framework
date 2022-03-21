@@ -518,6 +518,9 @@ public class CheckerMain {
    * the element isn't a wildcard, return a singleton list containing the argument. Since the
    * original argument list is placed after 'com.sun.tools.javac.Main' in the new command line, the
    * JVM doesn't do wildcard expansion of jar files in any classpaths in the original argument list.
+   *
+   * @param pathElement an element of a classpath
+   * @return all elements of a classpath with wildcards expanded
    */
   private List<String> expandWildcards(String pathElement) {
     if (pathElement.equals("*")) {
