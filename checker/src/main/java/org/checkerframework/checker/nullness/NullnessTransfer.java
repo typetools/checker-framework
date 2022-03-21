@@ -82,7 +82,11 @@ public class NullnessTransfer
    */
   protected final @Nullable KeyForAnnotatedTypeFactory keyForTypeFactory;
 
-  /** Create a new NullnessTransfer for the given analysis. */
+  /**
+   * Create a new NullnessTransfer for the given analysis.
+   *
+   * @param analysis nullness analysis
+   */
   public NullnessTransfer(NullnessAnalysis analysis) {
     super(analysis);
     this.nullnessTypeFactory = (NullnessAnnotatedTypeFactory) analysis.getTypeFactory();
