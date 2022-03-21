@@ -934,7 +934,12 @@ public class NullnessAnnotatedTypeFactory
     return am;
   }
 
-  /** Returns true if the node is an invocation of Map.get. */
+  /**
+   * Returns true if {@code node} is an invocation of Map.get.
+   *
+   * @param node a node
+   * @return true if {@code node} is an invocation of Map.get
+   */
   public boolean isMapGet(Node node) {
     return NodeUtils.isMethodInvocation(node, mapGet, getProcessingEnv());
   }
