@@ -341,16 +341,21 @@ public class NullnessAnnotatedTypeFactory
                 "org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType",
                 MONOTONIC_NONNULL);
 
-        AnnotationMirror nullMarkedDefaultQual =
-                new AnnotationBuilder(processingEnv, DefaultQualifier.class)
-                        .setValue("value", NonNull.class)
-                        .setValue("locations", new TypeUseLocation[] {TypeUseLocation.UPPER_BOUND})
-                        .setValue("applyToSubpackages", false)
-                        .build();
-        addAliasedDeclAnnotation(
-                "org.jspecify.nullness.NullMarked",
-                DefaultQualifier.class.getCanonicalName(),
-                nullMarkedDefaultQual);
+        if (checker.getBooleanOption("jspecifyNullMarkedAlias", true)) {
+            AnnotationMirror nullMarkedDefaultQual =
+                    new AnnotationBuilder(processingEnv, DefaultQualifier.class)
+                            .setValue("value", NonNull.class)
+                            .setValue(
+                                    "locations",
+                                    new TypeUseLocation[] {TypeUseLocation.UPPER_BOUND})
+                            .setValue("applyToSubpackages", false)
+                            .build();
+
+            addAliasedDeclAnnotation(
+                    "org.jspecify.nullness.NullMarked",
+                    DefaultQualifier.class.getCanonicalName(),
+                    nullMarkedDefaultQual);
+        }
 
         boolean permitClearProperty =
                 checker.getLintOption(

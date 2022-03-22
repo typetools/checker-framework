@@ -162,6 +162,12 @@ by the Checker Framework.
   \sunjavadoc{java.base/java/lang/System.html\#getProperties()}{System.getProperties()}.
   To make this behavior sound, the Nullness Checker forbids calls that
   might clear any built-in property, as described above.
+
+\item
+  \label{nullness-jspecifyNullMarkedAlias}%
+  If you supply the \code{-AjspecifyNullMarkedAlias=false} command-line option, then the
+  checker will not treat \code{org.jspecify.nullness.NullMarked} as a defaulting
+  annotation. By default the \code{NullMarked} annotation is recognized.
 \end{itemize}
 
 \end{enumerate}

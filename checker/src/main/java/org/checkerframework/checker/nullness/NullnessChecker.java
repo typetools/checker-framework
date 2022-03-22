@@ -35,7 +35,7 @@ import javax.annotation.processing.SupportedOptions;
     NullnessChecker.LINT_TRUSTARRAYLENZERO,
     NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
-@SupportedOptions({"assumeKeyFor"})
+@SupportedOptions({"assumeKeyFor", "jspecifyNullMarkedAlias"})
 public class NullnessChecker extends InitializationChecker {
 
     /** Should we be strict about initialization of {@link MonotonicNonNull} variables? */
