@@ -13,7 +13,7 @@ public class LiveVariablePlayground {
     /**
      * Run live variable analysis for a specific file and create a PDF of the CFG in the end.
      *
-     * @param args input arguments
+     * @param args input arguments, not used
      */
     public static void main(String[] args) {
 
@@ -27,8 +27,7 @@ public class LiveVariablePlayground {
         LiveVarTransfer transfer = new LiveVarTransfer();
         BackwardAnalysis<LiveVarValue, LiveVarStore, LiveVarTransfer> backwardAnalysis =
                 new BackwardAnalysisImpl<>(transfer);
-        CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
-        cfgVisualizeLauncher.generateDOTofCFG(
+        CFGVisualizeLauncher.generateDOTofCFG(
                 inputFile, outputDir, method, clazz, true, true, backwardAnalysis);
     }
 }

@@ -54,17 +54,34 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
+tasks.withType(Test) {
+    dependsOn('allDataflowTests')
+}
+
+tasks.create(name: 'allDataflowTests', group: 'Verification') {
+    description 'Run all dataflow analysis tests'
+}
+
 /**
- * Create a task to run a dataflow analysis demo
- * @param taskName the taskName for the created task
- * @param dirName the directory name of the test file
+ * Create a task to run a dataflow analysis test case.
+ * To add a new dataflow analysis test, you need to provide the
+ * task name, the directory which contains the test files, and the fully-qualified class
+ * name of the test class.
+ * Optionally, when option {@code diff} is true, the output is compared against a
+ * {@code Expected.txt} file.
+ * See org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher for more details.
+ * @param taskName the task name for the new task
+ * @param dirName the directory name of the directory that contains the test files
  * @param className the fully-qualified name of the test class
+ * @param diff whether to compare the generated output with a {@code Expected.txt} file
  * @return
  */
-def testDataflowAnalysis(taskName, dirName, className) {
+def testDataflowAnalysis(taskName, dirName, className, diff) {
     tasks.create(name: taskName, dependsOn: [assemble, compileTestJava], group: 'Verification') {
         description "Run the ${dirName} dataflow framework test."
-        inputs.file("tests/${dirName}/Expected.txt")
+        if (diff) {
+            inputs.file("tests/${dirName}/Expected.txt")
+        }
         inputs.file("tests/${dirName}/Test.java")
 
         outputs.file("tests/${dirName}/Out.txt")
@@ -94,46 +111,22 @@ def testDataflowAnalysis(taskName, dirName, className) {
                 classpath += sourceSets.test.output
                 mainClass = "${className}"
             }
-            exec {
-                workingDir = "tests/${dirName}"
-                executable 'diff'
-                args = ['-u', 'Expected.txt', 'Out.txt']
+            if (diff) {
+                exec {
+                    workingDir = "tests/${dirName}"
+                    executable 'diff'
+                    args = ['-u', 'Expected.txt', 'Out.txt']
+                }
             }
         }
     }
+
+    allDataflowTests.dependsOn << taskName
 }
 
-testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable")
-
-task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-    description 'Test issue 3447 test case for backward analysis.'
-    inputs.file('tests/issue3447/Test.java')
-    delete('tests/issue3447/Out.txt')
-    delete('tests/issue3447/Test.class')
-    doLast {
-        javaexec {
-            workingDir = 'tests/issue3447'
-            if (!JavaVersion.current().java9Compatible) {
-                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-            }
-            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-                jvmArgs += [
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
-                ]
-            }
-            classpath = sourceSets.test.runtimeClasspath
-            classpath += sourceSets.test.output
-
-            mainClass = 'livevar.LiveVariable'
-        }
-    }
-}
+// When adding a new test case, don't forget to add the temporary files to `../.gitignore`.
+testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
+testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
