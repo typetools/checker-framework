@@ -2291,6 +2291,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             adaptGetClassReturnTypeToReceiver(methodType, receiverType, tree);
         }
 
+        methodType.setReturnType(applyCaptureConversion(methodType.getReturnType()));
         return new ParameterizedExecutableType(methodType, typeargs);
     }
 
