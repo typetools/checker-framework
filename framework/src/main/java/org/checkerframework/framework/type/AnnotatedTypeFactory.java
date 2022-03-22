@@ -922,7 +922,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // is done at the **end** of the loop, and if there is more than one match no file
           // is parsed for this class and a warning is issued instead. The user can disambiguate by
           // supplying a root directory, instead of specific files.
-          if (ajavaLocation.endsWith(ajavaEnding)) {
+          if (ajavaLocation.endsWith(File.separator + ajavaEnding)) {
             // This is a candidate ajava file. If it is the only candidate, then it might be
             // unambiguous. If not, issue a warning.
             candidateAjavaFiles.add(ajavaLocation);
