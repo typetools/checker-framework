@@ -641,6 +641,7 @@ public class AnnotationFileParser {
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations annotationFileAnnos,
       AnnotationFileType fileType) {
+    System.out.println("Note: the next file is being parsed as a stub file");
     AnnotationFileParser afp =
         new AnnotationFileParser(filename, atypeFactory, processingEnv, fileType);
     try {
@@ -671,6 +672,7 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations ajavaAnnos) {
+    System.out.println("Note: the next file is being parsed as an ajava file");
     AnnotationFileParser afp =
         new AnnotationFileParser(filename, atypeFactory, processingEnv, AnnotationFileType.AJAVA);
     try {

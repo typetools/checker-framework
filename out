@@ -1,0 +1,2933 @@
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/net/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/net/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/net/package-info.java
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/util/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/util/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/util/package-info.java
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/security/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/security/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/security/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/io/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/io/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/io/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/math/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/math/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/math/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/time/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/time/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/time/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/lang/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/lang/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/lang/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/nio/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/nio/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/nio/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/text/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/text/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/text/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/dnd/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.desktop/share/classes/java/awt/dnd/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/dnd/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/event/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.desktop/share/classes/java/awt/event/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/event/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.desktop/share/classes/java/awt/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/package-info.java
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/text/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.desktop/share/classes/javax/swing/text/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/text/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/event/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.desktop/share/classes/javax/swing/event/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/event/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/package-info.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.desktop/share/classes/javax/swing/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing
+@org.checkerframework.checker.guieffect.qual.UIPackage
+about to parse a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/UsesAnonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+Note: AnnotationFileParser: parsing annotation file /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/UsesAnonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+finished parsing a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/UsesAnonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+ajava atypes entry for UsesAnonymous
+UsesAnonymous
+ajava atypes entry for method()
+void method(UsesAnonymous this)
+ajava declAnnos entry for UsesAnonymous
+@org.checkerframework.framework.qual.AnnotatedFor({"org.checkerframework.checker.testchecker.ainfer.AinferTestChecker"})
+ajava declAnnos entry for UsesAnonymous.method()
+@org.checkerframework.framework.qual.FromStubFile
+about to parse a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/Anonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+ajava atypes entry for UsesAnonymous
+UsesAnonymous
+ajava atypes entry for method()
+void method(UsesAnonymous this)
+Note: AnnotationFileParser: parsing annotation file /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/Anonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+finished parsing a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/Anonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+ajava atypes entry for t
+int
+ajava atypes entry for expectsTop(@org.checkerframework.checker.testchecker.ainfer.qual.Top int)
+void expectsTop(Anonymous this, int p0)
+ajava atypes entry for getSibling1()
+int getSibling1(Anonymous this)
+ajava atypes entry for UsesAnonymous
+UsesAnonymous
+ajava atypes entry for expectsBottom(@org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int)
+void expectsBottom(Anonymous this, int p0)
+ajava atypes entry for Anonymous()
+Anonymous <init>()
+ajava atypes entry for expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling1 int)
+void expectsSibling1(Anonymous this, int p0)
+ajava atypes entry for expectsSibling2(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling2 int)
+void expectsSibling2(Anonymous this, int p0)
+ajava atypes entry for t
+int
+ajava atypes entry for expectsParent(@org.checkerframework.checker.testchecker.ainfer.qual.Parent int)
+void expectsParent(Anonymous this, int p0)
+ajava atypes entry for t
+int
+ajava atypes entry for t
+int
+ajava atypes entry for Anonymous
+Anonymous
+ajava atypes entry for method()
+void method(UsesAnonymous this)
+ajava atypes entry for field2
+int
+ajava atypes entry for testPublicInference()
+void testPublicInference(Anonymous this)
+ajava atypes entry for t
+int
+ajava atypes entry for field1
+int
+ajava declAnnos entry for Anonymous.Anonymous()
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.framework.qual.EnsuresQualifier(expression={"Anonymous.field1"}, qualifier=org.checkerframework.checker.testchecker.ainfer.qual.Sibling1.class)
+ajava declAnnos entry for Anonymous.testPublicInference()
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsBottom(@org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int)
+@org.checkerframework.dataflow.qual.Pure
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsParent(@org.checkerframework.checker.testchecker.ainfer.qual.Parent int)
+@org.checkerframework.dataflow.qual.Pure
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsSibling2(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling2 int)
+@org.checkerframework.dataflow.qual.Pure
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous
+@org.checkerframework.framework.qual.AnnotatedFor({"org.checkerframework.checker.testchecker.ainfer.AinferTestChecker"})
+ajava declAnnos entry for UsesAnonymous
+@org.checkerframework.framework.qual.AnnotatedFor({"org.checkerframework.checker.testchecker.ainfer.AinferTestChecker"})
+ajava declAnnos entry for Anonymous.field2
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.field1
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling1 int)
+@org.checkerframework.dataflow.qual.Pure
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for UsesAnonymous.method()
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsTop(@org.checkerframework.checker.testchecker.ainfer.qual.Top int)
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for Anonymous.getSibling1()
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.dataflow.qual.Pure
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/util/Vector.java
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/util/Vector.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/util/Vector.java
+ajava atypes entry for indexOf(java.lang.Object,int)
+@IntRangeFromGTENegativeOne int indexOf(Vector<E extends Object> this, Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for elementData
+Object[]
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for get(int)
+E extends Object get(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for containsAll(java.util.Collection<?>)
+boolean containsAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for insertElementAt(E,int)
+void insertElementAt(Vector<E extends Object> this, E extends Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for checkInvariants()
+void checkInvariants(Vector<E extends Object> this)
+ajava atypes entry for sort(java.util.Comparator<? super E>)
+void sort(Vector<E extends Object> this, Comparator<? extends Object super E extends Object> p0)
+ajava atypes entry for elements()
+Enumeration<E extends Object> elements(Vector<E extends Object> this)
+ajava atypes entry for previousIndex()
+int previousIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for o
+Object
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for index
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for firstElement()
+E extends Object firstElement(Vector<E extends Object> this)
+ajava atypes entry for T
+T extends Object
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for toString()
+String toString(Vector<E extends Object> this)
+ajava atypes entry for ensureCapacity(int)
+void ensureCapacity(Vector<E extends Object> this, int p0)
+ajava atypes entry for forEachRemaining(java.util.function.Consumer<? super E>)
+void forEachRemaining(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for contains(java.lang.Object)
+boolean contains(Vector<E extends Object> this, Object p0)
+ajava atypes entry for replaceAll(java.util.function.UnaryOperator<E>)
+void replaceAll(Vector<E extends Object> this, UnaryOperator<E extends Object> p0)
+ajava atypes entry for initialCapacity
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for Vector(java.util.Collection<? extends E>)
+Vector<E extends Object> <init>(Collection<? extends E extends Object> p0)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for trySplit()
+Spliterator<E extends Object> trySplit(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for hashCode()
+int hashCode(Vector<E extends Object> this)
+ajava atypes entry for subList(int,int)
+List<E extends Object> subList(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for o
+Object
+ajava atypes entry for spliterator()
+Spliterator<E extends Object> spliterator(Vector<E extends Object> this)
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for set(int,E)
+E extends Object set(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, E extends Object p1)
+ajava atypes entry for toArray()
+Object[] toArray(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for setElementAt(E,int)
+void setElementAt(Vector<E extends Object> this, E extends Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for hasPrevious()
+boolean hasPrevious(Vector<E extends Object>.ListItr this)
+ajava atypes entry for capacity()
+@IntRangeFromNonNegative int capacity(Vector<E extends Object> this)
+ajava atypes entry for elementAt(int)
+E extends Object elementAt(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for Vector()
+Vector<E extends Object> <init>()
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for es
+Object[]
+ajava atypes entry for set(E)
+void set(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for trimToSize()
+void trimToSize(Vector<E extends Object> this)
+ajava atypes entry for removeElement(java.lang.Object)
+boolean removeElement(Vector<E extends Object> this, Object p0)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for lastIndexOf(java.lang.Object,int)
+@IntRangeFromGTENegativeOne int lastIndexOf(Vector<E extends Object> this, Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for newSize
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for elementData(int)
+E extends Object elementData(Vector<E extends Object> this, int p0)
+ajava atypes entry for minCapacity
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for addElement(E)
+void addElement(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for listIterator(int)
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for remove(java.lang.Object)
+boolean remove(Vector<E extends Object> this, Object p0)
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for addAll(int,java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, Collection<? extends E extends Object> p1)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for removeAll(java.util.Collection<?>)
+boolean removeAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for remove(int)
+E extends Object remove(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for <E>elementAt(java.lang.Object[],int)
+<E extends Object> E extends Object elementAt(Object[] p0, int p1)
+ajava atypes entry for isEmpty()
+boolean isEmpty(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for c
+Comparator<? extends Object super E extends Object>
+ajava atypes entry for size()
+@IntRangeFromNonNegative int size(Vector<E extends Object> this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for Vector(int,int)
+Vector<E extends Object> <init>(@IntRangeFromNonNegative int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for java.util.Vector.VectorSpliterator
+Vector<E extends Object>.VectorSpliterator
+ajava atypes entry for indexOf(java.lang.Object)
+@IntRangeFromGTENegativeOne int indexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for a
+T extends Object[]
+ajava atypes entry for removeRange(int,int)
+void removeRange(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for filter
+Predicate<? extends Object super E extends Object>
+ajava atypes entry for removeIf(java.util.function.Predicate<? super E>)
+boolean removeIf(Vector<E extends Object> this, Predicate<? extends Object super E extends Object> p0)
+ajava atypes entry for <T>toArray(T[])
+<T extends Object> T extends Object[] toArray(Vector<E extends Object> this, T extends Object[] p0)
+ajava atypes entry for copyInto(java.lang.Object[])
+void copyInto(Vector<E extends Object> this, Object[] p0)
+ajava atypes entry for Vector(int)
+Vector<E extends Object> <init>(@IntRangeFromNonNegative int p0)
+ajava atypes entry for retainAll(java.util.Collection<?>)
+boolean retainAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for nextIndex()
+int nextIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for anArray
+Object[]
+ajava atypes entry for index
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for removeAllElements()
+void removeAllElements(Vector<E extends Object> this)
+ajava atypes entry for lastElement()
+E extends Object lastElement(Vector<E extends Object> this)
+ajava atypes entry for clone()
+Object clone(Vector<E extends Object> this)
+ajava atypes entry for iterator()
+Iterator<E extends Object> iterator(Vector<E extends Object> this)
+ajava atypes entry for elementCount
+int
+ajava atypes entry for characteristics()
+int characteristics(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for listIterator()
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this)
+ajava atypes entry for initialCapacity
+@IntRangeFromNonNegative int
+ajava atypes entry for operator
+UnaryOperator<E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for setSize(int)
+void setSize(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Vector<E extends Object> this, Object p0)
+ajava atypes entry for o
+Object
+ajava atypes entry for add(int,E)
+void add(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, E extends Object p1)
+ajava atypes entry for clear()
+void clear(Vector<E extends Object> this)
+ajava atypes entry for tryAdvance(java.util.function.Consumer<? super E>)
+boolean tryAdvance(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for forEach(java.util.function.Consumer<? super E>)
+void forEach(Vector<E extends Object> this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for java.util.Vector
+Vector<E extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for lastIndexOf(java.lang.Object)
+@IntRangeFromGTENegativeOne int lastIndexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for previous()
+E extends Object previous(Vector<E extends Object>.ListItr this)
+ajava atypes entry for java.util.Vector.ListItr
+Vector<E extends Object>.ListItr
+ajava atypes entry for obj
+Object
+ajava atypes entry for removeElementAt(int)
+void removeElementAt(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for add(E)
+boolean add(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for estimateSize()
+long estimateSize(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for add(E)
+void add(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for addAll(java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, Collection<? extends E extends Object> p0)
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[])
+@java.lang.SuppressWarnings({"unchecked"})
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.forEachRemaining(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.elementAt(int).index
+ajava declAnnos entry for java.util.Vector.hashCode()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.remove(int).index
+ajava declAnnos entry for java.util.Vector.elementData(int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.setSize(int).newSize
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector
+@org.checkerframework.framework.qual.CFComment({"lock/nullness: permits nullable object"})
+@org.checkerframework.framework.qual.AnnotatedFor({"lock", "nullness", "index"})
+ajava declAnnos entry for java.util.Vector.iterator()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.toArray()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.capacity()
+ajava declAnnos entry for java.util.Vector.insertElementAt(E,int).index
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.tryAdvance(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[]).a
+ajava declAnnos entry for java.util.Vector.sort(java.util.Comparator<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.clone()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.addAll(int,java.util.Collection<? extends E>).index
+ajava declAnnos entry for java.util.Vector.remove(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.subList(int,int)
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.isEmpty()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.replaceAll(java.util.function.UnaryOperator<E>)
+@java.lang.Override
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.util.Vector.removeElementAt(int).index
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>).c
+ajava declAnnos entry for java.util.Vector.removeIf(java.util.function.Predicate<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object).o
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.listIterator(int).index
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.forEach(java.util.function.Consumer<? super E>)
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.get(int).index
+ajava declAnnos entry for java.util.Vector.setElementAt(E,int).index
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.copyInto(java.lang.Object[]).anArray
+ajava declAnnos entry for java.util.Vector.set(int,E).index
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.toString()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.size()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.add(int,E).index
+ajava declAnnos entry for java.util.Vector.Vector(int,int).initialCapacity
+ajava declAnnos entry for java.util.Vector.Vector(int).initialCapacity
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.spliterator()
+@java.lang.Override
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.<E>elementAt(java.lang.Object[],int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.get(int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object).o
+ajava declAnnos entry for javax.swing
+@org.checkerframework.checker.guieffect.qual.UIPackage
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/net/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/net/package-info.java
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/util/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/util/package-info.java
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/security/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/security/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/io/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/io/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/math/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/math/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/time/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/time/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/lang/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/lang/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/nio/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/nio/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/text/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/text/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/dnd/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/dnd/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/event/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/event/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/java/awt/package-info.java
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/text/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/text/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/event/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/event/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+about to parse a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/package-info.java
+finished parsing a stub file: annotated-jdk/src/java.desktop/share/classes/javax/swing/package-info.java
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for javax.swing
+@org.checkerframework.checker.guieffect.qual.UIPackage
+about to parse a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/UsesAnonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+finished parsing a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/UsesAnonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+ajava atypes entry for UsesAnonymous
+UsesAnonymous
+ajava atypes entry for method()
+void method(UsesAnonymous this)
+ajava declAnnos entry for UsesAnonymous
+@org.checkerframework.framework.qual.AnnotatedFor({"org.checkerframework.checker.testchecker.ainfer.AinferTestChecker"})
+ajava declAnnos entry for UsesAnonymous.method()
+@org.checkerframework.framework.qual.FromStubFile
+about to parse a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/Anonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+ajava atypes entry for UsesAnonymous
+UsesAnonymous
+ajava atypes entry for method()
+void method(UsesAnonymous this)
+finished parsing a stub file: /Users/kelloggm/jsr308/checker-framework/checker/tests/ainfer-testchecker/inference-output/Anonymous-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava
+ajava atypes entry for t
+int
+ajava atypes entry for expectsTop(@org.checkerframework.checker.testchecker.ainfer.qual.Top int)
+void expectsTop(Anonymous this, int p0)
+ajava atypes entry for getSibling1()
+int getSibling1(Anonymous this)
+ajava atypes entry for UsesAnonymous
+UsesAnonymous
+ajava atypes entry for expectsBottom(@org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int)
+void expectsBottom(Anonymous this, int p0)
+ajava atypes entry for Anonymous()
+Anonymous <init>()
+ajava atypes entry for expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling1 int)
+void expectsSibling1(Anonymous this, int p0)
+ajava atypes entry for expectsSibling2(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling2 int)
+void expectsSibling2(Anonymous this, int p0)
+ajava atypes entry for t
+int
+ajava atypes entry for expectsParent(@org.checkerframework.checker.testchecker.ainfer.qual.Parent int)
+void expectsParent(Anonymous this, int p0)
+ajava atypes entry for t
+int
+ajava atypes entry for t
+int
+ajava atypes entry for Anonymous
+Anonymous
+ajava atypes entry for method()
+void method(UsesAnonymous this)
+ajava atypes entry for field2
+@Sibling2 int
+ajava atypes entry for testPublicInference()
+void testPublicInference(Anonymous this)
+ajava atypes entry for t
+int
+ajava atypes entry for field1
+@Parent int
+ajava declAnnos entry for Anonymous.Anonymous()
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.framework.qual.EnsuresQualifier(expression={"Anonymous.field1"}, qualifier=org.checkerframework.checker.testchecker.ainfer.qual.Sibling1.class)
+ajava declAnnos entry for Anonymous.testPublicInference()
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsBottom(@org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int)
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for Anonymous.expectsParent(@org.checkerframework.checker.testchecker.ainfer.qual.Parent int)
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for Anonymous.expectsSibling2(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling2 int)
+@org.checkerframework.dataflow.qual.Pure
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous
+@org.checkerframework.framework.qual.AnnotatedFor({"org.checkerframework.checker.testchecker.ainfer.AinferTestChecker"})
+ajava declAnnos entry for UsesAnonymous
+@org.checkerframework.framework.qual.AnnotatedFor({"org.checkerframework.checker.testchecker.ainfer.AinferTestChecker"})
+ajava declAnnos entry for Anonymous.field2
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.field1
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.Sibling1 int)
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for UsesAnonymous.method()
+@org.checkerframework.framework.qual.FromStubFile
+ajava declAnnos entry for Anonymous.expectsTop(@org.checkerframework.checker.testchecker.ainfer.qual.Top int)
+@org.checkerframework.framework.qual.FromStubFile
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for Anonymous.getSibling1()
+@org.checkerframework.dataflow.qual.Pure
+@org.checkerframework.framework.qual.FromStubFile
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/util/Vector.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/util/Vector.java
+ajava atypes entry for indexOf(java.lang.Object,int)
+int indexOf(Vector<E extends Object> this, Object p0, int p1)
+ajava atypes entry for elementData
+Object[]
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for get(int)
+E extends Object get(Vector<E extends Object> this, int p0)
+ajava atypes entry for containsAll(java.util.Collection<?>)
+boolean containsAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for insertElementAt(E,int)
+void insertElementAt(Vector<E extends Object> this, E extends Object p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for checkInvariants()
+void checkInvariants(Vector<E extends Object> this)
+ajava atypes entry for sort(java.util.Comparator<? super E>)
+void sort(Vector<E extends Object> this, Comparator<? extends Object super E extends Object> p0)
+ajava atypes entry for elements()
+Enumeration<E extends Object> elements(Vector<E extends Object> this)
+ajava atypes entry for previousIndex()
+int previousIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for o
+Object
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for firstElement()
+E extends Object firstElement(Vector<E extends Object> this)
+ajava atypes entry for T
+T extends Object
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+int
+ajava atypes entry for toString()
+String toString(Vector<E extends Object> this)
+ajava atypes entry for ensureCapacity(int)
+void ensureCapacity(Vector<E extends Object> this, int p0)
+ajava atypes entry for forEachRemaining(java.util.function.Consumer<? super E>)
+void forEachRemaining(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for contains(java.lang.Object)
+boolean contains(Vector<E extends Object> this, Object p0)
+ajava atypes entry for replaceAll(java.util.function.UnaryOperator<E>)
+void replaceAll(Vector<E extends Object> this, UnaryOperator<E extends Object> p0)
+ajava atypes entry for initialCapacity
+int
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for Vector(java.util.Collection<? extends E>)
+Vector<E extends Object> <init>(Collection<? extends E extends Object> p0)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for trySplit()
+Spliterator<E extends Object> trySplit(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for hashCode()
+int hashCode(Vector<E extends Object> this)
+ajava atypes entry for subList(int,int)
+List<E extends Object> subList(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for o
+Object
+ajava atypes entry for spliterator()
+Spliterator<E extends Object> spliterator(Vector<E extends Object> this)
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for set(int,E)
+E extends Object set(Vector<E extends Object> this, int p0, E extends Object p1)
+ajava atypes entry for toArray()
+Object[] toArray(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for setElementAt(E,int)
+void setElementAt(Vector<E extends Object> this, E extends Object p0, int p1)
+ajava atypes entry for hasPrevious()
+boolean hasPrevious(Vector<E extends Object>.ListItr this)
+ajava atypes entry for capacity()
+int capacity(Vector<E extends Object> this)
+ajava atypes entry for elementAt(int)
+E extends Object elementAt(Vector<E extends Object> this, int p0)
+ajava atypes entry for Vector()
+Vector<E extends Object> <init>()
+ajava atypes entry for index
+int
+ajava atypes entry for es
+Object[]
+ajava atypes entry for set(E)
+void set(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for trimToSize()
+void trimToSize(Vector<E extends Object> this)
+ajava atypes entry for removeElement(java.lang.Object)
+boolean removeElement(Vector<E extends Object> this, Object p0)
+ajava atypes entry for index
+int
+ajava atypes entry for lastIndexOf(java.lang.Object,int)
+int lastIndexOf(Vector<E extends Object> this, Object p0, int p1)
+ajava atypes entry for newSize
+int
+ajava atypes entry for index
+int
+ajava atypes entry for elementData(int)
+E extends Object elementData(Vector<E extends Object> this, int p0)
+ajava atypes entry for minCapacity
+int
+ajava atypes entry for index
+int
+ajava atypes entry for addElement(E)
+void addElement(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for listIterator(int)
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this, int p0)
+ajava atypes entry for remove(java.lang.Object)
+boolean remove(Vector<E extends Object> this, Object p0)
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for addAll(int,java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, int p0, Collection<? extends E extends Object> p1)
+ajava atypes entry for index
+int
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for removeAll(java.util.Collection<?>)
+boolean removeAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for remove(int)
+E extends Object remove(Vector<E extends Object> this, int p0)
+ajava atypes entry for <E>elementAt(java.lang.Object[],int)
+<E extends Object> E extends Object elementAt(Object[] p0, int p1)
+ajava atypes entry for isEmpty()
+boolean isEmpty(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for c
+Comparator<? extends Object super E extends Object>
+ajava atypes entry for size()
+int size(Vector<E extends Object> this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for Vector(int,int)
+Vector<E extends Object> <init>(int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for java.util.Vector.VectorSpliterator
+Vector<E extends Object>.VectorSpliterator
+ajava atypes entry for indexOf(java.lang.Object)
+int indexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for a
+T extends Object[]
+ajava atypes entry for removeRange(int,int)
+void removeRange(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for filter
+Predicate<? extends Object super E extends Object>
+ajava atypes entry for removeIf(java.util.function.Predicate<? super E>)
+boolean removeIf(Vector<E extends Object> this, Predicate<? extends Object super E extends Object> p0)
+ajava atypes entry for <T>toArray(T[])
+<T extends Object> T extends Object[] toArray(Vector<E extends Object> this, T extends Object[] p0)
+ajava atypes entry for copyInto(java.lang.Object[])
+void copyInto(Vector<E extends Object> this, Object[] p0)
+ajava atypes entry for Vector(int)
+Vector<E extends Object> <init>(int p0)
+ajava atypes entry for retainAll(java.util.Collection<?>)
+boolean retainAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for nextIndex()
+int nextIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for anArray
+Object[]
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for removeAllElements()
+void removeAllElements(Vector<E extends Object> this)
+ajava atypes entry for lastElement()
+E extends Object lastElement(Vector<E extends Object> this)
+ajava atypes entry for clone()
+Object clone(Vector<E extends Object> this)
+ajava atypes entry for iterator()
+Iterator<E extends Object> iterator(Vector<E extends Object> this)
+ajava atypes entry for elementCount
+int
+ajava atypes entry for characteristics()
+int characteristics(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for listIterator()
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this)
+ajava atypes entry for initialCapacity
+int
+ajava atypes entry for operator
+UnaryOperator<E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for setSize(int)
+void setSize(Vector<E extends Object> this, int p0)
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Vector<E extends Object> this, Object p0)
+ajava atypes entry for o
+Object
+ajava atypes entry for add(int,E)
+void add(Vector<E extends Object> this, int p0, E extends Object p1)
+ajava atypes entry for clear()
+void clear(Vector<E extends Object> this)
+ajava atypes entry for tryAdvance(java.util.function.Consumer<? super E>)
+boolean tryAdvance(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for forEach(java.util.function.Consumer<? super E>)
+void forEach(Vector<E extends Object> this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for java.util.Vector
+Vector<E extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for lastIndexOf(java.lang.Object)
+int lastIndexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for previous()
+E extends Object previous(Vector<E extends Object>.ListItr this)
+ajava atypes entry for java.util.Vector.ListItr
+Vector<E extends Object>.ListItr
+ajava atypes entry for obj
+Object
+ajava atypes entry for removeElementAt(int)
+void removeElementAt(Vector<E extends Object> this, int p0)
+ajava atypes entry for add(E)
+boolean add(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for estimateSize()
+long estimateSize(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for add(E)
+void add(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for addAll(java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, Collection<? extends E extends Object> p0)
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[])
+@java.lang.SuppressWarnings({"unchecked"})
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.forEachRemaining(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.elementAt(int).index
+ajava declAnnos entry for java.util.Vector.hashCode()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.remove(int).index
+ajava declAnnos entry for java.util.Vector.elementData(int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.setSize(int).newSize
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector
+@org.checkerframework.framework.qual.CFComment({"lock/nullness: permits nullable object"})
+@org.checkerframework.framework.qual.AnnotatedFor({"lock", "nullness", "index"})
+ajava declAnnos entry for java.util.Vector.iterator()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.toArray()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.capacity()
+ajava declAnnos entry for java.util.Vector.insertElementAt(E,int).index
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.tryAdvance(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[]).a
+ajava declAnnos entry for java.util.Vector.sort(java.util.Comparator<? super E>)
+@java.lang.Override
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.clone()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.addAll(int,java.util.Collection<? extends E>).index
+ajava declAnnos entry for java.util.Vector.remove(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.subList(int,int)
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.isEmpty()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.replaceAll(java.util.function.UnaryOperator<E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.util.Vector.removeElementAt(int).index
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>).c
+ajava declAnnos entry for java.util.Vector.removeIf(java.util.function.Predicate<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object).o
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.listIterator(int).index
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.forEach(java.util.function.Consumer<? super E>)
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.get(int).index
+ajava declAnnos entry for java.util.Vector.setElementAt(E,int).index
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.copyInto(java.lang.Object[]).anArray
+ajava declAnnos entry for java.util.Vector.set(int,E).index
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.toString()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.size()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.add(int,E).index
+ajava declAnnos entry for java.util.Vector.Vector(int,int).initialCapacity
+ajava declAnnos entry for java.util.Vector.Vector(int).initialCapacity
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.spliterator()
+@java.lang.Override
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.<E>elementAt(java.lang.Object[],int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.get(int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object).o
+ajava declAnnos entry for javax.swing
+@org.checkerframework.checker.guieffect.qual.UIPackage
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/lang/Object.java
+ajava atypes entry for indexOf(java.lang.Object,int)
+@IntRangeFromGTENegativeOne int indexOf(Vector<E extends Object> this, Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for elementData
+Object[]
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for get(int)
+E extends Object get(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for containsAll(java.util.Collection<?>)
+boolean containsAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for insertElementAt(E,int)
+void insertElementAt(Vector<E extends Object> this, E extends Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for checkInvariants()
+void checkInvariants(Vector<E extends Object> this)
+ajava atypes entry for sort(java.util.Comparator<? super E>)
+void sort(Vector<E extends Object> this, Comparator<? extends Object super E extends Object> p0)
+ajava atypes entry for elements()
+Enumeration<E extends Object> elements(Vector<E extends Object> this)
+ajava atypes entry for previousIndex()
+int previousIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for o
+Object
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for index
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for firstElement()
+E extends Object firstElement(Vector<E extends Object> this)
+ajava atypes entry for T
+T extends Object
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for toString()
+String toString(Vector<E extends Object> this)
+ajava atypes entry for ensureCapacity(int)
+void ensureCapacity(Vector<E extends Object> this, int p0)
+ajava atypes entry for forEachRemaining(java.util.function.Consumer<? super E>)
+void forEachRemaining(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for contains(java.lang.Object)
+boolean contains(Vector<E extends Object> this, Object p0)
+ajava atypes entry for replaceAll(java.util.function.UnaryOperator<E>)
+void replaceAll(Vector<E extends Object> this, UnaryOperator<E extends Object> p0)
+ajava atypes entry for initialCapacity
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for Vector(java.util.Collection<? extends E>)
+Vector<E extends Object> <init>(Collection<? extends E extends Object> p0)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for trySplit()
+Spliterator<E extends Object> trySplit(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for hashCode()
+int hashCode(Vector<E extends Object> this)
+ajava atypes entry for subList(int,int)
+List<E extends Object> subList(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for o
+Object
+ajava atypes entry for spliterator()
+Spliterator<E extends Object> spliterator(Vector<E extends Object> this)
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for set(int,E)
+E extends Object set(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, E extends Object p1)
+ajava atypes entry for toArray()
+Object[] toArray(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for setElementAt(E,int)
+void setElementAt(Vector<E extends Object> this, E extends Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for hasPrevious()
+boolean hasPrevious(Vector<E extends Object>.ListItr this)
+ajava atypes entry for capacity()
+@IntRangeFromNonNegative int capacity(Vector<E extends Object> this)
+ajava atypes entry for elementAt(int)
+E extends Object elementAt(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for Vector()
+Vector<E extends Object> <init>()
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for es
+Object[]
+ajava atypes entry for set(E)
+void set(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for trimToSize()
+void trimToSize(Vector<E extends Object> this)
+ajava atypes entry for removeElement(java.lang.Object)
+boolean removeElement(Vector<E extends Object> this, Object p0)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for lastIndexOf(java.lang.Object,int)
+@IntRangeFromGTENegativeOne int lastIndexOf(Vector<E extends Object> this, Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for newSize
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for elementData(int)
+E extends Object elementData(Vector<E extends Object> this, int p0)
+ajava atypes entry for minCapacity
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for addElement(E)
+void addElement(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for listIterator(int)
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for remove(java.lang.Object)
+boolean remove(Vector<E extends Object> this, Object p0)
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for addAll(int,java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, Collection<? extends E extends Object> p1)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for removeAll(java.util.Collection<?>)
+boolean removeAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for remove(int)
+E extends Object remove(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for <E>elementAt(java.lang.Object[],int)
+<E extends Object> E extends Object elementAt(Object[] p0, int p1)
+ajava atypes entry for isEmpty()
+boolean isEmpty(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for c
+Comparator<? extends Object super E extends Object>
+ajava atypes entry for size()
+@IntRangeFromNonNegative int size(Vector<E extends Object> this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for Vector(int,int)
+Vector<E extends Object> <init>(@IntRangeFromNonNegative int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for java.util.Vector.VectorSpliterator
+Vector<E extends Object>.VectorSpliterator
+ajava atypes entry for indexOf(java.lang.Object)
+@IntRangeFromGTENegativeOne int indexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for a
+T extends Object[]
+ajava atypes entry for removeRange(int,int)
+void removeRange(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for filter
+Predicate<? extends Object super E extends Object>
+ajava atypes entry for removeIf(java.util.function.Predicate<? super E>)
+boolean removeIf(Vector<E extends Object> this, Predicate<? extends Object super E extends Object> p0)
+ajava atypes entry for <T>toArray(T[])
+<T extends Object> T extends Object[] toArray(Vector<E extends Object> this, T extends Object[] p0)
+ajava atypes entry for copyInto(java.lang.Object[])
+void copyInto(Vector<E extends Object> this, Object[] p0)
+ajava atypes entry for Vector(int)
+Vector<E extends Object> <init>(@IntRangeFromNonNegative int p0)
+ajava atypes entry for retainAll(java.util.Collection<?>)
+boolean retainAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for nextIndex()
+int nextIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for anArray
+Object[]
+ajava atypes entry for index
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for removeAllElements()
+void removeAllElements(Vector<E extends Object> this)
+ajava atypes entry for lastElement()
+E extends Object lastElement(Vector<E extends Object> this)
+ajava atypes entry for clone()
+Object clone(Vector<E extends Object> this)
+ajava atypes entry for iterator()
+Iterator<E extends Object> iterator(Vector<E extends Object> this)
+ajava atypes entry for elementCount
+int
+ajava atypes entry for characteristics()
+int characteristics(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for listIterator()
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this)
+ajava atypes entry for initialCapacity
+@IntRangeFromNonNegative int
+ajava atypes entry for operator
+UnaryOperator<E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for setSize(int)
+void setSize(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Vector<E extends Object> this, Object p0)
+ajava atypes entry for o
+Object
+ajava atypes entry for add(int,E)
+void add(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, E extends Object p1)
+ajava atypes entry for clear()
+void clear(Vector<E extends Object> this)
+ajava atypes entry for tryAdvance(java.util.function.Consumer<? super E>)
+boolean tryAdvance(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for forEach(java.util.function.Consumer<? super E>)
+void forEach(Vector<E extends Object> this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for java.util.Vector
+Vector<E extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for lastIndexOf(java.lang.Object)
+@IntRangeFromGTENegativeOne int lastIndexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for previous()
+E extends Object previous(Vector<E extends Object>.ListItr this)
+ajava atypes entry for java.util.Vector.ListItr
+Vector<E extends Object>.ListItr
+ajava atypes entry for obj
+Object
+ajava atypes entry for removeElementAt(int)
+void removeElementAt(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for add(E)
+boolean add(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for estimateSize()
+long estimateSize(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for add(E)
+void add(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for addAll(java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, Collection<? extends E extends Object> p0)
+Note: AnnotationFileParser: parsing annotation file annotated-jdk/src/java.base/share/classes/java/lang/Object.java
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/lang/Object.java
+ajava atypes entry for indexOf(java.lang.Object,int)
+@IntRangeFromGTENegativeOne int indexOf(Vector<E extends Object> this, Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for elementData
+Object[]
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for get(int)
+E extends Object get(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for containsAll(java.util.Collection<?>)
+boolean containsAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for insertElementAt(E,int)
+void insertElementAt(Vector<E extends Object> this, E extends Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for java.lang.Object
+Object
+ajava atypes entry for o
+Object
+ajava atypes entry for checkInvariants()
+void checkInvariants(Vector<E extends Object> this)
+ajava atypes entry for sort(java.util.Comparator<? super E>)
+void sort(Vector<E extends Object> this, Comparator<? extends Object super E extends Object> p0)
+ajava atypes entry for elements()
+Enumeration<E extends Object> elements(Vector<E extends Object> this)
+ajava atypes entry for previousIndex()
+int previousIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for o
+Object
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for index
+int
+ajava atypes entry for notify()
+void notify(Object this)
+ajava atypes entry for Object()
+Object <init>()
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for firstElement()
+E extends Object firstElement(Vector<E extends Object> this)
+ajava atypes entry for T
+T extends Object
+ajava atypes entry for o
+Object
+ajava atypes entry for hashCode()
+int hashCode(Object this)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for toString()
+String toString(Vector<E extends Object> this)
+ajava atypes entry for wait(long,int)
+void wait(Object this, long p0, @IntRangeFromNonNegative int p1) throws InterruptedException
+ajava atypes entry for ensureCapacity(int)
+void ensureCapacity(Vector<E extends Object> this, int p0)
+ajava atypes entry for forEachRemaining(java.util.function.Consumer<? super E>)
+void forEachRemaining(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for contains(java.lang.Object)
+boolean contains(Vector<E extends Object> this, Object p0)
+ajava atypes entry for replaceAll(java.util.function.UnaryOperator<E>)
+void replaceAll(Vector<E extends Object> this, UnaryOperator<E extends Object> p0)
+ajava atypes entry for initialCapacity
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for Vector(java.util.Collection<? extends E>)
+Vector<E extends Object> <init>(Collection<? extends E extends Object> p0)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for trySplit()
+Spliterator<E extends Object> trySplit(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for getClass()
+Class<? extends Object> getClass(Object this)
+ajava atypes entry for hashCode()
+int hashCode(Vector<E extends Object> this)
+ajava atypes entry for subList(int,int)
+List<E extends Object> subList(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for obj
+Object
+ajava atypes entry for o
+Object
+ajava atypes entry for spliterator()
+Spliterator<E extends Object> spliterator(Vector<E extends Object> this)
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for set(int,E)
+E extends Object set(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, E extends Object p1)
+ajava atypes entry for toArray()
+Object[] toArray(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for setElementAt(E,int)
+void setElementAt(Vector<E extends Object> this, E extends Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for hasPrevious()
+boolean hasPrevious(Vector<E extends Object>.ListItr this)
+ajava atypes entry for notifyAll()
+void notifyAll(Object this)
+ajava atypes entry for capacity()
+@IntRangeFromNonNegative int capacity(Vector<E extends Object> this)
+ajava atypes entry for elementAt(int)
+E extends Object elementAt(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for Vector()
+Vector<E extends Object> <init>()
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for es
+Object[]
+ajava atypes entry for set(E)
+void set(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for trimToSize()
+void trimToSize(Vector<E extends Object> this)
+ajava atypes entry for removeElement(java.lang.Object)
+boolean removeElement(Vector<E extends Object> this, Object p0)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for lastIndexOf(java.lang.Object,int)
+@IntRangeFromGTENegativeOne int lastIndexOf(Vector<E extends Object> this, Object p0, @IntRangeFromNonNegative int p1)
+ajava atypes entry for newSize
+@IntRangeFromNonNegative int
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Object this, Object p0)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for elementData(int)
+E extends Object elementData(Vector<E extends Object> this, int p0)
+ajava atypes entry for minCapacity
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for addElement(E)
+void addElement(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for listIterator(int)
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for remove(java.lang.Object)
+boolean remove(Vector<E extends Object> this, Object p0)
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for addAll(int,java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, Collection<? extends E extends Object> p1)
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for wait()
+void wait(Object this) throws InterruptedException
+ajava atypes entry for arg0
+@IntRangeFromNonNegative long
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for removeAll(java.util.Collection<?>)
+boolean removeAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for remove(int)
+E extends Object remove(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for <E>elementAt(java.lang.Object[],int)
+<E extends Object> E extends Object elementAt(Object[] p0, int p1)
+ajava atypes entry for isEmpty()
+boolean isEmpty(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for c
+Comparator<? extends Object super E extends Object>
+ajava atypes entry for size()
+@IntRangeFromNonNegative int size(Vector<E extends Object> this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for Vector(int,int)
+Vector<E extends Object> <init>(@IntRangeFromNonNegative int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for java.util.Vector.VectorSpliterator
+Vector<E extends Object>.VectorSpliterator
+ajava atypes entry for indexOf(java.lang.Object)
+@IntRangeFromGTENegativeOne int indexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for a
+T extends Object[]
+ajava atypes entry for removeRange(int,int)
+void removeRange(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for filter
+Predicate<? extends Object super E extends Object>
+ajava atypes entry for removeIf(java.util.function.Predicate<? super E>)
+boolean removeIf(Vector<E extends Object> this, Predicate<? extends Object super E extends Object> p0)
+ajava atypes entry for <T>toArray(T[])
+<T extends Object> T extends Object[] toArray(Vector<E extends Object> this, T extends Object[] p0)
+ajava atypes entry for copyInto(java.lang.Object[])
+void copyInto(Vector<E extends Object> this, Object[] p0)
+ajava atypes entry for Vector(int)
+Vector<E extends Object> <init>(@IntRangeFromNonNegative int p0)
+ajava atypes entry for retainAll(java.util.Collection<?>)
+boolean retainAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for nextIndex()
+int nextIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for toString()
+String toString(Object this)
+ajava atypes entry for anArray
+Object[]
+ajava atypes entry for index
+int
+ajava atypes entry for index
+@IntRangeFromNonNegative int
+ajava atypes entry for removeAllElements()
+void removeAllElements(Vector<E extends Object> this)
+ajava atypes entry for lastElement()
+E extends Object lastElement(Vector<E extends Object> this)
+ajava atypes entry for clone()
+Object clone(Vector<E extends Object> this)
+ajava atypes entry for iterator()
+Iterator<E extends Object> iterator(Vector<E extends Object> this)
+ajava atypes entry for elementCount
+int
+ajava atypes entry for characteristics()
+int characteristics(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for listIterator()
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this)
+ajava atypes entry for initialCapacity
+@IntRangeFromNonNegative int
+ajava atypes entry for operator
+UnaryOperator<E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for setSize(int)
+void setSize(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Vector<E extends Object> this, Object p0)
+ajava atypes entry for o
+Object
+ajava atypes entry for add(int,E)
+void add(Vector<E extends Object> this, @IntRangeFromNonNegative int p0, E extends Object p1)
+ajava atypes entry for clear()
+void clear(Vector<E extends Object> this)
+ajava atypes entry for tryAdvance(java.util.function.Consumer<? super E>)
+boolean tryAdvance(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for finalize()
+void finalize(Object this) throws Throwable
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for forEach(java.util.function.Consumer<? super E>)
+void forEach(Vector<E extends Object> this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for java.util.Vector
+Vector<E extends Object>
+ajava atypes entry for nanos
+@IntRangeFromNonNegative int
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for lastIndexOf(java.lang.Object)
+@IntRangeFromGTENegativeOne int lastIndexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for clone()
+Object clone(Object this) throws CloneNotSupportedException
+ajava atypes entry for previous()
+E extends Object previous(Vector<E extends Object>.ListItr this)
+ajava atypes entry for wait(long)
+void wait(Object this, @IntRangeFromNonNegative long p0) throws InterruptedException
+ajava atypes entry for java.util.Vector.ListItr
+Vector<E extends Object>.ListItr
+ajava atypes entry for obj
+Object
+ajava atypes entry for removeElementAt(int)
+void removeElementAt(Vector<E extends Object> this, @IntRangeFromNonNegative int p0)
+ajava atypes entry for add(E)
+boolean add(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for estimateSize()
+long estimateSize(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for add(E)
+void add(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for addAll(java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, Collection<? extends E extends Object> p0)
+ajava atypes entry for timeoutMillis
+long
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[])
+@java.lang.SuppressWarnings({"unchecked"})
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.lang.Object.finalize()
+@java.lang.Deprecated
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.forEachRemaining(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.lang.Object.clone()
+@jdk.internal.HotSpotIntrinsicCandidate
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.elementAt(int).index
+ajava declAnnos entry for java.util.Vector.hashCode()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.lang.Object.equals(java.lang.Object).obj
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.remove(int).index
+ajava declAnnos entry for java.util.Vector.elementData(int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.setSize(int).newSize
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector
+@org.checkerframework.framework.qual.CFComment({"lock/nullness: permits nullable object"})
+@org.checkerframework.framework.qual.AnnotatedFor({"lock", "nullness", "index"})
+ajava declAnnos entry for java.util.Vector.iterator()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.toArray()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.capacity()
+ajava declAnnos entry for java.lang.Object.getClass()
+@org.checkerframework.checker.guieffect.qual.SafeEffect
+@org.checkerframework.dataflow.qual.Pure
+@jdk.internal.HotSpotIntrinsicCandidate
+@org.checkerframework.common.reflection.qual.GetClass
+ajava declAnnos entry for java.util.Vector.insertElementAt(E,int).index
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.tryAdvance(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[]).a
+ajava declAnnos entry for java.util.Vector.sort(java.util.Comparator<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.clone()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.lang.Object.notify()
+@jdk.internal.HotSpotIntrinsicCandidate
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.addAll(int,java.util.Collection<? extends E>).index
+ajava declAnnos entry for java.util.Vector.remove(java.lang.Object).o
+ajava declAnnos entry for java.lang.Object.notifyAll()
+@jdk.internal.HotSpotIntrinsicCandidate
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.subList(int,int)
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.lang.Object.equals(java.lang.Object)
+@org.checkerframework.checker.nullness.qual.EnsuresNonNullIf(expression={"#1"}, result=true)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.isEmpty()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.replaceAll(java.util.function.UnaryOperator<E>)
+@java.lang.Override
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.lang.Object.toString()
+@org.checkerframework.dataflow.qual.SideEffectFree
+@org.checkerframework.framework.qual.CFComment({"nullness: toString() is @SideEffectFree rather than @Pure because it returns a string", "that differs according to ==, and @Deterministic requires that the results of", "two calls of the method are ==."})
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.util.Vector.removeElementAt(int).index
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>).c
+ajava declAnnos entry for java.util.Vector.removeIf(java.util.function.Predicate<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object).o
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.listIterator(int).index
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.lang.Object.wait(long).arg0
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.forEach(java.util.function.Consumer<? super E>)
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.get(int).index
+ajava declAnnos entry for java.util.Vector.setElementAt(E,int).index
+ajava declAnnos entry for java.lang.Object.hashCode()
+@jdk.internal.HotSpotIntrinsicCandidate
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.copyInto(java.lang.Object[]).anArray
+ajava declAnnos entry for java.util.Vector.set(int,E).index
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.toString()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.size()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.add(int,E).index
+ajava declAnnos entry for java.util.Vector.Vector(int,int).initialCapacity
+ajava declAnnos entry for java.util.Vector.Vector(int).initialCapacity
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.lang.Object.wait(long,int).nanos
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.spliterator()
+@java.lang.Override
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.<E>elementAt(java.lang.Object[],int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.lang.Object
+@org.checkerframework.checker.guieffect.qual.PolyUIType
+@org.checkerframework.framework.qual.AnnotatedFor({"aliasing", "guieffect", "index", "lock", "nullness"})
+ajava declAnnos entry for java.util.Vector.get(int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object).o
+ajava declAnnos entry for java.lang.Object.Object()
+@org.checkerframework.dataflow.qual.Pure
+@jdk.internal.HotSpotIntrinsicCandidate
+ajava declAnnos entry for javax.swing
+@org.checkerframework.checker.guieffect.qual.UIPackage
+about to parse a stub file: annotated-jdk/src/java.base/share/classes/java/lang/Object.java
+ajava atypes entry for indexOf(java.lang.Object,int)
+int indexOf(Vector<E extends Object> this, Object p0, int p1)
+ajava atypes entry for elementData
+Object[]
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for get(int)
+E extends Object get(Vector<E extends Object> this, int p0)
+ajava atypes entry for containsAll(java.util.Collection<?>)
+boolean containsAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for insertElementAt(E,int)
+void insertElementAt(Vector<E extends Object> this, E extends Object p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for checkInvariants()
+void checkInvariants(Vector<E extends Object> this)
+ajava atypes entry for sort(java.util.Comparator<? super E>)
+void sort(Vector<E extends Object> this, Comparator<? extends Object super E extends Object> p0)
+ajava atypes entry for elements()
+Enumeration<E extends Object> elements(Vector<E extends Object> this)
+ajava atypes entry for previousIndex()
+int previousIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for o
+Object
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for firstElement()
+E extends Object firstElement(Vector<E extends Object> this)
+ajava atypes entry for T
+T extends Object
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+int
+ajava atypes entry for toString()
+String toString(Vector<E extends Object> this)
+ajava atypes entry for ensureCapacity(int)
+void ensureCapacity(Vector<E extends Object> this, int p0)
+ajava atypes entry for forEachRemaining(java.util.function.Consumer<? super E>)
+void forEachRemaining(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for contains(java.lang.Object)
+boolean contains(Vector<E extends Object> this, Object p0)
+ajava atypes entry for replaceAll(java.util.function.UnaryOperator<E>)
+void replaceAll(Vector<E extends Object> this, UnaryOperator<E extends Object> p0)
+ajava atypes entry for initialCapacity
+int
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for Vector(java.util.Collection<? extends E>)
+Vector<E extends Object> <init>(Collection<? extends E extends Object> p0)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for trySplit()
+Spliterator<E extends Object> trySplit(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for hashCode()
+int hashCode(Vector<E extends Object> this)
+ajava atypes entry for subList(int,int)
+List<E extends Object> subList(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for o
+Object
+ajava atypes entry for spliterator()
+Spliterator<E extends Object> spliterator(Vector<E extends Object> this)
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for set(int,E)
+E extends Object set(Vector<E extends Object> this, int p0, E extends Object p1)
+ajava atypes entry for toArray()
+Object[] toArray(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for setElementAt(E,int)
+void setElementAt(Vector<E extends Object> this, E extends Object p0, int p1)
+ajava atypes entry for hasPrevious()
+boolean hasPrevious(Vector<E extends Object>.ListItr this)
+ajava atypes entry for capacity()
+int capacity(Vector<E extends Object> this)
+ajava atypes entry for elementAt(int)
+E extends Object elementAt(Vector<E extends Object> this, int p0)
+ajava atypes entry for Vector()
+Vector<E extends Object> <init>()
+ajava atypes entry for index
+int
+ajava atypes entry for es
+Object[]
+ajava atypes entry for set(E)
+void set(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for trimToSize()
+void trimToSize(Vector<E extends Object> this)
+ajava atypes entry for removeElement(java.lang.Object)
+boolean removeElement(Vector<E extends Object> this, Object p0)
+ajava atypes entry for index
+int
+ajava atypes entry for lastIndexOf(java.lang.Object,int)
+int lastIndexOf(Vector<E extends Object> this, Object p0, int p1)
+ajava atypes entry for newSize
+int
+ajava atypes entry for index
+int
+ajava atypes entry for elementData(int)
+E extends Object elementData(Vector<E extends Object> this, int p0)
+ajava atypes entry for minCapacity
+int
+ajava atypes entry for index
+int
+ajava atypes entry for addElement(E)
+void addElement(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for listIterator(int)
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this, int p0)
+ajava atypes entry for remove(java.lang.Object)
+boolean remove(Vector<E extends Object> this, Object p0)
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for addAll(int,java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, int p0, Collection<? extends E extends Object> p1)
+ajava atypes entry for index
+int
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for removeAll(java.util.Collection<?>)
+boolean removeAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for remove(int)
+E extends Object remove(Vector<E extends Object> this, int p0)
+ajava atypes entry for <E>elementAt(java.lang.Object[],int)
+<E extends Object> E extends Object elementAt(Object[] p0, int p1)
+ajava atypes entry for isEmpty()
+boolean isEmpty(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for c
+Comparator<? extends Object super E extends Object>
+ajava atypes entry for size()
+int size(Vector<E extends Object> this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for Vector(int,int)
+Vector<E extends Object> <init>(int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for java.util.Vector.VectorSpliterator
+Vector<E extends Object>.VectorSpliterator
+ajava atypes entry for indexOf(java.lang.Object)
+int indexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for a
+T extends Object[]
+ajava atypes entry for removeRange(int,int)
+void removeRange(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for filter
+Predicate<? extends Object super E extends Object>
+ajava atypes entry for removeIf(java.util.function.Predicate<? super E>)
+boolean removeIf(Vector<E extends Object> this, Predicate<? extends Object super E extends Object> p0)
+ajava atypes entry for <T>toArray(T[])
+<T extends Object> T extends Object[] toArray(Vector<E extends Object> this, T extends Object[] p0)
+ajava atypes entry for copyInto(java.lang.Object[])
+void copyInto(Vector<E extends Object> this, Object[] p0)
+ajava atypes entry for Vector(int)
+Vector<E extends Object> <init>(int p0)
+ajava atypes entry for retainAll(java.util.Collection<?>)
+boolean retainAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for nextIndex()
+int nextIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for anArray
+Object[]
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for removeAllElements()
+void removeAllElements(Vector<E extends Object> this)
+ajava atypes entry for lastElement()
+E extends Object lastElement(Vector<E extends Object> this)
+ajava atypes entry for clone()
+Object clone(Vector<E extends Object> this)
+ajava atypes entry for iterator()
+Iterator<E extends Object> iterator(Vector<E extends Object> this)
+ajava atypes entry for elementCount
+int
+ajava atypes entry for characteristics()
+int characteristics(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for listIterator()
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this)
+ajava atypes entry for initialCapacity
+int
+ajava atypes entry for operator
+UnaryOperator<E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for setSize(int)
+void setSize(Vector<E extends Object> this, int p0)
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Vector<E extends Object> this, Object p0)
+ajava atypes entry for o
+Object
+ajava atypes entry for add(int,E)
+void add(Vector<E extends Object> this, int p0, E extends Object p1)
+ajava atypes entry for clear()
+void clear(Vector<E extends Object> this)
+ajava atypes entry for tryAdvance(java.util.function.Consumer<? super E>)
+boolean tryAdvance(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for forEach(java.util.function.Consumer<? super E>)
+void forEach(Vector<E extends Object> this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for java.util.Vector
+Vector<E extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for lastIndexOf(java.lang.Object)
+int lastIndexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for previous()
+E extends Object previous(Vector<E extends Object>.ListItr this)
+ajava atypes entry for java.util.Vector.ListItr
+Vector<E extends Object>.ListItr
+ajava atypes entry for obj
+Object
+ajava atypes entry for removeElementAt(int)
+void removeElementAt(Vector<E extends Object> this, int p0)
+ajava atypes entry for add(E)
+boolean add(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for estimateSize()
+long estimateSize(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for add(E)
+void add(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for addAll(java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, Collection<? extends E extends Object> p0)
+finished parsing a stub file: annotated-jdk/src/java.base/share/classes/java/lang/Object.java
+ajava atypes entry for indexOf(java.lang.Object,int)
+int indexOf(Vector<E extends Object> this, Object p0, int p1)
+ajava atypes entry for elementData
+Object[]
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for get(int)
+E extends Object get(Vector<E extends Object> this, int p0)
+ajava atypes entry for containsAll(java.util.Collection<?>)
+boolean containsAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for insertElementAt(E,int)
+void insertElementAt(Vector<E extends Object> this, E extends Object p0, int p1)
+ajava atypes entry for java.lang.Object
+Object
+ajava atypes entry for o
+Object
+ajava atypes entry for checkInvariants()
+void checkInvariants(Vector<E extends Object> this)
+ajava atypes entry for sort(java.util.Comparator<? super E>)
+void sort(Vector<E extends Object> this, Comparator<? extends Object super E extends Object> p0)
+ajava atypes entry for elements()
+Enumeration<E extends Object> elements(Vector<E extends Object> this)
+ajava atypes entry for previousIndex()
+int previousIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for o
+Object
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for index
+int
+ajava atypes entry for notify()
+void notify(Object this)
+ajava atypes entry for Object()
+Object <init>()
+ajava atypes entry for index
+int
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for firstElement()
+E extends Object firstElement(Vector<E extends Object> this)
+ajava atypes entry for T
+T extends Object
+ajava atypes entry for o
+Object
+ajava atypes entry for hashCode()
+int hashCode(Object this)
+ajava atypes entry for index
+int
+ajava atypes entry for toString()
+String toString(Vector<E extends Object> this)
+ajava atypes entry for wait(long,int)
+void wait(Object this, long p0, int p1) throws InterruptedException
+ajava atypes entry for ensureCapacity(int)
+void ensureCapacity(Vector<E extends Object> this, int p0)
+ajava atypes entry for forEachRemaining(java.util.function.Consumer<? super E>)
+void forEachRemaining(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for contains(java.lang.Object)
+boolean contains(Vector<E extends Object> this, Object p0)
+ajava atypes entry for replaceAll(java.util.function.UnaryOperator<E>)
+void replaceAll(Vector<E extends Object> this, UnaryOperator<E extends Object> p0)
+ajava atypes entry for initialCapacity
+int
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for Vector(java.util.Collection<? extends E>)
+Vector<E extends Object> <init>(Collection<? extends E extends Object> p0)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for trySplit()
+Spliterator<E extends Object> trySplit(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for getClass()
+Class<? extends Object> getClass(Object this)
+ajava atypes entry for hashCode()
+int hashCode(Vector<E extends Object> this)
+ajava atypes entry for subList(int,int)
+List<E extends Object> subList(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for toIndex
+int
+ajava atypes entry for obj
+Object
+ajava atypes entry for o
+Object
+ajava atypes entry for spliterator()
+Spliterator<E extends Object> spliterator(Vector<E extends Object> this)
+ajava atypes entry for obj
+E extends Object
+ajava atypes entry for set(int,E)
+E extends Object set(Vector<E extends Object> this, int p0, E extends Object p1)
+ajava atypes entry for toArray()
+Object[] toArray(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for setElementAt(E,int)
+void setElementAt(Vector<E extends Object> this, E extends Object p0, int p1)
+ajava atypes entry for hasPrevious()
+boolean hasPrevious(Vector<E extends Object>.ListItr this)
+ajava atypes entry for notifyAll()
+void notifyAll(Object this)
+ajava atypes entry for capacity()
+int capacity(Vector<E extends Object> this)
+ajava atypes entry for elementAt(int)
+E extends Object elementAt(Vector<E extends Object> this, int p0)
+ajava atypes entry for Vector()
+Vector<E extends Object> <init>()
+ajava atypes entry for index
+int
+ajava atypes entry for es
+Object[]
+ajava atypes entry for set(E)
+void set(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for trimToSize()
+void trimToSize(Vector<E extends Object> this)
+ajava atypes entry for removeElement(java.lang.Object)
+boolean removeElement(Vector<E extends Object> this, Object p0)
+ajava atypes entry for index
+int
+ajava atypes entry for lastIndexOf(java.lang.Object,int)
+int lastIndexOf(Vector<E extends Object> this, Object p0, int p1)
+ajava atypes entry for newSize
+int
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Object this, Object p0)
+ajava atypes entry for index
+int
+ajava atypes entry for elementData(int)
+E extends Object elementData(Vector<E extends Object> this, int p0)
+ajava atypes entry for minCapacity
+int
+ajava atypes entry for index
+int
+ajava atypes entry for addElement(E)
+void addElement(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for listIterator(int)
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this, int p0)
+ajava atypes entry for remove(java.lang.Object)
+boolean remove(Vector<E extends Object> this, Object p0)
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for capacityIncrement
+int
+ajava atypes entry for addAll(int,java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, int p0, Collection<? extends E extends Object> p1)
+ajava atypes entry for index
+int
+ajava atypes entry for wait()
+void wait(Object this) throws InterruptedException
+ajava atypes entry for arg0
+long
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for removeAll(java.util.Collection<?>)
+boolean removeAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for remove(int)
+E extends Object remove(Vector<E extends Object> this, int p0)
+ajava atypes entry for <E>elementAt(java.lang.Object[],int)
+<E extends Object> E extends Object elementAt(Object[] p0, int p1)
+ajava atypes entry for isEmpty()
+boolean isEmpty(Vector<E extends Object> this)
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for c
+Comparator<? extends Object super E extends Object>
+ajava atypes entry for size()
+int size(Vector<E extends Object> this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for Vector(int,int)
+Vector<E extends Object> <init>(int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for c
+Collection<? extends Object>
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for java.util.Vector.VectorSpliterator
+Vector<E extends Object>.VectorSpliterator
+ajava atypes entry for indexOf(java.lang.Object)
+int indexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for a
+T extends Object[]
+ajava atypes entry for removeRange(int,int)
+void removeRange(Vector<E extends Object> this, int p0, int p1)
+ajava atypes entry for o
+Object
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for filter
+Predicate<? extends Object super E extends Object>
+ajava atypes entry for removeIf(java.util.function.Predicate<? super E>)
+boolean removeIf(Vector<E extends Object> this, Predicate<? extends Object super E extends Object> p0)
+ajava atypes entry for <T>toArray(T[])
+<T extends Object> T extends Object[] toArray(Vector<E extends Object> this, T extends Object[] p0)
+ajava atypes entry for copyInto(java.lang.Object[])
+void copyInto(Vector<E extends Object> this, Object[] p0)
+ajava atypes entry for Vector(int)
+Vector<E extends Object> <init>(int p0)
+ajava atypes entry for retainAll(java.util.Collection<?>)
+boolean retainAll(Vector<E extends Object> this, Collection<? extends Object> p0)
+ajava atypes entry for nextIndex()
+int nextIndex(Vector<E extends Object>.ListItr this)
+ajava atypes entry for toString()
+String toString(Object this)
+ajava atypes entry for anArray
+Object[]
+ajava atypes entry for index
+int
+ajava atypes entry for index
+int
+ajava atypes entry for removeAllElements()
+void removeAllElements(Vector<E extends Object> this)
+ajava atypes entry for lastElement()
+E extends Object lastElement(Vector<E extends Object> this)
+ajava atypes entry for clone()
+Object clone(Vector<E extends Object> this)
+ajava atypes entry for iterator()
+Iterator<E extends Object> iterator(Vector<E extends Object> this)
+ajava atypes entry for elementCount
+int
+ajava atypes entry for characteristics()
+int characteristics(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for listIterator()
+ListIterator<E extends Object> listIterator(Vector<E extends Object> this)
+ajava atypes entry for initialCapacity
+int
+ajava atypes entry for operator
+UnaryOperator<E extends Object>
+ajava atypes entry for c
+Collection<? extends E extends Object>
+ajava atypes entry for setSize(int)
+void setSize(Vector<E extends Object> this, int p0)
+ajava atypes entry for equals(java.lang.Object)
+boolean equals(Vector<E extends Object> this, Object p0)
+ajava atypes entry for o
+Object
+ajava atypes entry for add(int,E)
+void add(Vector<E extends Object> this, int p0, E extends Object p1)
+ajava atypes entry for clear()
+void clear(Vector<E extends Object> this)
+ajava atypes entry for tryAdvance(java.util.function.Consumer<? super E>)
+boolean tryAdvance(Vector<E extends Object>.VectorSpliterator this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for finalize()
+void finalize(Object this) throws Throwable
+ajava atypes entry for E
+E extends Object
+ajava atypes entry for forEach(java.util.function.Consumer<? super E>)
+void forEach(Vector<E extends Object> this, Consumer<? extends Object super E extends Object> p0)
+ajava atypes entry for fromIndex
+int
+ajava atypes entry for java.util.Vector
+Vector<E extends Object>
+ajava atypes entry for nanos
+int
+ajava atypes entry for action
+Consumer<? extends Object super E extends Object>
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for lastIndexOf(java.lang.Object)
+int lastIndexOf(Vector<E extends Object> this, Object p0)
+ajava atypes entry for e
+E extends Object
+ajava atypes entry for clone()
+Object clone(Object this) throws CloneNotSupportedException
+ajava atypes entry for previous()
+E extends Object previous(Vector<E extends Object>.ListItr this)
+ajava atypes entry for wait(long)
+void wait(Object this, long p0) throws InterruptedException
+ajava atypes entry for java.util.Vector.ListItr
+Vector<E extends Object>.ListItr
+ajava atypes entry for obj
+Object
+ajava atypes entry for removeElementAt(int)
+void removeElementAt(Vector<E extends Object> this, int p0)
+ajava atypes entry for add(E)
+boolean add(Vector<E extends Object> this, E extends Object p0)
+ajava atypes entry for estimateSize()
+long estimateSize(Vector<E extends Object>.VectorSpliterator this)
+ajava atypes entry for element
+E extends Object
+ajava atypes entry for add(E)
+void add(Vector<E extends Object>.ListItr this, E extends Object p0)
+ajava atypes entry for addAll(java.util.Collection<? extends E>)
+boolean addAll(Vector<E extends Object> this, Collection<? extends E extends Object> p0)
+ajava atypes entry for timeoutMillis
+long
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[])
+@java.lang.SuppressWarnings({"unchecked"})
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.lang.Object.finalize()
+@java.lang.Deprecated
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.forEachRemaining(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.lang.Object.clone()
+@jdk.internal.HotSpotIntrinsicCandidate
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.elementAt(int).index
+ajava declAnnos entry for java.util.Vector.hashCode()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.lang.Object.equals(java.lang.Object).obj
+ajava declAnnos entry for java.nio
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.remove(int).index
+ajava declAnnos entry for java.util.Vector.elementData(int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.setSize(int).newSize
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.time
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.net
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector
+@org.checkerframework.framework.qual.CFComment({"lock/nullness: permits nullable object"})
+@org.checkerframework.framework.qual.AnnotatedFor({"lock", "nullness", "index"})
+ajava declAnnos entry for java.util.Vector.iterator()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.toArray()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.capacity()
+ajava declAnnos entry for java.lang.Object.getClass()
+@org.checkerframework.checker.guieffect.qual.SafeEffect
+@jdk.internal.HotSpotIntrinsicCandidate
+@org.checkerframework.dataflow.qual.Pure
+@org.checkerframework.common.reflection.qual.GetClass
+ajava declAnnos entry for java.util.Vector.insertElementAt(E,int).index
+ajava declAnnos entry for java.util.Vector.VectorSpliterator.tryAdvance(java.util.function.Consumer<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.<T>toArray(T[]).a
+ajava declAnnos entry for java.util.Vector.sort(java.util.Comparator<? super E>)
+@java.lang.Override
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.util.Vector.clone()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.lang.Object.notify()
+@jdk.internal.HotSpotIntrinsicCandidate
+ajava declAnnos entry for java.security
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.addAll(int,java.util.Collection<? extends E>).index
+ajava declAnnos entry for java.util.Vector.remove(java.lang.Object).o
+ajava declAnnos entry for java.lang.Object.notifyAll()
+@jdk.internal.HotSpotIntrinsicCandidate
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.subList(int,int)
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.lang.Object.equals(java.lang.Object)
+@org.checkerframework.checker.nullness.qual.EnsuresNonNullIf(expression={"#1"}, result=true)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for javax.swing.text
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.isEmpty()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.replaceAll(java.util.function.UnaryOperator<E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.lang.Object.toString()
+@org.checkerframework.framework.qual.CFComment({"nullness: toString() is @SideEffectFree rather than @Pure because it returns a string", "that differs according to ==, and @Deterministic requires that the results of", "two calls of the method are ==."})
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.util.Vector.removeElementAt(int).index
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>).c
+ajava declAnnos entry for java.util.Vector.removeIf(java.util.function.Predicate<? super E>)
+@java.lang.SuppressWarnings({"unchecked"})
+@java.lang.Override
+ajava declAnnos entry for java.lang
+@org.checkerframework.framework.qual.AnnotatedFor({"nullness"})
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.contains(java.lang.Object).o
+ajava declAnnos entry for java.awt.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.listIterator(int).index
+ajava declAnnos entry for java.util.Vector.equals(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.lang.Object.wait(long).arg0
+ajava declAnnos entry for java.util
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.forEach(java.util.function.Consumer<? super E>)
+@java.lang.Override
+ajava declAnnos entry for java.util.Vector.get(int).index
+ajava declAnnos entry for java.util.Vector.setElementAt(E,int).index
+ajava declAnnos entry for java.lang.Object.hashCode()
+@jdk.internal.HotSpotIntrinsicCandidate
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.math
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.copyInto(java.lang.Object[]).anArray
+ajava declAnnos entry for java.util.Vector.set(int,E).index
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.toString()
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt.dnd
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.size()
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.add(int,E).index
+ajava declAnnos entry for java.util.Vector.Vector(int,int).initialCapacity
+ajava declAnnos entry for java.util.Vector.Vector(int).initialCapacity
+ajava declAnnos entry for javax.swing.event
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object,int).index
+ajava declAnnos entry for java.lang.Object.wait(long,int).nanos
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object).o
+ajava declAnnos entry for java.util.Vector.spliterator()
+@java.lang.Override
+@org.checkerframework.dataflow.qual.SideEffectFree
+ajava declAnnos entry for java.awt
+@org.checkerframework.checker.guieffect.qual.UIPackage
+ajava declAnnos entry for java.text
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.indexOf(java.lang.Object,int).o
+ajava declAnnos entry for java.io
+@org.checkerframework.framework.qual.DefaultQualifier(value=org.checkerframework.checker.nullness.qual.KeyForBottom.class, locations={org.checkerframework.framework.qual.TypeUseLocation.LOWER_BOUND})
+ajava declAnnos entry for java.util.Vector.<E>elementAt(java.lang.Object[],int)
+@java.lang.SuppressWarnings({"unchecked"})
+ajava declAnnos entry for java.lang.Object
+@org.checkerframework.checker.guieffect.qual.PolyUIType
+@org.checkerframework.framework.qual.AnnotatedFor({"aliasing", "guieffect", "index", "lock", "nullness"})
+ajava declAnnos entry for java.util.Vector.get(int)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.containsAll(java.util.Collection<?>)
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for java.util.Vector.lastIndexOf(java.lang.Object).o
+ajava declAnnos entry for java.lang.Object.Object()
+@jdk.internal.HotSpotIntrinsicCandidate
+@org.checkerframework.dataflow.qual.Pure
+ajava declAnnos entry for javax.swing
+@org.checkerframework.checker.guieffect.qual.UIPackage
+checker/tests/ainfer-testchecker/non-annotated/UsesAnonymous.java:19: error: [argument] incompatible argument for parameter t of expectsSibling2.
+            expectsSibling2(innerField);
+                            ^
+  found   : @DefaultType int
+  required: @Sibling2 int
+1 error

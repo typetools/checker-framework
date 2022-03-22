@@ -100,6 +100,7 @@ import org.checkerframework.framework.qual.NoQualifierParameter;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileElementTypes;
+import org.checkerframework.framework.stub.AnnotationFileParser;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -891,20 +892,48 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       String qualifiedName = packagePrefix + className;
 
+      // If this has exactly one element after the loop, a specific .ajava file was supplied, with no ambiguity,
+      // and can be parsed. See the comment below about possible ambiguity for an explanation.
+      Set<String> candidateAjavaFiles = new HashSet<>(1);
+      // All .ajava files for this class + checker combo end in this string.
+      String ajavaEnding = qualifiedName.replaceAll("\\.", "/")
+          + "-"
+          + checker.getClass().getCanonicalName()
+          + ".ajava";
       for (String ajavaLocation : checker.getOption("ajava").split(File.pathSeparator)) {
+        // ajavaLocation might either be (1) a directory, or (2) the name of a specific
+        // ajava file. This code must handle both possible cases.
+        // Case (1): ajavaPath is a directory
         String ajavaPath =
             ajavaLocation
                 + File.separator
-                + qualifiedName.replaceAll("\\.", "/")
-                + "-"
-                + checker.getClass().getCanonicalName()
-                + ".ajava";
-        File ajavaFile = new File(ajavaPath);
-        if (ajavaFile.exists()) {
-          currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-          currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
-          break;
+                + ajavaEnding;
+        File ajavaFileInDir = new File(ajavaPath);
+        if (ajavaFileInDir.exists()) {
+          // There is a candidate ajava file in one of the root directories.
+          candidateAjavaFiles.add(ajavaPath);
+        } else {
+          // Check case (2): ajavaPath might be a specific .ajava file. The tricky thing
+          // about this is that the "root" is not known, so the correct .ajava file might be
+          // ambiguous. Consider the following: there are
+          // two ajava files: ~/foo/foo/Bar-checker.ajava and ~/baz/foo/Bar-checker.ajava. Which is
+          // the correct one for class foo.Bar? It depends on whether there is a foo.foo.Bar or
+          // a baz.foo.Bar elsewhere in the project. For that reason, parsing using a specific file
+          // is done at the **end** of the loop, and if there is more than one match no file
+          // is parsed for this class and a warning is issued instead. The user can disambiguate by
+          // supplying a root directory, instead of specific files.
+          if (ajavaLocation.endsWith(ajavaEnding)) {
+            // This is a candidate ajava file. If it is the only candidate, then it might be
+            // unambiguous. If not, issue a warning.
+            candidateAjavaFiles.add(ajavaLocation);
+          }
         }
+      }
+      if (candidateAjavaFiles.size() == 1) {
+        currentFileAjavaTypes = new AnnotationFileElementTypes(this);
+        currentFileAjavaTypes.parseAjavaFileWithTree(candidateAjavaFiles.toArray(new String[1])[0], root);
+      } else if (candidateAjavaFiles.size() > 1) {
+        checker.reportWarning(root, "ambiguous.ajava", String.join(", ", candidateAjavaFiles));
       }
     } else {
       currentFileAjavaTypes = null;
