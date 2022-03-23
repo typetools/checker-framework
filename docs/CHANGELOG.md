@@ -18,6 +18,7 @@ visibility. It is only meant as a utility method for use within a
 transfer function.
 
 **Closed issues:**
+typetools#5075.
 
 
 Version 3.21.3 (March 1, 2022)

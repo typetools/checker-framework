@@ -39,6 +39,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         // are added to the type below).
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, variableTree.getType());
 
+        // See comment in visitMethod
+        ElementAnnotationApplier.apply(result, elt, f);
+
         // Handle any annotations in variableTree.getModifiers().
         List<AnnotationMirror> modifierAnnos;
         List<? extends AnnotationTree> annoTrees = variableTree.getModifiers().getAnnotations();
@@ -73,7 +76,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                     // This does not treat Checker Framework compatqual annotations differently,
                     // because it's not clear whether the annotation should apply to the outermost
                     // enclosing type or the innermost.
-                    result.addAnnotation(anno);
+                    result.replaceAnnotation(anno);
                 }
                 // If anno is not a declaration annotation, it should have been applied in the call
                 // to applyAnnotationsFromDeclaredType above.
@@ -89,10 +92,10 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                         && !AnnotationUtils.annotationName(anno)
                                 .startsWith("org.checkerframework")) {
                     // Declaration annotations apply to the outer type.
-                    result.addAnnotation(anno);
+                    result.replaceAnnotation(anno);
                 } else {
                     // Type annotations apply to the innermost type.
-                    innerType.addAnnotation(anno);
+                    innerType.replaceAnnotation(anno);
                 }
             }
         }

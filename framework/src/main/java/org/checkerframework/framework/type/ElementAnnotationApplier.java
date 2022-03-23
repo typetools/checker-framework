@@ -156,6 +156,9 @@ public final class ElementAnnotationApplier {
         } else if (isCaptureConvertedTypeVar(element)) {
             // Types resulting from capture conversion cannot have explicit annotations
 
+        } else if (ElementUtils.isBindingVariable(element)) {
+            // TODO: verify that there are no type use annotations that would need decoding
+
         } else {
             throw new BugInCF(
                     "ElementAnnotationUtil.apply: illegal argument: "
