@@ -27,8 +27,7 @@ public class AinferTestCheckerAjavaValidationTest extends CheckerFrameworkWPIPer
         AinferTestCheckerAjavaTest.class,
         "-Anomsgtext",
         ajavaArgFromFiles(testFiles),
-        "-Awarns",
-        "-AskipDefs=TestPure");
+        "-Awarns");
   }
 
   @Parameters
