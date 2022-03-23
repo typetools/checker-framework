@@ -34,7 +34,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
@@ -912,8 +911,10 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
+    @Deprecated // 2022-03-22
     public TransferResult<V, S> visitStringConcatenateAssignment(
-            StringConcatenateAssignmentNode n, TransferInput<V, S> in) {
+            org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode n,
+            TransferInput<V, S> in) {
         // This gets the type of LHS + RHS
         TransferResult<V, S> result = super.visitStringConcatenateAssignment(n, in);
         Node lhs = n.getLeftOperand();

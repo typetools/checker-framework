@@ -11,7 +11,6 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 
 import java.util.List;
 
@@ -46,17 +45,6 @@ public class LiveVarTransfer
                 (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitAssignment(n, p);
         processLiveVarInAssignment(
                 n.getTarget(), n.getExpression(), transferResult.getRegularStore());
-        return transferResult;
-    }
-
-    @Override
-    public RegularTransferResult<LiveVarValue, LiveVarStore> visitStringConcatenateAssignment(
-            StringConcatenateAssignmentNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
-        RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
-                (RegularTransferResult<LiveVarValue, LiveVarStore>)
-                        super.visitStringConcatenateAssignment(n, p);
-        processLiveVarInAssignment(
-                n.getLeftOperand(), n.getRightOperand(), transferResult.getRegularStore());
         return transferResult;
     }
 

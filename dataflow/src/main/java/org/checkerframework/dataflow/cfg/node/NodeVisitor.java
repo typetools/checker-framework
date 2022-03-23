@@ -67,6 +67,7 @@ public interface NodeVisitor<R, P> {
     R visitBitwiseXor(BitwiseXorNode n, P p);
 
     // Compound assignments
+    @Deprecated // 2022-03-22
     R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p);
 
     // Comparison operations

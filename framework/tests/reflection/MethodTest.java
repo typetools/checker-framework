@@ -57,10 +57,6 @@ public class MethodTest {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, new Class[] {});
-            // TODO: Should not fail -> enhance Value checker
-            // and remove the expected error
-
-            // :: error: (assignment.type.incompatible)
             @Sibling1 Object a = m.invoke(superClass, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }

@@ -813,7 +813,6 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \midrule
 
         \code{Assignment} & & \code{x = 1} \\
-        \code{StringConcatenateAssignment} & A compound assignment. & \code{s += ".txt"} \\
         \midrule
 
         \code{ArrayCreation} & & \code{new double[]} \\
@@ -913,17 +912,12 @@ Marker that still needs to be fleshed out.
 \end{workinprogress}
 
 \begin{workinprogress}
-``Could be desugared'' on ``StringConcatenateAssignment'' and ``Conversion
+``Could be desugared'' on ``Conversion
 nodes'' was confusing.  What is the design rationale for
 desugaring in the Dataflow Framework?   Discuss that.  Here, at least
 forward-reference to \autoref{sec:desugaring}, if that's relevant. \\
 More generally, for any cases that will be discussed in the text, add a
 forward reference to the section with the discussion.
-\end{workinprogress}
-
-\begin{workinprogress}
-There is a \code{StringConcatenateAssignmentNode}.
-What about other compound assignments? Are they desugared?
 \end{workinprogress}
 
 \begin{workinprogress}
@@ -1348,6 +1342,13 @@ cases that were better handled by desugaring.
       both an unboxing and a boxing operation on \code{i}.  Desugaring
       all compound assignments greatly reduced the total number of
       node classes.
+
+    \item String concatenation assignments are also desugared. A string
+      concatenation assignment like
+      \begin{verbatim}String s; s += "str";\end{verbatim} is represented as
+      \begin{verbatim}String s; s = s + "str";\end{verbatim} in CFGs.
+      This avoids duplicating the same logic that is necessary in assignment
+      and concatenation nodes, which was error prone.
 
     \end{itemize}
 
@@ -2018,7 +2019,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  NumericalSubtraction SignedRightShift StringConcatenate
 %  LocalWords:  TernaryExpression UnsignedRightShift NotEqual GreaterThan
 %  LocalWords:  GreaterThanOrEqual LessThan LessThanOrEqual ArrayCreation
-%  LocalWords:  StringConcatenateAssignment ObjectCreation TypeCast cond
+%  LocalWords:  ObjectCreation TypeCast cond
 %  LocalWords:  InstanceOf instanceof NarrowingConversion StringConversion
 %  LocalWords:  WideningConversion ArrayType ParameterizedType ClassName
 %  LocalWords:  PrimitiveType PackageName AssertionError NullChk accessor

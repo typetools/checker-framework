@@ -41,7 +41,6 @@ import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalPlusNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
@@ -601,8 +600,10 @@ public class ValueTransfer extends CFTransfer {
     }
 
     @Override
+    @Deprecated // 2022-03-22
     public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(
-            StringConcatenateAssignmentNode n, TransferInput<CFValue, CFStore> p) {
+            org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode n,
+            TransferInput<CFValue, CFStore> p) {
         TransferResult<CFValue, CFStore> result = super.visitStringConcatenateAssignment(n, p);
         return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
     }
