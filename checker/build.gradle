@@ -526,7 +526,6 @@ void copyNonannotatedToAnnotatedDirectory(String testdir) {
                     ? null : line
         }
     }
-
     // The only file for which expected errors are maintained is ExpectedErrors.java, so we copy it over.
     delete("tests/${testdir}/annotated/ExpectedErrors.java")
     copy {
