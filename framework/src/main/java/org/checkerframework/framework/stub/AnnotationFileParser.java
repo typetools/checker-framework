@@ -3010,10 +3010,11 @@ public class AnnotationFileParser {
     @Override
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> variablesToClear = null;
-      if (TreeUtils.elementFromTree(javacTree) != null
-          && javaParserNode instanceof CallableDeclaration<?>) {
-        ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
-        variablesToClear = processCallableDeclaration((CallableDeclaration<?>) javaParserNode, elt);
+      Element elt = TreeUtils.elementFromTree(javacTree);
+      if (elt != null && javaParserNode instanceof CallableDeclaration<?>) {
+        variablesToClear =
+            processCallableDeclaration(
+                (CallableDeclaration<?>) javaParserNode, (ExecutableElement) elt);
       }
 
       super.visitMethod(javacTree, javaParserNode);

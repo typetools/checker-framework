@@ -581,7 +581,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                   + inferArg
                   + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
       }
-      boolean showWpiFailedInferences = checker.hasOption("showWPIFailedInferences");
+      boolean showWpiFailedInferences = checker.hasOption("showWpiFailedInferences");
       if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(

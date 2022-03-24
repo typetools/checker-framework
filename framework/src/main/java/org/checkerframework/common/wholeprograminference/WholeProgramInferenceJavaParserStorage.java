@@ -444,6 +444,16 @@ public class WholeProgramInferenceJavaParserStorage
       ClassTree javacClass, TypeDeclaration<?> javaParserClass, CompilationUnitAnnos sourceAnnos) {
     JointJavacJavaParserVisitor visitor =
         new DefaultJointVisitor() {
+
+          /**
+           * The number of inner classes encountered, for use in computing their names as keys to
+           * various maps. This is an estimate only: an error might lead to inaccurate annotations
+           * being emitted, but that is ok: WPI should never be run without running the checker
+           * again afterwards to check the results. This field is only used when no element for the
+           * inner class is available, such as when it comes from another compilation unit.
+           */
+          private int innerClassCount = 0;
+
           @Override
           public void processClass(
               ClassTree javacTree, ClassOrInterfaceDeclaration javaParserNode) {
@@ -480,7 +490,8 @@ public class WholeProgramInferenceJavaParserStorage
                 String className;
                 if ("".equals(body.getSimpleName().toString().trim())) {
                   // TODO: compute this value correctly
-                  className = javaParserClass.getFullyQualifiedName().get() + "$1";
+                  className =
+                      javaParserClass.getFullyQualifiedName().get() + "$" + ++innerClassCount;
                 } else {
                   className =
                       javaParserClass.getFullyQualifiedName().get()
@@ -496,9 +507,13 @@ public class WholeProgramInferenceJavaParserStorage
            * Creates a wrapper around the class for {@code tree} and stores it in {@code
            * sourceAnnos}.
            *
-           * <p>This method assumes that there is an Element corresponding to {@code tree}.
+           * <p>This method assumes that there is an Element corresponding to {@code tree} if {@code
+           * classNameKey} is null.
            *
-           * @param tree tree to add
+           * @param tree tree to add. Its corresponding element is used as the key for {@code
+           *     classToAnnos} if {@code classNameKey} is null.
+           * @param classNameKey if non-null, used as the key for {@code classToAnnos} instead of
+           *     the element corresponding to {@code tree}.
            */
           private void addClass(ClassTree tree, @Nullable String classNameKey) {
             String className;
@@ -516,6 +531,15 @@ public class WholeProgramInferenceJavaParserStorage
             sourceAnnos.types.add(typeWrapper);
           }
 
+          /**
+           * Creates a wrapper around the class for {@code tree} and stores it in {@code
+           * sourceAnnos}.
+           *
+           * <p>This method assumes that there is an Element corresponding to {@code tree}.
+           *
+           * @param tree tree to add. Its corresponding element is used as the key for {@code
+           *     classToAnnos}.
+           */
           private void addClass(ClassTree tree) {
             addClass(tree, null);
           }
