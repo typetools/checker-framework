@@ -3,14 +3,11 @@ import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
 
 public class OverriddenMethodsTest {
   static class OverriddenMethodsTestParent {
-    public void foo(@Sibling1 Object obj, @Sibling2 Object obj2) {
-    }
+    public void foo(@Sibling1 Object obj, @Sibling2 Object obj2) {}
 
-    public void bar(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {
-    }
+    public void bar(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {}
 
-    public void barz(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {
-    }
+    public void barz(@Sibling1 OverriddenMethodsTestParent this, @Sibling2 Object obj) {}
 
     public void qux(Object obj1, Object obj2) {
       // :: warning: argument
@@ -42,8 +39,7 @@ public class OverriddenMethodsTest {
 
     @SuppressWarnings("all")
     @Override
-    public void barz(Object obj) {
-    }
+    public void barz(Object obj) {}
 
     public void callbarz(Object obj) {
       // If the @SuppressWarnings("all") on the overridden version of barz above is not

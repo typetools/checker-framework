@@ -2,11 +2,8 @@ package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import org.checkerframework.checker.testchecker.ainfer.AinferTestChecker;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
-import org.checkerframework.framework.test.CheckerFrameworkWPIPerDirectoryTest;
+import org.checkerframework.framework.test.AinferValidatePerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -16,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
  * issued.
  */
 @Category(AinferTestCheckerAjavaTest.class)
-public class AinferTestCheckerAjavaValidationTest extends CheckerFrameworkWPIPerDirectoryTest {
+public class AinferTestCheckerAjavaValidationTest extends AinferValidatePerDirectoryTest {
 
   /** @param testFiles the files containing test code, which will be type-checked */
   public AinferTestCheckerAjavaValidationTest(List<File> testFiles) {

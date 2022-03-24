@@ -44,9 +44,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
-import com.sun.tools.javac.tree.TreeInfo;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -485,7 +482,10 @@ public class WholeProgramInferenceJavaParserStorage
                   // TODO: compute this value correctly
                   className = javaParserClass.getFullyQualifiedName().get() + "$1";
                 } else {
-                  className = javaParserClass.getFullyQualifiedName().get() + "$" + body.getSimpleName().toString();
+                  className =
+                      javaParserClass.getFullyQualifiedName().get()
+                          + "$"
+                          + body.getSimpleName().toString();
                 }
                 addClass(body, className);
               }
@@ -496,7 +496,7 @@ public class WholeProgramInferenceJavaParserStorage
            * Creates a wrapper around the class for {@code tree} and stores it in {@code
            * sourceAnnos}.
            *
-           * This method assumes that there is an Element corresponding to {@code tree}.
+           * <p>This method assumes that there is an Element corresponding to {@code tree}.
            *
            * @param tree tree to add
            */

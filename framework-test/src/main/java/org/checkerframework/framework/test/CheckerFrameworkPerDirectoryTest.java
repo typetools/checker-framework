@@ -7,9 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.processing.AbstractProcessor;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.junit.Assert;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 import org.junit.runner.RunWith;
 
 /**

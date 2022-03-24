@@ -100,7 +100,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.JavaParserUtil;
@@ -3011,8 +3010,8 @@ public class AnnotationFileParser {
     @Override
     public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> variablesToClear = null;
-      if (TreeUtils.elementFromTree(javacTree) != null &&
-          javaParserNode instanceof CallableDeclaration<?>) {
+      if (TreeUtils.elementFromTree(javacTree) != null
+          && javaParserNode instanceof CallableDeclaration<?>) {
         ExecutableElement elt = TreeUtils.elementFromDeclaration(javacTree);
         variablesToClear = processCallableDeclaration((CallableDeclaration<?>) javaParserNode, elt);
       }

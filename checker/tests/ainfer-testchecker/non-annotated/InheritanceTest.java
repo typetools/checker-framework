@@ -11,8 +11,7 @@ public class InheritanceTest {
       expectsBot(field);
     }
 
-    void expectsBot(@AinferBottom int t) {
-    }
+    void expectsBot(@AinferBottom int t) {}
   }
 
   class IChild extends IParent {

@@ -242,8 +242,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // in JAIF mode.
         if (showWpiFailedInferences) {
           printFailedInferenceDebugMessage(
-              "Annotations cannot be placed on varargs parameters in -Ainfer=jaifs mode, because the"
-                  + " JAIF format does not correctly support it.\n"
+              "Annotations cannot be placed on varargs parameters in -Ainfer=jaifs mode, because"
+                  + " the JAIF format does not correctly support it.\n"
                   + "The signature of the method whose varargs parameter was not annotated is: "
                   + JVMNames.getJVMMethodSignature(methodElt));
         }
@@ -275,10 +275,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         if (expandArgATM) {
           if (argATM.getKind() == TypeKind.WILDCARD) {
             if (showWpiFailedInferences) {
-              printFailedInferenceDebugMessage("Javac cannot create an array type " +
-                  "from a wildcard, so WPI did not attempt to infer a type for an array " +
-                  "parameter. The signature of the method whose parameter had inference " +
-                  "skipped is: " + JVMNames.getJVMMethodSignature(methodElt));
+              printFailedInferenceDebugMessage(
+                  "Javac cannot create an array type "
+                      + "from a wildcard, so WPI did not attempt to infer a type for an array "
+                      + "parameter. The signature of the method whose parameter had inference "
+                      + "skipped is: "
+                      + JVMNames.getJVMMethodSignature(methodElt));
             }
             return;
           }
@@ -861,15 +863,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
         // break;
       case ARRAY:
-        AnnotatedTypeMirror sourceCodeComponent = ((AnnotatedArrayType) sourceCodeATM).getComponentType();
+        AnnotatedTypeMirror sourceCodeComponent =
+            ((AnnotatedArrayType) sourceCodeATM).getComponentType();
         AnnotatedTypeMirror ajavaComponent = ((AnnotatedArrayType) ajavaATM).getComponentType();
         if (sourceCodeComponent.getKind() == ajavaComponent.getKind()) {
           updateAtmWithLub(sourceCodeComponent, ajavaComponent);
         } else {
           if (showWpiFailedInferences) {
-            printFailedInferenceDebugMessage("attempted to update the component type of " +
-                "an array type, but found an unexpected difference in type structure.\nLHS kind: " +
-                sourceCodeComponent.getKind() + "\nRHS kind: " + ajavaComponent.getKind());
+            printFailedInferenceDebugMessage(
+                "attempted to update the component type of an array type, but found an unexpected"
+                    + " difference in type structure.\n"
+                    + "LHS kind: "
+                    + sourceCodeComponent.getKind()
+                    + "\nRHS kind: "
+                    + ajavaComponent.getKind());
             break;
           }
         }
