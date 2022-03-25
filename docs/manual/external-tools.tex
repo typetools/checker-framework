@@ -973,17 +973,16 @@ the \<-X> command-line argument is passed.
   </dependencies>
 \end{alltt}
 
-Java 11 and later do not need the \<com.google.errorprone.javac>
+Java 11 and later do not need the \<com.google.errorprone:javac>
 dependency.  If you will never use Java 8, you can omit it.
+The need for the \<com.google.errorprone:javac> artifact when running under
+JDK 8 is explained in Section~\ref{javac-jdk8}.
 
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:
 \begin{Verbatim}
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
-
-The need for the \<com.google.errorprone:javac> artifact when running under
-JDK 8 is explained in Section~\ref{javac-jdk8}.
 
 \end{enumerate}
 
@@ -1021,8 +1020,9 @@ section, or add it if it is not present.
 \item Direct the Maven compiler plugin to use the desired checkers by
   creating three new profiles as shown below (the example uses the Nullness
   Checker).  If your POM file does not already use the
-  \code{maven-compiler-plugin} plugin, you are done.  If your POM file
-  already uses the plugin, copy edit the first profile to incorporate the
+  \code{maven-compiler-plugin} plugin, you can use the text below as is.
+  If your POM file
+  already uses the plugin, copy and edit the first profile to incorporate the
   existing configuration.
 
 %% TODO: Is this comment still accurate?
@@ -1145,7 +1145,7 @@ section, or add it if it is not present.
 \end{mysmall}
 
 Now, building with Maven will run the checkers during every compilation
-that uses JDK 8 or JDK 11.
+that uses JDK 8 or higher.
 
 If you wish to run checkers while compiling your source code but not your
 tests, wrap the \code{<configuration>...</configuration>} within
@@ -1160,8 +1160,13 @@ tests, wrap the \code{<configuration>...</configuration>} within
 \end{Verbatim}
 
 To compile without using the Checker Framework, pass
-\<-P '!checkerframework-java11'> (or \<-P '!checkerframework-java8'>)
+\<-P !checkerframework>
 on the Maven command line.
+%% Per GitHub user danibs in
+%% https://github.com/typetools/checker-framework/issues/5086,
+%% this does not seem to work.
+% It should also work to pass
+% \<-P !checkerframework-jdk9orlater> or \<-P !checkerframework-java8>.
 
 % TODO: Figure out why, and then remove this paragraph.
 Warning:  adding
