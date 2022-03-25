@@ -487,16 +487,19 @@ public class WholeProgramInferenceJavaParserStorage
                 // but it should be sufficient for WPI's purposes here: if the wrong name
                 // is computed, the worst outcome is a false positive because WPI inferred an
                 // untrue annotation.
-                String className;
+                @BinaryName String className;
                 if ("".equals(body.getSimpleName().toString().trim())) {
-                  // TODO: compute this value correctly
-                  className =
+                  @SuppressWarnings("signature:assignment") // computed from other strings
+                  @BinaryName String computedName =
                       javaParserClass.getFullyQualifiedName().get() + "$" + ++innerClassCount;
+                  className = computedName;
                 } else {
-                  className =
+                  @SuppressWarnings("signature:assignment") // computed from other strings
+                  @BinaryName String computedName =
                       javaParserClass.getFullyQualifiedName().get()
                           + "$"
                           + body.getSimpleName().toString();
+                  className = computedName;
                 }
                 addClass(body, className);
               }
@@ -515,7 +518,7 @@ public class WholeProgramInferenceJavaParserStorage
            * @param classNameKey if non-null, used as the key for {@code classToAnnos} instead of
            *     the element corresponding to {@code tree}.
            */
-          private void addClass(ClassTree tree, @Nullable String classNameKey) {
+          private void addClass(ClassTree tree, @Nullable @BinaryName String classNameKey) {
             String className;
             if (classNameKey == null) {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
