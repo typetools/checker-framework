@@ -614,7 +614,7 @@ public abstract class GenericAnnotatedTypeFactory<
             FlowAnalysis result =
                     BaseTypeChecker.invokeConstructorFor(
                             BaseTypeChecker.getRelatedClassName(checkerClass, "Analysis"),
-                            new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
+                            new Class<?>[] {BaseTypeChecker.class, this.getClass()},
                             new Object[] {checker, this});
             if (result != null) {
                 return result;
