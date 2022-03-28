@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.initialization.InitializationChecker;
@@ -89,14 +88,5 @@ public class NullnessChecker extends InitializationChecker {
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
     return new NullnessVisitor(this);
-  }
-
-  @Override
-  public List<String> getExtraStubFiles() {
-    List<String> result = super.getExtraStubFiles();
-    if (hasOption("assumeKeyFor")) {
-      result.add("map-assumeKeyFor.astub");
-    }
-    return result;
   }
 }
