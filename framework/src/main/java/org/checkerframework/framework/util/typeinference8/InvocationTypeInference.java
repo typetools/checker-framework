@@ -12,6 +12,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -141,7 +142,8 @@ public class InvocationTypeInference {
    * @param methodType type of the method invocation
    * @return a list of inference variables that have been instantiated
    */
-  public List<Variable> infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
+  public List<Variable> infer(
+      ExpressionTree invocation, AnnotatedExecutableType methodType, boolean ignoreAnnoFail) {
     if (!shouldTryInference(context.pathToExpression)) {
       return null;
     }
@@ -150,20 +152,14 @@ public class InvocationTypeInference {
     try {
       ExecutableType e = methodType.getUnderlyingType();
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
-      result = inferInternal(invocation, invocationType);
+      result = inferInternal(invocation, invocationType, ignoreAnnoFail);
     } catch (FalseBoundException ex) {
-      //      checker.reportError(invocation, "type.inference.failed");
+      // TODO: This should never happen, if javac infers type arguments so should the Checker
+      // Framework. However, given how buggy javac inference is, this probably will, so deal with it
+      // gracefully.
 
-      if (ex.isAnnotatedTypeFailed()) {
-        // This error indicates that type inference failed because some constraint between
-        // annotated types could not be satisfied.
-        // In other words, the invocation does not type check with respect to qualifiers.
-
-        // TODO: Add more detail to the error message to indicate which bounds/constraints
-        // could not be satisfied so that the user can figure out how to correct their code.
-      } else {
-        //        throw ex;
-      }
+      // checker.reportError(invocation, "type.inference.failed");
+      // throw ex;
       return null;
     } catch (ProperType.CantCompute ex) {
       // This exception is thrown when inference found an uninferred type argument when
@@ -183,7 +179,8 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
    */
-  private List<Variable> inferInternal(ExpressionTree invocation, InvocationType invocationType) {
+  private List<Variable> inferInternal(
+      ExpressionTree invocation, InvocationType invocationType, boolean ignoreAnnoFail) {
     treesInInference.add(invocation);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
@@ -216,7 +213,11 @@ public class InvocationTypeInference {
       // TODO: the erasure of the return type should happen were the inferred type arguments
       // are substituted into the method type.
     }
-    return thetaPrime;
+    if (ignoreAnnoFail || !b4.annoFail) {
+      return thetaPrime;
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   /**

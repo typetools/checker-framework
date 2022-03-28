@@ -180,7 +180,7 @@ public class Typing extends Constraint {
 
       AbstractType sAsSuper = S.asSuper(T.getJavaType());
       if (sAsSuper == null) {
-        return new FalseBound(false);
+        return new FalseBound();
       } else if (sAsSuper.isRaw() || T.isRaw()) {
         return ReductionResult.UNCHECKED_CONVERSION;
       }

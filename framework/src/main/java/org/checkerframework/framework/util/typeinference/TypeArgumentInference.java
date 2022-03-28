@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.util.TreePath;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeVariable;
@@ -50,9 +51,22 @@ public interface TypeArgumentInference {
    *     where as two uses of an AnnotatedTypeVariable may be uses of the same declaration but are
    *     not .equals to each other.
    */
-  public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
+  Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
       final AnnotatedTypeFactory typeFactory,
       final ExpressionTree invocation,
       final ExecutableElement methodElem,
       final AnnotatedExecutableType methodType);
+
+  Map<TypeVariable, AnnotatedTypeMirror> inferNew(
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree expressionTree,
+      AnnotatedExecutableType methodType,
+      TreePath pathToExpression);
+
+  Map<TypeVariable, AnnotatedTypeMirror> inferNew(
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree expressionTree,
+      AnnotatedExecutableType methodType,
+      TreePath pathToExpression,
+      boolean ignoreAnnoFail);
 }

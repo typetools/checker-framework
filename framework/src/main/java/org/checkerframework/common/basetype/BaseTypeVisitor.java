@@ -74,6 +74,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -1609,7 +1610,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (shouldSkipUses(node)) {
       return super.visitMethodInvocation(node, p);
     }
-
+    ParameterizedExecutableType preI = atypeFactory.methodFromUse(node, false);
+    if (!preI.executableType.getElement().getTypeParameters().isEmpty()) {
+      Map<TypeVariable, AnnotatedTypeMirror> args =
+          atypeFactory
+              .getTypeArgumentInference()
+              .inferNew(atypeFactory, node, preI.executableType, getCurrentPath(), false);
+      if (args == null || args.isEmpty()) {
+        checker.reportError(
+            node, "type.arguments.not.inferred", preI.executableType.getElement().getSimpleName());
+        return null;
+      }
+    }
     ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
     AnnotatedExecutableType invokedMethod = mType.executableType;
     List<AnnotatedTypeMirror> typeargs = mType.typeArgs;

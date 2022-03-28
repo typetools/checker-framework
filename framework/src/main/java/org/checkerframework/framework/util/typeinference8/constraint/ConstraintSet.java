@@ -25,6 +25,14 @@ public class ConstraintSet implements ReductionResult {
         }
       };
 
+  public static final ConstraintSet TRUE_ANNO_FAIL =
+      new ConstraintSet(true) {
+        @Override
+        public String toString() {
+          return "TRUE_ANNO_FAIL";
+        }
+      };
+
   public static final ReductionResult FALSE =
       new ReductionResult() {
         @Override
@@ -39,6 +47,13 @@ public class ConstraintSet implements ReductionResult {
    * #getClosedSubset(Dependencies)} is computed correctly.
    */
   private final List<Constraint> list;
+
+  private boolean annotationFailure = false;
+
+  private ConstraintSet(boolean annotationFailure) {
+    this();
+    this.annotationFailure = annotationFailure;
+  }
 
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
@@ -58,6 +73,9 @@ public class ConstraintSet implements ReductionResult {
 
   /** Adds all constraints in {@code constraintSet} to this constraint set. */
   public void addAll(ConstraintSet constraintSet) {
+    if (constraintSet == TRUE_ANNO_FAIL) {
+      constraintSet.annotationFailure = true;
+    }
     list.addAll(constraintSet.list);
   }
 
@@ -229,11 +247,12 @@ public class ConstraintSet implements ReductionResult {
         throw new FalseBoundException(constraint, result);
       } else if (result == UNCHECKED_CONVERSION) {
         boundSet.setUncheckedConversion(true);
-      } else if (result == ConstraintSet.TRUE) {
-        // loop
       } else {
         throw new RuntimeException("Not found " + result);
       }
+    }
+    if (this.annotationFailure) {
+      boundSet.annoFail = true;
     }
     return boundSet;
   }

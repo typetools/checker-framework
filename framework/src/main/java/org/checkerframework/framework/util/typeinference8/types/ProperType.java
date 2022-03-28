@@ -137,10 +137,10 @@ public class ProperType extends AbstractType {
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
         return ConstraintSet.TRUE;
       } else {
-        return new FalseBound(true);
+        return ConstraintSet.TRUE_ANNO_FAIL;
       }
     } else {
-      return new FalseBound(false);
+      return new FalseBound();
     }
   }
 
@@ -161,10 +161,10 @@ public class ProperType extends AbstractType {
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
         return ConstraintSet.TRUE;
       } else {
-        return new FalseBound(true);
+        return ConstraintSet.TRUE_ANNO_FAIL;
       }
     } else {
-      return new FalseBound(false);
+      return new FalseBound();
     }
   }
 
@@ -185,10 +185,10 @@ public class ProperType extends AbstractType {
       if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
         return ConstraintSet.TRUE;
       } else {
-        return new FalseBound(true);
+        return ConstraintSet.TRUE_ANNO_FAIL;
       }
     } else {
-      return new FalseBound(false);
+      return new FalseBound();
     }
   }
 

@@ -138,17 +138,28 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
   }
 
-  private Map<TypeVariable, AnnotatedTypeMirror> inferNew(
+  @Override
+  public Map<TypeVariable, AnnotatedTypeMirror> inferNew(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree expressionTree,
       AnnotatedExecutableType methodType,
       TreePath pathToExpression) {
+    return inferNew(typeFactory, expressionTree, methodType, pathToExpression, true);
+  }
+
+  @Override
+  public Map<TypeVariable, AnnotatedTypeMirror> inferNew(
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree expressionTree,
+      AnnotatedExecutableType methodType,
+      TreePath pathToExpression,
+      boolean ignoreAnnoFail) {
     ExpressionTree outerTree =
         InvocationTypeInference.outerInference(expressionTree, pathToExpression.getParentPath());
     if (java8Inference != null
         && java8Inference.getContext().pathToExpression.getLeaf() == outerTree) {
       // Inference is running and is asking for the type of the method before type arguments are
-      // substituted. So don't infere any type arguments.  This happens when getting the type of a
+      // substituted. So don't infer any type arguments.  This happens when getting the type of a
       // lambda's returned expression.
       return Collections.emptyMap();
     }
@@ -168,7 +179,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     try {
       java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-      List<Variable> result = java8Inference.infer(outerTree, methodType);
+      List<Variable> result = java8Inference.infer(outerTree, methodType, ignoreAnnoFail);
       if (result != null) {
         Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> convertedResult = convert(result);
         return convertedResult.get(expressionTree);

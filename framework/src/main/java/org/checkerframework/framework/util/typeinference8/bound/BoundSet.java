@@ -43,6 +43,8 @@ public class BoundSet implements ReductionResult {
   /** Whether or not unchecked conversion was necessary to reduce and incorporate this bound set. */
   private boolean uncheckedConversion;
 
+  public boolean annoFail = false;
+
   public BoundSet(Java8InferenceContext context) {
     assert context != null;
     this.variables = new LinkedHashSet<>();
