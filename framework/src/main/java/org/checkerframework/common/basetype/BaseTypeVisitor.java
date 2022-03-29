@@ -85,6 +85,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -1819,6 +1820,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
         Set<AnnotationMirror> annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
+      } else if (exprJe instanceof FieldAccess) {
+        // A field may not be in the store, in which case its declared type
+        // should be used, instead.
+        AnnotatedTypeMirror declType =
+            atypeFactory.getAnnotatedType(((FieldAccess) exprJe).getField());
+        inferredAnno = declType.getAnnotationInHierarchy(anno);
       }
       if (!checkContract(exprJe, anno, inferredAnno, store)) {
         if (exprJe != null) {
