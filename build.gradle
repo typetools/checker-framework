@@ -4,7 +4,7 @@ plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id "de.undercouch.download" version "5.0.2"
+    id "de.undercouch.download" version "5.0.4"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id "net.ltgt.errorprone" version "2.0.2"
