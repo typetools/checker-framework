@@ -3219,7 +3219,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedExecutableType constructor,
       NewClassTree newClassTree) {
     // Only check the primary annotations, the type arguments are checked elsewhere.
-    Set<AnnotationMirror> explicitAnnos = atypeFactory.fromNewClass(newClassTree).getAnnotations();
+    Set<AnnotationMirror> explicitAnnos = atypeFactory.getExplicitNewClassAnnos(newClassTree);
     if (explicitAnnos.isEmpty()) {
       return;
     }

@@ -3,6 +3,7 @@ package org.checkerframework.framework.flow;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -902,9 +903,9 @@ public abstract class CFAbstractTransfer<
 
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
+    NewClassTree newClassTree = n.getTree();
     if (shouldPerformWholeProgramInference(n.getTree())) {
-      ExecutableElement constructorElt =
-          analysis.getTypeFactory().constructorFromUse(n.getTree()).executableType.getElement();
+      ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
       analysis
           .atypeFactory
           .getWholeProgramInference()

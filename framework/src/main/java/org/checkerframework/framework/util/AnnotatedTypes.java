@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -51,6 +52,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
@@ -935,6 +937,25 @@ public class AnnotatedTypes {
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+    if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
+        && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
+      DeclaredType t =
+          TypesUtils.getSuperClassOrInterface(
+              method.getElement().getEnclosingElement().asType(), atypeFactory.types);
+      if (t.getEnclosingType() != null) {
+        if (args.isEmpty() && !parameters.isEmpty()) {
+          parameters = parameters.subList(1, parameters.size());
+        } else if (!parameters.isEmpty()) {
+          if (atypeFactory.types.isSameType(
+              t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
+            if (!atypeFactory.types.isSameType(
+                TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
+              parameters = parameters.subList(1, parameters.size());
+            }
+          }
+        }
+      }
+    }
     if (!method.getElement().isVarArgs()) {
       return parameters;
     }
