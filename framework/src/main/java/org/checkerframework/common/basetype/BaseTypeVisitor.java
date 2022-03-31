@@ -1821,11 +1821,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<AnnotationMirror> annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
       } else if (exprJe instanceof FieldAccess) {
-        // A field may not be in the store, in which case its declared type
-        // should be used, instead.
-        AnnotatedTypeMirror declType =
-            atypeFactory.getAnnotatedType(((FieldAccess) exprJe).getField());
-        inferredAnno = declType.getAnnotationInHierarchy(anno);
+        // If a field is not in the store (possible if no refinement
+        // of the field has occurred), use top instead of automatically
+        // issuing a warning.
+        inferredAnno = atypeFactory.getQualifierHierarchy().getTopAnnotation(anno);
       }
       if (!checkContract(exprJe, anno, inferredAnno, store)) {
         if (exprJe != null) {
