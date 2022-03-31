@@ -85,7 +85,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
@@ -1820,10 +1819,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
         Set<AnnotationMirror> annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
-      } else if (exprJe instanceof FieldAccess) {
-        // If a field is not in the store (possible if no refinement
+      } else {
+        // If there is no information in the store (possible if e.g., no refinement
         // of the field has occurred), use top instead of automatically
-        // issuing a warning.
+        // issuing a warning. This is not perfectly precise: for example,
+        // if jeExpr is a field it would be more precise to use the field's
+        // declared type rather than top. However, doing so would be unsound
+        // in at least three circumstances where the type of the field depends
+        // on the type of the receiver: (1) all fields in Nullness Checker,
+        // because of possibility that the receiver is under initialization,
+        // (2) polymorphic fields, and (3) fields whose type is a type variable.
+        // Using top here instead means that there is no need for special cases
+        // for these situations.
         inferredAnno = atypeFactory.getQualifierHierarchy().getTopAnnotation(anno);
       }
       if (!checkContract(exprJe, anno, inferredAnno, store)) {
