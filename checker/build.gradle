@@ -522,6 +522,15 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
         delete('tests/ainfer-testchecker/annotated/ConflictingAnnotationsTest.java')
         delete('tests/ainfer-testchecker/annotated/MultiDimensionalArrays.java')
 
+        // JAIF-based WPI also fails this test. It used to pass, but the test was changed
+        // in a way that exposed a bug in the Annotation File Utilities: the AFU
+        // places annotations incorrectly on qualified types. In this test, a failure occurs because
+        // the AFU prints "@Annotation Outer.Inner this", rather than "Outer.@Annotation Inner this"
+        // (see an explanation of the syntax here:
+        // https://checkerframework.org/manual/#common-problems-non-typechecking).
+        // TODO: fix this bug in the AFU, then re-instate this test.
+        delete('tests/ainfer-testchecker/annotated/OverriddenMethodsTest.java')
+
         // Inserting annotations from .jaif files in-place.
         String jaifsDir = "tests/ainfer-testchecker/inference-output";
         List<File> jaifs = fileTree(jaifsDir).matching {
