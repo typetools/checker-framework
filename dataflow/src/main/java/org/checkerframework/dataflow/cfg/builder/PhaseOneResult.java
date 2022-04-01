@@ -18,10 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
-/* --------------------------------------------------------- */
-/* Phase One */
-/* --------------------------------------------------------- */
-
 /** A wrapper object to pass around the result of phase one. */
 public class PhaseOneResult {
 
