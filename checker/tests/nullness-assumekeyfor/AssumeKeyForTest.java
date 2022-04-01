@@ -42,7 +42,7 @@ public class AssumeKeyForTest {
     }
 
     void m7b(HashMap<String, @Nullable Integer> m, @KeyFor("#1") String k) {
-        // :: error: (assignment)
+        // :: error: (assignment.type.incompatible)
         @NonNull Integer x = m.get(k);
     }
 

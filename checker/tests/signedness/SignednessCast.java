@@ -33,7 +33,7 @@ public class SignednessCast {
         } catch (final Exception e) {
             throw new IllegalArgumentException("Could not find instruction: " + name, e);
         }
-        // :: error: (return)
+        // :: error: (return.type.incompatible)
         return i;
     }
 }
