@@ -148,8 +148,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
                 // To avoid a crash when running the InitializedFields Checker with the Signedness
-                // Checker,
-                // special case the literal 0 here rather than using the Value Checker.
+                // Checker, special case the literal 0 here rather than using the Value Checker.
                 if (tree instanceof LiteralTree) {
                     Object value = ((LiteralTree) tree).getValue();
                     if (value instanceof Number && ((Number) value).longValue() == 0) {
@@ -330,16 +329,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
             // Don't change the annotation on a cast with an explicit annotation.
-            if (type.getAnnotations().isEmpty()) {
-                if (isNotNumberOrChar(type)) {
-                    AnnotatedTypeMirror exprType =
-                            atypeFactory.getAnnotatedType(tree.getExpression());
-                    if ((type.getKind() != TypeKind.TYPEVAR
-                                    || exprType.getKind() != TypeKind.TYPEVAR)
-                            && !AnnotationUtils.containsSame(
-                                    exprType.getEffectiveAnnotations(), UNSIGNED)) {
-                        type.addAnnotation(SIGNED);
-                    }
+            if (type.getAnnotations().isEmpty() && isNotNumberOrChar(type)) {
+                AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
+                if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
+                        && !AnnotationUtils.containsSame(
+                                exprType.getEffectiveAnnotations(), UNSIGNED)) {
+                    type.addAnnotation(SIGNED);
                 }
             }
             return null;
