@@ -655,7 +655,7 @@ public abstract class AnnotatedTypeMirror {
     public boolean removeAnnotationByClass(Class<? extends Annotation> a) {
         AnnotationMirror anno = atypeFactory.getAnnotationByClass(annotations, a);
         if (anno != null) {
-            return annotations.remove(anno);
+            return this.removeAnnotation(anno);
         }
         return false;
     }
@@ -1522,6 +1522,18 @@ public abstract class AnnotatedTypeMirror {
             fixupBoundAnnotations();
         }
 
+        @Override
+        public boolean removeAnnotation(AnnotationMirror a) {
+            boolean ret = super.removeAnnotation(a);
+            if (lowerBound != null) {
+                ret |= lowerBound.removeAnnotation(a);
+            }
+            if (upperBound != null) {
+                ret |= upperBound.removeAnnotation(a);
+            }
+            return ret;
+        }
+
         /**
          * Change whether this {@code AnnotatedTypeVariable} is considered a use or a declaration
          * (use this method with caution).
@@ -1913,6 +1925,18 @@ public abstract class AnnotatedTypeMirror {
             fixupBoundAnnotations();
         }
 
+        @Override
+        public boolean removeAnnotation(AnnotationMirror a) {
+            boolean ret = super.removeAnnotation(a);
+            if (superBound != null) {
+                ret |= superBound.removeAnnotation(a);
+            }
+            if (extendsBound != null) {
+                ret |= extendsBound.removeAnnotation(a);
+            }
+            return ret;
+        }
+
         /**
          * Sets the super bound of this wildcard.
          *
@@ -2119,6 +2143,17 @@ public abstract class AnnotatedTypeMirror {
             fixupBoundAnnotations();
         }
 
+        @Override
+        public boolean removeAnnotation(AnnotationMirror a) {
+            boolean ret = super.removeAnnotation(a);
+            if (bounds != null) {
+                for (AnnotatedTypeMirror bound : bounds) {
+                    ret |= bound.removeAnnotation(a);
+                }
+            }
+            return ret;
+        }
+
         /**
          * Copies {@link #annotations} to all the bounds, replacing any existing annotations in the
          * same hierarchy.
@@ -2128,9 +2163,7 @@ public abstract class AnnotatedTypeMirror {
                 Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
                 if (bounds != null) {
                     for (AnnotatedTypeMirror bound : bounds) {
-                        if (bound.getKind() != TypeKind.TYPEVAR) {
-                            bound.replaceAnnotations(newAnnos);
-                        }
+                        bound.replaceAnnotations(newAnnos);
                     }
                 }
             }
