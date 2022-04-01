@@ -5231,14 +5231,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (upperBound.getKind() == TypeKind.INTERSECTION
                 && capturedTypeVar.getUpperBound().getKind() != TypeKind.INTERSECTION) {
             // There is a bug in javac such that the upper bound of the captured type variable is
-            // not the
-            // greatest lower bound. So the captureTypeVar.getUnderlyingType().getUpperBound() may
-            // not
-            // be the same type as upperbound.getUnderlyingType().  See
+            // not the greatest lower bound. So the
+            // captureTypeVar.getUnderlyingType().getUpperBound() may not be the same type as
+            // upperbound.getUnderlyingType(). See
             // framework/tests/all-systems/Issue4890Interfaces.java,
             // framework/tests/all-systems/Issue4890.java and
             // framework/tests/all-systems/Issue4877.java.
-            // (I think this is  https://bugs.openjdk.java.net/browse/JDK-8039222.)
+            // (I think this is https://bugs.openjdk.java.net/browse/JDK-8039222.)
             for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) upperBound).getBounds()) {
                 if (types.isSameType(
                         bound.underlyingType,

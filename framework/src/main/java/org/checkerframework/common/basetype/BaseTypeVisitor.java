@@ -2262,15 +2262,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (treeKind == Tree.Kind.POSTFIX_DECREMENT
                     || treeKind == Tree.Kind.POSTFIX_INCREMENT) {
                 // For postfixed increments or decrements, the type of the tree the type of the
-                // expression
-                // before 1 is added or subtracted. So, use a special method to get the type after 1
-                // has
-                // been added or subtracted.
+                // expression before 1 is added or subtracted. So, use a special method to get the
+                // type after 1 has been added or subtracted.
                 valueType = atypeFactory.getAnnotatedTypeRhsUnaryAssign(tree);
             } else {
                 // For prefixed increments or decrements, the type of the tree the type of the
-                // expression
-                // after 1 is added or subtracted. So, its type can be found using the usual method.
+                // expression after 1 is added or subtracted. So, its type can be found using the
+                // usual method.
                 valueType = atypeFactory.getAnnotatedType(tree);
             }
             String errorKey =
