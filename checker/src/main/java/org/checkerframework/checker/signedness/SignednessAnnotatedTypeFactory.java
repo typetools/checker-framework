@@ -43,6 +43,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
@@ -146,6 +147,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     || javaTypeKind == TypeKind.SHORT
                     || javaTypeKind == TypeKind.INT
                     || javaTypeKind == TypeKind.LONG) {
+                // To avoid a crash when running the InitializedFields Checker with the Signedness
+                // Checker,
+                // special case the literal 0 here rather than using the Value Checker.
+                if (tree instanceof LiteralTree) {
+                    Object value = ((LiteralTree) tree).getValue();
+                    if (value instanceof Number && ((Number) value).longValue() == 0) {
+                        type.replaceAnnotation(SIGNEDNESS_GLB);
+                        return;
+                    }
+                }
                 ValueAnnotatedTypeFactory valueFactory =
                         getTypeFactoryOfSubchecker(ValueChecker.class);
                 AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
@@ -315,6 +326,55 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             annotateBooleanAsUnknownSignedness(type);
             return null;
         }
+
+        @Override
+        public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
+            // Don't change the annotation on a cast with an explicit annotation.
+            if (type.getAnnotations().isEmpty()) {
+                if (isNotNumberOrChar(type)) {
+                    AnnotatedTypeMirror exprType =
+                            atypeFactory.getAnnotatedType(tree.getExpression());
+                    if ((type.getKind() != TypeKind.TYPEVAR
+                                    || exprType.getKind() != TypeKind.TYPEVAR)
+                            && !AnnotationUtils.containsSame(
+                                    exprType.getEffectiveAnnotations(), UNSIGNED)) {
+                        type.addAnnotation(SIGNED);
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Returns true if {@code type} underlying type isn't a number or a char nor is it a super type
+     * of one.
+     *
+     * @param type a type
+     * @return true if {@code type} underlying type isn't a number or a char nor is it a super type
+     *     of one
+     */
+    public boolean isNotNumberOrChar(AnnotatedTypeMirror type) {
+
+        TypeMirror serializableTM =
+                elements.getTypeElement(Serializable.class.getCanonicalName()).asType();
+        TypeMirror comparableTM =
+                elements.getTypeElement(Comparable.class.getCanonicalName()).asType();
+        TypeMirror numberTM = elements.getTypeElement(Number.class.getCanonicalName()).asType();
+        if (type.getKind().isPrimitive()) {
+            return false;
+        }
+        if (type.getKind() == TypeKind.DECLARED
+                || type.getKind() == TypeKind.TYPEVAR
+                || type.getKind() == TypeKind.WILDCARD) {
+            TypeMirror erasedType = types.erasure(type.getUnderlyingType());
+            return !(TypesUtils.isBoxedPrimitive(erasedType)
+                    || TypesUtils.isObject(erasedType)
+                    || TypesUtils.isErasedSubtype(numberTM, erasedType, types)
+                    || TypesUtils.isErasedSubtype(serializableTM, erasedType, types)
+                    || TypesUtils.isErasedSubtype(comparableTM, erasedType, types));
+        }
+        return true;
     }
 
     @Override

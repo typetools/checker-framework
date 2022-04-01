@@ -585,47 +585,47 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         /* NO-AFU
-               if (checker.hasOption("infer")) {
-                   checkInvalidOptionsInferSignatures();
-                   String inferArg = checker.getOption("infer");
-                   // No argument means "jaifs", for (temporary) backwards compatibility.
-                   if (inferArg == null) {
-                       inferArg = "jaifs";
-                   }
-                   switch (inferArg) {
-                       case "stubs":
-                           wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
-                           break;
-                       case "jaifs":
-                           wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
-                           break;
-                       case "ajava":
-                           wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
-                           break;
-                       default:
-                           throw new UserError(
-                                   "Bad argument -Ainfer="
-                                           + inferArg
-                                           + " should be one of: -Ainfer=jaifs, -Ainfer=stubs,"
-                                           + " -Ainfer=ajava");
-                   }
-                   if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
-                       wholeProgramInference =
-                               new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
-                                       this, new WholeProgramInferenceJavaParserStorage(this));
-                   } else {
-                       wholeProgramInference =
-                               new WholeProgramInferenceImplementation<ATypeElement>(
-                                       this, new WholeProgramInferenceScenesStorage(this));
-                   }
-                   if (!checker.hasOption("warns")) {
-                       // Without -Awarns, the inference output may be incomplete, because javac halts
-                       // after issuing an error.
-                       checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
-                   }
-               } else {
-                   wholeProgramInference = null;
-               }
+        if (checker.hasOption("infer")) {
+          checkInvalidOptionsInferSignatures();
+          String inferArg = checker.getOption("infer");
+          // No argument means "jaifs", for (temporary) backwards compatibility.
+          if (inferArg == null) {
+            inferArg = "jaifs";
+          }
+          switch (inferArg) {
+            case "stubs":
+              wpiOutputFormat = WholeProgramInference.OutputFormat.STUB;
+              break;
+            case "jaifs":
+              wpiOutputFormat = WholeProgramInference.OutputFormat.JAIF;
+              break;
+            case "ajava":
+              wpiOutputFormat = WholeProgramInference.OutputFormat.AJAVA;
+              break;
+            default:
+              throw new UserError(
+                  "Bad argument -Ainfer="
+                      + inferArg
+                      + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
+          }
+          boolean showWpiFailedInferences = checker.hasOption("showWpiFailedInferences");
+          if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
+            wholeProgramInference =
+                new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
+                    this, new WholeProgramInferenceJavaParserStorage(this), showWpiFailedInferences);
+          } else {
+            wholeProgramInference =
+                new WholeProgramInferenceImplementation<ATypeElement>(
+                    this, new WholeProgramInferenceScenesStorage(this), showWpiFailedInferences);
+          }
+          if (!checker.hasOption("warns")) {
+            // Without -Awarns, the inference output may be incomplete, because javac halts
+            // after issuing an error.
+            checker.message(Diagnostic.Kind.ERROR, "Do not supply -Ainfer without -Awarns");
+          }
+        } else {
+          wholeProgramInference = null;
+        }
         */
 
         ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
@@ -5228,12 +5228,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         typeVarToAnnotatedTypeArg, typeVariable.getUpperBound());
         AnnotatedTypeMirror upperBound =
                 AnnotatedTypes.annotatedGLB(this, typeVarUpperBound, wildcard.getExtendsBound());
-        // There is a bug in javac such that the upper bound of the captured type variable is not
-        // the greatest lower bound. So the captureTypeVar.getUnderlyingType().getUpperBound() may
-        // not be the same type as upperbound.getUnderlyingType().  See
-        // framework/tests/all-systems/Issue4890Interfaces.java,
-        // framework/tests/all-systems/Issue4890.java and
-        // framework/tests/all-systems/Issue4877.java.
+        if (upperBound.getKind() == TypeKind.INTERSECTION
+                && capturedTypeVar.getUpperBound().getKind() != TypeKind.INTERSECTION) {
+            // There is a bug in javac such that the upper bound of the captured type variable is
+            // not the
+            // greatest lower bound. So the captureTypeVar.getUnderlyingType().getUpperBound() may
+            // not
+            // be the same type as upperbound.getUnderlyingType().  See
+            // framework/tests/all-systems/Issue4890Interfaces.java,
+            // framework/tests/all-systems/Issue4890.java and
+            // framework/tests/all-systems/Issue4877.java.
+            // (I think this is  https://bugs.openjdk.java.net/browse/JDK-8039222.)
+            for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) upperBound).getBounds()) {
+                if (types.isSameType(
+                        bound.underlyingType,
+                        capturedTypeVar.getUpperBound().getUnderlyingType())) {
+                    upperBound = bound;
+                }
+            }
+        }
+
         capturedTypeVar.setUpperBound(upperBound);
 
         // typeVariable's lower bound is a NullType, so there's nothing to substitute.

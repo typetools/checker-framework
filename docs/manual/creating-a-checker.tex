@@ -1183,7 +1183,7 @@ on the type system, so the framework provides way to specify what qualifiers sho
 
 Defaulting rules are type introduction rules for computing the annotated type for an unannotated type;
 these rules are explained in Section~\ref{creating-typesystem-defaults}. The meta-annotation \refqualclass{framework/qual}{QualifierForLiterals} can be written on an annotation
-declaration to specify that that annotation should be applied to the type of literals listed in the
+declaration to specify that the annotation should be applied to the type of literals listed in the
 meta-annotation.
 
 \subsectionAndLabel{Procedurally specifying type introduction rules}{creating-procedurally-specifying-implicit-annotations}
@@ -1917,6 +1917,10 @@ Section~\ref{creating-extending-visitor}.
 \item \code{-AshowInferenceSteps}: print debugging information
 about intermediate steps in method type argument inference
 (as performed by \refclass{framework/util/typeinference}{DefaultTypeArgumentInference}).
+
+\item \code{-AshowWpiFailedInferences}: print debugging information
+about failed inference steps during whole-program inference. Must
+be used with \code{-Ainfer}; see Section~\ref{whole-program-inference}.
 
 \end{itemize}
 

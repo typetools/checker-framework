@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -16,7 +17,6 @@ import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
@@ -88,8 +88,11 @@ public class ControlFlowGraph implements UniqueId {
     /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
     protected final IdentityHashMap<Tree, Set<Node>> convertedTreeLookup;
 
-    /** Map from AST {@link UnaryTree}s to corresponding {@link AssignmentNode}s. */
-    protected final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup;
+    /**
+     * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the
+     * synthetic tree that is {@code v + 1} or {@code v - 1}.
+     */
+    protected final IdentityHashMap<UnaryTree, BinaryTree> postfixNodeLookup;
 
     /**
      * All return nodes (if any) encountered. Only includes return statements that actually return
@@ -116,7 +119,7 @@ public class ControlFlowGraph implements UniqueId {
             UnderlyingAST underlyingAST,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<Tree, Set<Node>> convertedTreeLookup,
-            IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookup,
+            IdentityHashMap<UnaryTree, BinaryTree> postfixNodeLookup,
             List<ReturnNode> returnNodes,
             List<ClassTree> declaredClasses,
             List<LambdaExpressionTree> declaredLambdas) {
@@ -124,7 +127,7 @@ public class ControlFlowGraph implements UniqueId {
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
-        this.unaryAssignNodeLookup = unaryAssignNodeLookup;
+        this.postfixNodeLookup = postfixNodeLookup;
         this.convertedTreeLookup = convertedTreeLookup;
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
@@ -268,12 +271,12 @@ public class ControlFlowGraph implements UniqueId {
     }
 
     /**
-     * Returns the copied lookup-map of the assign node for unary operation.
+     * Returns the copied lookup-map of the binary tree for a postfix expression.
      *
-     * @return the copied lookup-map of the assign node for unary operation
+     * @return the copied lookup-map of the binary tree for a postfix expression.
      */
-    public IdentityHashMap<UnaryTree, AssignmentNode> getUnaryAssignNodeLookup() {
-        return new IdentityHashMap<>(unaryAssignNodeLookup);
+    public IdentityHashMap<UnaryTree, BinaryTree> getPostfixNodeLookup() {
+        return new IdentityHashMap<>(postfixNodeLookup);
     }
 
     /**
@@ -348,7 +351,7 @@ public class ControlFlowGraph implements UniqueId {
         result.add("underlyingAST=" + underlyingAST);
         result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
         result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
-        result.add("unaryAssignNodeLookup=" + unaryAssignNodeLookup);
+        result.add("postfixLookup=" + postfixNodeLookup);
         result.add("returnNodes=" + Node.nodeCollectionToString(returnNodes));
         result.add("declaredClasses=" + declaredClasses);
         result.add("declaredLambdas=" + declaredLambdas);

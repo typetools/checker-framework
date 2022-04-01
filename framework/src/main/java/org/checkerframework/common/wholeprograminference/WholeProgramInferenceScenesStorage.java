@@ -514,7 +514,7 @@ public class WholeProgramInferenceScenesStorage
         return;
       }
     }
-    updateTypeElementFromATM(type, 1, defLoc, rhsATM, lhsATM, ignoreIfAnnotated);
+    updateTypeElementFromATM(type, defLoc, rhsATM, lhsATM, ignoreIfAnnotated);
     modifiedScenes.add(jaifPath);
   }
 
@@ -722,7 +722,7 @@ public class WholeProgramInferenceScenesStorage
       ATypeElement typeToUpdate,
       TypeUseLocation defLoc,
       boolean ignoreIfAnnotated) {
-    updateTypeElementFromATM(typeToUpdate, 1, defLoc, newATM, curATM, ignoreIfAnnotated);
+    updateTypeElementFromATM(typeToUpdate, defLoc, newATM, curATM, ignoreIfAnnotated);
   }
 
   ///
@@ -804,7 +804,6 @@ public class WholeProgramInferenceScenesStorage
    * is not a problem to remove all annotations before inserting the new annotations.
    *
    * @param typeToUpdate the ATypeElement that will be updated
-   * @param idx used to write annotations on compound types of an ATypeElement
    * @param defLoc the location where the annotation will be added
    * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement
    * @param curATM used to check if the element which will be updated has explicit annotations in
@@ -814,22 +813,17 @@ public class WholeProgramInferenceScenesStorage
    */
   private void updateTypeElementFromATM(
       ATypeElement typeToUpdate,
-      int idx,
       TypeUseLocation defLoc,
       AnnotatedTypeMirror newATM,
       AnnotatedTypeMirror curATM,
       boolean ignoreIfAnnotated) {
     // Clears only the annotations that are supported by the relevant AnnotatedTypeFactory.
     // The others stay intact.
-    if (idx == 1) {
-      // This if avoids clearing the annotations multiple times in cases
-      // of type variables and compound types.
-      Set<Annotation> annosToRemove = getSupportedAnnosInSet(typeToUpdate.tlAnnotationsHere);
-      // This method may be called consecutive times for the same ATypeElement.  Each time it is
-      // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore,
-      // it is not a problem to remove all annotations before inserting the new annotations.
-      typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
-    }
+    Set<Annotation> annosToRemove = getSupportedAnnosInSet(typeToUpdate.tlAnnotationsHere);
+    // This method may be called consecutive times for the same ATypeElement.  Each time it is
+    // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore,
+    // it is not a problem to remove all annotations before inserting the new annotations.
+    typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
 
     // Only update the ATypeElement if there are no explicit annotations.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
@@ -859,8 +853,7 @@ public class WholeProgramInferenceScenesStorage
       AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
       updateTypeElementFromATM(
           typeToUpdate.innerTypes.getVivify(
-              TypePathEntry.getTypePathEntryListFromBinary(Collections.nCopies(2 * idx, 0))),
-          idx + 1,
+              TypePathEntry.getTypePathEntryListFromBinary(Collections.nCopies(2, 0))),
           defLoc,
           newAAT.getComponentType(),
           oldAAT.getComponentType(),
