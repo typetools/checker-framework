@@ -588,7 +588,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     }
 
     /**
-     * Visits the the members of an anonymous class body.
+     * Visits the members of an anonymous class body.
      *
      * <p>In normal classes, javac inserts a synthetic no-argument constructor if no constructor is
      * explicitly defined, which is skipped when visiting members. Anonymous class bodies may

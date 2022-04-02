@@ -383,7 +383,7 @@ public class AnnotationUtils {
      *
      * @param av1 the first AnnotationValue to compare
      * @param av2 the second AnnotationValue to compare
-     * @return 0 if if the two annotation values are the same
+     * @return 0 if the two annotation values are the same
      */
     @CompareToMethod
     private static int compareAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
@@ -1302,7 +1302,7 @@ public class AnnotationUtils {
      *
      * @param am1 the first AnnotationMirror to compare
      * @param am2 the second AnnotationMirror to compare
-     * @return true if if the two annotations have the same elements (fields)
+     * @return true if the two annotations have the same elements (fields)
      */
     @EqualsMethod
     public static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
@@ -1343,7 +1343,7 @@ public class AnnotationUtils {
      *
      * @param av1 the first AnnotationValue to compare
      * @param av2 the second AnnotationValue to compare
-     * @return true if if the two annotation values are the same
+     * @return true if the two annotation values are the same
      */
     public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
         return compareAnnotationValue(av1, av2) == 0;
@@ -1657,7 +1657,7 @@ public class AnnotationUtils {
      * the default value.
      *
      * @param elementValues a mapping of annotation element to annotation value
-     * @return a new map with only the not default default values of {@code elementValues}
+     * @return a new map with only the non-default values of {@code elementValues}
      */
     private static Map<ExecutableElement, AnnotationValue> removeDefaultValues(
             Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {

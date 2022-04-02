@@ -537,7 +537,7 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
     doLast {
         copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
 
-        // JAIF-based WPI fails these tests, which was added for stub-based WPI.
+        // JAIF-based WPI fails these tests, which were added for stub-based WPI.
         // See issue here: https://github.com/typetools/checker-framework/issues/3009
         delete('tests/ainfer-testchecker/annotated/ConflictingAnnotationsTest.java')
         delete('tests/ainfer-testchecker/annotated/MultiDimensionalArrays.java')

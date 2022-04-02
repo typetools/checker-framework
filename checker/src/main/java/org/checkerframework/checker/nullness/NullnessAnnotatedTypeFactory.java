@@ -28,6 +28,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -103,6 +105,10 @@ public class NullnessAnnotatedTypeFactory
 
     /** Cache for the nullness annotations. */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
+
+    /** The Map.get method. */
+    private final ExecutableElement mapGet =
+            TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
 
     // List is in alphabetical order.  If you update it, also update
     // ../../../../../../../../docs/manual/nullness-checker.tex
@@ -814,9 +820,9 @@ public class NullnessAnnotatedTypeFactory
      * <p>This method ignores aliases of nullness annotations that are declaration annotations,
      * because they may apply to inner types.
      *
-     * @param annoTrees a list of annotations that the the Java parser attached to the
-     *     variable/method declaration; null if this type is not from such a location. This is a
-     *     list of extra annotations to check, in addition to those on the type.
+     * @param annoTrees a list of annotations that the Java parser attached to the variable/method
+     *     declaration; null if this type is not from such a location. This is a list of extra
+     *     annotations to check, in addition to those on the type.
      * @param typeTree the type whose annotations to test
      * @return true if some annotation is a nullness annotation
      */
@@ -1010,4 +1016,14 @@ public class NullnessAnnotatedTypeFactory
         return am;
     }
     */
+
+    /**
+     * Returns true if {@code node} is an invocation of Map.get.
+     *
+     * @param node a node
+     * @return true if {@code node} is an invocation of Map.get
+     */
+    public boolean isMapGet(Node node) {
+        return NodeUtils.isMethodInvocation(node, mapGet, getProcessingEnv());
+    }
 }

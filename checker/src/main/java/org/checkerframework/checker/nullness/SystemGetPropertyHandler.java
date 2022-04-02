@@ -16,10 +16,9 @@ import javax.lang.model.element.ExecutableElement;
 /**
  * Utility class for handling {@link java.lang.System#getProperty(String)} and related invocations.
  *
- * <p>The result of the method call is is assumed to be non-null if the argument is a literal key
- * that is guaranteed to be present in the system properties (according to the documentation of
- * {@link java.lang.System#getProperty(String)}), as in {@code
- * System.getProperties("line.separator")}.
+ * <p>The result of the method call is assumed to be non-null if the argument is a literal key that
+ * is guaranteed to be present in the system properties (according to the documentation of {@link
+ * java.lang.System#getProperty(String)}), as in {@code System.getProperties("line.separator")}.
  */
 public class SystemGetPropertyHandler {
 

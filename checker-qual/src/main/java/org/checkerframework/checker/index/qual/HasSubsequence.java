@@ -47,8 +47,8 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * The Index Checker verifies the first 3 facts, but always issues a warning because it cannot prove
- * the 4th fact. The programmer should should manually verify that the {@code subsequence} field is
- * equal to the given subsequence and then suppress the warning.
+ * the 4th fact. The programmer should manually verify that the {@code subsequence} field is equal
+ * to the given subsequence and then suppress the warning.
  *
  * <p>For an example of how this annotation is used in practice, see the test GuavaPrimitives.java
  * in /checker/tests/index/.
