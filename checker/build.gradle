@@ -458,7 +458,7 @@ task ainferTestCheckerGenerateAjava(type: Test) {
         // These tests cause unavoidable errors from the Annotation File Parser, so they are also
         // skipped. The errors are of the form:
         // :0: warning: ConditionalExpressions-org.checkerframework.common.value.ValueChecker.ajava:(line 53,col 10): Annotations on intersection types are not yet supported
-        // These tests can all be re-instated when the Annotation File Parser is enhanced to support
+        // These tests can all be reinstated when the Annotation File Parser is enhanced to support
         // intersection types.
         delete("tests/ainfer-testchecker/annotated/all-systems/ConditionalExpressions.java")
         delete("tests/ainfer-testchecker/annotated/all-systems/GenericCrazyBounds.java")
