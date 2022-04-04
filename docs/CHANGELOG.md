@@ -1,11 +1,8 @@
 Version 3.21.4 (April 1, 2022)
 ---------------------------------
 
-**User-visible changes:**
-
-**Implementation details:**
-
 **Closed issues:**
+#5086.
 
 
 Version 3.21.3 (March 1, 2022)
