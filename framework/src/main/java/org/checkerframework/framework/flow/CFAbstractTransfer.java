@@ -903,8 +903,7 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
     if (shouldPerformWholeProgramInference(n.getTree())) {
-      ExecutableElement constructorElt =
-          analysis.getTypeFactory().constructorFromUse(n.getTree()).executableType.getElement();
+      ExecutableElement constructorElt = TreeUtils.constructor2(n.getTree());
       analysis
           .atypeFactory
           .getWholeProgramInference()
