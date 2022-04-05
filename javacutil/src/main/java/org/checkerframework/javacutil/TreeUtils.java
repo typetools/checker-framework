@@ -390,7 +390,11 @@ public final class TreeUtils {
    *
    * <p>If the tree is a declaration of an anonymous class, then method returns constructor that
    * gets invoked in the extended class, rather than the anonymous constructor implicitly added by
-   * the constructor (JLS 15.9.5.1)
+   * the constructor (JLS 15.9.5.1).
+   *
+   * <p>If the tree has a synthetic argument (see {@link #hasSyntheticArgument(NewClassTree)}, then
+   * the anonymous constructor is return so that the return executable element has the same number
+   * of arguments as {@code tree}.
    *
    * @see #elementFromUse(NewClassTree)
    * @param tree the constructor invocation
