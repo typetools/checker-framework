@@ -16,7 +16,7 @@ dependencies {
     if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
         errorprone 'com.google.errorprone:error_prone_core:2.10.0'
     } else {
-        errorprone 'com.google.errorprone:error_prone_core:2.11.0'
+        errorprone 'com.google.errorprone:error_prone_core:2.12.0'
     }
 }
 

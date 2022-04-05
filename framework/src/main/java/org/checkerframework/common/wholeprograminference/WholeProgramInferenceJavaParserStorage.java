@@ -1185,6 +1185,7 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @return the declaration annotations for this field declaration
      */
+    @SuppressWarnings("UnusedMethod")
     public Set<AnnotationMirror> getDeclarationAnnotations() {
       if (declarationAnnotations == null) {
         return Collections.emptySet();
