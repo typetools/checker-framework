@@ -355,15 +355,11 @@ public final class TreeUtils {
   }
 
   /**
-   * Determines the symbol for an anonymous constructor given an invocation via {@code new}.
+   * Returns the constructor that gets invoked in the extended class, rather than the anonymous
+   * constructor implicitly added by the compiler (JLS 15.9.5.1)
    *
-   * <p>If the tree is a declaration of an anonymous class, then method returns constructor that
-   * gets invoked in the extended class, rather than the anonymous constructor implicitly added by
-   * the constructor (JLS 15.9.5.1)
-   *
-   * @see #elementFromUse(NewClassTree)
    * @param tree the constructor invocation
-   * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
+   * @return the constructor that gets invoked in the extended class
    */
   public static ExecutableElement getAnonymousConstructor(NewClassTree tree) {
     JCNewClass newClassTree = (JCNewClass) tree;
