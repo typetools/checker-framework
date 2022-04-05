@@ -25,7 +25,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.util.Options;
 import java.io.BufferedReader;
 import java.io.File;
@@ -2512,13 +2511,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     ExecutableElement ctor = TreeUtils.constructor(tree);
     AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
     if (TreeUtils.hasSyntheticArgument(tree)) {
-      AnnotatedExecutableType t =
-          (AnnotatedExecutableType) getAnnotatedType(((JCNewClass) tree).constructor);
-      List<AnnotatedTypeMirror> p = new ArrayList<>(con.getParameterTypes().size() + 1);
-      p.add(t.getParameterTypes().get(0));
-      p.addAll(1, con.getParameterTypes());
-      t.setParameterTypes(p);
-      con = t;
+      AnnotatedExecutableType t = getAnnotatedType(TreeUtils.getAnonymousConstructor(tree));
+      List<AnnotatedTypeMirror> p = new ArrayList<>(t.getParameterTypes().size() + 1);
+      p.add(con.getParameterTypes().get(0));
+      p.addAll(1, t.getParameterTypes());
+      con.setParameterTypes(p);
     }
 
     constructorFromUsePreSubstitution(tree, con);

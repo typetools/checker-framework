@@ -355,6 +355,37 @@ public final class TreeUtils {
   }
 
   /**
+   * Determines the symbol for an anonymous constructor given an invocation via {@code new}.
+   *
+   * <p>If the tree is a declaration of an anonymous class, then method returns constructor that
+   * gets invoked in the extended class, rather than the anonymous constructor implicitly added by
+   * the constructor (JLS 15.9.5.1)
+   *
+   * @see #elementFromUse(NewClassTree)
+   * @param tree the constructor invocation
+   * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
+   */
+  public static ExecutableElement getAnonymousConstructor(NewClassTree tree) {
+    JCNewClass newClassTree = (JCNewClass) tree;
+    // anonymous constructor bodies should contain exactly one statement
+    // in the form:
+    //    super(arg1, ...)
+    // or
+    //    o.super(arg1, ...)
+    //
+    // which is a method invocation (!) to the actual constructor
+
+    // the method call is guaranteed to return nonnull
+    JCMethodDecl anonConstructor =
+        (JCMethodDecl) TreeInfo.declarationFor(newClassTree.constructor, newClassTree);
+    assert anonConstructor != null;
+    assert anonConstructor.body.stats.size() == 1;
+    JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
+    JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
+    return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+  }
+
+  /**
    * Determines the symbol for a constructor given an invocation via {@code new}.
    *
    * <p>If the tree is a declaration of an anonymous class, then method returns constructor that
@@ -373,48 +404,6 @@ public final class TreeUtils {
 
     JCNewClass newClassTree = (JCNewClass) tree;
 
-    if (tree.getClassBody() != null) {
-      // anonymous constructor bodies should contain exactly one statement
-      // in the form:
-      //    super(arg1, ...)
-      // or
-      //    o.super(arg1, ...)
-      //
-      // which is a method invocation (!) to the actual constructor
-
-      // the method call is guaranteed to return nonnull
-      JCMethodDecl anonConstructor =
-          (JCMethodDecl) TreeInfo.declarationFor(newClassTree.constructor, newClassTree);
-      assert anonConstructor != null;
-      assert anonConstructor.body.stats.size() == 1;
-      JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
-      JCTree.JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
-      return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
-    } else {
-      Element e = newClassTree.constructor;
-      return (ExecutableElement) e;
-    }
-  }
-
-  /**
-   * Determines the symbol for a constructor given an invocation via {@code new}.
-   *
-   * <p>If the tree is a declaration of an anonymous class, then method returns constructor that
-   * gets invoked in the extended class, rather than the anonymous constructor implicitly added by
-   * the constructor (JLS 15.9.5.1)
-   *
-   * @see #elementFromUse(NewClassTree)
-   * @param tree the constructor invocation
-   * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
-   */
-  public static ExecutableElement constructor2(NewClassTree tree) {
-
-    if (!(tree instanceof JCTree.JCNewClass)) {
-      throw new BugInCF("TreeUtils.constructor: not a javac internal tree");
-    }
-
-    JCNewClass newClassTree = (JCNewClass) tree;
-
     if (tree.getClassBody() != null && !TreeUtils.hasSyntheticArgument(tree)) {
       // anonymous constructor bodies should contain exactly one statement
       // in the form:
@@ -425,13 +414,7 @@ public final class TreeUtils {
       // which is a method invocation (!) to the actual constructor
 
       // the method call is guaranteed to return nonnull
-      JCMethodDecl anonConstructor =
-          (JCMethodDecl) TreeInfo.declarationFor(newClassTree.constructor, newClassTree);
-      assert anonConstructor != null;
-      assert anonConstructor.body.stats.size() == 1;
-      JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
-      JCTree.JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
-      return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+      return getAnonymousConstructor(newClassTree);
     } else {
       Element e = newClassTree.constructor;
       return (ExecutableElement) e;
