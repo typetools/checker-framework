@@ -83,7 +83,8 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
             TargetType.CONSTRUCTOR_REFERENCE,
             TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
             TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
-            TargetType.METHOD_FORMAL_PARAMETER
+            TargetType.METHOD_FORMAL_PARAMETER,
+            TargetType.CLASS_EXTENDS
         };
     }
 

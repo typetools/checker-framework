@@ -6,6 +6,7 @@ Version 3.21.4-eisop2 (April ?, 2022)
 **Implementation details:**
 
 **Closed issues:**
+eisop#210.
 
 
 Version 3.21.4-eisop1 (April 4, 2022)
