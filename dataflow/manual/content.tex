@@ -299,6 +299,25 @@ package org.checkerframework.checker.nullness;
 class NullnessValue extends CFAbstractValue<NullnessValue>
 \end{verbatim}
 
+\subsubsection{UnusedAbstractValue}
+\label{sec:unused_abstract_value_class}
+
+UnusedAbstractValue, as the name suggests, is an AbstractValue that is
+not involved in any computation during dataflow analysis. This class should
+only be used as a type argument in transfer functions. It is implemented because some
+analyses do not need and do not have their own AbstractValue classes.
+
+For example, in LiveVariable analysis (\autoref{sec:live_variable}),
+we need to compute the least upper bound of successors' stores, and
+it is meaningless to further calculate the least upper bound of two
+individual live variables at a smaller granularity.
+Since there is no computation between two AbstractValues, using the UnusedAbstractValue
+is sufficient and we do not have to implement a specific AbstractValue for this analysis.
+
+\begin{verbatim}
+package org.checkerframework.dataflow.analysis;
+public final class UnusedAbstractValue implements AbstractValue<UnusedAbstractValue>
+\end{verbatim}
 
 \subsubsection{Store}
 \label{sec:store_classes}
@@ -1710,7 +1729,7 @@ is also shown in \autoref{fig:ConstSimple}.
 
 
 \section{Example: Live Variable}
-
+\label{sec:live_variable}
 A live variable analysis for local variables and fields was implemented
 to show the backward analysis works properly. The main class is
 \code{org.checkerframework.dataflow.cfg.playground.LiveVariablePlayground}.
@@ -1729,7 +1748,7 @@ and kill live variables.
 \textbf{The transfer function.} The transfer function \code{LiveVarTransfer}
 initializes empty stores at normal and exceptional exit blocks (because this
 is a backward transfer function). The transfer function visits assignments to
-update the information of live variables for each node in the stores.
+update the live variable values in the stores.
 
 \textbf{Example.} An example is shown in \autoref{fig:LiveSimple}.
 
