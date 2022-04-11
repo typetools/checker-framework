@@ -12,7 +12,6 @@ public class MustCallTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.mustcall.MustCallChecker.class,
                 "mustcall",
-                "-Anomsgtext",
                 // "-AstubDebug");
                 "-nowarn");
     }

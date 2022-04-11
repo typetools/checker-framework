@@ -22,7 +22,6 @@ public class AinferTestCheckerAjavaValidationTest extends CheckerFrameworkPerDir
                 testFiles,
                 AinferTestChecker.class,
                 "ainfer-testchecker/annotated",
-                "-Anomsgtext",
                 "-Aajava=tests/ainfer-testchecker/inference-output",
                 "-Awarns");
     }

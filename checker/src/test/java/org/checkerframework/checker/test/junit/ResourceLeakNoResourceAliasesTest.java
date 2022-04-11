@@ -14,7 +14,6 @@ public class ResourceLeakNoResourceAliasesTest extends CheckerFrameworkPerDirect
                 testFiles,
                 ResourceLeakChecker.class,
                 "resourceleak-noresourcealiases",
-                "-Anomsgtext",
                 "-AnoResourceAliases",
                 "-nowarn",
                 "-encoding",

@@ -19,7 +19,6 @@ public class StubparserTaintingTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.tainting.TaintingChecker.class,
                 "stubparser-tainting",
-                "-Anomsgtext",
                 "-AmergeStubsWithSource",
                 "-Astubs=tests/stubparser-tainting",
                 "-AstubWarnIfNotFound");

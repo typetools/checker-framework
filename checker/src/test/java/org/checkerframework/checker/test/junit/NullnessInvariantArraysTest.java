@@ -19,8 +19,7 @@ public class NullnessInvariantArraysTest extends CheckerFrameworkPerDirectoryTes
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AinvariantArrays",
-                "-Anomsgtext");
+                "-AinvariantArrays");
     }
 
     @Parameters

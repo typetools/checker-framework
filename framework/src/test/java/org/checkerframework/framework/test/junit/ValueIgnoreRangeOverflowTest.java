@@ -16,7 +16,6 @@ public class ValueIgnoreRangeOverflowTest extends CheckerFrameworkPerDirectoryTe
                 testFiles,
                 org.checkerframework.common.value.ValueChecker.class,
                 "value",
-                "-Anomsgtext",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS,
                 "-A" + ValueChecker.IGNORE_RANGE_OVERFLOW);
     }

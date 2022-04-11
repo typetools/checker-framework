@@ -14,8 +14,7 @@ public class MethodValTest extends CheckerFrameworkPerDirectoryTest {
         super(
                 testFiles,
                 org.checkerframework.common.reflection.MethodValChecker.class,
-                "methodval",
-                "-Anomsgtext");
+                "methodval");
     }
 
     @Parameters

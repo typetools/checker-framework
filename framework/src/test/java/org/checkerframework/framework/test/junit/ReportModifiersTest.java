@@ -14,7 +14,6 @@ public class ReportModifiersTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.common.util.report.ReportChecker.class,
                 "report",
-                "-Anomsgtext",
                 "-AreportModifiers=native");
     }
 

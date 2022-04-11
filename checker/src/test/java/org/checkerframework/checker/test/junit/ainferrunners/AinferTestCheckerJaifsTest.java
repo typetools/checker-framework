@@ -23,7 +23,6 @@ public class AinferTestCheckerJaifsTest extends CheckerFrameworkPerDirectoryTest
                 testFiles,
                 AinferTestChecker.class,
                 "ainfer-testchecker/non-annotated",
-                "-Anomsgtext",
                 "-Ainfer=jaifs",
                 "-Awarns");
     }

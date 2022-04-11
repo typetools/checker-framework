@@ -12,7 +12,7 @@ public class NonTopDefaultTest extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public NonTopDefaultTest(List<File> testFiles) {
-        super(testFiles, NTDChecker.class, "nontopdefault", "-Anomsgtext");
+        super(testFiles, NTDChecker.class, "nontopdefault");
     }
 
     @Parameters

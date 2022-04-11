@@ -19,7 +19,6 @@ public class ReturnsReceiverTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 ReturnsReceiverChecker.class,
                 "returnsreceiver",
-                "-Anomsgtext",
                 "-Astubs=stubs/",
                 "-nowarn");
     }

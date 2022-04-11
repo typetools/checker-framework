@@ -18,8 +18,7 @@ public class InterningTest extends CheckerFrameworkPerDirectoryTest {
         super(
                 testFiles,
                 org.checkerframework.checker.interning.InterningChecker.class,
-                "interning",
-                "-Anomsgtext");
+                "interning");
     }
 
     @Parameters

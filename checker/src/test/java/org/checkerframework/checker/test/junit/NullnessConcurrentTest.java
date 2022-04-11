@@ -19,8 +19,7 @@ public class NullnessConcurrentTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AconcurrentSemantics",
-                "-Anomsgtext");
+                "-AconcurrentSemantics");
     }
 
     @Parameters

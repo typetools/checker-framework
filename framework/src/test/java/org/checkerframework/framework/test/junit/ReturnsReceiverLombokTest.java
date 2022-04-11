@@ -18,7 +18,6 @@ public class ReturnsReceiverLombokTest extends CheckerFrameworkPerDirectoryTest 
                 testFiles,
                 ReturnsReceiverChecker.class,
                 "returnsreceiverdelomboked",
-                "-Anomsgtext",
                 "-nowarn",
                 "-AsuppressWarnings=type.anno.before.modifier");
     }

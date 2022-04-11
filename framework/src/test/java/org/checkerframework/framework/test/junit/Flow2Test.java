@@ -16,7 +16,7 @@ public class Flow2Test extends CheckerFrameworkPerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public Flow2Test(List<File> testFiles) {
-        super(testFiles, FlowTestChecker.class, "flow", "-Anomsgtext", "-AcheckPurityAnnotations");
+        super(testFiles, FlowTestChecker.class, "flow", "-AcheckPurityAnnotations");
     }
 
     @Parameters

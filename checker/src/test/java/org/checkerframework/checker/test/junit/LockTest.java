@@ -14,11 +14,7 @@ public class LockTest extends CheckerFrameworkPerDirectoryTest {
      * @param testFiles the files containing test code, which will be type-checked
      */
     public LockTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.checker.lock.LockChecker.class,
-                "lock",
-                "-Anomsgtext");
+        super(testFiles, org.checkerframework.checker.lock.LockChecker.class, "lock");
     }
 
     @Parameters

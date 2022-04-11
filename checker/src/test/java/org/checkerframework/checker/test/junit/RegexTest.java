@@ -14,11 +14,7 @@ public class RegexTest extends CheckerFrameworkPerDirectoryTest {
      * @param testFiles the files containing test code, which will be type-checked
      */
     public RegexTest(List<File> testFiles) {
-        super(
-                testFiles,
-                org.checkerframework.checker.regex.RegexChecker.class,
-                "regex",
-                "-Anomsgtext");
+        super(testFiles, org.checkerframework.checker.regex.RegexChecker.class, "regex");
     }
 
     @Parameters

@@ -14,7 +14,6 @@ public class ResourceLeakNoLightweightOwnershipTest extends CheckerFrameworkPerD
                 testFiles,
                 ResourceLeakChecker.class,
                 "resourceleak-nolightweightownership",
-                "-Anomsgtext",
                 "-AnoLightweightOwnership",
                 "-nowarn",
                 "-encoding",

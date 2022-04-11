@@ -24,7 +24,6 @@ public class CalledMethodsAutoValueTest extends CheckerFrameworkPerDirectoryTest
                         CalledMethodsChecker.class.getName()),
                 "calledmethods-autovalue",
                 Collections.emptyList(),
-                "-Anomsgtext",
                 "-nowarn");
     }
 

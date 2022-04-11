@@ -19,8 +19,7 @@ public class NullnessSafeDefaultsBytecodeTest extends CheckerFrameworkPerDirecto
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AuseConservativeDefaultsForUncheckedCode=bytecode",
-                "-Anomsgtext");
+                "-AuseConservativeDefaultsForUncheckedCode=bytecode");
     }
 
     @Parameters

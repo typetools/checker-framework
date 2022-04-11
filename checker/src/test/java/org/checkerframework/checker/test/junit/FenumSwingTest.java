@@ -18,7 +18,6 @@ public class FenumSwingTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.fenum.FenumChecker.class,
                 "fenum",
-                "-Anomsgtext",
                 "-Aquals=org.checkerframework.checker.fenum.qual.SwingVerticalOrientation,org.checkerframework.checker.fenum.qual.SwingHorizontalOrientation,org.checkerframework.checker.fenum.qual.SwingBoxOrientation,org.checkerframework.checker.fenum.qual.SwingCompassDirection,org.checkerframework.checker.fenum.qual.SwingElementOrientation,org.checkerframework.checker.fenum.qual.SwingTextOrientation");
         // TODO: check all qualifiers
     }

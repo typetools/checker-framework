@@ -25,7 +25,6 @@ public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTe
                         ReturnsReceiverChecker.class.getName()),
                 "basic",
                 Collections.emptyList(),
-                "-Anomsgtext",
                 "-nowarn");
     }
 

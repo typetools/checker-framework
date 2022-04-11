@@ -14,7 +14,6 @@ public class ReportTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.common.util.report.ReportChecker.class,
                 "report",
-                "-Anomsgtext",
                 "-Astubs=tests/report/reporttest.astub");
     }
 

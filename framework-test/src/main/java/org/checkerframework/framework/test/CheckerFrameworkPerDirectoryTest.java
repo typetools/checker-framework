@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -136,8 +135,7 @@ public abstract class CheckerFrameworkPerDirectoryTest {
         this.checkerNames = checkerNames;
         this.testDir = "tests" + File.separator + testDir;
         this.classpathExtra = classpathExtra;
-        this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
-        this.checkerOptions.add("-AajavaChecks");
+        this.checkerOptions = Arrays.asList(checkerOptions);
     }
 
     @Test

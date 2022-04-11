@@ -25,7 +25,6 @@ public class AinferTestCheckerAjavaTest extends CheckerFrameworkPerDirectoryTest
                 testFiles,
                 AinferTestChecker.class,
                 "ainfer-testchecker/non-annotated",
-                "-Anomsgtext",
                 "-Ainfer=ajava",
                 "-Awarns");
     }

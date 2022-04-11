@@ -16,7 +16,6 @@ public class TypeDeclDefaultTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 TypeDeclDefaultChecker.class,
                 "typedecldefault",
-                "-Anomsgtext",
                 "-Astubs=tests/typedecldefault/jdk.astub");
     }
 

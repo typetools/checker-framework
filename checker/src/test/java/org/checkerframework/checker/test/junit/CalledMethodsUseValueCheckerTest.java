@@ -13,7 +13,6 @@ public class CalledMethodsUseValueCheckerTest extends CheckerFrameworkPerDirecto
                 testFiles,
                 CalledMethodsChecker.class,
                 "calledmethods-usevaluechecker",
-                "-Anomsgtext",
                 "-AuseValueChecker",
                 "-nowarn");
     }

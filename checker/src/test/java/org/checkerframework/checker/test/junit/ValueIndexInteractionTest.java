@@ -18,8 +18,7 @@ public class ValueIndexInteractionTest extends CheckerFrameworkPerDirectoryTest 
         super(
                 testFiles,
                 org.checkerframework.common.value.ValueChecker.class,
-                "value-index-interaction",
-                "-Anomsgtext");
+                "value-index-interaction");
     }
 
     @Parameters

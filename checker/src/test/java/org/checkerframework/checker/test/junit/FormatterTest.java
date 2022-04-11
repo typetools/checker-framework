@@ -16,8 +16,7 @@ public class FormatterTest extends CheckerFrameworkPerDirectoryTest {
         super(
                 testFiles,
                 org.checkerframework.checker.formatter.FormatterChecker.class,
-                "formatter",
-                "-Anomsgtext");
+                "formatter");
     }
 
     @Parameters

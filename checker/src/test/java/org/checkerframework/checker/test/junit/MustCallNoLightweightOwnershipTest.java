@@ -12,7 +12,6 @@ public class MustCallNoLightweightOwnershipTest extends CheckerFrameworkPerDirec
                 testFiles,
                 org.checkerframework.checker.mustcall.MustCallChecker.class,
                 "mustcall-nolightweightownership",
-                "-Anomsgtext",
                 "-AnoLightweightOwnership",
                 // "-AstubDebug");
                 "-nowarn");

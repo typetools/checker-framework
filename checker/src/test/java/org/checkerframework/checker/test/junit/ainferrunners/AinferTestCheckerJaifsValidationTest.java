@@ -16,12 +16,7 @@ import java.util.List;
 public class AinferTestCheckerJaifsValidationTest extends CheckerFrameworkPerDirectoryTest {
     /** @param testFiles the files containing test code, which will be type-checked */
     public AinferTestCheckerJaifsValidationTest(List<File> testFiles) {
-        super(
-                testFiles,
-                AinferTestChecker.class,
-                "ainfer-testchecker/non-annotated",
-                "-Anomsgtext",
-                "-Awarns");
+        super(testFiles, AinferTestChecker.class, "ainfer-testchecker/non-annotated", "-Awarns");
     }
 
     @Override

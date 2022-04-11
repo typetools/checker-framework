@@ -17,8 +17,7 @@ public class SignatureTest extends CheckerFrameworkPerDirectoryTest {
         super(
                 testFiles,
                 org.checkerframework.checker.signature.SignatureChecker.class,
-                "signature",
-                "-Anomsgtext");
+                "signature");
     }
 
     @Parameters

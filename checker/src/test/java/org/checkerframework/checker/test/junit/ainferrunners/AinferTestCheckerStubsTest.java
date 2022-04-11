@@ -25,7 +25,6 @@ public class AinferTestCheckerStubsTest extends CheckerFrameworkPerDirectoryTest
                 testFiles,
                 AinferTestChecker.class,
                 "ainfer-testchecker/non-annotated",
-                "-Anomsgtext",
                 "-Ainfer=stubs",
                 "-Awarns");
     }

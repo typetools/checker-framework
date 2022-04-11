@@ -14,7 +14,6 @@ public class ReportTreeKindsTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.common.util.report.ReportChecker.class,
                 "report",
-                "-Anomsgtext",
                 "-AreportTreeKinds=WHILE_LOOP,CONDITIONAL_AND");
     }
 

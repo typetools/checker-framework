@@ -15,7 +15,6 @@ public class ValueNonNullStringsConcatenationTest extends CheckerFrameworkPerDir
                 testFiles,
                 org.checkerframework.common.value.ValueChecker.class,
                 "value-non-null-strings-concatenation",
-                "-Anomsgtext",
                 "-A" + ValueChecker.REPORT_EVAL_WARNS,
                 "-A" + ValueChecker.NON_NULL_STRINGS_CONCATENATION);
     }

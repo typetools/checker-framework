@@ -14,7 +14,6 @@ public class CalledMethodsTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 CalledMethodsChecker.class,
                 "calledmethods",
-                "-Anomsgtext",
                 "-nowarn",
                 "-encoding",
                 "UTF-8");
