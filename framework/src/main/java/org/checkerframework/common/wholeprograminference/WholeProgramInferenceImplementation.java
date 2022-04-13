@@ -278,8 +278,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
               printFailedInferenceDebugMessage(
                   "Javac cannot create an array type "
                       + "from a wildcard, so WPI did not attempt to infer a type for an array "
-                      + "parameter. The signature of the method whose parameter had inference "
-                      + "skipped is: "
+                      + "parameter.\n"
+                      + "The signature of the method whose parameter had inference skipped is: "
                       + JVMNames.getJVMMethodSignature(methodElt));
             }
             return;
