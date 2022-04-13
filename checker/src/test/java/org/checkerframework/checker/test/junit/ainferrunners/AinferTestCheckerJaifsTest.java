@@ -26,7 +26,8 @@ public class AinferTestCheckerJaifsTest extends AinferGeneratePerDirectoryTest {
         "-Ainfer=jaifs",
         "-Awarns");
     // Do not typecheck the file all-systems/java8/memberref/Purity.java: it contains
-    // an expected error that will be issued as a warning, instead (because of -Awarns).
+    // an expected error that will be issued as a warning, instead (because of -Awarns) if
+    // the test is executed by this test runner.
     // Since it is part of the all-systems tests, it cannot be changed (that would break other
     // checkers). Instead, a copy of the file with the expected warning (rather than error)
     // has been added to the ainfer non-annotated suite.

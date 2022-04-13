@@ -489,7 +489,7 @@ public class WholeProgramInferenceJavaParserStorage
                 // is computed, the worst outcome is a false positive because WPI inferred an
                 // untrue annotation.
                 @BinaryName String className;
-                if ("".equals(body.getSimpleName().toString().trim())) {
+                if ("".contentEquals(body.getSimpleName())) {
                   @SuppressWarnings("signature:assignment") // computed from string concatenation
                   @BinaryName String computedName =
                       javaParserClass.getFullyQualifiedName().get() + "$" + ++innerClassCount;
