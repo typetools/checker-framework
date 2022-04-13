@@ -81,7 +81,7 @@ fi
 # If so, the next command gets another chance to try the download.
 (./gradlew help || sleep 10) > /dev/null 2>&1
 
-echo "running \"./gradlew assemble\" for checker-framework"
-./gradlew assemble --console=plain --warning-mode=all -s -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+echo "running \"./gradlew fastAssemble\" for checker-framework"
+./gradlew fastAssemble --console=plain --warning-mode=all -s -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 echo Exiting checker/bin-devel/build.sh in "$(pwd)"

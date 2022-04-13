@@ -1208,6 +1208,18 @@ task checkBasicStyle(group: 'Format') {
 
 assemble.mustRunAfter(clean)
 
+/**
+ * Execute the `assemble` task without generating any Javadoc or sources.jar files.
+ */
+task fastAssemble(group: 'Build') {
+    description 'Assembles the outputs of this project without generating any Javadoc or sources.jar files'
+    tasks.withType(Javadoc) {
+        enabled = false
+    }
+
+    finalizedBy assemble
+}
+
 task buildAll(group: 'Build') {
     description 'Build all jar files, including source and javadoc jars'
     dependsOn(allJavadoc)
