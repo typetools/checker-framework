@@ -2697,6 +2697,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return Collections.emptyList();
   }
 
+  /**
+   * Infer the class type arguments for the diamond operator.
+   *
+   * <p>If {@code newClassTree} is assigned to the same type (not a supertype), then the type
+   * arguments are inferred to be the same as the assignment. Otherwise, the type arguments are
+   * annotated by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * @param newClassTree a diamond new class tree
+   * @return the class type arguments for {@code newClassTree}
+   */
   private List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
     assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
     AnnotatedDeclaredType diamondType =
