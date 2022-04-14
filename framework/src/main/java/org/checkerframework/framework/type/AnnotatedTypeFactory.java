@@ -2529,7 +2529,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // parameter of the anonymous constructor. For example,
         // class Outer { class Inner {} }
         //  new Inner(){};
-        // Then javac creates the followong constructor:
+        // Then javac creates the following constructor:
         //  (.Outer x0) {
         //   x0.super();
         //   }
