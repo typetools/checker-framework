@@ -608,7 +608,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     AnnotatedExecutableType invokedMethod = mType.executableType;
 
     List<AnnotatedTypeMirror> paramTypes =
-        AnnotatedTypes.expandVarArgsParameters(atypeFactory, invokedMethod, node.getArguments());
+        AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, node.getArguments());
 
     // Index on @GuardSatisfied at each location. -1 when no @GuardSatisfied annotation was present.
     // Note that @GuardSatisfied with no index is normally represented as having index -1.

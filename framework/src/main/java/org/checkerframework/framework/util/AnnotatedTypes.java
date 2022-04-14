@@ -931,12 +931,36 @@ public class AnnotatedTypes {
    * @param method the method's type
    * @param args the arguments to the method invocation
    * @return the types that the method invocation arguments need to be subtype of
+   * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory, AnnotatedExecutableType, List)}
+   *     instead
    */
+  @Deprecated
   public static List<AnnotatedTypeMirror> expandVarArgsParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
+    return adaptParameters(atypeFactory, method, args);
+  }
+
+  /**
+   * Returns the method parameters for the invoked method (or constructor), with the same number of
+   * arguments passed to the invocation tree.
+   *
+   * <p>This expands the parameters if the call uses varargs or contracts the parameters if the call
+   * is to an anonymous class that extends a class with an enclosing type. If the call is neither of
+   * these, then the parameters are returned unchanged.
+   *
+   * @param atypeFactory the type factory to use for fetching annotated types
+   * @param method the method or constructor's type
+   * @param args the arguments to the method or constructor invocation
+   * @return the types that the invocation arguments need to be subtype of
+   */
+  public static List<AnnotatedTypeMirror> adaptParameters(
+      AnnotatedTypeFactory atypeFactory,
+      AnnotatedExecutableType method,
+      List<? extends ExpressionTree> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+    // Handle anonymous constructors that extend a class with an enclosing type.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
       DeclaredType t =
@@ -956,6 +980,8 @@ public class AnnotatedTypes {
         }
       }
     }
+
+    // Handle vararg methods.
     if (!method.getElement().isVarArgs()) {
       return parameters;
     }
