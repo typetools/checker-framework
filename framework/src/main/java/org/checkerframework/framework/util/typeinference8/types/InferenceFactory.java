@@ -116,7 +116,7 @@ public class InferenceFactory {
       case NEW_CLASS:
         NewClassTree newClassTree = (NewClassTree) assignmentContext;
         AnnotatedExecutableType constructorType =
-            factory.constructorFromUse(newClassTree).executableType;
+            factory.constructorFromUseTypeArgInfere(newClassTree).executableType;
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return new ProperType(

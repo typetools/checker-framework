@@ -2527,8 +2527,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the annotated type of the invoked constructor (as an executable type) and the
    *     (inferred) type arguments
    */
-  public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+  public final ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+    return constructorFromUse(tree, true);
+  }
 
+  public ParameterizedExecutableType constructorFromUseTypeArgInfere(NewClassTree tree) {
+    return constructorFromUse(tree, false);
+  }
+
+  public ParameterizedExecutableType constructorFromUse(NewClassTree tree, boolean shouldInfer) {
     // Get the annotations written on the new class tree.
     AnnotatedDeclaredType type =
         (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
@@ -2596,7 +2603,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
-        new HashMap<>(AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con));
+        new HashMap<>(
+            AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con, shouldInfer));
     List<AnnotatedTypeMirror> typeargs;
     if (typeParamToTypeArg.isEmpty()) {
       typeargs = Collections.emptyList();
@@ -2606,7 +2614,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               (AnnotatedTypeVariable tv) -> typeParamToTypeArg.get(tv.getUnderlyingType()),
               con.getTypeVariables());
     }
-    if (TreeUtils.isDiamondTree(tree)) {
+    if (shouldInfer && TreeUtils.isDiamondTree(tree)) {
       // TODO: This should be done at the same time as type argument inference.
       List<AnnotatedTypeMirror> classTypeArgs = inferDiamondType(tree);
       int i = 0;
