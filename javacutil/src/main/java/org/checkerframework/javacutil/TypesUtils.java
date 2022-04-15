@@ -1050,6 +1050,23 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns the superclass or interface of the given class. Returns null if there is not one.
+   *
+   * @param type a type
+   * @param types type utilities
+   * @return the superclass of the given class, or null
+   */
+  public static @Nullable DeclaredType getSuperClassOrInterface(TypeMirror type, Types types) {
+    List<? extends TypeMirror> superTypes = types.directSupertypes(type);
+    for (TypeMirror t : superTypes) {
+      if (t instanceof ClassType) {
+        return (ClassType) t;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the type of primitive conversion from {@code from} to {@code to}.
    *
    * @param from a primitive type

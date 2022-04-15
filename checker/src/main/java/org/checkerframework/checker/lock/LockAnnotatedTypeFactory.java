@@ -627,7 +627,7 @@ public class LockAnnotatedTypeFactory
     List<? extends ExpressionTree> methodInvocationTreeArguments =
         ((MethodInvocationTree) tree).getArguments();
     List<AnnotatedTypeMirror> paramTypes =
-        AnnotatedTypes.expandVarArgsParameters(this, invokedMethod, methodInvocationTreeArguments);
+        AnnotatedTypes.adaptParameters(this, invokedMethod, methodInvocationTreeArguments);
 
     for (int i = 0; i < paramTypes.size(); i++) {
       if (replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
