@@ -34,34 +34,34 @@ public class PublicFieldTest {
   @Sibling1 int getSibling1() {
     return (@Sibling1 int) 0;
   }
-}
 
-class AnotherClass {
+  class AnotherClass {
 
-  int innerField;
+    int innerField;
 
-  public AnotherClass() {
-    PublicFieldTest.field1 = getSibling2();
-    PublicFieldTest.field2 = getSibling2();
-    innerField = getSibling2();
+    public AnotherClass() {
+      PublicFieldTest.field1 = getSibling2();
+      PublicFieldTest.field2 = getSibling2();
+      innerField = getSibling2();
+    }
+
+    void innerFieldTest() {
+      // :: warning: (argument)
+      expectsSibling2(innerField);
+    }
+
+    @AinferBottom int getBottom() {
+      return (@AinferBottom int) 0;
+    }
+
+    @Top int getTop() {
+      return (@Top int) 0;
+    }
+
+    @Sibling2 int getSibling2() {
+      return (@Sibling2 int) 0;
+    }
+
+    void expectsSibling2(@Sibling2 int t) {}
   }
-
-  void innerFieldTest() {
-    // :: warning: (argument)
-    expectsSibling2(innerField);
-  }
-
-  @AinferBottom int getBottom() {
-    return (@AinferBottom int) 0;
-  }
-
-  @Top int getTop() {
-    return (@Top int) 0;
-  }
-
-  @Sibling2 int getSibling2() {
-    return (@Sibling2 int) 0;
-  }
-
-  void expectsSibling2(@Sibling2 int t) {}
 }
