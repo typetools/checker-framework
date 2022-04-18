@@ -148,10 +148,16 @@ class MustCallConsistencyAnalyzer {
    */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
 
-  /** This map keeps the result of ResourceLeakAnnotatedTypeFactory.getStoreAfter() for each node */
+  /**
+   * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
+   * node. The cache prevents repeatedly computing least upper bounds on stores
+   */
   private Map<Node, CFStore> cmStoreAfter = new LinkedHashMap<>();
 
-  /** This map keeps the result of MustCallAnnotatedTypeFactory.getStoreAfter() for each node */
+  /**
+   * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
+   * node. The cache prevents repeatedly computing least upper bounds on stores
+   */
   private Map<Node, CFStore> mcStoreAfter = new LinkedHashMap<>();
 
   /** The Resource Leak Checker, used to issue errors. */
