@@ -939,7 +939,8 @@ checker as an annotation processor directly.
 
 Debugging your Maven configuration can be tricky because of a
 \ahreforurl{https://issues.apache.org/jira/browse/MCOMPILER-434}{bug in
-  Maven}: Maven does not report annotation processor exceptions, even when
+  maven-compiler-plugin versions before 3.10.1}: Maven does not report
+annotation processor exceptions, even when
 the \<-X> command-line argument is passed.
 
 
@@ -1042,7 +1043,7 @@ section, or add it if it is not present.
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
+            <version>3.10.1</version>
             <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
               <compilerArguments>
