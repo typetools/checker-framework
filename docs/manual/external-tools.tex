@@ -965,18 +965,8 @@ the \<-X> command-line argument is passed.
       <artifactId>checker-qual</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
-    <dependency>
-      <groupId>com.google.errorprone</groupId>
-      <artifactId>javac</artifactId>
-      <version>9+181-r4173-1</version>
-    </dependency>
   </dependencies>
 \end{alltt}
-
-Java 11 and later do not need the \<com.google.errorprone:javac>
-dependency.  If you will never use Java 8, you can omit it.
-The need for the \<com.google.errorprone:javac> artifact when running under
-JDK 8 is explained in Section~\ref{javac-jdk8}.
 
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:
@@ -990,7 +980,26 @@ latest bug fixes and new features:
   Error Prone \<javac.jar>.  They were declared as Maven dependencies above.
 To set the value of these properties automatically, you will use the Maven Dependency plugin.
 
-First, create the property in the \code{properties} section of the POM:
+Add a dependency:
+
+\begin{alltt}
+  <dependencies>
+    ... existing <dependency> items ...
+
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>javac</artifactId>
+      <version>9+181-r4173-1</version>
+    </dependency>
+  </dependencies>
+\end{alltt}
+
+Java 11 and later do not need the \<com.google.errorprone:javac>
+dependency.
+The need for the \<com.google.errorprone:javac> artifact when running under
+JDK 8 is explained in Section~\ref{javac-jdk8}.
+
+Create the property in the \code{properties} section of the POM:
 
 \begin{alltt}
 <properties>
