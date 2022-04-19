@@ -2021,7 +2021,7 @@ The CFG is generated and output, but no dataflow analysis is performed.
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+   org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2032,7 +2032,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \begin{smaller}
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+   org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2049,7 +2049,7 @@ remove \<--pdf> but add \<--string>. For example (with JDK 8):
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+   org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --string
 \end{Verbatim}
 \end{smaller}
