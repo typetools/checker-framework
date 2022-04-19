@@ -2624,12 +2624,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
     con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
-
-    stubTypes.injectRecordComponentType(types, ctor, con);
     if (enclosingType != null) {
       // Reset the enclosing type because it can be substituted incorrectly.
       ((AnnotatedDeclaredType) con.getReturnType()).setEnclosingType(enclosingType);
     }
+    if(type.isUnderlyingTypeRaw()) {
+      ((AnnotatedDeclaredType) con.getReturnType()).setIsUnderlyingTypeRaw();
+    }
+    stubTypes.injectRecordComponentType(types, ctor, con);
     return new ParameterizedExecutableType(con, typeargs);
   }
 
