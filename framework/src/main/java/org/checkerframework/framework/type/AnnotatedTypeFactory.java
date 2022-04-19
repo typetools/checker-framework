@@ -2628,7 +2628,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // Reset the enclosing type because it can be substituted incorrectly.
       ((AnnotatedDeclaredType) con.getReturnType()).setEnclosingType(enclosingType);
     }
-    if(type.isUnderlyingTypeRaw()) {
+    if (type.isUnderlyingTypeRaw()) {
       ((AnnotatedDeclaredType) con.getReturnType()).setIsUnderlyingTypeRaw();
     }
     stubTypes.injectRecordComponentType(types, ctor, con);
