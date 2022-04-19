@@ -742,7 +742,7 @@ public class AnnotatedTypes {
     }
 
     // Has the user supplied type arguments?
-    if (!targs.isEmpty()) {
+    if (!targs.isEmpty() && !TreeUtils.isDiamondTree(expr)) {
       List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();
 
       Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();

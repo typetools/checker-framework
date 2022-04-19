@@ -358,7 +358,9 @@ public class Typing extends Constraint {
       // the same erasure
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
-        constraintSet.add(new Typing(tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
+        if (tTypeArgs.get(i) != sTypeArgs.get(i)) {
+          constraintSet.add(new Typing(tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
+        }
       }
       return constraintSet;
     }

@@ -12,6 +12,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -837,17 +839,17 @@ public class InvocationTypeInference {
         if (methodElement.getTypeParameters().isEmpty()) {
           return tree;
         }
-        if (needsInference(methodElement, methodInvocationTree.getArguments(), tree)) {
+        if (needsInference(methodElement, methodInvocationTree.getArguments(), tree, null)) {
           return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
         }
         return tree;
       case NEW_CLASS:
-        if (!TreeUtils.isDiamondTree(parentTree)) {
+        NewClassTree newClassTree = (NewClassTree) parentTree;
+        if (!newClassTree.getTypeArguments().isEmpty()) {
           return tree;
         }
-        NewClassTree newClassTree = (NewClassTree) parentTree;
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
-        if (needsInference(constructor, newClassTree.getArguments(), tree)) {
+        if (needsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
           return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
         }
         return tree;
@@ -864,7 +866,10 @@ public class InvocationTypeInference {
   }
 
   private static boolean needsInference(
-      ExecutableElement executableElement, List<? extends ExpressionTree> argTrees, Tree tree) {
+      ExecutableElement executableElement,
+      List<? extends ExpressionTree> argTrees,
+      Tree tree,
+      @Nullable NewClassTree newClassTree) {
     int index = -1;
     for (int i = 0; i < argTrees.size(); i++) {
       @SuppressWarnings("interning")
@@ -883,6 +888,17 @@ public class InvocationTypeInference {
       index = executableType.getParameterTypes().size() - 1;
     }
     TypeMirror param = executableType.getParameterTypes().get(index);
+    if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
+      List<TypeVariable> list = new ArrayList<>(executableType.getTypeVariables());
+      if (TreeUtils.isDiamondTree(newClassTree)) {
+        DeclaredType declaredType =
+            (DeclaredType) ((DeclaredType) TreeUtils.typeOf(newClassTree)).asElement().asType();
+        for (TypeMirror typeVar : declaredType.getTypeArguments()) {
+          list.add((TypeVariable) typeVar);
+        }
+      }
+      return ContainsInferenceVariable.hasAnyTypeVariable(list, param);
+    }
     return ContainsInferenceVariable.hasAnyTypeVariable(executableType.getTypeVariables(), param);
   }
 }

@@ -29,6 +29,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -2033,7 +2034,14 @@ public final class TreeUtils {
    */
   public static boolean isStandaloneExpression(ExpressionTree expression) {
     if (expression instanceof JCTree.JCExpression) {
-      return ((JCTree.JCExpression) expression).isStandalone();
+      if (((JCTree.JCExpression) expression).isStandalone()) {
+        return true;
+      }
+      if (expression.getKind() == Kind.METHOD_INVOCATION) {
+        // This seems to be a bug in at least Java 11.  If a method has type arguments, then it is
+        // a standalone expression.
+        return !((MethodInvocationTree) expression).getTypeArguments().isEmpty();
+      }
     }
     return false;
   }

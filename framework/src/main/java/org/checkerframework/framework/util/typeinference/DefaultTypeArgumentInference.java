@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -169,8 +170,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         methodType =
             typeFactory.methodFromUseNoTypeArgInfere((MethodInvocationTree) outerTree)
                 .executableType;
+      } else if (outerTree.getKind() == Tree.Kind.NEW_CLASS) {
+        pathToExpression = typeFactory.getPath(outerTree);
+        methodType =
+            typeFactory.constructorFromUseTypeArgInfere((NewClassTree) outerTree).executableType;
       } else {
-        // outertree is a lambda or a diamond new class tree.  Ignore for now.
+        // outertree is a lambda. Ignore for now.
         return null;
       }
     }

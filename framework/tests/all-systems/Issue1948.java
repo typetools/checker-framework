@@ -17,8 +17,8 @@ public class Issue1948<
   private Issue1948(MapMaker builder, InternalEntryHelper<K, V, E, S> entryHelper) {}
 
   /** Returns a fresh {@link Issue1948} as specified by the given {@code builder}. */
-  static <K, V> Issue1948<K, V, ? extends MyEntry<K, V, ?>, ?> create(MapMaker builder) {
-    return new Issue1948<>(builder, Helper.<K, V>instance());
+  static <K2, V2> Issue1948<K2, V2, ? extends MyEntry<K2, V2, ?>, ?> create(MapMaker builder) {
+    return new Issue1948<>(builder, Helper.<K2, V2>instance());
   }
 
   interface MyEntry<K, V, E extends MyEntry<K, V, E>> {}
