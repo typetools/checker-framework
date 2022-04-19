@@ -2614,15 +2614,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               (AnnotatedTypeVariable tv) -> typeParamToTypeArg.get(tv.getUnderlyingType()),
               con.getTypeVariables());
     }
-    if (shouldInfer && TreeUtils.isDiamondTree(tree)) {
-      // TODO: This should be done at the same time as type argument inference.
-      List<AnnotatedTypeMirror> classTypeArgs = inferDiamondType(tree);
-      int i = 0;
-      for (AnnotatedTypeMirror typeParam : type.getTypeArguments()) {
-        typeParamToTypeArg.put((TypeVariable) typeParam.getUnderlyingType(), classTypeArgs.get(i));
-        i++;
-      }
-    }
+
     con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
     if (enclosingType != null) {
       // Reset the enclosing type because it can be substituted incorrectly.
@@ -2728,46 +2720,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return ((AnnotatedDeclaredType) fromTypeTree(newClass.getIdentifier())).getTypeArguments();
     }
     return Collections.emptyList();
-  }
-
-  /**
-   * Infer the class type arguments for the diamond operator.
-   *
-   * <p>If {@code newClassTree} is assigned to the same type (not a supertype), then the type
-   * arguments are inferred to be the same as the assignment. Otherwise, the type arguments are
-   * annotated by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
-   *
-   * @param newClassTree a diamond new class tree
-   * @return the class type arguments for {@code newClassTree}
-   */
-  private List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
-    assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
-    AnnotatedDeclaredType diamondType =
-        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-
-    TreePath p = getPath(newClassTree);
-    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-    if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
-      AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
-      if (diamondType.getTypeArguments().size() == adctx.getTypeArguments().size()) {
-        // Try to simply take the type arguments from LHS.
-        List<AnnotatedTypeMirror> oldArgs = diamondType.getTypeArguments();
-        List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
-        boolean useLhs = true;
-        for (int i = 0; i < diamondType.getTypeArguments().size(); ++i) {
-          if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
-            // One of the underlying types doesn't match. Give up.
-            useLhs = false;
-            break;
-          }
-        }
-        if (useLhs) {
-          return newArgs;
-        }
-      }
-    }
-    addComputedTypeAnnotations(newClassTree, diamondType);
-    return diamondType.getTypeArguments();
   }
 
   /**

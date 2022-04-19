@@ -721,7 +721,7 @@ public class AnnotatedTypes {
       final AnnotatedExecutableType preType,
       boolean inferTypeArgs) {
     // Is the method a generic method?
-    if (elt.getTypeParameters().isEmpty()) {
+    if (elt.getTypeParameters().isEmpty() && !TreeUtils.isDiamondTree(expr)) {
       return Collections.emptyMap();
     }
 
