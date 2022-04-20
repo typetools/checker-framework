@@ -1904,7 +1904,8 @@ This option can also help to keep a Travis CI job alive (since Travis CI
 terminates any job that does not produce output for 10 minutes).
 This does not work if you are using Maven, because with forked compilation,
 the maven-compiler-plugin queues up all the output and then prints it at the end.
-(Also, the maven-compiler-plugin is buggy and sometimes doesn't print any
+(Also, maven-compiler-plugin versions before 3.10.1 are buggy: it sometimes
+doesn't print any
 output if it cannot parse it.)
 % Example of not producing output:
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
@@ -2020,7 +2021,7 @@ The CFG is generated and output, but no dataflow analysis is performed.
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2031,7 +2032,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \begin{smaller}
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2048,7 +2049,7 @@ remove \<--pdf> but add \<--string>. For example (with JDK 8):
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --string
 \end{Verbatim}
 \end{smaller}
