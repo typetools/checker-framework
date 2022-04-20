@@ -15,7 +15,6 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -174,8 +173,6 @@ public class InvocationTypeInference {
     return result;
   }
 
-  Set<ExpressionTree> treesInInference = new HashSet<>();
-
   /**
    * Perform invocation type inference on {@code invocation}. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
@@ -183,7 +180,6 @@ public class InvocationTypeInference {
    */
   private List<Variable> inferInternal(
       ExpressionTree invocation, InvocationType invocationType, boolean ignoreAnnoFail) {
-    treesInInference.add(invocation);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
