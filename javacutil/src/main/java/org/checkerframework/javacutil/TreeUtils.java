@@ -2020,10 +2020,7 @@ public final class TreeUtils {
    * @return whether or not {@code expression} is a poly expression
    */
   public static boolean isPolyExpression(ExpressionTree expression) {
-    if (expression instanceof JCTree.JCExpression) {
-      return ((JCTree.JCExpression) expression).isPoly();
-    }
-    return false;
+    return !isStandaloneExpression(expression);
   }
 
   /**

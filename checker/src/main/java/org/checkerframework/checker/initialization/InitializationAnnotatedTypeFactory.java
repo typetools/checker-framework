@@ -792,6 +792,9 @@ public abstract class InitializationAnnotatedTypeFactory<
       boolean allInitialized = true;
       Type type = ((JCTree) node).type;
       for (ExpressionTree a : node.getArguments()) {
+        if (!TreeUtils.isStandaloneExpression(a)) {
+          continue;
+        }
         boolean old = shouldCache;
         shouldCache = false;
         final AnnotatedTypeMirror t = getAnnotatedType(a);
