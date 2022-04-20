@@ -306,32 +306,28 @@ public class InferenceFactory {
    */
   public static ExecutableType getTypeOfMethodAdaptedToUse(
       ExpressionTree expressionTree, Java8InferenceContext context) {
-    if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
-      if (!TreeUtils.isDiamondTree(expressionTree)) {
-        NewClassTree newClassTree = (NewClassTree) expressionTree;
-        ExecutableType type = (ExecutableType) TreeUtils.elementFromUse(expressionTree).asType();
-        List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
-        if (!typeArgs.isEmpty()) {
-          ExecutableElement e = TreeUtils.constructor(newClassTree);
-          List<? extends TypeParameterElement> typeParams =
-              ElementUtils.enclosingTypeElement(e).getTypeParameters();
-          List<TypeVariable> typeVariables = new ArrayList<>();
-          for (TypeParameterElement typeParam : typeParams) {
-            typeVariables.add((TypeVariable) typeParam.asType());
-          }
-
-          List<TypeMirror> args = new ArrayList<>();
-          for (Tree arg : typeArgs) {
-            args.add(TreeUtils.typeOf(arg));
-          }
-
-          return (ExecutableType) TypesUtils.substitute(type, typeVariables, args, context.env);
+    assert expressionTree.getKind() == Kind.NEW_CLASS
+        || expressionTree.getKind() == Kind.METHOD_INVOCATION;
+    if (expressionTree.getKind() == Tree.Kind.NEW_CLASS
+        && !TreeUtils.isDiamondTree(expressionTree)) {
+      NewClassTree newClassTree = (NewClassTree) expressionTree;
+      ExecutableType type = (ExecutableType) TreeUtils.elementFromUse(expressionTree).asType();
+      List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
+      if (!typeArgs.isEmpty()) {
+        ExecutableElement e = TreeUtils.constructor(newClassTree);
+        List<? extends TypeParameterElement> typeParams =
+            ElementUtils.enclosingTypeElement(e).getTypeParameters();
+        List<TypeVariable> typeVariables = new ArrayList<>();
+        for (TypeParameterElement typeParam : typeParams) {
+          typeVariables.add((TypeVariable) typeParam.asType());
         }
-
-        return type;
+        List<TypeMirror> args = new ArrayList<>();
+        for (Tree arg : typeArgs) {
+          args.add(TreeUtils.typeOf(arg));
+        }
+        return (ExecutableType) TypesUtils.substitute(type, typeVariables, args, context.env);
       }
-    } else if (expressionTree.getKind() != Tree.Kind.METHOD_INVOCATION) {
-      return null;
+      return type;
     }
     ExecutableElement ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
     ExecutableType executableType;
@@ -361,7 +357,12 @@ public class InferenceFactory {
     } else {
       executableType = (ExecutableType) ele.asType();
     }
-    List<? extends Tree> typeArgs = ((MethodInvocationTree) expressionTree).getTypeArguments();
+    List<? extends Tree> typeArgs;
+    if (expressionTree.getKind() == Kind.METHOD_INVOCATION) {
+      typeArgs = ((MethodInvocationTree) expressionTree).getTypeArguments();
+    } else {
+      typeArgs = ((NewClassTree) expressionTree).getTypeArguments();
+    }
     if (typeArgs.isEmpty()) {
       return executableType;
     }
