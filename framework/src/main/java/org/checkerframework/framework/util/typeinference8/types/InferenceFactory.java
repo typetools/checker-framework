@@ -285,6 +285,13 @@ public class InferenceFactory {
     Tree receiverTree;
     if (tree.getKind() == Tree.Kind.NEW_CLASS) {
       receiverTree = ((NewClassTree) tree).getEnclosingExpression();
+      if (receiverTree == null && ((NewClassTree) tree).getClassBody() == null) {
+        TypeMirror t = TreeUtils.constructor((NewClassTree) tree).getReceiverType();
+        if (t instanceof DeclaredType) {
+          return (DeclaredType) t;
+        }
+        return null;
+      }
     } else {
       receiverTree = TreeUtils.getReceiverTree(tree);
     }
@@ -314,14 +321,15 @@ public class InferenceFactory {
     // First adapt to receiver
     if (!ElementUtils.isStatic(ele)) {
       DeclaredType receiverType = getReceiverType(expressionTree);
-      if (receiverType == null) {
+      if (receiverType == null && expressionTree.getKind() == Kind.METHOD_INVOCATION) {
         receiverType = context.enclosingType;
-      } else {
+      } else if (receiverType != null) {
         receiverType = (DeclaredType) context.types.capture((Type) receiverType);
       }
 
-      while (context.types.asSuper((Type) receiverType, (Symbol) ele.getEnclosingElement())
-          == null) {
+      while (receiverType != null
+          && context.types.asSuper((Type) receiverType, (Symbol) ele.getEnclosingElement())
+              == null) {
         TypeMirror enclosing = receiverType.getEnclosingType();
         if (enclosing == null || enclosing.getKind() != TypeKind.DECLARED) {
           if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
@@ -332,6 +340,9 @@ public class InferenceFactory {
           }
         }
         receiverType = (DeclaredType) enclosing;
+      }
+      if (receiverType == null) {
+        executableType = (ExecutableType) ele.asType();
       }
       if (executableType == null) {
         javax.lang.model.util.Types types = context.env.getTypeUtils();
