@@ -584,14 +584,9 @@ public class InvocationTypeInference {
    */
   private boolean shouldTryInference(TreePath path) {
     if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+      // TODO: Delete this method.
       return false;
     }
-    if (path.getLeaf().getKind() == Tree.Kind.METHOD_INVOCATION) {
-      MethodInvocationTree tree = (MethodInvocationTree) path.getLeaf();
-      ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-      return !TreeUtils.isPolyExpression(receiver);
-    }
-
     return true;
   }
 
