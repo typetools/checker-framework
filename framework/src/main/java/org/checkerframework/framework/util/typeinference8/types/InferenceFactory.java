@@ -106,11 +106,11 @@ public class InferenceFactory {
         AnnotatedExecutableType methodType =
             factory.methodFromUseNoTypeArgInfere(methodInvocation).executableType;
 
-        AnnotatedTypeMirror ex =
+        AnnotatedTypeMirror paramType =
             assignedToExecutable(
                 path, methodInvocation, methodInvocation.getArguments(), methodType);
         return new ProperType(
-            ex,
+            paramType,
             assignedToExecutable(path, methodInvocation, methodInvocation.getArguments(), context),
             context);
       case NEW_CLASS:
@@ -334,31 +334,49 @@ public class InferenceFactory {
       return null;
     }
     ExecutableElement ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
-
-    if (ElementUtils.isStatic(ele)) {
-      return (ExecutableType) ele.asType();
-    }
-    DeclaredType receiverType = getReceiverType(expressionTree);
-    if (receiverType == null) {
-      receiverType = context.enclosingType;
-    } else {
-      receiverType = (DeclaredType) context.types.capture((Type) receiverType);
-    }
-
-    while (context.types.asSuper((Type) receiverType, (Symbol) ele.getEnclosingElement()) == null) {
-      TypeMirror enclosing = receiverType.getEnclosingType();
-      if (enclosing == null || enclosing.getKind() != TypeKind.DECLARED) {
-        if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
-          // No receiver for the constructor.
-          return (ExecutableType) ele.asType();
-        } else {
-          throw new BugInCF("Method not found");
-        }
+    ExecutableType executableType;
+    if (!ElementUtils.isStatic(ele)) {
+      DeclaredType receiverType = getReceiverType(expressionTree);
+      if (receiverType == null) {
+        receiverType = context.enclosingType;
+      } else {
+        receiverType = (DeclaredType) context.types.capture((Type) receiverType);
       }
-      receiverType = (DeclaredType) enclosing;
+
+      while (context.types.asSuper((Type) receiverType, (Symbol) ele.getEnclosingElement())
+          == null) {
+        TypeMirror enclosing = receiverType.getEnclosingType();
+        if (enclosing == null || enclosing.getKind() != TypeKind.DECLARED) {
+          if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
+            // No receiver for the constructor.
+            return (ExecutableType) ele.asType();
+          } else {
+            throw new BugInCF("Method not found");
+          }
+        }
+        receiverType = (DeclaredType) enclosing;
+      }
+      javax.lang.model.util.Types types = context.env.getTypeUtils();
+      executableType = (ExecutableType) types.asMemberOf(receiverType, ele);
+    } else {
+      executableType = (ExecutableType) ele.asType();
     }
-    javax.lang.model.util.Types types = context.env.getTypeUtils();
-    return (ExecutableType) types.asMemberOf(receiverType, ele);
+    List<? extends Tree> typeArgs = ((MethodInvocationTree) expressionTree).getTypeArguments();
+    if (typeArgs.isEmpty()) {
+      return executableType;
+    }
+    List<? extends TypeParameterElement> typeParams = ele.getTypeParameters();
+    List<TypeVariable> typeVariables = new ArrayList<>();
+    for (TypeParameterElement typeParam : typeParams) {
+      typeVariables.add((TypeVariable) typeParam.asType());
+    }
+
+    List<TypeMirror> args = new ArrayList<>();
+    for (Tree arg : typeArgs) {
+      args.add(TreeUtils.typeOf(arg));
+    }
+
+    return (ExecutableType) TypesUtils.substitute(executableType, typeVariables, args, context.env);
   }
 
   public static TypeMirror lub(

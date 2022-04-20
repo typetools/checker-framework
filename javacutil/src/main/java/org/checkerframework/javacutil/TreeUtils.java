@@ -605,7 +605,7 @@ public final class TreeUtils {
     }
   }
 
-  public static final List<? extends Tree> getTypeArgumentsToNewClassTree(Tree tree) {
+  public static List<? extends Tree> getTypeArgumentsToNewClassTree(Tree tree) {
     switch (tree.getKind()) {
       case ANNOTATED_TYPE:
         return getTypeArgumentsToNewClassTree(((AnnotatedTypeTree) tree).getUnderlyingType());
