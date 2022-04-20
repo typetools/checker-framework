@@ -308,29 +308,10 @@ public class InferenceFactory {
       ExpressionTree expressionTree, Java8InferenceContext context) {
     assert expressionTree.getKind() == Kind.NEW_CLASS
         || expressionTree.getKind() == Kind.METHOD_INVOCATION;
-    if (expressionTree.getKind() == Tree.Kind.NEW_CLASS
-        && !TreeUtils.isDiamondTree(expressionTree)) {
-      NewClassTree newClassTree = (NewClassTree) expressionTree;
-      ExecutableType type = (ExecutableType) TreeUtils.elementFromUse(expressionTree).asType();
-      List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
-      if (!typeArgs.isEmpty()) {
-        ExecutableElement e = TreeUtils.constructor(newClassTree);
-        List<? extends TypeParameterElement> typeParams =
-            ElementUtils.enclosingTypeElement(e).getTypeParameters();
-        List<TypeVariable> typeVariables = new ArrayList<>();
-        for (TypeParameterElement typeParam : typeParams) {
-          typeVariables.add((TypeVariable) typeParam.asType());
-        }
-        List<TypeMirror> args = new ArrayList<>();
-        for (Tree arg : typeArgs) {
-          args.add(TreeUtils.typeOf(arg));
-        }
-        return (ExecutableType) TypesUtils.substitute(type, typeVariables, args, context.env);
-      }
-      return type;
-    }
+
     ExecutableElement ele = (ExecutableElement) TreeUtils.elementFromUse(expressionTree);
-    ExecutableType executableType;
+    ExecutableType executableType = null;
+    // First adapt to receiver
     if (!ElementUtils.isStatic(ele)) {
       DeclaredType receiverType = getReceiverType(expressionTree);
       if (receiverType == null) {
@@ -345,18 +326,44 @@ public class InferenceFactory {
         if (enclosing == null || enclosing.getKind() != TypeKind.DECLARED) {
           if (expressionTree.getKind() == Tree.Kind.NEW_CLASS) {
             // No receiver for the constructor.
-            return (ExecutableType) ele.asType();
+            executableType = (ExecutableType) ele.asType();
           } else {
             throw new BugInCF("Method not found");
           }
         }
         receiverType = (DeclaredType) enclosing;
       }
-      javax.lang.model.util.Types types = context.env.getTypeUtils();
-      executableType = (ExecutableType) types.asMemberOf(receiverType, ele);
+      if (executableType == null) {
+        javax.lang.model.util.Types types = context.env.getTypeUtils();
+        executableType = (ExecutableType) types.asMemberOf(receiverType, ele);
+      }
     } else {
-      executableType = (ExecutableType) ele.asType();
+      executableType = (ExecutableType) TreeUtils.elementFromUse(expressionTree).asType();
     }
+
+    // Adapt to class type arguments.
+    if (expressionTree.getKind() == Tree.Kind.NEW_CLASS
+        && !TreeUtils.isDiamondTree(expressionTree)) {
+      NewClassTree newClassTree = (NewClassTree) expressionTree;
+      List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
+      if (!typeArgs.isEmpty()) {
+        ExecutableElement e = TreeUtils.constructor(newClassTree);
+        List<? extends TypeParameterElement> typeParams =
+            ElementUtils.enclosingTypeElement(e).getTypeParameters();
+        List<TypeVariable> typeVariables = new ArrayList<>();
+        for (TypeParameterElement typeParam : typeParams) {
+          typeVariables.add((TypeVariable) typeParam.asType());
+        }
+        List<TypeMirror> args = new ArrayList<>();
+        for (Tree arg : typeArgs) {
+          args.add(TreeUtils.typeOf(arg));
+        }
+        executableType =
+            (ExecutableType)
+                TypesUtils.substitute(executableType, typeVariables, args, context.env);
+      }
+    }
+    // Adapt to explicit method type arguments.
     List<? extends Tree> typeArgs;
     if (expressionTree.getKind() == Kind.METHOD_INVOCATION) {
       typeArgs = ((MethodInvocationTree) expressionTree).getTypeArguments();
