@@ -953,8 +953,8 @@ public class AnnotatedTypes {
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
    * @param args the arguments to the method or constructor invocation
-   * @return a list of the types that the invocation arguments need to be subtype of that is the
-   *     same length as {@code args}
+   * @return a list of the types that the invocation arguments need to be subtype of; has the same
+   *     length as {@code args}
    */
   public static List<AnnotatedTypeMirror> adaptParameters(
       AnnotatedTypeFactory atypeFactory,
