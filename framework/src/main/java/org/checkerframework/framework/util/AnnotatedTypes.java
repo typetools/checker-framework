@@ -960,6 +960,7 @@ public class AnnotatedTypes {
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+
     // Handle anonymous constructors that extend a class with an enclosing type.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
         && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {

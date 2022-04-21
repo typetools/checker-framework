@@ -371,15 +371,15 @@ public final class TreeUtils {
       return constructor(newClassTree);
     }
     JCNewClass jcNewClass = (JCNewClass) newClassTree;
-    // anonymous constructor bodies should contain exactly one statement
+    // Anonymous constructor bodies should contain exactly one statement
     // in the form:
     //    super(arg1, ...)
     // or
     //    o.super(arg1, ...)
     //
-    // which is a method invocation of the super constructor
+    // which is a method invocation of the super constructor.
 
-    // the method call is guaranteed to return nonnull
+    // The method call is guaranteed to return nonnull.
     JCMethodDecl anonConstructor =
         (JCMethodDecl) TreeInfo.declarationFor(jcNewClass.constructor, jcNewClass);
     assert anonConstructor != null;
