@@ -1902,11 +1902,12 @@ progress.
 
 This option can also help to keep a Travis CI job alive (since Travis CI
 terminates any job that does not produce output for 10 minutes).
-This does not work if you are using Maven, because with forked compilation,
-the maven-compiler-plugin queues up all the output and then prints it at the end.
+This does not work if you are using Maven, because it does not print
+the full output of the Java compiler (see \url{https://github.com/codehaus-plexus/plexus-compiler/issues/149}).
+% Also, with forked compilation,
+% the maven-compiler-plugin queues up all the output and then prints it at the end.
 (Also, maven-compiler-plugin versions before 3.10.1 are buggy: it sometimes
-doesn't print any
-output if it cannot parse it.)
+doesn't print any output if it cannot parse it.)
 % Example of not producing output:
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
