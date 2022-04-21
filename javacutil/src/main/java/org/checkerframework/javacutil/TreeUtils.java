@@ -354,32 +354,27 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the super constructor invoked by {@code newClassTree}.
-   *
-   * <p>If {@code newClassTree} is an anonymous class, then this method returns the super
-   * constructor invoked in the body of the anonymous constructor.
-   *
-   * <p>If {@code newClassTree} is not an anonymous class, then this method returns {@link
-   * #constructor(NewClassTree)}.
+   * Returns the constructor invoked by {@code newClassTree} unless {@code newClassTree} is creating
+   * an anonymous class. In which case, the super constructor is returned.
    *
    * @param newClassTree the constructor invocation
    * @return the super constructor invoked in the body of the anonymous constructor; or {@link
-   *     #constructor(NewClassTree)} if {@code newClassTree} is not an anonymous class
+   *     #constructor(NewClassTree)} if {@code newClassTree} is not creating an anonymous class
    */
   public static ExecutableElement getSuperConstructor(NewClassTree newClassTree) {
     if (newClassTree.getClassBody() == null) {
       return constructor(newClassTree);
     }
     JCNewClass jcNewClass = (JCNewClass) newClassTree;
-    // anonymous constructor bodies should contain exactly one statement
-    // in the form:
+    // Anonymous constructor bodies, which are always synthetic, contain exactly one statement in
+    // the form:
     //    super(arg1, ...)
     // or
     //    o.super(arg1, ...)
     //
-    // which is a method invocation of the super constructor
+    // which is a method invocation of the super constructor.
 
-    // the method call is guaranteed to return nonnull
+    // The method call is guaranteed to return nonnull.
     JCMethodDecl anonConstructor =
         (JCMethodDecl) TreeInfo.declarationFor(jcNewClass.constructor, jcNewClass);
     assert anonConstructor != null;
@@ -397,9 +392,6 @@ public final class TreeUtils {
    * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
    */
   public static ExecutableElement constructor(NewClassTree tree) {
-    if (!(tree instanceof JCNewClass)) {
-      throw new BugInCF("TreeUtils.constructor: not a javac internal tree");
-    }
     return (ExecutableElement) ((JCNewClass) tree).constructor;
   }
 

@@ -1031,17 +1031,19 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the superclass or interface of the given class. Returns null if there is not one.
+   * Returns the superclass the given type. If there is no superclass the first interface returned
+   * by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a superclass
+   * nor a superinterface, then null is returned.
    *
    * @param type a type
    * @param types type utilities
-   * @return the superclass of the given class, or null
+   * @return the superclass or super interface of the given type, or null
    */
   public static @Nullable DeclaredType getSuperClassOrInterface(TypeMirror type, Types types) {
     List<? extends TypeMirror> superTypes = types.directSupertypes(type);
     for (TypeMirror t : superTypes) {
-      if (t instanceof ClassType) {
-        return (ClassType) t;
+      if (t.getKind() == TypeKind.DECLARED) {
+        return (DeclaredType) t;
       }
     }
     return null;
