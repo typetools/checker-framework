@@ -390,30 +390,41 @@ public abstract class CFAbstractTransfer<
     // the declared type instead of a refined type. Issue a warning to alert users?
     private void addInitialFieldValues(S store, ClassTree classTree, MethodTree methodTree) {
         boolean isConstructor = TreeUtils.isConstructor(methodTree);
+        boolean isStaticMethod =
+                ElementUtils.isStatic(TreeUtils.elementFromDeclaration(methodTree));
         TypeElement classEle = TreeUtils.elementFromDeclaration(classTree);
         for (FieldInitialValue<V> fieldInitialValue : analysis.getFieldInitialValues()) {
             VariableElement varEle = fieldInitialValue.fieldDecl.getField();
+            boolean isStaticField = ElementUtils.isStatic(varEle);
+            if (isStaticMethod && !isStaticField) {
+                continue;
+            }
             // Insert the value from the initializer of private final fields.
             if (fieldInitialValue.initializer != null
                     // && varEle.getModifiers().contains(Modifier.PRIVATE)
                     && ElementUtils.isFinal(varEle)
                     && analysis.atypeFactory.isImmutable(ElementUtils.getType(varEle))) {
                 store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.initializer);
+                // The type from the initializer is always more specific than (or equal to) the
+                // declared type of the field.
+                // So, if there is an initializer, there is no point in inserting the declared type
+                // below.
+                continue;
             }
 
+            boolean isFieldOfCurrentClass = varEle.getEnclosingElement().equals(classEle);
             // Maybe insert the declared type:
             if (!isConstructor) {
                 // If it's not a constructor, use the declared type if the receiver of the method is
                 // fully initialized.
                 boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
-                if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
+                if (isInitializedReceiver && isFieldOfCurrentClass) {
                     store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
                 }
             } else {
                 // If it is a constructor, then only use the declared type if the field has been
                 // initialized.
-                if (fieldInitialValue.initializer != null
-                        && varEle.getEnclosingElement().equals(classEle)) {
+                if (fieldInitialValue.initializer != null && isFieldOfCurrentClass) {
                     store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
                 }
             }
