@@ -144,6 +144,8 @@ checker/tests/nullness-temp/*.class
 checker/tests/nullness-temp/*.java
 checker/tests/nullness/generics/*.class
 
+dataflow/tests/busy-expression/Out.txt
+dataflow/tests/busy-expression/*.class
 dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class
 dataflow/tests/live-variable/Out.txt
