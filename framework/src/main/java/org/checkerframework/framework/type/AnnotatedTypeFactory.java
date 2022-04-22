@@ -25,7 +25,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.util.Options;
 import java.io.BufferedReader;
 import java.io.File;
@@ -2539,19 +2538,45 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     ExecutableElement ctor = TreeUtils.constructor(tree);
     AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
-    if (TreeUtils.hasSyntheticArgument(tree)) {
-      AnnotatedExecutableType t =
-          (AnnotatedExecutableType) getAnnotatedType(((JCNewClass) tree).constructor);
-      List<AnnotatedTypeMirror> p = new ArrayList<>(con.getParameterTypes().size() + 1);
-      p.add(t.getParameterTypes().get(0));
-      p.addAll(1, con.getParameterTypes());
-      t.setParameterTypes(p);
-      con = t;
-    }
-
     constructorFromUsePreSubstitution(tree, con);
 
-    con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
+    if (tree.getClassBody() != null) {
+      // Because the anonymous constructor can't have explicit annotations on its parameters, they
+      // are copied from the super constructor invoked in the anonymous constructor. To do this:
+      // 1. get unsubstituted type of the super constructor.
+      // 2. adapt it to this call site.
+      // 3. copy the parameters to the anonymous constructor, `con`.
+      // 4. copy annotations on the return type to `con`.
+      AnnotatedExecutableType superCon = getAnnotatedType(TreeUtils.getSuperConstructor(tree));
+      constructorFromUsePreSubstitution(tree, superCon);
+      superCon = AnnotatedTypes.asMemberOf(types, this, type, superCon.getElement(), superCon);
+      if (superCon.getParameterTypes().size() == con.getParameterTypes().size()) {
+        con.setParameterTypes(superCon.getParameterTypes());
+      } else {
+        // If the super class of the anonymous class has an enclosing type, then it is the first
+        // parameter of the anonymous constructor. For example,
+        // class Outer { class Inner {} }
+        //  new Inner(){};
+        // Then javac creates the following constructor:
+        //  (.Outer x0) {
+        //   x0.super();
+        //   }
+        // So the code below deals with this.
+        List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
+        if (TreeUtils.hasSyntheticArgument(tree)) {
+          p.add(con.getParameterTypes().get(0));
+        } else if (con.receiverType != null) {
+          p.add(con.receiverType);
+        } else {
+          p.add(con.paramTypes.get(0));
+        }
+        p.addAll(1, superCon.getParameterTypes());
+        con.setParameterTypes(p);
+      }
+      con.getReturnType().replaceAnnotations(superCon.getReturnType().getAnnotations());
+    } else {
+      con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
+    }
 
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
         AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
