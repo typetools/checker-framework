@@ -3,6 +3,7 @@ package org.checkerframework.framework.test;
 import java.io.File;
 import java.util.List;
 import javax.annotation.processing.AbstractProcessor;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.junit.Assert;
 
 /**
@@ -46,7 +47,9 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
    * @param endswith a string that the absolute path of the target file that should not be
    *     typechecked ends with. Usually, this takes the form "all-systems/ProblematicFile.java".
    */
-  protected void doNotTypecheck(String endswith) {
+  protected void doNotTypecheck(
+          @UnderInitialization(CheckerFrameworkPerDirectoryTest.class) CheckerFrameworkWPIPerDirectoryTest this,
+      String endswith) {
     int removeIndex = -1;
     for (int i = 0; i < testFiles.size(); i++) {
       File f = testFiles.get(i);
