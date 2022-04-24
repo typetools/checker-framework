@@ -883,26 +883,6 @@ qualifier for the Nullness type system and is defined as follows:
 \end{Verbatim}
 
 
-
-
-To \emph{define} a polymorphic qualifier, mark the definition with
-\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
-\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
-qualifier for the Nullness type system:
-
-\begin{Verbatim}
-  import java.lang.annotation.ElementType;
-  import java.lang.annotation.Target;
-  import org.checkerframework.framework.qual.PolymorphicQualifier;
-
-  @PolymorphicQualifier
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface PolyNull {}
-\end{Verbatim}
-
-
-
-
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
 
 Class qualifier parameters permit you to supply a type qualifier (only,
