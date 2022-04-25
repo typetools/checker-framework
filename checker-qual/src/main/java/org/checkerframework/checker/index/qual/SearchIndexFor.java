@@ -12,8 +12,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * The annotated expression evaluates to an integer whose length is between {@code -a.length - 1}
  * and {@code a.length - 1}, inclusive, for all sequences {@code a} listed in the annotation.
  *
- * <p>This is the return type of {@link java.util.Arrays#binarySearch(Object[],Object) {@code
- * Arrays.binarySearch}} in the JDK.
+ * <p>This is the return type of {@link java.util.Arrays#binarySearch(Object[],Object)
+ * Arrays.binarySearch} in the JDK.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 public @interface SearchIndexFor {
   /**
    * Sequences for which the annotated expression has the type of the result of a call to {@link
-   * java.util.Arrays#binarySearch(Object[],Object) {@code Arrays.binarySearch}}.
+   * java.util.Arrays#binarySearch(Object[],Object) Arrays.binarySearch}.
    */
   @JavaExpression
   public String[] value();
