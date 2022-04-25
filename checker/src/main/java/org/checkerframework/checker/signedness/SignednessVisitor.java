@@ -119,6 +119,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case EQUAL_TO:
       case NOT_EQUAL_TO:
+        if (!atypeFactory.maybeIntegral(leftOpType) || !atypeFactory.maybeIntegral(rightOpType)) {
+          break;
+        }
         if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
           checker.reportError(node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
         } else if (leftOpType.hasAnnotation(Signed.class)
