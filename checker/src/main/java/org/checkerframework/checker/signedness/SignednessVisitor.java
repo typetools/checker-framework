@@ -3,12 +3,16 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.interning.InterningVisitor;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -156,6 +160,59 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         break;
     }
     return super.visitBinary(node, p);
+  }
+
+  // Ensure that method annotations are not written on methods they don't apply to.
+  // Copied from InterningVisitor
+  @Override
+  public Void visitMethod(MethodTree node, Void p) {
+    ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
+    boolean hasEqualsMethodAnno =
+        atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
+    int params = methElt.getParameters().size();
+    if (hasEqualsMethodAnno && !(params == 1 || params == 2)) {
+      checker.reportError(
+          node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
+    }
+
+    return super.visitMethod(node, p);
+  }
+
+  /**
+   * If lint option "dotequals" is specified, warn if the .equals method is used where reference
+   * equality is safe.
+   */
+  @Override
+  public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+    ExecutableElement methElt = TreeUtils.elementFromUse(node);
+    boolean hasEqualsMethodAnno =
+        atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
+    if (hasEqualsMethodAnno || InterningVisitor.isInvocationOfEquals(node)) {
+      int params = methElt.getParameters().size();
+      AnnotatedTypeMirror leftOpType;
+      AnnotatedTypeMirror rightOpType;
+      if (params == 1) {
+        leftOpType = atypeFactory.getReceiverType(node);
+        rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+      } else if (params == 2) {
+        leftOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+        rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(1));
+      } else {
+        checker.reportError(
+            node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
+      }
+      if (!atypeFactory.maybeIntegral(leftOpType) || !atypeFactory.maybeIntegral(rightOpType)) {
+        // nothing to do
+      }
+      if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
+        checker.reportError(node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
+      } else if (leftOpType.hasAnnotation(Signed.class)
+          && rightOpType.hasAnnotation(Unsigned.class)) {
+        checker.reportError(node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
+      }
+    }
+
+    return super.visitMethodInvocation(node, p);
   }
 
   /**
