@@ -505,7 +505,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
         List<? extends VariableElement> methodParams = method.getParameters();
         List<AnnotatedTypeMirror> paramTypes =
-            AnnotatedTypes.expandVarArgsParameters(
+            AnnotatedTypes.adaptParameters(
                 atypeFactory, invokedMethod, invocationTree.getArguments());
         for (int i = 0; i < args.size(); ++i) {
           if (args.get(i).getKind() == Tree.Kind.NEW_CLASS

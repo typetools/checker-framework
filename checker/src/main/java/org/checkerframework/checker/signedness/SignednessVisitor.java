@@ -123,6 +123,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case EQUAL_TO:
       case NOT_EQUAL_TO:
+        if (!atypeFactory.maybeIntegral(leftOpType) || !atypeFactory.maybeIntegral(rightOpType)) {
+          break;
+        }
         if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
           checker.reportError(node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
         } else if (leftOpType.hasAnnotation(Signed.class)
@@ -338,7 +341,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
   @Override
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-    if (atypeFactory.isNotNumberOrChar(castType)) {
+    if (!atypeFactory.maybeIntegral(castType)) {
       // If the cast is not a number or a char, then it is legal.
       return true;
     }
