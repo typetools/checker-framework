@@ -1007,7 +1007,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (suggestPureMethods && !TreeUtils.isSynthetic(node)) {
       // Issue a warning if the method is pure, but not annotated as such.
       EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
-      additionalKinds.removeAll(kinds);
+      if (!(infer && inferPurity)) {
+        // During WPI, propagate all purity kinds, even those that are already
+        // present (because they were inferred in a previous WPI round).
+        additionalKinds.removeAll(kinds);
+      }
       if (TreeUtils.isConstructor(node)) {
         additionalKinds.remove(Pure.Kind.DETERMINISTIC);
       }
@@ -3219,7 +3223,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedExecutableType constructor,
       NewClassTree newClassTree) {
     // Only check the primary annotations, the type arguments are checked elsewhere.
-    Set<AnnotationMirror> explicitAnnos = atypeFactory.fromNewClass(newClassTree).getAnnotations();
+    Set<AnnotationMirror> explicitAnnos = atypeFactory.getExplicitNewClassAnnos(newClassTree);
     if (explicitAnnos.isEmpty()) {
       return;
     }

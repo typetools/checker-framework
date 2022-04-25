@@ -81,6 +81,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
       AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
+  /** The Serializable type mirror. */
+  private TypeMirror serializableTM =
+      elements.getTypeElement(Serializable.class.getCanonicalName()).asType();
+  /** The Comparable type mirror. */
+  private TypeMirror comparableTM =
+      elements.getTypeElement(Comparable.class.getCanonicalName()).asType();
+  /** The Number type mirror. */
+  private TypeMirror numberTM = elements.getTypeElement(Number.class.getCanonicalName()).asType();
+
   /**
    * Create a SignednessAnnotatedTypeFactory.
    *
@@ -327,7 +336,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
       if (type.getAnnotations().isEmpty()) {
-        if (isNotNumberOrChar(type)) {
+        if (!maybeIntegral(type)) {
           AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
           if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
               && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
@@ -340,33 +349,42 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns true if {@code type} underlying type isn't a number or a char nor is it a super type of
-   * one.
+   * Returns true if {@code type}'s underlying type might be integral: it is a number, char, or a
+   * supertype of them.
    *
    * @param type a type
-   * @return true if {@code type} underlying type isn't a number or a char nor is it a super type of
-   *     one
+   * @return true if {@code type}'s underlying type might be integral
    */
-  public boolean isNotNumberOrChar(AnnotatedTypeMirror type) {
+  public boolean maybeIntegral(AnnotatedTypeMirror type) {
 
-    TypeMirror serializableTM =
-        elements.getTypeElement(Serializable.class.getCanonicalName()).asType();
-    TypeMirror comparableTM = elements.getTypeElement(Comparable.class.getCanonicalName()).asType();
-    TypeMirror numberTM = elements.getTypeElement(Number.class.getCanonicalName()).asType();
-    if (type.getKind().isPrimitive()) {
-      return false;
+    TypeKind kind = type.getKind();
+
+    switch (kind) {
+      case BOOLEAN:
+        return false;
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case CHAR:
+        return true;
+      case FLOAT:
+      case DOUBLE:
+        return false;
+
+      case DECLARED:
+      case TYPEVAR:
+      case WILDCARD:
+        TypeMirror erasedType = types.erasure(type.getUnderlyingType());
+        return (TypesUtils.isBoxedPrimitive(erasedType)
+            || TypesUtils.isObject(erasedType)
+            || TypesUtils.isErasedSubtype(numberTM, erasedType, types)
+            || TypesUtils.isErasedSubtype(serializableTM, erasedType, types)
+            || TypesUtils.isErasedSubtype(comparableTM, erasedType, types));
+
+      default:
+        return false;
     }
-    if (type.getKind() == TypeKind.DECLARED
-        || type.getKind() == TypeKind.TYPEVAR
-        || type.getKind() == TypeKind.WILDCARD) {
-      TypeMirror erasedType = types.erasure(type.getUnderlyingType());
-      return !(TypesUtils.isBoxedPrimitive(erasedType)
-          || TypesUtils.isObject(erasedType)
-          || TypesUtils.isErasedSubtype(numberTM, erasedType, types)
-          || TypesUtils.isErasedSubtype(serializableTM, erasedType, types)
-          || TypesUtils.isErasedSubtype(comparableTM, erasedType, types));
-    }
-    return true;
   }
 
   @Override

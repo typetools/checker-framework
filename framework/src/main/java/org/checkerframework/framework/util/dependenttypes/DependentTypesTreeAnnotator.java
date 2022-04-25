@@ -4,7 +4,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.Element;
@@ -40,12 +39,6 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
   public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror annotatedType) {
     helper.atExpression(annotatedType, node);
     return super.visitNewArray(node, annotatedType);
-  }
-
-  @Override
-  public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror annotatedType) {
-    helper.atExpression(annotatedType, node);
-    return super.visitNewClass(node, annotatedType);
   }
 
   @Override
