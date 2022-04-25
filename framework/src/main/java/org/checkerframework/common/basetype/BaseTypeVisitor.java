@@ -1935,6 +1935,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitNewClass(node, p);
     }
 
+    ParameterizedExecutableType preI = atypeFactory.constructorFromUse(node, false);
+    if (!preI.executableType.getElement().getTypeParameters().isEmpty()
+        || TreeUtils.isDiamondTree(node)) {
+      Map<TypeVariable, AnnotatedTypeMirror> args =
+          atypeFactory
+              .getTypeArgumentInference()
+              .inferNew(atypeFactory, node, preI.executableType, getCurrentPath(), false);
+      if (args == null || args.isEmpty()) {
+        checker.reportError(
+            node, "type.arguments.not.inferred", preI.executableType.getElement().getSimpleName());
+        return null;
+      }
+    }
+
     ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(node);
     AnnotatedExecutableType constructorType = fromUse.executableType;
     List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;

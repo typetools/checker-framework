@@ -21,6 +21,8 @@ public class Issue1705 {
   }
 
   void test(@Untainted Issue1705 a) {
+    // TODO: Poly qualifiers and type argument inference should work together.
+    // :: error: (assignment)
     @Untainted Object z = a.to(empty()).doOnComplete();
   }
 }
