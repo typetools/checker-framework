@@ -2533,7 +2533,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     (inferred) type arguments
    */
   public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
-    AnnotatedTypeMirror type = fromNewClass(tree);
+
+    // Get the annotations written on the new class tree.
+    AnnotatedDeclaredType type =
+        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
+    if (!TreeUtils.isDiamondTree(tree)) {
+      if (tree.getClassBody() == null) {
+        type.setTypeArguments(getExplicitNewClassClassTypeArgs(tree));
+      }
+    } else {
+      // TODO: This should be done at the same time as type argument inference.
+      inferDiamondType(type, tree);
+    }
+
+    Set<AnnotationMirror> explicitAnnos = getExplicitNewClassAnnos(tree);
+    type.addAnnotations(explicitAnnos);
+
+    // Get the enclosing type of the constructor, if one exists.
+    // this.new InnerClass()
+    AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(tree);
+    type.setEnclosingType(enclosingType);
+
+    // Add computed annotations to the type.
     addComputedTypeAnnotations(tree, type);
 
     ExecutableElement ctor = TreeUtils.constructor(tree);
@@ -2593,8 +2614,119 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     stubTypes.injectRecordComponentType(types, ctor, con);
-
+    if (enclosingType != null) {
+      // Reset the enclosing type because it can be substituted incorrectly.
+      ((AnnotatedDeclaredType) con.getReturnType()).setEnclosingType(enclosingType);
+    }
     return new ParameterizedExecutableType(con, typeargs);
+  }
+
+  /**
+   * Creates an AnnotatedDeclaredType for a NewClassTree. Only adds explicit annotations, unless
+   * newClassTree has a diamond operator. In that case, the annotations on the type arguments are
+   * inferred using the assignment context and contain defaults.
+   *
+   * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
+   *
+   * @param newClassTree NewClassTree
+   * @return AnnotatedDeclaredType
+   * @deprecated Use {@link #getExplicitNewClassAnnos(NewClassTree)}, {@link
+   *     #getExplicitNewClassClassTypeArgs(NewClassTree)}, or {@link #getAnnotatedType(ClassTree)}
+   *     instead.
+   */
+  @Deprecated // This should be removed when the #979 is fixed and the remain use is removed.
+  public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+    AnnotatedDeclaredType type =
+        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+    if (!TreeUtils.isDiamondTree(newClassTree)) {
+      if (newClassTree.getClassBody() == null) {
+        type.setTypeArguments(getExplicitNewClassClassTypeArgs(newClassTree));
+      }
+    } else {
+      inferDiamondType(type, newClassTree);
+    }
+
+    Set<AnnotationMirror> explicitAnnos = getExplicitNewClassAnnos(newClassTree);
+    // Type may already have explicit dependent type annotations that have not yet been vpa.
+    type.clearPrimaryAnnotations();
+    type.addAnnotations(explicitAnnos);
+    return type;
+  }
+
+  /**
+   * Returns the annotations explicitly written on a NewClassTree.
+   *
+   * <p>{@code new @HERE Class()}
+   *
+   * @param newClassTree a constructor invocation
+   * @return the annotations explicitly written on a NewClassTree
+   */
+  public Set<AnnotationMirror> getExplicitNewClassAnnos(NewClassTree newClassTree) {
+    if (newClassTree.getClassBody() != null) {
+      // In Java 17+, the annotations are on the identifier, so copy them.
+      AnnotatedTypeMirror identifierType = fromTypeTree(newClassTree.getIdentifier());
+      // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in this
+      // location:
+      //   new @HERE Class() {}
+      // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
+      List<? extends AnnotationTree> annoTrees =
+          newClassTree.getClassBody().getModifiers().getAnnotations();
+      // Add the annotations to an AnnotatedTypeMirror removes the annotations that are not
+      // supported by this type system.
+      identifierType.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees));
+      return identifierType.getAnnotations();
+    } else {
+      return fromTypeTree(newClassTree.getIdentifier()).getAnnotations();
+    }
+  }
+
+  /**
+   * Returns the partially-annotated explicit class type arguments of the new class tree. The {@code
+   * AnnotatedTypeMirror} only include the annotations explicitly written on the explict type
+   * arguments. (If {@code newClass} use a diamond operator, this method returns the empty list.)
+   * For example, when called with {@code new MyClass<@HERE String>()} this method would return a
+   * list containing {@code @HERE String}.
+   *
+   * @param newClass a new class tree
+   * @return the partially annotated {@code AnnotatedTypeMirror}s for the (explicit) class type
+   *     arguments of the new class tree
+   */
+  protected List<AnnotatedTypeMirror> getExplicitNewClassClassTypeArgs(NewClassTree newClass) {
+    if (!TreeUtils.isDiamondTree(newClass)) {
+      return ((AnnotatedDeclaredType) fromTypeTree(newClass.getIdentifier())).getTypeArguments();
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Infers type arguments for a diamond.
+   *
+   * @param type a type of a new class tree with a diamond; sideeffected by this method
+   * @param newClassTree new class tree that uses the diamond operator
+   */
+  private void inferDiamondType(AnnotatedDeclaredType type, NewClassTree newClassTree) {
+    assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
+    TreePath p = getPath(newClassTree);
+    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+    if (ctxtype == null) {
+      return;
+    }
+    if (ctxtype.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
+      if (type.getTypeArguments().size() != adctx.getTypeArguments().size()) {
+        return;
+      }
+      // Try to simply take the type arguments from LHS.
+      List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
+      List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
+      for (int i = 0; i < type.getTypeArguments().size(); ++i) {
+        if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
+          // One of the underlying types doesn't match. Give up.
+          return;
+        }
+      }
+      type.setTypeArguments(newArgs);
+    }
   }
 
   /**
@@ -2630,138 +2762,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
     return getMethodReturnType(m);
-  }
-
-  /**
-   * Creates an AnnotatedDeclaredType for a NewClassTree. Only adds explicit annotations, unless
-   * newClassTree has a diamond operator. In that case, the annotations on the type arguments are
-   * inferred using the assignment context and contain defaults.
-   *
-   * <p>Also, fully annotates the enclosing type of the returned declared type.
-   *
-   * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
-   *
-   * @param newClassTree NewClassTree
-   * @return AnnotatedDeclaredType
-   */
-  public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-
-    AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
-
-    // Diamond trees that are not anonymous classes.
-    if (TreeUtils.isDiamondTree(newClassTree) && newClassTree.getClassBody() == null) {
-      AnnotatedDeclaredType type =
-          (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-      if (((com.sun.tools.javac.code.Type) type.underlyingType)
-          .tsym
-          .getTypeParameters()
-          .nonEmpty()) {
-        TreePath p = getPath(newClassTree);
-        AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-        if (ctxtype != null) {
-          fromNewClassContextHelper(type, ctxtype);
-        } else {
-          // give up trying and set to raw.
-          type.setIsUnderlyingTypeRaw();
-        }
-      }
-      AnnotatedDeclaredType fromTypeTree =
-          (AnnotatedDeclaredType) TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
-      type.replaceAnnotations(fromTypeTree.getAnnotations());
-      type.setEnclosingType(enclosingType);
-      return type;
-    } else if (newClassTree.getClassBody() != null) {
-      AnnotatedDeclaredType type =
-          (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-      // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in this
-      // location:
-      //   new @HERE Class() {}
-      // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
-      List<? extends AnnotationTree> annos =
-          newClassTree.getClassBody().getModifiers().getAnnotations();
-      type.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
-
-      // In Java 17+, the annotations are on the identifier, so copy them.
-      AnnotatedDeclaredType identifierType =
-          (AnnotatedDeclaredType) TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
-      type.addAnnotations(identifierType.getAnnotations());
-      type.setEnclosingType(enclosingType);
-      return type;
-    } else {
-      // If newClassTree does not create an anonymous class (or if this is Java 17+),
-      // newClassTree.getIdentifier includes the explicit annotations in this location:
-      //   new @HERE Class()
-      AnnotatedDeclaredType type =
-          (AnnotatedDeclaredType) TypeFromTree.fromTypeTree(this, newClassTree.getIdentifier());
-      type.setEnclosingType(enclosingType);
-      return type;
-    }
-  }
-
-  // This method extracts the ugly hacky parts.
-  // This method should be rewritten and in particular diamonds should be
-  // implemented cleanly.
-  // See Issue 289.
-  private void fromNewClassContextHelper(AnnotatedDeclaredType type, AnnotatedTypeMirror ctxtype) {
-    switch (ctxtype.getKind()) {
-      case DECLARED:
-        AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
-
-        if (type.getTypeArguments().size() == adctx.getTypeArguments().size()) {
-          // Try to simply take the type arguments from LHS.
-          List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
-          List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
-          for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-            if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
-              // One of the underlying types doesn't match. Give up.
-              return;
-            }
-          }
-
-          type.setTypeArguments(newArgs);
-
-          /* It would be nice to call isSubtype for a basic sanity check.
-           * However, the type might not have been completely initialized yet,
-           * so isSubtype might fail.
-           *
-          if (!typeHierarchy.isSubtype(type, ctxtype)) {
-              // Simply taking the newArgs didn't result in a valid subtype.
-              // Give up and simply use the inferred types.
-              type.setTypeArguments(oldArgs);
-          }
-          */
-        } else {
-          // TODO: Find a way to determine annotated type arguments.
-          // Look at what Attr and Resolve are doing and rework this whole method.
-        }
-        break;
-
-      case ARRAY:
-        // This new class is in the initializer of an array.
-        // The array being created can't have a generic component type, so nothing to be done.
-        break;
-      case TYPEVAR:
-        // TODO: this should NOT be necessary.
-        // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree,
-        // Node)
-        // Uses an ExecutableElement, which did not substitute type variables.
-        break;
-      case WILDCARD:
-        // TODO: look at bounds of wildcard and see whether we can improve.
-        break;
-      default:
-        if (ctxtype.getKind().isPrimitive()) {
-          // See Issue 438. Ignore primitive types for diamond inference - a primitive
-          // type is never a suitable context anyway.
-        } else {
-          throw new BugInCF(
-              "AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: "
-                  + ctxtype
-                  + " ("
-                  + ctxtype.getKind()
-                  + ")");
-        }
-    }
   }
 
   /**
@@ -2974,7 +2974,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the types of the two arguments to a binarya operation, accounting for widening and
+   * Returns the types of the two arguments to a binary operation, accounting for widening and
    * unboxing if applicable.
    *
    * @param left the type of the left argument of a binary operation

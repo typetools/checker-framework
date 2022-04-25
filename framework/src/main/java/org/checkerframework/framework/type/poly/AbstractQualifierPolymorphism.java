@@ -227,7 +227,10 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     // instantiationMapping = collector.reduce(instantiationMapping,
     //        collector.visit(factory.getReceiverType(tree), type.getReceiverType()));
 
-    AnnotatedTypeMirror newClassType = atypeFactory.fromNewClass(tree);
+    AnnotatedTypeMirror newClassType = type.getReturnType().deepCopy();
+    newClassType.clearPrimaryAnnotations();
+    newClassType.replaceAnnotations(atypeFactory.getExplicitNewClassAnnos(tree));
+
     instantiationMapping =
         collector.reduce(
             instantiationMapping, mapQualifierToPoly(newClassType, type.getReturnType()));

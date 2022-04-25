@@ -543,10 +543,10 @@ the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipde
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
-regular expression that matches class names (not file names) for which warnings and errors
+regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyUses} command-line option to a
-regular expression that matches class names (not file names) for which warnings and errors
+regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
 
 For example, suppose that you use
@@ -593,10 +593,10 @@ see~\ref{askipuses}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
-regular expression that matches class names (not file names) in whose definition warnings and errors
+regular expression that matches fully-qualified class names (not file names) in whose definition warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyDefs} command-line option to a
-regular expression that matches class names (not file names) whose
+regular expression that matches fully-qualified class names (not file names) whose
 definitions should be type-checked.
 (This is somewhat similar to NullAway's
 \<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
