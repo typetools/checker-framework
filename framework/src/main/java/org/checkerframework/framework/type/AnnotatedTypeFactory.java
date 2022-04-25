@@ -2628,6 +2628,47 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Infer the class type arguments for the diamond operator.
+   *
+   * <p>If {@code newClassTree} is assigned to the same type (not a supertype), then the type
+   * arguments are inferred to be the same as the assignment. Otherwise, the type arguments are
+   * annotated by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * @param newClassTree a diamond new class tree
+   * @return the class type arguments for {@code newClassTree}
+   */
+  @Deprecated
+  public List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
+    assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
+    AnnotatedDeclaredType diamondType =
+        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+
+    TreePath p = getPath(newClassTree);
+    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+    if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
+      if (diamondType.getTypeArguments().size() == adctx.getTypeArguments().size()) {
+        // Try to simply take the type arguments from LHS.
+        List<AnnotatedTypeMirror> oldArgs = diamondType.getTypeArguments();
+        List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
+        boolean useLhs = true;
+        for (int i = 0; i < diamondType.getTypeArguments().size(); ++i) {
+          if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
+            // One of the underlying types doesn't match. Give up.
+            useLhs = false;
+            break;
+          }
+        }
+        if (useLhs) {
+          return newArgs;
+        }
+      }
+    }
+    addComputedTypeAnnotations(newClassTree, diamondType);
+    return diamondType.getTypeArguments();
+  }
+
+  /**
    * Creates an AnnotatedDeclaredType for a NewClassTree. Only adds explicit annotations, unless
    * newClassTree has a diamond operator. In that case, the annotations on the type arguments are
    * inferred using the assignment context and contain defaults.

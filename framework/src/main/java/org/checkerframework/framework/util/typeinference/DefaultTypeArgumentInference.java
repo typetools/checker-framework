@@ -29,6 +29,7 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -60,6 +61,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
@@ -216,6 +218,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       AnnotatedExecutableType methodType) {
     if (methodType == null) {
       return new HashMap<>();
+    }
+    if (TreeUtils.isDiamondTree(expressionTree)) {
+      @SuppressWarnings("deprecation")
+      List<AnnotatedTypeMirror> classTypeArgs =
+          typeFactory.inferDiamondType((NewClassTree) expressionTree);
+      AnnotatedDeclaredType type =
+          typeFactory.getAnnotatedType(TypesUtils.getTypeElement(TreeUtils.typeOf(expressionTree)));
+      int i = 0;
+      Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = new HashMap<>();
+      for (AnnotatedTypeMirror typeParam : type.getTypeArguments()) {
+        typeParamToTypeArg.put((TypeVariable) typeParam.getUnderlyingType(), classTypeArgs.get(i));
+        i++;
+      }
+      return typeParamToTypeArg;
     }
     final TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
