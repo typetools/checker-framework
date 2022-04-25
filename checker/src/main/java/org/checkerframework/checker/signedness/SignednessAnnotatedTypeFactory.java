@@ -676,6 +676,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return true;
   }
 
+  /**
+   * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
+   * arguments must have the same signedness type annotation.
+   */
   private static class SignednessQualifierPolymorphism extends DefaultQualifierPolymorphism {
     /**
      * Creates a {@link SignednessQualifierPolymorphism}.
