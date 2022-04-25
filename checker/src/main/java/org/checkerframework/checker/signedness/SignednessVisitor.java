@@ -20,6 +20,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -192,26 +193,30 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
     if (hasEqualsMethodAnno || InterningVisitor.isInvocationOfEquals(node)) {
       int params = methElt.getParameters().size();
-      AnnotatedTypeMirror leftOpType;
-      AnnotatedTypeMirror rightOpType;
-      if (params == 1) {
-        leftOpType = atypeFactory.getReceiverType(node);
-        rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
-      } else if (params == 2) {
-        leftOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
-        rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(1));
-      } else {
+      if (!(params == 1 || params == 2)) {
         checker.reportError(
             node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
-      }
-      if (!atypeFactory.maybeIntegral(leftOpType) || !atypeFactory.maybeIntegral(rightOpType)) {
-        // nothing to do
-      }
-      if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
-        checker.reportError(node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
-      } else if (leftOpType.hasAnnotation(Signed.class)
-          && rightOpType.hasAnnotation(Unsigned.class)) {
-        checker.reportError(node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
+      } else {
+        AnnotatedTypeMirror leftOpType;
+        AnnotatedTypeMirror rightOpType;
+        if (params == 1) {
+          leftOpType = atypeFactory.getReceiverType(node);
+          rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+        } else if (params == 2) {
+          leftOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+          rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(1));
+        } else {
+          throw new BugInCF("Checked that params is 1 or 2");
+        }
+        if (!atypeFactory.maybeIntegral(leftOpType) || !atypeFactory.maybeIntegral(rightOpType)) {
+          // nothing to do
+        } else if (leftOpType.hasAnnotation(Unsigned.class)
+            && rightOpType.hasAnnotation(Signed.class)) {
+          checker.reportError(node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
+        } else if (leftOpType.hasAnnotation(Signed.class)
+            && rightOpType.hasAnnotation(Unsigned.class)) {
+          checker.reportError(node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
+        }
       }
     }
 
