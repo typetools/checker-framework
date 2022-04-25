@@ -192,7 +192,6 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
       if (!(params == 1 || params == 2)) {
         checker.reportError(
             node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
-        // fallthrough
       } else {
         AnnotatedTypeMirror leftOpType;
         AnnotatedTypeMirror rightOpType;
