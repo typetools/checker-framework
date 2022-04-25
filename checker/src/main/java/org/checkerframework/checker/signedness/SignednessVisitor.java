@@ -182,10 +182,6 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     return super.visitMethod(node, p);
   }
 
-  /**
-   * If lint option "dotequals" is specified, warn if the .equals method is used where reference
-   * equality is safe.
-   */
   @Override
   public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
     ExecutableElement methElt = TreeUtils.elementFromUse(node);
@@ -196,6 +192,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
       if (!(params == 1 || params == 2)) {
         checker.reportError(
             node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
+        // fallthrough
       } else {
         AnnotatedTypeMirror leftOpType;
         AnnotatedTypeMirror rightOpType;
@@ -218,6 +215,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           checker.reportError(node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
         }
       }
+      // Don't check against the annotated method declaration (which super would do).
+      return null;
     }
 
     return super.visitMethodInvocation(node, p);
