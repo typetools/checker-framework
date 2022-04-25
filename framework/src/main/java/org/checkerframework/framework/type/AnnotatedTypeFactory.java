@@ -2946,7 +2946,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the types of the two arguments to a binarya operation, accounting for widening and
+   * Returns the types of the two arguments to a binary operation, accounting for widening and
    * unboxing if applicable.
    *
    * @param left the type of the left argument of a binary operation
