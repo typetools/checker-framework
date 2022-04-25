@@ -526,6 +526,9 @@ Here is where a polymorphic qualifier (e.g., \<@PolyNull>) can be used:
   meaning, see Section~\ref{class-qual-param-method}.
 \end{itemize}
 
+Section~\ref{qualifier-polymorphism-define} explains how to define a
+polymorphic qualifier.
+
 
 \subsectionAndLabel{Using polymorphic qualifiers in a method signature}{qualifier-polymorphism-examples}
 
@@ -827,7 +830,7 @@ use collections.
 
 There is no point to writing just one polymorphic qualifier in a method
 signature, as the main type qualifier on a formal parameter type.
-This signature:
+Consider this signature:
 
 \begin{Verbatim}
   void m(@PolyNull Object obj)
@@ -878,26 +881,6 @@ qualifier for the Nullness type system and is defined as follows:
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface PolyNull {}
 \end{Verbatim}
-
-
-
-
-To \emph{define} a polymorphic qualifier, mark the definition with
-\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
-\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
-qualifier for the Nullness type system:
-
-\begin{Verbatim}
-  import java.lang.annotation.ElementType;
-  import java.lang.annotation.Target;
-  import org.checkerframework.framework.qual.PolymorphicQualifier;
-
-  @PolymorphicQualifier
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface PolyNull {}
-\end{Verbatim}
-
-
 
 
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
