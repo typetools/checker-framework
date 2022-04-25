@@ -9,12 +9,12 @@ public class ExistingPurityAnnotations {
 
   Object obj;
 
-  public Object pureMethod (Object object) {
+  public Object pureMethod(Object object) {
     return null;
   }
 
   @SuppressWarnings("ainfertest")
-  @EnsuresQualifierIf(expression="#1", result=true, qualifier=Sibling1.class)
+  @EnsuresQualifierIf(expression = "#1", result = true, qualifier = Sibling1.class)
   public boolean checkSibling1(Object obj1) {
     return true;
   }
