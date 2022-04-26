@@ -631,9 +631,23 @@ create a subclass of
 type factory return an instance of the new subclass.  The Signedness
 Checker gives an example.
 
-If you do this, you may need to suppress false positive warnings within the
-body of methods whose formal parameter types are annotated with
-\refqualclass{checker/signedness/qual}{PolySigned}.
+Changing the qualifier polymorphism allows a loophole:  upcasts to top.
+For example, the type system permits a call like
+
+\begin{Verbatim}
+  Objects.equals((@UnknownSignedness) mySigned, (@UnknownSignedness) myUnsigned)
+\end{Verbatim}
+
+\noindent
+A type system can forbid upcasts to top (including in assignments, not just
+explicit casts) to close this loophole.
+
+If you change the qualifier polymorphism, your type system may need class
+qualifier polymorphism (see Section~\ref{class-qualifier-polymorphism}).
+And, you may need to suppress
+false positive warnings within the body of methods whose formal parameter
+types are annotated with the polymorphic qualifier (e.g.,
+\refqualclass{checker/signedness/qual}{PolySigned}).
 
 
 \subsectionAndLabel{Procedurally defining the qualifier hierarchy}{creating-procedural-hierarchy}
