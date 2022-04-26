@@ -145,21 +145,17 @@ public class InvocationTypeInference {
    */
   public List<Variable> infer(
       ExpressionTree invocation, AnnotatedExecutableType methodType, boolean ignoreAnnoFail) {
-    if (!shouldTryInference(context.pathToExpression)) {
-      return null;
-    }
-
     List<Variable> result;
     try {
       ExecutableType e = methodType.getUnderlyingType();
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
       result = inferInternal(invocation, invocationType, ignoreAnnoFail);
     } catch (FalseBoundException ex) {
-      // TODO: This should never happen, if javac infers type arguments so should the Checker
+      // This should never happen, if javac infers type arguments so should the Checker
       // Framework. However, given how buggy javac inference is, this probably will, so deal with it
       // gracefully.
 
-      // checker.reportError(invocation, "type.inference.failed");
+      checker.reportError(invocation, "type.inference.failed");
       // throw ex;
       return null;
     } catch (ProperType.CantCompute ex) {
@@ -568,26 +564,6 @@ public class InvocationTypeInference {
       current.incorporateToFixedPoint(newBounds);
     }
     return current;
-  }
-
-  /**
-   * Returns whether or not inference should be preformed.
-   *
-   * <p>Inference should be preformed if both of the following are true: 1.) {@code path} points to
-   * a generic method invocation that does not have explicit method type arguments. 2.) The target
-   * type of that method invocation does not itself require inference to determine.
-   *
-   * <p>This method should be removed once the rest of the framework uses Java 8 inference.
-   *
-   * @param path path to the method invocation
-   * @return if inference should be preformed
-   */
-  private boolean shouldTryInference(TreePath path) {
-    if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-      // TODO: Delete this method.
-      return false;
-    }
-    return true;
   }
 
   /**
