@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
@@ -195,10 +196,8 @@ public class Typing extends Constraint {
 
       return set;
     } else {
-      // TODO: Annotated types.
-      // The constraint reduces to true if T is among the supertypes of S, and false
-      // otherwise.
-      return ConstraintSet.TRUE;
+      // The constraint reduces to true if T is among the supertypes of S, and false otherwise.
+      return ((InferenceType) S).isSubType((ProperType) T);
     }
   }
 

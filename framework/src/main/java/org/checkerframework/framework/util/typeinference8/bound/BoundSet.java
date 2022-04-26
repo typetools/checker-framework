@@ -108,6 +108,7 @@ public class BoundSet implements ReductionResult {
     changed |= variables.addAll(newSet.variables);
     containsFalse |= newSet.containsFalse;
     uncheckedConversion |= newSet.uncheckedConversion;
+    annoFail |= newSet.annoFail;
     return changed;
   }
 

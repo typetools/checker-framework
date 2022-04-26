@@ -73,8 +73,8 @@ public class ConstraintSet implements ReductionResult {
 
   /** Adds all constraints in {@code constraintSet} to this constraint set. */
   public void addAll(ConstraintSet constraintSet) {
-    if (constraintSet == TRUE_ANNO_FAIL) {
-      constraintSet.annotationFailure = true;
+    if (constraintSet.annotationFailure) {
+      this.annotationFailure = true;
     }
     list.addAll(constraintSet.list);
   }

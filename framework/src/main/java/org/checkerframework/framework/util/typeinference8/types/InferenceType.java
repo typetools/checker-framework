@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
+import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -10,7 +11,11 @@ import java.util.Map;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
+import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -186,5 +191,36 @@ public class InferenceType extends AbstractType {
   @Override
   public String toString() {
     return "inference type: " + typeMirror;
+  }
+
+  /**
+   * Is {@code this} a subtype of {@code superType}?
+   *
+   * @param superType super type; declared type with no parameters.
+   * @return if {@code this} is a subtype of {@code superType}, then return {@link
+   *     ConstraintSet#TRUE}; otherwise, a false bound is returned
+   */
+  public ReductionResult isSubType(ProperType superType) {
+    TypeMirror subType = getJavaType();
+    TypeMirror superJavaType = superType.getJavaType();
+    if (subType.getKind() == TypeKind.WILDCARD) {
+      if (((WildcardType) subType).getExtendsBound() != null) {
+        subType = ((WildcardType) subType).getExtendsBound();
+      } else {
+        subType = context.types.erasure((Type) subType);
+      }
+    }
+
+    if (context.types.isSubtype((Type) subType, (Type) superJavaType)) {
+      AnnotatedTypeMirror superATM = superType.getAnnotatedType();
+      AnnotatedTypeMirror subATM = this.getAnnotatedType();
+      if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+        return ConstraintSet.TRUE;
+      } else {
+        return ConstraintSet.TRUE_ANNO_FAIL;
+      }
+    } else {
+      return new FalseBound();
+    }
   }
 }
