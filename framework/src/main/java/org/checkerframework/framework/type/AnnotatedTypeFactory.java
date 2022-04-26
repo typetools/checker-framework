@@ -2514,8 +2514,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         type.setTypeArguments(getExplicitNewClassClassTypeArgs(tree));
       }
     } else {
-      // TODO: This should be done at the same time as type argument inference.
-      inferDiamondType(type, tree);
+      type = getAnnotatedType(TypesUtils.getTypeElement(type.underlyingType));
+      // Add explicit annotations below.
+      type.clearPrimaryAnnotations();
     }
 
     Set<AnnotationMirror> explicitAnnos = getExplicitNewClassAnnos(tree);
@@ -2572,8 +2573,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
-        AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
-
+        new HashMap<>(AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con));
     List<AnnotatedTypeMirror> typeargs;
     if (typeParamToTypeArg.isEmpty()) {
       typeargs = Collections.emptyList();
@@ -2582,8 +2582,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           CollectionsPlume.mapList(
               (AnnotatedTypeVariable tv) -> typeParamToTypeArg.get(tv.getUnderlyingType()),
               con.getTypeVariables());
-      con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
     }
+    if (TreeUtils.isDiamondTree(tree)) {
+      // TODO: This should be done at the same time as type argument inference.
+      List<AnnotatedTypeMirror> classTypeArgs = inferDiamondType(tree);
+      int i = 0;
+      for (AnnotatedTypeMirror typeParam : type.getTypeArguments()) {
+        typeParamToTypeArg.put((TypeVariable) typeParam.getUnderlyingType(), classTypeArgs.get(i));
+        i++;
+      }
+    }
+    con = (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, con);
 
     stubTypes.injectRecordComponentType(types, ctor, con);
     if (enclosingType != null) {
@@ -2615,7 +2624,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         type.setTypeArguments(getExplicitNewClassClassTypeArgs(newClassTree));
       }
     } else {
-      inferDiamondType(type, newClassTree);
+      assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
+      TreePath p = getPath(newClassTree);
+      AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+      if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
+        AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
+        if (type.getTypeArguments().size() == adctx.getTypeArguments().size()) {
+          // Try to simply take the type arguments from LHS.
+          List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
+          List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
+          for (int i = 0; i < type.getTypeArguments().size(); ++i) {
+            if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
+              // One of the underlying types doesn't match. Give up.
+              newArgs = oldArgs;
+              break;
+            }
+          }
+          type.setTypeArguments(newArgs);
+        }
+      }
     }
 
     Set<AnnotationMirror> explicitAnnos = getExplicitNewClassAnnos(newClassTree);
@@ -2671,34 +2698,43 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Infers type arguments for a diamond.
+   * Infer the class type arguments for the diamond operator.
    *
-   * @param type a type of a new class tree with a diamond; sideeffected by this method
-   * @param newClassTree new class tree that uses the diamond operator
+   * <p>If {@code newClassTree} is assigned to the same type (not a supertype), then the type
+   * arguments are inferred to be the same as the assignment. Otherwise, the type arguments are
+   * annotated by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * @param newClassTree a diamond new class tree
+   * @return the class type arguments for {@code newClassTree}
    */
-  private void inferDiamondType(AnnotatedDeclaredType type, NewClassTree newClassTree) {
+  private List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
     assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
+    AnnotatedDeclaredType diamondType =
+        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+
     TreePath p = getPath(newClassTree);
     AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-    if (ctxtype == null) {
-      return;
-    }
-    if (ctxtype.getKind() == TypeKind.DECLARED) {
+    if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
       AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
-      if (type.getTypeArguments().size() != adctx.getTypeArguments().size()) {
-        return;
-      }
-      // Try to simply take the type arguments from LHS.
-      List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
-      List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
-      for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-        if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
-          // One of the underlying types doesn't match. Give up.
-          return;
+      if (diamondType.getTypeArguments().size() == adctx.getTypeArguments().size()) {
+        // Try to simply take the type arguments from LHS.
+        List<AnnotatedTypeMirror> oldArgs = diamondType.getTypeArguments();
+        List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
+        boolean useLhs = true;
+        for (int i = 0; i < diamondType.getTypeArguments().size(); ++i) {
+          if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
+            // One of the underlying types doesn't match. Give up.
+            useLhs = false;
+            break;
+          }
+        }
+        if (useLhs) {
+          return newArgs;
         }
       }
-      type.setTypeArguments(newArgs);
     }
+    addComputedTypeAnnotations(newClassTree, diamondType);
+    return diamondType.getTypeArguments();
   }
 
   /**
