@@ -116,7 +116,7 @@ public class InferenceFactory {
       case NEW_CLASS:
         NewClassTree newClassTree = (NewClassTree) assignmentContext;
         AnnotatedExecutableType constructorType =
-            factory.constructorFromUseTypeArgInfere(newClassTree).executableType;
+            factory.constructorFromUseNoTypeArgInfere(newClassTree).executableType;
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return new ProperType(
@@ -614,7 +614,8 @@ public class InferenceFactory {
           typeFactory.methodFromUseNoTypeArgInfere((MethodInvocationTree) invocation)
               .executableType;
     } else {
-      executableType = typeFactory.constructorFromUse((NewClassTree) invocation).executableType;
+      executableType =
+          typeFactory.constructorFromUse((NewClassTree) invocation, false).executableType;
     }
     return new InvocationType(
         executableType, getTypeOfMethodAdaptedToUse(invocation, context), invocation, context);

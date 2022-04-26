@@ -2531,7 +2531,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return constructorFromUse(tree, true);
   }
 
-  public ParameterizedExecutableType constructorFromUseTypeArgInfere(NewClassTree tree) {
+  public ParameterizedExecutableType constructorFromUseNoTypeArgInfere(NewClassTree tree) {
     return constructorFromUse(tree, false);
   }
 
