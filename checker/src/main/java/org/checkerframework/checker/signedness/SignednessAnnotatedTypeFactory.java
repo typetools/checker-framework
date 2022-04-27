@@ -18,7 +18,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signedness.qual.PolySigned;
@@ -98,8 +97,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-
-    addAliasedTypeAnnotation(NonNegative.class, SIGNEDNESS_GLB);
 
     addAliasedTypeAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
 
