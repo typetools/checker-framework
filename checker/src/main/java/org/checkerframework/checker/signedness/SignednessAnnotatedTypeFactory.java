@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
@@ -38,6 +39,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -689,5 +692,44 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
+   * arguments must have the same signedness type annotation.
+   */
+  private static class SignednessQualifierPolymorphism extends DefaultQualifierPolymorphism {
+    /**
+     * Creates a {@link SignednessQualifierPolymorphism}.
+     *
+     * @param env the processing environment
+     * @param factory the factory for the current checker
+     */
+    public SignednessQualifierPolymorphism(
+        ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+      super(env, factory);
+    }
+
+    /** Combines the two annotations using the least upper bound. */
+    @Override
+    protected AnnotationMirror combine(
+        AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
+      if (a1 == null) {
+        return a2;
+      } else if (a2 == null) {
+        return a1;
+      } else if (AnnotationUtils.areSame(a1, a2)) {
+        return a1;
+      } else {
+        // TODO: Issue a warning at the proper code location.
+        // Returning glb can lead to obscure error messages.
+        return qualHierarchy.greatestLowerBound(a1, a2);
+      }
+    }
+  }
+
+  @Override
+  protected QualifierPolymorphism createQualifierPolymorphism() {
+    return new SignednessQualifierPolymorphism(processingEnv, this);
   }
 }
