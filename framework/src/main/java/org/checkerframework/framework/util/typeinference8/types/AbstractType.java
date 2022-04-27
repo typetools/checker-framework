@@ -327,9 +327,9 @@ public abstract class AbstractType {
    * @return true if the type is a raw type
    */
   public boolean isRaw() {
-    assert TypesUtils.isRaw(getJavaType())
-        == (getAnnotatedType().getKind() == TypeKind.DECLARED
-            && ((AnnotatedDeclaredType) getAnnotatedType()).isUnderlyingTypeRaw());
+    // The annotated type might not be raw because javac uses the erased method type when the
+    // Checker Framework does not.
+    // See /Users/smillst/jsr308/checker-framework/checker/tests/all-systems/Issue2234.java.
     return TypesUtils.isRaw(getJavaType());
   }
 
@@ -369,7 +369,7 @@ public abstract class AbstractType {
    */
   public boolean isParameterizedType() {
     // TODO this isn't matching the JavaDoc.
-    return ((Type) getJavaType()).isParameterized();
+    return ((Type) getJavaType()).isParameterized() || ((Type) getJavaType()).isRaw();
   }
 
   /**
