@@ -1,10 +1,16 @@
-Version 3.21.5 (May 1, 2022)
+Version 3.22.0 (May 1, 2022)
 ---------------------------------
+
 **User-visible changes:**
-@PolySigned change
-constructorForUse
+
+The Signedness Checker now checks calls to `equals()` as well as to `==`.  When
+two formal parameter types are annotated with @PolySigned, the two arguments at
+a call site must have the same signedness type annotation. (This differs from
+the standard rule for polymorphic qualifiers.)
 
 **Implementation details:**
+
+TODO: constructorForUse
 
 **Closed issues:**
 
