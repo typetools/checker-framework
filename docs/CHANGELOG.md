@@ -7,6 +7,13 @@ Added reaching definitions and very busy expressions analysis demos.
 
 **Implementation details:**
 
+Fixed the types of `MethodInvocationNode#arguments` and
+`ObjectCreationNode#arguments` in CFGs. Previously, argument nodes are created
+using the types from the method declaration, which means some nodes are using
+type variables that are not substituted by type arguments at the call site.
+For example, we used to observe `new T[]{"a", "b"}` instead of
+`new String[]{"a", "b"}`, while the second one makes more sense.
+
 Added a new gradle task `fastAssemble` to quickly rebuild the Checker
 Framework for local development. This command will assemble the jar
 files without generating any Javadoc or sources.jar files, thus it is
