@@ -128,6 +128,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
 testDataflowAnalysis("busyExpressionTest", "busyexpr", "busyexpr.BusyExpression", true)
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
+testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
 

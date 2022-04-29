@@ -150,6 +150,8 @@ dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class
 dataflow/tests/live-variable/Out.txt
 dataflow/tests/live-variable/*.class
+dataflow/tests/reachingdef/Out.txt
+dataflow/tests/reachingdef/*.class
 
 checker/jtreg/multipleexecutions/Main.class
 
