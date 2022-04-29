@@ -5185,7 +5185,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Unlike {@link #typeVarSubstitutor}, this class does not copy the type. Call {@code
    * substitute} to use.
    */
-  private final CapturedTypeVarSubstitutor capturedTypeVarSubstitutor =
+  public final CapturedTypeVarSubstitutor capturedTypeVarSubstitutor =
       new CapturedTypeVarSubstitutor();
 
   /**
@@ -5195,7 +5195,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Unlike {@link #typeVarSubstitutor}, this class does not copy the type. Call {@code
    * substitute} to use.
    */
-  private static class CapturedTypeVarSubstitutor extends AnnotatedTypeCopier {
+  public static class CapturedTypeVarSubstitutor extends AnnotatedTypeCopier {
 
     /** A mapping from a captured type variable to its AnnotatedTypeVariable. */
     private Map<TypeVariable, AnnotatedTypeVariable> capturedTypeVarToAnnotatedTypeVar;
@@ -5211,7 +5211,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param capturedTypeVarToAnnotatedTypeVar mapping from TypeVariable, that is a captured type
      *     variable, to an AnnotatedTypeVariable
      */
-    private void substitute(
+    public void substitute(
         AnnotatedTypeVariable type,
         Map<TypeVariable, AnnotatedTypeVariable> capturedTypeVarToAnnotatedTypeVar) {
       this.capturedTypeVarToAnnotatedTypeVar = capturedTypeVarToAnnotatedTypeVar;

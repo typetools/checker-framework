@@ -5,16 +5,13 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
-import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -283,12 +280,9 @@ public class BoundSet implements ReductionResult {
       }
       boundsChangeInst |= captures.addAll(newBounds.captures);
       for (Variable alpha : variables) {
-        if (alpha.getBounds().hasInstantiation()) {
-          removeProblematicConstraints(alpha);
+        if (alpha.getInstantiation() == null) {
+          boundsChangeInst = alpha.getBounds().applyInstantiationsToBounds(instantiations);
         }
-      }
-      for (Variable alpha : variables) {
-        boundsChangeInst = alpha.getBounds().applyInstantiationsToBounds(instantiations);
         if (!alpha.getBounds().constraints.isEmpty()) {
           boundsChangeInst = true;
           merge(alpha.getBounds().constraints.reduce(context));
@@ -305,37 +299,6 @@ public class BoundSet implements ReductionResult {
       containsFalse |= newBounds.containsFalse;
       assert count < MAX_INCORPORATION_STEPS : "Max incorporation steps reached.";
     } while (!containsFalse && count < MAX_INCORPORATION_STEPS);
-  }
-
-  /**
-   * The Checker Framework cannot create recursive wildcard type mirrors. This causes incorporation
-   * to never reach a fixed point. To avoid this, this method removes constraints that were adding
-   * because a {@code alpha} was instantiated to a proper type. (See {@link
-   * Resolution#resolveWithCapture(LinkedHashSet, BoundSet, Java8InferenceContext)}}.
-   */
-  private void removeProblematicConstraints(Variable alpha) {
-    if (!TypesUtils.isCapturedTypeVariable(alpha.getBounds().getInstantiation().getJavaType())) {
-      return;
-    }
-    List<Constraint> constraints = new ArrayList<>();
-    while (!alpha.getBounds().constraints.isEmpty()) {
-      Constraint constraint = alpha.getBounds().constraints.pop();
-      switch (constraint.getKind()) {
-        case TYPE_COMPATIBILITY:
-        case SUBTYPE:
-        case CONTAINED:
-        case TYPE_EQUALITY:
-          if (!constraint.getT().isProper() || !((Typing) constraint).getS().isProper()) {
-            constraints.add(constraint);
-          }
-          break;
-        case EXPRESSION:
-        case LAMBDA_EXCEPTION:
-        case METHOD_REF_EXCEPTION:
-          constraints.add(constraint);
-      }
-    }
-    alpha.getBounds().constraints.addAll(constraints);
   }
 
   /** Remove any capture bound that mentions any variable in {@code as}. */

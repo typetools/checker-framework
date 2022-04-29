@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference8.util;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Queue;
@@ -11,7 +10,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -292,7 +290,7 @@ public class Resolution {
     BoundSet resolvedBoundSet = new BoundSet(context);
     List<Variable> asList = new ArrayList<>();
     List<TypeVariable> typeVar = new ArrayList<>();
-    List<ProperType> typeArg = new ArrayList<>();
+    List<AbstractType> typeArg = new ArrayList<>();
 
     for (Variable ai : as) {
       ai.getBounds().applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
@@ -309,19 +307,17 @@ public class Resolution {
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
 
       typeVar.add(ai.getJavaType());
-      ProperType freshTypeVar =
+      AbstractType freshTypeVar =
           context.inferenceTypeFactory.createFreshTypeVariable(lowerBound, upperBound);
       typeArg.add(freshTypeVar);
     }
 
-    List<ProperType> subsTypeArg =
+    List<AbstractType> subsTypeArg =
         context.inferenceTypeFactory.getSubsTypeArgs(typeVar, typeArg, asList);
 
     // Create the new bounds.
     for (int i = 0; i < asList.size(); i++) {
       Variable ai = asList.get(i);
-      ContainsInferenceVariable.getMentionedTypeVariables(
-          Collections.singleton(ai.getJavaType()), subsTypeArg.get(i).getJavaType());
       ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, subsTypeArg.get(i));
     }
 

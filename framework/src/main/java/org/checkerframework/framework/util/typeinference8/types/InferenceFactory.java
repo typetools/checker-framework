@@ -50,6 +50,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.TypeVariableSubstitutor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -948,11 +949,11 @@ public class InferenceFactory {
    * @param upperBound an abstract type or null
    * @return a fresh type variable with the provided upper and lower bounds
    */
-  public ProperType createFreshTypeVariable(ProperType lowerBound, AbstractType upperBound) {
+  public AbstractType createFreshTypeVariable(ProperType lowerBound, AbstractType upperBound) {
     TypeMirror freshTypeVariable =
         TypesUtils.freshTypeVariable(
-            lowerBound == null ? null : lowerBound.getJavaType(),
             upperBound == null ? null : upperBound.getJavaType(),
+            lowerBound == null ? null : lowerBound.getJavaType(),
             context.env);
     AnnotatedTypeVariable typeVariable =
         (AnnotatedTypeVariable)
@@ -963,11 +964,13 @@ public class InferenceFactory {
     if (upperBound != null) {
       typeVariable.setUpperBound(upperBound.getAnnotatedType());
     }
-    return new ProperType(typeVariable, freshTypeVariable, context);
+    context.typeFactory.capturedTypeVarSubstitutor.substitute(
+        typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
+    return upperBound.create(typeVariable, freshTypeVariable);
   }
 
-  public List<ProperType> getSubsTypeArgs(
-      List<TypeVariable> typeVar, List<ProperType> typeArg, List<Variable> asList) {
+  public List<AbstractType> getSubsTypeArgs(
+      List<TypeVariable> typeVar, List<AbstractType> typeArg, List<Variable> asList) {
     List<TypeMirror> javaTypeArgs = new ArrayList<>();
     // Recursive types:
     for (int i = 0; i < typeArg.size(); i++) {
@@ -1006,7 +1009,7 @@ public class InferenceFactory {
     // Recursive types:
     for (int i = 0; i < typeArg.size(); i++) {
       Variable ai = asList.get(i);
-      ProperType inst = typeArg.get(i);
+      AbstractType inst = typeArg.get(i);
       typeArgsATM.add(inst.getAnnotatedType());
       TypeVariable typeVariableI = ai.getJavaType();
       map.put(typeVariableI, inst.getAnnotatedType());
@@ -1014,9 +1017,24 @@ public class InferenceFactory {
 
     Iterator<TypeMirror> iter = javaTypeArgs.iterator();
     // Instantiations that refer to another variable
-    List<ProperType> subsTypeArg = new ArrayList<>();
+    List<AbstractType> subsTypeArg = new ArrayList<>();
     for (AnnotatedTypeMirror type : typeArgsATM) {
-      AnnotatedTypeMirror subs = typeFactory.getTypeVarSubstitutor().substitute(map, type);
+      TypeVariableSubstitutor typeVarSubstitutor = typeFactory.getTypeVarSubstitutor();
+      AnnotatedTypeMirror subs;
+      if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
+        AnnotatedTypeVariable capTypeVar = (AnnotatedTypeVariable) type;
+        AnnotatedTypeMirror upperBound =
+            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                map, capTypeVar.getUpperBound());
+        AnnotatedTypeMirror lowerBound =
+            typeVarSubstitutor.substituteWithoutCopyingTypeArguments(
+                map, capTypeVar.getLowerBound());
+        capTypeVar.setUpperBound(upperBound);
+        capTypeVar.setLowerBound(lowerBound);
+        subs = capTypeVar;
+      } else {
+        subs = typeVarSubstitutor.substituteWithoutCopyingTypeArguments(map, type);
+      }
       subsTypeArg.add(new ProperType(subs, iter.next(), context));
     }
     return subsTypeArg;
