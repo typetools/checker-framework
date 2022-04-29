@@ -869,9 +869,11 @@ public final class TypesUtils {
     }
     // Special case for primitives.
     if (isPrimitive(t1) || isPrimitive(t2)) {
-      if (types.isAssignable(t1, t2)) {
+      // NOTE: we need to know which type is primitive because e.g. int and Integer are assignable
+      // to each other.
+      if (isPrimitive(t1) && types.isAssignable(t1, t2)) {
         return t2;
-      } else if (types.isAssignable(t2, t1)) {
+      } else if (isPrimitive(t2) && types.isAssignable(t2, t1)) {
         return t1;
       } else {
         Elements elements = processingEnv.getElementUtils();
