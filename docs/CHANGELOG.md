@@ -10,9 +10,14 @@ the standard rule for polymorphic qualifiers.)
 
 **Implementation details:**
 
-TODO: constructorForUse
+When passed a NewClassTree that creates an anonymous constructor,
+AnnotatedTypeFactory#constructorFormUse now returns the type of the anonymous
+constructor rather than the type of the super constructor invoked in the
+anonymous classes constructor.  If the super constructor has explicit
+annotations, they are copied to the anonymous classes constructor.
 
 **Closed issues:**
+#5113.
 
 
 Version 3.21.4 (April 1, 2022)
