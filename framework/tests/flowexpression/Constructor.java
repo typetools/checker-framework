@@ -2,7 +2,7 @@ import org.checkerframework.framework.testchecker.flowexpression.qual.FlowExp;
 
 public class Constructor {
 
-    @SuppressWarnings({"inconsistent.constructor.type", "super.invocation"})
+    @SuppressWarnings({"inconsistent.constructor.type", "super.invocation.invalid"})
     static class MyClass {
         String field;
 
@@ -17,9 +17,10 @@ public class Constructor {
         void method() {
             // TODO: This should be an error.
             MyClass c = new @FlowExp("field") MyClass();
-            // :: error: (expression.unparsable) :: error: (constructor.invocation)
+            // :: error: (expression.unparsable.type.invalid) :: error:
+            // (constructor.invocation.invalid)
             MyClass c2 = new @FlowExp("bad") MyClass();
-            // :: error: (constructor.invocation)
+            // :: error: (constructor.invocation.invalid)
             MyClass c3 = new @FlowExp("field2") MyClass();
         }
     }

@@ -13,9 +13,9 @@ public class RestrictedPolymorphism {
 
     void client() {
         foo(sd, sd);
-        // :: error: (argument)
+        // :: error: (argument.type.incompatible)
         foo(sd, ud);
-        // :: error: (argument)
+        // :: error: (argument.type.incompatible)
         foo(ud, sd);
         foo(ud, ud);
     }
