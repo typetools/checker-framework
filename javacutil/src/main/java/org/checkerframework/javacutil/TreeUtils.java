@@ -523,8 +523,7 @@ public final class TreeUtils {
         }
         JCNewClass jcNewClass = (JCNewClass) newClassTree;
         // Anonymous constructor bodies, which are always synthetic, contain exactly one statement
-        // in
-        // the form:
+        // in the form:
         //    super(arg1, ...)
         // or
         //    o.super(arg1, ...)

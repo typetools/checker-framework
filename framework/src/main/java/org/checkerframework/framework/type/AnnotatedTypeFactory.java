@@ -2606,9 +2606,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (tree.getClassBody() != null) {
             // Because the anonymous constructor can't have explicit annotations on its parameters,
-            // they
-            // are copied from the super constructor invoked in the anonymous constructor. To do
-            // this:
+            // they are copied from the super constructor invoked in the anonymous constructor. To
+            // do this:
             // 1. get unsubstituted type of the super constructor.
             // 2. adapt it to this call site.
             // 3. copy the parameters to the anonymous constructor, `con`.
@@ -2622,8 +2621,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 con.setParameterTypes(superCon.getParameterTypes());
             } else {
                 // If the super class of the anonymous class has an enclosing type, then it is the
-                // first
-                // parameter of the anonymous constructor. For example,
+                // first parameter of the anonymous constructor. For example,
                 // class Outer { class Inner {} }
                 //  new Inner(){};
                 // Then javac creates the following constructor:
@@ -2745,8 +2743,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // In Java 17+, the annotations are on the identifier, so copy them.
             AnnotatedTypeMirror identifierType = fromTypeTree(newClassTree.getIdentifier());
             // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in
-            // this
-            // location:
+            // this location:
             //   new @HERE Class() {}
             // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
             List<? extends AnnotationTree> annoTrees =
