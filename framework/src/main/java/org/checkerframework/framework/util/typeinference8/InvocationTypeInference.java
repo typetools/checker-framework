@@ -855,6 +855,7 @@ public class InvocationTypeInference {
       index = executableType.getParameterTypes().size() - 1;
     }
     TypeMirror param = executableType.getParameterTypes().get(index);
+
     if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
       List<TypeVariable> list = new ArrayList<>(executableType.getTypeVariables());
       if (TreeUtils.isDiamondTree(newClassTree)) {
