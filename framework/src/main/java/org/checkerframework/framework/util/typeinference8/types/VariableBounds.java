@@ -237,9 +237,6 @@ public class VariableBounds {
 
   /** Apply instantiations to all bounds and constraints of this variable. */
   public boolean applyInstantiationsToBounds(List<Variable> instantiations) {
-    if (hasInstantiation()) {
-      return false;
-    }
     boolean changed = false;
     for (Set<AbstractType> boundList : bounds.values()) {
       LinkedHashSet<AbstractType> newBounds = new LinkedHashSet<>(boundList.size());

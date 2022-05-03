@@ -958,6 +958,9 @@ public class InferenceFactory {
     AnnotatedTypeVariable typeVariable =
         (AnnotatedTypeVariable)
             AnnotatedTypeMirror.createType(freshTypeVariable, typeFactory, false);
+    // Initialize bounds.
+    typeVariable.getUpperBound();
+    typeVariable.getLowerBound();
     if (lowerBound != null) {
       typeVariable.setLowerBound(lowerBound.getAnnotatedType());
     }
