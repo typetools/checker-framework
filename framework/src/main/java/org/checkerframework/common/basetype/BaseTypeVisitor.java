@@ -1037,7 +1037,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                    if (!(infer && inferPurity)) {
                        // During WPI, propagate all purity kinds, even those that are already
                        // present (because they were inferred in a previous WPI round).
-                       additionalKinds.removeAll(kinds);
+            */
+            additionalKinds.removeAll(kinds);
+            /* NO-AFU
                    }
             */
             if (TreeUtils.isConstructor(node)) {
