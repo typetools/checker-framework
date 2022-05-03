@@ -970,16 +970,19 @@ public abstract class CFAbstractTransfer<
     @Override
     public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
         /* NO-AFU
-               if (shouldPerformWholeProgramInference(n.getTree())) {
-                   ExecutableElement constructorElt =
-                           analysis.getTypeFactory()
-                                   .constructorFromUse(n.getTree())
-                                   .executableType
-                                   .getElement();
-                   analysis.atypeFactory
-                           .getWholeProgramInference()
-                           .updateFromObjectCreation(n, constructorElt, p.getRegularStore());
-               }
+        if (shouldPerformWholeProgramInference(n.getTree())) {
+          NewClassTree newClassTree = n.getTree();
+          // Can't infer annotations on an anonymous constructor, so use the super constructor.
+          ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
+          if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
+            // TODO: WPI could be changed to handle the synthetic argument, but for now just don't infer
+            // annotations for those new class trees.
+            analysis
+                .atypeFactory
+                .getWholeProgramInference()
+                .updateFromObjectCreation(n, constructorElt, p.getRegularStore());
+          }
+        }
         */
         return super.visitObjectCreation(n, p);
     }

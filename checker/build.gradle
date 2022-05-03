@@ -62,7 +62,7 @@ dependencies {
     testImplementation "com.google.auto.value:auto-value-annotations:1.7.4"
     testImplementation "com.google.auto.value:auto-value:1.7.4"
     testImplementation "com.ryanharter.auto.value:auto-value-parcel:0.2.9"
-    testImplementation "org.projectlombok:lombok:1.18.22"
+    testImplementation "org.projectlombok:lombok:1.18.24"
     // Called Methods Checker support for detecting misuses of AWS APIs
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
@@ -541,6 +541,15 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
         // See issue here: https://github.com/typetools/checker-framework/issues/3009
         delete('tests/ainfer-testchecker/annotated/ConflictingAnnotationsTest.java')
         delete('tests/ainfer-testchecker/annotated/MultiDimensionalArrays.java')
+
+        // JAIF-based WPI also fails this test. It used to pass, but the test was changed
+        // in a way that exposed a bug in the Annotation File Utilities: the AFU
+        // places annotations incorrectly on qualified types. In this test, a failure occurs because
+        // the AFU prints "@Annotation Outer.Inner this", rather than "Outer.@Annotation Inner this"
+        // (see an explanation of the syntax here:
+        // https://checkerframework.org/manual/#common-problems-non-typechecking).
+        // TODO: fix this bug in the AFU, then reinstate this test.
+        delete('tests/ainfer-testchecker/annotated/OverriddenMethodsTest.java')
 
         // Inserting annotations from .jaif files in-place.
         String jaifsDir = "tests/ainfer-testchecker/inference-output";

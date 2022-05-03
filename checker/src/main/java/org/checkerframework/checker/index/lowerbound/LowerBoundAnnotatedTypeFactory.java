@@ -27,6 +27,8 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -126,6 +128,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         addAliasedTypeAnnotation(LengthOf.class, NN);
         addAliasedTypeAnnotation(PolyIndex.class, POLY);
         addAliasedTypeAnnotation(SubstringIndexFor.class, GTEN1);
+
+        addAliasedTypeAnnotation(SignedPositive.class, NN);
+        addAliasedTypeAnnotation(SignednessGlb.class, NN);
 
         imf = new IndexMethodIdentifier(this);
 

@@ -30,13 +30,26 @@ Moved the `-AajavaChecks` option from `CheckerFrameworkPerDirectoryTest` to
 eisop#210.
 
 
-Version 3.21.5 (May 1, 2022)
+Version 3.22.0 (May 2, 2022)
 ---------------------------------
+
 **User-visible changes:**
+
+The Signedness Checker now checks calls to `equals()` as well as to `==`.  When
+two formal parameter types are annotated with @PolySigned, the two arguments at
+a call site must have the same signedness type annotation. (This differs from
+the standard rule for polymorphic qualifiers.)
 
 **Implementation details:**
 
+When passed a NewClassTree that creates an anonymous constructor,
+AnnotatedTypeFactory#constructorFormUse now returns the type of the anonymous
+constructor rather than the type of the super constructor invoked in the
+anonymous classes constructor.  If the super constructor has explicit
+annotations, they are copied to the anonymous classes constructor.
+
 **Closed issues:**
+#5113.
 
 
 Version 3.21.4-eisop1 (April 4, 2022)

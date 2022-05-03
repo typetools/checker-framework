@@ -712,10 +712,22 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-        AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-        dependentTypesHelper.atExpression(superResult, newClassTree);
+    protected List<AnnotatedTypeMirror> getExplicitNewClassClassTypeArgs(
+            NewClassTree newClassTree) {
+        List<AnnotatedTypeMirror> superResult =
+                super.getExplicitNewClassClassTypeArgs(newClassTree);
+        for (AnnotatedTypeMirror superR : superResult) {
+            dependentTypesHelper.atExpression(superR, newClassTree);
+        }
         return superResult;
+    }
+
+    @Override
+    public Set<AnnotationMirror> getExplicitNewClassAnnos(NewClassTree newClassTree) {
+        Set<AnnotationMirror> superResult = super.getExplicitNewClassAnnos(newClassTree);
+        AnnotatedTypeMirror dummy = getAnnotatedNullType(superResult);
+        dependentTypesHelper.atExpression(dummy, newClassTree);
+        return dummy.getAnnotations();
     }
 
     /**

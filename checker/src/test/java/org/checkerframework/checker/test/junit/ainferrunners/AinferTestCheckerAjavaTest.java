@@ -26,6 +26,7 @@ public class AinferTestCheckerAjavaTest extends CheckerFrameworkPerDirectoryTest
                 AinferTestChecker.class,
                 "ainfer-testchecker/non-annotated",
                 "-Ainfer=ajava",
+                "-Aajava=tests/ainfer-testchecker/input-annotation-files/ExistingPurityAnnotations-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava",
                 "-Awarns");
     }
 

@@ -151,6 +151,18 @@ class MustCallConsistencyAnalyzer {
      */
     private final ResourceLeakAnnotatedTypeFactory typeFactory;
 
+    /**
+     * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on
+     * a node. The cache prevents repeatedly computing least upper bounds on stores
+     */
+    private Map<Node, CFStore> cmStoreAfter = new LinkedHashMap<>();
+
+    /**
+     * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
+     * node. The cache prevents repeatedly computing least upper bounds on stores
+     */
+    private Map<Node, CFStore> mcStoreAfter = new LinkedHashMap<>();
+
     /** The Resource Leak Checker, used to issue errors. */
     private final ResourceLeakChecker checker;
 
@@ -1759,14 +1771,25 @@ class MustCallConsistencyAnalyzer {
                         // Use the called-methods store immediately after the last node in
                         // currentBlock.
                         Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)
-                        cmStore = typeFactory.getStoreAfter(last);
+
+                        if (cmStoreAfter.containsKey(last)) {
+                            cmStore = cmStoreAfter.get(last);
+                        } else {
+                            cmStore = typeFactory.getStoreAfter(last);
+                            cmStoreAfter.put(last, cmStore);
+                        }
                         // If this is an exceptional block, check the MC store beforehand to avoid
                         // issuing an error about a call to a CreatesMustCallFor method that might
                         // throw an exception. Otherwise, use the store after.
                         if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
                             mcStore = mcAtf.getStoreBefore(last); // 2a. (MC)
                         } else {
-                            mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
+                            if (mcStoreAfter.containsKey(last)) {
+                                mcStore = mcStoreAfter.get(last);
+                            } else {
+                                mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
+                                mcStoreAfter.put(last, mcStore);
+                            }
                         }
                     }
                     checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
