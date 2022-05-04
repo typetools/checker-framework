@@ -946,15 +946,11 @@ the \<-X> command-line argument is passed.
 
 \begin{enumerate}
 
-\item Declare a dependency on the Checker Framework artifacts, either from
-  Maven Central or from a local directory.  Find the
+\item Declare a dependency on the Checker Framework artifacts from
+  Maven Central.  Find the
   existing \code{<dependencies>} section (not within
   \code{<dependencyManagement>}, but somewhere else) and add the following new
   \code{<dependency>} items:
-
-\begin{enumerate}
-\item
-  To obtain artifacts from Maven Central:
 
 \begin{alltt}
   <dependencies>
@@ -974,8 +970,6 @@ latest bug fixes and new features:
 \begin{Verbatim}
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
-
-\end{enumerate}
 
 \item If using JDK 8, use a Maven property to hold the location of the
   Error Prone \<javac.jar>.
