@@ -4,7 +4,7 @@ plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id 'de.undercouch.download' version '5.0.4'
+    id 'de.undercouch.download' version '5.0.5'
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id 'net.ltgt.errorprone' version '2.0.2'
@@ -110,7 +110,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.21.4-eisop2-SNAPSHOT'
+    version '3.22.0'
 
     repositories {
         mavenCentral()
@@ -743,7 +743,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-        ext.errorproneVersion = '2.11.0'
+        ext.errorproneVersion = '2.13.1'
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
         // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.

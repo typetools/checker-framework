@@ -11,6 +11,7 @@ import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -160,7 +161,7 @@ public class KeyForPropagator {
             NewClassTree newClassTree,
             AnnotatedTypeMirror type,
             KeyForAnnotatedTypeFactory atypeFactory) {
-        if (type.getKind() != TypeKind.DECLARED) {
+        if (type.getKind() != TypeKind.DECLARED || TreeUtils.isDiamondTree(newClassTree)) {
             return;
         }
         TreePath path = atypeFactory.getPath(newClassTree);

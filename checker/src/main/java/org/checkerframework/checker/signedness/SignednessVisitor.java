@@ -3,8 +3,12 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
+import org.checkerframework.checker.interning.InterningVisitor;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -12,6 +16,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -127,6 +132,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
             case EQUAL_TO:
             case NOT_EQUAL_TO:
+                if (!atypeFactory.maybeIntegral(leftOpType)
+                        || !atypeFactory.maybeIntegral(rightOpType)) {
+                    break;
+                }
                 if (leftOpType.hasAnnotation(Unsigned.class)
                         && rightOpType.hasAnnotation(Signed.class)) {
                     checker.reportError(
@@ -177,6 +186,69 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
         }
         return super.visitBinary(node, p);
+    }
+
+    // Ensure that method annotations are not written on methods they don't apply to.
+    // Copied from InterningVisitor
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
+        boolean hasEqualsMethodAnno =
+                atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
+        int params = methElt.getParameters().size();
+        if (hasEqualsMethodAnno && !(params == 1 || params == 2)) {
+            checker.reportError(
+                    node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
+        }
+
+        return super.visitMethod(node, p);
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        ExecutableElement methElt = TreeUtils.elementFromUse(node);
+        boolean hasEqualsMethodAnno =
+                atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
+        if (hasEqualsMethodAnno || InterningVisitor.isInvocationOfEquals(node)) {
+            int params = methElt.getParameters().size();
+            if (!(params == 1 || params == 2)) {
+                checker.reportError(
+                        node,
+                        "invalid.method.annotation",
+                        "@EqualsMethod",
+                        "1 or 2",
+                        methElt,
+                        params);
+            } else {
+                AnnotatedTypeMirror leftOpType;
+                AnnotatedTypeMirror rightOpType;
+                if (params == 1) {
+                    leftOpType = atypeFactory.getReceiverType(node);
+                    rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+                } else if (params == 2) {
+                    leftOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+                    rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(1));
+                } else {
+                    throw new BugInCF("Checked that params is 1 or 2");
+                }
+                if (!atypeFactory.maybeIntegral(leftOpType)
+                        || !atypeFactory.maybeIntegral(rightOpType)) {
+                    // nothing to do
+                } else if (leftOpType.hasAnnotation(Unsigned.class)
+                        && rightOpType.hasAnnotation(Signed.class)) {
+                    checker.reportError(
+                            node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
+                } else if (leftOpType.hasAnnotation(Signed.class)
+                        && rightOpType.hasAnnotation(Unsigned.class)) {
+                    checker.reportError(
+                            node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
+                }
+            }
+            // Don't check against the annotated method declaration (which super would do).
+            return null;
+        }
+
+        return super.visitMethodInvocation(node, p);
     }
 
     /**
@@ -308,7 +380,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
     @Override
     protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-        if (atypeFactory.isNotNumberOrChar(castType)) {
+        if (!atypeFactory.maybeIntegral(castType)) {
             // If the cast is not a number or a char, then it is legal.
             return true;
         }

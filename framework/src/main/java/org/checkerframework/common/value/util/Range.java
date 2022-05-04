@@ -302,7 +302,10 @@ public class Range {
      * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
      * 32-bit integers, convert the bounds to Integer type in accordance with Java twos-complement
      * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
+     *
+     * @return this range, converted to to a 32-bit integral range
      */
+    @SuppressWarnings("UnnecessaryLongToIntConversion")
     public Range intRange() {
         if (this.isNothing()) {
             return this;
