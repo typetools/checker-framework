@@ -83,7 +83,7 @@ public class Default implements Comparable<Default> {
                 + location.name()
                 + " => "
                 + anno
-                + (applyToSubpackages ? "applies to subpackages" : "")
+                + (applyToSubpackages ? " applies to subpackages" : "")
                 + " )";
     }
 }
