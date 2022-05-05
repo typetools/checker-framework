@@ -113,6 +113,14 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
 
   /**
+   * The Pattern.compile method that takes two formal parameters (second one is flags).
+   *
+   * @see java.util.regex.Pattern#compile(String, int)
+   */
+  private final ExecutableElement patternCompile2 =
+      TreeUtils.getMethod("java.util.regex.Pattern", "compile", 2, processingEnv);
+
+  /**
    * Create a new RegexAnnotatedTypeFactory.
    *
    * @param checker the checker
@@ -416,8 +424,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-      // TODO: Also get this to work with 2 argument Pattern.compile.
-      if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)) {
+      if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)
+          || TreeUtils.isMethodInvocation(tree, patternCompile2, processingEnv)) {
         ExpressionTree arg0 = tree.getArguments().get(0);
 
         final AnnotatedTypeMirror argType = getAnnotatedType(arg0);
