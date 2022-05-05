@@ -712,7 +712,7 @@ public class AnnotatedTypes {
 
         // Is the method a generic method?
         if (elt.getTypeParameters().isEmpty()) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         List<? extends Tree> targs;

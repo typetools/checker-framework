@@ -2647,8 +2647,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
-                new HashMap<>(
-                        AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con));
+                AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
         List<AnnotatedTypeMirror> typeargs;
         if (typeParamToTypeArg.isEmpty()) {
             typeargs = Collections.emptyList();
