@@ -94,7 +94,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
         Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
         for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
             if (kind.hasElements()) {
-                throw new TypeSystemError(kind + "has elements");
+                throw new TypeSystemError(kind + " has elements");
             }
             quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
         }
