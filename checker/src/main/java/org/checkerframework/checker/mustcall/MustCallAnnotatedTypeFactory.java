@@ -357,7 +357,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy() {
+    protected QualifierHierarchy createQualifierHierarchy() {
         return new SubtypeIsSubsetQualifierHierarchy(
                 this.getSupportedTypeQualifiers(), this.getProcessingEnv());
     }

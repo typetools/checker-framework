@@ -96,7 +96,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy() {
+    protected QualifierHierarchy createQualifierHierarchy() {
         return new FenumQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
