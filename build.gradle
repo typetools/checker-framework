@@ -1213,8 +1213,10 @@ assemble.mustRunAfter(clean)
  */
 task fastAssemble(group: 'Build') {
     description 'Assembles the outputs of this project without generating any Javadoc or sources.jar files'
-    tasks.withType(Javadoc) {
-        enabled = false
+    doFirst {
+        tasks.withType(Javadoc) {
+            enabled = false
+        }
     }
 
     finalizedBy assemble
