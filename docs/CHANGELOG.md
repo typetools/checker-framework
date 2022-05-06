@@ -1,4 +1,4 @@
-Version 3.22.0-eisop1 (May ?, 2022)
+Version 3.22.0-eisop1 (May 6, 2022)
 -----------------------------------
 
 **User-visible changes:**
