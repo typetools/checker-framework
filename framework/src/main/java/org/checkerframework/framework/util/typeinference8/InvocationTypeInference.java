@@ -158,11 +158,6 @@ public class InvocationTypeInference {
       //      checker.reportError(invocation, "type.inference.failed");
       throw ex;
       //      return null;
-    } catch (ProperType.CantCompute ex) {
-      // This exception is thrown when inference found an uninferred type argument when
-      // getting the type of an expression.
-      // This should be removed once Java 8 inference is actually used by the framework.
-      return null;
     }
 
     //    checkResult(result, invocation, e);
