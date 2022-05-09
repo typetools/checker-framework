@@ -139,12 +139,10 @@ public class InferenceFactory {
           AnnotatedTypeMirror res = factory.getAnnotatedType(methodTree).getReturnType();
           return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), context);
         } else {
-          // TODO: I don't think this should happen. during inference
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
-          AnnotatedExecutableType fninf =
-              factory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
+          AnnotatedExecutableType fninf = factory.getFunctionTypeFromTree(lambdaTree);
           AnnotatedTypeMirror res = fninf.getReturnType();
-          return new ProperType(res, TreeUtils.typeOf(lambdaTree), context);
+          return new ProperType(res, res.getUnderlyingType(), context);
         }
       default:
         if (assignmentContext.getKind().asInterface().equals(CompoundAssignmentTree.class)) {

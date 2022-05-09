@@ -155,9 +155,9 @@ public class InvocationTypeInference {
       // Framework. However, given how buggy javac inference is, this probably will, so deal with it
       // gracefully.
 
-      checker.reportError(invocation, "type.inference.failed");
-      // throw ex;
-      return null;
+      //      checker.reportError(invocation, "type.inference.failed");
+      throw ex;
+      //      return null;
     } catch (ProperType.CantCompute ex) {
       // This exception is thrown when inference found an uninferred type argument when
       // getting the type of an expression.
