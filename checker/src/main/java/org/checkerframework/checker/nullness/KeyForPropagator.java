@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * KeyForPropagator is used to move nested KeyFor annotations in type arguments from one side of a
@@ -156,7 +157,7 @@ public class KeyForPropagator {
       NewClassTree newClassTree,
       AnnotatedTypeMirror type,
       KeyForAnnotatedTypeFactory atypeFactory) {
-    if (type.getKind() != TypeKind.DECLARED) {
+    if (type.getKind() != TypeKind.DECLARED || TreeUtils.isDiamondTree(newClassTree)) {
       return;
     }
     TreePath path = atypeFactory.getPath(newClassTree);
