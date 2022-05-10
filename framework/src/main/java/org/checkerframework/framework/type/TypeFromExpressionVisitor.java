@@ -33,6 +33,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
@@ -357,7 +358,13 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   public AnnotatedTypeMirror visitMethodInvocation(
       MethodInvocationTree node, AnnotatedTypeFactory f) {
     AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
-    return f.applyCaptureConversion(ex.getReturnType().asUse());
+    AnnotatedTypeMirror returnT = ex.getReturnType().asUse();
+    if (TypesUtils.isCapturedTypeVariable(returnT.getUnderlyingType())
+        && !TypesUtils.isCapturedTypeVariable(TreeUtils.typeOf(node))) {
+      // This seems to be a bug in javac.
+      returnT = ((AnnotatedTypeVariable) returnT).getUpperBound();
+    }
+    return f.applyCaptureConversion(returnT);
   }
 
   @Override
