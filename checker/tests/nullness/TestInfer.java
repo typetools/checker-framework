@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 
-@SuppressWarnings("type.inference.not.same")
 public class TestInfer {
   <T extends Object> T getValue(List<T> l) {
     return l.get(0);

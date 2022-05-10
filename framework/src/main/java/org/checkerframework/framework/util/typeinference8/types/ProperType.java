@@ -63,12 +63,6 @@ public class ProperType extends AbstractType {
   private static AnnotatedTypeMirror verifyTypeKinds(
       AnnotatedTypeMirror atm, TypeMirror typeMirror) {
     assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
-    if (TypesUtils.isCapturedTypeVariable(atm.getUnderlyingType())) {
-      // ignore captures type variables:
-      // See
-      // /Users/smillst/jsr308/checker-framework/checker/tests/all-systems/java8inference/Bug1.java.
-      return atm;
-    }
     if (atm.getKind() == TypeKind.WILDCARD) {
       AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
       if (TypesUtils.isCapturedTypeVariable(typeMirror)) {
