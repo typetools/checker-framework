@@ -1,6 +1,12 @@
 class Handler extends Thread {
   boolean running;
-  static class Call { boolean isResponseDeferred() { return true; } }
+
+  static class Call {
+    boolean isResponseDeferred() {
+      return true;
+    }
+  }
+
   @Override
   public void run() {
     while (running) {
