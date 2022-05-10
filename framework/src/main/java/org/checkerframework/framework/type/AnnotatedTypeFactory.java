@@ -1251,6 +1251,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     addComputedTypeAnnotations(tree, type);
+    if (tree.getKind() == Kind.TYPE_CAST) {
+      type = applyCaptureConversion(type);
+    }
 
     if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
       // Don't cache VARIABLE
