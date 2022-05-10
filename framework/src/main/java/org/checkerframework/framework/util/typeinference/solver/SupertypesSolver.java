@@ -40,7 +40,7 @@ public class SupertypesSolver {
    * @return a mapping from target to inferred type. Note this class always infers concrete types
    *     and will not infer that the target is equivalent to another target.
    */
-  public InferenceResult solveFromSupertypes(
+  public OldInferenceResult solveFromSupertypes(
       final Set<TypeVariable> remainingTargets,
       final ConstraintMap constraintMap,
       final AnnotatedTypeFactory typeFactory) {
@@ -48,7 +48,7 @@ public class SupertypesSolver {
     final Lubs lubs = targetToTypeLubs(remainingTargets, constraintMap, typeFactory);
 
     // add the lub types to the outgoing solution
-    final InferenceResult solution = new InferenceResult();
+    final OldInferenceResult solution = new OldInferenceResult();
     for (final TypeVariable target : remainingTargets) {
       final AnnotatedTypeMirror lub = lubs.getType(target);
       AnnotationMirrorMap<AnnotationMirror> lubAnnos = lubs.getPrimaries(target);

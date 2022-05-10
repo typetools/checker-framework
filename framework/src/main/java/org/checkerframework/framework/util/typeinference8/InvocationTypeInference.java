@@ -13,7 +13,6 @@ import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,13 +142,12 @@ public class InvocationTypeInference {
    * @param methodType type of the method invocation
    * @return a list of inference variables that have been instantiated
    */
-  public List<Variable> infer(
-      ExpressionTree invocation, AnnotatedExecutableType methodType, boolean ignoreAnnoFail) {
-    List<Variable> result;
+  public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
+    InferenceResult result;
     try {
       ExecutableType e = methodType.getUnderlyingType();
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
-      result = inferInternal(invocation, invocationType, ignoreAnnoFail);
+      result = inferInternal(invocation, invocationType);
     } catch (FalseBoundException ex) {
       // This should never happen, if javac infers type arguments so should the Checker
       // Framework. However, given how buggy javac inference is, this probably will, so deal with it
@@ -169,8 +167,7 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
    */
-  private List<Variable> inferInternal(
-      ExpressionTree invocation, InvocationType invocationType, boolean ignoreAnnoFail) {
+  private InferenceResult inferInternal(ExpressionTree invocation, InvocationType invocationType) {
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -202,11 +199,7 @@ public class InvocationTypeInference {
       // TODO: the erasure of the return type should happen were the inferred type arguments
       // are substituted into the method type.
     }
-    if (ignoreAnnoFail || !b4.annoFail) {
-      return thetaPrime;
-    } else {
-      return Collections.emptyList();
-    }
+    return new InferenceResult(thetaPrime, b4.annoFail);
   }
 
   /**

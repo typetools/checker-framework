@@ -11,10 +11,10 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue.In
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 
 /**
- * Represents the result from inferring type arguments. InferenceResult is a map from: target type
- * variable to (inferred type or target).
+ * Represents the result from inferring type arguments. OldInferenceResult is a map from: target
+ * type variable to (inferred type or target).
  */
-public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> {
+public class OldInferenceResult extends LinkedHashMap<TypeVariable, InferredValue> {
   private static final long serialVersionUID = 6911459752070485818L;
 
   /**
@@ -114,11 +114,11 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
   /**
    * Merges values in subordinate into this result, keeping the results form any type arguments that
-   * were already contained by this InferenceResult.
+   * were already contained by this OldInferenceResult.
    *
    * @param subordinate a result which we wish to merge into this result
    */
-  public void mergeSubordinate(final InferenceResult subordinate) {
+  public void mergeSubordinate(final OldInferenceResult subordinate) {
     final LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
     final LinkedHashSet<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
     remainingSubKeys.removeAll(keySet());
@@ -135,7 +135,8 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
   }
 
   /** Performs a merge for a specific target, we keep only results that lead to a concrete type. */
-  protected InferredType mergeTarget(final TypeVariable target, final InferenceResult subordinate) {
+  protected InferredType mergeTarget(
+      final TypeVariable target, final OldInferenceResult subordinate) {
     final InferredValue inferred = this.get(target);
     if (inferred instanceof InferredTarget) {
       InferredType newType = mergeTarget(((InferredTarget) inferred).target, subordinate);

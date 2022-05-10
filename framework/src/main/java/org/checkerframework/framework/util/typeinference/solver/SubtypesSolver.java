@@ -33,18 +33,18 @@ public class SubtypesSolver {
    * @return a mapping from target to inferred type. Note this class always infers concrete types
    *     and will not infer that the target is equivalent to another target.
    */
-  public InferenceResult solveFromSubtypes(
+  public OldInferenceResult solveFromSubtypes(
       final Set<TypeVariable> remainingTargets,
       final ConstraintMap constraints,
       final AnnotatedTypeFactory typeFactory) {
     return glbSubtypes(remainingTargets, constraints, typeFactory);
   }
 
-  public InferenceResult glbSubtypes(
+  public OldInferenceResult glbSubtypes(
       final Set<TypeVariable> remainingTargets,
       final ConstraintMap constraints,
       final AnnotatedTypeFactory typeFactory) {
-    final InferenceResult inferenceResult = new InferenceResult();
+    final OldInferenceResult inferenceResult = new OldInferenceResult();
     final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
 
     final Types types = typeFactory.getProcessingEnv().getTypeUtils();
@@ -139,7 +139,7 @@ public class SubtypesSolver {
    */
   protected static void propagatePreviousGlbs(
       final Subtypes targetSubtypes,
-      InferenceResult solution,
+      OldInferenceResult solution,
       final Map<AnnotatedTypeMirror, AnnotationMirrorSet> subtypesOfTarget) {
 
     for (final Map.Entry<TypeVariable, AnnotationMirrorSet> subtypeTarget :

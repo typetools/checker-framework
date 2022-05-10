@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 
 /**
  * Instances of TypeArgumentInference are used to infer the types of method type arguments when no
@@ -57,16 +58,9 @@ public interface TypeArgumentInference {
       final ExecutableElement methodElem,
       final AnnotatedExecutableType methodType);
 
-  Map<TypeVariable, AnnotatedTypeMirror> inferNew(
+  InferenceResult inferNew(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree expressionTree,
       AnnotatedExecutableType methodType,
       TreePath pathToExpression);
-
-  Map<TypeVariable, AnnotatedTypeMirror> inferNew(
-      AnnotatedTypeFactory typeFactory,
-      ExpressionTree expressionTree,
-      AnnotatedExecutableType methodType,
-      TreePath pathToExpression,
-      boolean ignoreAnnoFail);
 }

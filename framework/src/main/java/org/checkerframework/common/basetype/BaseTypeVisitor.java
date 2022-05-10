@@ -74,7 +74,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -132,6 +131,7 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1612,11 +1612,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     ParameterizedExecutableType preI = atypeFactory.methodFromUse(node, false);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()) {
-      Map<TypeVariable, AnnotatedTypeMirror> args =
+      InferenceResult args =
           atypeFactory
               .getTypeArgumentInference()
-              .inferNew(atypeFactory, node, preI.executableType, getCurrentPath(), false);
-      if (args == null || args.isEmpty()) {
+              .inferNew(atypeFactory, node, preI.executableType, getCurrentPath());
+      if (args == null || args.isAnnoInferenceFailed()) {
         checker.reportError(
             node, "type.arguments.not.inferred", preI.executableType.getElement().getSimpleName());
         return null;
@@ -1938,11 +1938,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ParameterizedExecutableType preI = atypeFactory.constructorFromUse(node, false);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()
         || TreeUtils.isDiamondTree(node)) {
-      Map<TypeVariable, AnnotatedTypeMirror> args =
+      InferenceResult args =
           atypeFactory
               .getTypeArgumentInference()
-              .inferNew(atypeFactory, node, preI.executableType, getCurrentPath(), false);
-      if (args == null || args.isEmpty()) {
+              .inferNew(atypeFactory, node, preI.executableType, getCurrentPath());
+      if (args == null || args.isAnnoInferenceFailed()) {
         checker.reportError(
             node, "type.arguments.not.inferred", preI.executableType.getElement().getSimpleName());
         return null;

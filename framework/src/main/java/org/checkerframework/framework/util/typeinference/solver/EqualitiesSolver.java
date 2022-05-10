@@ -42,9 +42,9 @@ public class EqualitiesSolver {
    * @param constraintMap the set of constraints over the set of targets
    * @return a Map from target to (inferred type or target)
    */
-  public InferenceResult solveEqualities(
+  public OldInferenceResult solveEqualities(
       Set<TypeVariable> targets, ConstraintMap constraintMap, AnnotatedTypeFactory typeFactory) {
-    final InferenceResult solution = new InferenceResult();
+    final OldInferenceResult solution = new OldInferenceResult();
 
     do {
       dirty = false;
@@ -361,7 +361,7 @@ public class EqualitiesSolver {
   public InferredValue mergeConstraints(
       final TypeVariable target,
       final Equalities equalities,
-      final InferenceResult solution,
+      final OldInferenceResult solution,
       ConstraintMap constraintMap,
       AnnotatedTypeFactory typeFactory) {
     final AnnotationMirrorSet tops =
