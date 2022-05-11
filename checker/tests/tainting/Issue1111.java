@@ -7,12 +7,16 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class Issue1111 {
   void foo(Box<? super Integer> box, List<Integer> list) {
-    // :: error: (argument)
+    // :: error: (type.arguments.not.inferred)
     bar(box, list);
   }
 
   void foo2(Box<@Untainted ? super Integer> box, List<Integer> list) {
-    // :: error: (argument)
+    // :: error: (type.arguments.not.inferred)
+    bar(box, list);
+  }
+
+  void foo3(Box<@Untainted ? super Integer> box, List<@Untainted Integer> list) {
     bar(box, list);
   }
 
