@@ -117,7 +117,7 @@ public class ProperType extends AbstractType {
     TypeMirror subType = getJavaType();
     TypeMirror superJavaType = superType.getJavaType();
 
-    if (context.typeFactory.types.isSubtype(subType, superJavaType)
+    if (context.typeFactory.types.isAssignable(subType, superJavaType)
         || TypesUtils.isErasedSubtype(subType, superJavaType, context.typeFactory.types)) {
       AnnotatedTypeMirror superATM = superType.getAnnotatedType();
       AnnotatedTypeMirror subATM = this.getAnnotatedType();
