@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,14 +102,20 @@ public class WholeProgramInferenceJavaParserStorage
   /** Mapping from source file to the wrapper for the compilation unit parsed from that file. */
   private Map<String, CompilationUnitAnnos> sourceToAnnos = new HashMap<>();
 
+  /** Whether the {@code -AinferOutputOriginal} option was supplied to the checker. */
+  private final boolean inferOutputOriginal;
+
   /**
    * Constructs a new {@code WholeProgramInferenceJavaParser} that has not yet inferred any
    * annotations.
    *
    * @param atypeFactory the associated type factory
+   * @param inferOutputOriginal whether the -AinferOutputOriginal option was supplied to the checker
    */
-  public WholeProgramInferenceJavaParserStorage(AnnotatedTypeFactory atypeFactory) {
+  public WholeProgramInferenceJavaParserStorage(
+      AnnotatedTypeFactory atypeFactory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
+    this.inferOutputOriginal = inferOutputOriginal;
   }
 
   @Override
@@ -715,7 +723,6 @@ public class WholeProgramInferenceJavaParserStorage
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
       prepareCompilationUnitForWriting(root);
-      root.transferAnnotations(checker);
       String packageDir = AJAVA_FILES_PATH;
       if (root.compilationUnit.getPackageDeclaration().isPresent()) {
         packageDir +=
@@ -737,26 +744,44 @@ public class WholeProgramInferenceJavaParserStorage
         name = name.substring(0, name.length() - ".java".length());
       }
 
-      name += "-" + checker.getClass().getCanonicalName() + ".ajava";
-      String outputPath = packageDir + File.separator + name;
-      try {
-        FileWriter writer = new FileWriter(outputPath);
-
-        // JavaParser can output using lexical preserving printing, which writes the file such that
-        // its formatting is close to the original source file it was parsed from as
-        // possible. Currently, this feature is very buggy and crashes when adding annotations in
-        // certain locations. This implementation could be used instead if it's fixed in JavaParser.
-        // LexicalPreservingPrinter.print(root.declaration, writer);
-
-        DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
-        writer.write(prettyPrinter.print(root.compilationUnit));
-        writer.close();
-      } catch (IOException e) {
-        throw new BugInCF("Error while writing ajava file " + outputPath, e);
+      String nameWithChecker = name + "-" + checker.getClass().getCanonicalName() + ".ajava";
+      String outputPath = packageDir + File.separator + nameWithChecker;
+      if (this.inferOutputOriginal) {
+        String outputPathNoCheckerName = packageDir + File.separator + name + ".ajava";
+        // Avoid re-writing this file for each checker that was run.
+        if (Files.notExists(Paths.get(outputPathNoCheckerName))) {
+          writeAjavaFile(outputPathNoCheckerName, root);
+        }
       }
+      root.transferAnnotations(checker);
+      writeAjavaFile(outputPath, root);
     }
 
     modifiedFiles.clear();
+  }
+
+  /**
+   * Write an ajava file to disk.
+   *
+   * @param outputPath the path to which the ajava file should be written
+   * @param root the compilation unit to be written
+   */
+  private void writeAjavaFile(String outputPath, CompilationUnitAnnos root) {
+    try {
+      FileWriter writer = new FileWriter(outputPath);
+
+      // JavaParser can output using lexical preserving printing, which writes the file such that
+      // its formatting is close to the original source file it was parsed from as
+      // possible. Currently, this feature is very buggy and crashes when adding annotations in
+      // certain locations. This implementation could be used instead if it's fixed in JavaParser.
+      // LexicalPreservingPrinter.print(root.declaration, writer);
+
+      DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+      writer.write(prettyPrinter.print(root.compilationUnit));
+      writer.close();
+    } catch (IOException e) {
+      throw new BugInCF("Error while writing ajava file " + outputPath, e);
+    }
   }
 
   /**

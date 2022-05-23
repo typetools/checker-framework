@@ -683,6 +683,11 @@ Type-checking modes:  enable/disable functionality
   Using \<-Ainfer=stubs> produces \<.astub> files.
   Using \<-Ainfer=ajava> produces \<.ajava> files.
   You must also supply \<-Awarns>, or the inference output may be incomplete.
+\item \<-AinferOutputOriginal>
+  When outputting \<.ajava> files when running with \<-Ainfer=ajava>,
+  also output a copy of the original file with no inferred annotations,
+  but with the formatting of a \<.ajava> file, to permit use of \<diff>
+  to view the inferred annotations. Must be combined with \<-Ainfer=ajava>.
 \item \<-AshowSuppressWarningsStrings>
   With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
