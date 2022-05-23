@@ -102,7 +102,7 @@ public class WholeProgramInferenceJavaParserStorage
   /** Mapping from source file to the wrapper for the compilation unit parsed from that file. */
   private Map<String, CompilationUnitAnnos> sourceToAnnos = new HashMap<>();
 
-  /** Whether the -AinferOutputOriginal option was supplied to the checker. */
+  /** Whether the {@code -AinferOutputOriginal} option was supplied to the checker. */
   private final boolean inferOutputOriginal;
 
   /**
