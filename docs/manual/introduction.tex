@@ -865,14 +865,16 @@ when running \<javac>.
 
 ``Auto-discovery'' makes the \code{javac} compiler always run an
 annotation processor, such as a checker
-plugin without explicitly passing the \code{-processor}
+plugin, without explicitly passing the \code{-processor}
 command-line option.  This can make your command line shorter, and it ensures
 that your code is checked even if you forget the command-line option.
 
 If the \<javac> command line specifies any \<-processor> command-line
 option, then auto-discovery is disabled.  This means that if your project
 currently uses auto-discovery, you should use auto-discovery for the
-Checker Framework too.
+Checker Framework too.  (Alternately, if you prefer to use a \<-processor>
+command-line argument, you will need to specify all annotation processors,
+including ones that used to be auto-discovered.)
 
 \begin{sloppypar}
 To enable auto-discovery, place a configuration file named
