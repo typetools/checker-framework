@@ -1,0 +1,6 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+// Explicit bound corresponds to "T extends @NonNull Object"
+class NullableBox<T extends Object> {
+    static <S extends Object> NullableBox<S> of(S in);
+}

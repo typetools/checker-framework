@@ -1816,6 +1816,18 @@ public class AnnotationFileParser {
                     stubWarnNotFound(
                             param, "Annotations on intersection types are not yet supported");
                 }
+                if (param.getTypeBound().size() == 1
+                        && param.getTypeBound().get(0).getAnnotations().isEmpty()
+                        && paramType
+                                .getUpperBound()
+                                .getUnderlyingType()
+                                .toString()
+                                .contentEquals("java.lang.Object")) {
+                    // If there is an explicit "T extends Object" type parameter bound,
+                    // treat it like an explicit use of "Object" in code.
+                    AnnotatedTypeMirror ub = atypeFactory.getAnnotatedType(Object.class);
+                    paramType.getUpperBound().replaceAnnotations(ub.getAnnotations());
+                }
             }
             putMerge(
                     annotationFileAnnos.atypes,
