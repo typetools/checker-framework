@@ -153,7 +153,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       // Inference is running and is asking for the type of the method before type arguments are
       // substituted. So don't infer any type arguments.  This happens when getting the type of a
       // lambda's returned expression.
-      return InferenceResult.emptyResult(outerTree);
+      return InferenceResult.emptyResult();
     }
     if (outerTree != expressionTree) {
       if (outerTree.getKind() == Tree.Kind.METHOD_INVOCATION) {

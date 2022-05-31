@@ -450,6 +450,11 @@ public class InferenceFactory {
       // for the class type parameters, too.
       Element classEle =
           ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse((NewClassTree) invocation));
+      if (classEle.getSimpleName().contentEquals("")) {
+        classEle =
+            ((DeclaredType) TreeUtils.typeOf(((NewClassTree) invocation).getIdentifier()))
+                .asElement();
+      }
       DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
 
       AnnotatedDeclaredType classType =
