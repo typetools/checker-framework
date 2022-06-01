@@ -3,4 +3,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // T corresponds to "T extends @Nullable Object"
 class NullableBox<T> {
     static <S> NullableBox<S> of(S in);
+    static void consume(NullableBox<?> producer);
+    static void nonnull(NullableBox<?> producer);
 }

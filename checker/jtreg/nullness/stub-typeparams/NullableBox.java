@@ -1,3 +1,4 @@
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // This class is not compiled with the Nullness Checker,
@@ -7,4 +8,8 @@ public class NullableBox<T extends @Nullable Object> {
         // Implementation doesn't matter.
         return null;
     }
+
+    static void consume(NullableBox<? extends @Nullable Object> producer) {}
+
+    static void nonnull(NullableBox<? extends @NonNull Object> producer) {}
 }

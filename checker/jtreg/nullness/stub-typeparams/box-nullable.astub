@@ -2,4 +2,5 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Box<T extends @Nullable Object> {
     static <S extends @Nullable Object> Box<S> of(S in);
+    static void consume(Box<? extends @Nullable Object> producer);
 }

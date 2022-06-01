@@ -1578,7 +1578,23 @@ public class AnnotationFileParser {
                             null,
                             astNode);
                     annotate(wildcardType.getExtendsBound(), primaryAnnotations, astNode);
+                } else if (primaryAnnotations.isEmpty()) {
+                    // Unannotated unbounded wildcard "?": remove any existing annotations and
+                    // add the annotations from the type variable corresponding to the wildcard.
+                    wildcardType.getExtendsBound().clearAnnotations();
+                    wildcardType.getSuperBound().clearAnnotations();
+                    AnnotatedTypeVariable atv =
+                            (AnnotatedTypeVariable)
+                                    atypeFactory.getAnnotatedType(
+                                            wildcardType.getTypeVariable().asElement());
+                    wildcardType
+                            .getExtendsBound()
+                            .addAnnotations(atv.getUpperBound().getAnnotations());
+                    wildcardType
+                            .getSuperBound()
+                            .addAnnotations(atv.getLowerBound().getAnnotations());
                 } else {
+                    // Annotated unbounded wildcard "@A ?": use annotations.
                     annotate(atype, primaryAnnotations, astNode);
                 }
                 break;

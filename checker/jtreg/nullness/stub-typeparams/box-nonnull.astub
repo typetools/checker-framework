@@ -2,4 +2,5 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 class Box<T extends @NonNull Object> {
     static <S extends @NonNull Object> Box<S> of(S in);
+    static void consume(Box<? extends @NonNull Object> producer);
 }

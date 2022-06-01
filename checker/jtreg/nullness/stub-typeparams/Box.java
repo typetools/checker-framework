@@ -5,4 +5,6 @@ public class Box<T> {
         // Implementation doesn't matter.
         return null;
     }
+
+    static void consume(Box<?> producer) {}
 }
