@@ -9,6 +9,9 @@ Version 3.22.1-eisop1 (June ?, 2022)
 
 typetools#3030, typetools#3236.
 
+Test cases for issues that already pass:
+typetools#2722, typetools#2995, typetools#3015, typetools#3027.
+
 
 Version 3.22.1 (June 1, 2022)
 ---------------------------------
