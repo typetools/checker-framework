@@ -2771,7 +2771,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param newClassTree a diamond new class tree
    * @return the class type arguments for {@code newClassTree}
    */
-  private List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
+  @Deprecated
+  public List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
     assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
     AnnotatedDeclaredType diamondType =
         (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
