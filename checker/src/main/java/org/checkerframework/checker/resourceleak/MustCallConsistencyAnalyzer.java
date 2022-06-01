@@ -1052,8 +1052,12 @@ class MustCallConsistencyAnalyzer {
         }
       }
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
-      removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
-          obligations, (LocalVariableNode) rhs);
+      if (rhs instanceof FieldAccessNode) {
+        // Handling of @Owning fields is a completely separate check.
+      } else if (rhs instanceof LocalVariableNode) {
+        removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
+            obligations, (LocalVariableNode) rhs);
+      }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);

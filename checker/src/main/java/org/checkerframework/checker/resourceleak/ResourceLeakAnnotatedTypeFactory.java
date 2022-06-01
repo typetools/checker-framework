@@ -188,7 +188,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       return Collections.emptyList();
     }
     return AnnotationUtils.getElementValueArray(
-        mustCallAnnotation, mustCallValueElement, String.class);
+        mustCallAnnotation, mustCallValueElement, String.class, Collections.emptyList());
   }
 
   /**
@@ -231,7 +231,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param tree the tree of the expression the tempvar represents
    */
   /* package-private */ void addTempVar(LocalVariableNode tmpVar, Tree tree) {
-    tempVarToTree.put(tmpVar, tree);
+    if (!tempVarToTree.containsValue(tree)) {
+      tempVarToTree.put(tmpVar, tree);
+    }
   }
 
   /**

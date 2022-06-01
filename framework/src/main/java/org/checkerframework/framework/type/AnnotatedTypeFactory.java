@@ -582,10 +582,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                   + " should be one of: -Ainfer=jaifs, -Ainfer=stubs, -Ainfer=ajava");
       }
       boolean showWpiFailedInferences = checker.hasOption("showWpiFailedInferences");
+      boolean inferOutputOriginal = checker.hasOption("inferOutputOriginal");
+      if (inferOutputOriginal && wpiOutputFormat != WholeProgramInference.OutputFormat.AJAVA) {
+        checker.message(
+            Diagnostic.Kind.WARNING,
+            "-AinferOutputOriginal only works with -Ainfer=ajava, so it is being ignored.");
+      }
       if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
-                this, new WholeProgramInferenceJavaParserStorage(this), showWpiFailedInferences);
+                this,
+                new WholeProgramInferenceJavaParserStorage(this, inferOutputOriginal),
+                showWpiFailedInferences);
       } else {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<ATypeElement>(
@@ -891,20 +899,48 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       String qualifiedName = packagePrefix + className;
 
+      // If the set candidateAjavaFiles has exactly one element after the loop, a specific .ajava
+      // file was supplied, with no ambiguity, and can be parsed. For an explanation, see the
+      // comment below about possible ambiguity.
+      Set<String> candidateAjavaFiles = new HashSet<>(1);
+      // All .ajava files for this class + checker combo end in this string.
+      String ajavaEnding =
+          qualifiedName.replaceAll("\\.", "/")
+              + "-"
+              + checker.getClass().getCanonicalName()
+              + ".ajava";
       for (String ajavaLocation : checker.getOption("ajava").split(File.pathSeparator)) {
-        String ajavaPath =
-            ajavaLocation
-                + File.separator
-                + qualifiedName.replaceAll("\\.", "/")
-                + "-"
-                + checker.getClass().getCanonicalName()
-                + ".ajava";
-        File ajavaFile = new File(ajavaPath);
-        if (ajavaFile.exists()) {
-          currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-          currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
-          break;
+        // ajavaLocation might either be (1) a directory, or (2) the name of a specific
+        // ajava file. This code must handle both possible cases.
+        // Case (1): ajavaPath is a directory
+        String ajavaPath = ajavaLocation + File.separator + ajavaEnding;
+        File ajavaFileInDir = new File(ajavaPath);
+        if (ajavaFileInDir.exists()) {
+          // There is a candidate ajava file in one of the root directories.
+          candidateAjavaFiles.add(ajavaPath);
+        } else {
+          // Check case (2): ajavaPath might be a specific .ajava file. The tricky thing about this
+          // is that the "root" is not known, so the correct .ajava file might be
+          // ambiguous. Consider the following: there are two ajava files:
+          // ~/foo/foo/Bar-checker.ajava and ~/baz/foo/Bar-checker.ajava. Which is the correct one
+          // for class foo.Bar? It depends on whether there is a foo.foo.Bar or a baz.foo.Bar
+          // elsewhere in the project. For that reason, parsing using a specific file is done at the
+          // **end** of the loop, and if there is more than one match no file is parsed for this
+          // class and a warning is issued instead. The user can disambiguate by supplying a root
+          // directory, instead of specific files.
+          if (ajavaLocation.endsWith(File.separator + ajavaEnding)) {
+            // This is a candidate ajava file. If it is the only candidate, then it might be
+            // unambiguous. If not, issue a warning.
+            candidateAjavaFiles.add(ajavaLocation);
+          }
         }
+      }
+      if (candidateAjavaFiles.size() == 1) {
+        currentFileAjavaTypes = new AnnotationFileElementTypes(this);
+        currentFileAjavaTypes.parseAjavaFileWithTree(
+            candidateAjavaFiles.toArray(new String[1])[0], root);
+      } else if (candidateAjavaFiles.size() > 1) {
+        checker.reportWarning(root, "ambiguous.ajava", String.join(", ", candidateAjavaFiles));
       }
     } else {
       currentFileAjavaTypes = null;
@@ -2584,7 +2620,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // parameter of the anonymous constructor. For example,
         // class Outer { class Inner {} }
         //  new Inner(){};
-        // Then javac creates the followong constructor:
+        // Then javac creates the following constructor:
         //  (.Outer x0) {
         //   x0.super();
         //   }
@@ -2628,47 +2664,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     stubTypes.injectRecordComponentType(types, ctor, con);
     return new ParameterizedExecutableType(con, typeargs);
-  }
-
-  /**
-   * Infer the class type arguments for the diamond operator.
-   *
-   * <p>If {@code newClassTree} is assigned to the same type (not a supertype), then the type
-   * arguments are inferred to be the same as the assignment. Otherwise, the type arguments are
-   * annotated by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
-   *
-   * @param newClassTree a diamond new class tree
-   * @return the class type arguments for {@code newClassTree}
-   */
-  @Deprecated
-  public List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
-    assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
-    AnnotatedDeclaredType diamondType =
-        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-
-    TreePath p = getPath(newClassTree);
-    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-    if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
-      AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
-      if (diamondType.getTypeArguments().size() == adctx.getTypeArguments().size()) {
-        // Try to simply take the type arguments from LHS.
-        List<AnnotatedTypeMirror> oldArgs = diamondType.getTypeArguments();
-        List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
-        boolean useLhs = true;
-        for (int i = 0; i < diamondType.getTypeArguments().size(); ++i) {
-          if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
-            // One of the underlying types doesn't match. Give up.
-            useLhs = false;
-            break;
-          }
-        }
-        if (useLhs) {
-          return newArgs;
-        }
-      }
-    }
-    addComputedTypeAnnotations(newClassTree, diamondType);
-    return diamondType.getTypeArguments();
   }
 
   /**
@@ -2764,6 +2759,46 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return ((AnnotatedDeclaredType) fromTypeTree(newClass.getIdentifier())).getTypeArguments();
     }
     return Collections.emptyList();
+  }
+
+  /**
+   * Infer the class type arguments for the diamond operator.
+   *
+   * <p>If {@code newClassTree} is assigned to the same type (not a supertype), then the type
+   * arguments are inferred to be the same as the assignment. Otherwise, the type arguments are
+   * annotated by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * @param newClassTree a diamond new class tree
+   * @return the class type arguments for {@code newClassTree}
+   */
+  private List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
+    assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
+    AnnotatedDeclaredType diamondType =
+        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+
+    TreePath p = getPath(newClassTree);
+    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
+    if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
+      if (diamondType.getTypeArguments().size() == adctx.getTypeArguments().size()) {
+        // Try to simply take the type arguments from LHS.
+        List<AnnotatedTypeMirror> oldArgs = diamondType.getTypeArguments();
+        List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
+        boolean useLhs = true;
+        for (int i = 0; i < diamondType.getTypeArguments().size(); ++i) {
+          if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
+            // One of the underlying types doesn't match. Give up.
+            useLhs = false;
+            break;
+          }
+        }
+        if (useLhs) {
+          return newArgs;
+        }
+      }
+    }
+    addComputedTypeAnnotations(newClassTree, diamondType);
+    return diamondType.getTypeArguments();
   }
 
   /**
@@ -3011,7 +3046,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the types of the two arguments to a binarya operation, accounting for widening and
+   * Returns the types of the two arguments to a binary operation, accounting for widening and
    * unboxing if applicable.
    *
    * @param left the type of the left argument of a binary operation

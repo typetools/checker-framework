@@ -3,7 +3,7 @@ package org.checkerframework.checker.test.junit.ainferrunners;
 import java.io.File;
 import java.util.List;
 import org.checkerframework.checker.testchecker.ainfer.AinferTestChecker;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.AinferGeneratePerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
  * the expected ones. The errors on .java files must be ignored.
  */
 @Category(AinferTestCheckerStubsTest.class)
-public class AinferTestCheckerStubsTest extends CheckerFrameworkPerDirectoryTest {
+public class AinferTestCheckerStubsTest extends AinferGeneratePerDirectoryTest {
 
   /** @param testFiles the files containing test code, which will be type-checked */
   public AinferTestCheckerStubsTest(List<File> testFiles) {
@@ -26,6 +26,7 @@ public class AinferTestCheckerStubsTest extends CheckerFrameworkPerDirectoryTest
         "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
         "-Ainfer=stubs",
+        "-Astubs=tests/ainfer-testchecker/input-annotation-files/ExistingPurityAnnotations-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.astub",
         "-Awarns");
   }
 

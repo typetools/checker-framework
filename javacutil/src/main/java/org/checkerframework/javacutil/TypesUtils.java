@@ -888,9 +888,11 @@ public final class TypesUtils {
     }
     // Special case for primitives.
     if (isPrimitive(t1) || isPrimitive(t2)) {
-      if (types.isAssignable(t1, t2)) {
+      // NOTE: we need to know which type is primitive because e.g. int and Integer are assignable
+      // to each other.
+      if (isPrimitive(t1) && types.isAssignable(t1, t2)) {
         return t2;
-      } else if (types.isAssignable(t2, t1)) {
+      } else if (isPrimitive(t2) && types.isAssignable(t2, t1)) {
         return t1;
       } else {
         Elements elements = processingEnv.getElementUtils();
@@ -1050,17 +1052,19 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the superclass or interface of the given class. Returns null if there is not one.
+   * Returns the superclass the given type. If there is no superclass the first interface returned
+   * by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a superclass
+   * nor a superinterface, then null is returned.
    *
    * @param type a type
    * @param types type utilities
-   * @return the superclass of the given class, or null
+   * @return the superclass or super interface of the given type, or null
    */
   public static @Nullable DeclaredType getSuperClassOrInterface(TypeMirror type, Types types) {
     List<? extends TypeMirror> superTypes = types.directSupertypes(type);
     for (TypeMirror t : superTypes) {
-      if (t instanceof ClassType) {
-        return (ClassType) t;
+      if (t.getKind() == TypeKind.DECLARED) {
+        return (DeclaredType) t;
       }
     }
     return null;

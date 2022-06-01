@@ -500,7 +500,7 @@ Your type system should include a top qualifier and a bottom qualifier
 The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 Most type systems should also include a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
-(Section~\ref{method-qualifier-polymorphism}).
+(Section~\ref{creating-declarative-hierarchy}).
 
 Choose good names for the qualifiers, because users will write these in
 their source code.
@@ -569,23 +569,85 @@ hierarchy.
 \item \refqualclass{framework/qual}{PolymorphicQualifier} denotes that a qualifier is a
   polymorphic qualifier.  For example:
 
-  \begin{Verbatim}
-    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-    @PolymorphicQualifier
-    public @interface PolyNull {}
-  \end{Verbatim}
+\begin{Verbatim}
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Target;
+  import org.checkerframework.framework.qual.PolymorphicQualifier;
 
-  For a description of polymorphic qualifiers, see
-  Section~\ref{method-qualifier-polymorphism}.  A polymorphic qualifier must not have
+  @PolymorphicQualifier
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public @interface PolyNull {}
+\end{Verbatim}
+
+  A polymorphic qualifier must not have
   a \refqualclass{framework/qual}{SubtypeOf} meta-annotation nor be
   mentioned in any other \refqualclass{framework/qual}{SubtypeOf}
   meta-annotation.
+
+  For how to restrict instantiation, see Section~\ref{qualifier-polymorphism-define-restrict}.
+  For a general description of polymorphic qualifiers, see
+  Section~\ref{method-qualifier-polymorphism}.
 
 \end{itemize}
 
 The declarative and procedural mechanisms for specifying the hierarchy can
 be used together. If any of the annotations representing type qualifiers have elements, then
 the relationships between those qualifiers must be defined procedurally.
+
+
+\subsubsectionAndLabel{Restricting instantiation}{qualifier-polymorphism-define-restrict}
+
+Sometimes, you wish to restrict how a polymorphic qualifier can be
+instantiated.  An example is the Signedness Checker
+(\chapterpageref{signedness-checker}).  Its two main qualifiers are
+\refqualclass{checker/signedness/qual}{Signed} and
+\refqualclass{checker/signedness/qual}{Unsigned}, and the top qualifier
+(which should be rarely used) is
+\refqualclass{checker/signedness/qual}{UnknownSignedness}.
+
+As described so far, there is no way for a programmer to require that two
+method arguments have the same signedness type.  Writing
+
+\begin{Verbatim}
+  void foo(@PolySigned Object a, @PolySigned Object b) { ... }
+\end{Verbatim}
+
+\noindent
+permits every invocation, because one if its instantiations is
+
+\begin{Verbatim}
+  void foo(@UnknownSignedness Object a, @UnknownSignedness Object b) { ... }
+\end{Verbatim}
+
+\noindent
+which is consistent with any two arguments, regardless of their signedness
+type.
+
+It is possible to permit only method calls whose arguments have exactly the
+same type qualifier.  This is enabled for an entire type system.  To do so,
+create a subclass of
+\refclass{framework/type/poly}{DefaultQualifierPolymorphism}, override its
+\<combine> method, and make method \<createQualifierPolymorphism> in the
+type factory return an instance of the new subclass.  The Signedness
+Checker gives an example.
+
+Changing the qualifier polymorphism allows a loophole:  upcasts to top.
+For example, the type system permits a call like
+
+\begin{Verbatim}
+  Objects.equals((@UnknownSignedness) mySigned, (@UnknownSignedness) myUnsigned)
+\end{Verbatim}
+
+\noindent
+A type system can forbid upcasts to top (including in assignments, not just
+explicit casts) to close this loophole.
+
+If you change the qualifier polymorphism, your type system may need class
+qualifier polymorphism (see Section~\ref{class-qualifier-polymorphism}).
+And, you may need to suppress
+false positive warnings within the body of methods whose formal parameter
+types are annotated with the polymorphic qualifier (e.g.,
+\refqualclass{checker/signedness/qual}{PolySigned}).
 
 
 \subsectionAndLabel{Procedurally defining the qualifier hierarchy}{creating-procedural-hierarchy}
@@ -1902,11 +1964,12 @@ progress.
 
 This option can also help to keep a Travis CI job alive (since Travis CI
 terminates any job that does not produce output for 10 minutes).
-This does not work if you are using Maven, because with forked compilation,
-the maven-compiler-plugin queues up all the output and then prints it at the end.
+This does not work if you are using Maven, because it does not print
+the full output of the Java compiler (see \url{https://github.com/codehaus-plexus/plexus-compiler/issues/149}).
+% Also, with forked compilation,
+% the maven-compiler-plugin queues up all the output and then prints it at the end.
 (Also, maven-compiler-plugin versions before 3.10.1 are buggy: it sometimes
-doesn't print any
-output if it cannot parse it.)
+doesn't print any output if it cannot parse it.)
 % Example of not producing output:
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
 
@@ -2021,7 +2084,7 @@ The CFG is generated and output, but no dataflow analysis is performed.
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2032,7 +2095,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \begin{smaller}
 \begin{Verbatim}
 java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --pdf
 \end{Verbatim}
 \end{smaller}
@@ -2049,7 +2112,7 @@ remove \<--pdf> but add \<--string>. For example (with JDK 8):
 \begin{Verbatim}
 java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
   -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-  org.checkerframework.dataflow.cfg.CFGVisualizeLauncher \
+  org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher \
   MyClass.java --class MyClass --method test --string
 \end{Verbatim}
 \end{smaller}
