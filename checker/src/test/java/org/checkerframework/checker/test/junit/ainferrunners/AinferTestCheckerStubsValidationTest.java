@@ -1,7 +1,7 @@
 package org.checkerframework.checker.test.junit.ainferrunners;
 
 import org.checkerframework.checker.testchecker.ainfer.AinferTestChecker;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.AinferValidatePerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -13,7 +13,7 @@ import java.util.List;
  * that with the stubs in place, the errors that those annotations remove are no longer issued.
  */
 @Category(AinferTestCheckerStubsTest.class)
-public class AinferTestCheckerStubsValidationTest extends CheckerFrameworkPerDirectoryTest {
+public class AinferTestCheckerStubsValidationTest extends AinferValidatePerDirectoryTest {
 
     /** @param testFiles the files containing test code, which will be type-checked */
     public AinferTestCheckerStubsValidationTest(List<File> testFiles) {
@@ -21,21 +21,12 @@ public class AinferTestCheckerStubsValidationTest extends CheckerFrameworkPerDir
                 testFiles,
                 AinferTestChecker.class,
                 "ainfer-testchecker/annotated",
-                "-Astubs=tests/ainfer-testchecker/inference-output",
+                AinferTestCheckerStubsTest.class,
+                astubsArgFromFiles(testFiles),
                 // "-AstubDebug",
                 "-AmergeStubsWithSource",
-                "-Awarns");
-    }
-
-    @Override
-    public void run() {
-        // Only run if annotated files have been created.
-        // See ainferTest task.
-        if (!new File("tests/ainfer-testchecker/annotated/").exists()) {
-            throw new RuntimeException(
-                    AinferTestCheckerStubsTest.class + " must be run before this test.");
-        }
-        super.run();
+                "-Awarns",
+                "-AskipDefs=TestPure");
     }
 
     @Parameters

@@ -207,6 +207,10 @@ import javax.tools.Diagnostic.Kind;
     // "-Ainfer=stubs" or "-Ainfer=jaifs".
     "infer",
 
+    // Whether to output a copy of each file for which annotations were inferred, formatted
+    // as an ajava file. Can only be used with -Ainfer=ajava
+    "inferOutputOriginal",
+
     // With each warning, in addition to the concrete error key,
     // output the SuppressWarnings strings that can be used to
     // suppress that warning.

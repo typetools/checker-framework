@@ -2,7 +2,7 @@ interface FunctionAC {
     String apply(String s);
 }
 
-public class AssignmentContext {
+public class AssignmentContextFunction {
     // Test assign
     FunctionAC f1 = String::toString;
 

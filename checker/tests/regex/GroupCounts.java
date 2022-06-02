@@ -29,18 +29,25 @@ public class GroupCounts {
 
     void testPatternCompileGroupCount(@Regex String r, @Regex(3) String r3, @Regex(5) String r5) {
         @Regex(5) Pattern p1 = Pattern.compile(r5);
+        @Regex(5) Pattern p1a = Pattern.compile(r5, 0);
         @Regex Pattern p2 = Pattern.compile(r5);
         @Regex Pattern p3 = Pattern.compile(r);
 
         // :: error: (assignment.type.incompatible)
         @Regex(6) Pattern p4 = Pattern.compile(r5); // error
         // :: error: (assignment.type.incompatible)
+        @Regex(6) Pattern p4a = Pattern.compile(r5, 0); // error
+        // :: error: (assignment.type.incompatible)
         @Regex(6) Pattern p5 = Pattern.compile(r3); // error
+        // :: error: (assignment.type.incompatible)
+        @Regex(6) Pattern p5a = Pattern.compile(r3, 0); // error
 
         // Make sure Pattern.compile still works when passed an @UnknownRegex String
         // that's actually a regex, with the warning suppressed.
         @SuppressWarnings("regex:argument.type.incompatible")
         Pattern p6 = Pattern.compile("(" + r + ")");
+        @SuppressWarnings("regex:argument.type.incompatible")
+        Pattern p6a = Pattern.compile("(" + r + ")", 0);
     }
 
     void testConcatenationGroupCount(@Regex String r, @Regex(3) String r3, @Regex(5) String r5) {
