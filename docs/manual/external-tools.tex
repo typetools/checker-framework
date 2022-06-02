@@ -119,10 +119,10 @@ configurations {
 dependencies {
     ... existing dependencies...
     ext.checkerFrameworkVersion = '3.22.0-eisop1'
-    implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
+    implementation "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
-    // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
-    annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
+    // compileOnly "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
+    annotationProcessor "io.github.eisop:checker:${checkerFrameworkVersion}"
     errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
 }
 \end{Verbatim}
@@ -192,10 +192,10 @@ android {
 dependencies {
     ... existing dependencies...
     ext.checkerFrameworkVersion = '3.22.0-eisop1'
-    implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
+    implementation "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
-    // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
-    annotationProcessor "org.checkerframework:checker:${checkerFrameworkVersion}"
+    // compileOnly "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
+    annotationProcessor "io.github.eisop:checker:${checkerFrameworkVersion}"
 }
 \end{Verbatim}
 \end{mysmall}
@@ -925,7 +925,7 @@ See the directory \code{docs/examples/MavenExample/} for examples of the use of
 Maven build files.
 This example can be used to verify that
 Maven is correctly downloading the Checker Framework from the
-\href{https://search.maven.org/search?q=org.checkerframework}{Maven
+\href{https://search.maven.org/search?q=io.github.eisop}{Maven
   Central Repository} and executing it.
 
 Please note that the \<-AoutputArgsToFile> command-line option
@@ -962,7 +962,7 @@ the \<-X> command-line argument is passed.
 
     <!-- Annotations from the Checker Framework: nullness, interning, locking, ... -->
     <dependency>
-      <groupId>org.checkerframework</groupId>
+      <groupId>io.github.eisop</groupId>
       <artifactId>checker-qual</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
@@ -972,7 +972,7 @@ the \<-X> command-line argument is passed.
 Periodically update to the most recent version, to obtain the
 latest bug fixes and new features:
 \begin{Verbatim}
-  mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
+  mvn versions:use-latest-versions -Dincludes="io.github.eisop:*"
 \end{Verbatim}
 
 \end{enumerate}
@@ -1061,7 +1061,7 @@ section, or add it if it is not present.
               </compilerArguments>
               <annotationProcessorPaths>
                 <path>
-                  <groupId>org.checkerframework</groupId>
+                  <groupId>io.github.eisop</groupId>
                   <artifactId>checker</artifactId>
                   <version>\ReleaseVersion{}</version>
                 </path>
@@ -1079,7 +1079,7 @@ section, or add it if it is not present.
       </build>
       <dependencies>
         <dependency>
-          <groupId>org.checkerframework</groupId>
+          <groupId>io.github.eisop</groupId>
           <artifactId>checker</artifactId>
           <version>\ReleaseVersion{}</version>
         </dependency>
