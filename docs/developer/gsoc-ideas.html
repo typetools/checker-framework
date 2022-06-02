@@ -89,7 +89,7 @@
 </p>
 
 <p>
-  The Checker Framework is popular:  it is used daily at Google, Amazon,
+  The Checker Framework is popular:  it is used daily at Amazon, Facebook, Google,
   Uber, on Wall Street, and in other companies from big to small.  It is
   attractive to programmers who care about their craft and the quality of
   their code.  The Checker Framework is the motivation for Java's type
@@ -130,9 +130,10 @@
 
 <p>
 <b>Potential projects:</b>
-Most of this document lists potential summer projects.  The projects are
-grouped roughly from easiest to most challenging.  Many of the projects are
-applicable beyond Google Summer of Code.
+Most of this document lists potential projects.  The projects are
+grouped roughly from easiest to most challenging.  The projects are
+applicable beyond Google Summer of Code (GSoC), though this webpage does
+include some information that is relevant only to GSoC students.
 <!--
 You can find more potential projects in the
 <a href="https://github.com/typetools/checker-framework/issues">issue
@@ -262,15 +263,15 @@ improvements you would like to make to the Checker Framework this summer.
 <p>
 You can also try to fix problems that you find and submit a
 <a href="https://github.com/typetools/checker-framework/pulls">pull
-  request</a>, but that is <em>not</em> a requirement; most successful GSOC
+  request</a>, but that is <em>not</em> a requirement; most successful GSoC
   applicants had not submitted a successful pull request before being selected.
-(Some GSOC projects have a requirement to fix an issue in the issue tracker.
+(Some GSoC projects have a requirement to fix an issue in the issue tracker.
 We do not, because it is unproductive.
 Don't try to start fixing issues before you
 understand the Checker Framework from the user point of view, which will
 not happen until you have completed a case study on an open-source program.)
 You may discuss your ideas with us by sending mail
-to <a href="https://groups.google.com/forum/#!forum/checker-framework-gsoc">checker-framework-gsoc@googlegroups.com</a>.
+to <a href="https://groups.google.com/g/checker-framework-gsoc">checker-framework-gsoc@googlegroups.com</a>.
 </p>
 
 
@@ -295,7 +296,7 @@ for the answer.
 Don't send us a message
 that says nothing but &ldquo;please guide me&rdquo;
 or &ldquo;tell me how to fix this bug&rdquo;.  Such a message disqualifies
-you from participating in GSOC, because it shows that you do not read
+you from participating in GSoC, because it shows that you do not read
 instructions, and you haven't thought about the problem nor
 tried to solve it.
 </p>
@@ -358,6 +359,11 @@ This document gives a few suggestions in each category.
 
 
 <h2 id="apply">How to apply</h2>
+
+<p>
+  (This section is relevant only to Google Summer of Code Students.
+  Others can skip this section.)
+</p>
 
 <p>
   To <b>apply</b>, you will submit a single PDF through the Google Summer
@@ -476,7 +482,7 @@ program you are annotating or of the Checker Framework.
 Pull requests against our GitHub project are a plus but are not required:
 good submitted bugs are just as valuable as bug fixes!
 You can also make a good impression by correctly answering questions from
-other students on the GSOC mailing list.
+other students on the GSoC mailing list.
 </p>
 
 <p>
@@ -1121,7 +1127,7 @@ This project would involve designing and implementing a solution to this problem
 <p>
 Verifying a program to be free of errors can be a daunting task.  When
 starting out, a user may be more interested in
-<a href="https://checkerframework.org/manual/#other-tools">bug-finding</a>
+<a href="https://checkerframework.org/manual/#faq-other-tools-section">bug-finding</a>
 than verification.  The goal of this project is to create a nullness bug
 detector that uses the powerful analysis of the Checker Framework and its
 Nullness Checker, but omits some of its more confusing or expensive
@@ -1197,7 +1203,7 @@ differences from the real Nullness checker:
 <p>
 Compiler writers have come to realize that clarity of error
 messages is as important as the speed of the executable
-(<a href="http://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
+(<a href="https://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
 <a href="http://se.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
 <a href="http://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
 </p>
@@ -1369,7 +1375,7 @@ need to design a new one.
 <p>
 Perhaps one of these existing side effect analyses could be used:
 <a href="https://github.com/Sable/soot/wiki/Using-Side-Effect-Attributes">Soot</a>,
-<a href="https://pdfs.semanticscholar.org/d2bd/29e20c99a10ab9d0c5ecf3acaf15606407d1.pdf">Geffken</a>.
+<a href="https://www.semanticscholar.org/paper/Precise-Interprocedural-Side-Effect-Analysis-Report-Geffken-Saffrich/d2bd29e20c99a10ab9d0c5ecf3acaf15606407d1?p2df">Geffken</a>.
 </p>
 
 <!--

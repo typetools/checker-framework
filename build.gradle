@@ -110,7 +110,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.22.1-eisop1-SNAPSHOT'
+    version '3.22.1'
 
     repositories {
         mavenCentral()
@@ -561,7 +561,7 @@ configurations {
 }
 
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.2"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.3"
 }
 
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
@@ -743,7 +743,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-        ext.errorproneVersion = '2.13.1'
+        ext.errorproneVersion = '2.14.0'
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
         // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
