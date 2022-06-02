@@ -889,7 +889,19 @@ public final class TypesUtils {
                 return elements.getTypeElement("java.lang.Object").asType();
             }
         }
-        return types.lub(t1, t2);
+
+        try {
+            return types.lub(t1, t2);
+        } catch (Exception e) {
+            // typetools issue #3025: In at least Java 8/9, types.lub throws an NPE
+            // on capture/wildcard combinations, see test case
+            // checker/tests/nullness/generics/Issue3025.java.
+            // Using j.l.Object is too coarse in case the type actually matters.
+            // This problem doesn't exist anymore in Java 11+, so let's
+            // see whether this is a problem for anyone in practice.
+            Elements elements = processingEnv.getElementUtils();
+            return elements.getTypeElement("java.lang.Object").asType();
+        }
     }
 
     /**
