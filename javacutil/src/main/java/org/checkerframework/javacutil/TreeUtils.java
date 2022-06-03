@@ -145,6 +145,9 @@ public final class TreeUtils {
     /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
     private static final long Flags_RECORD = 2305843009213693952L;
 
+    /** The set of tree kinds that can be categorized as binary comparison. */
+    private static final Set<Tree.Kind> BINARY_COMPARISON_TREE_KINDS;
+
     static {
         final SourceVersion latestSource = SourceVersion.latest();
         SourceVersion java12;
@@ -211,6 +214,15 @@ public final class TreeUtils {
             err.initCause(e);
             throw err;
         }
+
+        BINARY_COMPARISON_TREE_KINDS =
+                EnumSet.of(
+                        Tree.Kind.EQUAL_TO,
+                        Tree.Kind.NOT_EQUAL_TO,
+                        Tree.Kind.LESS_THAN,
+                        Tree.Kind.GREATER_THAN,
+                        Tree.Kind.LESS_THAN_EQUAL,
+                        Tree.Kind.GREATER_THAN_EQUAL);
     }
 
     /**
@@ -2113,5 +2125,15 @@ public final class TreeUtils {
             kind = Tree.Kind.CLASS;
         }
         return kind;
+    }
+
+    /**
+     * Returns true if the {@code tree} is a binary tree that performs a comparison.
+     *
+     * @param tree the tree to check
+     * @return whether the tree represents a binary comparison
+     */
+    public static boolean isBinaryComparison(BinaryTree tree) {
+        return BINARY_COMPARISON_TREE_KINDS.contains(tree.getKind());
     }
 }

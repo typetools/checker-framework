@@ -18,10 +18,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 
 import java.util.Map;
@@ -212,12 +212,15 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             // propagated annotations won't be applied.  So don't compute them.
             return null;
         }
-        AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
-        AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
+
+        Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+                atypeFactory.compoundAssignmentTreeArgTypes(node);
         Set<? extends AnnotationMirror> lubs =
                 qualHierarchy.leastUpperBounds(
-                        rhs.getEffectiveAnnotations(), lhs.getEffectiveAnnotations());
+                        argTypes.first.getEffectiveAnnotations(),
+                        argTypes.second.getEffectiveAnnotations());
         type.addMissingAnnotations(lubs);
+
         return null;
     }
 
@@ -237,6 +240,13 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                 qualHierarchy.leastUpperBounds(
                         argTypes.first.getEffectiveAnnotations(),
                         argTypes.second.getEffectiveAnnotations());
+
+        if (TreeUtils.isBinaryComparison(node)) {
+            // When we have binary comparison, the result type (boolean) can be different
+            // from the operands' types. So we need to apply the bounds of boolean to the
+            // lubs.
+            lubs = atypeFactory.getAnnotationOrTypeDeclarationBound(type.getUnderlyingType(), lubs);
+        }
         type.addMissingAnnotations(lubs);
 
         return null;
@@ -337,16 +347,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
      * @param annos annotations to add to type
      */
     private void addAnnoOrBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
-        Set<AnnotationMirror> boundAnnos =
-                atypeFactory.getQualifierUpperBounds().getBoundQualifiers(type.getUnderlyingType());
-        Set<AnnotationMirror> annosToAdd = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror boundAnno : boundAnnos) {
-            AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annos, boundAnno);
-            if (anno != null && !qualHierarchy.isSubtype(anno, boundAnno)) {
-                annosToAdd.add(boundAnno);
-            }
-        }
+        Set<AnnotationMirror> annosToAdd =
+                atypeFactory.getAnnotationOrTypeDeclarationBound(type.getUnderlyingType(), annos);
         type.addMissingAnnotations(annosToAdd);
-        type.addMissingAnnotations(annos);
     }
 }

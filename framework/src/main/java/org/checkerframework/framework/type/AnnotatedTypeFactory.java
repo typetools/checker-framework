@@ -1406,6 +1406,35 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Compare the given {@code annos} with the declaration bounds of {@code type} and return the
+     * appropriate qualifiers. For each qualifier in {@code annos}, if it is a subtype of the
+     * declaration bound in the same hierarchy, it will be added to the result; otherwise, the
+     * declaration bound will be added to the result instead.
+     *
+     * @param type java type that specifies the qualifier upper bound
+     * @param annos a set of qualifiers to be compared with the declaration bounds of {@code type}
+     * @return the modified {@code annos} after applying the rules described above
+     */
+    public Set<AnnotationMirror> getAnnotationOrTypeDeclarationBound(
+            TypeMirror type, Set<? extends AnnotationMirror> annos) {
+        Set<AnnotationMirror> boundAnnos = getTypeDeclarationBounds(type);
+        Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
+
+        for (AnnotationMirror anno : annos) {
+            AnnotationMirror boundAnno =
+                    qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
+            assert boundAnno != null;
+
+            if (!qualHierarchy.isSubtype(anno, boundAnno)) {
+                results.add(boundAnno);
+            } else {
+                results.add(anno);
+            }
+        }
+        return results;
+    }
+
+    /**
      * Returns the set of qualifiers that are the upper bound for a type use if no other bound is
      * specified for the type.
      *
@@ -3078,20 +3107,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the types of the two arguments to the BinaryTree, accounting for widening and
-     * unboxing if applicable.
+     * Returns the types of the two arguments to the BinaryTree. Please refer to {@link
+     * #binaryTreeArgTypes(TypeMirror, AnnotatedTypeMirror, AnnotatedTypeMirror)} )} for more
+     * details.
      *
      * @param node a binary tree
      * @return the types of the two arguments
      */
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
         return binaryTreeArgTypes(
-                getAnnotatedType(node.getLeftOperand()), getAnnotatedType(node.getRightOperand()));
+                TreeUtils.typeOf(node),
+                getAnnotatedType(node.getLeftOperand()),
+                getAnnotatedType(node.getRightOperand()));
     }
 
     /**
-     * Returns the types of the two arguments to the CompoundAssignmentTree, accounting for widening
-     * and unboxing if applicable.
+     * Returns the types of the two arguments to the CompoundAssignmentTree. Please refer to {@link
+     * #binaryTreeArgTypes(TypeMirror, AnnotatedTypeMirror, AnnotatedTypeMirror)} ) for more
+     * details.
      *
      * @param node a compound assignment tree
      * @return the types of the two arguments
@@ -3099,7 +3132,67 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> compoundAssignmentTreeArgTypes(
             CompoundAssignmentTree node) {
         return binaryTreeArgTypes(
-                getAnnotatedType(node.getVariable()), getAnnotatedType(node.getExpression()));
+                TreeUtils.typeOf(node.getVariable()),
+                getAnnotatedType(node.getVariable()),
+                getAnnotatedType(node.getExpression()));
+    }
+
+    /**
+     * Returns the types of the two arguments to a binary operation. There are two special cases:
+     *
+     * <p>1. If both operands have numeric type, widening and unboxing will be applied accordingly.
+     *
+     * <p>2. If we have a non-string operand in a string concatenation (i.e., result is a string),
+     * we will always return a string ATM for the operand. The resulting ATM will have the original
+     * annotations with the declaration bounds of string type applied. Please check {@link
+     * #getAnnotationOrTypeDeclarationBound} for more details.
+     *
+     * @param resultType the type of the result of a binary operation
+     * @param left the type of the left argument of a binary operation
+     * @param right the type of the right argument of a binary operation
+     * @return the types of the two arguments
+     */
+    protected Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(
+            TypeMirror resultType, AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
+        TypeKind widenedNumericType =
+                TypeKindUtils.widenedNumericType(
+                        left.getUnderlyingType(), right.getUnderlyingType());
+        if (TypeKindUtils.isNumeric(widenedNumericType)) {
+            TypeMirror widenedNumericTypeMirror = types.getPrimitiveType(widenedNumericType);
+            AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
+            AnnotatedPrimitiveType rightUnboxed = applyUnboxing(right);
+            AnnotatedPrimitiveType leftWidened =
+                    (leftUnboxed.getKind() == widenedNumericType
+                            ? leftUnboxed
+                            : getWidenedPrimitive(leftUnboxed, widenedNumericTypeMirror));
+            AnnotatedPrimitiveType rightWidened =
+                    (rightUnboxed.getKind() == widenedNumericType
+                            ? rightUnboxed
+                            : getWidenedPrimitive(rightUnboxed, widenedNumericTypeMirror));
+            return Pair.of(leftWidened, rightWidened);
+        } else if (TypesUtils.isString(resultType)) {
+            // the result of a binary operation is String iff it's string concatenation
+            AnnotatedTypeMirror leftStringConverted = left;
+            AnnotatedTypeMirror rightStringConverted = right;
+
+            if (!TypesUtils.isString(left.getUnderlyingType())) {
+                leftStringConverted = toAnnotatedType(resultType, false);
+                Set<AnnotationMirror> annos =
+                        getAnnotationOrTypeDeclarationBound(
+                                resultType, left.getEffectiveAnnotations());
+                leftStringConverted.addAnnotations(annos);
+            }
+            if (!TypesUtils.isString(right.getUnderlyingType())) {
+                rightStringConverted = toAnnotatedType(resultType, false);
+                Set<AnnotationMirror> annos =
+                        getAnnotationOrTypeDeclarationBound(
+                                resultType, right.getEffectiveAnnotations());
+                rightStringConverted.addAnnotations(annos);
+            }
+            return Pair.of(leftStringConverted, rightStringConverted);
+        }
+
+        return Pair.of(left, right);
     }
 
     /**
@@ -3109,7 +3202,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param left the type of the left argument of a binary operation
      * @param right the type of the right argument of a binary operation
      * @return the types of the two arguments
+     * @deprecated use {@link #binaryTreeArgTypes(BinaryTree)} or {@link
+     *     #compoundAssignmentTreeArgTypes(CompoundAssignmentTree)}
      */
+    @Deprecated // 2022-06-03
     public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(
             AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
         TypeKind resultTypeKind =

@@ -9,6 +9,15 @@ files and in .java files.
 
 **Implementation details:**
 
+In `PropagationTreeAnnotator.visitBinary`, we now consider the two cases where
+the resulting Java type of a binary operation can be different from the operands'
+types: string concatenation and binary comparison. We apply the declaration
+bounds of the resulting Java type to ensure annotations in the ATM are valid.
+
+Deprecated `AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)` in favor of
+`AnnotatedTypeFactory.binaryTreeArgTypes(BinaryTree)` and
+`AnnotatedTypeFactory.compoundAssignmentTreeArgTypes(CompoundAssignmentTree)`.
+
 **Closed issues:**
 
 typetools#3025, typetools#3030, typetools#3236.

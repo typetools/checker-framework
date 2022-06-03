@@ -26,7 +26,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -154,16 +154,21 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                     AnnotationMirror rightAnno =
                             rightOpType.getEffectiveAnnotations().iterator().next();
 
-                    if (leftOpType.getKind() != TypeKind.CHAR
-                            && !TypesUtils.isDeclaredOfName(
-                                    leftOpType.getUnderlyingType(), "java.lang.Character")
+                    // Note that leftOpType.getUnderlyingType() and rightOpType.getUnderlyingType()
+                    // are always java.lang.String. Please refer to binaryTreeArgTypes for more
+                    // details.
+                    // Here, the original types of operands can be something different from string.
+                    // For example, "123" + obj is a string concatenation in which the original type
+                    // of the right operand is java.lang.Object.
+                    TypeMirror leftOpOriginalType = TreeUtils.typeOf(leftOp);
+                    TypeMirror rightOpOriginalType = TreeUtils.typeOf(rightOp);
+
+                    if (!TypesUtils.isCharType(leftOpOriginalType)
                             && !atypeFactory
                                     .getQualifierHierarchy()
                                     .isSubtype(leftAnno, atypeFactory.SIGNED)) {
                         checker.reportError(leftOp, "unsigned.concat");
-                    } else if (rightOpType.getKind() != TypeKind.CHAR
-                            && !TypesUtils.isDeclaredOfName(
-                                    rightOpType.getUnderlyingType(), "java.lang.Character")
+                    } else if (!TypesUtils.isCharType(rightOpOriginalType)
                             && !atypeFactory
                                     .getQualifierHierarchy()
                                     .isSubtype(rightAnno, atypeFactory.SIGNED)) {
@@ -341,9 +346,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
             case PLUS_ASSIGNMENT:
                 if (TreeUtils.isStringCompoundConcatenation(node)) {
-                    if (exprType.getKind() != TypeKind.CHAR
-                            && !TypesUtils.isDeclaredOfName(
-                                    exprType.getUnderlyingType(), "java.lang.Character")) {
+                    // Note that exprType.getUnderlyingType() is always java.lang.String.
+                    // Please refer to compoundAssignmentTreeArgTypes for more details.
+                    if (!TypesUtils.isCharType(TreeUtils.typeOf(expr))) {
                         AnnotationMirror anno =
                                 exprType.getEffectiveAnnotations().iterator().next();
                         if (!atypeFactory
