@@ -966,9 +966,17 @@ public class InferenceFactory {
     typeVariable.getLowerBound();
     if (lowerBound != null) {
       typeVariable.setLowerBound(lowerBound.getAnnotatedType());
+    } else {
+      typeVariable
+          .getLowerBound()
+          .addAnnotations(typeFactory.getQualifierHierarchy().getBottomAnnotations());
     }
     if (upperBound != null) {
       typeVariable.setUpperBound(upperBound.getAnnotatedType());
+    } else {
+      typeVariable
+          .getUpperBound()
+          .addAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
     }
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));
