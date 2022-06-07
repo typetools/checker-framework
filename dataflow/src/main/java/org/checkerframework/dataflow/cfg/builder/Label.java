@@ -6,7 +6,7 @@ package org.checkerframework.dataflow.cfg.builder;
  * generated unique names.
  */
 public class Label {
-  
+
   /** Unique id counter that incremented in {@code #uniqueName}. */
   private static int uid = 0;
 
