@@ -92,7 +92,7 @@ public class VariableBounds {
   /** Adds {@code otherType} as bound against this variable. */
   public boolean addBound(BoundKind kind, AbstractType otherType) {
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
-      instantiation = (ProperType) otherType;
+      instantiation = ((ProperType) otherType).boxType();
     }
     if (bounds.get(kind).add(otherType)) {
       addConstraintsFromComplementaryBounds(kind, otherType);
@@ -255,7 +255,7 @@ public class VariableBounds {
     if (changed && instantiation == null) {
       for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
         if (bound.isProper()) {
-          instantiation = (ProperType) bound;
+          instantiation = ((ProperType) bound).boxType();
         }
       }
     }
