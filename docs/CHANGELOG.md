@@ -1,4 +1,4 @@
-Version 3.22.1 (June 1, 2022)
+Version 3.22.2 (July 1, 2022)
 ---------------------------------
 
 **User-visible changes:**
@@ -6,6 +6,12 @@ Version 3.22.1 (June 1, 2022)
 **Implementation details:**
 
 **Closed issues:**
+
+
+---------------------------------
+
+**Closed issues:**
+#58, #5136, #5138, #5142, #5143.,
 
 
 Version 3.22.0 (May 2, 2022)

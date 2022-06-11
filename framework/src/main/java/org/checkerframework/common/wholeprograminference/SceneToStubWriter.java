@@ -341,9 +341,20 @@ public final class SceneToStubWriter {
 
     // fields don't need their generic types, and sometimes they are wrong. Just don't print them.
     while (basetypeToPrint.contains("<")) {
+      int openCount = 1;
+      int pos = basetypeToPrint.indexOf('<');
+      while (openCount > 0) {
+        pos++;
+        if (basetypeToPrint.charAt(pos) == '<') {
+          openCount++;
+        }
+        if (basetypeToPrint.charAt(pos) == '>') {
+          openCount--;
+        }
+      }
       basetypeToPrint =
           basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'))
-              + basetypeToPrint.substring(basetypeToPrint.lastIndexOf('>') + 1);
+              + basetypeToPrint.substring(pos + 1);
     }
 
     // An array is not a receiver, so using the javacType to check for arrays is safe.

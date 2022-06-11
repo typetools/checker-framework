@@ -936,8 +936,17 @@ specific relationship to one another.
 
 \subsubsectionAndLabel{Names of ajava files}{ajava-file-name}
 
-The ajava file must be found below one of the arguments to
-\code{-Aajava}, in a subdirectory matching its package name.
+The ajava file must either (1) be found below one of the arguments to
+\code{-Aajava}, in a subdirectory matching its package name, or (2) be
+unambiguously specified directly with its full path. A pair of \<.ajava>
+files are specified ambiguously if one of their fully-qualified names
+is a substring of the other, and both are specified as \<.ajava> files (rather
+than being found under directories). For example, if the \<-Aajava> argument
+was \<-Aajava=~/foo/Bar.ajava:~/baz/foo/Bar.ajava>, the two \<.ajava> files
+would be considered ambiguous and a \<ambiguous.ajava> warning would be issued.
+Files found under a directory are always unambiguous, because their file structure
+must match their package name; the solution to a \<ambiguous.ajava> warning is to
+convert the specific files in the \<-Aajava> argument to directories.
 
 The ajava file must be named
 \code{ClassName-checker.qualified.name.ajava} where

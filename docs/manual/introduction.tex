@@ -212,7 +212,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.22.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.22.1.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -683,6 +683,11 @@ Type-checking modes:  enable/disable functionality
   Using \<-Ainfer=stubs> produces \<.astub> files.
   Using \<-Ainfer=ajava> produces \<.ajava> files.
   You must also supply \<-Awarns>, or the inference output may be incomplete.
+\item \<-AinferOutputOriginal>
+  When outputting \<.ajava> files when running with \<-Ainfer=ajava>,
+  also output a copy of the original file with no inferred annotations,
+  but with the formatting of a \<.ajava> file, to permit use of \<diff>
+  to view the inferred annotations. Must be combined with \<-Ainfer=ajava>.
 \item \<-AshowSuppressWarningsStrings>
   With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
@@ -860,14 +865,16 @@ when running \<javac>.
 
 ``Auto-discovery'' makes the \code{javac} compiler always run an
 annotation processor, such as a checker
-plugin without explicitly passing the \code{-processor}
+plugin, without explicitly passing the \code{-processor}
 command-line option.  This can make your command line shorter, and it ensures
 that your code is checked even if you forget the command-line option.
 
 If the \<javac> command line specifies any \<-processor> command-line
 option, then auto-discovery is disabled.  This means that if your project
 currently uses auto-discovery, you should use auto-discovery for the
-Checker Framework too.
+Checker Framework too.  (Alternately, if you prefer to use a \<-processor>
+command-line argument, you will need to specify all annotation processors,
+including ones that used to be auto-discovered.)
 
 \begin{sloppypar}
 To enable auto-discovery, place a configuration file named
@@ -1636,7 +1643,7 @@ or suppress warnings.
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
-% LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
+% LocalWords:  bashrc IDE xml buildfile enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
