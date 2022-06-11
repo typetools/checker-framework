@@ -215,7 +215,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     Element elt = TreeUtils.elementFromUse(node);
     AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
     if (selfType != null) {
-      return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt).asUse();
+      AnnotatedTypeMirror type = AnnotatedTypes.asMemberOf(f.types, f, selfType, elt).asUse();
+      return f.applyCaptureConversion(type, TreeUtils.typeOf(node));
     }
 
     AnnotatedTypeMirror type = f.getAnnotatedType(elt);
