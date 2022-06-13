@@ -154,7 +154,7 @@ conventions of their build system for single-module projects. When analyzing a p
 that requires non-standard build system commands, use the \<-c> and \<-b> options to
 override the defaults used by \<wpi.sh>. For example, suppose that you wanted to use
 \<wpi.sh> to infer annotations for the Resource Leak Checker on
-\ahref{https://github.com/apache/zookeeper}{Apache Zookeeper's}
+\href{https://github.com/apache/zookeeper}{Apache Zookeeper's}
 \<zookeeper-server> module only. Without \<wpi.sh>, one might use the following command:
 \<mvn -B --projects zookeeper-server --also-make install -DskipTests>. To use this command via
 \<wpi.sh>, use the following:
@@ -203,17 +203,17 @@ Here is an explanation of the arguments:
   The argument may contain spaces and is re-tokenized by the shell.
 
 \item[-g GRADLECACHEDIR]
-  The directory to use for the `-g` option to Gradle (the Gradle home
+  The directory to use for the \<-g> option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
-  build with Gradle. The default is `.gradle` relative to the target
+  build with Gradle. The default is \<.gradle> relative to the target
   project (i.e., each target project has its own Gradle home). This default
   is motivated by
-  \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
+  \href{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
 \label{DLJC-ARGS}
 \item[DLJC-ARGS]
   Arguments that are passed directly to
-  \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
+  \href{https://github.com/kelloggm/do-like-javac}{do-like-javac}'s
   \<dljc> program without
   modification.  One argument is required: \<-\relax-checker>, which indicates
   what type-checker(s) to run (in the format described in Section~\ref{shorthand-for-checkers}).
@@ -247,7 +247,7 @@ The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
 \item If set, the \verb|JAVA17_HOME| environment variable must point to a Java 17 JDK.
 \item \<CHECKERFRAMEWORK> environment variable must point to a built copy of the Checker Framework.
 \item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
-from \ahref{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not
+from \ahreforurl{https://github.com/kelloggm/do-like-javac}{do-like-javac}. (If this variable is not
 set, the WPI scripts will download this dependency automatically.)
 \item Other dependencies:
   ant,
@@ -366,12 +366,12 @@ An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
   The timeout for running the checker on each project, in seconds.
 
 \item[-g GRADLECACHEDIR]
-  The directory to use for the `-g` option to Gradle (the Gradle home
+  The directory to use for the \<-g> option to Gradle (the Gradle home
   directory). This option is ignored if the target project does not
-  build with Gradle. The default is `.gradle` relative to the target
+  build with Gradle. The default is \<.gradle> relative to the target
   project (i.e., each target project has its own Gradle home). This default
   is motivated by
-  \ahref{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
+  \href{https://github.com/gradle/gradle/issues/1319}{Gradle issue \#1319}.
 
 \item[-s]
   If this flag is present, then projects which are not buildable --- for which

@@ -121,13 +121,6 @@ Werner Dietl, Michael~D. Ernst, and Peter M{\"u}ller.
 \newblock In {\em ECOOP 2011 --- Object-Oriented Programming, 25th European
   Conference}, pages 333--357, Lancaster, UK, July 2011.
 
-\bibitem[DMD16]{DongMD2016}
-Yao Dong, Ana Milanova, and Julian Dolby.
-\newblock {JCrypt}: Towards computation over encrypted data.
-\newblock In {\em PPPJ 2016: Proceedings of the 4th International Conference on
-  Principles and Practice of Programming in Java: Virtual Machines, Languages,
-  and Tools}, Lugano, Switzerland, August 2016.
-
 \bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
 Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
   Pernsteiner, Franziska Roesner, Karl Koscher, Paulo Barros, Ravi Bhoraskar,
@@ -413,9 +406,10 @@ F.~Spoto.
 
 \bibitem[Ta18]{Ta2018}
 Mier Ta.
-\newblock Context sensitive typechecking and inference: ownership and
+\newblock Context sensitive typechecking and inference: Ownership and
   immutability.
-\newblock Master's thesis, U. of Waterloo, Waterloo, Ontario, Canada, 2018.
+\newblock Master's thesis, University of Waterloo Department of Electrical and
+  Computer Engineering, Waterloo, Ontario, Canada, 2018.
 
 \bibitem[TE05]{TschantzE2005}
 Matthew~S. Tschantz and Michael~D. Ernst.
@@ -435,12 +429,6 @@ Lembit Valgma.
 \newblock Usable and sound static analysis through its integration into
   automated and interactive workflows.
 \newblock Master's thesis, U. of Tartu, Tartu, Estonia, 2018.
-
-\bibitem[VPEJ14]{VakilianPEJ2014}
-Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
-\newblock Cascade: A universal type qualifier inference tool.
-\newblock Technical report, University of Illinois at Urbana-Champaign, Urbana,
-  IL, USA, September 2014.
 
 \bibitem[VPEJ15]{VakilianPEJ2015}
 Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
@@ -465,18 +453,13 @@ Tobias Wrigstad, Filip Pizlo, Fadi Meawad, Lei Zhao, and Jan Vitek.
 \bibitem[Xia20]{Xiang2020}
 Tongtong Xiang.
 \newblock Type checking and whole-program inference for value range analysis.
-\newblock Master's thesis, U. of Waterloo, Waterloo, Ontario, Canada, 2020.
+\newblock Master's thesis, University of Waterloo Department of Electrical and
+  Computer Engineering, Waterloo, Ontario, Canada, October 2020.
 
 \bibitem[Xin20]{Xing2020}
 Weitian Xing.
 \newblock Light-weight verification of cryptographic {API} usage.
 \newblock Master's thesis, U. of Waterloo, Waterloo, Ontario, Canada, 2020.
-
-\bibitem[XLD20]{XiaohuiLD2020}
-Tongtong Xiang, Jeff~Y. Luo, and Werner Dietl.
-\newblock Precise inference of expressive units of measurement types.
-\newblock In {\em OOPSLA 2020, Object-Oriented Programming Systems, Languages,
-  and Applications}, Chicago, IL, USA, November 2020.
 
 \bibitem[ZPA{\etalchar{+}}07]{ZibinPAAKE2007}
 Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and

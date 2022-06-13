@@ -16,7 +16,7 @@ If you only want to \emph{use} a checker, you do not need to read this
 chapter.
 People who wish to edit the Checker Framework source code or
 make pull requests should read the
-\ahref{https://checkerframework.org/manual/developer-manual.html}{Checker
+\ahreforurl{https://checkerframework.org/manual/developer-manual.html}{Checker
   Framework Developer Manual}.
 
 
@@ -1873,7 +1873,7 @@ exactly one error, whose message key is \<dereference.of.nullable>, on
 the line following the ``// ::'' comment.
 
 % Don't repeat the information here, to prevent them from getting out of sync.
-The testing infrastructure is extensively documented in file \ahref{https://github.com/typetools/checker-framework/blob/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
+The testing infrastructure is extensively documented in file \href{https://github.com/typetools/checker-framework/blob/master/checker/tests/README}{\<checker-framework/checker/tests/README>}.
 
 If your checker's source code is within a fork of the Checker Framework
 repository, then you can copy the testing infrastructure used by some
@@ -1927,7 +1927,7 @@ large codebase without being inundated in stack traces.
 \end{itemize}
 
 The
-\ahref{https://github.com/eisopux/javac-diagnostics-wrapper}{javac-diagnostic-wrapper}
+\ahreforurl{https://github.com/eisopux/javac-diagnostics-wrapper}{javac-diagnostic-wrapper}
 tool can transform javac's textual output into other formats, such as JSON
 in LSP (Language Server Protocol) format.
 
@@ -2022,7 +2022,7 @@ for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \noindent
 where the first command creates file \<MyClass.dot> that
 represents the CFG, and the last command draws the CFG in a PDF file.
-The \<dot> program is part of \ahref{http://www.graphviz.org}{Graphviz}.
+The \<dot> program is part of \href{http://www.graphviz.org}{Graphviz}.
 
 In the output, conditional basic blocks are represented as octagons with
 two successors.  Special basic blocks are represented as ovals (e.g., the
