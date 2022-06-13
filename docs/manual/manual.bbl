@@ -640,12 +640,6 @@ Lembit Valgma.
   automated and interactive workflows.
 \newblock Master's thesis, U. of Tartu, Tartu, Estonia, 2018.
 
-\bibitem[VPEJ14]{VakilianPEJ2014}
-Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
-\newblock Cascade: A universal type qualifier inference tool.
-\newblock Technical report, University of Illinois at Urbana-Champaign, Urbana,
-  IL, USA, September 2014.
-
 \bibitem[VPEJ15]{VakilianPEJ2015}
 Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
 \newblock Cascade: A universal programmer-assisted type qualifier inference
