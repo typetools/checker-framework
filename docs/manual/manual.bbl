@@ -348,6 +348,12 @@ Martin Kellogg.
   Conference on Automated Software Engineering}, pages 1256--1258, San Diego,
   CA, USA, September 2019.
 
+\bibitem[Kel22]{Kellogg2022}
+Martin Kellogg.
+\newblock {\em Lightweight Verification via Specialized Typecheckers}.
+\newblock PhD thesis, University of Washington Paul G. Allen School of Computer
+  Science and Engineering, Seattle, WA, USA, June 2022.
+
 \bibitem[KEW{\etalchar{+}}20]{KohlerEWMS2020}
 Mirko K{\"o}hler, Nafise Eskandani, Pascal Weisenburger, Alessandro Margara,
   and Guido Salvaneschi.
