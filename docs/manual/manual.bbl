@@ -388,6 +388,12 @@ Martin Kellogg, Narges Shadab, Manu Sridharan, and Michael~D. Ernst.
   Engineering Conference and Symposium on the Foundations of Software
   Engineering (ESEC/FSE)}, Athens, Greece, August 2021.
 
+\bibitem[KSSE22]{KelloggSSE2022}
+Martin Kellogg, Narges Shadab, Manu Sridharan, and Michael~D. Ernst.
+\newblock Accumulation analysis.
+\newblock In {\em ECOOP 2022 --- Object-Oriented Programming, 33rd European
+  Conference}, Berlin, Germany, June 2022.
+
 \bibitem[KSTE20]{KelloggSTE2020}
 Martin Kellogg, Martin Sch{\"a}f, Serdar Tasiran, and Michael~D. Ernst.
 \newblock Continuous compliance.
