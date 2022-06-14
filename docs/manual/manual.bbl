@@ -1,6 +1,15 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
 \begin{thebibliography}{MWME21}
 
+\bibitem[ABB{\etalchar{+}}19]{AlmeidaBBCCGPPST2019}
+Jos\'{e}~Bacelar Almeida, Manuel Barbosa, Gilles Barthe, Matthew Campagna,
+  Ernie Cohen, Benjamin Gregoire, Vitor Pereira, Bernardo Portela, Pierre-Yves
+  Strub, and Serdar Tasiran.
+\newblock A machine-checked proof of security for {AWS} {Key} {Management}
+  {Service}.
+\newblock In {\em CCS 2019: Proceedings of the 21st ACM Conference on Computer
+  and Communications Security}, page 63–78, London, UK, November 2019.
+
 \bibitem[AQKE09]{ArtziQKE2009}
 Shay Artzi, Jaime Quinonez, Adam Kie{\.z}un, and Michael~D. Ernst.
 \newblock Parameter reference immutability: Formal definition, inference tool,
@@ -12,6 +21,12 @@ Cyrille Artho.
 \newblock Finding faults in multi-threaded programs.
 \newblock Master's thesis, Swiss Federal Institute of Technology, March~15,
   2001.
+
+\bibitem[BBRS21]{BastysBRS2021}
+Iulia Bastys, Pauline Bolignano, Franco Raimondi, and Daniel Schoepe.
+\newblock Automatic annotation of confidential data in {Java} code.
+\newblock In {\em FPS 2021: 14th International Symposium on Foundations \&
+  Practice of Security}, Paris, France, December 2021.
 
 \bibitem[BCS19]{BanerjeeCS2019}
 Subarno Banerjee, Lazaro Clapp, and Manu Sridharan.
@@ -25,6 +40,20 @@ Dan Brotherston, Werner Dietl, and Ond\v{r}ej Lhot\'{a}k.
 \newblock Granullar: Gradual nullable types for {Java}.
 \newblock In {\em CC 2017: 26th International Conference on Compiler
   Construction}, pages 87--97, Austin, TX, USA, February 2017.
+
+\bibitem[Ber12]{Bergstein2012}
+Paul~L. Bergstein.
+\newblock Documenting {Java} database access with type annotations.
+\newblock In {\em WorldComp 2012: Proceedings of The 2012 World Congress in
+  Computer Science, Computer Engineering, and Applied Computing}, 2012.
+
+\bibitem[BFG{\etalchar{+}}20]{BravettiFGHJKR2020}
+Mario Bravetti, Adrian Francalanza, Iaroslav Golovanov, Hans H{\"u}ttel,
+  Mathias~S. Jakobsen, Mikkel~K. Kettunen, and Ant\'{o}nio Ravara.
+\newblock Behavioural types for memory and method safety in a core
+  object-oriented language.
+\newblock In {\em APLAS 2020: 18th Asian Symposium on Programming Languages and
+  Systems}, page 105–124, Fukuoka, Japan, November 2020.
 
 \bibitem[BJM{\etalchar{+}}15]{BarrosJMVDdAE2015}
 Paulo Barros, Ren\'e Just, Suzanne Millstein, Paul Vines, Werner Dietl, Marcelo
@@ -88,6 +117,13 @@ Jose Cronembold.
   {Environments}.
 \newblock \url{https://jcp.org/en/jsr/detail?id=198}, May~8, 2006.
 
+\bibitem[CSA{\etalchar{+}}16]{CoblenzSAMWS2016}
+Michael Coblenz, Joshua Sunshine, Jonathan Aldrich, Brad Myers, Sam Weber, and
+  Forrest Shull.
+\newblock Exploring language support for immutability.
+\newblock In {\em ICSE 2016, Proceedings of the 38th International Conference
+  on Software Engineering}, pages 736--747, Austin, TX, USA, May 2016.
+
 \bibitem[Dar06]{JSR269}
 Joe Darcy.
 \newblock {JSR} 269: Pluggable annotation processing {API}.
@@ -120,6 +156,33 @@ Werner Dietl, Michael~D. Ernst, and Peter M{\"u}ller.
 \newblock Tunable static inference for {Generic} {Universe} {Types}.
 \newblock In {\em ECOOP 2011 --- Object-Oriented Programming, 25th European
   Conference}, pages 333--357, Lancaster, UK, July 2011.
+
+\bibitem[dLM21]{daLuzMotaM2021}
+Jo\~{a}o~Daniel da~Luz~Mota.
+\newblock Coping with the reality: adding crucial features to a
+  typestate-oriented language.
+\newblock Master's thesis, Universidade Nova de Lisboa, Faculdade de
+  Ci\^{e}ncias e Tocnologia, February 2021.
+
+\bibitem[DMD16a]{DongMD2016:JCrypt}
+Yao Dong, Ana Milanova, and Julian Dolby.
+\newblock {JCrypt}: Towards computation over encrypted data.
+\newblock In {\em PPPJ 2016: Proceedings of the 13th International Conference
+  on Principles and Practice of Programming in Java: Virtual Machines,
+  Languages, and Tools}, Lugano, Switzerland, July 2016.
+
+\bibitem[DMD16b]{DongMD2016:secure-cloud}
+Yao Dong, Ana Milanova, and Julian Dolby.
+\newblock Static analysis and program transformation for secure computation on
+  the cloud.
+\newblock In {\em ISSTA 2016 Doctoral Symposium}, Saarbr{\"u}cken, Genmany,
+  July 2016.
+
+\bibitem[Don17]{Dong2017}
+Yao Dong.
+\newblock {\em Static analysis and program transformation for secure
+  computation on the cloud}.
+\newblock PhD thesis, Rensselaer Polytechnic Institute, December 2017.
 
 \bibitem[EJM{\etalchar{+}}14]{ErnstJMDPRKBBHVW2014}
 Michael~D. Ernst, Ren{\'e} Just, Suzanne Millstein, Werner Dietl, Stuart
@@ -189,17 +252,35 @@ Sascha Gschwind and Renato Venzin.
 \newblock Technical report, University of Applied Sciences Rapperswil,
   Rapperswil, Switzerland, 2018.
 
+\bibitem[Har10]{Harper2010}
+Artemus Harper.
+\newblock Applying uniqueness to the {Java} language.
+\newblock Master's thesis, Washington State University, 2010.
+
 \bibitem[HDM14]{HuangDM2014}
 Wei Huang, Yao Dong, and Ana Milanova.
 \newblock Type-based taint analysis for {Java} web applications.
 \newblock In {\em FASE 2014: Fundamental Approaches to Software Engineering},
   pages 140--154, Grenoble, France, April 2014.
 
+\bibitem[HDMD15]{HuangDMD2015}
+Wei Huang, Yao Dong, Ana Milanova, and Julian Dolby.
+\newblock Scalable and precise taint analysis for {Android}.
+\newblock In {\em ISSTA 2015, Proceedings of the 2015 International Symposium
+  on Software Testing and Analysis}, pages 106--117, Baltimore, MD, USA, July
+  2015.
+
 \bibitem[HDME12]{HuangDME2012}
 Wei Huang, Werner Dietl, Ana Milanova, and Michael~D. Ernst.
 \newblock Inference and checking of object ownership.
 \newblock In {\em ECOOP 2012 --- Object-Oriented Programming, 26th European
   Conference}, pages 181--206, Beijing, China, June 2012.
+
+\bibitem[HM11]{HuangM2011}
+Wei Huang and Ana Milanova.
+\newblock Towards effective inference and checking of ownership types.
+\newblock In {\em IWACO 2011: International Workshop on Aliasing, Confinement
+  and Ownership in object-oriented programming}, Lancaster, UK, July 2011.
 
 \bibitem[HM12]{HuangM2012}
 Wei Huang and Ana Milanova.
@@ -222,12 +303,36 @@ David Hovemeyer and William Pugh.
   Systems, Languages, and Applications}, pages 132--136, Vancouver, BC, Canada,
   October 2004.
 
+\bibitem[HP09]{HaackP2009}
+Christian Haack and Erik Poll.
+\newblock Type-based object immutability with flexible initialization.
+\newblock In {\em ECOOP 2009 --- Object-Oriented Programming, 23rd European
+  Conference}, pages 520--545, Genova, Italy, July 2009.
+
 \bibitem[HSP05]{HovemeyerSP2005}
 David Hovemeyer, Jaime Spacco, and William Pugh.
 \newblock Evaluating and tuning a static analysis to find null pointer bugs.
 \newblock In {\em PASTE 2005: ACM SIGPLAN/SIGSOFT Workshop on Program Analysis
   for Software Tools and Engineering (PASTE 2005)}, pages 13--19, Lisbon,
   Portugal, September 2005.
+
+\bibitem[Hua14]{Huang2014}
+Wei Huang.
+\newblock {\em An inference and checking framework for context-sensitive
+  pluggable types}.
+\newblock PhD thesis, Rennselaer Polytechnic Institute, 2014.
+
+\bibitem[Iri16]{Irini2016}
+Karamitrou Irini.
+\newblock A crowdsourcing game for formal software verification.
+\newblock Bachelor's thesis, University of Thessaly Polytechnic School
+  Department of Electrical and Computer Engineering, Thessaly, Greece, 2016.
+
+\bibitem[Kai15]{Kaiser2015}
+Benjamin Kaiser.
+\newblock A context-sensitive security type system for {Java}.
+\newblock Master's thesis, Rennselaer Polytechnic Institute, Troy, NY, USA,
+  April 2015.
 
 \bibitem[KDME18]{KelloggDME2018}
 Martin Kellogg, Vlastimil Dort, Suzanne Millstein, and Michael~D. Ernst.
@@ -243,6 +348,12 @@ Martin Kellogg.
   Conference on Automated Software Engineering}, pages 1256--1258, San Diego,
   CA, USA, September 2019.
 
+\bibitem[Kel22]{Kellogg2022}
+Martin Kellogg.
+\newblock {\em Lightweight Verification via Specialized Typecheckers}.
+\newblock PhD thesis, University of Washington Paul G. Allen School of Computer
+  Science and Engineering, Seattle, WA, USA, June 2022.
+
 \bibitem[KEW{\etalchar{+}}20]{KohlerEWMS2020}
 Mirko K{\"o}hler, Nafise Eskandani, Pascal Weisenburger, Alessandro Margara,
   and Guido Salvaneschi.
@@ -250,6 +361,12 @@ Mirko K{\"o}hler, Nafise Eskandani, Pascal Weisenburger, Alessandro Margara,
   programming.
 \newblock In {\em OOPSLA 2020, Object-Oriented Programming Systems, Languages,
   and Applications}, Chicago, IL, USA, November 2020.
+
+\bibitem[Kog17]{Kogtenkov2017}
+Alexander~V. Kogtenkov.
+\newblock Null safety benchmarks for object initialization.
+\newblock {\em Proceedings of the Institute for System Programming of RAS},
+  29(6):135--150, 2017.
 
 \bibitem[KRS{\etalchar{+}}20]{KelloggRSSE2020}
 Martin Kellogg, Manli Ran, Manu Sridharan, Martin Sch{\"a}f, and Michael~D.
@@ -278,6 +395,19 @@ Martin Kellogg, Martin Sch{\"a}f, Serdar Tasiran, and Michael~D. Ernst.
   Conference on Automated Software Engineering}, pages 511--523, Melbourne,
   Australia, September 2020.
 
+\bibitem[Lan21]{Lanzinger2021}
+Florian Lanzinger.
+\newblock Property types in {Java}: Combining type systems and deductive
+  verification.
+\newblock Master's thesis, Karlsruher Institut f{\"u}r Technologie, feb 2021.
+
+\bibitem[LBOK16]{LiBOK2016}
+Li~Li, Tegawend\'{e}~F. Bissyand\'{e}, Damien Octeau, and Jacques Klein.
+\newblock Reflection-aware static analysis of {Android} apps.
+\newblock In {\em ASE 2016: Proceedings of the 31st Annual International
+  Conference on Automated Software Engineering}, pages 756--761, Singapore,
+  Singapore, September 2016.
+
 \bibitem[LBR06]{LeavensBR2006:JML}
 Gary~T. Leavens, Albert~L. Baker, and Clyde Ruby.
 \newblock Preliminary design of {JML}: A behavioral interface specification
@@ -290,11 +420,25 @@ Shuang Liu, Guangdong Bai, Jun Sun, and J.~Dong.
 \newblock In {\em ICECCS 2016: 21st International Conference on Engineering of
   Complex Computer Systems}, pages 219--222, Dubai, UAE, June 2016.
 
+\bibitem[L{\v{C}}CT19]{LuCCT2019}
+Tianhan Lu, Pavol {\v{C}}ern{\'y}, Bor-Yuh~Evan Chang, and Ashutosh Trivedi.
+\newblock Type-directed bounding of collections in reactive programs.
+\newblock In {\em VMCAI 2019: 20th International Conference on Verification,
+  Model Checking and Abstract Interpretation}, pages 275--296, Cascais,
+  Portugal, January 2019.
+
 \bibitem[Li17]{Li2017}
 Jianchu Li.
 \newblock A general pluggable type inference framework and its use for
   data-flow analysis.
 \newblock Master's thesis, U. of Waterloo, Waterloo, Ontario, Canada, 2017.
+
+\bibitem[LWUD21]{LanzingerWUD2021}
+Florian Lanzinger, Alexander Weigl, Mattias Ulbrich, and Werner Dietl.
+\newblock Scalability and precision by combining expressive type systems and
+  deductive verification.
+\newblock {\em ACM Proceedings on Programming Languages}, 5(OOPSLA), October
+  2021.
 
 \bibitem[Mac16]{Mackie2016}
 Christopher~A. Mackie.
@@ -303,6 +447,13 @@ Christopher~A. Mackie.
   on the Foundations of Software Engineering}, pages 1148--1150, Seattle, WA,
   USA, November 2016.
 
+\bibitem[MGR21]{MotaGR2021}
+Jo\~{a}o Mota, Marco Giunti, and Ant\'{o}nio Ravara.
+\newblock Java typestate checker.
+\newblock In {\em Coordination 2021: 23rd IFIP WG 6.1 International Conference
+  on Coordination Models and Languages}, page 121–133, Valletta, Malta, June
+  2021.
+
 \bibitem[MH12]{MilanovaH2012}
 Ana Milanova and Wei Huang.
 \newblock Inference and checking of context-sensitive pluggable types.
@@ -310,17 +461,55 @@ Ana Milanova and Wei Huang.
   on the Foundations of Software Engineering}, pages 1--4, Cary, NC, USA,
   November 2012.
 
+\bibitem[MH13]{MilanovaH2013}
+Ana Milanova and Wei Huang.
+\newblock Composing polymorphic information flow systems with reference
+  immutability.
+\newblock In {\em FTfJP: 14th Workshop on Formal Techniques for Java-like
+  Programs}, pages 5:1--5:7, Montpellier, France, July 2013.
+
+\bibitem[MHD14]{MilanovaHD2014}
+Ana Milanova, Wei Huang, and Yao Dong.
+\newblock {CFL}-reachability and context-sensitive integrity types.
+\newblock In {\em PPPJ 2014: Proceedings of the 2014 International Conference
+  on Principles and Practice of Programming in Java: Virtual Machines,
+  Languages, and Tools}, page 99–109, Cracow, Poland, September 2014.
+
 \bibitem[Mil18]{Milanova2018}
 Ana Milanova.
 \newblock Definite reference mutability.
 \newblock In {\em ECOOP 2018 --- Object-Oriented Programming, 32nd European
   Conference}, pages 25:1--25:30, Amsterdam, Netherlands, July 2018.
 
+\bibitem[MV11]{MilanovaV2011}
+Ana Milanova and Jan Vitek.
+\newblock Static dominance inference.
+\newblock In {\em TOOLS 2011: Objects, Models, Components, Patterns, 49th
+  International Conference}, pages 211--227, Zurich, Switzerland, June 2011.
+
 \bibitem[MWME21]{MudduluruWME2021}
 Rashmi Mudduluru, Jason Waataja, Suzanne Millstein, and Michael~D. Ernst.
 \newblock Verifying determinism in sequential programs.
 \newblock In {\em ICSE 2021, Proceedings of the 43rd International Conference
   on Software Engineering}, Madrid, Spain, May 2021.
+
+\bibitem[Noa10]{Noack2010}
+Gunther Noack.
+\newblock {TIFI}+: A type checker for object immutability with flexible
+  initialization.
+\newblock Diploma thesis, University of Kaiserslautern, March 2010.
+
+\bibitem[NR19]{NietoRodriguez2019}
+Abel Nieto~Rodriguez.
+\newblock Scala with explicit nulls.
+\newblock Master's thesis, University of Waterloo Department of Computer
+  Science, Waterloo, Ontario, Canada, December 2019.
+
+\bibitem[NZL{\etalchar{+}}20]{NietoZLCP2020}
+Abel Nieto, Yaoyu Zhao, Ondřej Lhot{\'a}k, Angela Chang, and Justin Pu.
+\newblock Scala with explicit nulls.
+\newblock In {\em ECOOP 2020 --- Object-Oriented Programming, 33rd European
+  Conference}, pages 25:1--25:26, online, November 2020.
 
 \bibitem[PAC{\etalchar{+}}08]{PapiACPE2008}
 Matthew~M. Papi, Mahmood Ali, Telmo~Luis {Correa~Jr.}, Jeff~H. Perkins, and
@@ -348,6 +537,13 @@ Joseph Santino.
 \newblock In {\em FSE 2016: Proceedings of the {ACM} {SIGSOFT} 24th Symposium
   on the Foundations of Software Engineering}, pages 1142--1144, Seattle, WA,
   USA, November 2016.
+
+\bibitem[SCN17]{SextonCN2017}
+Julian Sexton, Andrey Chudnov, and David~A. Naumann.
+\newblock Spartan {Jester}: end-to-end information flow control for hybrid
+  {Android} applications.
+\newblock In {\em SPW 2017: Symposium Security and Privacy Workshops}, pages
+  157--162, San Jose, CA, USA, May 2017.
 
 \bibitem[SCSC18]{SteinCSC2018}
 Benno Stein, Lazaro Clapp, Manu Sridharan, and Bor{-}Yuh~Evan Chang.
@@ -404,6 +600,13 @@ F.~Spoto.
   on Logic for Programming, Artificial Intelligence, and Reasoning}, pages
   405--424, Dakar, Senegal, April 2010.
 
+\bibitem[Sun21]{Sun2021}
+Lian Sun.
+\newblock An immutability type system for classes and objects: Improvements,
+  experiments, and comparisons.
+\newblock Master's thesis, University of Waterloo Department of Electrical and
+  Computer Engineering, Waterloo, Ontario, Canada, April 2021.
+
 \bibitem[Ta18]{Ta2018}
 Mier Ta.
 \newblock Context sensitive typechecking and inference: Ownership and
@@ -416,6 +619,13 @@ Matthew~S. Tschantz and Michael~D. Ernst.
 \newblock Javari: Adding reference immutability to {Java}.
 \newblock In {\em OOPSLA 2005, Object-Oriented Programming Systems, Languages,
   and Applications}, pages 211--230, San Diego, CA, USA, October 2005.
+
+\bibitem[TPNV11]{TangPNV2011}
+Daniel Tang, Ales Plsek, Kelvin Nilsen, and Jan Vitek.
+\newblock A static memory safety annotation system for {Safety} {Critical}
+  {Java}.
+\newblock In {\em RTSS 2011: The 32nd IEEE Real-Time Systems Symposium},
+  Vienna, Austria, November 2011.
 
 \bibitem[TPV10]{TangPJ2010}
 Daniel Tang, Ales Plsek, and Jan Vitek.
@@ -437,6 +647,12 @@ Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
 \newblock In {\em ICSE 2015, Proceedings of the 37th International Conference
   on Software Engineering}, pages 234--245, Florence, Italy, May 2015.
 
+\bibitem[Wan21]{Wang2021}
+Di~Wang.
+\newblock Interval type inference: Improvements and evaluations.
+\newblock Master's thesis, University of Waterloo Department of Electrical and
+  Computer Engineering, Waterloo, Ontario, Canada, 2021.
+
 \bibitem[WKSE14]{WeitzKSE2014}
 Konstantin Weitz, Gene Kim, Siwakorn Srisakaokul, and Michael~D. Ernst.
 \newblock A type system for format strings.
@@ -450,6 +666,13 @@ Tobias Wrigstad, Filip Pizlo, Fadi Meawad, Lei Zhao, and Jan Vitek.
 \newblock In {\em ECOOP 2009 --- Object-Oriented Programming, 23rd European
   Conference}, pages 445--469, Genova, Italy, July 2009.
 
+\bibitem[XCD21]{XingCD2021}
+Weitian Xing, Yuanhui Cheng, and Werner Dietl.
+\newblock Ensuring correct cryptographic algorithm and provider usage at
+  compile time.
+\newblock In {\em FTfJP: 239d Workshop on Formal Techniques for Java-like
+  Programs}, page 43–50, Online, July 2021.
+
 \bibitem[Xia20]{Xiang2020}
 Tongtong Xiang.
 \newblock Type checking and whole-program inference for value range analysis.
@@ -460,6 +683,18 @@ Tongtong Xiang.
 Weitian Xing.
 \newblock Light-weight verification of cryptographic {API} usage.
 \newblock Master's thesis, U. of Waterloo, Waterloo, Ontario, Canada, 2020.
+
+\bibitem[XLD20]{XiangLD2020}
+Tongtong Xiang, Jeff~Y. Luo, and Werner Dietl.
+\newblock Precise inference of expressive units of measurement types.
+\newblock In {\em OOPSLA 2020, Object-Oriented Programming Systems, Languages,
+  and Applications}, Chicago, IL, USA, November 2020.
+
+\bibitem[Zaz13]{Zaza2013}
+Nosheen Zaza.
+\newblock Evaluating the accuracy of annotations in the {Loci 3.0} pluggable
+  type checker.
+\newblock Master's thesis, Uppsala University, Uppsala, Sweden, 2013.
 
 \bibitem[ZPA{\etalchar{+}}07]{ZibinPAAKE2007}
 Yoav Zibin, Alex Potanin, Mahmood Ali, Shay Artzi, Adam Kie{\.z}un, and
