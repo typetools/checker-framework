@@ -406,7 +406,7 @@ def main(argv):
             + " * Browse to https://oss.sonatype.org/#stagingRepositories\n"
             + " * Log in using your Sonatype credentials\n"
             + ' * In the search box at upper right, type "checker"\n'
-            + " * In the top pane, click on orgcheckerframework-XXXX\n"
+            + " * In the top pane, click on org.checkerframework-XXXX\n"
             + ' * Click "close" at the top\n'
             + " * For the close message, enter:  Checker Framework release "
             + new_cf_version
@@ -510,7 +510,7 @@ def main(argv):
         msg = (
             "Please 'release' the artifacts.\n"
             + "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and "
-            + "locate the orgcheckerframework repository and click on it.\n"
+            + "locate the org.checkerframework repository and click on it.\n"
             + "If you have a permissions problem, try logging out and back in.\n"
             + "Finally, click on the Release button at the top of the page. In the dialog box that pops up, "
             + 'leave the "Automatically drop" box checked. For the description, write '
@@ -589,8 +589,8 @@ def main(argv):
         )
         continue_or_exit(
             "Make a pull request to the Checker Framework that\n"
-            + "updates the version number of the Checker Framework"
-            + "Gradle Plugin in docs/example/lombok and docs/example/errorprone .\n"
+            + "updates the version number of the Checker Framework\n"
+            + "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
             + "The pull request's tests will fail; you will merge it in a day."
         )
 
