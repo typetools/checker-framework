@@ -2004,7 +2004,7 @@ be used with \code{-Ainfer}; see Section~\ref{whole-program-inference}.
   Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
 
   The \code{-AoutputArgsToFile} command-line argument is processed by
-  CheckerMain, not by the annotation processor.  That means that it can be
+  \<CheckerMain>, not by the annotation processor.  That means that it can be
   supplied only when you use the Checker Framework compiler (the ``Checker
   Framework javac wrapper''), and it cannot be written in a file containing
   command-line arguments passed to the compiler using the @argfile syntax.
@@ -2492,7 +2492,7 @@ without warnings or errors.
 % LocalWords:  AnnotatedClassType isAnnotatedWith hasAnnotationAt TODO src jdk
 % LocalWords:  processor NullnessChecker InterningChecker Nullness Nullable
 % LocalWords:  AnnotatedTypeMirrors BaseTypeChecker BaseTypeVisitor basetype
-% LocalWords:  Aqual Anqual CharSequence getAnnotatedType UseLovely
+% LocalWords:  Aqual Anqual CharSequence getAnnotatedType UseLovely Ainfer
 % LocalWords:  AnnotatedTypeMirror LovelyChecker Anomsgtext Ashowchecks enums
 % LocalWords:  Afilenames dereferenced SuppressWarnings declaratively SubtypeOf
 % LocalWords:  TypeHierarchy GraphQualifierHierarchy Foo qual UnknownSign
@@ -2534,7 +2534,7 @@ without warnings or errors.
 %%  LocalWords:  MyChecker's subchecker plugins ElementType myClass myflag
 %%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
 %%  LocalWords:  addCheckedCodeDefaults RelevantJavaTypes TargetLocations
-%%  LocalWords:  TypeUseLocation createExpressionAnnoHelper fromNode
+%%  LocalWords:  TypeUseLocation createExpressionAnnoHelper fromNode expr
 %%  LocalWords:  ExpressionAnnotationHelper JavaExpressions CFTransfer LSP
 %%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
 %%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
@@ -2547,10 +2547,16 @@ without warnings or errors.
 %  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
 %%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals
 %%  LocalWords:  TypeAnnotationUtils reimplementing typesystem TreeType
-%%  LocalWords:  getTypeFactoryOfSubchecker checkername
+%%  LocalWords:  getTypeFactoryOfSubchecker checkername inference''
 %%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet
 %%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
 %%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk
-% LocalWords:  createTreeAnnotator ListTreeAnnotator TypeAnnotator
+% LocalWords:  createTreeAnnotator ListTreeAnnotator TypeAnnotator upcasts
 % LocalWords:  createTypeAnnotator ListTypeAnnotator CFGVisualizeLauncher
 % LocalWords:  PropagationTreeAnnotator checkerName cfgvisualizelauncher
+% LocalWords:  Signedness UnknownSignedness signedness PolySigned fromTree
+% LocalWords:  DefaultQualifierPolymorphism createQualifierPolymorphism
+% LocalWords:  representation'' stubfilename commonAssignmentCheck
+% LocalWords:  AshowWpiFailedInferences CheckerMain wrapper'' typechecker
+% LocalWords:  AatfDoNotCache AatfCacheSize PolyPresent Subinterface
+% LocalWords:  UnionType
