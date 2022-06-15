@@ -295,6 +295,11 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.logBugInCF
   "noPrintErrorStack",
 
+  // Whether to NOT issue a warning when performance is impeded by
+  // memory constraints. An INFO level message with be printed, to
+  // interoperate better with -Werror
+  "noWarnMemoryConstraints",
+
   // Only output error code, useful for testing framework
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
@@ -938,8 +943,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     if (!warnedAboutGarbageCollection) {
       String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
+      boolean noWarnMemoryConstraints =
+          (processingEnv != null
+              && processingEnv.getOptions() != null
+              && processingEnv.getOptions().containsKey("noWarnMemoryConstraints"));
       if (gcUsageMessage != null) {
-        messager.printMessage(Kind.WARNING, gcUsageMessage);
+        Kind kind = noWarnMemoryConstraints ? Kind.INFO : Kind.WARNING
+        messager.printMessage(kind, gcUsageMessage);
         warnedAboutGarbageCollection = true;
       }
     }
