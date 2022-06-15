@@ -3,6 +3,11 @@ Version 3.22.3 (July 1, 2022)
 
 **User-visible changes:**
 
+By default, command-line argument `-AstubWarnIfNotFound` is treated as true
+for stub files provided on the command line and false for built-in stub
+files.  Use `-AstubWarnIfNotFound` to enable it for all stub files, and use
+new `-AstubNoWarnIfNotFound` to disable it for all stub files.
+
 **Implementation details:**
 
 **Closed issues:**
