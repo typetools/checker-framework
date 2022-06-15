@@ -943,12 +943,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     if (!warnedAboutGarbageCollection) {
       String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
-      boolean noWarnMemoryConstraints =
-          (processingEnv != null
-              && processingEnv.getOptions() != null
-              && processingEnv.getOptions().containsKey("noWarnMemoryConstraints"));
       if (gcUsageMessage != null) {
-        Kind kind = noWarnMemoryConstraints ? Kind.INFO : Kind.WARNING
+        boolean noWarnMemoryConstraints =
+            (processingEnv != null
+                && processingEnv.getOptions() != null
+                && processingEnv.getOptions().containsKey("noWarnMemoryConstraints"));
+        Kind kind = noWarnMemoryConstraints ? Kind.INFO : Kind.WARNING;
         messager.printMessage(kind, gcUsageMessage);
         warnedAboutGarbageCollection = true;
       }
