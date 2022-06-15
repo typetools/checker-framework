@@ -537,16 +537,16 @@ smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 \sectionAndLabel{\code{-AskipUses} and \code{-AonlyUses} command-line options}{askipuses}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
-class, or suppress all errors and warnings except those at uses of a given
+class, or suppress all errors and warnings \emph{except} those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
 the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
-regular expression that matches class names (not file names) for which warnings and errors
+regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyUses} command-line option to a
-regular expression that matches class names (not file names) for which warnings and errors
+regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
 
 For example, suppose that you use
@@ -586,17 +586,17 @@ refined in the future.  Oftentimes \code{-AskipUses} is more useful.
 \sectionAndLabel{\code{-AskipDefs} and \code{-AonlyDefs} command-line options}{askipdefs}
 
 You can suppress all errors and warnings in the \emph{definition} of a given
-class, or suppress all errors and warnings except those in the definition
+class, or suppress all errors and warnings \emph{except} those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} or \code{-AonlyUses} command-line option,
 see~\ref{askipuses}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
-regular expression that matches class names (not file names) in whose definition warnings and errors
+regular expression that matches fully-qualified class names (not file names) in whose definition warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyDefs} command-line option to a
-regular expression that matches class names (not file names) whose
+regular expression that matches fully-qualified class names (not file names) whose
 definitions should be type-checked.
 (This is somewhat similar to NullAway's
 \<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)

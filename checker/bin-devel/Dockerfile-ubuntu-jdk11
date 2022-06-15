@@ -1,6 +1,7 @@
 # Create a Docker image that is ready to run the main Checker Framework tests,
 # using JDK 11.
 
+# "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 

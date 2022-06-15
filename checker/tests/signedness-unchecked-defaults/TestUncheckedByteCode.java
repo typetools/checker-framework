@@ -1,7 +1,8 @@
+import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.framework.testchecker.lib.UncheckedByteCode;
 
 public class TestUncheckedByteCode {
-  Object field;
+  @UnknownSignedness Object field;
 
   void test(UncheckedByteCode<Object> param, Integer i) {
     field = param.getCT();

@@ -7,11 +7,11 @@
 #  * run WPI to infer annotations
 #  * type-check the annotated version
 #  * check that the output of type-checking is the same as the *.expected file in this directory
-# Afterward, the inferred annotations can be found in a directory named /tmp/wpi-stubs-XXXXXX .
-# The exact directory name is the last directory in the -Astubs= argument in file
+# Afterward, the inferred annotations can be found in a directory named /tmp/wpi-ajava-XXXXXX .
+# The exact directory name is the last directory in the -Ajava= argument in file
 # checker-framework/checker/build/wpi-plumelib-tests/PROJECTNAME/dljc-out/typecheck.out .
 
-# This script is run by `./gradlew wpiPlumeLibTests` at the top level.
+# This script is run by `./gradlew wpiPlumeLibTest` at the top level.
 
 # wpi.sh may exit with non-zero status.
 set +e
@@ -45,6 +45,11 @@ clean_compile_output() {
 
     # Remove uninteresting output
     sed -i '/^warning: \[path\] bad path element /d' "$out"
+    sed -i '/^.*warning: Option --illegal-access is deprecated and will be removed in a future release./d' "$out"
+    sed -i '/^warning: \[options\] bootstrap class path not set/d' "$out"
+
+    # Remove warning count because it can differ between JDK 8 and later JDKs due to the bootstrap warning:
+    sed -i '/^[0-9]* warning/d' "$out"
 
     # Remove directory names and line numbers
     sed -i 's/^[^ ]*\///' "$out"
@@ -81,9 +86,9 @@ test_wpi_plume_lib() {
       if [ -n "$AZURE_HTTP_USER_AGENT" ] || [ -n "$CIRCLE_PR_USERNAME" ] || [ -n "$GITHUB_HEAD_REF" ] || [ "$TRAVIS" = "true" ] ; then
         # Running under continuous integration.  Output files that may be useful for debugging.
         more "$TESTDIR/$project"/dljc-out/*
-        STUBDIR="$(sed -n 's/Directory for generated stub files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
-        echo "STUBDIR=$STUBDIR"
-        find "$STUBDIR" -type f -print0 | xargs -0 more
+        AJAVADIR="$(sed -n 's/Directory for generated ajava files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
+        echo "AJAVADIR=$AJAVADIR"
+        find "$AJAVADIR" -type f -print0 | xargs -0 more
       fi
       exit 1
     fi

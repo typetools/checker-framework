@@ -159,6 +159,17 @@ public class PurityChecker {
       kinds.remove(Kind.DETERMINISTIC);
       kinds.remove(Kind.SIDE_EFFECT_FREE);
     }
+
+    @Override
+    public String toString() {
+      return String.join(
+          System.lineSeparator(),
+          "PurityResult{",
+          "  notSEF: " + notSEFreeReasons,
+          "  notDet: " + notDetReasons,
+          "  notBoth: " + notBothReasons,
+          "}");
+    }
   }
 
   // TODO: It would be possible to improve efficiency by visiting fewer nodes.  This would require
@@ -310,6 +321,7 @@ public class PurityChecker {
      * @param variable the lhs to check
      */
     protected void assignmentCheck(ExpressionTree variable) {
+      variable = TreeUtils.withoutParens(variable);
       if (TreeUtils.isFieldAccess(variable)) {
         // lhs is a field access
         purityResult.addNotBothReason(variable, "assign.field");

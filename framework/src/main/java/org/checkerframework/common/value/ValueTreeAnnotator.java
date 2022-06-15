@@ -33,9 +33,9 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The TreeAnnotator for this AnnotatedTypeFactory. It adds/replaces annotations. */
@@ -628,7 +628,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
         id = ((IdentifierTree) tree).getName();
         break;
       default:
-        throw new BugInCF("unexpected kind of enum constant use tree: " + tree.getKind());
+        throw new TypeSystemError("unexpected kind of enum constant use tree: " + tree.getKind());
     }
     AnnotationMirror stringVal =
         atypeFactory.createStringAnnotation(Collections.singletonList(id.toString()));

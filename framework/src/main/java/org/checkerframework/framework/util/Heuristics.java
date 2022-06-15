@@ -29,7 +29,7 @@ public class Heuristics {
    * contained by an if statement which is immediately contained in a method, one would invoke:
    *
    * <pre>
-   * matchParents(path, Kind.IF, Kind.METHOD)
+   * matchParents(path, Kind.IF, Tree.Kind.METHOD)
    * </pre>
    *
    * @param path the path to match

@@ -36,9 +36,9 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Annotated type factory for the GUI Effect Checker. */
@@ -307,7 +307,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         }
         srcType = callerReceiver;
       } else {
-        throw new BugInCF("Unexpected getMethodSelect() kind at callsite " + node);
+        throw new TypeSystemError("Unexpected getMethodSelect() kind at callsite " + node);
       }
 
       // Instantiate type-polymorphic effects
@@ -451,7 +451,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotatedTypeMirror.AnnotatedExecutableType overriddenMethod =
           AnnotatedTypes.asMemberOf(types, this, overriddenType, pair.getValue());
       ExecutableElement overriddenMethodElt = pair.getValue();
-      if (debugSpew)
+      if (debugSpew) {
         System.err.println(
             "Found "
                 + declaringType
@@ -461,6 +461,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 + overriddenType
                 + "::"
                 + overriddenMethod);
+      }
       Effect eff = getDeclaredEffect(overriddenMethodElt);
       if (eff.isSafe()) {
         safeOverriden = overriddenMethodElt;

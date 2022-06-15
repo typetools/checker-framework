@@ -160,7 +160,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
       AnnotatedDeclaredType subtype,
       AnnotatedDeclaredType supertype,
       Set<AFConstraint> constraints) {
-    if (subtype.wasRaw() || supertype.wasRaw()) {
+    if (subtype.isUnderlyingTypeRaw() || supertype.isUnderlyingTypeRaw()) {
       // The error will be caught in {@link DefaultTypeArgumentInference#infer} and
       // inference will be aborted, but type-checking will continue.
       throw new BugInCF("Can't infer type arguments when raw types are involved.");

@@ -6,7 +6,6 @@ import org.checkerframework.checker.signedness.qual.*;
 public class ObjectCasts {
 
   Integer castObjectToInteger1(Object o) {
-    // :: error: (return)
     return (Integer) o;
   }
 
@@ -20,7 +19,6 @@ public class ObjectCasts {
   }
 
   @Signed Integer castObjectToInteger4(Object o) {
-    // :: error: (return)
     return (Integer) o;
   }
 
@@ -52,6 +50,7 @@ public class ObjectCasts {
   }
 
   Object castIntegerToObject2(@Unsigned Integer o) {
+    // :: error: (return)
     return (Object) o;
   }
 
@@ -92,13 +91,9 @@ public class ObjectCasts {
     int i1 = 1;
     long l1 = 1;
     Object[] obj = new Object[] {b1, s1, i1, l1};
-    // :: error: (argument)
     byteParameter((Byte) obj[0]);
-    // :: error: (argument)
     shortParameter((Short) obj[1]);
-    // :: error: (argument)
     integralParameter((Integer) obj[2]);
-    // :: error: (argument)
     longParameter((Long) obj[3]);
   }
 

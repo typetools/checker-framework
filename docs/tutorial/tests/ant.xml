@@ -101,6 +101,10 @@
         <arg value="-I"/>
         <arg value="^javac "/>
 
+        <!-- ignore JDK 17 deprecation warning -->
+        <arg value="-I"/>
+        <arg value="illegal-access is deprecated"/>
+
         <!-- ignore paths -->
         <arg value="-I"/>
         <arg value=".java"/>

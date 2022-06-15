@@ -19,7 +19,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.mustcall.qual.CreatesObligation;
+import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -46,16 +46,16 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * The annotated type factory for the Must Call Checker. Primarily responsible for the subtyping
  * rules between @MustCall annotations.
  */
 public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
-    implements CreatesObligationElementSupplier {
+    implements CreatesMustCallForElementSupplier {
 
   /** The {@code @}{@link MustCallUnknown} annotation. */
   public final AnnotationMirror TOP;
@@ -97,13 +97,13 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   final ExecutableElement inheritableMustCallValueElement =
       TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
 
-  /** The CreatesObligation.List.value field/element. */
-  private final ExecutableElement createsObligationListValueElement =
-      TreeUtils.getMethod(CreatesObligation.List.class, "value", 0, processingEnv);
+  /** The CreatesMustCallFor.List.value field/element. */
+  private final ExecutableElement createsMustCallForListValueElement =
+      TreeUtils.getMethod(CreatesMustCallFor.List.class, "value", 0, processingEnv);
 
-  /** The CreatesObligation.value field/element. */
-  private final ExecutableElement createsObligationValueElement =
-      TreeUtils.getMethod(CreatesObligation.class, "value", 0, processingEnv);
+  /** The CreatesMustCallFor.value field/element. */
+  private final ExecutableElement createsMustCallForValueElement =
+      TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
   /**
    * Creates a MustCallAnnotatedTypeFactory.
@@ -160,8 +160,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @return a MustCall annotation that does not have "close" as one of its values, but is otherwise
    *     identical to anno
    */
-  // Package private to permit usage from the visitor in the common assignment check.
-  /* package-private */ AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
+  public AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
     if (anno == null || AnnotationUtils.areSame(anno, BOTTOM)) {
       return BOTTOM;
     } else if (!AnnotationUtils.areSameByName(
@@ -184,7 +183,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param elt an element; may be null, in which case this method always returns false
    * @return true iff the given element represents a resource variable
    */
-  private boolean isResourceVariable(@Nullable Element elt) {
+  /* package-private*/ boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
@@ -197,7 +196,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     } else if (tree instanceof MemberReferenceTree) {
       declaration = (ExecutableElement) TreeUtils.elementFromTree(tree);
     } else {
-      throw new BugInCF("unexpected type of method tree: " + tree.getKind());
+      throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
     }
     changeNonOwningParameterTypesToTop(declaration, type);
     super.methodFromUsePreSubstitution(tree, type);
@@ -246,6 +245,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
     return new MustCallDefaultQualifierForUseTypeAnnotator();
+  }
+
+  /**
+   * Returns the {@link MustCall#value} element. For use with {@link
+   * AnnotationUtils#getElementValueArray}.
+   *
+   * @return the {@link MustCall#value} element
+   */
+  public ExecutableElement getMustCallValueElement() {
+    return mustCallValueElement;
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
@@ -361,23 +370,23 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Returns the CreatesObligation.value field/element.
+   * Returns the CreatesMustCallFor.value field/element.
    *
-   * @return the CreatesObligation.value field/element
+   * @return the CreatesMustCallFor.value field/element
    */
   @Override
-  public ExecutableElement getCreatesObligationValueElement() {
-    return createsObligationValueElement;
+  public ExecutableElement getCreatesMustCallForValueElement() {
+    return createsMustCallForValueElement;
   }
 
   /**
-   * Returns the CreatesObligation.List.value field/element.
+   * Returns the CreatesMustCallFor.List.value field/element.
    *
-   * @return the CreatesObligation.List.value field/element
+   * @return the CreatesMustCallFor.List.value field/element
    */
   @Override
-  public ExecutableElement getCreatesObligationListValueElement() {
-    return createsObligationListValueElement;
+  public ExecutableElement getCreatesMustCallForListValueElement() {
+    return createsMustCallForListValueElement;
   }
 
   /**
@@ -419,7 +428,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Return the temporary variable for node, if it exists. See {@link #tempVars}.
+   * Return the temporary variable for node, if it exists. See {@code #tempVars}.
    *
    * @param node a CFG node
    * @return the corresponding temporary variable, or null if there is not one

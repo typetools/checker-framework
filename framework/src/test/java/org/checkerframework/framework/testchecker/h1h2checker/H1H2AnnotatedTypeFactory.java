@@ -1,7 +1,6 @@
 package org.checkerframework.framework.testchecker.h1h2checker;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
@@ -51,7 +50,7 @@ public class H1H2AnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
     super.addComputedTypeAnnotations(tree, type, iUseFlow);
-    if (tree.getKind() == Kind.VARIABLE
+    if (tree.getKind() == Tree.Kind.VARIABLE
         && ((VariableTree) tree).getName().toString().contains("addH1S2")) {
       type.replaceAnnotation(H1S2);
     }

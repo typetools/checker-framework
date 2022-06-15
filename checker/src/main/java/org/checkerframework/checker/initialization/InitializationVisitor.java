@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
@@ -21,7 +20,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -32,6 +30,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -274,8 +273,11 @@ public class InitializationVisitor<
         Store store = atypeFactory.getRegularExitStore(block);
 
         // Add field values for fields with an initializer.
-        for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-          store.addInitializedField(t.first);
+        for (FieldInitialValue<Value> fieldInitialValue :
+            store.getAnalysis().getFieldInitialValues()) {
+          if (fieldInitialValue.initializer != null) {
+            store.addInitializedField(fieldInitialValue.fieldDecl.getField());
+          }
         }
         final List<VariableTree> init =
             atypeFactory.getInitializedInvariantFields(store, getCurrentPath());
@@ -286,15 +288,22 @@ public class InitializationVisitor<
     super.processClassTree(node);
 
     // Warn about uninitialized static fields.
-    if (node.getKind() == Kind.CLASS) {
+    Tree.Kind nodeKind = node.getKind();
+    // Skip interfaces (and annotations, which are interfaces).  In an interface, every static field
+    // must be initialized.  Java forbids uninitialized variables and static initalizer blocks.
+    if (nodeKind != Tree.Kind.INTERFACE && nodeKind != Tree.Kind.ANNOTATION_TYPE) {
       boolean isStatic = true;
       // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
       // the regular exit store of the class here.
       Store store = atypeFactory.getRegularExitStore(node);
       // Add field values for fields with an initializer.
-      for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-        store.addInitializedField(t.first);
+      for (FieldInitialValue<Value> fieldInitialValue :
+          store.getAnalysis().getFieldInitialValues()) {
+        if (fieldInitialValue.initializer != null) {
+          store.addInitializedField(fieldInitialValue.fieldDecl.getField());
+        }
       }
+
       List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
       checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
     }
@@ -370,19 +379,25 @@ public class InitializationVisitor<
       return;
     }
 
+    // Compact canonical record constructors do not generate visible assignments in the source,
+    // but by definition they assign to all the record's fields so we don't need to
+    // check for uninitialized fields in them:
+    if (node.getKind() == Tree.Kind.METHOD
+        && TreeUtils.isCompactCanonicalRecordConstructor((MethodTree) node)) {
+      return;
+    }
+
     Pair<List<VariableTree>, List<VariableTree>> uninitializedFields =
         atypeFactory.getUninitializedFields(
             store, getCurrentPath(), staticFields, receiverAnnotations);
     List<VariableTree> violatingFields = uninitializedFields.first;
     List<VariableTree> nonviolatingFields = uninitializedFields.second;
 
+    // Remove fields that have already been initialized by an initializer block.
     if (staticFields) {
-      // TODO: Why is nothing done for static fields?
-      // Do we need the following?
-      // violatingFields.removeAll(store.initializedFields);
+      violatingFields.removeAll(initializedFields);
+      nonviolatingFields.removeAll(initializedFields);
     } else {
-      // remove fields that have already been initialized by an
-      // initializer block
       violatingFields.removeAll(initializedFields);
       nonviolatingFields.removeAll(initializedFields);
     }

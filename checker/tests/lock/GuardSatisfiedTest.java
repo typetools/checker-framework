@@ -188,10 +188,16 @@ public class GuardSatisfiedTest {
     return this;
   }
 
-  final Object lock1 = new Object(), lock2 = new Object();
+  final Object lock1 = new Object();
+  final Object lock2 = new Object();
+
+  // This method exists to prevent flow-sensitive refinement.
+  @GuardedBy({"lock1", "lock2"}) Object guardedByLock1Lock2() {
+    return new Object();
+  }
 
   void testAssignment(@GuardSatisfied Object o) {
-    @GuardedBy({"lock1", "lock2"}) Object p = new Object();
+    @GuardedBy({"lock1", "lock2"}) Object p = guardedByLock1Lock2();
     // :: error: (lock.not.held)
     o = p;
     synchronized (lock1) {
@@ -241,7 +247,7 @@ public class GuardSatisfiedTest {
 
   void testGuardSatisfiedOnWildCardSuperBound(
       // :: error: (guardsatisfied.location.disallowed)
-      MyParameterizedClass1<? super @GuardSatisfied Object> l) {}
+      MyParameterizedClass1<? super @GuardSatisfied String> l) {}
 
   @GuardSatisfied(1) Object testGuardSatisfiedOnParameters(
       @GuardSatisfied GuardSatisfiedTest this,

@@ -120,6 +120,11 @@ This section describes the lock annotations you can write on types and methods.
   default type qualifier for method receivers in unannotated libraries
   (see \chapterpageref{annotating-libraries}).
 
+\item[\refqualclass{checker/lock/qual}{NewObject}]
+  This type represents a newly-consructed value; such as the result of
+  calling a constructor or factory method.  The client can use the value as
+  any \refqualclass{checker/lock/qual}{GuardedBy} type.
+
 \item[\refqualclass{checker/lock/qual}{GuardedByBottom}]
   If a variable \<x> has type \code{@GuardedByBottom}, then
   the value referred to by \<x> is \code{null} and can never
@@ -708,6 +713,11 @@ filename = filename.append(extension);
 
 This section gives some details that are helpful for understanding how Java
 locking and the Lock Checker works.
+
+The paper ``Locking discipline inference and checking''~\cite{ErnstLMST2016} (ICSE 2016,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
+gives additional details.
+
 
 \subsectionAndLabel{Two types of locking:  monitor locks and explicit locks}{lock-two-types}
 

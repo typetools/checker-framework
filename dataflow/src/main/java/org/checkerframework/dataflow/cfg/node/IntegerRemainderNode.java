@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -14,9 +14,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class IntegerRemainderNode extends BinaryOperationNode {
 
+  /**
+   * Constructs an {@link IntegerRemainderNode}.
+   *
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
+   */
   public IntegerRemainderNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Kind.REMAINDER;
+    assert tree.getKind() == Tree.Kind.REMAINDER;
   }
 
   @Override

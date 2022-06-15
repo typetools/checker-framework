@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -14,9 +14,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class LessThanOrEqualNode extends BinaryOperationNode {
 
+  /**
+   * Constructs a {@link LessThanOrEqualNode}.
+   *
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
+   */
   public LessThanOrEqualNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Kind.LESS_THAN_EQUAL;
+    assert tree.getKind() == Tree.Kind.LESS_THAN_EQUAL;
   }
 
   @Override

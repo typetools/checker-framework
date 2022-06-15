@@ -355,7 +355,8 @@ public class QualifierDefaults {
   }
 
   /**
-   * Applies default annotations to a type given an {@link javax.lang.model.element.Element}.
+   * Applies default annotations to a type obtained from an {@link
+   * javax.lang.model.element.Element}.
    *
    * @param elt the element from which the type was obtained
    * @param type the type to annotate
@@ -427,7 +428,11 @@ public class QualifierDefaults {
     Tree prev = null;
 
     for (Tree t : path) {
-      switch (t.getKind()) {
+      switch (TreeUtils.getKindRecordAsClass(t)) {
+        case ANNOTATED_TYPE:
+        case ANNOTATION:
+          // If the tree is in an annotation, then there is no relevant scope.
+          return null;
         case VARIABLE:
           VariableTree vtree = (VariableTree) t;
           ExpressionTree vtreeInit = vtree.getInitializer();
@@ -451,7 +456,7 @@ public class QualifierDefaults {
           return TreeUtils.elementFromDeclaration((VariableTree) t);
         case METHOD:
           return TreeUtils.elementFromDeclaration((MethodTree) t);
-        case CLASS:
+        case CLASS: // Including RECORD
         case ENUM:
         case INTERFACE:
         case ANNOTATION_TYPE:
@@ -936,6 +941,8 @@ public class QualifierDefaults {
                 && scope.getKind() == ElementKind.CONSTRUCTOR
                 && t.getKind() == TypeKind.EXECUTABLE
                 && isTopLevelType) {
+              // This is the return type of a constructor declaration (not a constructor
+              // invocation).
               final AnnotatedTypeMirror returnType = ((AnnotatedExecutableType) t).getReturnType();
               if (shouldBeAnnotated(returnType, false)) {
                 addAnnotation(returnType, qual);

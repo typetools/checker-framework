@@ -210,7 +210,7 @@ public class CFGTranslationPhaseTwo {
         in.underlyingAST,
         in.treeLookupMap,
         in.convertedTreeLookupMap,
-        in.unaryAssignNodeLookupMap,
+        in.postfixLookupMap,
         in.returnNodes,
         in.declaredClasses,
         in.declaredLambdas);

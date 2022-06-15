@@ -60,7 +60,7 @@ public class CalledMethodsChecker extends AccumulationChecker {
 
   /**
    * The number of calls to build frameworks supported by this invocation. Incremented only if the
-   * {@link #COUNT_FRAMEWORK_BUILD_CALLS} option was supplied.
+   * {@link #COUNT_FRAMEWORK_BUILD_CALLS} command-line option was supplied.
    */
   int numBuildCalls = 0;
 

@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
@@ -23,11 +22,11 @@ public interface BackwardTransferFunction<V extends AbstractValue<V>, S extends 
    * Returns the initial store that should be used at the normal exit block.
    *
    * @param underlyingAST the underlying AST of the given control flow graph
-   * @param returnNodes the return nodes of the given control flow graph if the underlying AST of
-   *     this graph is a method. Otherwise will be set to {@code null}
+   * @param returnNodes the return nodes of the given control flow graph (an empty list if the
+   *     underlying AST is not a method)
    * @return the initial store that should be used at the normal exit block
    */
-  S initialNormalExitStore(UnderlyingAST underlyingAST, @Nullable List<ReturnNode> returnNodes);
+  S initialNormalExitStore(UnderlyingAST underlyingAST, List<ReturnNode> returnNodes);
 
   /**
    * Returns the initial store that should be used at the exceptional exit block or given the

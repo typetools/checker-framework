@@ -300,7 +300,7 @@ public class I18nFormatUtil {
       argumentIndices.add(argumentNumber);
 
       // now get the format
-      I18nConversionCategory category = null;
+      final I18nConversionCategory category;
       if (segments[SEG_TYPE].length() != 0) {
         int type = findKeyword(segments[SEG_TYPE], TYPE_KEYWORDS);
         switch (type) {

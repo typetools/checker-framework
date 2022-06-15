@@ -4,7 +4,9 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -727,7 +729,7 @@ public abstract class AnnotatedTypeMirror {
    * <p>This method should only be used in very specific situations. For individual type systems, it
    * is generally better to use {@link #removeAnnotation(AnnotationMirror)} and similar methods.
    */
-  public void clearAnnotations() {
+  public void clearPrimaryAnnotations() {
     annotations.clear();
   }
 
@@ -857,9 +859,9 @@ public abstract class AnnotatedTypeMirror {
      * TODO: improve inference.
      *
      * <p>Ideally, the field would be final. However, when we determine the supertype of a raw type,
-     * we need to set wasRaw for the supertype.
+     * we need to set isUnderlyingTypeRaw for the supertype.
      */
-    private boolean wasRaw;
+    private boolean isUnderlyingTypeRaw;
 
     /** The enclosing type. May be null. */
     protected @Nullable AnnotatedDeclaredType enclosingType;
@@ -878,7 +880,8 @@ public abstract class AnnotatedTypeMirror {
       super(type, atypeFactory);
       TypeElement typeelem = (TypeElement) type.asElement();
       DeclaredType declty = (DeclaredType) typeelem.asType();
-      wasRaw = !declty.getTypeArguments().isEmpty() && type.getTypeArguments().isEmpty();
+      isUnderlyingTypeRaw =
+          !declty.getTypeArguments().isEmpty() && type.getTypeArguments().isEmpty();
 
       TypeMirror encl = type.getEnclosingType();
       if (encl.getKind() == TypeKind.DECLARED) {
@@ -919,8 +922,30 @@ public abstract class AnnotatedTypeMirror {
       }
       AnnotatedDeclaredType result = this.shallowCopy(true);
       result.declaration = false;
+      if (this.enclosingType != null) {
+        result.enclosingType = this.enclosingType.asUse();
+      }
       // setTypeArguments calls asUse on all the new type arguments.
       result.setTypeArguments(typeArgs);
+
+      // If "this" is a type declaration with a type variable that references itself, e.g. MyClass<T
+      // extends List<T>>, then the type variable is a declaration, i.e. the first T, but the
+      // reference to the type variable is a use, i.e. the second T.  When "this" is converted to a
+      // use, then both type variables are uses and should be the same object.  The code below does
+      // this.
+      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(typeArgs.size());
+      for (AnnotatedTypeMirror typeArgs : result.getTypeArguments()) {
+        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArgs;
+        mapping.put(typeVar.getUnderlyingType(), typeVar);
+      }
+      for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
+        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArg;
+        AnnotatedTypeMirror upperBound =
+            atypeFactory
+                .getTypeVarSubstitutor()
+                .substituteWithoutCopyingTypeArguments(mapping, typeVar.getUpperBound());
+        typeVar.setUpperBound(upperBound);
+      }
 
       return result;
     }
@@ -935,13 +960,25 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param ts the type arguments
      */
-    // WMD
     public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
       if (ts == null || ts.isEmpty()) {
         typeArgs = Collections.emptyList();
       } else {
         if (isDeclaration()) {
-          // TODO: check that all args are really declarations
+          if (isDeclaration()) {
+            for (AnnotatedTypeMirror typeArg : ts) {
+              if (typeArg.getKind() != TypeKind.TYPEVAR) {
+                throw new BugInCF(
+                    "Type declaration must have type variables as type arguments. Found %s",
+                    typeArg);
+              }
+              if (!typeArg.isDeclaration()) {
+                throw new BugInCF(
+                    "Type declarations must have type variables that are declarations. Found %s",
+                    typeArg);
+              }
+            }
+          }
           typeArgs = Collections.unmodifiableList(ts);
         } else {
           List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
@@ -958,7 +995,7 @@ public abstract class AnnotatedTypeMirror {
     public List<AnnotatedTypeMirror> getTypeArguments() {
       if (typeArgs != null) {
         return typeArgs;
-      } else if (wasRaw()) {
+      } else if (isUnderlyingTypeRaw()) {
         // Initialize the type arguments with uninferred wildcards.
         BoundsInitializer.initializeTypeArgs(this);
         return typeArgs;
@@ -973,21 +1010,44 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns true if the type was raw, that is, type arguments were not provided but instead
-     * inferred.
+     * Returns true if the underlying type is raw. The receiver of this method is not raw, however;
+     * its annotated type arguments have been inferred.
      *
      * @return true iff the type was raw
      */
-    public boolean wasRaw() {
-      return wasRaw;
+    public boolean isUnderlyingTypeRaw() {
+      return isUnderlyingTypeRaw;
     }
 
     /**
-     * Set the wasRaw flag to true. This should only be necessary when determining the supertypes of
-     * a raw type.
+     * Returns true if the underlying type is raw. The receiver of this method is not raw, however;
+     * its annotated type arguments have been inferred.
+     *
+     * @return true iff the type was raw
+     * @deprecated Use {@link #isUnderlyingTypeRaw()} instead
      */
+    @Deprecated // 2021-06-16
+    public boolean wasRaw() {
+      return isUnderlyingTypeRaw();
+    }
+
+    /**
+     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
+     * supertypes of a raw type.
+     */
+    protected void setIsUnderlyingTypeRaw() {
+      this.isUnderlyingTypeRaw = true;
+    }
+
+    /**
+     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
+     * supertypes of a raw type.
+     *
+     * @deprecated Use {@link #setIsUnderlyingTypeRaw()} instead
+     */
+    @Deprecated // 2021-06-16
     protected void setWasRaw() {
-      this.wasRaw = true;
+      setIsUnderlyingTypeRaw();
     }
 
     @Override
@@ -1351,7 +1411,6 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the component type
      */
-    // WMD
     public void setComponentType(AnnotatedTypeMirror type) {
       this.componentType = type;
     }
@@ -1474,6 +1533,13 @@ public abstract class AnnotatedTypeMirror {
 
       AnnotatedTypeVariable result = this.shallowCopy();
       result.declaration = false;
+      Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(1);
+      mapping.put(getUnderlyingType(), result);
+      AnnotatedTypeMirror upperBound =
+          atypeFactory
+              .getTypeVarSubstitutor()
+              .substituteWithoutCopyingTypeArguments(mapping, result.getUpperBound());
+      result.setUpperBound(upperBound);
 
       return result;
     }
@@ -1924,7 +1990,7 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns the type variable to which this wildcard is an argument. Used to initialize the upper
-     * bound of unbounded wildcards and wildcards in raw types.
+     * bound of wildcards in raw types.
      *
      * @return the type variable to which this wildcard is an argument
      */
@@ -2132,7 +2198,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param bounds bounds to use
      */
-    /*default-visibility*/ void setBounds(List<AnnotatedTypeMirror> bounds) {
+    public void setBounds(List<AnnotatedTypeMirror> bounds) {
       this.bounds = bounds;
     }
 

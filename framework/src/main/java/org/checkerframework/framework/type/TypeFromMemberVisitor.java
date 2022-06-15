@@ -4,7 +4,6 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import java.util.Collections;
 import java.util.List;
@@ -138,7 +137,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     }
     Tree declaredInTree =
         f.getPath(f.declarationFromElement(paramElement)).getParentPath().getLeaf();
-    if (declaredInTree.getKind() == Kind.LAMBDA_EXPRESSION) {
+    if (declaredInTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
       LambdaExpressionTree lambdaDecl = (LambdaExpressionTree) declaredInTree;
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);

@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg.visualize;
 
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -219,21 +221,28 @@ public class DOTCFGVisualizer<
     } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
       CFGLambda cfgLambda = (CFGLambda) ast;
       String clsName = cfgLambda.getSimpleClassName();
-      String methodName = cfgLambda.getMethodName();
+      String enclosingMethodName = cfgLambda.getEnclosingMethodName();
       long uid = TreeUtils.treeUids.get(cfgLambda.getCode());
       outFile.append(clsName);
       outFile.append("-");
-      outFile.append(methodName);
-      outFile.append("-");
+      if (enclosingMethodName != null) {
+        outFile.append(enclosingMethodName);
+        outFile.append("-");
+      }
       outFile.append(uid);
 
       srcLoc.append("<");
       srcLoc.append(clsName);
+      if (enclosingMethodName != null) {
+        srcLoc.append("::");
+        srcLoc.append(enclosingMethodName);
+        srcLoc.append("(");
+        @SuppressWarnings("nullness") // enclosingMethodName != null => getEnclosingMethod() != null
+        @NonNull MethodTree method = cfgLambda.getEnclosingMethod();
+        srcLoc.append(method.getParameters());
+        srcLoc.append(")");
+      }
       srcLoc.append("::");
-      srcLoc.append(methodName);
-      srcLoc.append("(");
-      srcLoc.append(cfgLambda.getMethod().getParameters());
-      srcLoc.append(")::");
       srcLoc.append(((JCTree) cfgLambda.getCode()).pos);
       srcLoc.append(">");
     } else {

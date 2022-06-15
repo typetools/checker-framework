@@ -32,7 +32,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.reflection.Signatures;
 
 /**
@@ -257,7 +257,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
             treeUtil.getI18nInvalidFormatValue(subAnno),
             treeUtil.getI18nInvalidFormatValue(superAnno));
       }
-      throw new BugInCF("Unexpected QualifierKinds: %s %s", subKind, superKind);
+      throw new TypeSystemError("Unexpected QualifierKinds: %s %s", subKind, superKind);
     }
 
     @Override

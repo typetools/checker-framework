@@ -133,7 +133,7 @@ public class FIsAReducer implements AFReducer {
         AnnotatedDeclaredType parameter,
         AnnotatedDeclaredType argument,
         Set<AFConstraint> constraints) {
-      if (argument.wasRaw() || parameter.wasRaw()) {
+      if (argument.isUnderlyingTypeRaw() || parameter.isUnderlyingTypeRaw()) {
         return null;
       }
 
@@ -209,7 +209,7 @@ public class FIsAReducer implements AFReducer {
     @Override
     public Void visitNull_Null(
         AnnotatedNullType parameter, AnnotatedNullType argument, Set<AFConstraint> afConstraints) {
-      // we sometimes get these when we have captured types passed as arguments
+      // we sometimes get these when we have captured type variables passed as arguments
       // regardless they don't give any information
       return null;
     }

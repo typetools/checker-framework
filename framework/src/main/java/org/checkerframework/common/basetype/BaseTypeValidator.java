@@ -1,26 +1,34 @@
 package org.checkerframework.common.basetype;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -34,6 +42,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * A visitor to validate the types in a tree.
@@ -286,7 +295,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
 
       AnnotatedDeclaredType elemType = type.deepCopy();
-      elemType.clearAnnotations();
+      elemType.clearPrimaryAnnotations();
       elemType.addAnnotations(bounds);
 
       if (!visitor.isValidUse(elemType, type, tree)) {
@@ -296,6 +305,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // Set checkTopLevelDeclaredType to true, because the next time visitDeclared is called,
     // the type isn't the top level, so always do the check.
     checkTopLevelDeclaredOrPrimitiveType = true;
+
+    if (TreeUtils.isClassTree(tree)) {
+      visitedNodes.put(type, null);
+      visitClassTypeParameters(type, (ClassTree) tree);
+      return null;
+    }
 
     /*
      * Try to reconstruct the ParameterizedTypeTree from the given tree.
@@ -355,7 +370,53 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     return null;
   }
 
-  private Pair<ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
+  /**
+   * Visits the type parameters of a class tree.
+   *
+   * @param type type of {@code tree}
+   * @param tree a class tree
+   */
+  protected void visitClassTypeParameters(AnnotatedDeclaredType type, ClassTree tree) {
+    for (int i = 0, size = type.getTypeArguments().size(); i < size; i++) {
+      AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) type.getTypeArguments().get(i);
+      TypeParameterTree typeParameterTree = tree.getTypeParameters().get(i);
+      scan(typeParameter, typeParameterTree);
+    }
+  }
+
+  /**
+   * Visits type parameter bounds.
+   *
+   * @param typeParameter type of {@code typeParameterTree}
+   * @param typeParameterTree a type parameter tree
+   */
+  protected void visitTypeParameterBounds(
+      AnnotatedTypeVariable typeParameter, TypeParameterTree typeParameterTree) {
+    List<? extends Tree> boundTrees = typeParameterTree.getBounds();
+    if (boundTrees.size() == 1) {
+      scan(typeParameter.getUpperBound(), boundTrees.get(0));
+    } else if (boundTrees.size() == 0) {
+      // The upper bound is implicitly Object
+      scan(typeParameter.getUpperBound(), typeParameterTree);
+    } else {
+      AnnotatedIntersectionType intersectionType =
+          (AnnotatedIntersectionType) typeParameter.getUpperBound();
+      for (int j = 0; j < intersectionType.getBounds().size(); j++) {
+        scan(intersectionType.getBounds().get(j), boundTrees.get(j));
+      }
+    }
+  }
+
+  /**
+   * If {@code tree} has a {@link ParameterizedTypeTree}, then the tree and its type is returned.
+   * Otherwise null and {@code type} are returned.
+   *
+   * @param tree tree to search
+   * @param type type to return if no {@code ParameterizedTypeTree} is found
+   * @return if {@code tree} has a {@code ParameterizedTypeTree}, then returns the tree and its
+   *     type. Otherwise, returns null and {@code type}.
+   */
+  private Pair<@Nullable ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
       Tree tree, AnnotatedDeclaredType type) {
     ParameterizedTypeTree typeargtree = null;
 
@@ -410,6 +471,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       case SUPER_WILDCARD:
       case TYPE_PARAMETER:
         // Nothing to do.
+        break;
+      case METHOD:
+        // If a MethodTree is passed, it's just the return type that is validated.
+        // See BaseTypeVisitor#validateTypeOf.
+        MethodTree methodTree = (MethodTree) tree;
+        if (methodTree.getReturnType() instanceof ParameterizedTypeTree) {
+          typeargtree = (ParameterizedTypeTree) methodTree.getReturnType();
+        }
         break;
       default:
         // The parameterized type is the result of some expression tree.
@@ -476,15 +545,91 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return null;
     }
 
-    List<AnnotatedTypeParameterBounds> bounds = atypeFactory.typeVariablesFromUse(type, element);
+    AnnotatedDeclaredType capturedType =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type);
+    List<AnnotatedTypeParameterBounds> bounds =
+        atypeFactory.typeVariablesFromUse(capturedType, element);
 
     visitor.checkTypeArguments(
         tree,
         bounds,
-        type.getTypeArguments(),
+        capturedType.getTypeArguments(),
         tree.getTypeArguments(),
         element.getSimpleName(),
         element.getTypeParameters());
+
+    @SuppressWarnings(
+        "interning:not.interned") // applyCaptureConversion returns the passed type if type does not
+    // have wildcards.
+    boolean hasCapturedTypeVariables = capturedType != type;
+    if (hasCapturedTypeVariables) {
+      // Check that the extends bound of the captured type variable is a subtype of the extends
+      // bound of the wildcard.
+      int numTypeArgs = capturedType.getTypeArguments().size();
+      // First create a mapping from captured type variable to its wildcard.
+      Map<TypeVariable, AnnotatedTypeMirror> typeVarToWildcard = new HashMap<>(numTypeArgs);
+      for (int i = 0; i < numTypeArgs; i++) {
+        AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);
+        if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())
+            && type.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
+          AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
+          AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type.getTypeArguments().get(i);
+          typeVarToWildcard.put(capturedTypeVar.getUnderlyingType(), wildcard);
+        }
+      }
+
+      for (int i = 0; i < numTypeArgs; i++) {
+        AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);
+        if (type.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
+          AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type.getTypeArguments().get(i);
+          if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())) {
+            AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
+            // Substitute the captured type variables with their wildcards. Without this, the
+            // isSubtype check crashes because wildcards aren't comparable with type variables.
+            AnnotatedTypeMirror catpureTypeVarUB =
+                atypeFactory
+                    .getTypeVarSubstitutor()
+                    .substituteWithoutCopyingTypeArguments(
+                        typeVarToWildcard, capturedTypeVar.getUpperBound());
+            if (!atypeFactory
+                .getTypeHierarchy()
+                .isSubtype(catpureTypeVarUB, wildcard.getExtendsBound())) {
+              checker.reportError(
+                  tree.getTypeArguments().get(i),
+                  "type.argument",
+                  element.getTypeParameters().get(i),
+                  element.getSimpleName(),
+                  wildcard.getExtendsBound(),
+                  capturedTypeVar.getUpperBound());
+            }
+          } else if (AnnotatedTypes.isExplicitlySuperBounded(wildcard)) {
+            // If the super bound of the wildcard is the same as the upper bound of the type
+            // parameter, then javac uses the bound rather than creating a fresh type variable.
+            // (See https://bugs.openjdk.java.net/browse/JDK-8054309.)
+            // In this case, the Checker Framework uses the annotations on the super bound of the
+            // wildcard and ignores the annotations on the extends bound. So, issue a warning if
+            // the annotations on the extends bound are not the same as the annotations on the super
+            // bound.
+            if (!(atypeFactory
+                    .getQualifierHierarchy()
+                    .isSubtype(
+                        wildcard.getSuperBound().getEffectiveAnnotations(),
+                        wildcard.getExtendsBound().getAnnotations())
+                && atypeFactory
+                    .getQualifierHierarchy()
+                    .isSubtype(
+                        wildcard.getExtendsBound().getAnnotations(),
+                        wildcard.getSuperBound().getEffectiveAnnotations()))) {
+              checker.reportError(
+                  tree.getTypeArguments().get(i),
+                  "super.wildcard",
+                  wildcard.getExtendsBound(),
+                  wildcard.getSuperBound());
+            }
+          }
+        }
+      }
+    }
 
     return null;
   }
@@ -498,8 +643,15 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     if (type.isDeclaration() && !areBoundsValid(type.getUpperBound(), type.getLowerBound())) {
       reportInvalidBounds(type, tree);
     }
-
-    return super.visitTypeVariable(type, tree);
+    AnnotatedTypeVariable useOfTypeVar = type.asUse();
+    if (tree instanceof TypeParameterTree) {
+      TypeParameterTree typeParameterTree = (TypeParameterTree) tree;
+      visitedNodes.put(useOfTypeVar, defaultResult);
+      visitTypeParameterBounds(useOfTypeVar, typeParameterTree);
+      visitedNodes.put(useOfTypeVar, defaultResult);
+      return null;
+    }
+    return super.visitTypeVariable(useOfTypeVar, tree);
   }
 
   @Override

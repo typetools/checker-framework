@@ -28,7 +28,7 @@ public class Unknown extends JavaExpression {
    * Create a new Unknown JavaExpression.
    *
    * @param type the Java type of this
-   * @param originalExpression String representation of the expression that has no corresponding
+   * @param originalExpression a String representation of the expression that has no corresponding
    *     {@code JavaExpression}
    */
   public Unknown(TypeMirror type, String originalExpression) {

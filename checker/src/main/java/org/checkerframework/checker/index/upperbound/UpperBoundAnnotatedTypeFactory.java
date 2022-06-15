@@ -6,7 +6,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -76,9 +75,9 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Implements the introduction rules for the Upper Bound Checker.
@@ -297,7 +296,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             && !offsets.isEmpty()) {
           // Cannot use type.replaceAnnotation because it will call isSubtype, which will
           // try to process the annotation and throw an error.
-          type.clearAnnotations();
+          type.clearPrimaryAnnotations();
           type.addAnnotation(BOTTOM);
         }
       }
@@ -335,18 +334,32 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return imf.isRandomNextInt(methodTree, processingEnv);
   }
 
+  /**
+   * Creates a new @LTLengthOf annotation.
+   *
+   * @param names the arguments to @LTLengthOf
+   * @return a new @LTLengthOf annotation with the given arguments
+   */
   AnnotationMirror createLTLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
-      throw new BugInCF("createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
+      throw new TypeSystemError(
+          "createLTLengthOfAnnotation: bad argument %s", Arrays.toString(names));
     }
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTLengthOf.class);
     builder.setValue("value", names);
     return builder.build();
   }
 
+  /**
+   * Creates a new @LTEqLengthOf annotation.
+   *
+   * @param names the arguments to @LTEqLengthOf
+   * @return a new @LTEqLengthOf annotation with the given arguments
+   */
   AnnotationMirror createLTEqLengthOfAnnotation(String... names) {
     if (names == null || names.length == 0) {
-      throw new BugInCF("createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
+      throw new TypeSystemError(
+          "createLTEqLengthOfAnnotation: bad argument %s", Arrays.toString(names));
     }
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTEqLengthOf.class);
     builder.setValue("value", names);
@@ -495,7 +508,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     @Override
     public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
       // Dataflow refines this type if possible
-      if (node.getKind() == Kind.BITWISE_COMPLEMENT) {
+      if (node.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
         addAnnotationForBitwiseComplement(
             getSearchIndexAnnotatedTypeFactory().getAnnotatedType(node.getExpression()), type);
       } else {
@@ -725,7 +738,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     private UBQualifier plusTreeDivideByVal(int divisor, ExpressionTree numeratorTree) {
       numeratorTree = TreeUtils.withoutParens(numeratorTree);
-      if (divisor < 2 || numeratorTree.getKind() != Kind.PLUS) {
+      if (divisor < 2 || numeratorTree.getKind() != Tree.Kind.PLUS) {
         return UpperBoundUnknownQualifier.UNKNOWN;
       }
       BinaryTree plusTree = (BinaryTree) numeratorTree;
