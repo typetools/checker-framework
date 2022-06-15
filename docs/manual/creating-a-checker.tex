@@ -987,7 +987,7 @@ method (see its Javadoc for details).
 It is required to define \<createSupportedTypeQualifiers> if you are mixing
 qualifiers from multiple directories (including when extending an existing
 checker that has its own qualifiers) and when using the Buck build tool,
-whose classloader cannot find the qualifier directory.
+whose class loader cannot find the qualifier directory.
 
 An aggregate checker (which extends
 \refclass{framework/source}{AggregateChecker}) does not need to specify its
@@ -1908,6 +1908,10 @@ internal Checker Framework error occurs.  Setting this option is rare.  You
 should only do it if you have discovered a bug in a checker, you have
 already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
+
+\item \code{-AnoWarnMemoryConstraints}: when memory constraints are
+impeding performance, issue an INFO message rather than a WARNING message.
+This prevents the message from being elevated to an error by \code{-Werror}.
 
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 

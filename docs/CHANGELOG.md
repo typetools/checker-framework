@@ -3,6 +3,10 @@ Version 3.22.3 (July 1, 2022)
 
 **User-visible changes:**
 
+Added `-AnoWarnMemoryConstraints` to change the "Memory constraints are impeding
+performance; please increase max heap size" message from a warning to an INFO
+message.
+
 **Implementation details:**
 
 **Closed issues:**

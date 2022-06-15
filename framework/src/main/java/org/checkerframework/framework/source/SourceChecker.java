@@ -296,8 +296,7 @@ import org.plumelib.util.UtilPlume;
   "noPrintErrorStack",
 
   // Whether to NOT issue a warning when performance is impeded by
-  // memory constraints. An INFO level message with be printed, to
-  // interoperate better with -Werror
+  // memory constraints. An INFO level message with be printed.
   "noWarnMemoryConstraints",
 
   // Only output error code, useful for testing framework
