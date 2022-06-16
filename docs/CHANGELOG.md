@@ -5,6 +5,11 @@ Version 3.22.2-eisop1 (July ?, 2022)
 
 **Implementation details:**
 
+Method `CFAbstractTransfer.visitMethodInvocation` now only creates a
+`ConditionalTransferResult` when the method return type is boolean or
+Boolean. This avoids unnecessary duplication of many stores, reducing
+memory consumption.
+
 **Closed issues:**
 
 
