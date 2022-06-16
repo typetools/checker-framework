@@ -20,7 +20,9 @@ public class StubparserRecordTest extends CheckerFrameworkPerDirectoryTest {
         "stubparser-records",
         "-Anomsgtext",
         "-Astubs=tests/stubparser-records",
-        "-AstubWarnIfNotFound");
+        // Cannot use this because of JUnit 5 stub file
+        // "-AstubWarnIfNotFound",
+          );
   }
 
   @Parameterized.Parameters

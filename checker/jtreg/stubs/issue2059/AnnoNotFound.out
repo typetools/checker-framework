@@ -1,2 +1,3 @@
 - compiler.warn.proc.messager: AnnoNotFound.astub:(line 8,col 3): Unknown annotation @Nullable
-1 warning
+- compiler.warn.proc.messager: junit-assertions.astub:(line 14,col 1): Type not found: org.junit.jupiter.api.Assertions
+2 warnings
