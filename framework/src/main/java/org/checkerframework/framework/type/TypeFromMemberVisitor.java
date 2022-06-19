@@ -24,7 +24,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
 /**
- * Converts a field or methods tree into an AnnotatedTypeMirror.
+ * Converts a field or methods tree into an AnnotatedTypeMirror. Using addAnnotations for innerType
+ * can add multiple annotations from the same hierarchy, which is required to get the desired error
+ * messages about duplicate annotations.
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
@@ -39,9 +41,6 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         // are added to the type below).
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, variableTree.getType());
 
-        // See comment in visitMethod
-        ElementAnnotationApplier.apply(result, elt, f);
-
         // Handle any annotations in variableTree.getModifiers().
         List<AnnotationMirror> modifierAnnos;
         List<? extends AnnotationTree> annoTrees = variableTree.getModifiers().getAnnotations();
@@ -49,6 +48,11 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
             modifierAnnos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
         } else {
             modifierAnnos = Collections.emptyList();
+        }
+
+        if (result.getKind() != TypeKind.TYPEVAR || modifierAnnos.isEmpty()) {
+            // See comment in visitMethod
+            ElementAnnotationApplier.apply(result, elt, f);
         }
 
         if (result.getKind() == TypeKind.DECLARED
@@ -76,7 +80,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                     // This does not treat Checker Framework compatqual annotations differently,
                     // because it's not clear whether the annotation should apply to the outermost
                     // enclosing type or the innermost.
-                    result.replaceAnnotation(anno);
+                    result.addAnnotation(anno);
                 }
                 // If anno is not a declaration annotation, it should have been applied in the call
                 // to applyAnnotationsFromDeclaredType above.
@@ -92,10 +96,10 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
                         && !AnnotationUtils.annotationName(anno)
                                 .startsWith("org.checkerframework")) {
                     // Declaration annotations apply to the outer type.
-                    result.replaceAnnotation(anno);
+                    result.addAnnotation(anno);
                 } else {
                     // Type annotations apply to the innermost type.
-                    innerType.replaceAnnotation(anno);
+                    innerType.addAnnotation(anno);
                 }
             }
         }
