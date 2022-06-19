@@ -49,6 +49,7 @@ import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -1410,8 +1411,10 @@ class MustCallConsistencyAnalyzer {
       return "this";
     }
     if (receiver instanceof LocalVariableNode) {
-
       return ((LocalVariableNode) receiver).getName();
+    }
+    if (receiver instanceof ClassNameNode) {
+      return ((ClassNameNode) receiver).getElement().toString();
     }
     throw new TypeSystemError(
         "unexpected receiver of field assignment: " + receiver + " of type " + receiver.getClass());
