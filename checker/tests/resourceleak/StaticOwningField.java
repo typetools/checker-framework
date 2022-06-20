@@ -35,11 +35,19 @@ import org.checkerframework.checker.mustcall.qual.Owning;
   }
 
   private static @Owning @MustCall("close") PrintStream ps_static_initialized1 =
-      new PrintStream("filename.txt");
+      newPrintStreamWithoutExceptions();
 
   private static @Owning @MustCall("close") PrintStream ps_static_initialized2;
 
   static {
-    ps_static_initialized2 = new PrintStream("filename.txt");
+    ps_static_initialized2 = newPrintStreamWithoutExceptions();
+  }
+
+  public static PrintStream newPrintStreamWithoutExceptions() {
+    try {
+      return new PrintStream("filename.txt");
+    } catch (Exception e) {
+      throw new Error(e);
+    }
   }
 }
