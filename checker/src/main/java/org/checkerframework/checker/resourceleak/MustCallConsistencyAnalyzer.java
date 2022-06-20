@@ -1364,12 +1364,14 @@ class MustCallConsistencyAnalyzer {
         ResourceLeakVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, typeFactory);
 
     if (cmcfValues.isEmpty()) {
-      checker.reportError(
-          enclosingMethod,
-          "missing.creates.mustcall.for",
-          enclosingMethodElt.getSimpleName().toString(),
-          receiverString,
-          ((FieldAccessNode) lhs).getFieldName());
+      if (!(((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode)) {
+        checker.reportError(
+            enclosingMethod,
+            "missing.creates.mustcall.for",
+            enclosingMethodElt.getSimpleName().toString(),
+            receiverString,
+            ((FieldAccessNode) lhs).getFieldName());
+      }
       return;
     }
 
@@ -1415,6 +1417,9 @@ class MustCallConsistencyAnalyzer {
     }
     if (receiver instanceof ClassNameNode) {
       return ((ClassNameNode) receiver).getElement().toString();
+    }
+    if (receiver instanceof SuperNode) {
+      return "super";
     }
     throw new TypeSystemError(
         "unexpected receiver of field assignment: " + receiver + " of type " + receiver.getClass());

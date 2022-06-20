@@ -3,7 +3,7 @@ import java.io.PrintStream;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-class StaticOwningField {
+public class TypeProcessError {
 
   @SuppressWarnings("required.method.not.called")
   private static @Owning @MustCall("close") PrintStream trace_file_static;
