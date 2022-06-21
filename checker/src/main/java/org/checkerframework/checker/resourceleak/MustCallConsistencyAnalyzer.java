@@ -1255,7 +1255,7 @@ class MustCallConsistencyAnalyzer {
       // also a declaration must be a field initializer.
       if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
         return;
-      } else if (TreePathUtil.isInitializerInBlock(currentPath)) {
+      } else if (TreePathUtil.isTopLevelAssignmentInInitializerBlock(currentPath)) {
         // This is likely not reassignment; if reassignment, the number of assignments that
         // were not warned about is limited to other initializations (is not unbounded).
         return;

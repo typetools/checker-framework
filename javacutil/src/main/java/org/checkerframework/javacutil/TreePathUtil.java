@@ -345,12 +345,12 @@ public final class TreePathUtil {
   /**
    * Returns true if the path is to a top-level (not within a loop) assignment within an initializer
    * block. Will return true for a re-assignment even if there is another initialization (within
-   * this initializer block, another initializer block, or the variable declaration).
+   * this initializer block, another initializer block, a constructor, or the variable declaration).
    *
    * @param path the path to test
    * @return true if the path is to an initialization within an initializer block
    */
-  public static boolean isInitializerInBlock(TreePath path) {
+  public static boolean isTopLevelAssignmentInInitializerBlock(TreePath path) {
     TreePath origPath = path;
     if (path.getLeaf().getKind() != Tree.Kind.ASSIGNMENT) {
       return false;
