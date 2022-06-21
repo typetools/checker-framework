@@ -212,8 +212,14 @@ As with any annotation, incorrect or missing annotations can lead to false posit
 
 Unannotated fields are treated as non-owning.
 
-The Resource Leak Checker treats all \textbf{static fields} as non-owning, meaning that no assignment to one
-can satisfy a must-call obligation.
+The Resource Leak Checker issues a warning about every assignment to a
+\textbf{static field}; such an assignment does not satisfy a must-call
+obligation.  As an exception, the \<-ApermitStaticOwning> suppresses
+warnings related to static owning fields.  This can help in checking legacy
+code.  It permits only a small number of resource leaks, related to the
+number of such fields and assignments to them.  Furthermore, those fields
+are often used throughout execution, until the program exits; there is no
+good place to dispose of them.
 
 For \textbf{final, non-static owning fields},
 the Resource Leak Checker enforces the ``resource acquisition is

@@ -242,11 +242,13 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     }
 
     Set<Modifier> modifiers = field.getModifiers();
-    if (modifiers.contains(Modifier.STATIC) && modifiers.contains(Modifier.FINAL)) {
-      return;
-    }
-    if (modifiers.contains(Modifier.STATIC) /* && flag */) {
-      return;
+    if (modifiers.contains(Modifier.STATIC)) {
+      if (modifiers.contains(Modifier.FINAL)) {
+        return;
+      }
+      if (((ResourceLeakChecker) checker).permitStaticOwning) {
+        return;
+      }
     }
 
     // This value is side-effected.
