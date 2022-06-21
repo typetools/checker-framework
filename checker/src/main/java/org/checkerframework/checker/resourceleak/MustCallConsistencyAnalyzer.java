@@ -138,6 +138,9 @@ import org.plumelib.util.StringsPlume;
 /* package-private */
 class MustCallConsistencyAnalyzer {
 
+  /** True if errors related to static owning fields should be suppressed. */
+  boolean permitStaticOwning;
+
   /**
    * Aliases about which the checker has already reported about a resource leak, to avoid duplicate
    * reports.
@@ -462,6 +465,7 @@ class MustCallConsistencyAnalyzer {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
+    this.permitStaticOwning = checker.hasOption("permitStaticOwning");
   }
 
   /**
@@ -1369,8 +1373,7 @@ class MustCallConsistencyAnalyzer {
         ResourceLeakVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, typeFactory);
 
     if (cmcfValues.isEmpty()) {
-      if (checker.permitStaticOwning
-          && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
+      if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
         return;
       }
       checker.reportError(

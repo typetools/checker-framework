@@ -24,9 +24,6 @@ import org.checkerframework.framework.source.SupportedOptions;
 })
 public class ResourceLeakChecker extends CalledMethodsChecker {
 
-  /** True if errors related to static owning fields should be suppressed. */
-  boolean permitStaticOwning = hasOption("permitStaticOwning");
-
   /**
    * Command-line option for counting how many must-call obligations were checked by the Resource
    * Leak Checker, and emitting the number after processing all files. Used for generating tables

@@ -26,7 +26,6 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 
   // Static field
 
-  @SuppressWarnings("builder:required.method.not.called") // static @Owning field
   private static @Owning @MustCall("close") PrintStream ps_static;
 
   static void m_static() throws IOException {
