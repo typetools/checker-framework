@@ -1253,8 +1253,8 @@ class MustCallConsistencyAnalyzer {
       if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
         return;
       } else if (TreePathUtil.isInitializerInBlock(currentPath)) {
-        // This is likely not reassignment; if reassignment, the number of  assignments
-        // that were not warned about is limited to other initializations (is not unbounded).
+        // This is likely not reassignment; if reassignment, the number of assignments that
+        // were not warned about is limited to other initializations (is not unbounded).
         return;
       } else {
         // Issue an error if the field has a non-empty must-call type.
@@ -1358,6 +1358,9 @@ class MustCallConsistencyAnalyzer {
     if (!(lhs instanceof FieldAccessNode)) {
       return;
     }
+    if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
+      return;
+    }
 
     String receiverString = receiverAsString((FieldAccessNode) lhs);
     if ("this".equals(receiverString) && TreeUtils.isConstructor(enclosingMethod)) {
@@ -1373,9 +1376,6 @@ class MustCallConsistencyAnalyzer {
         ResourceLeakVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, typeFactory);
 
     if (cmcfValues.isEmpty()) {
-      if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
-        return;
-      }
       checker.reportError(
           enclosingMethod,
           "missing.creates.mustcall.for",

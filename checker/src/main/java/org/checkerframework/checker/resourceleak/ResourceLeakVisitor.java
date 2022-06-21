@@ -247,10 +247,10 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
     Set<Modifier> modifiers = field.getModifiers();
     if (modifiers.contains(Modifier.STATIC)) {
-      if (modifiers.contains(Modifier.FINAL)) {
+      if (permitStaticOwning) {
         return;
       }
-      if (permitStaticOwning) {
+      if (modifiers.contains(Modifier.FINAL)) {
         return;
       }
     }

@@ -217,9 +217,9 @@ The Resource Leak Checker issues a warning about every assignment to a
 obligation.  As an exception, the \<-ApermitStaticOwning> suppresses
 warnings related to static owning fields.  This can help in checking legacy
 code.  It permits only a small number of resource leaks, related to the
-number of such fields and assignments to them.  Furthermore, those fields
-are often used throughout execution, until the program exits; there is no
-good place to dispose of them.
+number of such fields and assignments to them.  When those fields are used
+throughout execution, until the program exits, there is no good place to
+dispose of them.
 
 For \textbf{final, non-static owning fields},
 the Resource Leak Checker enforces the ``resource acquisition is
