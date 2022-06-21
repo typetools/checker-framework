@@ -1261,6 +1261,7 @@ class MustCallConsistencyAnalyzer {
       } else if (TreePathUtil.isTopLevelAssignmentInInitializerBlock(currentPath)) {
         // This is likely not reassignment; if reassignment, the number of assignments that
         // were not warned about is limited to other initializations (is not unbounded).
+        // This behavior is unsound; see InstanceInitializer.java test case.
         return;
       } else {
         // Issue an error if the field has a non-empty must-call type.
