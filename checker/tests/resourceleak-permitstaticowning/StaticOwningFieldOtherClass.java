@@ -9,7 +9,7 @@ abstract class HasStaticOwningField {
 }
 
 class TestUtils {
-  public static void setRandoopLog(String filename) {
+  public static void setLog(String filename) {
     try {
       HasStaticOwningField.log = new FileWriter(filename);
     } catch (IOException ioe) {
