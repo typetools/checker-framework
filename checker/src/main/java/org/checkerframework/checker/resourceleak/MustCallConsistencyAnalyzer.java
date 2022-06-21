@@ -1243,7 +1243,7 @@ class MustCallConsistencyAnalyzer {
     if (enclosingMethodTree == null) {
       // If the assignment is taking place outside of a method, the Resource Leak Checker
       // issues an error unless it can prove that the assignment is a field initializer, which
-      // are always safe. The node's TreeKind being "VARAIBLE" is a safe proxy for this requirement,
+      // are always safe. The node's TreeKind being "VARIABLE" is a safe proxy for this requirement,
       // because VARIABLE Trees are only used for declarations. An assignment to a field that is
       // also a declaration must be a field initializer.
       if (node.getTree().getKind() == Tree.Kind.VARIABLE) {

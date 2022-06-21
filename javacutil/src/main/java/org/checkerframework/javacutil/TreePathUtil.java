@@ -329,7 +329,7 @@ public final class TreePathUtil {
       return block.isStatic();
     }
 
-    // check if its in a variable initializer
+    // check if it's in a variable initializer
     Tree t = enclosingVariable(path);
     if (t != null) {
       return ((VariableTree) t).getModifiers().getFlags().contains(Modifier.STATIC);
