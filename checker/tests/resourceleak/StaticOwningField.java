@@ -43,6 +43,15 @@ import org.checkerframework.checker.mustcall.qual.Owning;
     ps_static_initialized2 = newPrintStreamWithoutExceptions();
   }
 
+  private static final @Owning @MustCall("close") PrintStream ps_static_final_initialized1 =
+      newPrintStreamWithoutExceptions();
+
+  private static final @Owning @MustCall("close") PrintStream ps_static_final_initialized2;
+
+  static {
+    ps_static_final_initialized2 = newPrintStreamWithoutExceptions();
+  }
+
   public static PrintStream newPrintStreamWithoutExceptions() {
     try {
       return new PrintStream("filename.txt");

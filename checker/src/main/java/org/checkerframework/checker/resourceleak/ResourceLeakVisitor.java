@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
@@ -237,6 +238,14 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   private void checkOwningField(Element field) {
 
     if (checker.shouldSkipUses(field)) {
+      return;
+    }
+
+    Set<Modifier> modifiers = field.getModifiers();
+    if (modifiers.contains(Modifier.STATIC) && modifiers.contains(Modifier.FINAL)) {
+      return;
+    }
+    if (modifiers.contains(Modifier.STATIC) /* && flag */) {
       return;
     }
 

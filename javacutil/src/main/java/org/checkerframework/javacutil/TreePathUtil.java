@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
@@ -329,7 +330,7 @@ public final class TreePathUtil {
       return block.isStatic();
     }
 
-    // check if its in a variable initializer
+    // check if it's in a variable initializer
     Tree t = enclosingVariable(path);
     if (t != null) {
       return ((VariableTree) t).getModifiers().getFlags().contains(Modifier.STATIC);
@@ -339,6 +340,50 @@ public final class TreePathUtil {
       return classTree.getModifiers().getFlags().contains(Modifier.STATIC);
     }
     return false;
+  }
+
+  /**
+   * Returns true if the path is to a top-level (not within a loop) assignment within an initializer
+   * block.
+   *
+   * @param path the path to test
+   * @return true if the path is to an initialization within an initializer block
+   */
+  public static boolean isInitializerInBlock(TreePath path) {
+    TreePath origPath = path;
+    if (path.getLeaf().getKind() != Tree.Kind.ASSIGNMENT) {
+      return false;
+    }
+    path = path.getParentPath();
+    if (path.getLeaf().getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+      return false;
+    }
+    Tree prevLeaf = path.getLeaf();
+    path = path.getParentPath();
+
+    for (Iterator<Tree> itor = path.iterator(); itor.hasNext(); ) {
+      Tree leaf = itor.next();
+      switch (leaf.getKind()) {
+        case CLASS:
+        case ENUM:
+        case PARAMETERIZED_TYPE:
+          return prevLeaf.getKind() == Tree.Kind.BLOCK;
+
+        case COMPILATION_UNIT:
+          throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
+
+        case DO_WHILE_LOOP:
+        case ENHANCED_FOR_LOOP:
+        case FOR_LOOP:
+        case LAMBDA_EXPRESSION:
+        case METHOD:
+          return false;
+
+        default:
+          prevLeaf = leaf;
+      }
+    }
+    throw new BugInCF("path did not contain method or class: " + toString(origPath));
   }
 
   ///
