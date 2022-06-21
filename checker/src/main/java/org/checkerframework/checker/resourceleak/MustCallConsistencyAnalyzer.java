@@ -1232,6 +1232,9 @@ class MustCallConsistencyAnalyzer {
       throw new TypeSystemError(
           "checkReassignmentToField: non-field node " + node + " of class " + node.getClass());
     }
+    if (permitStaticOwning && ((FieldAccessNode) lhsNode).getReceiver() instanceof ClassNameNode) {
+      return;
+    }
 
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;
     Node receiver = lhs.getReceiver();
