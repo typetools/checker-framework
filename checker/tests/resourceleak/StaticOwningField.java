@@ -43,6 +43,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
   private static @Owning @MustCall("close") PrintStream ps_static_initialized2;
 
   static {
+    // :: error: (required.method.not.called)
     ps_static_initialized2 = newPrintStreamWithoutExceptions();
   }
 

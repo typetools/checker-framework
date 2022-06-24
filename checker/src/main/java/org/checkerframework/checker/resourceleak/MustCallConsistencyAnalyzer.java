@@ -1258,28 +1258,30 @@ class MustCallConsistencyAnalyzer {
       // are always safe. The node's TreeKind being "VARIABLE" is a safe proxy for this requirement,
       // because VARIABLE Trees are only used for declarations. An assignment to a field that is
       // also a declaration must be a field initializer.
-      return;
-    } else {
-      // Issue an error if the field has a non-empty must-call type.
-      MustCallAnnotatedTypeFactory mcTypeFactory =
-          typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-      AnnotationMirror mcAnno =
-          mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
-      List<String> mcValues =
-          AnnotationUtils.getElementValueArray(
-              mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
-      if (mcValues.isEmpty()) {
+      if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
+        return;
+      } else {
+        // Issue an error if the field has a non-empty must-call type.
+        MustCallAnnotatedTypeFactory mcTypeFactory =
+            typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+        AnnotationMirror mcAnno =
+            mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+        List<String> mcValues =
+            AnnotationUtils.getElementValueArray(
+                mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
+        if (mcValues.isEmpty()) {
+          return;
+        }
+        Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
+        checker.reportError(
+            node.getTree(),
+            "required.method.not.called",
+            formatMissingMustCallMethods(mcValues),
+            "field " + lhsElement.getSimpleName().toString(),
+            lhsElement.asType().toString(),
+            "Field assignment outside method or declaration might overwrite field's current value");
         return;
       }
-      Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
-      checker.reportError(
-          node.getTree(),
-          "required.method.not.called",
-          formatMissingMustCallMethods(mcValues),
-          "field " + lhsElement.getSimpleName().toString(),
-          lhsElement.asType().toString(),
-          "Field assignment outside method or declaration might overwrite field's current value");
-      return;
     }
 
     // Check that there is a corresponding CreatesMustCallFor annotation, unless this is

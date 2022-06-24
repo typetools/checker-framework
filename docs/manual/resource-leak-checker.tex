@@ -50,8 +50,16 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 \end{Verbatim}
 
 The Resource Leak Checker supports all the command-line arguments
- listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker.
+listed in Section~\ref{called-methods-run-checker} for
+the Called Methods Checker, plus two others:
+
+\begin{description}
+\item[\<-ApermitStaticOwning>]
+  See Section~\ref{resource-leak-owning-fields}.
+% \item[\<-ApermitInitializationLeak>]
+%   See Section~\ref{TODO}.
+\end{itemize}
+
 
 \sectionAndLabel{Resource Leak Checker annotations}{resource-leak-annotations}
 
@@ -399,6 +407,7 @@ methods (including \<close()>) do not appear in the \<@CalledMethods> type quali
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
 
+
 \sectionAndLabel{Ignored exception types}{resource-leak-ignored-exceptions}
 
 The Resource Leak Checker checks that an element's must-call obligations
@@ -442,6 +451,22 @@ list in the future.  Please let us know if there is a type that you think should
 be ignored by filing an issue listing both the exception type and the
 verification tool.
 \end{itemize}
+
+
+\sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
+
+% Arguably, this is working around a bug in the
+% MustCallConsistencyAnalyzer, which could be improved to avoid issuing
+% these false positive warnings.
+
+The Resource Leak Checker warns about re-assignments to owning fields,
+because the value that was overwritten might not have had its obligations
+satisfied.
+Such a warning is not necessary on the first
+
+
+
+
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
