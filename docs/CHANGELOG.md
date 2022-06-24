@@ -8,6 +8,9 @@ for stub files provided on the command line and false for built-in stub
 files.  Use `-AstubWarnIfNotFound` to enable it for all stub files, and use
 new `-AstubNoWarnIfNotFound` to disable it for all stub files.
 
+New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
+Checker warnings related to field initialization.
+
 **Implementation details:**
 
 **Closed issues:**
