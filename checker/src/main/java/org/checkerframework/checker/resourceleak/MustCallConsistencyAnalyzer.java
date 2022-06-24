@@ -1224,10 +1224,12 @@ class MustCallConsistencyAnalyzer {
    * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
    * the must-call obligations of the field.
    *
+   * <p>Despite the name of this method, the argument {@code node} might be the first and only
+   * assignment to a field.
+   *
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
-  // Despite the name of this method, it might be checking the first and only assignment to a field.
   private void checkReassignmentToField(Set<Obligation> obligations, AssignmentNode node) {
 
     Node lhsNode = node.getTarget();
