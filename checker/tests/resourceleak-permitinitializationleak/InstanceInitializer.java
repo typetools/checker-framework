@@ -42,7 +42,6 @@ class InstanceInitializer {
   }
 
   public InstanceInitializer() throws Exception {
-    // :: error: required.method.not.called
     s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
   }
 }

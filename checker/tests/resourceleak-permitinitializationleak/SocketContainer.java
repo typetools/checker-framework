@@ -11,12 +11,7 @@ import org.checkerframework.checker.mustcall.qual.*;
   @Owning Socket sock;
 
   public SocketContainer(String host, int port) throws Exception {
-    // It should be okay to assign to uninitialized owning fields in the constructor.
-    // But it isn't! Why?
-    // :: error: required.method.not.called
     sock = new Socket(host, port);
-    // It's definitely not okay to do it twice!
-    // :: error: required.method.not.called
     sock = new Socket(host, port);
   }
 

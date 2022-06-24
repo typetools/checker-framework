@@ -139,7 +139,6 @@ import org.plumelib.util.StringsPlume;
 class MustCallConsistencyAnalyzer {
 
   /** True if errors related to field initialization should be suppressed. */
-  @SuppressWarnings("UnusedVariable") // temporary
   private boolean permitInitializationLeak;
 
   /**
@@ -1248,11 +1247,14 @@ class MustCallConsistencyAnalyzer {
     if (enclosingMethodTree == null) {
       // The assignment is taking place outside of a method:  in a variable declaration's
       // initializer or in an initializer block.
-      // The Resource Leak Checker issues an error the assignment is a field initializer.
+      // The Resource Leak Checker issues no error if the assignment is a field initializer.
       if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
-        // An assignment to a field that is also a declaration (VARIABLE Trees are only used for
-        // declarations) must be a field initializer.  Assignment in a field initializer is always
-      } else if (TreePathUtil.isTopLevelAssignmentInInitializerBlock(currentPath)) {
+        // An assignment to a field that is also a declaration must be a field initializer (VARIABLE
+        // Trees are only used for declarations).  Assignment in a field initializer is always
+        // permitted.
+        return;
+      } else if (permitInitializationLeak
+          && TreePathUtil.isTopLevelAssignmentInInitializerBlock(currentPath)) {
         // This is likely not reassignment; if reassignment, the number of assignments that
         // were not warned about is limited to other initializations (is not unbounded).
         // This behavior is unsound; see InstanceInitializer.java test case.
@@ -1279,7 +1281,7 @@ class MustCallConsistencyAnalyzer {
             "Field assignment outside method or declaration might overwrite field's current value");
         return;
       }
-    } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
+    } else if (permitInitializationLeak && TreeUtils.isConstructor(enclosingMethodTree)) {
       Element enclosingClassElement =
           TreeUtils.elementFromTree(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {

@@ -393,6 +393,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    *     running the analysis
    */
   protected @Nullable S runAnalysisFor(Node node, Analysis.BeforeOrAfter preOrPost) {
+    // block is null if node is a formal parameter of a method, or is a field access thereof
     Block block = node.getBlock();
     assert block != null : "@AssumeAssertion(nullness): null block for node " + node;
     TransferInput<V, S> transferInput = stores.get(block);
