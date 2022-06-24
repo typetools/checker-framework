@@ -576,7 +576,7 @@ class ReentrantLock {
     @EnsuresLockHeld("this")
     public void lock();
 
-    @EnsuresLockHeldIf (expression="this", result=true)
+    @EnsuresLockHeldIf(expression="this", result=true)
     public boolean tryLock();
 
     ...

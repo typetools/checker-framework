@@ -11,8 +11,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
- * Utility class for the Nullness Checker, providing every method in {@link java.util.Optional}, but
- * written for possibly-null references rather than for the {@code Optional} type.
+ * Utility class providing every method in {@link java.util.Optional}, but written for possibly-null
+ * references rather than for the {@code Optional} type.
  *
  * <p>To avoid the need to write the {@code Opt} class name at invocation sites, do:
  *
