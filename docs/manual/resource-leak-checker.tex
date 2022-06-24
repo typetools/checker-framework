@@ -50,8 +50,16 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 \end{Verbatim}
 
 The Resource Leak Checker supports all the command-line arguments
- listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker.
+listed in Section~\ref{called-methods-run-checker} for
+the Called Methods Checker, plus two others:
+
+\begin{description}
+% \item[\<-ApermitStaticOwning>]
+%   See Section~\ref{resource-leak-owning-fields}.
+\item[\<-ApermitInitializationLeak>]
+  See Section~\ref{resource-leak-field-initialization}.
+\end{description}
+
 
 \sectionAndLabel{Resource Leak Checker annotations}{resource-leak-annotations}
 
@@ -424,6 +432,31 @@ list in the future.  Please let us know if there is a type that you think should
 be ignored by filing an issue listing both the exception type and the
 verification tool.
 \end{itemize}
+
+
+\sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
+
+% Arguably, this is working around a bug in the
+% MustCallConsistencyAnalyzer, which could be improved to avoid issuing
+% these false positive warnings.
+
+The Resource Leak Checker warns about re-assignments to owning fields,
+because the value that was overwritten might not have had its obligations
+satisfied.  Such a warning is not necessary on the first assignment to a
+field, since the field had no content before the assignment.  Sometimes,
+the Resource Leak Checker is unable to determine that an assignment is the
+first one, so it conservatively assumes the assignment is a re-assignment
+and issues an error.
+
+One way to prevent this false positive warning is to declare the field as \<final>.
+
+Alternately, to suppress all warnings related to field assignments in the
+constructor and in initializer blocks, pass the
+\<-ApermitInitializationLeak> command-line argument.  This makes the
+checker unsound:  the Resoure Leak Checker will not warn if the constructor
+and initializers set a field more than once.  The amount of leakage is
+limited to how many times the field is set.
+
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
