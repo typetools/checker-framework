@@ -339,13 +339,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   @Override
   public Void scan(@Nullable Tree tree, Void p) {
-    if (tree == null) {
-      return null;
-    }
-    if (getCurrentPath() != null) {
+    if (tree != null && getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
-    if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+    if (tree != null && tree.getKind().name().equals("SWITCH_EXPRESSION")) {
       visitSwitchExpression17(tree);
       return null;
     }
