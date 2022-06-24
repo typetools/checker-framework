@@ -6,6 +6,9 @@ Version 3.22.3 (July 1, 2022)
 New command-line argument `-ApermitStaticOwning` suppresses Resource Leak
 Checker warnings related to static owning fields.
 
+New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
+Checker warnings related to field initialization.
+
 **Implementation details:**
 
 **Closed issues:**
