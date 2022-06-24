@@ -3,6 +3,9 @@ Version 3.22.3 (July 1, 2022)
 
 **User-visible changes:**
 
+New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
+Checker warnings related to field initialization.
+
 **Implementation details:**
 
 **Closed issues:**

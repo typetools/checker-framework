@@ -138,6 +138,10 @@ import org.plumelib.util.StringsPlume;
 /* package-private */
 class MustCallConsistencyAnalyzer {
 
+  /** True if errors related to field initialization should be suppressed. */
+  @SuppressWarnings("UnusedVariable") // temporary
+  private boolean permitInitializationLeak;
+
   /**
    * Aliases about which the checker has already reported about a resource leak, to avoid duplicate
    * reports.
@@ -462,6 +466,7 @@ class MustCallConsistencyAnalyzer {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
+    this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
   }
 
   /**

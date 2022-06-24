@@ -33,6 +33,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
+  /** True if errors related to field initialization should be suppressed. */
+  @SuppressWarnings("UnusedVariable") // temporary
+  private boolean permitInitializationLeak;
+
   /**
    * Because CalledMethodsVisitor doesn't have a type parameter, we need a reference to the type
    * factory that has this static type to access the features that ResourceLeakAnnotatedTypeFactory
@@ -48,6 +52,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   public ResourceLeakVisitor(final BaseTypeChecker checker) {
     super(checker);
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
+    permitInitializationLeak = checker.hasOption("permitInitializationLeak");
   }
 
   @Override

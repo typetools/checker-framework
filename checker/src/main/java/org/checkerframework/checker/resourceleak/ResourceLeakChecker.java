@@ -16,6 +16,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * via the {@link org.checkerframework.checker.mustcall.MustCallChecker} have been fulfilled.
  */
 @SupportedOptions({
+  "permitInitializationLeak",
   ResourceLeakChecker.COUNT_MUST_CALL,
   MustCallChecker.NO_CREATES_MUSTCALLFOR,
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
