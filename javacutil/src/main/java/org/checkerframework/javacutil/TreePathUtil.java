@@ -344,8 +344,9 @@ public final class TreePathUtil {
 
   /**
    * Returns true if the path is to a top-level (not within a loop) assignment within an initializer
-   * block. Will return true for a re-assignment even if there is another initialization (within
-   * this initializer block, another initializer block, a constructor, or the variable declaration).
+   * block. The initializer block might be instance or static. Will return true for a re-assignment
+   * even if there is another initialization (within this initializer block, another initializer
+   * block, a constructor, or the variable declaration).
    *
    * @param path the path to test
    * @return true if the path is to an initialization within an initializer block

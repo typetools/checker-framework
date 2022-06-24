@@ -12,6 +12,7 @@ class InstanceInitializer {
 
   {
     try {
+      // :: error: required.method.not.called
       s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
     } catch (Exception e) {
     }
@@ -19,6 +20,7 @@ class InstanceInitializer {
 
   {
     try {
+      // :: error: required.method.not.called
       s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
     } catch (Exception e) {
     }

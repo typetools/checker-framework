@@ -13,7 +13,6 @@ class TestUtils {
     try {
       HasStaticOwningField.log = new FileWriter(filename);
     } catch (IOException ioe) {
-      // TODO: clarify that this is a user error
       throw new Error("Cannot write file " + filename, ioe);
     }
   }
