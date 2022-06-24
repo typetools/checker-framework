@@ -37,10 +37,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   /** True if errors related to static owning fields should be suppressed. */
   private boolean permitStaticOwning;
 
-  /** True if errors related to field initialization should be suppressed. */
-  @SuppressWarnings("UnusedVariable") // temporary
-  private boolean permitInitializationLeak;
-
   /**
    * Because CalledMethodsVisitor doesn't have a type parameter, we need a reference to the type
    * factory that has this static type to access the features that ResourceLeakAnnotatedTypeFactory
@@ -57,7 +53,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     super(checker);
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
     permitStaticOwning = checker.hasOption("permitStaticOwning");
-    permitInitializationLeak = checker.hasOption("permitInitializationLeak");
   }
 
   @Override

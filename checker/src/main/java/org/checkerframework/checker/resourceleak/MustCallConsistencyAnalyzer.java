@@ -141,10 +141,6 @@ class MustCallConsistencyAnalyzer {
   /** True if errors related to static owning fields should be suppressed. */
   private boolean permitStaticOwning;
 
-  /** True if errors related to field initialization should be suppressed. */
-  @SuppressWarnings("UnusedVariable") // temporary
-  private boolean permitInitializationLeak;
-
   /**
    * Aliases about which the checker has already reported about a resource leak, to avoid duplicate
    * reports.
@@ -470,7 +466,6 @@ class MustCallConsistencyAnalyzer {
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
-    this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
   }
 
   /**
@@ -1258,50 +1253,33 @@ class MustCallConsistencyAnalyzer {
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
 
     if (enclosingMethodTree == null) {
-      // The assignment is taking place outside of a method:  in a variable declaration's
-      // initializer or in an initializer block.
-      // The Resource Leak Checker issues an error the assignment is a field initializer.
-      if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
-        // An assignment to a field that is also a declaration (VARIABLE Trees are only used for
-        // declarations) must be a field initializer.  Assignment in a field initializer is always
-        // safe.
-        return;
-      } else if (TreePathUtil.isTopLevelAssignmentInInitializerBlock(currentPath)) {
-        // This is likely not reassignment; if reassignment, the number of assignments that
-        // were not warned about is limited to other initializations (is not unbounded).
-        // This behavior is unsound; see InstanceInitializer.java test case.
-        return;
-      } else {
-        // Issue an error if the field has a non-empty must-call type.
-        MustCallAnnotatedTypeFactory mcTypeFactory =
-            typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-        AnnotationMirror mcAnno =
-            mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
-        List<String> mcValues =
-            AnnotationUtils.getElementValueArray(
-                mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
-        if (mcValues.isEmpty()) {
-          return;
-        }
-        Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
-        checker.reportError(
-            node.getTree(),
-            "required.method.not.called",
-            formatMissingMustCallMethods(mcValues),
-            "field " + lhsElement.getSimpleName().toString(),
-            lhsElement.asType().toString(),
-            "Field assignment outside method or declaration might overwrite field's current value");
+      // If the assignment is taking place outside of a method, the Resource Leak Checker
+      // issues an error unless it can prove that the assignment is a field initializer, which
+      // are always safe. The node's TreeKind being "VARIABLE" is a safe proxy for this requirement,
+      // because VARIABLE Trees are only used for declarations. An assignment to a field that is
+      // also a declaration must be a field initializer.
+      return;
+    } else {
+      // Issue an error if the field has a non-empty must-call type.
+      MustCallAnnotatedTypeFactory mcTypeFactory =
+          typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+      AnnotationMirror mcAnno =
+          mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+      List<String> mcValues =
+          AnnotationUtils.getElementValueArray(
+              mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
+      if (mcValues.isEmpty()) {
         return;
       }
-    } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
-      Element enclosingClassElement =
-          TreeUtils.elementFromTree(enclosingMethodTree).getEnclosingElement();
-      if (ElementUtils.isTypeElement(enclosingClassElement)) {
-        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-        if (Objects.equals(enclosingClassElement, receiverElement)) {
-          return;
-        }
-      }
+      Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
+      checker.reportError(
+          node.getTree(),
+          "required.method.not.called",
+          formatMissingMustCallMethods(mcValues),
+          "field " + lhsElement.getSimpleName().toString(),
+          lhsElement.asType().toString(),
+          "Field assignment outside method or declaration might overwrite field's current value");
+      return;
     }
 
     // Check that there is a corresponding CreatesMustCallFor annotation, unless this is
