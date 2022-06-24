@@ -394,7 +394,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    */
   protected @Nullable S runAnalysisFor(Node node, Analysis.BeforeOrAfter preOrPost) {
     Block block = node.getBlock();
-    assert block != null : "@AssumeAssertion(nullness): invariant";
+    assert block != null : "@AssumeAssertion(nullness): null block for node " + node;
     TransferInput<V, S> transferInput = stores.get(block);
     if (transferInput == null) {
       return null;

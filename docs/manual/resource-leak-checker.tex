@@ -57,8 +57,8 @@ the Called Methods Checker, plus two others:
 \item[\<-ApermitStaticOwning>]
   See Section~\ref{resource-leak-owning-fields}.
 % \item[\<-ApermitInitializationLeak>]
-%   See Section~\ref{TODO}.
-\end{itemize}
+%   See Section~\ref{resource-leak-field-initialization}.
+\end{description}
 
 
 \sectionAndLabel{Resource Leak Checker annotations}{resource-leak-annotations}
@@ -451,21 +451,6 @@ list in the future.  Please let us know if there is a type that you think should
 be ignored by filing an issue listing both the exception type and the
 verification tool.
 \end{itemize}
-
-
-\sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
-
-% Arguably, this is working around a bug in the
-% MustCallConsistencyAnalyzer, which could be improved to avoid issuing
-% these false positive warnings.
-
-The Resource Leak Checker warns about re-assignments to owning fields,
-because the value that was overwritten might not have had its obligations
-satisfied.
-Such a warning is not necessary on the first
-
-
-
 
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
