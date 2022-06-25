@@ -30,8 +30,10 @@ import org.plumelib.util.UniqueId;
  */
 public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> implements UniqueId {
 
+  private boolean mapsCopied = false;
+
   /** Abstract values of nodes. */
-  protected final IdentityHashMap<Node, V> nodeValues;
+  protected IdentityHashMap<Node, V> nodeValues;
 
   /**
    * Map from AST {@link Tree}s to sets of {@link Node}s.
@@ -39,13 +41,13 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * <p>Some of those Nodes might not be keys in {@link #nodeValues}. One reason is that the Node is
    * unreachable in the control flow graph, so dataflow never gave it a value.
    */
-  protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
+  protected IdentityHashMap<Tree, Set<Node>> treeLookup;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
    * tree that is {@code v + 1} or {@code v - 1}.
    */
-  protected final IdentityHashMap<UnaryTree, BinaryTree> postfixLookup;
+  protected IdentityHashMap<UnaryTree, BinaryTree> postfixLookup;
 
   /** Map from (effectively final) local variable elements to their abstract value. */
   protected final HashMap<Element, V> finalLocalValues;
@@ -137,6 +139,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * @param other an analysis result to combine with this
    */
   public void combine(AnalysisResult<V, S> other) {
+    if (!mapsCopied) {
+      nodeValues = new IdentityHashMap<>(nodeValues);
+      treeLookup = new IdentityHashMap<>(treeLookup);
+      postfixLookup = new IdentityHashMap<>(postfixLookup);
+      mapsCopied = true;
+    }
     nodeValues.putAll(other.nodeValues);
     mergeTreeLookup(treeLookup, other.treeLookup);
     postfixLookup.putAll(other.postfixLookup);
