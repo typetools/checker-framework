@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.UnmodifiableIdentityHashMap;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.UniqueId;
@@ -87,9 +88,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       IdentityHashMap<UnaryTree, BinaryTree> postfixLookup,
       HashMap<Element, V> finalLocalValues,
       Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
-    this.nodeValues = new IdentityHashMap<>(nodeValues);
-    this.treeLookup = new IdentityHashMap<>(treeLookup);
-    this.postfixLookup = new IdentityHashMap<>(postfixLookup);
+    this.nodeValues = UnmodifiableIdentityHashMap.wrap(nodeValues);
+    this.treeLookup = UnmodifiableIdentityHashMap.wrap(treeLookup);
+    this.postfixLookup = UnmodifiableIdentityHashMap.wrap(postfixLookup);
     // TODO: why are stores and finalLocalValues captured?
     this.stores = stores;
     this.finalLocalValues = finalLocalValues;

@@ -32,6 +32,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
+import org.checkerframework.dataflow.util.UnmodifiableIdentityHashMap;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -264,7 +265,7 @@ public class ControlFlowGraph implements UniqueId {
    * @return the copied tree-lookup map
    */
   public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
-    return new IdentityHashMap<>(treeLookup);
+    return UnmodifiableIdentityHashMap.wrap(treeLookup);
   }
 
   /**
@@ -273,7 +274,7 @@ public class ControlFlowGraph implements UniqueId {
    * @return the copied lookup-map of the binary tree for a postfix expression.
    */
   public IdentityHashMap<UnaryTree, BinaryTree> getPostfixNodeLookup() {
-    return new IdentityHashMap<>(postfixNodeLookup);
+    return UnmodifiableIdentityHashMap.wrap(postfixNodeLookup);
   }
 
   /**
