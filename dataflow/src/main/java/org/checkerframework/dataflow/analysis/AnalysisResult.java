@@ -30,6 +30,10 @@ import org.plumelib.util.UniqueId;
  */
 public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> implements UniqueId {
 
+  /**
+   * For efficiency, certain maps stored in the result are only copied lazily, when they need to be
+   * mutated. This flag tracks if the copying has occurred.
+   */
   private boolean mapsCopied = false;
 
   /** Abstract values of nodes. */

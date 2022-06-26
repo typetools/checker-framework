@@ -259,21 +259,21 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
-   * Returns the copied tree-lookup map. Ignores convertedTreeLookup, though {@link
+   * Returns an unmodifiable view of the tree-lookup map. Ignores convertedTreeLookup, though {@link
    * #getNodesCorrespondingToTree} uses that field.
    *
-   * @return the copied tree-lookup map
+   * @return the unmodifiable tree-lookup map
    */
-  public IdentityHashMap<Tree, Set<Node>> getTreeLookup() {
+  public UnmodifiableIdentityHashMap<Tree, Set<Node>> getTreeLookup() {
     return UnmodifiableIdentityHashMap.wrap(treeLookup);
   }
 
   /**
-   * Returns the copied lookup-map of the binary tree for a postfix expression.
+   * Returns an unmodifiable view of the lookup-map of the binary tree for a postfix expression.
    *
-   * @return the copied lookup-map of the binary tree for a postfix expression.
+   * @return the unmodifiable lookup-map of the binary tree for a postfix expression.
    */
-  public IdentityHashMap<UnaryTree, BinaryTree> getPostfixNodeLookup() {
+  public UnmodifiableIdentityHashMap<UnaryTree, BinaryTree> getPostfixNodeLookup() {
     return UnmodifiableIdentityHashMap.wrap(postfixNodeLookup);
   }
 

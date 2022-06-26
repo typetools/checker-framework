@@ -9,16 +9,36 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * A wrapper around an {@link IdentityHashMap} that makes it unmodifiable. All mutating operations
+ * throw {@link UnsupportedOperationException}, and all other operations delegating to the
+ * underlying map.
+ *
+ * <p>This class extends {@link IdentityHashMap} only so it is assignable to variables / fields of
+ * static type {@link IdentityHashMap}. All valid operations are delegated to the wrapped map, and
+ * any inherited state from the superclass is unused.
+ */
 public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;
+
+  /** the wrapped map */
   private final IdentityHashMap<K, V> map;
 
   private UnmodifiableIdentityHashMap(IdentityHashMap<K, V> map) {
     this.map = map;
   }
 
+  /**
+   * Create an {@link UnmodifiableIdentityHashMap} wrapper for a map.
+   *
+   * @param map the map to wrap
+   * @return the wrapper
+   * @param <K> the key type
+   * @param <V> the value type
+   */
   public static <K, V> UnmodifiableIdentityHashMap<K, V> wrap(IdentityHashMap<K, V> map) {
+    // avoid repeated wrapping
     if (map instanceof UnmodifiableIdentityHashMap) {
       return (UnmodifiableIdentityHashMap<K, V>) map;
     }
