@@ -150,7 +150,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    if (TreeUtils.elementFromTree(varTree).getKind() == ElementKind.RESOURCE_VARIABLE) {
+    Element elt = TreeUtils.elementFromTree(varTree);
+    if (elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE) {
       commonAssignmentCheckOnResourceVariable = true;
     }
     super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);

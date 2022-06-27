@@ -54,8 +54,8 @@ listed in Section~\ref{called-methods-run-checker} for
 the Called Methods Checker, plus two others:
 
 \begin{description}
-% \item[\<-ApermitStaticOwning>]
-%   See Section~\ref{resource-leak-owning-fields}.
+\item[\<-ApermitStaticOwning>]
+  See Section~\ref{resource-leak-owning-fields}.
 \item[\<-ApermitInitializationLeak>]
   See Section~\ref{resource-leak-field-initialization}.
 \end{description}
@@ -220,9 +220,6 @@ As with any annotation, incorrect or missing annotations can lead to false posit
 
 Unannotated fields are treated as non-owning.
 
-The Resource Leak Checker treats all \textbf{static fields} as non-owning, meaning that no assignment to one
-can satisfy a must-call obligation.
-
 For \textbf{final, non-static owning fields},
 the Resource Leak Checker enforces the ``resource acquisition is
 initialization (RAII)'' programming idiom.  Some
@@ -239,6 +236,27 @@ on all exceptional paths.
 \textbf{Non-final, non-static owning fields} usually require one or more \<@CreatesMustCallFor> annotations
 when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
 more details on how to annotate a non-final, non-static owning field.
+
+An assignment to a \textbf{static owning field} does not satisfy a
+must-call obligation; for example,
+
+\begin{smaller}
+\begin{Verbatim}
+  static @Owning PrintWriter debugLog = new PrintWriter("debug.log");
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+The Resource Leak Checker issues a warning about every assignment of an
+object with with a must-call annotation into a static owning field,
+indicating that the obligation of the field's content might not be
+satisfied.  When those fields are used throughout execution, until the
+program exits, there is no good place to dispose of them, so these warnings
+might not be useful.  The \<-ApermitStaticOwning> command-line argument
+suppresses warnings related to static owning fields.  This can help in
+checking legacy code.  It permits only a small number of resource retained
+throughout execution, related to the number of such fields and assignments
+to them.
 
 
 \sectionAndLabel{Resource aliasing}{resource-leak-resource-alias}
