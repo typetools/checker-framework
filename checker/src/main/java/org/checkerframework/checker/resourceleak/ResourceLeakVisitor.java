@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
@@ -33,6 +34,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
+  /** True if errors related to static owning fields should be suppressed. */
+  private boolean permitStaticOwning;
+
   /**
    * Because CalledMethodsVisitor doesn't have a type parameter, we need a reference to the type
    * factory that has this static type to access the features that ResourceLeakAnnotatedTypeFactory
@@ -48,6 +52,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   public ResourceLeakVisitor(final BaseTypeChecker checker) {
     super(checker);
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
+    permitStaticOwning = checker.hasOption("permitStaticOwning");
   }
 
   @Override
@@ -238,6 +243,16 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
     if (checker.shouldSkipUses(field)) {
       return;
+    }
+
+    Set<Modifier> modifiers = field.getModifiers();
+    if (modifiers.contains(Modifier.STATIC)) {
+      if (permitStaticOwning) {
+        return;
+      }
+      if (modifiers.contains(Modifier.FINAL)) {
+        return;
+      }
     }
 
     // This value is side-effected.
