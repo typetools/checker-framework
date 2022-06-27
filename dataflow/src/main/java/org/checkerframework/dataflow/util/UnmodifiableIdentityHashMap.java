@@ -25,6 +25,11 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   /** the wrapped map */
   private final IdentityHashMap<K, V> map;
 
+  /**
+   * Create an UnmodifiableIdentityHashMap
+   *
+   * @param map the map to wrap
+   */
   private UnmodifiableIdentityHashMap(IdentityHashMap<K, V> map) {
     this.map = map;
   }
