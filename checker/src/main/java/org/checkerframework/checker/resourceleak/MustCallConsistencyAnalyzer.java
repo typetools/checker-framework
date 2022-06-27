@@ -138,6 +138,9 @@ import org.plumelib.util.StringsPlume;
 /* package-private */
 class MustCallConsistencyAnalyzer {
 
+  /** True if errors related to static owning fields should be suppressed. */
+  private boolean permitStaticOwning;
+
   /** True if errors related to field initialization should be suppressed. */
   private boolean permitInitializationLeak;
 
@@ -465,6 +468,7 @@ class MustCallConsistencyAnalyzer {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
+    this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
   }
 
@@ -1221,6 +1225,9 @@ class MustCallConsistencyAnalyzer {
    * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
    * the must-call obligations of the field.
    *
+   * <p>Despite the name of this method, the argument {@code node} might be the first and only
+   * assignment to a field.
+   *
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
@@ -1235,6 +1242,10 @@ class MustCallConsistencyAnalyzer {
 
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;
     Node receiver = lhs.getReceiver();
+
+    if (permitStaticOwning && receiver instanceof ClassNameNode) {
+      return;
+    }
 
     // TODO: it would be better to defer getting the path until after checking
     // for a CreatesMustCallFor annotation, because getting the path can be expensive.
@@ -1368,6 +1379,9 @@ class MustCallConsistencyAnalyzer {
       AssignmentNode node, MethodTree enclosingMethod) {
     Node lhs = node.getTarget();
     if (!(lhs instanceof FieldAccessNode)) {
+      return;
+    }
+    if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
       return;
     }
 
