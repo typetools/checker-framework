@@ -1,3 +1,4 @@
+- compiler.warn.proc.messager: junit-assertions.astub:(line 14,col 1): Type not found: org.junit.jupiter.api.Assertions
 Class2.java:14:39: compiler.err.proc.messager: (type.argument)
 Class2.java:15:20: compiler.err.proc.messager: (type.argument)
 Class2.java:15:45: compiler.err.proc.messager: (type.argument)
@@ -8,3 +9,4 @@ Class2.java:20:26: compiler.err.proc.messager: (argument)
 Class2.java:24:14: compiler.err.proc.messager: (override.return)
 Class2.java:25:33: compiler.err.proc.messager: (type.argument)
 9 errors
+1 warning

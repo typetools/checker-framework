@@ -1,5 +1,4 @@
 // Test case for issue #5175: https://github.com/typetools/checker-framework/issues/5175
-// @skip-test until the issue is fixed
 
 // The Resource Leak Checker issues the following error:
 // LemmaStack.java:40: error: [reset.not.owning] Calling method startProver resets the must-call
