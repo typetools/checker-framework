@@ -2,7 +2,7 @@
  * @test
  * @summary Test that the stub files get invoked
  * @library .
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=sample.astub Sample.java  -AstubWarnIfNotFound -Werror
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=sample.astub Sample.java  -Werror
  */
 
 public class Sample {
