@@ -562,8 +562,12 @@ class MustCallConsistencyAnalyzer {
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
    * <p>Such an invocation is valid if any of the conditions in {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} is true. If none of these
-   * conditions are true, this method issues a reset.not.owning error.
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} is true for each
+   * expression in the argument to the CreatesMustCallFor annotation. As a special case, the
+   * invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
+   * constructor of the relevant class (invoking a constructor already creates an obligation). If
+   * none of these conditions are true for any of the expressions, this method issues a
+   * reset.not.owning error.
    *
    * <p>For soundness, this method also guarantees that if any of the expressions in the
    * CreatesMustCallFor annotation has a tracked Obligation, any tracked resource aliases of it will
@@ -593,6 +597,14 @@ class MustCallConsistencyAnalyzer {
     if (missing.isEmpty()) {
       // All expressions matched one of the rules, so the invocation is valid.
       return;
+    }
+
+    // Special case for invocations of CreatesMustCallFor("this") methods in the constructor.
+    if (missing.size() == 1) {
+      JavaExpression expression = missing.get(0);
+      if (expression instanceof ThisReference && TreePathUtil.inConstructor(currentPath)) {
+        return;
+      }
     }
 
     String missingStrs = StringsPlume.join(", ", missing);
