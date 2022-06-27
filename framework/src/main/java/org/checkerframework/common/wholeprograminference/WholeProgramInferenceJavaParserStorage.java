@@ -234,7 +234,7 @@ public class WholeProgramInferenceJavaParserStorage
       // There might not be a corresponding entry for the field name
       // in an anonymous class, if the field and class were defined in
       // another compilation unit (for the same reason that a method
-      // might not have an entry, as in #getParameterAnnotations, above.
+      // might not have an entry, as in #getParameterAnnotations, above).
       return null;
     } else {
       return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
