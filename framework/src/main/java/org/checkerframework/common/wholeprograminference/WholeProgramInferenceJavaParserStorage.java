@@ -215,7 +215,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public AnnotatedTypeMirror getFieldAnnotations(
+  public @Nullable AnnotatedTypeMirror getFieldAnnotations(
       Element element,
       String fieldName,
       AnnotatedTypeMirror lhsATM,
@@ -230,12 +230,13 @@ public class WholeProgramInferenceJavaParserStorage
     // and it won't have extra annotations, so just return the basic type:
     if (classAnnos.enumConstants.contains(fieldName)) {
       return lhsATM;
+    } else if (classAnnos.fields.get(fieldName) == null) {
+      // There might not be a corresponding entry for the field name
+      // in an anonymous class, if the field and class were defined in
+      // another compilation unit (for the same reason that a method
+      // might not have an entry, as in #getParameterAnnotations, above.
+      return null;
     } else {
-      if (classAnnos.fields == null) {
-        throw new BugInCF("fields map for class " + className + " was never initialized");
-      } else if (classAnnos.fields.get(fieldName) == null) {
-        throw new BugInCF("no entry in the fields for " + fieldName + " of class " + className);
-      }
       return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
     }
   }
@@ -627,13 +628,11 @@ public class WholeProgramInferenceJavaParserStorage
             // class located in a source file. If this check returns false, then the
             // below call to TreeUtils.elementFromDeclaration causes a crash.
             if (TreeUtils.elementFromTree(javacTree) == null) {
-              System.out.println("failed to process this javacTree: " + javacTree + " because no element exists");
               return;
             }
 
             VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
             if (!elt.getKind().isField()) {
-              System.out.println("failed to process this javacTree: " + javacTree + " because the element isn't a field; element's kind instead is " + elt.getKind());
               return;
             }
 
