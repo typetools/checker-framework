@@ -231,6 +231,11 @@ public class WholeProgramInferenceJavaParserStorage
     if (classAnnos.enumConstants.contains(fieldName)) {
       return lhsATM;
     } else {
+      if (classAnnos.fields == null) {
+        throw new BugInCF("fields map for class " + className + " was never initialized");
+      } else if (classAnnos.fields.get(fieldName) == null) {
+        throw new BugInCF("no entry in the fields for " + fieldName + " of class " + className);
+      }
       return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
     }
   }
@@ -622,11 +627,13 @@ public class WholeProgramInferenceJavaParserStorage
             // class located in a source file. If this check returns false, then the
             // below call to TreeUtils.elementFromDeclaration causes a crash.
             if (TreeUtils.elementFromTree(javacTree) == null) {
+              System.out.println("failed to process this javacTree: " + javacTree + " because no element exists");
               return;
             }
 
             VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
             if (!elt.getKind().isField()) {
+              System.out.println("failed to process this javacTree: " + javacTree + " because the element isn't a field; element's kind instead is " + elt.getKind());
               return;
             }
 
