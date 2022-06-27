@@ -49,6 +49,7 @@ import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -56,6 +57,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -135,6 +137,12 @@ import org.plumelib.util.StringsPlume;
  */
 /* package-private */
 class MustCallConsistencyAnalyzer {
+
+  /** True if errors related to static owning fields should be suppressed. */
+  private boolean permitStaticOwning;
+
+  /** True if errors related to field initialization should be suppressed. */
+  private boolean permitInitializationLeak;
 
   /**
    * Aliases about which the checker has already reported about a resource leak, to avoid duplicate
@@ -460,6 +468,8 @@ class MustCallConsistencyAnalyzer {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
+    this.permitStaticOwning = checker.hasOption("permitStaticOwning");
+    this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
   }
 
   /**
@@ -1215,6 +1225,9 @@ class MustCallConsistencyAnalyzer {
    * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
    * the must-call obligations of the field.
    *
+   * <p>Despite the name of this method, the argument {@code node} might be the first and only
+   * assignment to a field.
+   *
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
@@ -1230,6 +1243,10 @@ class MustCallConsistencyAnalyzer {
     FieldAccessNode lhs = (FieldAccessNode) lhsNode;
     Node receiver = lhs.getReceiver();
 
+    if (permitStaticOwning && receiver instanceof ClassNameNode) {
+      return;
+    }
+
     // TODO: it would be better to defer getting the path until after checking
     // for a CreatesMustCallFor annotation, because getting the path can be expensive.
     // It might be possible to exploit the CFG structure to find the containing
@@ -1239,12 +1256,19 @@ class MustCallConsistencyAnalyzer {
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
 
     if (enclosingMethodTree == null) {
-      // If the assignment is taking place outside of a method, the Resource Leak Checker
-      // issues an error unless it can prove that the assignment is a field initializer, which
-      // are always safe. The node's TreeKind being "VARAIBLE" is a safe proxy for this requirement,
-      // because VARIABLE Trees are only used for declarations. An assignment to a field that is
-      // also a declaration must be a field initializer.
+      // The assignment is taking place outside of a method:  in a variable declaration's
+      // initializer or in an initializer block.
+      // The Resource Leak Checker issues no error if the assignment is a field initializer.
       if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
+        // An assignment to a field that is also a declaration must be a field initializer (VARIABLE
+        // Trees are only used for declarations).  Assignment in a field initializer is always
+        // permitted.
+        return;
+      } else if (permitInitializationLeak
+          && TreePathUtil.isTopLevelAssignmentInInitializerBlock(currentPath)) {
+        // This is likely not reassignment; if reassignment, the number of assignments that
+        // were not warned about is limited to other initializations (is not unbounded).
+        // This behavior is unsound; see InstanceInitializer.java test case.
         return;
       } else {
         // Issue an error if the field has a non-empty must-call type.
@@ -1267,6 +1291,15 @@ class MustCallConsistencyAnalyzer {
             lhsElement.asType().toString(),
             "Field assignment outside method or declaration might overwrite field's current value");
         return;
+      }
+    } else if (permitInitializationLeak && TreeUtils.isConstructor(enclosingMethodTree)) {
+      Element enclosingClassElement =
+          TreeUtils.elementFromTree(enclosingMethodTree).getEnclosingElement();
+      if (ElementUtils.isTypeElement(enclosingClassElement)) {
+        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
+        if (Objects.equals(enclosingClassElement, receiverElement)) {
+          return;
+        }
       }
     }
 
@@ -1348,6 +1381,9 @@ class MustCallConsistencyAnalyzer {
     if (!(lhs instanceof FieldAccessNode)) {
       return;
     }
+    if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
+      return;
+    }
 
     String receiverString = receiverAsString((FieldAccessNode) lhs);
     if ("this".equals(receiverString) && TreeUtils.isConstructor(enclosingMethod)) {
@@ -1410,8 +1446,13 @@ class MustCallConsistencyAnalyzer {
       return "this";
     }
     if (receiver instanceof LocalVariableNode) {
-
       return ((LocalVariableNode) receiver).getName();
+    }
+    if (receiver instanceof ClassNameNode) {
+      return ((ClassNameNode) receiver).getElement().toString();
+    }
+    if (receiver instanceof SuperNode) {
+      return "super";
     }
     throw new TypeSystemError(
         "unexpected receiver of field assignment: " + receiver + " of type " + receiver.getClass());
