@@ -219,6 +219,23 @@ public final class TreeUtils {
   }
 
   /**
+   * If the given tree is a parenthesized tree or cast tree, return the enclosed non-parenthesized,
+   * non-cast tree. Otherwise, return the same tree.
+   *
+   * @param tree an expression tree
+   * @return the outermost non-parenthesized non-cast tree enclosed by the given tree
+   */
+  @SuppressWarnings("interning:return") // polymorphism implementation
+  public static @PolyInterned ExpressionTree withoutParensOrCasts(
+      final @PolyInterned ExpressionTree tree) {
+    ExpressionTree t = withoutParens(tree);
+    while (t.getKind() == Tree.Kind.TYPE_CAST) {
+      t = withoutParens(((TypeCastTree) t).getExpression());
+    }
+    return t;
+  }
+
+  /**
    * Gets the {@link Element} for the given Tree API node. For an object instantiation returns the
    * value of the {@link JCNewClass#constructor} field.
    *
@@ -239,7 +256,7 @@ public final class TreeUtils {
     }
 
     if (isExpressionTree(tree)) {
-      tree = withoutParens((ExpressionTree) tree);
+      tree = withoutParensOrCasts((ExpressionTree) tree);
     }
 
     switch (tree.getKind()) {

@@ -51,7 +51,14 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 
 The Resource Leak Checker supports all the command-line arguments
 listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker.
+the Called Methods Checker, plus two others:
+
+\begin{description}
+\item[\<-ApermitStaticOwning>]
+  See Section~\ref{resource-leak-owning-fields}.
+\item[\<-ApermitInitializationLeak>]
+  See Section~\ref{resource-leak-field-initialization}.
+\end{description}
 
 If you are running the Resource Leak Checker, then there is no need to run
 the Must Call Checker (\chapterpageref{must-call-checker}), because the
@@ -217,9 +224,6 @@ As with any annotation, incorrect or missing annotations can lead to false posit
 
 Unannotated fields are treated as non-owning.
 
-The Resource Leak Checker treats all \textbf{static fields} as non-owning, meaning that no assignment to one
-can satisfy a must-call obligation.
-
 For \textbf{final, non-static owning fields},
 the Resource Leak Checker enforces the ``resource acquisition is
 initialization (RAII)'' programming idiom.  Some
@@ -236,6 +240,27 @@ on all exceptional paths.
 \textbf{Non-final, non-static owning fields} usually require one or more \<@CreatesMustCallFor> annotations
 when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
 more details on how to annotate a non-final, non-static owning field.
+
+An assignment to a \textbf{static owning field} does not satisfy a
+must-call obligation; for example,
+
+\begin{smaller}
+\begin{Verbatim}
+  static @Owning PrintWriter debugLog = new PrintWriter("debug.log");
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+The Resource Leak Checker issues a warning about every assignment of an
+object with with a must-call annotation into a static owning field,
+indicating that the obligation of the field's content might not be
+satisfied.  When those fields are used throughout execution, until the
+program exits, there is no good place to dispose of them, so these warnings
+might not be useful.  The \<-ApermitStaticOwning> command-line argument
+suppresses warnings related to static owning fields.  This can help in
+checking legacy code.  It permits only a small number of resource retained
+throughout execution, related to the number of such fields and assignments
+to them.
 
 
 \sectionAndLabel{Resource aliasing}{resource-leak-resource-alias}
@@ -386,6 +411,7 @@ methods (including \<close()>) do not appear in the \<@CalledMethods> type quali
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
 
+
 \sectionAndLabel{Ignored exception types}{resource-leak-ignored-exceptions}
 
 The Resource Leak Checker checks that an element's must-call obligations
@@ -429,6 +455,31 @@ list in the future.  Please let us know if there is a type that you think should
 be ignored by filing an issue listing both the exception type and the
 verification tool.
 \end{itemize}
+
+
+\sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
+
+% Arguably, this is working around a bug in the
+% MustCallConsistencyAnalyzer, which could be improved to avoid issuing
+% these false positive warnings.
+
+The Resource Leak Checker warns about re-assignments to owning fields,
+because the value that was overwritten might not have had its obligations
+satisfied.  Such a warning is not necessary on the first assignment to a
+field, since the field had no content before the assignment.  Sometimes,
+the Resource Leak Checker is unable to determine that an assignment is the
+first one, so it conservatively assumes the assignment is a re-assignment
+and issues an error.
+
+One way to prevent this false positive warning is to declare the field as \<final>.
+
+Alternately, to suppress all warnings related to field assignments in the
+constructor and in initializer blocks, pass the
+\<-ApermitInitializationLeak> command-line argument.  This makes the
+checker unsound:  the Resoure Leak Checker will not warn if the constructor
+and initializers set a field more than once.  The amount of leakage is
+limited to how many times the field is set.
+
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
