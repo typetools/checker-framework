@@ -24,6 +24,12 @@ the type \<@MustCall(\{"close"\}) OutputStream>, which can be read as ``an
 OutputStream that might need to call \<close()> (but no other methods)
 before it is de-allocated''.
 
+If you are running the Resource Leak Checker
+(\chapterpageref{resource-leak-checker}), then there is no need to run the
+Must Call Checker, because the Resource Leak Checker does so.
+Running both may lead to warning suppressions for the Must Call Checker not
+working.
+
 
 \sectionAndLabel{Must Call annotations}{must-call-annotations}
 

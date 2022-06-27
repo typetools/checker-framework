@@ -50,8 +50,13 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 \end{Verbatim}
 
 The Resource Leak Checker supports all the command-line arguments
- listed in Section~\ref{called-methods-run-checker} for
+listed in Section~\ref{called-methods-run-checker} for
 the Called Methods Checker.
+
+If you are running the Resource Leak Checker, then there is no need to run
+the Must Call Checker (\chapterpageref{must-call-checker}), because the
+Resource Leak Checker does so.
+
 
 \sectionAndLabel{Resource Leak Checker annotations}{resource-leak-annotations}
 
