@@ -111,11 +111,6 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  public Object clone() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Set<K> keySet() {
     return Collections.unmodifiableSet(map.keySet());
   }
