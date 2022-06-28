@@ -6,7 +6,8 @@ import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-@MustCall("close") class StaticOwningField implements Closeable {
+@InheritableMustCall("close")
+class StaticOwningField implements Closeable {
 
   // Instance field
 

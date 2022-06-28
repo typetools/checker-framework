@@ -11,7 +11,8 @@ class COInSubtype {
     void resetFoo() {}
   }
 
-  @MustCall("a") static class Bar extends Foo {
+  @InheritableMustCall("a")
+  static class Bar extends Foo {
     void a() {}
   }
 

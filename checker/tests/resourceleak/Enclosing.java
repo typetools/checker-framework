@@ -3,7 +3,8 @@
 import org.checkerframework.checker.mustcall.qual.*;
 
 class Enclosing {
-  @MustCall("a") static class Foo {
+  @InheritableMustCall("a")
+  static class Foo {
     void a() {}
   }
 

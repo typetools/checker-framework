@@ -3,7 +3,8 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class ACOwning {
 
-  @MustCall("a") static class Foo {
+  @InheritableMustCall("a")
+  static class Foo {
     void a() {}
   }
 
@@ -60,7 +61,7 @@ class ACOwning {
     takeOwnership(new Foo(), makeFoo());
   }
 
-  @MustCall({})
+  @InheritableMustCall({})
   // :: error: super.invocation
   private class SubFoo extends Foo {
 
