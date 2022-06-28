@@ -575,6 +575,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
     T fieldAnnotations = storage.getFieldAnnotations(element, fieldName, lhsATM, atypeFactory);
 
+    if (fieldAnnotations == null) {
+      return;
+    }
+
     updateAnnotationSet(fieldAnnotations, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
   }
 
