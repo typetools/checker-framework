@@ -64,15 +64,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return super.visitReturn(node, p);
   }
 
-  /*  @Override
-  public void processClassTree(ClassTree tree) {
-    // Check if an explicit @MustCall annotation is present on a non-final class
-    // declaration. If so, issue an error suggesting that @InheritableMustCall is
-    // probably what the programmer means, for usability.
-    if (atypeFactory.getExp)
-    super.processClassTree(tree);
-  }*/
-
   @Override
   protected boolean validateType(Tree tree, AnnotatedTypeMirror type) {
     if (TreeUtils.isClassTree(tree)) {
