@@ -19,6 +19,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * static type {@link IdentityHashMap}. All valid operations are delegated to the wrapped map, and
  * any inherited state from the superclass is unused.
  */
+@SuppressWarnings("nullness")
 public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;
