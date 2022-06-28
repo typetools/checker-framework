@@ -9,6 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 /**
  * A wrapper around an {@link IdentityHashMap} that makes it unmodifiable. All mutating operations
@@ -169,23 +170,26 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+  public @PolyNull V computeIfAbsent(
+      K key, Function<? super K, ? extends @PolyNull V> mappingFunction) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public V computeIfPresent(
-      K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+  public @PolyNull V computeIfPresent(
+      K key, BiFunction<? super K, ? super V, ? extends @PolyNull V> remappingFunction) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+  public @PolyNull V compute(
+      K key, BiFunction<? super K, ? super V, ? extends @PolyNull V> remappingFunction) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+  public @PolyNull V merge(
+      K key, V value, BiFunction<? super V, ? super V, ? extends @PolyNull V> remappingFunction) {
     throw new UnsupportedOperationException();
   }
 }
