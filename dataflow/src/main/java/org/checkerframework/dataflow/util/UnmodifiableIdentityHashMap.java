@@ -20,7 +20,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  * static type {@link IdentityHashMap}. All valid operations are delegated to the wrapped map, and
  * any inherited state from the superclass is unused.
  */
-@SuppressWarnings("keyfor")
+@SuppressWarnings("keyfor") // Keys for `this` are also keys for `this.map`
 public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;
