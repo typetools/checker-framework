@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A wrapper around an {@link IdentityHashMap} that makes it unmodifiable. All mutating operations
@@ -61,22 +62,22 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  public V get(Object key) {
+  public @Nullable V get(@Nullable Object key) {
     return map.get(key);
   }
 
   @Override
-  public boolean containsKey(Object key) {
+  public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
   @Override
-  public boolean containsValue(Object value) {
+  public boolean containsValue(@Nullable Object value) {
     return map.containsValue(value);
   }
 
   @Override
-  public V put(K key, V value) {
+  public @Nullable V put(K key, V value) {
     throw new UnsupportedOperationException();
   }
 
@@ -86,7 +87,7 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  public V remove(Object key) {
+  public @Nullable V remove(@Nullable Object key) {
     throw new UnsupportedOperationException();
   }
 
@@ -97,7 +98,7 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
   @Override
   @SuppressWarnings("IdentityHashMapUsage")
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     return map.equals(o);
   }
 
