@@ -51,12 +51,16 @@ ENV PATH="/apache-maven-3.8.3/bin:$PATH"
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
+  autoconf \
   devscripts \
   dia \
   hevea \
   imagemagick \
+  jtreg \
   latexmk \
   librsvg2-bin \
+  libasound2-dev libcups2-dev libfontconfig1-dev \
+  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
   pdf2svg \
   rsync \
   shellcheck \
