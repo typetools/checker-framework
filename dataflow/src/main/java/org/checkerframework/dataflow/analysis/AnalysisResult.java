@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.UnmodifiableIdentityHashMap;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.UniqueId;
@@ -29,8 +30,14 @@ import org.plumelib.util.UniqueId;
  */
 public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> implements UniqueId {
 
+  /**
+   * For efficiency, certain maps stored in the result are only copied lazily, when they need to be
+   * mutated. This flag tracks if the copying has occurred.
+   */
+  private boolean mapsCopied = false;
+
   /** Abstract values of nodes. */
-  protected final IdentityHashMap<Node, V> nodeValues;
+  protected IdentityHashMap<Node, V> nodeValues;
 
   /**
    * Map from AST {@link Tree}s to sets of {@link Node}s.
@@ -38,13 +45,13 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * <p>Some of those Nodes might not be keys in {@link #nodeValues}. One reason is that the Node is
    * unreachable in the control flow graph, so dataflow never gave it a value.
    */
-  protected final IdentityHashMap<Tree, Set<Node>> treeLookup;
+  protected IdentityHashMap<Tree, Set<Node>> treeLookup;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
    * tree that is {@code v + 1} or {@code v - 1}.
    */
-  protected final IdentityHashMap<UnaryTree, BinaryTree> postfixLookup;
+  protected IdentityHashMap<UnaryTree, BinaryTree> postfixLookup;
 
   /** Map from (effectively final) local variable elements to their abstract value. */
   protected final HashMap<Element, V> finalLocalValues;
@@ -87,9 +94,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       IdentityHashMap<UnaryTree, BinaryTree> postfixLookup,
       HashMap<Element, V> finalLocalValues,
       Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
-    this.nodeValues = new IdentityHashMap<>(nodeValues);
-    this.treeLookup = new IdentityHashMap<>(treeLookup);
-    this.postfixLookup = new IdentityHashMap<>(postfixLookup);
+    this.nodeValues = UnmodifiableIdentityHashMap.wrap(nodeValues);
+    this.treeLookup = UnmodifiableIdentityHashMap.wrap(treeLookup);
+    this.postfixLookup = UnmodifiableIdentityHashMap.wrap(postfixLookup);
     // TODO: why are stores and finalLocalValues captured?
     this.stores = stores;
     this.finalLocalValues = finalLocalValues;
@@ -136,6 +143,12 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * @param other an analysis result to combine with this
    */
   public void combine(AnalysisResult<V, S> other) {
+    if (!mapsCopied) {
+      nodeValues = new IdentityHashMap<>(nodeValues);
+      treeLookup = new IdentityHashMap<>(treeLookup);
+      postfixLookup = new IdentityHashMap<>(postfixLookup);
+      mapsCopied = true;
+    }
     nodeValues.putAll(other.nodeValues);
     mergeTreeLookup(treeLookup, other.treeLookup);
     postfixLookup.putAll(other.postfixLookup);
