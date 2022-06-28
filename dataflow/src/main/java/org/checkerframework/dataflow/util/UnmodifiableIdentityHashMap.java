@@ -129,6 +129,7 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
     return Collections.unmodifiableSet(map.entrySet());
   }
 
+  // `action` has no side effects on the map, because it is only passed keys and values.
   @Override
   public void forEach(BiConsumer<? super K, ? super V> action) {
     map.forEach(action);
