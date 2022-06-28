@@ -38,7 +38,8 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   /**
-   * Create an {@link UnmodifiableIdentityHashMap} wrapper for a map.
+   * Create an {@link UnmodifiableIdentityHashMap} wrapper for a map. Returns the argument if it is
+   * already an {@link UnmodifiableIdentityHashMap}.
    *
    * @param map the map to wrap
    * @return the wrapper
