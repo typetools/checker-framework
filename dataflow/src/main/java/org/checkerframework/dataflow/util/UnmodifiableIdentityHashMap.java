@@ -11,8 +11,8 @@ import java.util.function.Function;
 
 /**
  * A wrapper around an {@link IdentityHashMap} that makes it unmodifiable. All mutating operations
- * throw {@link UnsupportedOperationException}, and all other operations delegating to the
- * underlying map.
+ * throw {@link UnsupportedOperationException}, and all other operations delegate to the underlying
+ * map.
  *
  * <p>This class extends {@link IdentityHashMap} only so it is assignable to variables / fields of
  * static type {@link IdentityHashMap}. All valid operations are delegated to the wrapped map, and
@@ -22,11 +22,11 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;
 
-  /** the wrapped map */
+  /** The wrapped map. */
   private final IdentityHashMap<K, V> map;
 
   /**
-   * Create an UnmodifiableIdentityHashMap
+   * Create an UnmodifiableIdentityHashMap. Clients should use {@link #wrap} instead.
    *
    * @param map the map to wrap
    */
