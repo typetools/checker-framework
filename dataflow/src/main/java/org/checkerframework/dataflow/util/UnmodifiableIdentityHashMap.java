@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 /**
  * A wrapper around an {@link IdentityHashMap} that makes it unmodifiable. All mutating operations
@@ -18,6 +20,7 @@ import java.util.function.Function;
  * static type {@link IdentityHashMap}. All valid operations are delegated to the wrapped map, and
  * any inherited state from the superclass is unused.
  */
+@SuppressWarnings("keyfor")
 public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;
@@ -61,22 +64,22 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  public V get(Object key) {
+  public @Nullable V get(@Nullable Object key) {
     return map.get(key);
   }
 
   @Override
-  public boolean containsKey(Object key) {
+  public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
   @Override
-  public boolean containsValue(Object value) {
+  public boolean containsValue(@Nullable Object value) {
     return map.containsValue(value);
   }
 
   @Override
-  public V put(K key, V value) {
+  public @Nullable V put(K key, V value) {
     throw new UnsupportedOperationException();
   }
 
@@ -86,7 +89,7 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  public V remove(Object key) {
+  public @Nullable V remove(@Nullable Object key) {
     throw new UnsupportedOperationException();
   }
 
@@ -97,7 +100,7 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
   @Override
   @SuppressWarnings("IdentityHashMapUsage")
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     return map.equals(o);
   }
 
@@ -167,23 +170,26 @@ public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
   }
 
   @Override
-  public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+  public @PolyNull V computeIfAbsent(
+      K key, Function<? super K, ? extends @PolyNull V> mappingFunction) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public V computeIfPresent(
-      K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+  public @PolyNull V computeIfPresent(
+      K key, BiFunction<? super K, ? super V, ? extends @PolyNull V> remappingFunction) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+  public @PolyNull V compute(
+      K key, BiFunction<? super K, ? super V, ? extends @PolyNull V> remappingFunction) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+  public @PolyNull V merge(
+      K key, V value, BiFunction<? super V, ? super V, ? extends @PolyNull V> remappingFunction) {
     throw new UnsupportedOperationException();
   }
 }
