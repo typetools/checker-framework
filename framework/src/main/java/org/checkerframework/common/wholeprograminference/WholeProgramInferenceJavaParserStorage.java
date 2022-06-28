@@ -215,7 +215,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public AnnotatedTypeMirror getFieldAnnotations(
+  public @Nullable AnnotatedTypeMirror getFieldAnnotations(
       Element element,
       String fieldName,
       AnnotatedTypeMirror lhsATM,
@@ -230,6 +230,12 @@ public class WholeProgramInferenceJavaParserStorage
     // and it won't have extra annotations, so just return the basic type:
     if (classAnnos.enumConstants.contains(fieldName)) {
       return lhsATM;
+    } else if (classAnnos.fields.get(fieldName) == null) {
+      // There might not be a corresponding entry for the field name
+      // in an anonymous class, if the field and class were defined in
+      // another compilation unit (for the same reason that a method
+      // might not have an entry, as in #getParameterAnnotations, above).
+      return null;
     } else {
       return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
     }
