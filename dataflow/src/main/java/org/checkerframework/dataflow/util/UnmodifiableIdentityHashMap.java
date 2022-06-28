@@ -23,6 +23,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 @SuppressWarnings("keyfor") // Keys for `this` are also keys for `this.map`
 public class UnmodifiableIdentityHashMap<K, V> extends IdentityHashMap<K, V> {
 
+  /** The serial version UID. */
   private static final long serialVersionUID = -5147442142854693854L;
 
   /** The wrapped map. */
