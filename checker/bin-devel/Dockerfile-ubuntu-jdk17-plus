@@ -12,6 +12,7 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 #  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
+## [Question: Why does this use Oracle JDK rather than OpenJDK?]
 # Instructions for installing Java 17 on Ubuntu:
 # https://www.linuxuprising.com/2021/09/how-to-install-oracle-java-17-lts-on.html
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -44,9 +45,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   wget
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.8.3/binaries/apache-maven-3.8.3-bin.tar.gz \
-&& tar xzvf apache-maven-3.8.3-bin.tar.gz
-ENV PATH="/apache-maven-3.8.3/bin:$PATH"
+&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz \
+&& tar xzvf apache-maven-3.8.6-bin.tar.gz
+ENV PATH="/apache-maven-3.8.6/bin:$PATH"
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \

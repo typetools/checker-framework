@@ -58,6 +58,16 @@ export JDKVER=jdk17-plus
 export PROJECT=cf
 create_upload_docker_image
 
+export OS=ubuntu
+export JDKVER=jdk18
+export PROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk18-plus
+export PROJECT=cf
+create_upload_docker_image
+
 
 Cleanup:
 

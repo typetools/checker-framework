@@ -1,3 +1,7 @@
+The Checker Framework officially supports Java 18.
+(It worked before, but gave a warning that it was not tested.)
+
+
 Version 3.23.0 (July 1, 2022)
 -----------------------------
 
