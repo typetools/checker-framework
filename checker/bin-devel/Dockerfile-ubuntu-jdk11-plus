@@ -43,6 +43,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   hevea \
   imagemagick \
   jtreg \
+  junit \
   latexmk \
   librsvg2-bin \
   libasound2-dev libcups2-dev libfontconfig1-dev \
