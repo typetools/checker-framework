@@ -647,7 +647,7 @@ javac \
 -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
-The arguments are explained above, except for two of them:.
+The arguments are explained above, except for two of them:
 \begin{enumerate}
 
 \item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
@@ -660,7 +660,7 @@ required with JDK 17+ because the Checker Framework accesses non-exported member
 
 \end{enumerate}
 
-If this option is missing, \<javac> may issue the following warning:
+If this option is missing, \<javac> may issue one of the below warnings:
 \begin{Verbatim}
 WARNING: An illegal reflective access operation has occurred
 WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
@@ -668,6 +668,13 @@ WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
 WARNING: Please consider reporting this to the maintainers of org.checkerframework.javacutil.Resolver
 WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
 WARNING: All illegal access operations will be denied in a future release
+\end{Verbatim}
+
+\begin{Verbatim}
+java.lang.IllegalAccessError: class org.checkerframework.javacutil.AbstractTypeProcessor
+  (in unnamed module ...) cannot access class com.sun.tools.javac.processing.JavacProcessingEnvironment
+  (in module jdk.compiler) because module jdk.compiler does not export com.sun.tools.javac.processing
+  to unnamed module ...
 \end{Verbatim}
 
 
