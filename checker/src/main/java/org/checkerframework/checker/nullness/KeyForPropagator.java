@@ -1,7 +1,6 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
@@ -17,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * KeyForPropagator is used to move nested KeyFor annotations in type arguments from one side of a
@@ -157,8 +157,7 @@ public class KeyForPropagator {
       NewClassTree newClassTree,
       AnnotatedTypeMirror type,
       KeyForAnnotatedTypeFactory atypeFactory) {
-    Pair<Tree, AnnotatedTypeMirror> context = atypeFactory.getVisitorState().getAssignmentContext();
-    if (type.getKind() != TypeKind.DECLARED || context == null || context.first == null) {
+    if (type.getKind() != TypeKind.DECLARED || TreeUtils.isDiamondTree(newClassTree)) {
       return;
     }
     TreePath path = atypeFactory.getPath(newClassTree);

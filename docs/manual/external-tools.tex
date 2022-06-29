@@ -118,7 +118,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.13.0'
+    ext.checkerFrameworkVersion = '3.22.2'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -191,7 +191,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.13.0'
+    ext.checkerFrameworkVersion = '3.22.2'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -210,7 +210,7 @@ gradlew assembleCheckTypes
 
 \sectionAndLabel{Ant task}{ant-task}
 
-If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
+If you use the \href{https://ant.apache.org/}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
 that your Ant file already contains a compilation target that uses the
 \code{javac} task, and that the \<CHECKERFRAMEWORK> environment variable is set.
@@ -268,8 +268,10 @@ Fill in each ellipsis (\ldots) from the original compilation target.
 However, do not copy any \<fork=> setting from the original \code{<javac>}
 task invocation.
 
-If your original compilation target set the classpath or bootclasspath,
-then you will need to adjust it; see Section~\ref{javac-jdk8}.
+If your original compilation target set the bootclasspath, then you cannot
+use the javac wrapper script as the above instructions do.  You should edit
+your Ant buildfile to make invocations similar to those described in
+Section~\ref{javac}, but accommodating your bootclasspath.
 
 In the example, the target is named \code{check-nullness}, but you can
 name it whatever you like.
@@ -321,34 +323,31 @@ Buck is a build system maintained by Facebook.
 Buck has support for annotation processors, but that support is
 undocumented because the Buck maintainers may change the syntax in the
 future and they don't wish to ever change anything that is documented.
-
 You can learn more about Buck and annotation processors at these URLs:
 {\codesize\url{https://stackoverflow.com/questions/32915721/documentation-for-annotation-processors-buck}},
 {\codesize\url{https://github.com/facebook/buck/issues/85}}.
 
-In order to use Checker Framework with Buck on JDK 8, you first need
+In order to use Checker Framework with Buck on \textbf{JDK 8}, you first need
 to place the Error Prone JDK 9 compiler in Buck's bootclasspath
 (further explanation in Section~\ref{javac-jdk8}).  To do so,
-follow the instructions on this page:
-
-{\codesize\url{https://github.com/uber/okbuck/wiki/Using-Error-Prone-with-Buck-and-OkBuck#using-error-prone-javac-on-jdk-8}}
-
+follow the instructions on this page: \\
+{\codesize\url{https://github.com/uber/okbuck/wiki/Using-Error-Prone-with-Buck-and-OkBuck#using-error-prone-javac-on-jdk-8}} \\
 You only need to follow the instructions to use Error Prone javac on
 that page, not the instructions to enable Error Prone.
 
-Once you have completed those steps, here is an example \<BUCK> build
-file showing how to enable Checker Framework:
+Here is an example \<BUCK> build
+file showing how to enable the Checker Framework:
 
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.13.0.jar',
+    binary_jar = 'checker-3.22.2.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.13.0.jar',
+    binary_jar = 'checker-qual-3.22.2.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -364,15 +363,47 @@ java_library (
 \end{Verbatim}
 
 
+\subsectionAndLabel{Troubleshooting}{buck-troubleshooting}
+
+Use \<--verbose 8> to see diagnostic output including a command line that
+ought to be equivalent to Buck's use of an in-process Java compiler.
+For example, you might run
+
+\begin{Verbatim}
+./buck clean
+./buck fetch //...
+./buck build --verbose 8 //app:main
+\end{Verbatim}
+
+However, the command lines that buck prints with \<-v 8> is \emph{not} what
+Buck actually executes.  Buck's invocation of the Checker Framework may
+produce errors that cannot be reproduced from the command line.  This is
+because Buck uses
+\href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/jvm/java/Jsr199Javac.java}{in-process
+  compilation}, potentially multi-threaded, and because Buck may use use
+\href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/util/ClassLoaderCache.java}{multiple
+  classloaders} that are cached.
+
+You can force Buck to run an external javac, thus behaving exactly like the
+command line that its diagnostics print.  Use the configuration flag \<-c
+tools.javac=\emph{path-to-javac}>, for example:
+
+\begin{Verbatim}
+./buck clean && ./buck fetch //... && ./buck build //app:main -c tools.javac=$(which javac)
+\end{Verbatim}
+
 
 \sectionAndLabel{Command line, via Checker Framework javac wrapper}{javac-wrapper}
 \label{javac-installation}      % for backward compatibility, added 10/2/2019
 
 To perform pluggable type-checking from the command line, run the \<javac>
 command that ships with the Checker Framework.  This is called the
-``Checker Framework compiler''.  It is exactly the same as the OpenJDK
+``Checker Framework compiler'' or the ``Checker Framework \<javac> wrapper''.
+It is exactly the same as the OpenJDK
 \<javac> compiler, with one small difference:  it includes the Checker
 Framework jar file on its classpath.
+
+You cannot use the \<javac> wrapper if you wish to set the bootclasspath.
 
 There are three ways to use the Checker Framework compiler from the command
 line.  You can use any
@@ -380,21 +411,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.13.0/>.
+other than \<\${HOME}/checker-framework-3.22.2/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.13.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.22.2/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.13.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.2
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -415,7 +446,7 @@ other than \<\${HOME}/checker-framework-3.13.0/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.13.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.2
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -437,11 +468,11 @@ other than \<\${HOME}/checker-framework-3.13.0/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.13.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.2
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.13.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.22.2\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -520,9 +551,9 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.13.0/checker-qual-3.13.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.13.0/checker-util-3.13.0.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.13.0/checker-3.13.0-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.22.2/checker-qual-3.22.2.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.22.2/checker-util-3.22.2.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.22.2/checker-3.22.2-all.jar}
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
@@ -531,7 +562,9 @@ Different arguments to \<javac> are required for JDK 8
 
 \subsectionAndLabel{JDK 8}{javac-jdk8}
 
-This section shows what arguments to pass to javac to run the Checker
+This section shows what arguments to pass to the OpenJDK or OracleJDK
+\<javac> (\emph{not} the \<javac> wrapper script of
+Section~\ref{javac-wrapper}) to run the Checker
 Framework, if you are using JDK 8.
 
 \begin{Verbatim}
@@ -582,28 +615,50 @@ source code is Java 8 and that Java 8 bytecode is created.
 \end{enumerate}
 
 
-\subsectionAndLabel{JDK 11}{javac-jdk11}
+\subsectionAndLabel{JDK 11+}{javac-jdk11}
 
-This section shows what arguments to pass to javac to run the Checker Framework using JDK 11.  These
-instructions should work on JDK 9 or later, but we only test with JDK 11.
+This section shows what arguments to pass to the OpenJDK or OracleJDK
+\<javac> (\emph{not} the \<javac> wrapper script of
+Section~\ref{javac-wrapper}) to run the Checker
+Framework, if you are using JDK 9 or later.  These
+instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK 17.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
 
 To compile non-modularized code:
 
+% Keep list of --add-opens and --add-exports in sync with the "maven" and "SBT" sections,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in compilerArgsForRunningCFs,
+% and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javac \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
 -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
 -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
 -cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
 -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
-The arguments are explained above, except for
-\<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
+The arguments are explained above, except for two of them:.
+\begin{enumerate}
+
+\item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
 opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
+
+\item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
+required with JDK 17+ because the Checker Framework accesses non-exported members of these packages.
+(These are also required with JDK 11 if \<--illegal-access> is set to \<deny>.)
+
+\end{enumerate}
 
 If this option is missing, \<javac> may issue the following warning:
 \begin{Verbatim}
@@ -625,6 +680,14 @@ so you must do this even if you write no annotations in your code.
 
 \begin{Verbatim}
 javac \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+  -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
   -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED \
   -processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar \
   --module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar \
@@ -811,7 +874,7 @@ to generated methods, when the user writes Lombok's \<@Getter>, \<@Setter>,
 and \<@Builder> annotations.  Lombok does so only for certain type
 annotations (including all annotations in the Checker Framework
 distribution); see variable \<BASE\_COPYABLE\_ANNOTATIONS> in file
-\href{https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}{\<HandlerUtil.java>}.
+\href{https://github.com/projectlombok/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java}{\<HandlerUtil.java>}.
 
 To make Lombok copy other type annotations from fields to generated code,
 add those type annotations to the \<lombok.copyableAnnotations>
@@ -854,7 +917,7 @@ Checker Framework on that.  The
 
 \sectionAndLabel{Maven}{maven}
 
-If you use the \href{http://maven.apache.org/}{Maven} tool,
+If you use the \href{https://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
 instructions below.
 
@@ -874,16 +937,20 @@ is run.  The instructions in this section
 bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
 
+Debugging your Maven configuration can be tricky because of a
+\ahreforurl{https://issues.apache.org/jira/browse/MCOMPILER-434}{bug in
+  maven-compiler-plugin versions before 3.10.1}: Maven does not report
+annotation processor exceptions, even when
+the \<-X> command-line argument is passed.
+
+
 \begin{enumerate}
 
-\item Declare a dependency on the Checker Framework artifacts, either from
-  Maven Central or from a local directory.  Find the
-  existing \code{<dependencies>} section and add the following new
+\item Declare a dependency on the Checker Framework artifacts from
+  Maven Central.  Find the
+  existing \code{<dependencies>} section (not within
+  \code{<dependencyManagement>}, but somewhere else) and add the following new
   \code{<dependency>} items:
-
-\begin{enumerate}
-\item
-  To obtain artifacts from Maven Central:
 
 \begin{alltt}
   <dependencies>
@@ -895,6 +962,25 @@ checker as an annotation processor directly.
       <artifactId>checker-qual</artifactId>
       <version>\ReleaseVersion{}</version>
     </dependency>
+  </dependencies>
+\end{alltt}
+
+Periodically update to the most recent version, to obtain the
+latest bug fixes and new features:
+\begin{Verbatim}
+  mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
+\end{Verbatim}
+
+\item If using JDK 8, use a Maven property to hold the location of the
+  Error Prone \<javac.jar>.
+To set the value of these properties automatically, you will use the Maven Dependency plugin.
+
+Add a dependency:
+
+\begin{alltt}
+  <dependencies>
+    ... existing <dependency> items ...
+
     <dependency>
       <groupId>com.google.errorprone</groupId>
       <artifactId>javac</artifactId>
@@ -903,25 +989,12 @@ checker as an annotation processor directly.
   </dependencies>
 \end{alltt}
 
-Java 11 and later do not need the \<com.google.errorprone.javac>
-dependency.  If you will never use Java 8, you can omit it.
-
-Periodically update to the most recent version, to obtain the
-latest bug fixes and new features:
-\begin{Verbatim}
-  mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
-\end{Verbatim}
-
+Java 11 and later do not need the \<com.google.errorprone:javac>
+dependency.
 The need for the \<com.google.errorprone:javac> artifact when running under
 JDK 8 is explained in Section~\ref{javac-jdk8}.
 
-\end{enumerate}
-
-\item If using JDK 8, use a Maven property to hold the location of the
-  Error Prone \<javac.jar>.  They were declared as Maven dependencies above.
-To set the value of these properties automatically, you will use the Maven Dependency plugin.
-
-First, create the property in the \code{properties} section of the POM:
+Create the property in the \code{properties} section of the POM:
 
 \begin{alltt}
 <properties>
@@ -951,8 +1024,9 @@ section, or add it if it is not present.
 \item Direct the Maven compiler plugin to use the desired checkers by
   creating three new profiles as shown below (the example uses the Nullness
   Checker).  If your POM file does not already use the
-  \code{maven-compiler-plugin} plugin, you are done.  If your POM file
-  already uses the plugin, copy edit the first profile to incorporate the
+  \code{maven-compiler-plugin} plugin, you can use the text below as is.
+  If your POM file
+  already uses the plugin, copy and edit the first profile to incorporate the
   existing configuration.
 
 %% TODO: Is this comment still accurate?
@@ -966,13 +1040,13 @@ section, or add it if it is not present.
     <profile>
       <id>checkerframework</id>
       <activation>
-        <jdk>[1.8,13)</jdk>
+        <jdk>[1.8,)</jdk>
       </activation>
       <build>
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
+            <version>3.10.1</version>
             <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
               <compilerArguments>
@@ -1001,7 +1075,7 @@ section, or add it if it is not present.
         <dependency>
           <groupId>org.checkerframework</groupId>
           <artifactId>checker</artifactId>
-          <version>$\{checkerFrameworkVersion\}</version>
+          <version>\ReleaseVersion{}</version>
         </dependency>
       </dependencies>
     </profile>
@@ -1030,7 +1104,6 @@ section, or add it if it is not present.
             <configuration>
               <fork>true</fork>
               <compilerArgs combine.children="append">
-                <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
                 <arg>-J-Xbootclasspath/p:$\{settings.localRepository\}/com/google/errorprone/javac/$\{javac.version\}/javac-$\{javac.version\}.jar</arg>
               </compilerArgs>
             </configuration>
@@ -1040,9 +1113,9 @@ section, or add it if it is not present.
     </profile>
 
     <profile>
-      <id>checkerframework-jdk11</id>
+      <id>checkerframework-jdk9orlater</id>
       <activation>
-        <jdk>11</jdk>
+        <jdk>[9,)</jdk>
       </activation>
       <build>
         <plugins>
@@ -1052,6 +1125,14 @@ section, or add it if it is not present.
             <configuration>
               <fork>true</fork>
               <compilerArgs combine.children="append">
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>
             </configuration>
@@ -1068,7 +1149,7 @@ section, or add it if it is not present.
 \end{mysmall}
 
 Now, building with Maven will run the checkers during every compilation
-that uses JDK 8 or JDK 11.
+that uses JDK 8 or higher.
 
 If you wish to run checkers while compiling your source code but not your
 tests, wrap the \code{<configuration>...</configuration>} within
@@ -1083,8 +1164,13 @@ tests, wrap the \code{<configuration>...</configuration>} within
 \end{Verbatim}
 
 To compile without using the Checker Framework, pass
-\<-P '!checkerframework-java11'> (or \<-P '!checkerframework-java8'>)
+\<-P !checkerframework>
 on the Maven command line.
+%% Per GitHub user danibs in
+%% https://github.com/typetools/checker-framework/issues/5086,
+%% this does not seem to work.
+% It should also work to pass
+% \<-P !checkerframework-jdk9orlater> or \<-P !checkerframework-java8>.
 
 % TODO: Figure out why, and then remove this paragraph.
 Warning:  adding
@@ -1279,7 +1365,7 @@ will not appear in the editor.
 
 \sectionAndLabel{sbt}{sbt}
 
-\ahref{https://www.scala-sbt.org/}{sbt} is a build tool for
+\href{https://www.scala-sbt.org/}{sbt} is a build tool for
 Scala, Java, and more.
 
 Adjust the \<-processor> command-line argument for the processor(s)
@@ -1301,8 +1387,19 @@ javacOptions ++= Seq(
 
 \subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
 
+% Keep list of --add-opens and --add-exports in sync with the "maven" and "javac-jdk11-non-modularized" sections,
+% the method CheckerMain#getExecArguments, checker-framework/build.gradle in compilerArgsForRunningCFs,
+% and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
 \begin{Verbatim}
 javacOptions ++= Seq(
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
     "-cp $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
@@ -1316,6 +1413,14 @@ javacOptions ++= Seq(
 \begin{Verbatim}
 For compiling modularized code:
 javacOptions ++= Seq(
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
     "-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     "-processorpath $CHECKERFRAMEWORK/checker/dist/checker.jar",
     "--module-path $CHECKERFRAMEWORK/checker/dist/checker-qual.jar",
@@ -1343,12 +1448,12 @@ lists type inference tools.
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle cp
-% LocalWords:  compilerArgs Xbootclasspath mvn
+% LocalWords:  compilerArgs Xbootclasspath mvn sbt runtime jdk11
 % LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 % LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
 % LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK env jdk
 % LocalWords:  javacheck checkerframework MavenExample org arg typecheck
-% LocalWords:  AoutputArgsToFile qual jdk8 annotatedJdk Unhandled dex SDK
+% LocalWords:  AoutputArgsToFile qual jdk8 Unhandled dex SDK
 % LocalWords:  annotationProcessors annotationProcessor JavaCompile Ctrl
 % LocalWords:  targetJavaVersion GradleExamples gradle JavaVersion lombok
 % LocalWords:  systemPath artifactID MacOS eclipsec getter getRole setRole
@@ -1357,4 +1462,4 @@ lists type inference tools.
 % LocalWords:  annotationProcessorPaths checkTypes OracleJDK java8 java11
 % LocalWords:  bootclasspath processorpath intellij typechecking postpass
 % LocalWords:  Delombok r4173 pathnames HandlerUtil errorProneJavac
-% LocalWords:  uncomment deployArtifactsToLocalRepo
+% LocalWords:  uncomment

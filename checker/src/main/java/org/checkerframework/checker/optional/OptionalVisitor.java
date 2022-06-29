@@ -9,7 +9,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
@@ -85,7 +84,12 @@ public class OptionalVisitor
     return new OptionalTypeValidator(checker, this, atypeFactory);
   }
 
-  /** @return true iff expression is a call to java.util.Optional.get */
+  /**
+   * Returns true iff {@code expression} is a call to java.util.Optional.get.
+   *
+   * @param expression an expression
+   * @return true iff {@code expression} is a call to java.util.Optional.get
+   */
   private boolean isCallToGet(ExpressionTree expression) {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     return TreeUtils.isMethodInvocation(expression, optionalGet, env);
@@ -129,7 +133,12 @@ public class OptionalVisitor
     }
   }
 
-  /** @return true iff expression is a call to Optional creation: of, ofNullable. */
+  /**
+   * Returns true iff the method being callid is Optional creation: of, ofNullable.
+   *
+   * @param methInvok a method invocation
+   * @return true iff the method being called is Optional creation: of, ofNullable
+   */
   private boolean isOptionalCreation(MethodInvocationTree methInvok) {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     return TreeUtils.isMethodInvocation(methInvok, optionalOf, env)
@@ -137,7 +146,11 @@ public class OptionalVisitor
   }
 
   /**
-   * @return true iff expression is a call to Optional elimination: get, orElse, orElseGet,
+   * Returns true iff the method being called is Optional elimination: get, orElse, orElseGet,
+   * orElseThrow.
+   *
+   * @param methInvok a method invocation
+   * @return true iff the method being called is Optional elimination: get, orElse, orElseGet,
    *     orElseThrow
    */
   private boolean isOptionalElimation(MethodInvocationTree methInvok) {
@@ -179,7 +192,7 @@ public class OptionalVisitor
       falseExpr = tmp;
     }
 
-    if (trueExpr.getKind() != Kind.METHOD_INVOCATION) {
+    if (trueExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return;
     }
     ExpressionTree trueReceiver = TreeUtils.getReceiverTree(trueExpr);
@@ -259,11 +272,11 @@ public class OptionalVisitor
       return;
     }
 
-    if (thenStmt.getKind() != Kind.EXPRESSION_STATEMENT) {
+    if (thenStmt.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
       return;
     }
     ExpressionTree thenExpr = ((ExpressionStatementTree) thenStmt).getExpression();
-    if (thenExpr.getKind() != Kind.METHOD_INVOCATION) {
+    if (thenExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
       return;
     }
     MethodInvocationTree invok = (MethodInvocationTree) thenExpr;
@@ -309,7 +322,7 @@ public class OptionalVisitor
       return;
     }
     ExpressionTree receiver = TreeUtils.getReceiverTree(node);
-    if (!(receiver.getKind() == Kind.METHOD_INVOCATION
+    if (!(receiver.getKind() == Tree.Kind.METHOD_INVOCATION
         && isOptionalCreation((MethodInvocationTree) receiver))) {
       return;
     }

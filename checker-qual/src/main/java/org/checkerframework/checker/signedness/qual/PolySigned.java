@@ -10,6 +10,10 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the signedness type system.
  *
+ * <p>When two formal parameter types are annotated with {@code @PolySigned}, the two arguments must
+ * have the same signedness type annotation. (This differs from the standard rule for polymorphic
+ * qualifiers.)
+ *
  * @checker_framework.manual #signedness-checker Signedness Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
  */

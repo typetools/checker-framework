@@ -99,7 +99,7 @@ public class TreeBuilder {
 
     if (numIterTypeArgs == 1) {
       TypeMirror elementType = iteratorType.getTypeArguments().get(0);
-      // Remove captured type from a wildcard.
+      // Remove captured type variable from a wildcard.
       if (elementType instanceof Type.CapturedType) {
         elementType = ((Type.CapturedType) elementType).wildcard;
 

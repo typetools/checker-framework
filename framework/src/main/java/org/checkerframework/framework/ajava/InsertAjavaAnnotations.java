@@ -69,7 +69,7 @@ public class InsertAjavaAnnotations {
   /**
    * Gets an instance of {@code Elements} from the current Java compiler.
    *
-   * @return Element utilities
+   * @return the Element utilities
    */
   private static Elements createElements() {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -313,7 +313,7 @@ public class InsertAjavaAnnotations {
      * insertion position on its own line).
      *
      * @param position the position of the insertion
-     * @param annotations List of annotations to insert
+     * @param annotations list of annotations to insert
      */
     private void addAnnotationOnOwnLine(Position position, List<AnnotationExpr> annotations) {
       String line = lines.get(position.line - 1);
@@ -353,7 +353,7 @@ public class InsertAjavaAnnotations {
      * adds it to {@link #insertions}.
      *
      * @param position the position of the insertion
-     * @param annotations List of annotations to insert
+     * @param annotations list of annotations to insert
      * @param offset additional offset of the insertion after {@code position}
      * @param addSpaceBefore if true, the insertion content will start with a space
      */

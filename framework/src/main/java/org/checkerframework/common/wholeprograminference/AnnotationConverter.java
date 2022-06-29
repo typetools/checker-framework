@@ -137,7 +137,7 @@ public class AnnotationConverter {
         return BasicAFT.forType(short.class);
 
       case ARRAY:
-        TypeMirror componentType = (((ArrayType) tm).getComponentType());
+        TypeMirror componentType = ((ArrayType) tm).getComponentType();
         AnnotationFieldType componentAFT = typeMirrorToAnnotationFieldType(componentType);
         return new ArrayAFT((ScalarAFT) componentAFT);
 

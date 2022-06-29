@@ -14,13 +14,13 @@ public class StringLenConcats {
 
   void stringLenRangeConcat(
       @ArrayLenRange(from = 3, to = 5) String a, @ArrayLenRange(from = 11, to = 19) String b) {
-    @ArrayLenRange(from = 14, to = 24) String ab = a + b;
-    @ArrayLenRange(from = 13, to = 21) String bxx = b + "xx";
+    @ArrayLenRange(from = 7, to = 24) String ab = a + b;
+    @ArrayLenRange(from = 6, to = 21) String bxx = b + "xx";
   }
 
   void stringLenLenRangeConcat(
       @ArrayLen({3, 4, 5}) String a, @ArrayLenRange(from = 10, to = 100) String b) {
-    @ArrayLenRange(from = 13, to = 105) String ab = a + b;
+    @ArrayLenRange(from = 7, to = 105) String ab = a + b;
   }
 
   void stringValLenConcat(
@@ -40,9 +40,9 @@ public class StringLenConcats {
       @StringVal({"a", "xxx"}) String c,
       @ArrayLenRange(from = 11, to = 19) String d) {
 
-    @ArrayLenRange(from = 19, to = 27) String ad = a + d;
-    @ArrayLenRange(from = 12, to = 20) String bd = b + d;
-    @ArrayLenRange(from = 12, to = 22) String cd = c + d;
+    @ArrayLenRange(from = 8, to = 27) String ad = a + d;
+    @ArrayLenRange(from = 5, to = 23) String bd = b + d;
+    @ArrayLenRange(from = 5, to = 23) String cd = c + d;
   }
 
   void tooManyStringValConcat(
@@ -61,7 +61,7 @@ public class StringLenConcats {
     @ArrayLen({5, 101, 201}) String sc = s + c;
     @ArrayLen({5, 101, 201}) String sd = s + d;
 
-    @ArrayLenRange(from = 101, to = 201) String tc = t + c;
+    @ArrayLenRange(from = 5, to = 201) String tc = t + c;
 
     @ArrayLen({2, 3, 4, 5}) String uc = u + c;
     @ArrayLen({2, 3, 4, 5}) String ud = u + d;
@@ -78,12 +78,12 @@ public class StringLenConcats {
     @ArrayLen({7, 13}) String aConst = a + intConst;
     @ArrayLenRange(from = 5, to = 17) String aRange = a + intRange;
     @ArrayLen({7, 8, 9, 10, 13, 14, 15, 16}) String aPositive = a + positiveRange;
-    @ArrayLenRange(from = 11, to = 21) String aUnknown = a + unknownInt;
+    @ArrayLenRange(from = 5, to = 21) String aUnknown = a + unknownInt;
 
-    @ArrayLenRange(from = 13, to = 23) String bConst = b + intConst;
-    @ArrayLenRange(from = 11, to = 27) String bRange = b + intRange;
-    @ArrayLenRange(from = 13, to = 26) String bPositive = b + positiveRange;
-    @ArrayLenRange(from = 11, to = 31) String bUnknown = b + unknownInt;
+    @ArrayLenRange(from = 5, to = 23) String bConst = b + intConst;
+    @ArrayLenRange(from = 5, to = 27) String bRange = b + intRange;
+    @ArrayLenRange(from = 7, to = 26) String bPositive = b + positiveRange;
+    @ArrayLenRange(from = 5, to = 31) String bUnknown = b + unknownInt;
 
     @StringVal({"aaa123", "bbbbb123", "null123"}) String cConst = c + intConst;
     @ArrayLen({4, 5, 6, 7, 8, 9, 10, 11, 12}) String cRange = c + intRange;
@@ -97,8 +97,8 @@ public class StringLenConcats {
       @ArrayLen(10) String a) {
 
     @ArrayLen({17, 23}) String aConst = a + longConst;
-    @ArrayLenRange(from = 12, to = 23) String aRange = a + longRange;
-    @ArrayLenRange(from = 11, to = 30) String aUnknown = a + unknownLong;
+    @ArrayLenRange(from = 6, to = 23) String aRange = a + longRange;
+    @ArrayLenRange(from = 5, to = 30) String aUnknown = a + unknownLong;
   }
 
   void byteConversions(
@@ -113,6 +113,6 @@ public class StringLenConcats {
   }
 
   void minLenConcat(@MinLen(5) String s, @MinLen(7) String t) {
-    @MinLen(12) String st = s + t;
+    @MinLen(8) String st = s + t;
   }
 }

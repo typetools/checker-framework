@@ -42,8 +42,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * Adds {@link Regex} to the type of tree, in the following cases:
@@ -111,6 +111,14 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private final ExecutableElement patternCompile =
       TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
+
+  /**
+   * The Pattern.compile method that takes two formal parameters (second one is flags).
+   *
+   * @see java.util.regex.Pattern#compile(String, int)
+   */
+  private final ExecutableElement patternCompile2 =
+      TreeUtils.getMethod("java.util.regex.Pattern", "compile", 2, processingEnv);
 
   /**
    * Create a new RegexAnnotatedTypeFactory.
@@ -188,7 +196,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (subKind == PARTIALREGEX_KIND && superKind == PARTIALREGEX_KIND) {
         return AnnotationUtils.areSame(subAnno, superAnno);
       }
-      throw new BugInCF("Unexpected qualifiers: %s %s", subAnno, superAnno);
+      throw new TypeSystemError("Unexpected qualifiers: %s %s", subAnno, superAnno);
     }
 
     @Override
@@ -217,7 +225,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (qualifierKind2 == PARTIALREGEX_KIND || qualifierKind2 == REGEX_KIND) {
         return a2;
       }
-      throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+      throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
     }
 
     @Override
@@ -246,7 +254,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (qualifierKind2 == PARTIALREGEX_KIND || qualifierKind2 == REGEX_KIND) {
         return a2;
       }
-      throw new BugInCF("Unexpected qualifiers: %s %s", a1, a2);
+      throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
     }
 
     /**
@@ -416,8 +424,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-      // TODO: Also get this to work with 2 argument Pattern.compile.
-      if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)) {
+      if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)
+          || TreeUtils.isMethodInvocation(tree, patternCompile2, processingEnv)) {
         ExpressionTree arg0 = tree.getArguments().get(0);
 
         final AnnotatedTypeMirror argType = getAnnotatedType(arg0);

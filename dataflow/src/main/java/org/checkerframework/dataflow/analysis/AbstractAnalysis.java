@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
@@ -169,7 +170,7 @@ public abstract class AbstractAnalysis<
           "AbstractAnalysis::getResult() shouldn't be called when the analysis is running.");
     }
     return new AnalysisResult<>(
-        nodeValues, inputs, cfg.getTreeLookup(), cfg.getUnaryAssignNodeLookup(), finalLocalValues);
+        nodeValues, inputs, cfg.getTreeLookup(), cfg.getPostfixNodeLookup(), finalLocalValues);
   }
 
   @Override
@@ -260,16 +261,30 @@ public abstract class AbstractAnalysis<
 
   @Override
   public @Nullable V getValue(Tree t) {
-    // we don't have a org.checkerframework.dataflow fact about the current node yet
-    if (t == currentTree) {
+    // Dataflow is analyzing the tree, so no value is available.
+    if (t == currentTree || cfg == null) {
       return null;
     }
-    Set<Node> nodesCorrespondingToTree = getNodesForTree(t);
-    if (nodesCorrespondingToTree == null) {
+    V result = getValue(getNodesForTree(t));
+    if (result == null) {
+      result = getValue(cfg.getTreeLookup().get(t));
+    }
+    return result;
+  }
+
+  /**
+   * Returns the least upper bound of the values of {@code nodes}.
+   *
+   * @param nodes a set of nodes
+   * @return the least upper bound of the values of {@code nodes}
+   */
+  private @Nullable V getValue(@Nullable Set<Node> nodes) {
+    if (nodes == null) {
       return null;
     }
+
     V merged = null;
-    for (Node aNode : nodesCorrespondingToTree) {
+    for (Node aNode : nodes) {
       if (aNode.isLValue()) {
         return null;
       }
@@ -280,6 +295,7 @@ public abstract class AbstractAnalysis<
         merged = merged.leastUpperBound(v);
       }
     }
+
     return merged;
   }
 
@@ -358,6 +374,20 @@ public abstract class AbstractAnalysis<
   protected final void init(ControlFlowGraph cfg) {
     initFields(cfg);
     initInitialInputs();
+  }
+
+  /**
+   * Should exceptional control flow for a particular exception type be ignored?
+   *
+   * <p>The default implementation always returns {@code false}. Subclasses should override the
+   * method to implement a different policy.
+   *
+   * @param exceptionType the exception type
+   * @return {@code true} if exceptional control flow due to {@code exceptionType} should be
+   *     ignored, {@code false} otherwise
+   */
+  protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return false;
   }
 
   /**

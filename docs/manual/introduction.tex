@@ -6,7 +6,7 @@ and useful.
 This lets software developers detect and
 prevent errors in their Java programs.
 
-A ``checker'' is a tool that warns you about certain errors or gives you a
+A ``checker'' is a compile-time tool that warns you about certain errors or gives you a
 guarantee that those errors do not occur.
 The Checker Framework comes with checkers for specific types of errors:
 
@@ -31,17 +31,23 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
-  (see \chapterpageref{lock-checker})
+  \ahrefloc{called-methods-checker}{Called Methods Checker} for
+  the builder pattern (see \chapterpageref{called-methods-checker})
 \item
-  \ahrefloc{index-checker}{Index Checker} for array accesses
-  (see \chapterpageref{index-checker})
+  \ahrefloc{resource-leak-checker}{Resource Leak Checker} for ensuring that resources are disposed of properly
+  (see \chapterpageref{resource-leak-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
   patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
+\item
+  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  (see \chapterpageref{lock-checker})
+\item
+  \ahrefloc{index-checker}{Index Checker} for array accesses
+  (see \chapterpageref{index-checker})
 \item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
@@ -190,10 +196,13 @@ Alternately, you can build the latest development version from source
 
 \textbf{Requirement:}
 % Keep in sync with build.gradle and SourceChecker.init.
-You must have \textbf{JDK 8} or \textbf{JDK 11} installed.
+You must have \textbf{JDK 8}, \textbf{JDK 11}, or \textbf{JDK 17} installed.
 % Possible replacement for the above.
-% You must have a supported LTS JDK installed: \textbf{JDK 8} or \textbf{JDK 11}.
-The Checker Framework processes code written for either of those versions.
+% You must have a supported LTS JDK installed: \textbf{JDK 8}, \textbf{JDK
+% 11}, or \textbf{JDK 17}.
+The Checker Framework processes code written for any of those versions.
+(For running the Checker Framework under other JDK versions, see
+Section~\ref{permitUnsupportedJdkVersion}.)
 
 The installation process has two required steps and one
 optional step.
@@ -203,7 +212,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.13.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.22.2.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -385,10 +394,11 @@ option, or use auto-discovery as described in
 Section~\ref{checker-auto-discovery}.
 (If your project already uses auto-discovery for some annotation processor,
 such as AutoValue, then you should use auto-discovery.)
-A concrete example of using \code{-processor} to run the Nullness Checker is:
+Two concretes example of using \code{-processor} to run the Nullness Checker are
 
 \begin{Verbatim}
   javac -processor nullness MyFile.java
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
 \end{Verbatim}
 
 \noindent
@@ -467,7 +477,7 @@ This special syntax only works for ``\<checker.jar>''.
 % .)
 
 The annotated libraries that are provided as class files appear in
-\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
+\href{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{the
   \<org.checkerframework.annotatedlib> group in the Maven Central Repository}.
 The annotated library has \emph{identical} behavior to the upstream,
 unannotated version; the source code is identical other than added
@@ -487,7 +497,7 @@ To use an annotated library:
 \begin{itemize}
 \item
 If your project stores \<.jar> files locally, then
-\ahref{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{download
+\href{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{download
   the \<.jar> file from the Maven Central Repository}.
 
 \item
@@ -497,7 +507,7 @@ group.  For example, in \<build.gradle>, change
 
 \begin{Verbatim}
   api group: 'org.apache.bcel', name: 'bcel', version: '6.3.1'
-  api group: 'commons-io', name: 'commans-io', version: '2.6'
+  api group: 'commons-io', name: 'commans-io', version: '2.8'
 \end{Verbatim}
 
 \noindent
@@ -505,7 +515,7 @@ to
 
 \begin{Verbatim}
   api group: 'org.checkerframework.annotatedlib', name: 'bcel', version: '6.3.1'
-  api group: 'org.checkerframework.annotatedlib', name: 'commons-io', version: '2.6.0.1'
+  api group: 'org.checkerframework.annotatedlib', name: 'commons-io', version: '2.8.0.1'
 \end{Verbatim}
 
 \noindent
@@ -661,7 +671,7 @@ Type-checking modes:  enable/disable functionality
   Section~\ref{type-refinement-purity}.
 \item \<-AresolveReflection>
   Determine the target of reflective calls, and perform more precise
-  type-checking based no that information; see
+  type-checking based on that information; see
   Chapter~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
   debugging information to be output.
 \item \<-Ainfer=\emph{outputformat}>
@@ -673,6 +683,11 @@ Type-checking modes:  enable/disable functionality
   Using \<-Ainfer=stubs> produces \<.astub> files.
   Using \<-Ainfer=ajava> produces \<.ajava> files.
   You must also supply \<-Awarns>, or the inference output may be incomplete.
+\item \<-AinferOutputOriginal>
+  When outputting \<.ajava> files when running with \<-Ainfer=ajava>,
+  also output a copy of the original file with no inferred annotations,
+  but with the formatting of a \<.ajava> file, to permit use of \<diff>
+  to view the inferred annotations. Must be combined with \<-Ainfer=ajava>.
 \item \<-AshowSuppressWarningsStrings>
   With each warning, show all possible strings to suppress that warning.
 \item \<-AwarnUnneededSuppressions>
@@ -691,6 +706,16 @@ Type-checking modes:  enable/disable functionality
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment")> has no effect, but
   \<@SuppressWarnings("nullness:assignment")> does.
+\item \<-ApermitUnsupportedJdkVersion>
+  \label{permitUnsupportedJdkVersion}
+  Issue a note, rather than a warning, when running the Checker Framework
+  on a JDK version that the Checker Framework maintainers do not support.
+  The Checker Framework seems to work on all versions of the JDK, from JDK
+  8 onward.  However, in the past, Oracle has introduced JDK
+  incompatibilities that caused mysterious (to users) failures.  If you
+  have a problem while using this command-line argument, please do not
+  report it to the Checker Framework maintainers unless you can reproduce
+  the problem without this command-line argument.
 \end{itemize}
 
 Partially-annotated libraries
@@ -752,7 +777,8 @@ Stub and JDK libraries; see Section~\ref{creating-debugging-options-libraries}.
 \item
  \<-Afilenames>,
  \<-Ashowchecks>,
- \<-AshowInferenceSteps>
+ \<-AshowInferenceSteps>,
+ \<-AshowWpiFailedInferences>
 Progress tracing; see Section~\ref{creating-debugging-options-progress}.
 
 \item
@@ -839,14 +865,16 @@ when running \<javac>.
 
 ``Auto-discovery'' makes the \code{javac} compiler always run an
 annotation processor, such as a checker
-plugin without explicitly passing the \code{-processor}
+plugin, without explicitly passing the \code{-processor}
 command-line option.  This can make your command line shorter, and it ensures
 that your code is checked even if you forget the command-line option.
 
 If the \<javac> command line specifies any \<-processor> command-line
 option, then auto-discovery is disabled.  This means that if your project
 currently uses auto-discovery, you should use auto-discovery for the
-Checker Framework too.
+Checker Framework too.  (Alternately, if you prefer to use a \<-processor>
+command-line argument, you will need to specify all annotation processors,
+including ones that used to be auto-discovered.)
 
 \begin{sloppypar}
 To enable auto-discovery, place a configuration file named
@@ -1033,7 +1061,7 @@ may overlook some annotations.  It often leads to confusion and poor
 results.  It leads users to make changes not for any principled reason, but
 to ``make the type-checker happy'', even when the changes are in conflict
 with the documentation or the code.  Also see
-\ahref{#get-started-annotations-are-a-specification}{``Annotations are a
+\ahrefloc{get-started-annotations-are-a-specification}{``Annotations are a
   specification''}, below.
 
 
@@ -1615,7 +1643,7 @@ or suppress warnings.
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness unselect checkbox unsetting PolyNull typedefs arg
-% LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
+% LocalWords:  bashrc IDE xml buildfile enum API elts INF
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier SoyLatte GetStarted Formatter bcel csv sbt
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
@@ -1624,7 +1652,7 @@ or suppress warnings.
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns com astub jaifs
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse fenum propkey forName
+% LocalWords:  callees Xmx unconfuse fenum propkey forName de step1 step2
 % LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AcheckPurityAnnotations
 % LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext m2
 % LocalWords:  AignoreRawTypeArguments AsuggestPureMethods ApermitMissingJdk
@@ -1646,9 +1674,9 @@ or suppress warnings.
 % LocalWords:  AstubWarnIfNotFoundIgnoresClasses processOptions getopt
 % LocalWords:  EnsuresNonNull EnsuresNonNullIf checkername orElseThrow
 % LocalWords:  ArequirePrefixInWarningSuppressions MaybePresent checker''
-% LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties
+% LocalWords:  AignoreInvalidAnnotationLocations AprintGitProperties step3
 % LocalWords:  AstubWarnIfRedundantWithBytecode annotation'' AassumePure
 % LocalWords:  AassumeDeterministic stubfilename outputformat AparseAllJdk
 % LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors AutoValue
 % LocalWords:  specification'' AwarnUnneededSuppressionsExceptions
-% LocalWords:  requireNonNull
+% LocalWords:  requireNonNull ApermitUnsupportedJdkVersion AstubWarnNote

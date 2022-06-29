@@ -5,7 +5,11 @@ import org.checkerframework.dataflow.qual.*;
 public class ItselfExpressionCases {
   final Object somelock = new Object();
 
-  private final @GuardedBy({"<self>"}) MyClass m = new MyClass();
+  private @GuardedBy({"<self>"}) MyClass guardedBySelf() {
+    return new MyClass();
+  }
+
+  private final @GuardedBy({"<self>"}) MyClass m = guardedBySelf();
 
   @Pure
   private @GuardedBy({"<self>"}) MyClass getm() {

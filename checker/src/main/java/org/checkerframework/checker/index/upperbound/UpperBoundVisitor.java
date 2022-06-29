@@ -6,7 +6,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.List;
@@ -298,7 +297,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * @return true if the assignment is legal based on special Upper Bound rules
    */
   private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
-    if (valueExp.getKind() == Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
+    if (valueExp.getKind() == Tree.Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
       List<? extends ExpressionTree> expressions = ((NewArrayTree) valueExp).getInitializers();
       if (expressions == null || expressions.isEmpty()) {
         return false;

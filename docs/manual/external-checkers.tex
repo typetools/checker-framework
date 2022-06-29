@@ -2,26 +2,30 @@
 \chapterAndLabel{Third-party checkers\label{external-checkers}}{third-party-checkers}
 
 The Checker Framework has been used to build other checkers that are not
-distributed together with the framework.  This chapter mentions just a few
-of them.  They are listed in reverse chronological order; newer ones appear
-first and older ones appear last.
+distributed together with the framework.  This chapter gives an \emph{incomplete}
+list of them.  (If you know of others, or
+if you want this chapter to reference your checker,
+please send us a link and a short description.)
+Many of the publications in Section~\ref{publications} provide
+implementations, which are not necessarily listed here yet.
 
-They are externally-maintained, so if you have problems or questions, you
+These tools are externally-maintained, so if you have problems or questions, you
 should contact their maintainers rather than the Checker Framework
 maintainers.
 
-If you want this chapter to reference your checker,
-please send us a link and a short description.
+This list is in reverse chronological order; newer tools appear
+first and older ones appear last.
 
 
 % Note to maintainers:
 % Sections are added to this chapter in reverse chronological order, at the top.
 
+%%% 2021
 
 \sectionAndLabel{Determinism checker}{deteriminism-checker}
 
 The
-\href{https://github.com/t-rasmud/checker-framework/tree/nondet-checker}{Determinism
+\ahreforurl{https://github.com/t-rasmud/checker-framework/tree/nondet-checker}{Determinism
   Checker} ensures that a program is deterministic across executions.  A
 determinismic program is easier to test, and it is easier to debug (such as
 comparing executions).
@@ -33,18 +37,65 @@ property of hash codes), default formatting (such as Java's
 date-and-time functions, and accessing system properties such as the file
 system or environment variables.
 
+The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/determinism-icse2021-abstract.html}{``Verifying
+  determinism in sequential programs''}~\cite{MudduluruWME2021}
+describes the Determinism Checker.
+
+
+\sectionAndLabel{Constant Value Inference (Interval Inference)}{interval-inference-checker}
+
+Interval analysis estimates the run-time values of numerical expressions in
+the source code by computing a lower bound and an upper bound.  The
+\ahreforurl{https://github.com/d367wang/value-inference/tree/artifact}{Constant
+  Value Inference} project is a whole-program inference approach for
+integral range analysis (interval analysis).
+
+The thesis
+\href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/17788/Wang_Di.pdf}{``Interval
+  Type Inference: Improvements and Evaluations''}~\cite{Wang2021} describes
+Constant Value Inference.
+
+
+\sectionAndLabel{Crypto Checker}{crypto-checker}
+
+The \ahreforurl{https://github.com/vehiloco/crypto-checker}{Crypto Checker} can
+help you find whether there are any weak or unsupported crypto algorithms
+and the unsupported algorithm providers being used in your program. If the
+Crypto Checker issues no warnings for a given program, then you have a
+guarantee that your program at runtime will never have these issues.  This
+is similar to the earlier AWS Crypto Policy Compliance Checker
+(Section~\ref{crypto-policy-compliance-checker}).
+
+The paper
+\href{https://vehiloco.github.io/crypto-checker/2021-06-04-Crypto-Checker-FTfJP-2021-preprint.pdf}{``Ensuring
+  correct cryptographic algorithm and provider usage at compile
+  time''}~\cite{XingCD2021} (FTFjP 2021) and the thesis
+\href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/16555/Xing_Weitian.pdf}{``Light-weight
+  verification of cryptographic API usage''}~\cite{Xing2020} describe the
+Crypto Checker.
+
+
+%%% 2020
+
 
 \sectionAndLabel{AWS crypto policy compliance checker}{crypto-policy-compliance-checker}
 
 The
-\href{https://github.com/awslabs/aws-crypto-policy-compliance-checker}{AWS
+\ahreforurl{https://github.com/awslabs/aws-crypto-policy-compliance-checker}{AWS
   crypto policy compliance checker} checks that no weak cipher algorithms
 are used with the Java crypto API\@.
+
+The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/continuous-compliance-ase2020-abstract.html}{``Continuous
+  Compliance''}~\cite{KelloggSTE2020} (ASE 2020) describes several custom
+Checker Framework checkers in the context of a compliance regime at Amazon
+Web Services.
 
 
 \sectionAndLabel{AWS KMS compliance checker}{kms-compliance-checker}
 
-The \href{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS
+The \ahreforurl{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS
   compliance checker} extends the Constant Value Checker (see
 \chapterpageref{constant-value-checker}) to enforce that calls to Amazon
 Web Services' Key Management System only request 256-bit (or longer) data
@@ -55,23 +106,143 @@ keys.  This checker can be used to help enforce a compliance requirement
 The KMS compliance checker is available in Maven Central.  To use it in
 \<build.gradle>, add the following dependency:
 
+\begin{small}
 \begin{Verbatim}
 compile group: 'software.amazon.checkerframework', name: 'aws-kms-compliance-checker', version: '1.0.2'
 \end{Verbatim}
+\end{small}
 
-\ahref{https://mvnrepository.com/artifact/software.amazon.checkerframework/aws-kms-compliance-checker/1.0.2}{Other build systems} are similar.
+\href{https://mvnrepository.com/artifact/software.amazon.checkerframework/aws-kms-compliance-checker/1.0.2}{Other build systems} are similar.
 
+The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/continuous-compliance-ase2020-abstract.html}{``Continuous
+  Compliance''}~\cite{KelloggSTE2020} (ASE 2020) describes several custom
+Checker Framework checkers in the context of a compliance regime at Amazon
+Web Services.
+
+
+\sectionAndLabel{PUnits units of measurement}{punits-checker}
+
+The \ahreforurl{https://github.com/opprop/units-inference}{PUnits system}
+can check the correctness of a program or annotate a program with units of
+measurement.  It is described in the paper
+% I don't see a free online PDF of the paper.
+``Precise inference of
+expressive units of measurement types'' (OOPSLA 2020)~\cite{XiangLD2020}.
+
+
+\sectionAndLabel{JaTyC typestate checker}{jatyc-checker}
+
+\ahreforurl{https://github.com/jdmota/java-typestate-checker}{JaTyC, Java
+  Typestate Checker}, ensures that methods are called in the correct
+order. The sequences of method calls allowed are specified in a protocol
+file which is associated with a Java class by adding a \<@Typestate>
+annotation to the class.  It is described in
+\href{https://arxiv.org/pdf/2002.12793.pdf}{``Behavioural Types for Memory
+  and Method Safety in a Core Object-Oriented
+  Language''}~\cite{BravettiFGHJKR2020}, and the implementation is an
+extension of Mungo
+(\url{http://www.dcs.gla.ac.uk/research/mungo/index.html}).
+
+
+%%% 2019
+
+\sectionAndLabel{NullAway}{nullaway-checker}
+
+\ahreforurl{https://github.com/uber/NullAway}{NullAway} is
+a fast type-checker for only nullness properties.  It is built on top of
+Error Prone and the Checker Framework's Dataflow Framework.  See
+Section~\ref{faq-nullaway} for a comparison between NullAway and the
+Nullness Checker.  NullAway is described in the paper
+\href{https://lazaroclapp.com/preprints/fse19-nullaway.pdf}{``NullAway:
+  Practical type-based null safety for Java''}~\cite{BanerjeeCS2019}.
+
+
+\sectionAndLabel{Nullness Rawness Checker}{initialization-rawness-checker}
+
+The Nullness Rawness Checker is a variant of the Nullness Checker that uses
+a different type system for initialization.  It was distributed with the
+Checker Framework through release 2.9.0 (dated 3 July 2019). If you wish to
+use it, install \href{https://checkerframework.org/releases/2.9.0/}{Checker
+  Framework version 2.9.0}.
+
+The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html}{``Inference
+  of field initialization''}~\cite{SpotoE2011} describes
+inference for the Rawness Initialization Checker.
+
+
+%%% 2018
 
 \sectionAndLabel{UI Thread Checker for ReactiveX}{rx-thread-checker}
 
-The \href{https://www.bennostein.org/ase18.pdf}{Rx Thread \& Effect Checker}~\cite{SteinCSC2018} enforces
-UI Thread safety properties for stream-based Android applications and is available at
-\url{https://github.com/uber-research/RxThreadEffectChecker}.
+The \ahreforurl{https://github.com/uber-research/RxThreadEffectChecker}{Rx
+  Thread \& Effect Checker} enforces UI Thread safety properties for
+stream-based Android applications.  The paper
+\href{https://www.bennostein.org/ase18.pdf}{``Safe Stream-Based Programming
+  with Refinement Types''}~\cite{SteinCSC2018} describes the Rx Thread \&
+Effect Checker.
+
+
+
+\sectionAndLabel{Practical Immutability For Classes And Objects (PICO)}{pico-checker}
+
+Practical Immutability For Classes And Objects (PICO) is a type system that
+supports class level and object level immutability based on Checker
+Framework.
+The implementation is available at
+\url{https://github.com/opprop/immutability}, and
+a docker image is available at
+\url{https://hub.docker.com/repository/docker/lnsun/pico}.
+
+The theses
+\href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/13185/Ta_Mier.pdf}{``Context
+  Sensitive Typechecking And Inference: Ownership And
+  Immutability''}~\cite{Ta2018} and
+\href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/16882/Lian_Sun.pdf}{``An
+  Immutability Type System for Classes and Objects: Improvements,
+  Experiments, and Comparisons''}~\cite{Sun2021} describe PICO.
+
+
+\sectionAndLabel{Read Checker and Cast Checker for ensuring that EOF is recognized}{read-checker}
+
+The \<InputStream.read()> and \<Reader.read()> methods read
+a byte (or character) from a stream.  The methods return an \<int>, using
+-1 to indicate the end of the stream.  It is an error to cast the value to
+a byte (or character) without first checking the value against -1.  This is
+rule
+\href{https://wiki.sei.cmu.edu/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1}{CERT-FIO08-J}.
+The \ahreforurl{https://github.com/opprop/ReadChecker}{Read Checker} and/or
+\ahreforurl{https://github.com/opprop/cast-checker}{Cast Checker} enforces it.
+
+% I cannot find a free online copy of this paper.
+The paper ``Don't miss the end: Preventing unsafe end-of-file
+comparisons''~\cite{ChenD2018} and the thesis
+\href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/13181/zhuo_chen.pdf}{``Pluggable
+  Properties for Program Understanding: Ontic Type Checking and
+  Inference''}~\cite{Chen2018} describe the Read Checker.
+
+
+\sectionAndLabel{Ontology type system}{ontology-checker}
+
+The \ahreforurl{https://github.com/opprop/ontology}{Ontology type system}
+groups related types into coarser concepts.  For example, the SEQUENCE
+concept includes Java's \<Array>, \<List>, and their subtypes.  Other
+examples are VELOCITY and FORCE.
+
+The thesis
+\href{https://uwspace.uwaterloo.ca/bitstream/handle/10012/13181/zhuo_chen.pdf}{``Pluggable
+  Properties for Program Understanding: Ontic Type Checking and
+  Inference''}~\cite{Chen2018} describes the Ontic type
+system.
+
+
+%%% 2017
 
 
 \sectionAndLabel{Glacier:  Class immutability}{glacier-immutability-checker}
 
-\href{http://mcoblenz.github.io/Glacier/}{Glacier}~\cite{CoblenzNAMS2017}
+\ahreforurl{http://mcoblenz.github.io/Glacier/}{Glacier}
 enforces transitive class immutability in Java.  According to its webpage:
 
 \begin{itemize}
@@ -87,35 +258,25 @@ enforces transitive class immutability in Java.  According to its webpage:
   the object.
 \end{itemize}
 
+Glacier is described by the paper
+% I cannot find a free online version of this paper.
+``Glacier: Transitive class immutability for Java'' (ICSE
+2017)~\cite{CoblenzNAMS2017} and the PhD thesis
+\href{http://reports-archive.adm.cs.cmu.edu/anon/2020/CMU-CS-20-127.pdf}{``User-Centered
+  Design of Principled  Programming Languages''}~\cite{Coblenz2020}.
+
 
 \sectionAndLabel{SQL checker that supports multiple dialects}{sql-schecker}
 
 \href{http://www.jooq.org/}{jOOQ} is a database API that lets you build
 typesafe SQL queries.  jOOQ version 3.0.9 and later ships with a SQL
-checker that provides even more safety:  it ensures that you don't
-use SQL features that are not supported by your database
-implementation.  You can learn about the SQL checker at
-\url{https://blog.jooq.org/2016/05/09/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9/}.
+checker that provides even more safety:  it ensures that you don't use SQL
+features that are not supported by your database implementation.  You can
+learn about the SQL checker at
+\url{https://blog.jooq.org/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9/}.
 
 
-\sectionAndLabel{Read Checker for CERT FIO08-J}{read-checker}
-
-CERT
-rule \href{https://www.securecoding.cert.org/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1}{FIO08-J}
-describes a rule for the correct handling of characters/bytes read
-from a stream.
-
-The Read Checker enforces this rule.
-It is available from
-\url{https://github.com/opprop/ReadChecker}.
-
-
-\sectionAndLabel{Nullness Rawness Checker}{initialization-rawness-checker}
-
-The Nullness Rawness Checker is a nullness checker that uses a different type system for initialization.
-It was distributed with the Checker Framework through release 2.9.0 (dated 3 July 2019). If you wish
-to use them, install \href{https://checkerframework.org/releases/2.9.0/}{Checker Framework version 2.9.0}.
-
+%%% 2016
 
 \sectionAndLabel{Immutability checkers:  IGJ, OIGJ, and Javari\label{javari-checker}}{igj-checker}
 
@@ -135,46 +296,151 @@ useful.  However,
 we wanted
 to focus on distributing checkers that are currently being maintained.
 
+IGJ and OIGJ are described in the papers
+\href{https://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html}{``Object
+  and reference immutability using Java generics''}~\cite{ZibinPAAKE2007}
+(ESEC/FSE 2007) and
+\href{https://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html}{``Ownership
+  and immutability in generic Java''}~\cite{ZibinPLAE2010} (OOPSLA 2010).
+The Javari type system is described in
+\href{https://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html}{``Javari:
+  Adding reference immutability to Java''}~\cite{TschantzE2005} (OOPSLA
+2005); for inference, see
+\href{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html}{``Inference
+  of reference immutability''}~\cite{QuinonezTE2008} (ECOOP 2008) and
+\href{https://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}{``Parameter
+  reference immutability: Formal definition, inference tool, and
+  comparison''}~\cite{ArtziQKE2009} (J.ASE 2009).  The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical
+  pluggable types for Java''}~\cite{PapiACPE2008} (ISSTA 2008) describes
+case studies in which the Javari and IGJ Checkers found previously-unknown
+errors in real software.
+
+
+\sectionAndLabel{JCrypt: computation over encrypted data}{jcrypt-checker}
+
+\ahreforurl{https://github.com/proganalysis/type-inference}{JCrypt} is a
+static program analysis which transforms a Java program into an equivalent
+one, so that it performs computation over encrypted data and preserves data
+confidentiality.  It is described in the paper
+\href{http://cs.rpi.edu/~dongy6/docs/pppj16-jcrypt.pdf}{``JCrypt: Towards
+  computation over encrypted data''}~\cite{DongMD2016:JCrypt}.
+
+
+%%% 2015
+
+\sectionAndLabel{DroidInfer: information flow}{droidinfer-checker}
+
+\ahreforurl{https://github.com/proganalysis/type-inference}{DroidInfer}
+determines the Android library sources (e.g., location access, phone state)
+and sinks (e.g., Internet access) used by a program, and determines whether
+there is impermissible information flow between them.  It is described in
+the paper
+\href{https://www.cs.rpi.edu/~milanova/docs/DroidInfer.pdf}{``Scalable and
+  Precise Taint Analysis for Android''} (ISSTA 2015)~\cite{HuangDMD2015}.
+
+
+%%% 2014
+
+\sectionAndLabel{Error Prone linter}{error-prone-checker}
+
+% Has used the Dataflow Framework since summer 2014.
+
+\ahreforurl{https://errorprone.info/}{Error Prone} is a linter or bug detector
+for Java.  It reports violations of style rules.  It is built on top of the
+Checker Framework's Dataflow Framework.  See
+Section~\ref{faq-type-checking-vs-bug-detectors} for a comparison between
+Error Prone and the Nullness Checker.
+
 
 \sectionAndLabel{SPARTA information flow type-checker for Android}{sparta-checker}
 
-SPARTA is a security toolset aimed at preventing malware from appearing in
-an app store.  SPARTA provides an information-flow type-checker that is
-customized to Android but can also be applied to other domains.
-The SPARTA toolset is available from
-\url{https://checkerframework.org/sparta/}.
-The paper
+\ahreforurl{https://checkerframework.org/sparta/}{SPARTA} is a security
+toolset aimed at preventing malware from appearing in an app store.  SPARTA
+provides an information-flow type-checker that is customized to Android but
+can also be applied to other domains.  The paper
 \href{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}{``Collaborative
-    verification of information flow for a high-assurance app store''}
-  appeared in CCS 2014.
+  verification of information flow for a high-assurance app
+  store''}~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014) describes the SPARTA
+toolset and information flow type-checker.
 
+
+\sectionAndLabel{SFlow type system for information flow}{sflow-checker}
+
+\ahreforurl{https://github.com/proganalysis/type-inference}{SFlow} is a
+context-sensitive type system for secure information flow.  It contains two
+variants, SFlow/Integrity and SFlow/Confidentiality.
+SFlowInfer is its worst-case-cubic inference analysis.
+
+The paper
+\href{https://www.cs.rpi.edu/~milanova/docs/FASE14.pdf}{``Type-based
+  taint analysis for Java web applications''} (FASE 2014) and the thesis
+``An Inference And Checking Framework For Context-Sensitive Pluggable
+Types'' (PhD thesis, 2014) describe SFlow and SFlowInfer.
+
+
+%%% 2013
 
 \sectionAndLabel{CheckLT taint checker}{checklt-checker}
 
-CheckLT uses taint tracking to detect illegal information flows, such as
-unsanitized data that could result in a SQL injection attack.
-CheckLT is available from \url{http://checklt.github.io/}.
+\ahreforurl{http://checklt.github.io/}{CheckLT} uses taint tracking to
+detect illegal information flows, such as unsanitized data that could
+result in a SQL injection attack.
 
 
 \sectionAndLabel{EnerJ checker}{enerj-checker}
 
-A checker for EnerJ~\cite{SampsonDFGCG2011}, an extension to Java that exposes hardware faults
-in a safe, principled manner to save energy with only
-slight sacrifices to the quality of service, is available from
-\url{http://sampa.cs.washington.edu/research/approximation/enerj.html}.
+\ahreforurl{http://sampa.cs.washington.edu/research/approximation/enerj.html}{EnerJ}
+is an extension to Java that exposes hardware faults in a safe, principled
+manner to save energy with only slight sacrifices to the quality of
+service.
+More details appear in the paper
+\href{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf}{``EnerJ:
+  Approximate Data Types for Safe and General Low-Power
+  Computation''}~\cite{SampsonDFGCG2011} (PLDI 2011).
+
+
+\sectionAndLabel{ReIm immutability}{reim-checker}
+
+A checker and inference tool for ReIm~\cite{HuangMDE2012,Huang2014}, an immutability
+type system, is available at
+\url{http://www.cs.rpi.edu/~huangw5/cf-inference/}.
+
+% TODO: add more citations
+
+
+\sectionAndLabel{SFlow x ReIm for information flow and reference immutability}{sflow-reim-checker}
+
+The \ahreforurl{https://github.com/proganalysis/type-inference}{``SFlow
+  $\times$ ReIm''} system combines information flow and reference
+immutability.  It is described in the paper
+\href{https://www.cs.rpi.edu/~milanova/docs/FTFJP13.pdf}{``Composing
+  polymorphic information flow systems with reference
+  immutability''}~\cite{MilanovaH2013}.
 
 
 \sectionAndLabel{Generic Universe Types checker}{gut-checker}
 
 A checker for Generic Universe Types~\cite{DietlEM2011}, a lightweight ownership type
 system, is available from
-\url{https://ece.uwaterloo.ca/~wdietl/ownership/}.
+\url{https://ece.uwaterloo.ca/~wdietl/ownership/} and
+\url{https://github.com/opprop/universe}.
+
+The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html}{``Tunable
+  static inference for Generic Universe Types''}~\cite{DietlEM2011} (ECOOP
+2011) describes inference for the Generic Universe Types type system.
+Another implementation of Universe Types and
+\href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is
+described in
+\href{https://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}{``Inference
+  and checking of object ownership''}~\cite{HuangDME2012} (ECOOP 2012).
 
 
 \sectionAndLabel{Safety-Critical Java checker}{safety-critical-java-checker}
 
-A checker for Safety-Critical Java (SCJ, JSR 302)~\cite{TangPJ2010} is available at
-\url{https://www.cs.purdue.edu/sss/projects/oscj/checker/checker.html}.
+A checker for Safety-Critical Java (SCJ, JSR 302)~\cite{TangPJ2010,TangPNV2011} is available at
+\url{https://sss.cs.purdue.edu/projects/oscj/checker/checker.html}.
 Developer resources are available at the project page
 \url{https://code.google.com/archive/p/scj-jsr302/}.
 
@@ -182,7 +448,7 @@ Developer resources are available at the project page
 % In a mail from Aleš Plšek <aplsek@gmail.com> on 29.03.2011:
 
 % Name: SCJ Checker
-% WWW: http://sss.cs.purdue.edu/projects/oscj/checker/checker.html
+% WWW: https://sss.cs.purdue.edu/projects/oscj/checker/checker.html
 % Source-Code Repository: http://code.google.com/p/scj-jsr302/
 
 % Description: The SCJ Checker implements verification of a set of
@@ -196,24 +462,25 @@ Developer resources are available at the project page
 
 \sectionAndLabel{Thread locality checker}{loci-thread-locality-checker}
 
-Loci~\cite{WrigstadPMZV2009}, a checker for thread locality, is available at
-\url{http://www.it.uu.se/research/upmarc/loci/}.
+\ahreforurl{http://www.it.uu.se/research/upmarc/loci/}{Loci} is a checker
+for thread locality.
 %% This URL is broken as of
 % Developer resources are available at the project page
 % \url{http://java.net/projects/loci/}.
+For more details, see the paper
+\href{http://janvitek.org/pubs/ecoop09.pdf}{``Loci: Simple thread-locality
+  for Java''}~\cite{WrigstadPMZV2009} (ECOOP 2009) and the thesis
+\href{http://uu.diva-portal.org/smash/get/diva2:428159/FULLTEXT01.pdf}{``The
+  Design, Implementation and Evaluation of a Pluggable Type Checker for
+  Thread-Locality in Java''}~\cite{Sherwany2011}.
 
 % A paper was publishd in ECOOP 2009, release 0.1 was made in March 2011,
 % but as of October 2013 and June 2017 the manual is still listed as "forthcoming".
-
-
-% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28.03.2011:
-
+%
+% In a mail from Amanj Mahmud <amanjpro@gmail.com> on 28 March 2011:
 % The plugin name:
-% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in
-% Java''
-
+% ``Loci: A Pluggable Type Checker for Expressing Thread Locality in Java''
 % Project homepage: http://www.it.uu.se/research/upmarc/loci
-
 % Project's developer's page: http://java.net/projects/loci
 
 

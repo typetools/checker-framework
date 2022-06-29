@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.livevariable;
 
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.BackwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -23,7 +22,7 @@ public class LiveVarTransfer
 
   @Override
   public LiveVarStore initialNormalExitStore(
-      UnderlyingAST underlyingAST, @Nullable List<ReturnNode> returnNodes) {
+      UnderlyingAST underlyingAST, List<ReturnNode> returnNodes) {
     return new LiveVarStore();
   }
 
@@ -78,6 +77,19 @@ public class LiveVarTransfer
     LiveVarStore store = transferResult.getRegularStore();
     for (Node arg : n.getArguments()) {
       store.addUseInExpression(arg);
+    }
+    return transferResult;
+  }
+
+  @Override
+  public RegularTransferResult<LiveVarValue, LiveVarStore> visitReturn(
+      ReturnNode n, TransferInput<LiveVarValue, LiveVarStore> p) {
+    RegularTransferResult<LiveVarValue, LiveVarStore> transferResult =
+        (RegularTransferResult<LiveVarValue, LiveVarStore>) super.visitReturn(n, p);
+    Node result = n.getResult();
+    if (result != null) {
+      LiveVarStore store = transferResult.getRegularStore();
+      store.addUseInExpression(result);
     }
     return transferResult;
   }

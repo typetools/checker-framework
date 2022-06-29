@@ -53,7 +53,7 @@ public class TreeParser {
   /**
    * Parses the snippet in the string as an internal Javac AST expression node.
    *
-   * @param s the java snippet
+   * @param s the Java snippet
    * @return the AST corresponding to the snippet
    */
   public ExpressionTree parseTree(String s) {

@@ -1,3 +1,286 @@
+Version 3.23.0 (July 1, 2022)
+-----------------------------
+
+**User-visible changes:**
+
+By default, command-line argument `-AstubWarnIfNotFound` is treated as true
+for stub files provided on the command line and false for built-in stub
+files.  Use `-AstubWarnIfNotFound` to enable it for all stub files, and use
+new `-AstubNoWarnIfNotFound` to disable it for all stub files.
+
+New command-line argument `-ApermitStaticOwning` suppresses Resource Leak
+Checker warnings related to static owning fields.
+
+New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
+Checker warnings related to field initialization.
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.22.2 (June 14, 2022)
+------------------------------
+
+**Implementation details:**
+
+Expose CFG APIs to allow inserting jumps and throws
+
+
+Version 3.22.1 (June 1, 2022)
+-----------------------------
+
+**Closed issues:**
+#58, #5136, #5138, #5142, #5143.,
+
+
+Version 3.22.0 (May 2, 2022)
+----------------------------
+
+**User-visible changes:**
+
+The Signedness Checker now checks calls to `equals()` as well as to `==`.  When
+two formal parameter types are annotated with @PolySigned, the two arguments at
+a call site must have the same signedness type annotation. (This differs from
+the standard rule for polymorphic qualifiers.)
+
+**Implementation details:**
+
+When passed a NewClassTree that creates an anonymous constructor,
+AnnotatedTypeFactory#constructorFormUse now returns the type of the anonymous
+constructor rather than the type of the super constructor invoked in the
+anonymous classes constructor.  If the super constructor has explicit
+annotations, they are copied to the anonymous classes constructor.
+
+**Closed issues:**
+#5113.
+
+
+Version 3.21.4 (April 1, 2022)
+------------------------------
+
+**Closed issues:**
+#5086.
+
+
+Version 3.21.3 (March 1, 2022)
+------------------------------
+
+**Closed issues:**
+#2847, #4965, #5039, #5042, #5047.
+
+
+Version 3.21.2 (February 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+The `wpi.sh` script supports non-standard names for build system compile targets
+via the new `-c` command-line option.
+
+The Checker Framework now more precisely computes and checks the type of the
+pattern variable in a pattern match instanceof.
+
+**Implementation details:**
+
+Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
+
+**Closed issues:**
+#4615, #4993, #5006, #5007, #5008, #5013, #5016, #5021.
+
+Version 3.21.1 (January 7, 2022)
+--------------------------------
+
+**User-visible changes:**
+
+The Checker Framework Gradle Plugin now works incrementally:  if you change just
+one source file, then Gradle will recompile just that file rather than all
+files.
+
+**Closed issues:**
+#2401, #4994, #4995, #4996.
+
+
+Version 3.21.0 (December 17, 2021)
+----------------------------------
+
+**User-visible changes:**
+
+The Checker Framework now more precisely computes the type of a switch expression.
+
+**Implementation details:**
+
+The dataflow framework now analyzes switch expressions and switch statements
+that use the new `->` case syntax. To do so, a new node, SwitchExpressionNode,
+was added.
+
+**Closed issues:**
+#2373, #4934, #4977, #4979, #4987.
+
+Version 3.20.0 (December 6, 2021)
+---------------------------------
+
+**User-visible changes:**
+
+The Checker Framework now runs on code that contains switch expressions and
+switch statements that use the new `->` case syntax, but treats them
+conservatively. A future version will improve precision.
+
+**Implementation details:**
+
+The dataflow framework can be run on code that contains switch expressions and
+switch statements that use the new `->` case syntax, but it does not yet
+analyze the cases in a switch expression and it treats `->` as `:`. A future
+version will do so.
+
+Removed methods and classes that have been deprecated for more than one year:
+ * Old way of constructing qualifier hierarchies
+ * `@SuppressWarningsKeys`
+ * `RegularBlock.getContents()`
+ * `TestUtilities.testBooleanProperty()`
+ * `CFAbstractTransfer.getValueWithSameAnnotations()`
+
+**Closed issues:**
+#4911, #4948, #4965.
+
+
+Version 3.19.0 (November 1, 2021)
+---------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 17 -- that is, it runs on a version 17 JVM.
+The Checker Framework also continues to run under JDK 8 and JDK 11.  New
+command-line argument `-ApermitUnsupportedJdkVersion` lets you run the Checker
+Framework on any JDK (version 8 or greater) without a warning about an
+unsupported JDK version.  The Checker Framework does not yet run on code that
+contains switch expressions.
+
+**Implementation details:**
+
+Removed `org.checkerframework.framework.type.VisitorState`
+Removed `AnnotatedTypeFactory#postTypeVarSubstitution`
+
+Deprecated methods in AnnotatedTypeFactory:
+* `getCurrentClassTree`
+* `getCurrentMethodReceiver`
+
+**Closed issues:**
+#4932, #4924, #4908, #3014.
+
+
+Version 3.18.1 (October 4, 2021)
+--------------------------------
+
+**Closed issues:**
+#4902 and #4903.
+
+
+Version 3.18.0 (September 1, 2021)
+----------------------------------
+
+**User-visible changes:**
+
+Java records are type-checked.  Thanks to Neil Brown.
+
+**Closed issues:**
+#4838, #4843, #4852, #4853, #4861, #4876, #4877, #4878, #4878, #4889, #4889.
+
+
+Version 3.17.0 (August 3, 2021)
+-------------------------------
+
+**User-visible changes:**
+
+`-Ainfer` can now infer postcondition annotations that reference formal parameters
+(e.g. `"#1"`, `"#2"`) and the receiver (`"this"`).
+
+**Implementation details:**
+
+Method renamings and signature changes (old methods are removed) in `GenericAnnotatedTypeFactory`:
+* `getPreconditionAnnotation(VariableElement, AnnotatedTypeMirror)` => `getPreconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror)`
+* `getPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, List<AnnotationMirror>)` => `getPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, List<AnnotationMirror>)`
+* `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
+* `requiresOrEnsuresQualifierAnno(VariableElement, AnnotationMirror, Analysis.BeforeOrAfter)` => `createRequiresOrEnsuresQualifier(String, AnnotationMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
+
+Method renamings and signature changes (old method is removed) in `WholeProgramInferenceStorage`:
+* `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
+
+Method renamings:
+ * `CFAbstractAnalysis.getFieldValues` => `getFieldInitialValues`
+
+The following methods no longer take a `fieldValues` parameter:
+ * `GenericAnnotatedTypeFactory#createFlowAnalysis`
+ * `CFAnalysis` construtor
+ * `CFAbstractAnalysis#performAnalysis`
+ * `CFAbstractAnalysis` constructors
+
+**Closed issues:**
+#4685, #4689, #4785, #4805, #4806, #4815, #4829, #4849.
+
+
+Version 3.16.0 (July 13, 2021)
+------------------------------
+
+**User-visible changes:**
+
+You can run the Checker Framework on a JDK 16 JVM.  You can pass the `--release
+16` command-line argument to the compiler.  You may need to add additional
+command-line options, such as `--add-opens`; see the Checker Framework manual.
+New syntax, such as records and switch expressions, is not yet supported or
+type-checked; that will be added in a future release.  Thanks to Neil Brown for
+the JDK 16 support.
+
+The Lock Checker supports a new type, `@NewObject`, for the result of a
+constructor invocation.
+
+The `-Ainfer` command-line argument now outputs purity annotations even if
+neither `-AsuggestPureMethods` nor `-AcheckPurityAnnotations` is supplied
+on the command line.
+
+**Implementation details:**
+
+Method renamings (the old methods remain but are deprecated):
+ * `AnnotationFileElementTypes.getDeclAnnotation` => `getDeclAnnotations`
+
+Method renamings (the old methods were removed):
+ * `AnnotatedTypeMirror.clearAnnotations => `clearPrimaryAnnotations`
+
+Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
+ * `visitIntersectionSupertype` => `visitIntersectionSupertype`
+ * `visitIntersectionSubtype` => `visitIntersection_Type`
+ * `visitUnionSubtype` => `visitUnion_Type`
+ * `visitTypevarSubtype` => `visitTypevar_Type`
+ * `visitTypevarSupertype` => `visitType_Typevar`
+ * `visitWildcardSubtype` => `visitWildcard_Type`
+ * `visitWildcardSupertype` => `visitType_Wildcard`
+
+Method renamings in `AnnotatedTypes` (the old methods were removed):
+ * `expandVarArgs` => `expandVarArgsParameters`
+ * `expandVarArgsFromTypes` => `expandVarArgsParametersFromTypes`
+
+**Closed issues:**
+#3013, #3754, #3791, #3845, #4523, #4767.
+
+Version 3.15.0 (June 18, 2021)
+----------------------------
+
+**User-visible changes:**
+
+The Resource Leak Checker ensures that certain methods are called on an
+object before it is de-allocated. By default, it enforces that `close()` is
+called on any expression whose compile-time type implements `java.io.Closeable`.
+
+**Implementation details:**
+
+Method renamings (the old methods remain but are deprecated):
+ * `AnnotatedDeclaredType#wasRaw` => `isUnderlyingTypeRaw`
+ * `AnnotatedDeclaredType#setWasRaw` => `setIsUnderlyingTypeRaw`
+
+**Closed issues:**
+#4549, #4646, #4684, and #4699.
+
+
 Version 3.14.0 (June 1, 2021)
 ----------------------------
 
@@ -23,6 +306,7 @@ Method `TreeUtils.getMethodName()` returns a `String` rather than a `Name`.
 Removed CheckerDevelMain.
 
 **Closed issues:**
+#3993, #4116, #4586, #4598, #4612, #4614.
 
 
 Version 3.13.0 (May 3, 2021)
@@ -3876,7 +4160,7 @@ Code Changes
     fixed generic and array handling of @ReadOnly
     fixed @RoMaybe resolution of receivers at method invocation
     fixed parsing of parenthesized trees and conditional trees
-    added initial support for for-enhanced loop
+    added initial support for enhanced-for loop
     fixed constructor behavior on @ReadOnly classes
     added checks for annotations on primitive types inside arrays
 
