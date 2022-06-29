@@ -1,4 +1,4 @@
-The Checker Framework officially supports Java 18.
+The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
 (It worked before, but gave a warning that it was not tested.)
 
 
