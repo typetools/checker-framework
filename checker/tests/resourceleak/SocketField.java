@@ -6,7 +6,8 @@ import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-@MustCall("closeSocket") class SocketField {
+@InheritableMustCall("closeSocket")
+class SocketField {
   protected @Owning Socket socket = null;
 
   @CreatesMustCallFor("this")

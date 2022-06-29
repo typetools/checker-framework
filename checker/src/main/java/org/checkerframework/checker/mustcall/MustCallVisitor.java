@@ -70,24 +70,42 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Element classEle = TreeUtils.elementFromDeclaration((ClassTree) tree);
       AnnotationMirror inheritableMustCall =
           atypeFactory.getDeclAnnotation(classEle, InheritableMustCall.class);
-      if (inheritableMustCall != null) {
-        AnnotationMirror explict = atypeFactory.fromElement(classEle).getAnnotation();
-        if (explict != null) {
+      if (inheritableMustCall == null) {
+        if (!ElementUtils.isFinal(classEle)) {
+          // There is no @InheritableMustCall annotation and this is a non-final class.
+          // Check if an explicit @MustCall annotation is present. If so, issue an error suggesting
+          // that @InheritableMustCall is probably what the programmer means, for usability.
+          List<? extends AnnotationMirror> explicitAnnos = classEle.getAnnotationMirrors();
+          if (explicitAnnos.stream()
+              .anyMatch(
+                  a ->
+                      AnnotationUtils.areSameByName(
+                          a, "org.checkerframework.checker.mustcall.qual.MustCall"))) {
+            checker.reportError(
+                tree, "mustcall.not.inheritable", ElementUtils.getQualifiedName(classEle));
+          }
+        }
+      } else {
+        // There is an @InheritableMustCall annotation
+        AnnotationMirror explicit = atypeFactory.fromElement(classEle).getAnnotation();
+        if (explicit != null) {
           List<String> mustCallVal =
               AnnotationUtils.getElementValueArray(
                   inheritableMustCall, atypeFactory.inheritableMustCallValueElement, String.class);
           AnnotationMirror inheritedMCAnno = atypeFactory.createMustCall(mustCallVal);
 
           // Issue an error if there is an inconsistent, user-written @MustCall annotation.
-          AnnotationMirror writtenMCAnno = type.getAnnotation();
-          if (writtenMCAnno != null
-              && !atypeFactory.getQualifierHierarchy().isSubtype(inheritedMCAnno, writtenMCAnno)) {
+          AnnotationMirror effectiveMCAnno = type.getAnnotation();
+          if (effectiveMCAnno != null
+              && !atypeFactory
+                  .getQualifierHierarchy()
+                  .isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
             checker.reportError(
                 tree,
                 "inconsistent.mustcall.subtype",
-                classEle.getSimpleName(),
-                writtenMCAnno,
+                ElementUtils.getQualifiedName(classEle),
+                effectiveMCAnno,
                 inheritableMustCall);
             return false;
           }

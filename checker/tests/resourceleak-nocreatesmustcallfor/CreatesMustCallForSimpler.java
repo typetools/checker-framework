@@ -5,7 +5,8 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("a") class CreatesMustCallForSimpler {
+@InheritableMustCall("a")
+class CreatesMustCallForSimpler {
 
   @CreatesMustCallFor
   void reset() {}

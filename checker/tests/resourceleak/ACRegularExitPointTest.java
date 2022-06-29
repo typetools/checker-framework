@@ -6,7 +6,8 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class ACRegularExitPointTest {
 
-  @MustCall("a") class Foo {
+  @InheritableMustCall("a")
+  class Foo {
     void a() {}
 
     @This Foo b() {
@@ -16,7 +17,7 @@ class ACRegularExitPointTest {
     void c(@CalledMethods("a") Foo this) {}
   }
 
-  @MustCall("a") class SubFoo extends Foo {}
+  class SubFoo extends Foo {}
 
   Foo makeFoo() {
     return new Foo();
