@@ -16,6 +16,8 @@ Checker warnings related to field initialization.
 
 **Implementation details:**
 
+New method `MethodAccessNode.getOwner()` indicates which class defined the method.
+
 **Closed issues:**
 
 

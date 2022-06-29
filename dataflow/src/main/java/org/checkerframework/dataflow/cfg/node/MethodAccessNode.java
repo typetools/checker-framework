@@ -2,15 +2,17 @@ package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for a method access, including a method accesses:
+ * A node for a method access, including a receiver:
  *
  * <pre>
  *   <em>expression</em> . <em>method</em> ()
@@ -44,6 +46,15 @@ public class MethodAccessNode extends Node {
   @Override
   public Tree getTree() {
     return tree;
+  }
+
+  /**
+   * Returns the owner of the method -- that is, the class that defines it.
+   *
+   * @return the owner of the method -- that is, the class that defines it
+   */
+  public TypeElement getOwner() {
+    return (TypeElement) ((MethodSymbol) method).owner;
   }
 
   @Override
