@@ -1,22 +1,11 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
 
 /** A regular basic block that contains a sequence of {@link Node}s. */
 public interface RegularBlock extends SingleSuccessorBlock {
-
-  /**
-   * Returns the unmodifiable sequence of {@link Node}s.
-   *
-   * @return the unmodifiable sequence of {@link Node}s
-   * @deprecated use {@link #getNodes} instead
-   */
-  @Deprecated // 2020-08-05
-  @Pure
-  List<Node> getContents();
 
   /**
    * Returns the regular successor block.

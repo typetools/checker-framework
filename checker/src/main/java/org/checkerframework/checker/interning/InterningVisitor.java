@@ -184,14 +184,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     if (!(left.hasEffectiveAnnotation(INTERNED)
         || (leftElt != null
             && atypeFactory.getDeclAnnotation(leftElt, UsesObjectEquals.class) != null))) {
-      checker.reportError(leftOp, "not.interned", left);
+      checker.reportError(leftOp, "not.interned");
     }
 
     Element rightElt = TypesUtils.getTypeElement(right.getUnderlyingType());
     if (!(right.hasEffectiveAnnotation(INTERNED)
         || (rightElt != null
             && atypeFactory.getDeclAnnotation(rightElt, UsesObjectEquals.class) != null))) {
-      checker.reportError(rightOp, "not.interned", right);
+      checker.reportError(rightOp, "not.interned");
     }
     return super.visitBinary(node, p);
   }
@@ -428,7 +428,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param node a method invocation node
    * @return true iff {@code node} is a invocation of {@code equals()}
    */
-  private boolean isInvocationOfEquals(MethodInvocationTree node) {
+  public static boolean isInvocationOfEquals(MethodInvocationTree node) {
     ExecutableElement method = TreeUtils.elementFromUse(node);
     return (method.getParameters().size() == 1
         && method.getReturnType().getKind() == TypeKind.BOOLEAN
@@ -517,8 +517,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       return false;
     }
 
-    ExecutableElement enclosingMethod =
-        TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
+    ExecutableElement enclosingMethod = TreeUtils.elementFromDeclaration(methodTree);
     assert enclosingMethod != null;
 
     final Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);

@@ -255,7 +255,7 @@ This means any unannotated use of \<MyClass> is treated as \<@B MyClass> by the 
 (Except for locals, which can be refined.)
 
 Similarly, the meta-annotation \refqualclass{framework/qual}{DefaultFor} can be used to specify defaults
-for uses of of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
+for uses of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
 
 Interaction between qualifier bounds and \<DefaultQualifierForUse>:
 \begin{itemize}
@@ -916,6 +916,9 @@ Type systems that support a run-time test are:
   \ahrefloc{index-checker}{Index Checker} for array accesses
   (see \chapterpageref{index-checker})
 \item
+  \ahrefloc{resource-leak-checker}{Resource Leak Checker} for ensuring that resources are disposed of properly
+  (see \chapterpageref{resource-leak-checker})
+\item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
 \item
@@ -1058,7 +1061,8 @@ issuing a warning about the call \<myField.toString()>.
 
 \begin{enumerate}
 \item
-  If \<computeValue> has no side effects, declare it as
+  If \<computeValue> has no side effects, declare the method as
+  \refqualclass{dataflow/qual}{SideEffectFree}:
 
 \begin{Verbatim}
   @SideEffectFree
@@ -1073,14 +1077,16 @@ the one in the test.
 \item
   If no method resets \<myField> to \<null> after it has been initialized
   to a non-null value (even if a method has some other side effect),
-  declare \<myField> as \refqualclass{checker/nullness/qual}{MonotonicNonNull}.
+  declare the field as \refqualclass{checker/nullness/qual}{MonotonicNonNull}:
 
 \begin{Verbatim}
   @MonotonicNonNull Object myField;
 \end{Verbatim}
 
 \item
-  If \<computeValue> sets \<myField> to a non-null value, declare it as
+  If \<computeValue> sets \<myField> to a non-null value (or maintains it
+  as a non-null value), declare the method as
+  \refqualclass{checker/nullness/qual}{EnsuresNonNull}:
 
 \begin{Verbatim}
   @EnsuresNonNull("myField")
@@ -1558,16 +1564,16 @@ class @Marsupial-Animal {
 % TO DO:  give an example where @Dependent is actually needed
 
 
-% LocalWords:  MyClass qual PolymorphicQualifier DefaultQualifier subpackages
+% LocalWords:  MyClass qual DefaultQualifier subpackages
 % LocalWords:  actuals toArray CollectionToArrayHeuristics nn RegexBottom
-% LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
+% LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
 % LocalWords:  myLocalVar myClass getPackage getSuperclass myString Regex
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 % LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 % LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-% LocalWords:  computeValue AsuggestPureMethods arg myInt Anno Im
+% LocalWords:  computeValue arg myInt Anno Im
 % LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
 % LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 % LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName

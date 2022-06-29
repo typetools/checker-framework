@@ -2,21 +2,20 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id "de.undercouch.download" version "4.1.1"
+    id "de.undercouch.download" version "5.1.0"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "2.0.1"
+    id "net.ltgt.errorprone" version "2.0.2"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-    id 'org.ajoberstar.grgit' version '4.1.0' apply false
+    id 'org.ajoberstar.grgit' version '4.1.1' apply false
 }
 apply plugin: "de.undercouch.download"
 
 import org.ajoberstar.grgit.Grgit
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -27,6 +26,8 @@ ext {
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
+    isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
+
     errorproneJavacVersion = '9+181-r4173-1'
 
     parentDir = file("${rootDir}/../").absolutePath
@@ -35,7 +36,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.20.2.1.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.2.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -54,14 +55,18 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_9:
     case JavaVersion.VERSION_1_10:
     case JavaVersion.VERSION_12:
-        logger.warn("The Checker Framework has only been tested with JDK 8 and 11." +
+    case JavaVersion.VERSION_18:
+    case JavaVersion.VERSION_19:
+    case JavaVersion.VERSION_20:
+        logger.warn("The Checker Framework has only been tested with JDK 8, 11, and 17." +
                 " Found version " + JavaVersion.current().majorVersion);
         break;
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
+    case JavaVersion.VERSION_17:
         break; // Supported versions
     default:
-        throw new GradleException("Build the Checker Framework with JDK 8 or JDK 11." +
+        throw new GradleException("Build the Checker Framework with JDK 8, 11, or 17." +
                 " Found version " + JavaVersion.current().majorVersion);
 }
 
@@ -83,6 +88,10 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
 }
 
 allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.fork = true
+    }
+
     apply plugin: 'java'
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: "de.undercouch.download"
@@ -93,7 +102,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.14.1-SNAPSHOT'
+    version '3.23.0-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -109,9 +118,6 @@ allprojects {
         annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
     }
 
-    configurations {
-        checkerFatJar
-    }
     dependencies {
         if (isJava8) {
             javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
@@ -120,12 +126,42 @@ allprojects {
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
         allProjects subprojects
-        checkerFatJar project(path: ':checker', configuration: 'shadow')
     }
+
+  ext {
+    // A list of add-export and add-open arguments to be used when running the Checker Framework.
+    // Keep this list in sync with the lists in CheckerMain#getExecArguments,
+    // the sections with labels "javac-jdk11-non-modularized", "maven", and "sbt" in the manual
+    // and in the checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
+    compilerArgsForRunningCF = [
+        // These are required in Java 16+ because the --illegal-access option is set to deny
+        // by default.  None of these packages are accessed via reflection, so the module
+        // only needs to be exported, but not opened.
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+        // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
+        "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    ]
+  }
 
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
+      configurations {
+        checkerFatJar {
+          canBeConsumed = false
+          canBeResolved = true
+        }
+      }
+      dependencies {
+        checkerFatJar(project(path: ":checker", configuration: 'fatJar'))
+      }
         // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
         // any module to reference classes in any other module.
         // Also, build and use ManualTaglet as a taglet.
@@ -139,7 +175,7 @@ allprojects {
                 if (!name.equals("javadocDoclintAll")) {
                     options.memberLevel = javadocMemberLevel
                 }
-                classpath += rootProject.configurations.getByName('checkerFatJar').asFileTree
+                classpath += configurations.getByName('checkerFatJar').asFileTree
                 if (isJava8) {
                     classpath += configurations.javacJar
                 }
@@ -209,7 +245,8 @@ allprojects {
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
                     // warnings are suppressible with a "// fall through" comment.
-                    "-Xlint:-options,-fallthrough",
+                    // -classfile: classgraph jar file and https://bugs.openjdk.java.net/browse/JDK-8190452
+                    "-Xlint:-options,-fallthrough,-classfile",
                     "-Xlint",
             ]
 
@@ -225,7 +262,7 @@ allprojects {
                 // Error Prone must be available in the annotation processor path
                 options.annotationProcessorPath = configurations.errorprone
                 // Enable Error Prone
-                options.errorprone.enabled = true
+                options.errorprone.enabled = !isJava8
                 options.errorprone.disableWarningsInGeneratedCode = true
                 options.errorprone.errorproneArgs = [
                         // Many compiler classes are interned.
@@ -292,7 +329,7 @@ task maybeCloneAndBuildDependencies() {
     doLast {
         if (!file(stubparserJar).exists()) {
             exec {
-                workingDir ${stubparser}/javaparser-core/target
+                workingDir "${stubparser}/javaparser-core/target"
                 executable 'ls'
                 ignoreExitValue = true
             }
@@ -325,7 +362,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
         outputs.upToDateWhen { false }
         source = project("${projectName}").sourceSets.main.java
         classpath = files(project("${projectName}").compileJava.classpath,project(':checker-qual').sourceSets.main.output)
-        destinationDir = file("${buildDir}")
+        destinationDirectory = file("${buildDir}")
 
         options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archivePath)
         options.compilerArgs += [
@@ -349,9 +386,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
                 ]
         } else {
             options.fork = true
-            options.forkOptions.jvmArgs += [
-                "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                ]
+            options.forkOptions.jvmArgs += compilerArgsForRunningCF
        }
     }
 }
@@ -359,8 +394,8 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
 /**
  * Returns a list of all the Java files that should be formatted for the given project. These are:
  *
- * All java files in the main sourceSet.
- * All java files in the tests directory that compile.
+ * All Java files in the main sourceSet.
+ * All Java files in the tests directory that compile.
  *
  * @param projectName name of the project to format
  * @return a list of all Java files that should be formatted for projectName
@@ -371,25 +406,28 @@ List<String> getJavaFilesToFormat(projectName) {
         javaFiles.addAll(set.java.files)
     }
 
-    // Collect all java files in tests directory
+    // Collect all Java files in tests directory
     fileTree("${project(projectName).projectDir}/tests").visit { details ->
         // If you change this, also change checker/bin-devel/git.pre-commit
         if (!details.path.contains("nullness-javac-errors")
+                && !details.path.contains("calledmethods-delomboked")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
+                && (isJava17 || !details.path.contains("-records"))
+                && (isJava17 || !details.path.contains("java17"))
                 && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
-    // Collect all java files in jtreg directory
+    // Collect all Java files in jtreg directory
     fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }
     }
 
-    // Collect all java files in jtregJdk11 directory
+    // Collect all Java files in jtregJdk11 directory
     fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
         if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
@@ -401,6 +439,24 @@ List<String> getJavaFilesToFormat(projectName) {
         args += project(projectName).relativePath(f)
     }
     return args
+}
+
+task writeListOfJavaFilesToFormat(group: 'Format') {
+  description "Writes a list of Java files subject to formatting, to ${buildDir}/javafiles.txt"
+  doLast {
+    mkdir buildDir
+    File list = new File("${buildDir}/javafiles.txt");
+    list.createNewFile();
+    FileWriter fileWriter = new FileWriter(list)
+    subprojects.forEach {
+      if (!it.name.startsWith("checker-qual-android")) {
+        for (String fileName : getJavaFilesToFormat(it.name)) {
+          fileWriter.write(fileName)
+          fileWriter.write(System.lineSeparator())
+        }
+      }
+    }
+  }
 }
 
 task htmlValidate(type: Exec, group: 'Format') {
@@ -462,11 +518,11 @@ configurations {
     requireJavadoc
 }
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.2"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.3"
 }
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
     description = 'Ensures that Javadoc documentation exists in source code.'
-    main = "org.plumelib.javadoc.RequireJavadoc"
+    mainClass = "org.plumelib.javadoc.RequireJavadoc"
     classpath = configurations.requireJavadoc
     args "checker/src/main/java", "checker-qual/src/main/java", "checker-util/src/main/java", "dataflow/src/main/java", "framework/src/main/java", "framework-test/src/main/java", "javacutil/src/main/java"
 }
@@ -632,6 +688,7 @@ task tags {
 subprojects {
     configurations {
         errorprone
+        annotatedGuava
     }
 
     dependencies {
@@ -640,9 +697,15 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-        //  * Don't edit framework/build.gradle to use the same version number
-        //    (it is updated when the annotated version of Guava is updated).
-        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.7.1'
+      ext.errorproneVersion = '2.14.0'
+      errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
+
+      // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
+      annotatedGuava "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
+      annotatedGuava ('org.checkerframework.annotatedlib:guava:30.1.1-jre') {
+        // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
+        exclude group: 'org.checkerframework'
+      }
     }
 
     task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
@@ -658,10 +721,13 @@ subprojects {
             }
             args += "${formatScriptsHome}/check-google-java-format.py"
             args += getJavaFilesToFormat(project.name)
+            // Since the scripts are downloaded from third-party Github, the environment variable
+            // is the only way to add the necessary open:
+            environment('JDK_JAVA_OPTIONS', '--add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED')
         }
         ignoreExitValue = true
         doLast {
-            if (execResult.exitValue != 0) {
+            if (!executionResult.isPresent() || executionResult.get().getExitValue() != 0) {
                 throw new RuntimeException('Found improper formatting, try running:  ./gradlew reformat"')
             }
         }
@@ -815,7 +881,16 @@ subprojects {
                                     // uses the jdk.jdeps module.
                                     "-javacoptions:--add-modules jdk.jdeps",
                                     "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
                                     "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                             ]
                         }
                         if (project.name.is('framework')) {
@@ -850,10 +925,7 @@ subprojects {
             if (isJava8) {
                 jvmArgs "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
             } else {
-                jvmArgs += [
-                        "--illegal-access=warn",
-                        "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                ]
+                jvmArgs += compilerArgsForRunningCF
             }
 
             maxParallelForks = Integer.MAX_VALUE
@@ -919,7 +991,7 @@ subprojects {
         tasks.create(name: 'inferenceTests', group: 'Verification') {
             description 'Run inference tests.'
             if (project.name.is('checker')) {
-                dependsOn('wholeProgramInferenceTests', 'wpiManyTests', 'wpiPlumeLibTests')
+                dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
             }
         }
 
@@ -999,6 +1071,7 @@ task checkBasicStyle(group: 'Format') {
             'securerandom.*',
             'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
             'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
+            'checker/nullness/junit-assertions.astub',
             'framework/src/main/resources/git.properties']
     doLast {
         FileTree tree = fileTree(dir: projectDir)

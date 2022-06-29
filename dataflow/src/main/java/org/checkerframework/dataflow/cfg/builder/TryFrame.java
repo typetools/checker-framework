@@ -3,10 +3,7 @@ package org.checkerframework.dataflow.cfg.builder;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 
-/**
- * A TryFrame takes a thrown exception type and maps it to a set of possible control-flow
- * successors.
- */
+/** A TryFrame maps a thrown exception type to a set of possible control-flow successors. */
 interface TryFrame {
   /**
    * Given a type of thrown exception, add the set of possible control flow successor {@link Label}s

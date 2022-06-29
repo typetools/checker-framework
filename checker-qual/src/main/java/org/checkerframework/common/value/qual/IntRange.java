@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>If only one of the {@code to} and {@code from} fields is set, then the other will default to
  * the max/min value of the type of the variable that is annotated. (In other words, the defaults
- * {@code Long.MIN_VALUE} and {@code Long.MAX_VALUE} are used only for \code{long}; appropriate
+ * {@code Long.MIN_VALUE} and {@code Long.MAX_VALUE} are used only for {@code long}; appropriate
  * values are used for other types.)
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker

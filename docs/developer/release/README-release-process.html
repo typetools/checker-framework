@@ -196,7 +196,7 @@ TreeAnnotator
       to be built but more work still needs to be done.  Just pass &quot;all&quot; for now.
   </li>
   <li>
-      <strong>Run release_push</strong> to move release artifacts from the development website to the live site and to Maven Central <br/>
+      <strong>Run release_push</strong> to run a few tests and move release artifacts from the development website to the live site and to Maven Central <br/>
       <code>python3 release_push.py release</code><br/><br/>
       <div class="alert alert-danger">
         <strong>Note:</strong> The &quot;<strong>release</strong>&quot; argument states that you intend
@@ -212,6 +212,11 @@ TreeAnnotator
     Following the instructions in <a href="https://github.com/projectlombok/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java#L108">HandlerUtil.java</a>.
     If the release did not add, remove, or rename any type qualifiers, no changes are required.
     Those instructions do not work on macOS, so you may need to use buffalo to make the changes.
+  </li>
+  <li> <strong>Make Daikon use the latest Checker Framework version.</strong>
+
+    Follow the  instructions in
+    <a href="https://github.com/codespecs/daikon/blob/master/java/lib/README">java/lib/README</a> to update the Checker Framework version number in Daikon.
   </li>
 </ol>
 

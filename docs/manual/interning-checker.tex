@@ -365,6 +365,19 @@ This example shows both sorts of problems:
 
 \label{lint-dotequals}
 
+The Interning Checker's warnings look like
+
+\begin{Verbatim}
+MyFile.java:716: error: [interning:not.interned] attempting to use a non-@Interned comparison operand
+        if (date == idate)
+            ^
+\end{Verbatim}
+
+\noindent
+To resolve a \<not.interned> error, you should change the argument that is
+passed to \<==>, or use \<.equals()> instead of \<==>, or suppress the
+warning.
+
 The checker also issues a warning when \code{.equals} is used where
 \code{==} could be safely used.  You can disable this behavior via the
 javac \code{-Alint=-dotequals} command-line option.
@@ -434,6 +447,11 @@ The Daikon invariant detector
 \refqualclass{checker/interning/qual}{Interned}.  From directory \code{java/},
 run \code{make check-interning}.
 
+The paper ``Building and using pluggable
+type-checkers''~\cite{DietlDEMS2011} (ICSE 2011,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
+describes case studies in which the Interning Checker found
+previously-unknown errors in real software.
 
 
 \sectionAndLabel{Other interning annotations}{other-interning-annotations}

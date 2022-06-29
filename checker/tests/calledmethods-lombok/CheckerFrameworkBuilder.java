@@ -118,7 +118,9 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder name(final String name) {
-      if (this.names == null) this.names = new java.util.ArrayList<String>();
+      if (this.names == null) {
+        this.names = new java.util.ArrayList<String>();
+      }
       this.names.add(name);
       return this;
     }
@@ -130,7 +132,9 @@ public class CheckerFrameworkBuilder {
       if (names == null) {
         throw new java.lang.NullPointerException("names cannot be null");
       }
-      if (this.names == null) this.names = new java.util.ArrayList<String>();
+      if (this.names == null) {
+        this.names = new java.util.ArrayList<String>();
+      }
       this.names.addAll(names);
       return this;
     }
@@ -138,7 +142,9 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder clearNames() {
-      if (this.names != null) this.names.clear();
+      if (this.names != null) {
+        this.names.clear();
+      }
       return this;
     }
 
@@ -161,7 +167,9 @@ public class CheckerFrameworkBuilder {
               java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.names));
       }
       int x$value = this.x$value;
-      if (!this.x$set) x$value = CheckerFrameworkBuilder.$default$x();
+      if (!this.x$set) {
+        x$value = CheckerFrameworkBuilder.$default$x();
+      }
       return new CheckerFrameworkBuilder(x$value, this.y, this.z, names);
     }
 

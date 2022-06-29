@@ -600,8 +600,10 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 % Julia is no longer publicly available.
 % \item
 %   \href{https://juliasoft.com/solutions/}{Julia analyzer},
-\item
-  \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
+% This URL no longer works.  As of June 2022, the last Wayback Machine crawl
+% was August 2019.
+% \item
+%   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
   \href{https://jastadd.cs.lth.se/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
     checker and inferencer} of the \href{https://jastadd.cs.lth.se/}{JastAdd
@@ -790,6 +792,18 @@ Run the command \code{make check-nullness}.
 \end{itemize}
 
 
+\subsectionAndLabel{Publications}{nullness-publications}
+
+The papers ``Practical pluggable types for Java''~\cite{PapiACPE2008}
+(ISSTA 2008,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
+and ``Building and using pluggable type-checkers''~\cite{DietlDEMS2011}
+(ICSE 2011,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
+describe case studies in which the Nullness Checker found
+previously-unknown errors in real software.
+
+
 \sectionAndLabel{Tips for getting started}{nullness-getting-started}
 
 Here are some tips about getting started using the Nullness Checker on a
@@ -910,6 +924,8 @@ Section~\ref{declaration-annotations-moved}.
 
 % These lists should be kept in sync with
 % ../../checker/src/main/java/org/checkerframework/checker/nullness/NullnessAnnotatedTypeFactory.java
+% and with variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
+% https://github.com/rzwitserloot/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java .
 \begin{figure}
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
@@ -919,24 +935,37 @@ Section~\ref{declaration-annotations-moved}.
 \hline
  ~android.annotation.NonNull~ \\ \hline
  ~android.support.annotation.NonNull~ \\ \hline
+ ~android.support.annotation.RecentlyNonNull~ \\ \hline
  ~androidx.annotation.NonNull~ \\ \hline
  ~androidx.annotation.RecentlyNonNull~ \\ \hline
+ ~com.android.annotations.NonNull~ \\ \hline
+ ~com.google.firebase.database.annotations.NotNull~ \\ \hline
+ ~com.google.firebase.internal.NonNull~ \\ \hline
+ ~com.mongodb.lang.NonNull~ \\ \hline
+ ~com.sun.istack.NotNull~ \\ \hline
  ~com.sun.istack.internal.NotNull~ \\ \hline
+ ~com.unboundid.util.NotNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.NonNull~ \\ \hline
+ ~io.micrometer.core.lang.NonNull~ \\ \hline
  ~io.reactivex.annotations.NonNull~ \\ \hline
  ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
+ ~// The field might contain a null value until it is persisted. \\ % comment refers to javax.validation.constraints.NotNull
  ~javax.validation.constraints.NotNull~ \\ \hline
+ ~libcore.util.NonNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
+ ~org.antlr.v4.runtime.misc.NotNull~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NonNullDecl~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NonNullType~ \\ \hline
  ~org.codehaus.commons.nullanalysis.NotNull~ \\ \hline
  ~org.eclipse.jdt.annotation.NonNull~ \\ \hline
  ~org.eclipse.jgit.annotations.NonNull~ \\ \hline
+ ~org.eclipse.lsp4j.jsonrpc.validation.NonNull~ \\ \hline
  ~org.jetbrains.annotations.NotNull~ \\ \hline
  ~org.jmlspecs.annotation.NonNull~ \\ \hline
  ~org.netbeans.api.annotations.common.NonNull~ \\ \hline
  ~org.springframework.lang.NonNull~ \\ \hline
+ ~reactor.util.annotation.NonNull~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$
@@ -948,30 +977,48 @@ $\Rightarrow$
 \hline
  ~android.annotation.Nullable~ \\ \hline
  ~android.support.annotation.Nullable~ \\ \hline
+ ~android.support.annotation.RecentlyNullable~ \\ \hline
  ~androidx.annotation.Nullable~ \\ \hline
  ~androidx.annotation.RecentlyNullable~ \\ \hline
+ ~com.android.annotations.Nullable~ \\ \hline
+ ~com.beust.jcommander.internal.Nullable~ \\ \hline
+ ~com.google.api.server.spi.config.Nullable~ \\ \hline
+ ~com.google.firebase.database.annotations.Nullable~ \\ \hline
+ ~com.google.firebase.internal.Nullable~ \\ \hline
+ ~com.google.gerrit.common.Nullable~ \\ \hline
+ ~com.mongodb.lang.Nullable~ \\ \hline
+ ~com.sun.istack.Nullable~ \\ \hline
  ~com.sun.istack.internal.Nullable~ \\ \hline
- ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
+ ~com.unboundid.util.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.CheckForNull~ \\ \hline
+ ~edu.umd.cs.findbugs.annotations.Nullable~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.PossiblyNull~ \\ \hline
  ~edu.umd.cs.findbugs.annotations.UnknownNullness~ \\ \hline
+ ~io.micrometer.core.lang.Nullable~ \\ \hline
  ~io.reactivex.annotations.Nullable~ \\ \hline
  ~io.reactivex.rxjava3.annotations.Nullable~ \\ \hline
- ~javax.annotation.Nullable~ \\ \hline
  ~javax.annotation.CheckForNull~ \\ \hline
+ ~javax.annotation.Nullable~ \\ \hline
+ ~junitparams.converters.Nullable~ \\ \hline
+ ~libcore.util.Nullable~ \\ \hline
+ ~org.apache.avro.reflect.Nullable~ \\ \hline
+ ~org.apache.cxf.jaxrs.ext.Nullable~ \\ \hline
+ ~org.apache.shindig.common.Nullable~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableDecl~ \\ \hline
  ~org.checkerframework.checker.nullness.compatqual.NullableType~ \\ \hline
  ~org.codehaus.commons.nullanalysis.Nullable~ \\ \hline
  ~org.eclipse.jdt.annotation.Nullable~ \\ \hline
  ~org.eclipse.jgit.annotations.Nullable~ \\ \hline
  ~org.jetbrains.annotations.Nullable~ \\ \hline
+ ~org.jetbrains.annotations.UnknownNullability~ \\ \hline
  ~org.jmlspecs.annotation.Nullable~ \\ \hline
  ~org.jspecify.nullness.Nullable~ \\ \hline
  ~org.jspecify.nullness.NullnessUnspecified~ \\ \hline
- ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
  ~org.netbeans.api.annotations.common.CheckForNull~ \\ \hline
+ ~org.netbeans.api.annotations.common.NullAllowed~ \\ \hline
  ~org.netbeans.api.annotations.common.NullUnknown~ \\ \hline
  ~org.springframework.lang.Nullable~ \\ \hline
+ ~reactor.util.annotation.Nullable~ \\ \hline
 \end{tabular}
 &
 $\Rightarrow$

@@ -22,7 +22,6 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -56,7 +55,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    *
    * @param analysis the analysis
    */
-  public CalledMethodsTransfer(final CFAnalysis analysis) {
+  public CalledMethodsTransfer(final CalledMethodsAnalysis analysis) {
     super(analysis);
     calledMethodsValueElement =
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;

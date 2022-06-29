@@ -1,13 +1,13 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-class Super<S extends @Nullable Object> {
+class OGSuper<S extends @Nullable Object> {
   public void m(S p) {}
 }
 
-class Impl1<T extends @NonNull Object> extends Super<T> {
+class OGImpl1<T extends @NonNull Object> extends OGSuper<T> {
   public void m(T p) {}
 }
 
-class Impl2<T> extends Super<T> {
+class OGImpl2<T> extends OGSuper<T> {
   public void m(T p) {}
 }

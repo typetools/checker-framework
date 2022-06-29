@@ -47,47 +47,9 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  @SuppressWarnings("deprecation") // TODO: REVERT: Just testing backward compatibility.
-  public QualifierHierarchy createQualifierHierarchy() {
-    return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
-        .createMultiGraphQualifierHierarchy(this);
+  protected QualifierHierarchy createQualifierHierarchy() {
+    return new FlowQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
   }
-
-  @Override
-  @SuppressWarnings("deprecation") // TODO: REVERT: Just testing backward compatibility.
-  public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
-      org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-    return new OldFlowQualifierHierarchy(factory, BOTTOM);
-  }
-
-  @SuppressWarnings("deprecation") // TODO: REVERT: Just testing backward compatibility.
-  class OldFlowQualifierHierarchy
-      extends org.checkerframework.framework.util.GraphQualifierHierarchy {
-
-    public OldFlowQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
-      super(f, bottom);
-    }
-
-    @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (AnnotationUtils.areSameByName(superAnno, VALUE)
-          && AnnotationUtils.areSameByName(subAnno, VALUE)) {
-        return AnnotationUtils.areSame(superAnno, subAnno);
-      }
-      if (AnnotationUtils.areSameByName(superAnno, VALUE)) {
-        superAnno = VALUE;
-      }
-      if (AnnotationUtils.areSameByName(subAnno, VALUE)) {
-        subAnno = VALUE;
-      }
-      return super.isSubtype(subAnno, superAnno);
-    }
-  }
-
-  //    @Override
-  //    protected QualifierHierarchy createQualifierHierarchy() {
-  //        return new FlowQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
-  //    }
 
   /** FlowQualifierHierarchy: {@code @Value(a) <: @Value(b) iff a == b} */
   class FlowQualifierHierarchy extends MostlyNoElementQualifierHierarchy {

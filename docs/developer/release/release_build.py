@@ -267,18 +267,15 @@ def build_checker_framework_release(
 
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version)
-    grep_cmd = "grep -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
+    grep_cmd = "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit(
         'If any occurrence is not acceptable, then stop the release, update target "update-checker-framework-versions" in file release.xml, and start over.'
     )
 
-    # build the checker framework binaries and documents, run checker framework tests
-    if notest:
-        ant_cmd = "./gradlew releaseBuild"
-    else:
-        ant_cmd = "./gradlew releaseAndTest"
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
+    # build the checker framework binaries and documents.  Tests are run by release_push.py
+    gradle_cmd = "./gradlew releaseBuild"
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")

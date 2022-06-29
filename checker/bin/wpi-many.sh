@@ -45,26 +45,37 @@ echo "Starting wpi-many.sh."
 
 # check required arguments and environment variables:
 
-if [ "x${JAVA_HOME}" = "x" ]; then
+# shellcheck disable=SC2153 # testing for JAVA_HOME, not a typo of JAVA8_HOME
+if [ "${JAVA_HOME}" = "" ]; then
   has_java_home="no"
 else
   has_java_home="yes"
 fi
 
-# testing for JAVA8_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
-if [ "x${JAVA8_HOME}" = "x" ]; then
+# shellcheck disable=SC2153 # testing for JAVA8_HOME, not a typo of JAVA_HOME
+if [ "${JAVA8_HOME}" = "" ]; then
   has_java8="no"
 else
   has_java8="yes"
 fi
 
-# testing for JAVA11_HOME, not an unintentional reference to JAVA_HOME
-# shellcheck disable=SC2153
-if [ "x${JAVA11_HOME}" = "x" ]; then
+# shellcheck disable=SC2153 # testing for JAVA11_HOME, not a typo of JAVA_HOME
+if [ "${JAVA11_HOME}" = "" ]; then
   has_java11="no"
 else
   has_java11="yes"
+fi
+
+# shellcheck disable=SC2153 # testing for JAVA17_HOME, not a typo of JAVA_HOME
+if [ "${JAVA17_HOME}" = "" ]; then
+  has_java17="no"
+else
+  has_java17="yes"
+fi
+
+if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
+    echo "JAVA_HOME is set to a non-existent directory ${JAVA_HOME}"
+    exit 1
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
@@ -76,6 +87,10 @@ if [ "${has_java_home}" = "yes" ]; then
     if [ "${has_java11}" = "no" ] && [ "${java_version}" = 11 ]; then
       export JAVA11_HOME="${JAVA_HOME}"
       has_java11="yes"
+    fi
+    if [ "${has_java17}" = "no" ] && [ "${java_version}" = 17 ]; then
+      export JAVA17_HOME="${JAVA_HOME}"
+      has_java17="yes"
     fi
 fi
 
@@ -89,12 +104,17 @@ if [ "${has_java11}" = "yes" ] && [ ! -d "${JAVA11_HOME}" ]; then
     exit 1
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ]; then
-    echo "No Java 8 or 11 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, or JAVA11_HOME must be set."
+if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
+    echo "JAVA17_HOME is set to a non-existent directory ${JAVA17_HOME}"
     exit 1
 fi
 
-if [ "x${CHECKERFRAMEWORK}" = "x" ]; then
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ]; then
+    echo "No Java 8, 11, or 17 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA17_HOME must be set."
+    exit 1
+fi
+
+if [ "${CHECKERFRAMEWORK}" = "" ]; then
     echo "CHECKERFRAMEWORK is not set; it must be set to a locally-built Checker Framework. Please clone and build github.com/typetools/checker-framework"
     exit 2
 fi
@@ -104,26 +124,23 @@ if [ ! -d "${CHECKERFRAMEWORK}" ]; then
     exit 2
 fi
 
-if [ "x${OUTDIR}" = "x" ]; then
+if [ "${OUTDIR}" = "" ]; then
     echo "You must specify an output directory using the -o argument."
     exit 3
 fi
 
-if [ "x${INLIST}" = "x" ]; then
+if [ "${INLIST}" = "" ]; then
     echo "You must specify an input file using the -i argument."
     exit 4
 fi
 
-if [ "x${GRADLECACHEDIR}" = "x" ]; then
+if [ "${GRADLECACHEDIR}" = "" ]; then
   GRADLECACHEDIR=".gradle"
 fi
 
-if [ "x${SKIP_OR_DELETE_UNUSABLE}" = "x" ]; then
+if [ "${SKIP_OR_DELETE_UNUSABLE}" = "" ]; then
   SKIP_OR_DELETE_UNUSABLE="delete"
 fi
-
-JAVA_HOME_BACKUP="${JAVA_HOME}"
-export JAVA_HOME="${JAVA11_HOME}"
 
 ### Script
 
@@ -138,6 +155,9 @@ cd "${OUTDIR}" || exit 5
 
 while IFS='' read -r line || [ "$line" ]
 do
+    # Skip lines that start with "#".
+    [[ $line = \#* ]] && continue
+
     REPOHASH=${line}
 
     REPO=$(echo "${REPOHASH}" | awk '{print $1}')
@@ -203,7 +223,8 @@ do
       fi
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
-      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out"
+      # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
+      /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
     fi
 
     cd "${OUTDIR}" || exit 5
@@ -263,9 +284,10 @@ else
     listpath=$(mktemp "/tmp/cloc-file-list-$(date +%Y%m%d-%H%M%S)-XXX.txt")
     # Compute lines of non-comment, non-blank Java code in the projects whose
     # results can be inspected by hand (that is, those that WPI succeeded on).
-    # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java".
+    # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java"
+    # or "--add-opens=jdk.compiler/com.sun.tools.java".
     # shellcheck disable=SC2046
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | sort | uniq > "${listpath}"
+    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | grep -v '^\-\-add\-opens' | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
         echo "${listpath} has size zero"
@@ -291,7 +313,5 @@ else
     echo "skipping computation of lines of code because the operating system is not linux: ${OSTYPE}}"
   fi
 fi
-
-export JAVA_HOME="${JAVA_HOME_BACKUP}"
 
 echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."

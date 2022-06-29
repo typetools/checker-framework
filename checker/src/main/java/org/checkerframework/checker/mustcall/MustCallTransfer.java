@@ -10,15 +10,18 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -95,6 +98,28 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   @Override
+  public TransferResult<CFValue, CFStore> visitAssignment(
+      AssignmentNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitAssignment(n, in);
+    // Remove "close" from the type in the store for resource variables.
+    // The Resource Leak Checker relies on this code to avoid checking that
+    // resource variables are closed.
+    if (atypeFactory.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
+      CFStore store = result.getRegularStore();
+      JavaExpression expr = JavaExpression.fromNode(n.getTarget());
+      CFValue value = store.getValue(expr);
+      AnnotationMirror withClose =
+          atypeFactory.getAnnotationByClass(value.getAnnotations(), MustCall.class);
+      if (withClose == null) {
+        return result;
+      }
+      AnnotationMirror withoutClose = atypeFactory.withoutClose(withClose);
+      insertIntoStores(result, expr, withoutClose);
+    }
+    return result;
+  }
+
+  @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
@@ -154,13 +179,29 @@ public class MustCallTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitTernaryExpression(
       TernaryExpressionNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
-    updateStoreWithTempVar(result, node);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      atypeFactory.tempVars.put(node.getTree(), node.getTernaryExpressionVar());
+    }
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
+      SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
+    }
     return result;
   }
 
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to
-   * give t the same type as node.
+   * give t the same type as {@code node}.
    *
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified

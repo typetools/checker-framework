@@ -2,10 +2,6 @@
 // is added to the invocation of the compiler!
 // TODO: add a @Processor method-annotation to parameterize
 
-/**
- * This class has auxiliary methods to compile a class and return its classfile. It is used by
- * defaultPersists/Driver and inheritDeclAnnoPersist/Driver.
- */
 import com.sun.tools.classfile.ClassFile;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,8 +13,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.StringJoiner;
 
+/**
+ * This class has auxiliary methods to compile a class and return its classfile. It is used by
+ * defaultPersists/Driver and inheritDeclAnnoPersist/Driver.
+ */
 public class PersistUtil {
 
   public static String testClassOf(Method m) {
@@ -65,7 +67,25 @@ public class PersistUtil {
       path = "";
     }
 
-    return new File(path + testClass + ".class");
+    File result = new File(path + testClass + ".class");
+
+    // This diagnostic code preserves temporary files and prints the paths where they are preserved.
+    if (false) {
+      try {
+        File tempDir = new File(System.getProperty("java.io.tmpdir"));
+        File fCopy = File.createTempFile("FCopy", ".java", tempDir);
+        File resultCopy = File.createTempFile("FCopy", ".class", tempDir);
+        // REPLACE_EXISTING is essential in the `Files.copy()` calls because createTempFile actually
+        // creates a file in addition to returning its name.
+        Files.copy(f.toPath(), fCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(result.toPath(), resultCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        System.out.printf("comileTestFile: copied to %s %s%n", fCopy, resultCopy);
+      } catch (IOException e) {
+        throw new Error(e);
+      }
+    }
+
+    return result;
   }
 
   public static String wrap(String compact) {

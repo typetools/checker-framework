@@ -7,10 +7,10 @@ import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsIf;
 class EnsuresCalledMethodsIfTest {
 
   @EnsuresCalledMethods(value = "#1", methods = "close")
-  // The contract is not satisfied.  Suppose `sock` is null.  Then `sock.close()` throws a
-  // NullPointerException before `sock.close()` has a chance to be called.  The exception is caught
-  // and control exits the method without `close()` being called.
-  // :: error: (contracts.postcondition)
+  // If `sock` is null, `sock.close()` will not be called, and the method will exit normally, as the
+  // NullPointerException is caught.  But, the Called Methods Checker
+  // assumes the program is free of NullPointerExceptions, delegating verification of that
+  // property to the Nullness Checker.  So, the postcondition is verified.
   public static void closeSock(EnsuresCalledMethodsIfTest sock) throws Exception {
     if (!sock.isOpen()) {
       return;

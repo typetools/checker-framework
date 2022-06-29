@@ -16,7 +16,7 @@ public interface TypeHierarchy {
    *
    * <p>JLS 5.1 specifies 13 categories of conversions.
    *
-   * <p>4 categories are converted in isSubtype:
+   * <p>3 categories are converted in isSubtype:
    *
    * <ul>
    *   <li>Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper( AnnotatedTypeFactory,
@@ -25,17 +25,17 @@ public interface TypeHierarchy {
    *   <li>Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(
    *       AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
    *       AnnotatedTypeFactory#getUnboxedType}
-   *   <li>Capture conversions: Wildcards are treated as though they were converted to type
-   *       variables
    *   <li>String conversions: Any type to String. isSubtype calls {@link AnnotatedTypes#asSuper}
    *       which calls {@link AnnotatedTypeFactory#getStringType(AnnotatedTypeMirror)}
    * </ul>
    *
-   * 1 happens elsewhere:
+   * 2 happen elsewhere:
    *
    * <ul>
    *   <li>Unchecked conversions: Generic type to raw type. Raw types are instantiated with bounds
    *       in AnnotatedTypeFactory#fromTypeTree before is subtype is called
+   *   <li>Capture conversions: Wildcards are captured in {@link
+   *       AnnotatedTypeFactory#applyCaptureConversion(AnnotatedTypeMirror)}
    * </ul>
    *
    * 7 are not explicitly converted and are treated as though the types are actually subtypes.

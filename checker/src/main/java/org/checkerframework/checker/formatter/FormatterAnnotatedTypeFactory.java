@@ -25,7 +25,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import scenelib.annotations.Annotation;
 import scenelib.annotations.el.AField;
 import scenelib.annotations.el.AMethod;
@@ -218,7 +218,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (subKind == INVALIDFORMAT_KIND && superKind == INVALIDFORMAT_KIND) {
         return true;
       }
-      throw new BugInCF("Unexpected kinds: %s %s", subKind, superKind);
+      throw new TypeSystemError("Unexpected kinds: %s %s", subKind, superKind);
     }
 
     @Override

@@ -64,9 +64,9 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -733,10 +733,10 @@ public class ValueTransfer extends CFTransfer {
       // Both operands have a length from a known range, compute a range of result lengths
       if (!nonNullStringConcat) {
         if (isNullable(leftOperand)) {
-          leftLengthRange.union(Range.create(4, 4)); // "null"
+          leftLengthRange = leftLengthRange.union(Range.create(4, 4)); // "null"
         }
         if (isNullable(rightOperand)) {
-          rightLengthRange.union(Range.create(4, 4)); // "null"
+          rightLengthRange = rightLengthRange.union(Range.create(4, 4)); // "null"
         }
       }
       Range concatLengthRange = calculateLengthRangeAddition(leftLengthRange, rightLengthRange);
@@ -839,7 +839,7 @@ public class ValueTransfer extends CFTransfer {
           resultRange = leftRange.bitwiseXor(rightRange);
           break;
         default:
-          throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
       }
       // Any integral type with less than 32 bits would be promoted to 32-bit int type during
       // operations.
@@ -905,7 +905,7 @@ public class ValueTransfer extends CFTransfer {
             resultValues.add(nmLeft.bitwiseXor(right));
             break;
           default:
-            throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+            throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
         }
       }
     }
@@ -1092,7 +1092,7 @@ public class ValueTransfer extends CFTransfer {
           resultRange = range.bitwiseComplement();
           break;
         default:
-          throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
       }
       // Any integral type with less than 32 bits would be promoted to 32-bit int type during
       // operations.
@@ -1123,7 +1123,7 @@ public class ValueTransfer extends CFTransfer {
           resultValues.add(nmLeft.bitwiseComplement());
           break;
         default:
-          throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+          throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
       }
     }
     return resultValues;
@@ -1233,7 +1233,7 @@ public class ValueTransfer extends CFTransfer {
             result = nmLeft.notEqualTo(right);
             break;
           default:
-            throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+            throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
         }
         resultValues.add(result);
         if (result) {
@@ -1313,7 +1313,7 @@ public class ValueTransfer extends CFTransfer {
         elseLeftRange = elseRightRange; // Equality only needs to be computed once.
         break;
       default:
-        throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+        throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
     }
 
     createAnnotationFromRangeAndAddToStore(thenStore, thenRightRange, rightNode);
@@ -1563,7 +1563,7 @@ public class ValueTransfer extends CFTransfer {
         }
         return resultValues;
     }
-    throw new BugInCF("ValueTransfer: unsupported operation: " + op);
+    throw new TypeSystemError("ValueTransfer: unsupported operation: " + op);
   }
 
   @Override

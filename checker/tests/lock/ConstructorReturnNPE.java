@@ -5,7 +5,6 @@ import org.checkerframework.checker.lock.qual.*;
 
 // :: error: (expression.unparsable)
 @GuardedBy("lock") class ConstructorReturnNPE {
-  // :: error: (expression.unparsable) :: error: (super.invocation)
-  // :: warning: (inconsistent.constructor.type)
+  // :: error: (expression.unparsable)
   @GuardedBy("lock") ConstructorReturnNPE() {}
 }

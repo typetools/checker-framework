@@ -159,6 +159,9 @@ public class ForwardAnalysisImpl<
           // Propagate store to exceptional successors
           for (Map.Entry<TypeMirror, Set<Block>> e : eb.getExceptionalSuccessors().entrySet()) {
             TypeMirror cause = e.getKey();
+            if (isIgnoredExceptionType(cause)) {
+              continue;
+            }
             S exceptionalStore = transferResult.getExceptionalStore(cause);
             if (exceptionalStore != null) {
               for (Block exceptionSucc : e.getValue()) {

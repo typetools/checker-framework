@@ -7,6 +7,9 @@ of the form ``call method A before method B''. For the purpose of this
 checker, a method has ``definitely been called'' if it is \emph{invoked}:
 a method that might never return or that might throw an exception has
 definitely been called on every path after the call, including exceptional paths.
+The checker also assumes that the program is free of null-pointer dereferences.
+You can verify that all pointer dereferences are safe
+by running the Nullness Checker (Section~\ref{nullness-checker}).
 
 The Called Methods Checker provides built-in support for one such property:
 that clients of the builder pattern for object
@@ -39,7 +42,7 @@ discover this.
 
 \begin{Verbatim}
 javac -processor calledmethods MyFile.java ...
-javac -processor org.checkerframework.checker.calledmethods.CalledMethods MyFile.java ...
+javac -processor org.checkerframework.checker.calledmethods.CalledMethodsChecker MyFile.java ...
 \end{Verbatim}
 
 The Called Methods Checker supports the following optional command-line arguments:
@@ -148,7 +151,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
   The bottom type for the Called Methods hierarchy. Conceptually, this annotation
   means that all possible methods have been called on the object. Programmers should rarely,
   if ever, need to write this annotation---write an appropriate \<@CalledMethods> annotation
-  instead.
+  instead. The type of \<null> is \<@CalledMethodsBottom>.
 
 \end{description}
 
@@ -294,3 +297,12 @@ To improve precision, you can specify the
 instructs the checker to treat provably-safe calls to the \<withFilters>
 method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or
 \<withImageIds> methods.
+
+
+\sectionAndLabel{More information}{called-methods-more-information}
+
+The paper ``Verifying Object Construction''~\cite{KelloggRSSE2020} (ICSE 2020,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/object-construction-icse2020-abstract.html})
+gives more information about the Called Methods Checker, such as
+theoretical underpinnings and results of experiments.  (The paper uses an
+earlier name, ``Object Construction Checker''.)

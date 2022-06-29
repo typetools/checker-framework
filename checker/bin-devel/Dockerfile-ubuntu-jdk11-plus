@@ -29,7 +29,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   make \
   maven \
   mercurial \
-  pdf2svg \
   python3-pip \
   python3-requests \
   unzip \
@@ -38,12 +37,18 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
+  autoconf \
   devscripts \
   dia \
   hevea \
   imagemagick \
+  jtreg \
+  junit \
   latexmk \
   librsvg2-bin \
+  libasound2-dev libcups2-dev libfontconfig1-dev \
+  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+  pdf2svg \
   rsync \
   shellcheck \
   texlive-font-utils \

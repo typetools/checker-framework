@@ -4,8 +4,10 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Exception type indicating a bug in the framework. To indicate a bug in a checker implementation,
- * use {@link TypeSystemError}.
+ * Exception type indicating a bug in the framework.
+ *
+ * <p>To indicate a bug in a checker implementation, use {@link TypeSystemError}. To indicate that
+ * an end user made a mistake, use {@link UserError}.
  */
 @SuppressWarnings("serial")
 public class BugInCF extends RuntimeException {

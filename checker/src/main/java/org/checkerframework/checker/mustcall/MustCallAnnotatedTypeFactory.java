@@ -46,9 +46,9 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * The annotated type factory for the Must Call Checker. Primarily responsible for the subtyping
@@ -160,8 +160,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @return a MustCall annotation that does not have "close" as one of its values, but is otherwise
    *     identical to anno
    */
-  // Package private to permit usage from the visitor in the common assignment check.
-  /* package-private */ AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
+  public AnnotationMirror withoutClose(@Nullable AnnotationMirror anno) {
     if (anno == null || AnnotationUtils.areSame(anno, BOTTOM)) {
       return BOTTOM;
     } else if (!AnnotationUtils.areSameByName(
@@ -184,7 +183,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param elt an element; may be null, in which case this method always returns false
    * @return true iff the given element represents a resource variable
    */
-  private boolean isResourceVariable(@Nullable Element elt) {
+  /* package-private*/ boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
@@ -197,7 +196,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     } else if (tree instanceof MemberReferenceTree) {
       declaration = (ExecutableElement) TreeUtils.elementFromTree(tree);
     } else {
-      throw new BugInCF("unexpected type of method tree: " + tree.getKind());
+      throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
     }
     changeNonOwningParameterTypesToTop(declaration, type);
     super.methodFromUsePreSubstitution(tree, type);
@@ -246,6 +245,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   protected DefaultQualifierForUseTypeAnnotator createDefaultForUseTypeAnnotator() {
     return new MustCallDefaultQualifierForUseTypeAnnotator();
+  }
+
+  /**
+   * Returns the {@link MustCall#value} element. For use with {@link
+   * AnnotationUtils#getElementValueArray}.
+   *
+   * @return the {@link MustCall#value} element
+   */
+  public ExecutableElement getMustCallValueElement() {
+    return mustCallValueElement;
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
@@ -386,8 +395,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * <p>This tree annotator treats non-owning method parameters as bottom, regardless of their
    * declared type, when they appear in the body of the method. Doing so is safe because being
    * non-owning means, by definition, that their must-call obligations are only relevant in the
-   * callee. (This behavior is disabled if the -AnoLightweightOwnership option is passed to the
-   * checker.)
+   * callee. (This behavior is disabled if the {@code -AnoLightweightOwnership} option is passed to
+   * the checker.)
    *
    * <p>The tree annotator also changes the type of resource variables to remove "close" from their
    * must-call types, because the try-with-resources statement guarantees that close() is called on

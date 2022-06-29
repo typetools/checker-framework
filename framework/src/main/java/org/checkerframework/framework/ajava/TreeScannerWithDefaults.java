@@ -76,6 +76,23 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   public abstract void defaultAction(Tree tree);
 
   @Override
+  public Void scan(Tree tree, Void unused) {
+    if (tree != null) {
+      if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+        visitSwitchExpression17(tree, unused);
+        return null;
+      } else if (tree.getKind().name().equals("YIELD")) {
+        visitYield17(tree, unused);
+        return null;
+      } else if (tree.getKind().name().equals("BINDING_PATTERN")) {
+        visitBindingPattern17(tree, unused);
+        return null;
+      }
+    }
+    return super.scan(tree, unused);
+  }
+
+  @Override
   public Void visitAnnotatedType(AnnotatedTypeTree tree, Void p) {
     defaultAction(tree);
     return super.visitAnnotatedType(tree, p);
@@ -115,6 +132,18 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   public Void visitBinary(BinaryTree tree, Void p) {
     defaultAction(tree);
     return super.visitBinary(tree, p);
+  }
+
+  /**
+   * Visit a binding pattern tree.
+   *
+   * @param tree a binding pattern tree
+   * @param p null
+   * @return null
+   */
+  public Void visitBindingPattern17(Tree tree, Void p) {
+    defaultAction(tree);
+    return super.scan(tree, p);
   }
 
   @Override
@@ -369,6 +398,18 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
     return super.visitSwitch(tree, p);
   }
 
+  /**
+   * Visit a switch expression tree.
+   *
+   * @param tree switch expression tree
+   * @param p null
+   * @return null
+   */
+  public Void visitSwitchExpression17(Tree tree, Void p) {
+    defaultAction(tree);
+    return super.scan(tree, p);
+  }
+
   @Override
   public Void visitSynchronized(SynchronizedTree tree, Void p) {
     defaultAction(tree);
@@ -433,5 +474,17 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   public Void visitWildcard(WildcardTree tree, Void p) {
     defaultAction(tree);
     return super.visitWildcard(tree, p);
+  }
+
+  /**
+   * Visit a yield tree.
+   *
+   * @param tree a yield tree
+   * @param p null
+   * @return null
+   */
+  public Void visitYield17(Tree tree, Void p) {
+    defaultAction(tree);
+    return super.scan(tree, p);
   }
 }

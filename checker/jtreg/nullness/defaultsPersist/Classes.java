@@ -71,6 +71,16 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 0),
+    // Annotations on the implicit constructor, which the test ignores.
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/NonNull",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/initialization/qual/UnderInitialization",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+    //     type = METHOD_RETURN),
   })
   public String typeParams1() {
     return "class Test <T1> {}";
@@ -104,6 +114,16 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 0),
+    // Annotations on the implicit constructor, which the test ignores.
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/NonNull",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/initialization/qual/UnderInitialization",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+    //     type = METHOD_RETURN),
   })
   public String typeParams2() {
     return "class Test<T1 extends Object> {}";
@@ -137,6 +157,16 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 0,
         boundIndex = 1),
+    // Annotations on the implicit constructor, which the test ignores.
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/NonNull",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/initialization/qual/UnderInitialization",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+    //     type = METHOD_RETURN),
   })
   public String typeParams3() {
     return "class Test<T2 extends Comparable<T2>> {}";
@@ -197,6 +227,16 @@ public class Classes {
         type = CLASS_TYPE_PARAMETER_BOUND,
         paramIndex = 1,
         boundIndex = 1),
+    // Annotations on the implicit constructor, which the test ignores.
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/NonNull",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/initialization/qual/UnderInitialization",
+    //     type = METHOD_RETURN),
+    // @TADescription(
+    //     annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor",
+    //     type = METHOD_RETURN),
   })
   public String typeParams4() {
     return "class Test<T1, T2 extends Comparable<T2>> {}";

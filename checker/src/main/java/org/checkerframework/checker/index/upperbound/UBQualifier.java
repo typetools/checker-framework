@@ -20,8 +20,8 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -78,7 +78,7 @@ public abstract class UBQualifier {
         // TODO:  Ignores offset.  Should we check that offset is not set?
         return PolyQualifier.POLY;
       default:
-        throw new BugInCF("createUBQualifier(%s, %s, ...)", am, offset);
+        throw new TypeSystemError("createUBQualifier(%s, %s, ...)", am, offset);
     }
   }
 
@@ -689,7 +689,7 @@ public abstract class UBQualifier {
         builder.setValue("value", sequences);
         builder.setValue("offset", offsets);
       } else {
-        throw new BugInCF("What annoClass? " + annoClass);
+        throw new TypeSystemError("What annoClass? " + annoClass);
       }
       return builder.build();
     }
