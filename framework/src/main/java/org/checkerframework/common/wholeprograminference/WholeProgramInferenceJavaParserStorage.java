@@ -1,6 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -14,12 +15,17 @@ import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.CloneVisitor;
+import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
+import com.github.javaparser.printer.DefaultPrettyPrinterVisitor;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -33,12 +39,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -56,6 +64,7 @@ import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConv
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -782,7 +791,50 @@ public class WholeProgramInferenceJavaParserStorage
       // certain locations. This implementation could be used instead if it's fixed in JavaParser.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+      // Do not print invisible qualifiers, to avoid cluttering the output.
+      Set<String> invisibleQualifierNames =
+          atypeFactory.getSupportedTypeQualifiers().stream()
+              .filter(
+                  qual ->
+                      Arrays.stream(qual.getAnnotations())
+                          .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class))
+              .map(Class::getCanonicalName)
+              .collect(Collectors.toSet());
+      DefaultPrettyPrinter prettyPrinter =
+          new DefaultPrettyPrinter() {
+            @Override
+            public String print(Node node) {
+              VoidVisitor<Void> visitor =
+                  new DefaultPrettyPrinterVisitor(getConfiguration()) {
+                    @Override
+                    public void visit(final MarkerAnnotationExpr n, final Void arg) {
+                      if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      super.visit(n, arg);
+                    }
+
+                    @Override
+                    public void visit(final SingleMemberAnnotationExpr n, final Void arg) {
+                      if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      super.visit(n, arg);
+                    }
+
+                    @Override
+                    public void visit(final NormalAnnotationExpr n, final Void arg) {
+                      if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      super.visit(n, arg);
+                    }
+                  };
+              node.accept(visitor, null);
+              return visitor.toString();
+            }
+          };
+
       writer.write(prettyPrinter.print(root.compilationUnit));
       writer.close();
     } catch (IOException e) {
