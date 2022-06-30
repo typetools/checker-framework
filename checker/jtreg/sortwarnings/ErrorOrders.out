@@ -1,23 +1,23 @@
 OrderOfCheckers.java:12:95: compiler.err.proc.messager: [assignment] incompatible types in assignment.
 found   : @UnknownVal int @UnknownVal []
-required: @UnknownVal int []
+required: @UnknownVal int @BottomVal []
 OrderOfCheckers.java:12:95: compiler.err.proc.messager: [assignment] incompatible types in assignment.
-found   : @SearchIndexUnknown int @SearchIndexUnknown []
-required: @SearchIndexBottom int @SearchIndexUnknown []
+found   : int []
+required: @SearchIndexBottom int []
 OrderOfCheckers.java:12:95: compiler.err.proc.messager: [assignment] incompatible types in assignment.
-found   : @SameLenUnknown int @SameLen("y") []
-required: @SameLenUnknown int @SameLenBottom []
+found   : int @SameLen("y") []
+required: int @SameLenBottom []
 OrderOfCheckers.java:12:95: compiler.err.proc.messager: [assignment] incompatible types in assignment.
-found   : @LowerBoundUnknown int @LowerBoundUnknown []
-required: @GTENegativeOne int @LowerBoundUnknown []
+found   : int []
+required: @GTENegativeOne int []
 OrderOfCheckers.java:12:95: compiler.err.proc.messager: [assignment] incompatible types in assignment.
-found   : @UpperBoundUnknown int @UpperBoundUnknown []
-required: @UpperBoundBottom int @UpperBoundUnknown []
+found   : int []
+required: @UpperBoundBottom int []
 ErrorOrders.java:13:7: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
-found   : @LowerBoundUnknown int
+found   : int
 required: an integer >= 0 (@NonNegative or @Positive)
 ErrorOrders.java:13:7: compiler.err.proc.messager: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
-found   : @UpperBoundUnknown int
+found   : int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:23:29: compiler.err.proc.messager: [assignment] incompatible types in assignment.
 found   : @UpperBoundLiteral(0) int
@@ -27,66 +27,66 @@ ErrorOrders.java:24:51: compiler.err.proc.messager: [assignment] incompatible ty
 found   : @LTLengthOf("p2") int
 required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
 ErrorOrders.java:29:11: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:29:11: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:29:20: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:29:20: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:29:21: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:29:21: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:29:25: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:29:25: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:29:29: compiler.err.proc.messager: [argument] incompatible argument for parameter p3 of test4.
 found   : @UnknownVal int @UnknownVal []
-required: @UnknownVal int []
+required: @UnknownVal int @BottomVal []
 ErrorOrders.java:29:33: compiler.err.proc.messager: [argument] incompatible argument for parameter p4 of test4.
-found   : @SameLenUnknown int @SameLen("p4") []
-required: @SameLenUnknown int @SameLenBottom []
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
 ErrorOrders.java:29:37: compiler.err.proc.messager: [argument] incompatible argument for parameter p5 of test4.
 found   : @UnknownVal int
-required: int
+required: @BottomVal int
 ErrorOrders.java:29:42: compiler.err.proc.messager: [argument] incompatible argument for parameter p3 of test4.
 found   : @UnknownVal int @UnknownVal []
-required: @UnknownVal int []
+required: @UnknownVal int @BottomVal []
 ErrorOrders.java:29:46: compiler.err.proc.messager: [argument] incompatible argument for parameter p4 of test4.
-found   : @SameLenUnknown int @SameLen("p4") []
-required: @SameLenUnknown int @SameLenBottom []
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
 ErrorOrders.java:29:50: compiler.err.proc.messager: [argument] incompatible argument for parameter p5 of test4.
 found   : @UnknownVal int
-required: int
+required: @BottomVal int
 ErrorOrders.java:33:43: compiler.err.proc.messager: [expression.unparsable] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
 ErrorOrders.java:33:51: compiler.err.proc.messager: [assignment] incompatible types in assignment.
 found   : @UpperBoundLiteral(0) int
 required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
 ErrorOrders.java:36:9: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
-found   : @LowerBoundUnknown int
+found   : int
 required: an integer >= 0 (@NonNegative or @Positive)
 ErrorOrders.java:36:9: compiler.err.proc.messager: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
-found   : @UpperBoundUnknown int
+found   : int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:42:41: compiler.err.proc.messager: [expression.unparsable] Expression invalid in dependent type annotation: [error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]
 ErrorOrders.java:42:49: compiler.err.proc.messager: [assignment] incompatible types in assignment.
 found   : @UpperBoundLiteral(0) int
 required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
 ErrorOrders.java:45:7: compiler.err.proc.messager: [array.access.unsafe.low] Potentially unsafe array access: the index could be negative.
-found   : @LowerBoundUnknown int
+found   : int
 required: an integer >= 0 (@NonNegative or @Positive)
 ErrorOrders.java:45:7: compiler.err.proc.messager: [array.access.unsafe.high] Potentially unsafe array access: the index could be larger than the array's bound
-found   : @UpperBoundUnknown int
+found   : int
 required: @IndexFor("a") or @LTLengthOf("a") -- an integer less than a's length
 ErrorOrders.java:55:29: compiler.err.proc.messager: [assignment] incompatible types in assignment.
 found   : @UpperBoundLiteral(0) int
@@ -96,45 +96,45 @@ ErrorOrders.java:56:51: compiler.err.proc.messager: [assignment] incompatible ty
 found   : @LTLengthOf("p2") int
 required: @LTLengthOf("[error for expression: This isn't an expression; error: Invalid 'This isn't an expression' because the expression did not parse. Error message: Encountered unexpected token: "isn" <IDENTIFIER>]") int
 ErrorOrders.java:61:11: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:61:11: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:61:20: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:61:20: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:61:21: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:61:21: compiler.err.proc.messager: [argument] incompatible argument for parameter p1 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:61:25: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @LowerBoundUnknown int
+found   : int
 required: @GTENegativeOne int
 ErrorOrders.java:61:25: compiler.err.proc.messager: [argument] incompatible argument for parameter p2 of test4.
-found   : @UpperBoundUnknown int
+found   : int
 required: @UpperBoundBottom int
 ErrorOrders.java:61:29: compiler.err.proc.messager: [argument] incompatible argument for parameter p3 of test4.
 found   : @UnknownVal int @UnknownVal []
-required: @UnknownVal int []
+required: @UnknownVal int @BottomVal []
 ErrorOrders.java:61:33: compiler.err.proc.messager: [argument] incompatible argument for parameter p4 of test4.
-found   : @SameLenUnknown int @SameLen("p4") []
-required: @SameLenUnknown int @SameLenBottom []
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
 ErrorOrders.java:61:37: compiler.err.proc.messager: [argument] incompatible argument for parameter p5 of test4.
 found   : @UnknownVal int
-required: int
+required: @BottomVal int
 ErrorOrders.java:61:42: compiler.err.proc.messager: [argument] incompatible argument for parameter p3 of test4.
 found   : @UnknownVal int @UnknownVal []
-required: @UnknownVal int []
+required: @UnknownVal int @BottomVal []
 ErrorOrders.java:61:46: compiler.err.proc.messager: [argument] incompatible argument for parameter p4 of test4.
-found   : @SameLenUnknown int @SameLen("p4") []
-required: @SameLenUnknown int @SameLenBottom []
+found   : int @SameLen("p4") []
+required: int @SameLenBottom []
 ErrorOrders.java:61:50: compiler.err.proc.messager: [argument] incompatible argument for parameter p5 of test4.
 found   : @UnknownVal int
-required: int
+required: @BottomVal int
 49 errors
