@@ -5,6 +5,10 @@ Version 3.22.2-eisop1 (July ?, 2022)
 
 **Implementation details:**
 
+Method `AnnotatedTypeFactory.getDeclAnnotations` now returns the
+annotations for a package element. Previously, it returned an empty set
+when parsing another file. (eisop#270)
+
 Method `CFAbstractTransfer.visitMethodInvocation` now only creates a
 `ConditionalTransferResult` when the method return type is boolean or
 Boolean. This avoids unnecessary duplication of many stores, reducing
@@ -12,6 +16,7 @@ memory consumption.
 
 **Closed issues:**
 
+eisop#270
 
 Version 3.22.2 (July 1, 2022)
 ---------------------------------

@@ -391,7 +391,10 @@ public class AnnotationFileElementTypes {
      *     does not appear in an annotation file.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
-        if (parsing) {
+        // If currently parsing a file, return an empty set.
+        // The only exception is package because we always load package-info eagerly
+        // and there is no parent element to parse.
+        if (parsing && elt.getKind() != ElementKind.PACKAGE) {
             return Collections.emptySet();
         }
 
