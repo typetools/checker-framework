@@ -127,7 +127,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
             return;
         }
         if (keyForMaps == null) {
-            keyForMaps = new LinkedHashSet<>();
+            keyForMaps = new LinkedHashSet<>(newKeyForMaps.size());
         }
         keyForMaps.addAll(newKeyForMaps);
     }
