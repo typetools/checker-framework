@@ -2798,6 +2798,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Type may already have explicit dependent type annotations that have not yet been vpa.
         type.clearAnnotations();
         type.addAnnotations(explicitAnnos);
+        // Use the receiver type as enclosing type, if present.
+        AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+        if (enclosingType != null) {
+            type.setEnclosingType(enclosingType);
+        }
         return type;
     }
 
