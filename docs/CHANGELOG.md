@@ -16,7 +16,8 @@ memory consumption.
 
 **Closed issues:**
 
-eisop#270
+eisop#270, typetools#5189.
+
 
 Version 3.22.2 (July 1, 2022)
 ---------------------------------

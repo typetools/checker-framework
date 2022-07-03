@@ -992,25 +992,24 @@ public class AnnotatedTypes {
             List<? extends ExpressionTree> args) {
         List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
 
+        if (parameters.isEmpty()) {
+            return parameters;
+        }
+
         // Handle anonymous constructors that extend a class with an enclosing type.
         if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
                 && method.getElement().getEnclosingElement().getSimpleName().contentEquals("")) {
             DeclaredType t =
                     TypesUtils.getSuperClassOrInterface(
                             method.getElement().getEnclosingElement().asType(), atypeFactory.types);
-            if (t.getEnclosingType() != null) {
-                if (args.isEmpty() && !parameters.isEmpty()) {
-                    parameters = parameters.subList(1, parameters.size());
-                } else if (!parameters.isEmpty()) {
-                    if (atypeFactory.types.isSameType(
-                            t.getEnclosingType(), parameters.get(0).getUnderlyingType())) {
-                        if (!atypeFactory.types.isSameType(
-                                TreeUtils.typeOf(args.get(0)),
-                                parameters.get(0).getUnderlyingType())) {
-                            parameters = parameters.subList(1, parameters.size());
-                        }
-                    }
-                }
+            if (t.getEnclosingType() != null
+                    && atypeFactory.types.isSameType(
+                            t.getEnclosingType(), parameters.get(0).getUnderlyingType())
+                    && (args.isEmpty()
+                            || !atypeFactory.types.isSameType(
+                                    TreeUtils.typeOf(args.get(0)),
+                                    parameters.get(0).getUnderlyingType()))) {
+                parameters = parameters.subList(1, parameters.size());
             }
         }
 
