@@ -5,6 +5,11 @@ Version 3.22.2-eisop1 (July ?, 2022)
 
 **Implementation details:**
 
+Added support for viewpoint adaptation of types via the added
+ViewpointAdapter interface. This support is experimental and the API
+will change, in particular if the feature is fully integrated with
+the DependentTypesHelper.
+
 Method `AnnotatedTypeFactory.getDeclAnnotations` now returns the
 annotations for a package element. Previously, it returned an empty set
 when parsing another file. (eisop#270)

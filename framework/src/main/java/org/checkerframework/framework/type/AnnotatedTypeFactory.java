@@ -270,6 +270,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final @Nullable WholeProgramInference wholeProgramInference;
     */
 
+    /** Viewpoint adapter used to perform viewpoint adaptation or null */
+    protected @Nullable ViewpointAdapter viewpointAdapter;
+
     /**
      * This formatter is used for converting AnnotatedTypeMirrors to Strings. This formatter will be
      * used by all AnnotatedTypeMirrors created by this factory in their toString methods.
@@ -755,6 +758,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.typeHierarchy = createTypeHierarchy();
         this.typeVarSubstitutor = createTypeVariableSubstitutor();
         this.typeArgumentInference = createTypeArgumentInference();
+        this.viewpointAdapter = createViewpointAdapter();
         this.qualifierUpperBounds = createQualifierUpperBounds();
 
         // TODO: is this the best location for declaring this alias?
@@ -1035,6 +1039,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public final TypeHierarchy getTypeHierarchy() {
         return typeHierarchy;
+    }
+
+    /**
+     * Factory method to create a ViewpointAdapter. Subclasses should implement and instantiate a
+     * ViewpointAdapter subclass if viewpoint adaptation is needed for a type system.
+     *
+     * @return viewpoint adapter to perform viewpoint adaptation or null
+     */
+    protected @Nullable ViewpointAdapter createViewpointAdapter() {
+        return null;
     }
 
     /**
@@ -1805,6 +1819,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             addAnnotationFromFieldInvariant(type, owner, (VariableElement) element);
         }
         addComputedTypeAnnotations(element, type);
+
+        if (viewpointAdapter != null && type.getKind() != TypeKind.EXECUTABLE) {
+            viewpointAdapter.viewpointAdaptMember(owner, element, type);
+        }
     }
 
     /**
@@ -1998,6 +2016,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypeMirror lower =
                     typeVarSubstitutor.substitute(typeParamToTypeArg, atv.getLowerBound());
             res.add(new AnnotatedTypeParameterBounds(upper, lower));
+        }
+
+        if (viewpointAdapter != null) {
+            viewpointAdapter.viewpointAdaptTypeParameterBounds(type, res);
         }
         return res;
     }
@@ -2319,13 +2341,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public ParameterizedExecutableType methodFromUse(
             ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
-
         AnnotatedExecutableType memberTypeWithoutOverrides =
                 getAnnotatedType(methodElt); // get unsubstituted type
         AnnotatedExecutableType memberTypeWithOverrides =
                 applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
         memberTypeWithOverrides = applyRecordTypesToAccessors(methodElt, memberTypeWithOverrides);
         methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
+
+        // Perform viewpoint adaption before type argument substitution.
+        if (viewpointAdapter != null) {
+            viewpointAdapter.viewpointAdaptMethod(receiverType, methodElt, memberTypeWithOverrides);
+        }
 
         AnnotatedExecutableType methodType =
                 AnnotatedTypes.asMemberOf(
@@ -2647,7 +2673,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *     (inferred) type arguments
      */
     public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
-
         // Get the annotations written on the new class tree.
         AnnotatedDeclaredType type =
                 (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
@@ -2676,6 +2701,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
         constructorFromUsePreSubstitution(tree, con);
 
+        if (viewpointAdapter != null) {
+            viewpointAdapter.viewpointAdaptConstructor(type, ctor, con);
+        }
+
         if (tree.getClassBody() != null) {
             // Because the anonymous constructor can't have explicit annotations on its parameters,
             // they are copied from the super constructor invoked in the anonymous constructor. To
@@ -2687,6 +2716,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedExecutableType superCon =
                     getAnnotatedType(TreeUtils.getSuperConstructor(tree));
             constructorFromUsePreSubstitution(tree, superCon);
+            // no viewpoint adaptation needed for super invocation
             superCon =
                     AnnotatedTypes.asMemberOf(types, this, type, superCon.getElement(), superCon);
             if (superCon.getParameterTypes().size() == con.getParameterTypes().size()) {
