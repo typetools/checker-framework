@@ -115,6 +115,23 @@ public class WholeProgramInferenceJavaParserStorage
   private final boolean inferOutputOriginal;
 
   /**
+   * Returns the names of all qualifiers supported by the type factory passed as input that are
+   * marked with {@link InvisibleQualifier}.
+   *
+   * @param atypeFactory a type factory
+   * @return the names of every invisible qualifier supported by {@code atypeFactory}
+   */
+  public static Set<String> getInvisibleQualifierNames(AnnotatedTypeFactory atypeFactory) {
+    return atypeFactory.getSupportedTypeQualifiers().stream()
+        .filter(
+            qual ->
+                Arrays.stream(qual.getAnnotations())
+                    .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class))
+        .map(Class::getCanonicalName)
+        .collect(Collectors.toSet());
+  }
+
+  /**
    * Constructs a new {@code WholeProgramInferenceJavaParser} that has not yet inferred any
    * annotations.
    *
@@ -792,14 +809,7 @@ public class WholeProgramInferenceJavaParserStorage
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
       // Do not print invisible qualifiers, to avoid cluttering the output.
-      Set<String> invisibleQualifierNames =
-          atypeFactory.getSupportedTypeQualifiers().stream()
-              .filter(
-                  qual ->
-                      Arrays.stream(qual.getAnnotations())
-                          .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class))
-              .map(Class::getCanonicalName)
-              .collect(Collectors.toSet());
+      Set<String> invisibleQualifierNames = getInvisibleQualifierNames();
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
             @Override
