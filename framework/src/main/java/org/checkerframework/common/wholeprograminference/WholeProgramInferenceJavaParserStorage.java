@@ -809,7 +809,7 @@ public class WholeProgramInferenceJavaParserStorage
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
       // Do not print invisible qualifiers, to avoid cluttering the output.
-      Set<String> invisibleQualifierNames = getInvisibleQualifierNames();
+      Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
       DefaultPrettyPrinter prettyPrinter =
           new DefaultPrettyPrinter() {
             @Override
