@@ -15,6 +15,11 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
   public static class LombokBuilderSubclassExampleBuilder extends LBSEBuilder {
 
     @Override
+    @This public LombokBuilderSubclassExampleBuilder attribute(@NonNull Integer attribute) {
+      return (LombokBuilderSubclassExampleBuilder) super.attribute(attribute);
+    }
+
+    @Override
     public LombokBuilderSubclassExample build(
         @CalledMethods("attribute") LombokBuilderSubclassExampleBuilder this) {
       final LombokBuilderSubclassExample result = super.build();
