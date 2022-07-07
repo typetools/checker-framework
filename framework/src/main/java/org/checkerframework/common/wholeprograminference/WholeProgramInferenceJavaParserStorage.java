@@ -116,8 +116,8 @@ public class WholeProgramInferenceJavaParserStorage
   private final boolean inferOutputOriginal;
 
   /**
-   * Returns the names of all qualifiers supported by the type factory passed as input that are
-   * marked with {@link InvisibleQualifier}.
+   * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
+   * are supported by the given type factory.
    *
    * @param atypeFactory a type factory
    * @return the names of every invisible qualifier supported by {@code atypeFactory}
