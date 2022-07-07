@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -123,12 +124,20 @@ public class WholeProgramInferenceJavaParserStorage
    */
   public static Set<String> getInvisibleQualifierNames(AnnotatedTypeFactory atypeFactory) {
     return atypeFactory.getSupportedTypeQualifiers().stream()
-        .filter(
-            qual ->
-                Arrays.stream(qual.getAnnotations())
-                    .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class))
+        .filter(WholeProgramInferenceJavaParserStorage::isInvisible)
         .map(Class::getCanonicalName)
         .collect(Collectors.toSet());
+  }
+
+  /**
+   * Is the definition of the given annotation class annotated with {@link InvisibleQualifier}?
+   *
+   * @param qual an annotation class
+   * @return true iff {@code qual} is meta-annotated with {@link InvisibleQualifier}
+   */
+  public static boolean isInvisible(Class<? extends Annotation> qual) {
+    return Arrays.stream(qual.getAnnotations())
+        .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class);
   }
 
   /**
