@@ -1936,8 +1936,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Clients should generally call {@link #getReceiverType}.
    *
    * @param tree the expression that might have an implicit receiver
-   * @return the type of the implicit receiver. Returns null if the expression has an explicit
-   *     receiver or doesn't have a receiver.
+   * @return the type of the implicit receiver
    */
   protected @Nullable AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
     assert (tree.getKind() == Tree.Kind.IDENTIFIER
@@ -1978,7 +1977,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (thisType == null) {
       return null;
     }
-    // An implicit receiver is the first enclosing type that is a subtype of the type where the
+    // An implicit receiver is the first enclosing type that is a subtype of the type where
     // element is declared.
     while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
       thisType = thisType.getEnclosingType();
