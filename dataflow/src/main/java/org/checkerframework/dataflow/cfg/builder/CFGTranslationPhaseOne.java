@@ -200,9 +200,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** Path to the tree currently being scanned. */
   private TreePath path;
 
-  /** The class that contains the tree currently being processed. */
-  private ClassTree classTree;
-
   /** Annotation processing environment and its associated type and tree utilities. */
   final ProcessingEnvironment env;
 
