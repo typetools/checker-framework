@@ -191,7 +191,8 @@ import org.plumelib.util.CollectionsPlume;
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
  *
- * <p>The entry point is {@link process(TreePath, UnderlyingAST)}.
+ * <p>The entry point to process a single body (e.g., method) is {@link process(TreePath,
+ * UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
@@ -199,7 +200,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** Path to the tree currently being scanned. */
   private TreePath path;
 
-  /** The class currently being processed. */
+  /** The class that contains the tree currently being processed. */
   private ClassTree classTree;
 
   /** Annotation processing environment and its associated type and tree utilities. */
@@ -437,11 +438,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
 
     // Set class variables
+    this.path = bodyPath;
     boolean isMethod = underlyingAST.getKind() == UnderlyingAST.Kind.METHOD;
     if (isMethod) {
       this.classTree = ((UnderlyingAST.CFGMethod) underlyingAST).getClassTree();
     }
-    this.path = bodyPath;
 
     // Traverse AST of the method body.
     try { // "finally" clause is "this.path = null"
@@ -479,10 +480,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           declaredClasses,
           declaredLambdas);
     } finally {
+      this.path = null;
       if (isMethod) {
         this.classTree = null;
       }
-      this.path = null;
     }
   }
 
@@ -2522,12 +2523,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
-  // This does not seem to ever be invoked.
+  // This is not invoked for top-level classes.  Maybe it is, for classes defined within method
+  // bodies.
   @Override
   public Node visitClass(ClassTree tree, Void p) {
+    ClassTree oldClassTree = classTree;
+    this.classTree = tree;
     declaredClasses.add(tree);
     Node classbody = new ClassDeclarationNode(tree);
     extendWithNode(classbody);
+    this.classTree = oldClassTree;
     return classbody;
   }
 

@@ -16,7 +16,7 @@ Checker warnings related to field initialization.
 
 **Implementation details:**
 
-New method `MethodAccessNode.getOwner()` indicates which class defined the method.
+The type of ImplicitThis nodes in the CFG has been corrected.
 
 **Closed issues:**
 
