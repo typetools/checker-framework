@@ -439,10 +439,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // Set class variables
     this.path = bodyPath;
-    boolean isMethod = underlyingAST.getKind() == UnderlyingAST.Kind.METHOD;
-    if (isMethod) {
-      this.classTree = ((UnderlyingAST.CFGMethod) underlyingAST).getClassTree();
-    }
 
     // Traverse AST of the method body.
     try { // "finally" clause is "this.path = null"
@@ -481,9 +477,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           declaredLambdas);
     } finally {
       this.path = null;
-      if (isMethod) {
-        this.classTree = null;
-      }
     }
   }
 
@@ -2527,12 +2520,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   // bodies.
   @Override
   public Node visitClass(ClassTree tree, Void p) {
-    ClassTree oldClassTree = classTree;
-    this.classTree = tree;
     declaredClasses.add(tree);
     Node classbody = new ClassDeclarationNode(tree);
     extendWithNode(classbody);
-    this.classTree = oldClassTree;
     return classbody;
   }
 

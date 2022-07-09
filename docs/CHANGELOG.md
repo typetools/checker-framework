@@ -16,8 +16,6 @@ Checker warnings related to field initialization.
 
 **Implementation details:**
 
-The type of ImplicitThis nodes in the CFG has been corrected.
-
 **Closed issues:**
 
 
