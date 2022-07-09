@@ -427,15 +427,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Performs the actual work of phase one.
+   * Performs the actual work of phase one: processing a single body (of a method, lambda, top-level
+   * block, etc.).
    *
    * @param bodyPath path to the body of the underlying AST's method
    * @param underlyingAST the AST for which the CFG is to be built
    * @return the result of phase one
    */
   public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
-    // Traverse AST of the method body.
+
+    // Set class variables
+    boolean isMethod = underlyingAST.getKind() == UnderlyingAST.Kind.METHOD;
+    if (isMethod) {
+      this.classTree = ((UnderlyingAST.CFGMethod) underlyingAST).getClassTree();
+    }
     this.path = bodyPath;
+
+    // Traverse AST of the method body.
     try { // "finally" clause is "this.path = null"
       Node finalNode = scan(path.getLeaf(), null);
 
@@ -471,10 +479,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           declaredClasses,
           declaredLambdas);
     } finally {
+      if (isMethod) {
+        this.classTree = null;
+      }
       this.path = null;
     }
   }
 
+  /**
+   * Process a single body within {@code root}. This method does not process the entire given
+   * CompilationUnitTree. Rather, it processes one body (of a method/lambda/etc.) within it, which
+   * corresponds to {@code underlyingAST}.
+   *
+   * @param root the compilation unit
+   * @param underlyingAST the AST corresponding to the body to process
+   * @return a PhaseOneResult
+   */
   public PhaseOneResult process(CompilationUnitTree root, UnderlyingAST underlyingAST) {
     // TODO: Isn't this costly? Is there no cache we can reuse?
     TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
@@ -1670,15 +1690,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return scan(mtree.getExpression(), null);
     } else {
-      // `tree` lacks an explicit reciever (it is possibly a method call).
+      // `tree` lacks an explicit reciever.
       Element ele = TreeUtils.elementFromUse(tree);
-      TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
-      TypeMirror type = ElementUtils.getType(declaringClass);
       if (ElementUtils.isStatic(ele)) {
+        TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
+        TypeMirror type = ElementUtils.getType(declaringClass);
         ClassNameNode node = new ClassNameNode(type, declaringClass);
         extendWithClassNameNode(node);
         return node;
       } else {
+        TypeMirror type = TreeUtils.typeOf(classTree);
         Node node = new ImplicitThisNode(type);
         extendWithNode(node);
         return node;
@@ -2501,6 +2522,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
+  // This does not seem to ever be invoked.
   @Override
   public Node visitClass(ClassTree tree, Void p) {
     declaredClasses.add(tree);

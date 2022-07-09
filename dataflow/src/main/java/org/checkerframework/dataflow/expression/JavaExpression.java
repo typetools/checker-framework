@@ -626,6 +626,9 @@ public abstract class JavaExpression {
    * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static or
    * not. The passed element must be a field, method, or class.
    *
+   * <p>When this returns a ThisReference, its type is the class that declares {@code ele}, which is
+   * not necessarily the type of {@code this} at the invocation site.
+   *
    * @param ele a field, method, or class
    * @return either a new ClassName or a new ThisReference depending on whether ele is static or not
    */
