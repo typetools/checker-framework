@@ -190,9 +190,17 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
+ *
+ * <p>The entry point is {@link process(TreePath, UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
+
+  /** Path to the tree currently being scanned. */
+  private TreePath path;
+
+  /** The class currently being processed. */
+  private ClassTree classTree;
 
   /** Annotation processing environment and its associated type and tree utilities. */
   final ProcessingEnvironment env;
@@ -426,13 +434,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of phase one
    */
   public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
-    // traverse AST of the method body
+    // Traverse AST of the method body.
     this.path = bodyPath;
     try { // "finally" clause is "this.path = null"
       Node finalNode = scan(path.getLeaf(), null);
 
       // If we are building the CFG for a lambda with a single expression as the body, then
-      // add an extra node for the result of that lambda
+      // add an extra node for the result of that lambda.
       if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
         LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
         if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
@@ -499,9 +507,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public TreePath getCurrentPath() {
     return path;
   }
-
-  /** Path to the tree currently being scanned. */
-  private TreePath path;
 
   @Override
   public Node scan(Tree tree, Void p) {
@@ -1654,15 +1659,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * <p>Note 2: Visits the receiver and adds all necessary blocks to the CFG.
    *
-   * @param tree the field access tree containing the receiver
-   * @return the receiver of the field access
+   * @param tree the field or method access tree containing the receiver: one of
+   *     MethodInvocationTree, AssignmentTree, or IdentifierTree
+   * @return the receiver of the field or method access
    */
   private Node getReceiver(ExpressionTree tree) {
     assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+      // `tree` has an explicit receiver.
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return scan(mtree.getExpression(), null);
     } else {
+      // `tree` lacks an explicit reciever (it is possibly a method call).
       Element ele = TreeUtils.elementFromUse(tree);
       TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
       TypeMirror type = ElementUtils.getType(declaringClass);

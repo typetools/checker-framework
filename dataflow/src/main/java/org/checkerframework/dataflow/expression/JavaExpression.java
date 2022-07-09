@@ -600,9 +600,9 @@ public abstract class JavaExpression {
   ///
 
   /**
-   * Returns the receiver of the given invocation
+   * Returns the receiver of the given invocation.
    *
-   * @param accessTree method or constructor invocation
+   * @param accessTree a method or constructor invocation
    * @return the receiver of the given invocation
    */
   public static JavaExpression getReceiver(ExpressionTree accessTree) {
