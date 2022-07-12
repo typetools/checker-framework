@@ -23,7 +23,7 @@ Improved the CFG type of implicit this receivers. (typetools#5174)
 
 **Closed issues:**
 
-eisop#270, typetools#5174, typetools#5189.
+eisop#270, typetools#5174, typetools#5189, eisop#281.
 
 
 Version 3.22.2 (July 1, 2022)
