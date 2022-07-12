@@ -804,11 +804,11 @@ public class ElementUtils {
    */
   public static boolean isRecordAccessor(ExecutableElement methodElement) {
     TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
-    if (enclosing.getKind() == ElementKind.RECORD) {
+    if (enclosing.getKind().toString().equals("RECORD")) {
       String methodName = methodElement.getSimpleName().toString();
       List<? extends Element> encloseds = enclosing.getEnclosedElements();
       for (Element enclosed : encloseds) {
-        if (enclosed.getKind() == ElementKind.RECORD_COMPONENT
+        if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
             && enclosed.getSimpleName().toString().equals(methodName)) {
           return true;
         }
