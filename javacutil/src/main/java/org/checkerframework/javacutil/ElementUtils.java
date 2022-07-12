@@ -797,6 +797,27 @@ public class ElementUtils {
   }
 
   /**
+   * Returns true if the element is a record accessor method.
+   *
+   * @param methodElement a method element
+   * @return true if the element is a record accessor method
+   */
+  public static boolean isRecordAccessor(ExecutableElement methodElement) {
+    TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
+    if (enclosing.getKind() == ElementKind.RECORD) {
+      String methodName = methodElement.getSimpleName().toString();
+      List<? extends Element> encloseds = enclosing.getEnclosedElements();
+      for (Element enclosed : encloseds) {
+        if (enclosed.getKind() == ElementKind.RECORD_COMPONENT
+            && enclosed.getSimpleName().toString().equals(methodName)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
    * Check that a method Element matches a signature.
    *
    * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is only
