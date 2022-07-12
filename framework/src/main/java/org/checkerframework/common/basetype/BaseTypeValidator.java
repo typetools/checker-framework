@@ -622,24 +622,24 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                         // (See https://bugs.openjdk.java.net/browse/JDK-8054309.)
                         // In this case, the Checker Framework uses the annotations on the super
                         // bound of the wildcard and ignores the annotations on the extends bound.
+                        // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.
                         // So, issue a warning if the annotations on the extends bound are not the
                         // same as the annotations on the super bound.
+                        Set<AnnotationMirror> extendsBoundAnnos =
+                                wildcard.getExtendsBound().getAnnotations();
+                        Set<AnnotationMirror> superBoundAnnos =
+                                wildcard.getSuperBound().getEffectiveAnnotations();
                         if (!(atypeFactory
                                         .getQualifierHierarchy()
-                                        .isSubtype(
-                                                wildcard.getSuperBound().getEffectiveAnnotations(),
-                                                wildcard.getExtendsBound().getAnnotations())
+                                        .isSubtype(extendsBoundAnnos, superBoundAnnos)
                                 && atypeFactory
                                         .getQualifierHierarchy()
-                                        .isSubtype(
-                                                wildcard.getExtendsBound().getAnnotations(),
-                                                wildcard.getSuperBound()
-                                                        .getEffectiveAnnotations()))) {
+                                        .isSubtype(superBoundAnnos, extendsBoundAnnos))) {
                             checker.reportError(
                                     tree.getTypeArguments().get(i),
                                     "type.invalid.super.wildcard",
-                                    wildcard.getExtendsBound(),
-                                    wildcard.getSuperBound());
+                                    wildcard.getSuperBound(),
+                                    wildcard.getExtendsBound());
                         }
                     }
                 }
