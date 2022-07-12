@@ -14,8 +14,6 @@ Checker warnings related to static owning fields.
 New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
 Checker warnings related to field initialization.
 
-**Implementation details:**
-
 **Closed issues:**
 
 #4855, #5151, #5166, #5172, #5175, #5181, #5189.
