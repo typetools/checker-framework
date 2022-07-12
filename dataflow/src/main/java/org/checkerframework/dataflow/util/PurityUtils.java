@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.util;
 import com.sun.source.tree.MethodTree;
 import java.util.EnumSet;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
@@ -42,7 +41,8 @@ public class PurityUtils {
    * @param methodElement a method to test
    * @return whether the method has any purity annotations
    */
-  public static boolean hasPurityAnnotation(AnnotationProvider provider, Element methodElement) {
+  public static boolean hasPurityAnnotation(
+      AnnotationProvider provider, ExecutableElement methodElement) {
     return !getPurityKinds(provider, methodElement).isEmpty();
   }
 
@@ -54,7 +54,7 @@ public class PurityUtils {
    * @return whether the method is deterministic
    */
   public static boolean isDeterministic(AnnotationProvider provider, MethodTree methodTree) {
-    Element methodElement = TreeUtils.elementFromTree(methodTree);
+    ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
     if (methodElement == null) {
       throw new BugInCF("Could not find element for tree: " + methodTree);
     }
@@ -68,7 +68,8 @@ public class PurityUtils {
    * @param methodElement a method to test
    * @return whether the method is deterministic
    */
-  public static boolean isDeterministic(AnnotationProvider provider, Element methodElement) {
+  public static boolean isDeterministic(
+      AnnotationProvider provider, ExecutableElement methodElement) {
     EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
     return kinds.contains(Kind.DETERMINISTIC);
   }
@@ -81,7 +82,7 @@ public class PurityUtils {
    * @return whether the method is side-effect-free
    */
   public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree methodTree) {
-    Element methodElement = TreeUtils.elementFromTree(methodTree);
+    ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
     if (methodElement == null) {
       throw new BugInCF("Could not find element for tree: " + methodTree);
     }
@@ -95,7 +96,8 @@ public class PurityUtils {
    * @param methodElement a method to test
    * @return whether the method is side-effect-free
    */
-  public static boolean isSideEffectFree(AnnotationProvider provider, Element methodElement) {
+  public static boolean isSideEffectFree(
+      AnnotationProvider provider, ExecutableElement methodElement) {
     EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
     return kinds.contains(Kind.SIDE_EFFECT_FREE);
   }
@@ -109,7 +111,7 @@ public class PurityUtils {
    */
   public static EnumSet<Pure.Kind> getPurityKinds(
       AnnotationProvider provider, MethodTree methodTree) {
-    Element methodElement = TreeUtils.elementFromTree(methodTree);
+    ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
     if (methodElement == null) {
       throw new BugInCF("Could not find element for tree: " + methodTree);
     }
@@ -125,7 +127,7 @@ public class PurityUtils {
    */
   // TODO: should the return type be an EnumSet?
   public static EnumSet<Pure.Kind> getPurityKinds(
-      AnnotationProvider provider, Element methodElement) {
+      AnnotationProvider provider, ExecutableElement methodElement) {
     if (ElementUtils.isRecordAccessor((ExecutableElement) methodElement)) {
       return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
     }
