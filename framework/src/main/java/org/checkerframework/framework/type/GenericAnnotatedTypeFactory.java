@@ -1619,7 +1619,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     protected void handleCFGViz(ControlFlowGraph cfg) {
         if (handleCFGViz) {
-            getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), analysis);
+            getCFGVisualizer().visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
         }
     }
 
