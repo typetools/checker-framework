@@ -2,6 +2,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.common.returnsreceiver.qual.This;
 
 @Builder(builderClassName = "BaseBuilder")
 @Value public class LombokBuilderSubclassExample {
