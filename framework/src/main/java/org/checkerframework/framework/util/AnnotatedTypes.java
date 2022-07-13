@@ -1017,9 +1017,6 @@ public class AnnotatedTypes {
         if (!method.getElement().isVarArgs()) {
             return parameters;
         }
-        if (parameters.size() == 0) {
-            return parameters;
-        }
 
         AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
