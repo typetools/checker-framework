@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -127,6 +128,9 @@ public class PurityUtils {
   // TODO: should the return type be an EnumSet?
   public static EnumSet<Pure.Kind> getPurityKinds(
       AnnotationProvider provider, ExecutableElement methodElement) {
+    if (ElementUtils.isRecordAccessor(methodElement)) {
+      return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
+    }
     AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);
     AnnotationMirror sefAnnotation =
         provider.getDeclAnnotation(methodElement, SideEffectFree.class);
