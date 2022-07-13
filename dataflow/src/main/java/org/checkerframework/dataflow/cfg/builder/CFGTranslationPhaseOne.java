@@ -500,6 +500,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     public void handleArtificialTree(Tree tree) {}
 
     /**
+     * Allow subclasses to access the processing environment and its associated utilities.
+     *
+     * @return the ProcessingEnvironment associated with this object
+     */
+    protected ProcessingEnvironment getProcessingEnvironment() {
+        return env;
+    }
+
+    /**
      * Returns the current path for the tree currently being scanned.
      *
      * @return the current path
@@ -4166,7 +4175,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param clazz a class
      * @return the TypeMirror for the class
      */
-    private TypeMirror getTypeMirror(Class<?> clazz) {
+    protected TypeMirror getTypeMirror(Class<?> clazz) {
         return TypesUtils.typeFromClass(clazz, types, elements);
     }
 
@@ -4180,7 +4189,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param clazz a class, which must have a canonical name
      * @return the TypeMirror for the class, or {@code null} if the type is not present
      */
-    private @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
+    protected @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
         String name = clazz.getCanonicalName();
         assert name != null : clazz + " does not have a canonical name";
         TypeElement element = elements.getTypeElement(name);

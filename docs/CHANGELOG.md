@@ -26,14 +26,12 @@ Improved the CFG type of implicit this receivers. (typetools#5174)
 eisop#270, typetools#5174, typetools#5189, eisop#281.
 
 
-Version 3.22.2 (July 1, 2022)
----------------------------------
-
-**User-visible changes:**
+Version 3.22.2 (June 14, 2022)
+------------------------------
 
 **Implementation details:**
 
-**Closed issues:**
+Expose CFG APIs to allow inserting jumps and throws
 
 
 Version 3.22.1-eisop1 (June 3, 2022)

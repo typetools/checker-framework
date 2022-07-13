@@ -9,19 +9,18 @@ import org.checkerframework.javacutil.BugInCF;
  * An extended node can be one of several things (depending on its {@code type}):
  *
  * <ul>
- *   <li><em>NODE</em>: {@link CFGBuilder.NodeHolder}. An extended node of this type is just a
- *       wrapper for a {@link Node} (that cannot throw exceptions).
- *   <li><em>EXCEPTION_NODE</em>: {@link CFGBuilder.NodeWithExceptionsHolder}. A wrapper for a
- *       {@link Node} which can throw exceptions. It contains a label for every possible exception
- *       type the node might throw.
- *   <li><em>UNCONDITIONAL_JUMP</em>: {@link CFGBuilder.UnconditionalJump}. An unconditional jump to
- *       a label.
- *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>: {@link CFGBuilder.ConditionalJump}. A conditional
- *       jump with two targets for both the 'then' and 'else' branch.
+ *   <li><em>NODE</em>: {@link NodeHolder}. An extended node of this type is just a wrapper for a
+ *       {@link Node} (that cannot throw exceptions).
+ *   <li><em>EXCEPTION_NODE</em>: {@link NodeWithExceptionsHolder}. A wrapper for a {@link Node}
+ *       which can throw exceptions. It contains a label for every possible exception type the node
+ *       might throw.
+ *   <li><em>UNCONDITIONAL_JUMP</em>: {@link UnconditionalJump}. An unconditional jump to a label.
+ *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two
+ *       targets for both the 'then' and 'else' branch.
  * </ul>
  */
 @SuppressWarnings("nullness") // TODO
-/*package-private*/ abstract class ExtendedNode {
+public abstract class ExtendedNode {
 
     /** The basic block this extended node belongs to (as determined in phase two). */
     protected BlockImpl block;
