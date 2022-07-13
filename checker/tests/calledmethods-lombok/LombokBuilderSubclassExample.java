@@ -3,7 +3,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 
-@Builder(builderClassName = "LBSEBuilder")
+@Builder(builderClassName = "BaseBuilder")
 @Value public class LombokBuilderSubclassExample {
 
   @NonNull Integer attribute;
@@ -12,7 +12,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
     return new LombokBuilderSubclassExampleBuilder();
   }
 
-  public static class LombokBuilderSubclassExampleBuilder extends LBSEBuilder {
+  public static class LombokBuilderSubclassExampleBuilder extends BaseBuilder {
 
     @Override
     @This public LombokBuilderSubclassExampleBuilder attribute(@NonNull Integer attribute) {
