@@ -18,7 +18,9 @@ import org.junit.runners.Parameterized.Parameters;
 @Category(AinferTestCheckerStubsTest.class)
 public class AinferTestCheckerStubsTest extends AinferGeneratePerDirectoryTest {
 
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public AinferTestCheckerStubsTest(List<File> testFiles) {
     super(
         testFiles,

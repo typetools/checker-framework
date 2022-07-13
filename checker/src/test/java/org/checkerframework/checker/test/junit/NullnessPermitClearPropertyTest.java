@@ -11,7 +11,9 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class NullnessPermitClearPropertyTest extends CheckerFrameworkPerDirectoryTest {
 
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public NullnessPermitClearPropertyTest(List<File> testFiles) {
     super(
         testFiles,

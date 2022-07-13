@@ -9,7 +9,9 @@ import org.junit.runners.Parameterized.Parameters;
 /** Tests the NonTopDefault Checker. */
 public class NonTopDefaultTest extends CheckerFrameworkPerDirectoryTest {
 
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public NonTopDefaultTest(List<File> testFiles) {
     super(testFiles, NTDChecker.class, "nontopdefault", "-Anomsgtext");
   }
