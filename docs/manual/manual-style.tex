@@ -26,11 +26,15 @@
 %%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
 \def\<#1>{\code{#1}}
 
+% Don't use \ahref which makes no hyperlink; use \href or \ahrefforurl instead.
+% \ahrefloc is for internal links to a LaTeX label, but only works in HTML
+% (no hyperlink in PDF).
+
 % This can't handle a URL with an embedded "#" -- at least at UW CSE
 \newcommand{\myurl}[1]{{\codesize\url{#1}}}
 %HEVEA \def\myurl{\url}
 % A command that shows the URL in the printed manual.
-% make a URL visible in PDF the but just be attached to anchor text in HTML:
+% Make a URL visible in PDF the but just be attached to anchor text in HTML:
 %BEGIN LATEX
 \newcommand{\ahreforurl}[2]{#2 (\url{#1})}
 %END LATEX

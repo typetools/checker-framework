@@ -28,6 +28,7 @@ import com.sun.source.tree.WildcardTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
@@ -221,7 +222,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         Element elt = TreeUtils.elementFromUse(node);
         AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
         if (selfType != null) {
-            return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt).asUse();
+            AnnotatedTypeMirror type = AnnotatedTypes.asMemberOf(f.types, f, selfType, elt).asUse();
+            return f.applyCaptureConversion(type, TreeUtils.typeOf(node));
         }
 
         AnnotatedTypeMirror type = f.getAnnotatedType(elt);
@@ -365,7 +367,15 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitMethodInvocation(
             MethodInvocationTree node, AnnotatedTypeFactory f) {
         AnnotatedExecutableType ex = f.methodFromUse(node).executableType;
-        return ex.getReturnType();
+        AnnotatedTypeMirror returnT = ex.getReturnType().asUse();
+        if (TypesUtils.isCapturedTypeVariable(returnT.getUnderlyingType())
+                && !TypesUtils.isCapturedTypeVariable(TreeUtils.typeOf(node))) {
+            // Sometimes javac types an expression as the upper bound of a captured type variable
+            // instead of the captured type variable itself. This seems to be a bug in javac. Detect
+            // this case and match the annotated type to the Java type.
+            returnT = ((AnnotatedTypeVariable) returnT).getUpperBound();
+        }
+        return f.applyCaptureConversion(returnT);
     }
 
     @Override
