@@ -128,7 +128,7 @@ public class PurityUtils {
   // TODO: should the return type be an EnumSet?
   public static EnumSet<Pure.Kind> getPurityKinds(
       AnnotationProvider provider, ExecutableElement methodElement) {
-    if (ElementUtils.isRecordAccessor((ExecutableElement) methodElement)) {
+    if (ElementUtils.isRecordAccessor(methodElement)) {
       return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
     }
     AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);
