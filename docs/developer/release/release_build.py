@@ -266,7 +266,7 @@ def build_checker_framework_release(
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # Check that updating versions didn't overlook anything.
-    print("Here are occurrences of the old version number, " + old_cf_version)
+    print("Here are occurrences of the old version number, " + old_cf_version + ":")
     grep_cmd = "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit(

@@ -1,6 +1,7 @@
 package org.checkerframework.common.value.qual;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 import java.lang.annotation.Documented;
@@ -20,4 +21,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
+@InvisibleQualifier
 public @interface UnknownVal {}

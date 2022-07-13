@@ -20,8 +20,7 @@ public class StubparserTaintingTest extends CheckerFrameworkPerDirectoryTest {
                 org.checkerframework.checker.tainting.TaintingChecker.class,
                 "stubparser-tainting",
                 "-AmergeStubsWithSource",
-                "-Astubs=tests/stubparser-tainting",
-                "-AstubWarnIfNotFound");
+                "-Astubs=tests/stubparser-tainting");
     }
 
     @Parameterized.Parameters

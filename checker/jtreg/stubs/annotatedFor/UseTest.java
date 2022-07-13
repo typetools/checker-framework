@@ -2,8 +2,8 @@
  * @test
  * @summary Test AnnotatedFor in stub files
  * @compile -XDrawDiagnostics -Xlint:unchecked ../annotatedForLib/Test.java
- * @compile/fail/ref=WithStub.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext UseTest.java -Astubs=Test.astub -AstubWarnIfNotFound -Werror
- * @compile/fail/ref=WithoutStub.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext UseTest.java -AstubWarnIfNotFound -Werror
+ * @compile/fail/ref=WithStub.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext UseTest.java -Astubs=Test.astub -Werror
+ * @compile/fail/ref=WithoutStub.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext UseTest.java -Werror
  */
 
 package annotatedfor;

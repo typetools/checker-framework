@@ -74,12 +74,34 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             Element classEle = TreeUtils.elementFromDeclaration((ClassTree) tree);
             AnnotationMirror inheritableMustCall =
                     atypeFactory.getDeclAnnotation(classEle, InheritableMustCall.class);
-            if (inheritableMustCall != null) {
-                AnnotationMirror explict =
+            if (inheritableMustCall == null) {
+                if (!ElementUtils.isFinal(classEle)) {
+                    // There is no @InheritableMustCall annotation and this is a non-final class.
+                    // Check if an explicit @MustCall annotation is present. If so, issue an error
+                    // suggesting
+                    // that @InheritableMustCall is probably what the programmer means, for
+                    // usability.
+                    List<? extends AnnotationMirror> explicitAnnos =
+                            classEle.getAnnotationMirrors();
+                    if (explicitAnnos.stream()
+                            .anyMatch(
+                                    a ->
+                                            AnnotationUtils.areSameByName(
+                                                    a,
+                                                    "org.checkerframework.checker.mustcall.qual.MustCall"))) {
+                        checker.reportError(
+                                tree,
+                                "mustcall.not.inheritable",
+                                ElementUtils.getQualifiedName(classEle));
+                    }
+                }
+            } else {
+                // There is an @InheritableMustCall annotation
+                AnnotationMirror explicit =
                         atypeFactory
                                 .fromElement(classEle)
                                 .getAnnotationInHierarchy(atypeFactory.TOP);
-                if (explict != null) {
+                if (explicit != null) {
                     List<String> mustCallVal =
                             AnnotationUtils.getElementValueArray(
                                     inheritableMustCall,
@@ -89,18 +111,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
                     // Issue an error if there is an inconsistent, user-written @MustCall
                     // annotation.
-                    AnnotationMirror writtenMCAnno =
+                    AnnotationMirror effectiveMCAnno =
                             type.getAnnotationInHierarchy(atypeFactory.TOP);
-                    if (writtenMCAnno != null
+                    if (effectiveMCAnno != null
                             && !atypeFactory
                                     .getQualifierHierarchy()
-                                    .isSubtype(inheritedMCAnno, writtenMCAnno)) {
+                                    .isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
                         checker.reportError(
                                 tree,
                                 "inconsistent.mustcall.subtype",
-                                classEle.getSimpleName(),
-                                writtenMCAnno,
+                                ElementUtils.getQualifiedName(classEle),
+                                effectiveMCAnno,
                                 inheritableMustCall);
                         return false;
                     }
@@ -165,7 +187,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             ExpressionTree valueExp,
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
-        if (TreeUtils.elementFromTree(varTree).getKind() == ElementKind.RESOURCE_VARIABLE) {
+        Element elt = TreeUtils.elementFromTree(varTree);
+        if (elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE) {
             commonAssignmentCheckOnResourceVariable = true;
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);

@@ -18,6 +18,8 @@ import javax.tools.Diagnostic.Kind;
  * via the {@link org.checkerframework.checker.mustcall.MustCallChecker} have been fulfilled.
  */
 @SupportedOptions({
+    "permitStaticOwning",
+    "permitInitializationLeak",
     ResourceLeakChecker.COUNT_MUST_CALL,
     MustCallChecker.NO_CREATES_MUSTCALLFOR,
     MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
@@ -27,8 +29,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
 
     /**
      * Command-line option for counting how many must-call obligations were checked by the Resource
-     * Leak Checker, and emitting the number after processing all files. Not of interest to most
-     * users.
+     * Leak Checker, and emitting the number after processing all files. Used for generating tables
+     * for a research paper. Not of interest to most users.
      */
     public static final String COUNT_MUST_CALL = "countMustCall";
 

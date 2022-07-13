@@ -9,7 +9,8 @@ import java.io.InputStream;
 class ManualMustCallEmptyOnConstructor {
 
     // Test that writing @MustCall({}) on a constructor results in an error
-    @MustCall("a") static class Foo {
+    @InheritableMustCall("a")
+    static class Foo {
         final @Owning InputStream is;
 
         // :: error: inconsistent.constructor.type

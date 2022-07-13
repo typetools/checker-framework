@@ -255,6 +255,7 @@ import javax.tools.Diagnostic.Kind;
     // that were not found on the class path
     // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFound
     "stubWarnIfNotFound",
+    "stubNoWarnIfNotFound",
     // Whether to ignore missing classes even when warnIfNotFound is set to true and other classes
     // from the same package are present (useful if a package spans more than one jar).
     // org.checkerframework.framework.stub.AnnotationFileParser.warnIfNotFoundIgnoresClasses

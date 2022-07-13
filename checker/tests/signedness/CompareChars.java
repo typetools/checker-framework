@@ -9,4 +9,9 @@ public class CompareChars {
         res = c1 < c2;
         res = c1 <= c2;
     }
+
+    // Test case for issue #5166: https://tinyurl.com/cfissue/5166
+    private static boolean isWhitespace(char c) {
+        return c <= '\u0020';
+    }
 }

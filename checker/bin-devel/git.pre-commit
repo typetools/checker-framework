@@ -18,6 +18,7 @@ CHANGED_JAVA_FILES=$(git diff --staged --name-only --diff-filter=ACM \
                     | grep -v '/nullness-javac-errors/' \
                     | grep -v 'dataflow/manual/examples/' \
                     | grep -v '/java17/' \
+                    | grep -v 'records/' \
                     | grep -v '/wholeprograminference/' \
                     | grep -v '/stub/AddAnnotatedFor.java' \
                     | grep -v '/stub/ToIndexFileConverter.java') || true

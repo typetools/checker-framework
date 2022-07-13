@@ -112,15 +112,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>Update the Checker Framework source code:
     <ul>
       <li>
-        <b>Update the list of contributors</b>.
-        <pre><code>cd docs/manual
-make contributors.tex
-git diff `git rev-list -1 --before 1.month.ago origin/master` HEAD -- contributors.tex
-</code></pre>
-        Update the <a href="https://github.com/eisop-plume-lib/plume-scripts/blob/master/git-authors.sed"><code>plume-scripts/git-authors.sed</code></a> script if
-        any customizations are necessary.
-      </li>
-      <li>
         <b>Update the AWS Java SDK BOM dependency.</b> In file <code>checker/build.gradle</code>,
         edit the <code>com.amazonaws:aws-java-sdk-bom</code> dependency to be the latest version
         number at
@@ -139,8 +130,8 @@ git diff `git rev-list -1 --before 1.month.ago origin/master` HEAD -- contributo
         (The AFU version is updated as part of the release scripts.)
 
         <p>
-        Update the minor version (second number) if there are any incompatibilities
-        with the previous version.
+        Update the minor version (middle number in the version number)
+        if there are any incompatibilities with the previous version.
         This includes incompatibilities for people who are maintaining a checker,
         which happens if the signature changes for any method in these classes:
         </p>
@@ -169,8 +160,11 @@ TreeAnnotator
         (TODO: Write a command that diffs these classes between the previous and current release.)
         </p>
         <p>
-        A rule of thumb is that any framework change that requires changes to more than one type-checker should be at least a minor version (second number in the version number) bump.
+        A rule of thumb is that any framework change that requires changes to more than one type-checker should be at least a minor version (middle number in the version number) bump.
         </p>
+      </li>
+      <li>
+        <b>Update the Annotation Tools version number.</b>  Manually search for occurrences of the old one.  (TODO: automate this.)
       </li>
       <li>
         <b>Commit and push</b> these changes to eisop/master.
@@ -182,9 +176,9 @@ TreeAnnotator
   </li>
   <li>
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
-      <code>mkdir -p /tmp/$USER/cf-release<br/></code>
-      <code>cd /tmp/$USER/cf-release<br/></code>
-      <code>test -d checker-framework && (cd checker-framework && git pull --quiet) || git clone --quiet https://github.com/eisop/checker-framework.git<br/></code>
+      <code>mkdir -p /scratch/$USER/cf-release<br/></code>
+      <code>cd /scratch/$USER/cf-release<br/></code>
+      <code>test -d checker-framework && (cd checker-framework && git pull --ff-only --quiet) || git clone --quiet https://github.com/eisop/checker-framework.git<br/></code>
       <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
   </li>
@@ -482,18 +476,18 @@ git config --global user.email you@example.com</pre>
 
     <h3 id="content_guidelines">Content Guidelines</h3>
     <ul>
-      <li>Only (and all) changes that affect users go into the changelog.
+      <li>Only (and all) changes that affect users (including type system developers) go into the changelog.
         If a change is breaking, no matter how small, mention it.</li>
       <li>
-            Even if some code has been committed to the repository, don't
-            announce the feature until it has been documented in the manual.
+        Even if some code has been committed to the repository, don't
+        announce the feature until it has been documented in the manual.
       </li>
       <li>Checker Framework:
         <ul>
           <li>List all issues (in issue trackers) resolved since the previous release:
             <a href="https://checkerframework.org/CHANGELOG.md">previous release</a>,
             <a href="https://github.com/eisop/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
-            <a href="https://github.com/eisop/checker-framework/blob/master/docs/changelog.txt">current changelog</a>.
+            <a href="https://github.com/eisop/checker-framework/blob/master/docs/CHANGELOG.md">current changelog</a>.
           </li>
           <li>
             Ensure the changelogs reflect version control commits since the last release, via the

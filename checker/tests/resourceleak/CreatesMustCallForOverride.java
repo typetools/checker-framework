@@ -3,7 +3,8 @@
 
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("a") class CreatesMustCallForOverride {
+@InheritableMustCall("a")
+class CreatesMustCallForOverride {
     @CreatesMustCallFor
     @Override
     // :: error: creates.mustcall.for.override.invalid

@@ -13,7 +13,7 @@ import java.util.Objects;
 import javax.lang.model.element.ExecutableElement;
 
 /**
- * A node for a method access, including a method accesses:
+ * A node for a method access, including a receiver:
  *
  * <pre>
  *   <em>expression</em> . <em>method</em> ()
