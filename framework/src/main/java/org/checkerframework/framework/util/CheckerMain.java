@@ -155,7 +155,7 @@ public class CheckerMain {
 
   /** Assert that required jars exist. */
   protected void assertValidState() {
-    if (SystemUtil.getJreVersion() < 9) {
+    if (SystemUtil.jreVersion < 9) {
       assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar, checkerUtilJar));
     } else {
       assertFilesExist(Arrays.asList(checkerJar, checkerQualJar, checkerUtilJar));
@@ -426,7 +426,7 @@ public class CheckerMain {
     final String java = "java";
     args.add(java);
 
-    if (SystemUtil.getJreVersion() == 8) {
+    if (SystemUtil.jreVersion == 8) {
       args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, runtimeClasspath));
     } else {
       args.addAll(
@@ -479,7 +479,7 @@ public class CheckerMain {
       args.add(quote(concatenatePaths(ppOpts)));
     }
 
-    if (SystemUtil.getJreVersion() == 8) {
+    if (SystemUtil.jreVersion == 8) {
       // No classes on the compilation bootclasspath will be loaded
       // during compilation, but the classes are read by the compiler
       // without loading them.  The compiler assumes that any class on

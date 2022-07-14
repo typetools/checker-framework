@@ -100,8 +100,7 @@ public class AnnotationFileElementTypes {
     this.annotationFileAnnos = new AnnotationFileAnnotations();
     this.parsing = false;
     String release = SystemUtil.getReleaseValue(factory.getProcessingEnv());
-    this.annotatedJdkVersion =
-        release != null ? release : String.valueOf(SystemUtil.getJreVersion());
+    this.annotatedJdkVersion = release != null ? release : String.valueOf(SystemUtil.jreVersion);
 
     this.shouldParseJdk = !factory.getChecker().hasOption("ignorejdkastub");
     this.parseAllJdkFiles = factory.getChecker().hasOption("parseAllJdk");
@@ -761,7 +760,7 @@ public class AnnotationFileElementTypes {
     try {
       root = Paths.get(resourceURL.toURI());
     } catch (URISyntaxException e) {
-      throw new BugInCF("Can parse URL: " + resourceURL.toString(), e);
+      throw new BugInCF("Cannot parse URL: " + resourceURL.toString(), e);
     }
 
     try (Stream<Path> walk = Files.walk(root)) {
@@ -828,7 +827,7 @@ public class AnnotationFileElementTypes {
         }
       }
     } catch (IOException e) {
-      throw new BugInCF("cannot open the Jar file " + resourceURL.getFile(), e);
+      throw new BugInCF("Cannot open the jar file " + resourceURL.getFile(), e);
     }
   }
 }

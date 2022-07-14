@@ -9,6 +9,7 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -599,9 +600,8 @@ public class ElementUtils {
     try {
       superTypeMirror = typeElt.getSuperclass();
     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-      // Looking up a supertype failed. This sometimes happens
-      // when transitive dependencies are not on the classpath.
-      // As javac didn't complain, let's also not complain.
+      // Looking up a supertype failed. This sometimes happens when transitive dependencies are not
+      // on the classpath.  As javac didn't complain, let's also not complain.
       return null;
     }
 
@@ -951,6 +951,17 @@ public class ElementUtils {
     return kind;
   }
 
+  /** The {@code TypeElement.getRecordComponents()} method. */
+  private static Method getRecordComponentsMethod;
+
+  static {
+    try {
+      getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
+    } catch (NoSuchMethodException e) {
+      throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+    }
+  }
+
   /**
    * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is not
    * available before JDK 16. On earlier JDKs, which don't support records anyway, an exception is
@@ -963,13 +974,9 @@ public class ElementUtils {
   @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
   public static List<? extends Element> getRecordComponents(TypeElement element) {
     try {
-      return (@NonNull List<? extends Element>)
-          TypeElement.class.getMethod("getRecordComponents").invoke(element);
-    } catch (NoSuchMethodException
-        | IllegalAccessException
-        | IllegalArgumentException
-        | InvocationTargetException e) {
-      throw new Error("Cannot access TypeElement.getRecordComponents", e);
+      return (@NonNull List<? extends Element>) getRecordComponentsMethod.invoke(element);
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      throw new Error("Cannot call TypeElement.getRecordComponents()", e);
     }
   }
 

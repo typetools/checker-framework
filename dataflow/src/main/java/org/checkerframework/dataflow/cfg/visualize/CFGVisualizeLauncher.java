@@ -226,8 +226,8 @@ public class CFGVisualizeLauncher {
 
     PrintStream err = System.err;
     try {
-      // redirect syserr to nothing (and prevent the compiler from issuing
-      // warnings about our exception.
+      // Redirect syserr to nothing (and prevent the compiler from issuing
+      // warnings about our exception).
       System.setErr(
           new PrintStream(
               new OutputStream() {
