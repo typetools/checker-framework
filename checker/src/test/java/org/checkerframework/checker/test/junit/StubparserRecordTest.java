@@ -19,10 +19,7 @@ public class StubparserRecordTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "stubparser-records",
-                "-Astubs=tests/stubparser-records"
-                // Cannot use this because of JUnit 5 stub file
-                // "-AstubWarnIfNotFound",
-                );
+                "-Astubs=tests/stubparser-records");
     }
 
     @Parameterized.Parameters
