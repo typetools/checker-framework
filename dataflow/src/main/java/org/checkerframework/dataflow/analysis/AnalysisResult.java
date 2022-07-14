@@ -151,7 +151,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     finalLocalValues.putAll(other.finalLocalValues);
   }
 
-  /** Make copies of certain internal IdentityHashMaps, if they have not been copied already */
+  /** Make copies of certain internal IdentityHashMaps, if they have not been copied already. */
   private void copyMapsIfNeeded() {
     if (!mapsCopied) {
       nodeValues = new IdentityHashMap<>(nodeValues);
