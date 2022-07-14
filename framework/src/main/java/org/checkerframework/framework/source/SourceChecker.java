@@ -541,7 +541,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     // Keep in sync with check in checker-framework/build.gradle and text in installation
     // section of manual.
-    int jreVersion = SystemUtil.getJreVersion();
+    int jreVersion = SystemUtil.jreVersion;
     if (jreVersion != 8 && jreVersion != 11 && jreVersion != 17) {
       message(
           (hasOption("permitUnsupportedJdkVersion") ? Kind.NOTE : Kind.WARNING),
