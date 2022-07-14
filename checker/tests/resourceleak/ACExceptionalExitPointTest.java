@@ -4,7 +4,8 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class ACExceptionalExitPointTest {
 
-    @MustCall("a") class Foo {
+    @InheritableMustCall("a")
+    class Foo {
         void a() {}
 
         @This Foo b() {

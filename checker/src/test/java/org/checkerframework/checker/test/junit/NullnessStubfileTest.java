@@ -18,7 +18,6 @@ public class NullnessStubfileTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                "-AstubWarnIfNotFound",
                 "-Astubs="
                         + String.join(
                                 ":",

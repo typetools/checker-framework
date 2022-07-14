@@ -6,7 +6,8 @@ import org.checkerframework.checker.mustcall.qual.*;
 
 import java.net.Socket;
 
-@MustCall("stop") class MCAOwningField {
+@InheritableMustCall("stop")
+class MCAOwningField {
 
     @Owning final Socket s;
 

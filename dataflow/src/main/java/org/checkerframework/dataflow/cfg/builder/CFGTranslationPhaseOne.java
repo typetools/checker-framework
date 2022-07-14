@@ -194,9 +194,15 @@ import javax.lang.model.util.Types;
  *
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
+ *
+ * <p>The entry point to process a single body (e.g., method) is {@link #process(TreePath,
+ * UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
+
+    /** Path to the tree currently being scanned. */
+    private TreePath path;
 
     /** Annotation processing environment. */
     protected final ProcessingEnvironment env;
@@ -434,20 +440,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
-     * Performs the actual work of phase one.
+     * Performs the actual work of phase one: processing a single body (of a method, lambda,
+     * top-level block, etc.).
      *
      * @param bodyPath path to the body of the underlying AST's method
      * @param underlyingAST the AST for which the CFG is to be built
      * @return the result of phase one
      */
     public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
-        // traverse AST of the method body
+
+        // Set class variables
         this.path = bodyPath;
+
+        // Traverse AST of the method body.
         try { // "finally" clause is "this.path = null"
             Node finalNode = scan(path.getLeaf(), null);
 
             // If we are building the CFG for a lambda with a single expression as the body, then
-            // add an extra node for the result of that lambda
+            // add an extra node for the result of that lambda.
             if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
                 LambdaExpressionTree lambdaTree =
                         ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
@@ -484,6 +494,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
     }
 
+    /**
+     * Process a single body within {@code root}. This method does not process the entire given
+     * CompilationUnitTree. Rather, it processes one body (of a method/lambda/etc.) within it, which
+     * corresponds to {@code underlyingAST}.
+     *
+     * @param root the compilation unit
+     * @param underlyingAST the AST corresponding to the body to process
+     * @return a PhaseOneResult
+     */
     public PhaseOneResult process(CompilationUnitTree root, UnderlyingAST underlyingAST) {
         // TODO: Isn't this costly? Is there no cache we can reuse?
         TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
@@ -507,9 +526,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     public TreePath getCurrentPath() {
         return path;
     }
-
-    /** Path to the tree currently being scanned. */
-    private TreePath path;
 
     // TODO: remove method and instead use JCP to add version-specific methods.
     // Switch expressions first appeared in 12, standard in 14, so don't use 17.
@@ -1719,12 +1735,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * <p>Note 2: Visits the receiver and adds all necessary blocks to the CFG.
      *
-     * @param tree the field access tree containing the receiver
-     * @return the receiver of the field access
+     * @param tree the field or method access tree containing the receiver: one of
+     *     MethodInvocationTree, AssignmentTree, or IdentifierTree
+     * @return the receiver of the field or method access
      */
     private Node getReceiver(ExpressionTree tree) {
         assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
         if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+            // `tree` has an explicit receiver.
             MemberSelectTree mtree = (MemberSelectTree) tree;
             return scan(mtree.getExpression(), null);
         }
@@ -2609,6 +2627,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         return null;
     }
 
+    // This is not invoked for top-level classes.  Maybe it is, for classes defined within method
+    // bodies.
     @Override
     public Node visitClass(ClassTree tree, Void p) {
         declaredClasses.add(tree);

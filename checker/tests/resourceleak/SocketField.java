@@ -7,7 +7,8 @@ import org.checkerframework.dataflow.qual.Pure;
 import java.io.IOException;
 import java.net.Socket;
 
-@MustCall("closeSocket") class SocketField {
+@InheritableMustCall("closeSocket")
+class SocketField {
     protected @Owning Socket socket = null;
 
     @CreatesMustCallFor("this")

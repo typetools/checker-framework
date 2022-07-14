@@ -3,7 +3,8 @@
 import org.checkerframework.checker.mustcall.qual.*;
 
 class BorrowOnReturn {
-    @MustCall("a") class Foo {
+    @InheritableMustCall("a")
+    class Foo {
         void a() {}
     }
 

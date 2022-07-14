@@ -3,7 +3,8 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("a") class CreatesMustCallForIndirect {
+@InheritableMustCall("a")
+class CreatesMustCallForIndirect {
 
     @CreatesMustCallFor
     void reset() {}

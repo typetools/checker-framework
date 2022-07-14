@@ -932,7 +932,7 @@ public class DependentTypesHelper {
                     // This code must remove and then add, rather than call `replace`, because a
                     // type may have multiple annotations with the same class, but different
                     // elements.  (This is a bug; see
-                    // https://github.com/typetools/checker-framework/issues/4451.)
+                    // https://github.com/typetools/checker-framework/issues/4451 .)
                     // AnnotatedTypeMirror#replace only removes one annotation that is in the same
                     // hierarchy as the passed argument.
                     type.removeAnnotation(anno);

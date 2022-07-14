@@ -2,7 +2,7 @@
  * @test
  * @summary Test that java.lang annotations can be used.
  * @library .
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=MyStub.astub Driver.java  -AstubWarnIfNotFound -Werror
+ * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=MyStub.astub Driver.java -Werror
  */
 
 public class Driver {

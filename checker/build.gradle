@@ -67,7 +67,7 @@ dependencies {
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
     // The AWS SDK is used for testing the Called Methods Checker.
-    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.238")
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.257")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
@@ -408,8 +408,10 @@ task ainferTestCheckerGenerateStubs(type: Test) {
     doLast {
         copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
         // The stub file format doesn't support annotations on anonymous inner classes, so
-        // this test also expects errors on UsesAnonymous.java.
+        // this test also expects errors on these tests that expect annotations to be inferred
+        // inside anonymous classes.
         delete('tests/ainfer-testchecker/annotated/UsesAnonymous.java')
+        delete('tests/ainfer-testchecker/annotated/AnonymousClassWithField.java')
 
         // This test causes an error when its corresponding stub file is read, because the test
         // contains an annotation definition. The stub file parser does not support reading

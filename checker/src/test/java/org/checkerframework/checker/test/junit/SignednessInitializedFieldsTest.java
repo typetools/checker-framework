@@ -23,7 +23,6 @@ public class SignednessInitializedFieldsTest extends CheckerFrameworkPerDirector
                         "org.checkerframework.checker.signedness.SignednessChecker"),
                 "signedness-initialized-fields",
                 Collections.emptyList(), // classpathextra
-                "-Anomsgtext",
                 "-AsuppressWarnings=type.checking.not.run");
     }
 

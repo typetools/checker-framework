@@ -9,7 +9,8 @@ import org.checkerframework.checker.mustcall.qual.*;
 import java.io.IOException;
 import java.net.Socket;
 
-@MustCall("dispose") class TwoResourcesECM {
+@InheritableMustCall("dispose")
+class TwoResourcesECM {
     @Owning Socket s1, s2;
 
     // The contracts.postcondition error below is thrown because s1 is not final,

@@ -70,21 +70,29 @@ import javax.lang.model.type.TypeMirror;
 /** The visitor for the nullness type-system. */
 public class NullnessVisitor
         extends InitializationVisitor<NullnessAnnotatedTypeFactory, NullnessValue, NullnessStore> {
-    // Error message keys
     // private static final @CompilerMessageKey String ASSIGNMENT_TYPE_INCOMPATIBLE =
     // "assignment.type.incompatible";
+    /** Error message key. */
     private static final @CompilerMessageKey String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
+    /** Error message key. */
     private static final @CompilerMessageKey String LOCKING_NULLABLE = "locking.nullable";
+    /** Error message key. */
     private static final @CompilerMessageKey String THROWING_NULLABLE = "throwing.nullable";
+    /** Error message key. */
     private static final @CompilerMessageKey String ACCESSING_NULLABLE = "accessing.nullable";
+    /** Error message key. */
     private static final @CompilerMessageKey String CONDITION_NULLABLE = "condition.nullable";
+    /** Error message key. */
     private static final @CompilerMessageKey String ITERATING_NULLABLE = "iterating.over.nullable";
+    /** Error message key. */
     private static final @CompilerMessageKey String SWITCHING_NULLABLE = "switching.nullable";
+    /** Error message key. */
     private static final @CompilerMessageKey String DEREFERENCE_OF_NULLABLE =
             "dereference.of.nullable";
 
-    // Annotation and type constants
+    /** Annotation mirrors. */
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONIC_NONNULL;
+    /** TypeMirror for java.lang.String. */
     private final TypeMirror stringType;
 
     /** The element for java.util.Collection.size(). */

@@ -5,7 +5,8 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class SwitchExpressions {
 
-    @MustCall("a") class Foo {
+    @InheritableMustCall("a")
+    class Foo {
         void a() {}
 
         @This Foo b() {
@@ -162,9 +163,11 @@ class SwitchExpressions {
         };
     }
 
-    @MustCall("toString") static class Sub1 extends Object {}
+    @InheritableMustCall("toString")
+    static class Sub1 extends Object {}
 
-    @MustCall("clone") static class Sub2 extends Object {}
+    @InheritableMustCall("clone")
+    static class Sub2 extends Object {}
 
     static void testSwitchSubtyping(int i) {
         // :: error: required.method.not.called

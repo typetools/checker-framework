@@ -4,7 +4,8 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class TernaryExpressions {
 
-    @MustCall("a") class Foo {
+    @InheritableMustCall("a")
+    class Foo {
         void a() {}
 
         @This Foo b() {
@@ -104,9 +105,11 @@ class TernaryExpressions {
         return b ? x : makeFoo();
     }
 
-    @MustCall("toString") static class Sub1 extends Object {}
+    @InheritableMustCall("toString")
+    static class Sub1 extends Object {}
 
-    @MustCall("clone") static class Sub2 extends Object {}
+    @InheritableMustCall("clone")
+    static class Sub2 extends Object {}
 
     static void testTernarySubtyping(boolean b) {
         // :: error: required.method.not.called

@@ -110,7 +110,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.22.2'
+    version '3.23.0'
 
     repositories {
         mavenCentral()
@@ -1135,6 +1135,7 @@ task checkBasicStyle(group: 'Format') {
             'securerandom.*',
             'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
             'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
+            'checker/nullness/junit-assertions.astub',
             'framework/src/main/resources/git.properties']
 
     doLast {

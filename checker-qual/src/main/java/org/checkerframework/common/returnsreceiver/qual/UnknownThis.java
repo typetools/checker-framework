@@ -2,6 +2,7 @@ package org.checkerframework.common.returnsreceiver.qual;
 
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -24,4 +25,5 @@ import java.lang.annotation.Target;
 @SubtypeOf({})
 @QualifierForLiterals(LiteralKind.NULL)
 @DefaultFor(value = TypeUseLocation.LOWER_BOUND)
+@InvisibleQualifier
 public @interface UnknownThis {}

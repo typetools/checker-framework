@@ -1,4 +1,6 @@
 // A test that the checker is sound in the presence of instance initializer blocks.
+// In the resourceleak-permitinitializationleak/ directory, it's a test that the
+// checker is unsound with the -ApermitInitializationLeak command-line argument.
 
 import org.checkerframework.checker.mustcall.qual.*;
 
@@ -13,6 +15,8 @@ class InstanceInitializer {
 
     {
         try {
+            // This assignment is OK, because it's the first assignment.
+            // However, the Resource Leak Checker issues a false positive warning.
             // :: error: required.method.not.called
             s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
         } catch (Exception e) {
@@ -21,6 +25,8 @@ class InstanceInitializer {
 
     {
         try {
+            // This assignment is not OK, because it's a reassignment without satisfying the
+            // mustcall obligations of the previous value of `s`.
             // :: error: required.method.not.called
             s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
         } catch (Exception e) {
