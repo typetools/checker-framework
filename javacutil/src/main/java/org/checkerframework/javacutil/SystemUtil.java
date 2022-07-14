@@ -21,6 +21,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /** This file contains basic utility functions. */
 public class SystemUtil {
 
+  /** The major version of the JRE, such as 8, 11, or 17. */
   @SuppressWarnings("deprecation") // remove when getJreVersion is made private (and not deprecated)
   public static final int jreVersion = getJreVersion();
 
