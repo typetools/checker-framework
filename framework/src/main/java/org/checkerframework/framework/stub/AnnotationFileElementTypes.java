@@ -761,7 +761,7 @@ public class AnnotationFileElementTypes {
     try {
       root = Paths.get(resourceURL.toURI());
     } catch (URISyntaxException e) {
-      throw new BugInCF("Can parse URL: " + resourceURL.toString(), e);
+      throw new BugInCF("Cannot parse URL: " + resourceURL.toString(), e);
     }
 
     try (Stream<Path> walk = Files.walk(root)) {
@@ -828,7 +828,7 @@ public class AnnotationFileElementTypes {
         }
       }
     } catch (IOException e) {
-      throw new BugInCF("cannot open the Jar file " + resourceURL.getFile(), e);
+      throw new BugInCF("Cannot open the jar file " + resourceURL.getFile(), e);
     }
   }
 }

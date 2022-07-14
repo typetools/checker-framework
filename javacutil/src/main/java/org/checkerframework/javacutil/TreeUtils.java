@@ -1692,8 +1692,7 @@ public final class TreeUtils {
       // May as well fall back to old method
     }
 
-    // Need to suppress deprecation on JDK 12 and later:
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation") // deprecated on JDK 12 and later
     ExpressionTree expression = caseTree.getExpression();
     if (expression == null) {
       return Collections.emptyList();
@@ -1755,7 +1754,7 @@ public final class TreeUtils {
    * pattern.
    *
    * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
-   * @return the {@code PatternTree} of {@code instanceOfTree} or null if is doesn't exist
+   * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
    */
   public static @Nullable Tree instanceOfGetPattern(InstanceOfTree instanceOfTree) {
     try {
