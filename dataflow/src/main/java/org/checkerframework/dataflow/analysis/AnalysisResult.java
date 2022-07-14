@@ -143,17 +143,21 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    * @param other an analysis result to combine with this
    */
   public void combine(AnalysisResult<V, S> other) {
+    copyMapsIfNeeded();
+    nodeValues.putAll(other.nodeValues);
+    mergeTreeLookup(treeLookup, other.treeLookup);
+    postfixLookup.putAll(other.postfixLookup);
+    stores.putAll(other.stores);
+    finalLocalValues.putAll(other.finalLocalValues);
+  }
+
+  private void copyMapsIfNeeded() {
     if (!mapsCopied) {
       nodeValues = new IdentityHashMap<>(nodeValues);
       treeLookup = new IdentityHashMap<>(treeLookup);
       postfixLookup = new IdentityHashMap<>(postfixLookup);
       mapsCopied = true;
     }
-    nodeValues.putAll(other.nodeValues);
-    mergeTreeLookup(treeLookup, other.treeLookup);
-    postfixLookup.putAll(other.postfixLookup);
-    stores.putAll(other.stores);
-    finalLocalValues.putAll(other.finalLocalValues);
   }
 
   /**
@@ -413,6 +417,10 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     if (transferInput == null) {
       return null;
     }
+    // Calling Analysis.runAnalysisFor() may mutate the internal nodeValues map inside an
+    // AbstractAnalysis object, and by default the AnalysisResult constructor just wraps this map
+    // without copying it.  So here the AnalysisResult maps must be copied, to preserve them.
+    copyMapsIfNeeded();
     return runAnalysisFor(node, preOrPost, transferInput, nodeValues, analysisCaches);
   }
 
