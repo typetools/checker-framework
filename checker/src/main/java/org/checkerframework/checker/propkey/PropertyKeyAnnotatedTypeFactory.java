@@ -181,9 +181,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         prop.load(in);
         result.addAll(prop.stringPropertyNames());
       } catch (Exception e) {
-        // TODO: is there a nicer way to report messages, that are not
-        // connected to an AST node?
-        // One cannot use report, because it needs a node.
+        // TODO: is there a nicer way to report messages, that are not connected to an AST node?
+        // One cannot use `report`, because it needs a node.
         checker.message(Kind.WARNING, "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
         e.printStackTrace();
       }
