@@ -1,7 +1,5 @@
-Version 3.23.0-eisop1 (July ?, 2022)
-------------------------------------
-
-**User-visible changes:**
+Version 3.23.0-eisop1 (July 14, 2022)
+-------------------------------------
 
 **Implementation details:**
 
@@ -10,6 +8,7 @@ ViewpointAdapter interface. This support is experimental and the API
 will change, in particular if the feature is fully integrated with
 the DependentTypesHelper.
 
+Improved defaulting in stub files:
 Method `AnnotatedTypeFactory.getDeclAnnotations` now returns the
 annotations for a package element. Previously, it returned an empty set
 when parsing another file. (eisop#270)
@@ -23,7 +22,7 @@ Improved the CFG type of implicit this receivers. (typetools#5174)
 
 **Closed issues:**
 
-eisop#270, typetools#5174, typetools#5189, eisop#281.
+eisop#270, eisop#281, typetools#5174, typetools#5189.
 
 
 Version 3.23.0 (July 11, 2022)
