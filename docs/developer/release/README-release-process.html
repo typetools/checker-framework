@@ -176,8 +176,8 @@ TreeAnnotator
   </li>
   <li>
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
-      <code>mkdir -p /scratch/$USER/cf-release<br/></code>
-      <code>cd /scratch/$USER/cf-release<br/></code>
+      <code>mkdir -p /tmp/$USER/cf-release<br/></code>
+      <code>cd /tmp/$USER/cf-release<br/></code>
       <code>test -d checker-framework && (cd checker-framework && git pull --ff-only --quiet) || git clone --quiet https://github.com/eisop/checker-framework.git<br/></code>
       <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
