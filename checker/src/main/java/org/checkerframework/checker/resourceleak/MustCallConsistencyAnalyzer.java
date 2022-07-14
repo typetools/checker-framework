@@ -142,10 +142,10 @@ import javax.lang.model.type.TypeMirror;
 class MustCallConsistencyAnalyzer {
 
     /** True if errors related to static owning fields should be suppressed. */
-    private boolean permitStaticOwning;
+    private final boolean permitStaticOwning;
 
     /** True if errors related to field initialization should be suppressed. */
-    private boolean permitInitializationLeak;
+    private final boolean permitInitializationLeak;
 
     /**
      * Aliases about which the checker has already reported about a resource leak, to avoid
@@ -1312,10 +1312,8 @@ class MustCallConsistencyAnalyzer {
             // The Resource Leak Checker issues no error if the assignment is a field initializer.
             if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
                 // An assignment to a field that is also a declaration must be a field initializer
-                // (VARIABLE
-                // Trees are only used for declarations).  Assignment in a field initializer is
-                // always
-                // permitted.
+                // (VARIABLE Trees are only used for declarations).  Assignment in a field
+                // initializer is always permitted.
                 return;
             } else if (permitInitializationLeak
                     && TreePathUtil.isTopLevelAssignmentInInitializerBlock(currentPath)) {

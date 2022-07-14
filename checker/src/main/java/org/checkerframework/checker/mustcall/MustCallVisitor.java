@@ -78,9 +78,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                 if (!ElementUtils.isFinal(classEle)) {
                     // There is no @InheritableMustCall annotation and this is a non-final class.
                     // Check if an explicit @MustCall annotation is present. If so, issue an error
-                    // suggesting
-                    // that @InheritableMustCall is probably what the programmer means, for
-                    // usability.
+                    // suggesting that @InheritableMustCall is probably what the programmer means,
+                    // for usability.
                     List<? extends AnnotationMirror> explicitAnnos =
                             classEle.getAnnotationMirrors();
                     if (explicitAnnos.stream()
@@ -136,11 +135,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         // MustCallAlias annotations are always permitted on type uses, despite not technically
-        // being a
-        // part of the type hierarchy. It's necessary to get the annotation from the
-        // element because MustCallAlias is aliased to PolyMustCall, which is what useType
-        // would contain. Note that isValidUse does not need to consider component types,
-        // on which it should be called separately.
+        // being a part of the type hierarchy. It's necessary to get the annotation from the element
+        // because MustCallAlias is aliased to PolyMustCall, which is what useType would contain.
+        // Note that isValidUse does not need to consider component types, on which it should be
+        // called separately.
         Element elt = TreeUtils.elementFromTree(tree);
         if (elt != null
                 && AnnotationUtils.containsSameByClass(

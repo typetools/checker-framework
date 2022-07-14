@@ -26,8 +26,7 @@ class InstanceInitializer {
     {
         try {
             // This assignment is not OK, because it's a reassignment without satisfying the
-            // mustcall
-            // obligations of the previous value of `s`.
+            // mustcall obligations of the previous value of `s`.
             // :: error: required.method.not.called
             s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
         } catch (Exception e) {

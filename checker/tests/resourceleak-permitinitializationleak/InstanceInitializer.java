@@ -24,8 +24,7 @@ class InstanceInitializer {
     {
         try {
             // This assignment is not OK, because it's a reassignment without satisfying the
-            // mustcall
-            // obligations of the previous value of `s`.
+            // mustcall obligations of the previous value of `s`.
             // With -ApermitInitializationLeak, the Resource Leak Checker unsoundly permits it.
             s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
         } catch (Exception e) {
