@@ -687,7 +687,7 @@ task getPlumeScripts() {
         exec {
             workingDir "${plumeScriptsHome}/../"
             executable 'git'
-            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/plume-scripts.git', '.plume-scripts']
+            args = ['clone', '-q', '--depth', '1', 'https://github.com/eisop-plume-lib/plume-scripts.git', '.plume-scripts']
         }
     }
 }
