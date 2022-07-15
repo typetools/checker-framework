@@ -42,8 +42,8 @@ TransferInput#12
 Before:   constant propagation = {a=0}
 ~~~~~~~~~
 b   [ LocalVariable ]
-3   [ IntegerLiteral ]    > 3
-b = 3   [ Assignment ]    > 3
+3   [ IntegerLiteral ]
+b = 3   [ Assignment ]
 ~~~~~~~~~
 AnalysisResult#3
 After:   constant propagation = {a=0, b=3}
@@ -54,8 +54,8 @@ TransferInput#13
 Before:   constant propagation = {a=0}
 ~~~~~~~~~
 b   [ LocalVariable ]
-4   [ IntegerLiteral ]    > 4
-b = 4   [ Assignment ]    > 4
+4   [ IntegerLiteral ]
+b = 4   [ Assignment ]
 ~~~~~~~~~
 AnalysisResult#5
 After:   constant propagation = {a=0, b=4}
@@ -65,7 +65,7 @@ Process order: 6
 TransferInput#23
 Before:   constant propagation = {a=0, b=T}
 ~~~~~~~~~
-b   [ LocalVariable ]    > T
+b   [ LocalVariable ]
 return b   [ Return ]
 ~~~~~~~~~
 AnalysisResult#7
