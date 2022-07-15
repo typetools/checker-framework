@@ -11,9 +11,9 @@ plugins {
 
 apply plugin: 'org.checkerframework'
 dependencies {
-    compileOnly 'io.github.eisop:checker-qual:3.22.1-eisop1'
-    testCompileOnly 'io.github.eisop:checker-qual:3.22.1-eisop1'
-    checkerFramework 'io.github.eisop:checker:3.22.1-eisop1'
+    compileOnly 'io.github.eisop:checker-qual:3.23.0-eisop1'
+    testCompileOnly 'io.github.eisop:checker-qual:3.23.0-eisop1'
+    checkerFramework 'io.github.eisop:checker:3.23.0-eisop1'
 }
 
 dependencies {
