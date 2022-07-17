@@ -42,11 +42,11 @@ TransferInput#12
 Before:   constant propagation = {a=0}
 ~~~~~~~~~
 b   [ LocalVariable ]
-3   [ IntegerLiteral ]
-b = 3   [ Assignment ]
+a   [ LocalVariable ]
+b = a   [ Assignment ]
 ~~~~~~~~~
 AnalysisResult#3
-After:   constant propagation = {a=0, b=3}
+After:   constant propagation = {a=0, b=0}
 
 10:
 Process order: 5
