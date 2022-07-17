@@ -3,11 +3,8 @@ package constantpropagation;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
-import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.ForwardAnalysis;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
-import org.checkerframework.dataflow.cfg.ControlFlowGraph;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
 import org.checkerframework.dataflow.constantpropagation.Constant;
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationStore;
@@ -33,13 +30,6 @@ public class ConstantPropagation {
     CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
     Map<String, Object> res =
         cfgVisualizeLauncher.generateStringOfCFG(inputFile, method, clazz, true, forwardAnalysis);
-    // analysis has run, so we can get the result
-    AnalysisResult<Constant, ConstantPropagationStore> result = forwardAnalysis.getResult();
-    ControlFlowGraph cfg = cfgVisualizeLauncher.generateMethodCFG(inputFile, clazz, method);
-    for (Node node : cfg.getAllNodes()) {
-      result.getStoreBefore(node);
-      result.getStoreAfter(node);
-    }
     try (FileWriter out = new FileWriter(outputFile)) {
       out.write(res.get("stringGraph").toString());
       out.write("\n");
