@@ -1,4 +1,5 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
+
 import qual.MyFenum;
 
 @SuppressWarnings("fenum:assignment.type.incompatible") // initialization of fake enums

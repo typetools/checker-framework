@@ -1,6 +1,7 @@
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.LinkedList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.*;
 
 /**
  * This class is based on NullnessExample. This version contains additional tests to ensure that a

@@ -476,6 +476,14 @@ List<String> getJavaFilesToFormat(projectName) {
         }
     }
 
+    // Add documentation example and tutorial
+    fileTree("${rootDir}/docs").visit { details ->
+        if (details.name.endsWith('.java')) {
+            javaFiles.add(details.file)
+        }
+    }
+    // Don't reformat the sources in dataflow/manual/examples/
+
     List<String> args = new ArrayList<>(javaFiles.size());
     for (File f : javaFiles) {
         args += project(projectName).relativePath(f)

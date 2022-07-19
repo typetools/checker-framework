@@ -1,14 +1,15 @@
 package qual;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.units.UnitsRelations;
 import org.checkerframework.checker.units.UnitsRelationsTools;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 /** Relations among units of frequency. */
 public class FrequencyRelations implements UnitsRelations {

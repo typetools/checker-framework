@@ -1,6 +1,7 @@
+import org.checkerframework.checker.nullness.qual.*;
+
 import java.util.LinkedList;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.*;
 
 /**
  * This class illustrates use of nullness type annotations. The class doesn't do anything -- it is
