@@ -89,7 +89,7 @@ public class ForwardAnalysisImpl<
      *
      * @param transfer the transfer function
      */
-    public ForwardAnalysisImpl(@Nullable T transfer) {
+    public ForwardAnalysisImpl(T transfer) {
         this(-1);
         this.transferFunction = transfer;
     }
