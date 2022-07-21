@@ -3926,8 +3926,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                     boolean isPostfix =
                             kind == Tree.Kind.POSTFIX_INCREMENT
                                     || kind == Tree.Kind.POSTFIX_DECREMENT;
-                    AssignmentNode unaryAssign =
-                            createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
 
                     if (isPostfix) {
                         TypeMirror exprType = TreeUtils.typeOf(exprTree);
@@ -3958,7 +3956,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                         result = new LocalVariableNode(resultExpr);
                         result.setInSource(false);
                         extendWithNode(result);
-                    } else {
+                    }
+                    AssignmentNode unaryAssign =
+                            createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
+                    if (!isPostfix) {
                         result = unaryAssign;
                     }
                     break;
