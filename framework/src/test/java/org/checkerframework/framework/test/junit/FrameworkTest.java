@@ -7,10 +7,11 @@ import org.junit.runners.Parameterized.Parameters;
 import java.io.File;
 
 /** JUnit tests for the Checker Framework, using the {@link EvenOddChecker}. */
+// See framework/tests/framework/README for why this is a CFPerFileTest.
 public class FrameworkTest extends CheckerFrameworkPerFileTest {
 
     public FrameworkTest(File testFile) {
-        super(testFile, EvenOddChecker.class, "framework", "-Anomsgtext");
+        super(testFile, EvenOddChecker.class, "framework");
     }
 
     @Parameters
