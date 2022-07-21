@@ -7,6 +7,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Arrays;
@@ -84,15 +85,23 @@ public class AssignmentNode extends Node {
      *
      * @return the left-hand-side of the assignment
      */
+    @Pure
     public Node getTarget() {
         return lhs;
     }
 
+    /**
+     * Returns the right-hand-side of the assignment.
+     *
+     * @return the right-hand-side of the assignment
+     */
+    @Pure
     public Node getExpression() {
         return rhs;
     }
 
     @Override
+    @Pure
     public Tree getTree() {
         return tree;
     }
@@ -103,6 +112,7 @@ public class AssignmentNode extends Node {
      *
      * @return true if the assignment node is synthetic
      */
+    @Pure
     public boolean isSynthetic() {
         return synthetic;
     }
@@ -113,11 +123,13 @@ public class AssignmentNode extends Node {
     }
 
     @Override
+    @Pure
     public String toString() {
         return getTarget() + " = " + getExpression() + (synthetic ? " (synthetic)" : "");
     }
 
     @Override
+    @Pure
     public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof AssignmentNode)) {
             return false;
@@ -133,6 +145,7 @@ public class AssignmentNode extends Node {
     }
 
     @Override
+    @Pure
     public Collection<Node> getOperands() {
         return Arrays.asList(getTarget(), getExpression());
     }
