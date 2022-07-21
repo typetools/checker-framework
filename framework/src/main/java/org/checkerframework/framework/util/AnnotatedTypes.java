@@ -1002,14 +1002,24 @@ public class AnnotatedTypes {
             DeclaredType t =
                     TypesUtils.getSuperClassOrInterface(
                             method.getElement().getEnclosingElement().asType(), atypeFactory.types);
-            if (t.getEnclosingType() != null
-                    && atypeFactory.types.isSameType(
-                            t.getEnclosingType(), parameters.get(0).getUnderlyingType())
-                    && (args.isEmpty()
-                            || !atypeFactory.types.isSameType(
-                                    TreeUtils.typeOf(args.get(0)),
-                                    parameters.get(0).getUnderlyingType()))) {
-                parameters = parameters.subList(1, parameters.size());
+            if (t.getEnclosingType() != null) {
+                if (args.isEmpty()) {
+                    // TODO: ugly hack to attempt to fix mismatch
+                    parameters = parameters.subList(1, parameters.size());
+                } else {
+                    TypeMirror p0tm = parameters.get(0).getUnderlyingType();
+                    // Is the first parameter either equal to the enclosing type?
+                    if (atypeFactory.types.isSameType(t.getEnclosingType(), p0tm)) {
+                        // Is the first argument the same type as the first parameter?
+                        if (!atypeFactory.types.isSameType(TreeUtils.typeOf(args.get(0)), p0tm)) {
+                            // Remove the first parameter.
+                            parameters = parameters.subList(1, parameters.size());
+                        }
+                    }
+                }
+                if (parameters.isEmpty()) {
+                    return parameters;
+                }
             }
         }
 

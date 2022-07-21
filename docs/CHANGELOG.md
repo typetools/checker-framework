@@ -1,3 +1,15 @@
+Version 3.23.0-eisop2 (July 22, 2022)
+-------------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+eisop#308.
+
+
 Version 3.23.0-eisop1 (July 14, 2022)
 -------------------------------------
 
