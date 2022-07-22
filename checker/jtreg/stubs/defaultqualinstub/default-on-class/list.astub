@@ -1,0 +1,8 @@
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+@DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.UPPER_BOUND)
+public class List<T> {
+    abstract void retainAll(List<?> other);
+}

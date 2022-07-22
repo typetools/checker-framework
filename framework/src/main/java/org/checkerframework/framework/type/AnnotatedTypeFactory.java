@@ -4215,17 +4215,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        // If parsing annotation files, return only the annotations in the element.
-        // The only exception is package because we always load package-info eagerly
-        // and there is no parent element to parse.
-        boolean isParsing =
-                stubTypes.isParsing()
-                        || ajavaTypes.isParsing()
-                        || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing());
-        if (isParsing && elt.getKind() != ElementKind.PACKAGE) {
-            return results;
-        }
-
         // Add annotations from annotation files.
         results.addAll(stubTypes.getDeclAnnotations(elt));
         results.addAll(ajavaTypes.getDeclAnnotations(elt));
@@ -4241,7 +4230,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         // Add the element and its annotations to the cache.
-        cacheDeclAnnos.put(elt, results);
+        if (!stubTypes.isParsing()
+                && !ajavaTypes.isParsing()
+                && (currentFileAjavaTypes == null || !currentFileAjavaTypes.isParsing())) {
+            cacheDeclAnnos.put(elt, results);
+        }
         return results;
     }
 

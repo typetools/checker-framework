@@ -5,6 +5,12 @@ Version 3.23.0-eisop2 (July 22, 2022)
 
 **Implementation details:**
 
+Improved defaulting in stub files:
+As an extension to the fix for eisop#270, we now allow internally parsing
+multiple stub files at the same time. This should make `AnnotatedTypeFactory.getDeclAnnotations`
+return the expected declaration annotations for all kinds of elements,
+even if it is parsing a different stub file.
+
 **Closed issues:**
 
 eisop#308.
