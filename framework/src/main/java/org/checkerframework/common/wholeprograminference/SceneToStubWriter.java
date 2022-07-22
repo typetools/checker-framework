@@ -124,28 +124,67 @@ public final class SceneToStubWriter {
   }
 
   /**
+   * Formats an annotation in Java source format.
+   *
+   * @param sb where to format the annotation to
+   * @param a the annotation to print
+   */
+  public static void formatAnnotation(StringBuilder sb, Annotation a) {
+    String fullAnnoName = a.def().name;
+    String simpleAnnoName = fullAnnoName.substring(fullAnnoName.lastIndexOf('.') + 1);
+    sb.append("@");
+    sb.append(simpleAnnoName);
+    if (a.fieldValues.isEmpty()) {
+      return;
+    } else {
+      sb.append("(");
+      if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
+        AnnotationFieldType aft = a.def().fieldTypes.get("value");
+        // TODO: pass in a StringBuilder.
+        sb.append(aft.format(a.fieldValues.get("value")));
+      } else {
+        // This simulates: new StringJoiner(", ", "@" + simpleAnnoName + "(", ")")
+        for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
+          AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
+          sb.append(f.getKey());
+          sb.append("=");
+          sb.append(aft.format(f.getValue()));
+          sb.append(", ");
+        }
+        sb.delete(sb.length() - 2, sb.length());
+      }
+      sb.append(")");
+    }
+  }
+
+  /**
    * Returns the String representation of an annotation in Java source format.
    *
    * @param a the annotation to print
    * @return the formatted annotation
    */
   public static String formatAnnotation(Annotation a) {
-    String fullAnnoName = a.def().name;
-    String simpleAnnoName = fullAnnoName.substring(fullAnnoName.lastIndexOf('.') + 1);
-    if (a.fieldValues.isEmpty()) {
-      return "@" + simpleAnnoName;
-    }
-    StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
-    if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
-      AnnotationFieldType aft = a.def().fieldTypes.get("value");
-      sj.add(aft.format(a.fieldValues.get("value")));
-    } else {
-      for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-        AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-        sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+    StringBuilder sb = new StringBuilder();
+    formatAnnotation(sb, a);
+    return sb.toString();
+  }
+
+  /**
+   * Prints all annotations in {@code annos} to {@code sb} in a form suitable to be printed as Java
+   * source code.
+   *
+   * <p>Each annotation is followed by a space, to separate it from following Java code.
+   *
+   * @param sb where to write the formatted annotations
+   * @param annos the annotations to format
+   */
+  private static void formatAnnotations(StringBuilder sb, Collection<? extends Annotation> annos) {
+    for (Annotation tla : annos) {
+      if (!isInternalJDKAnnotation(tla.def.name)) {
+        sb.append(formatAnnotation(tla));
+        sb.append(" ");
       }
     }
-    return sj.toString();
   }
 
   /**
@@ -159,13 +198,29 @@ public final class SceneToStubWriter {
    */
   private static String formatAnnotations(Collection<? extends Annotation> annos) {
     StringBuilder sb = new StringBuilder();
-    for (Annotation tla : annos) {
-      if (!isInternalJDKAnnotation(tla.def.name)) {
-        sb.append(formatAnnotation(tla));
-        sb.append(" ");
-      }
-    }
+    formatAnnotations(sb, annos);
     return sb.toString();
+  }
+
+  /**
+   * Formats the type of an array so that it is printable in Java source code, with the annotations
+   * from the scenelib representation added in appropriate places. The result includes a trailing
+   * space.
+   *
+   * @param sb where to format the array type to
+   * @param scenelibRep the array's scenelib type element
+   * @param javacRep the representation of the array's type used by javac
+   */
+  private static void formatArrayType(
+      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
+    TypeMirror componentType = javacRep.getComponentType();
+    ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((ArrayType) componentType).getComponentType();
+      scenelibComponent = getNextArrayLevel(scenelibComponent);
+    }
+    formatType(sb, scenelibComponent, componentType);
+    formatArrayTypeImpl(sb, scenelibRep, javacRep);
   }
 
   /**
@@ -177,14 +232,37 @@ public final class SceneToStubWriter {
    * @return the type formatted to be written to Java source code, followed by a space character
    */
   private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
-    TypeMirror componentType = javacRep.getComponentType();
+    StringBuilder sb = new StringBuilder();
+    formatArrayType(sb, scenelibRep, javacRep);
+    return sb.toString();
+  }
+
+  /**
+   * Formats the type of an array to be printable in Java source code, with the annotations from the
+   * scenelib representation added. This method formats only the "array" parts of an array type; it
+   * does not format (or attempt to format) the ultimate component type (that is, the non-array part
+   * of the array type).
+   *
+   * @param sb where to format the array type to
+   * @param scenelibRep the scene-lib representation
+   * @param javacRep the javac representation of the array type
+   */
+  private static void formatArrayTypeImpl(
+      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
+    TypeMirror javacComponent = javacRep.getComponentType();
     ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
-    while (componentType.getKind() == TypeKind.ARRAY) {
-      componentType = ((ArrayType) componentType).getComponentType();
-      scenelibComponent = getNextArrayLevel(scenelibComponent);
+    List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
+    for (AnnotationMirror explicitAnno : explicitAnnos) {
+      sb.append(explicitAnno.toString());
+      sb.append(" ");
     }
-    return formatType(scenelibComponent, componentType)
-        + formatArrayTypeImpl(scenelibRep, javacRep);
+    if (explicitAnnos.isEmpty() && scenelibRep != null) {
+      sb.append(formatAnnotations(scenelibRep.tlAnnotationsHere));
+    }
+    sb.append("[] ");
+    if (javacComponent.getKind() == TypeKind.ARRAY) {
+      sb.append(formatArrayTypeImpl(scenelibComponent, (ArrayType) javacComponent));
+    }
   }
 
   /**
@@ -198,23 +276,9 @@ public final class SceneToStubWriter {
    * @return the type formatted to be written to Java source code, followed by a space character
    */
   private static String formatArrayTypeImpl(ATypeElement scenelibRep, ArrayType javacRep) {
-    TypeMirror javacComponent = javacRep.getComponentType();
-    ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
-    String result = "";
-    List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
-    for (AnnotationMirror explicitAnno : explicitAnnos) {
-      result += explicitAnno.toString();
-      result += " ";
-    }
-    if (result.isEmpty() && scenelibRep != null) {
-      result += formatAnnotations(scenelibRep.tlAnnotationsHere);
-    }
-    result += "[] ";
-    if (javacComponent.getKind() == TypeKind.ARRAY) {
-      return result + formatArrayTypeImpl(scenelibComponent, (ArrayType) javacComponent);
-    } else {
-      return result;
-    }
+    StringBuilder result = new StringBuilder();
+    formatArrayTypeImpl(result, scenelibRep, javacRep);
+    return result.toString();
   }
 
   /** Static variable to improve performance of getNextArrayLevel. */
@@ -244,6 +308,29 @@ public final class SceneToStubWriter {
   }
 
   /**
+   * Formats a single formal parameter declaration, as if it were written in Java source code.
+   *
+   * @param sb where to format the formal parameter to
+   * @param param the AField that represents the parameter
+   * @param parameterName the name of the parameter to display in the stub file. Stub files
+   *     disregard formal parameter names, so this is aesthetic in almost all cases. The exception
+   *     is the receiver parameter, whose name must be "this".
+   * @param basename the type name to use for the receiver parameter. Only used when the previous
+   *     argument is exactly the String "this".
+   */
+  private static void formatParameter(
+      StringBuilder sb, AField param, String parameterName, String basename) {
+    if (!param.tlAnnotationsHere.isEmpty()) {
+      for (Annotation declAnno : param.tlAnnotationsHere) {
+        sb.append(formatAnnotation(declAnno));
+        sb.append(" ");
+      }
+      sb.delete(sb.length() - 1, sb.length());
+    }
+    sb.append(formatAFieldImpl(param, parameterName, basename));
+  }
+
+  /**
    * Formats a single formal parameter declaration.
    *
    * @param param the AField that represents the parameter
@@ -255,12 +342,35 @@ public final class SceneToStubWriter {
    * @return the formatted formal parameter, as if it were written in Java source code
    */
   private static String formatParameter(AField param, String parameterName, String basename) {
-    StringJoiner result = new StringJoiner(" ");
-    for (Annotation declAnno : param.tlAnnotationsHere) {
-      result.add(formatAnnotation(declAnno));
+    StringBuilder sb = new StringBuilder();
+    formatParameter(sb, param, parameterName, basename);
+    return sb.toString();
+  }
+
+  /**
+   * Formats a field declaration or formal parameter so that it can be printed in a stub file.
+   *
+   * <p>This method does not add a trailing semicolon or comma.
+   *
+   * <p>Usually, {@link #formatParameter(AField, String, String)} should be called to format method
+   * parameters, and {@link #printField(AField, String, PrintWriter, String)} should be called to
+   * print field declarations. Both use this method as their underlying implementation.
+   *
+   * @param aField the field declaration or formal parameter declaration to format; should not
+   *     represent a local variable
+   * @param fieldName the name to use for the declaration in the stub file. This doesn't matter for
+   *     parameters (except the "this" receiver parameter), but must be correct for fields.
+   * @param className the simple name of the enclosing class. This is only used for printing the
+   *     type of an explicit receiver parameter (i.e., a parameter named "this").
+   */
+  private static void formatAFieldImpl(
+      StringBuilder sb, AField aField, String fieldName, String className) {
+    if ("this".equals(fieldName)) {
+      sb.append(formatType(aField.type, null, className));
+    } else {
+      sb.append(formatType(aField.type, aField.getTypeMirror()));
     }
-    result.add(formatAFieldImpl(param, parameterName, basename));
-    return result.toString();
+    sb.append(fieldName);
   }
 
   /**
@@ -281,22 +391,21 @@ public final class SceneToStubWriter {
    * @return a String suitable to print in a stub file
    */
   private static String formatAFieldImpl(AField aField, String fieldName, String className) {
-    if ("this".equals(fieldName)) {
-      return formatType(aField.type, null, className) + fieldName;
-    } else {
-      return formatType(aField.type, aField.getTypeMirror()) + fieldName;
-    }
+    StringBuilder sb = new StringBuilder();
+    formatAFieldImpl(sb, aField, fieldName, className);
+    return sb.toString();
   }
 
   /**
-   * Formats the given type for printing in Java source code.
+   * Formats the given type as it would appear in Java source code, followed by a trailing space.
    *
+   * @param sb where to format the type to
    * @param aType the scene-lib representation of the type, or null if only the unannotated type is
    *     to be printed
    * @param javacType the javac representation of the type
-   * @return the type as it would appear in Java source code, followed by a trailing space
    */
-  private static String formatType(final @Nullable ATypeElement aType, final TypeMirror javacType) {
+  private static void formatType(
+      StringBuilder sb, final @Nullable ATypeElement aType, final TypeMirror javacType) {
     // TypeMirror#toString prints multiple annotations on a single type
     // separated by commas rather than by whitespace, as is required in source code.
     String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
@@ -315,23 +424,41 @@ public final class SceneToStubWriter {
         basetypeToPrint = basetypeToPrint.substring(basetypeToPrint.lastIndexOf(' ') + 1);
       }
     }
-    return formatType(aType, javacType, basetypeToPrint);
+    formatType(sb, aType, javacType, basetypeToPrint);
   }
 
   /**
-   * Formats the given type for printing in Java source code. This separate version of this method
-   * exists only for receiver parameters, which are printed using the name of the class as {@code
-   * basetypeToPrint} instead of the javac type. The other version of this method should be
-   * preferred in every other case.
+   * Formats the given type for printing in Java source code.
    *
+   * @param aType the scene-lib representation of the type, or null if only the unannotated type is
+   *     to be printed
+   * @param javacType the javac representation of the type
+   * @return the type as it would appear in Java source code, followed by a trailing space
+   */
+  private static String formatType(final @Nullable ATypeElement aType, final TypeMirror javacType) {
+    StringBuilder sb = new StringBuilder();
+    formatType(sb, aType, javacType);
+    return sb.toString();
+  }
+
+  /**
+   * Formats the given type as it would appear in Java source code, followed by a trailing space.
+   *
+   * <p>This overloaded version of this method exists only for receiver parameters, which are
+   * printed using the name of the class as {@code basetypeToPrint} instead of the javac type. The
+   * other version of this method should be preferred in every other case.
+   *
+   * @param sb where to formate the type to
    * @param aType the scene-lib representation of the type, or null if only the unannotated type is
    *     to be printed
    * @param javacType the javac representation of the type, or null if this is a receiver parameter
    * @param basetypeToPrint the string representation of the type
-   * @return the type as it would appear in Java source code, followed by a trailing space
    */
-  private static String formatType(
-      final @Nullable ATypeElement aType, @Nullable TypeMirror javacType, String basetypeToPrint) {
+  private static void formatType(
+      StringBuilder sb,
+      final @Nullable ATypeElement aType,
+      @Nullable TypeMirror javacType,
+      String basetypeToPrint) {
     // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
     // library uses
     if (basetypeToPrint.startsWith("<anonymous ")) {
@@ -359,14 +486,35 @@ public final class SceneToStubWriter {
 
     // An array is not a receiver, so using the javacType to check for arrays is safe.
     if (javacType != null && javacType.getKind() == TypeKind.ARRAY) {
-      return formatArrayType(aType, (ArrayType) javacType);
+      sb.append(formatArrayType(aType, (ArrayType) javacType));
+      return;
     }
 
-    if (aType == null) {
-      return basetypeToPrint + " ";
-    } else {
-      return formatAnnotations(aType.tlAnnotationsHere) + basetypeToPrint + " ";
+    if (aType != null) {
+      sb.append(formatAnnotations(aType.tlAnnotationsHere));
     }
+    sb.append(basetypeToPrint);
+    sb.append(" ");
+  }
+
+  /**
+   * Formats the given type for printing in Java source code.
+   *
+   * <p>This overloaded version of this method exists only for receiver parameters, which are
+   * printed using the name of the class as {@code basetypeToPrint} instead of the javac type. The
+   * other version of this method should be preferred in every other case.
+   *
+   * @param aType the scene-lib representation of the type, or null if only the unannotated type is
+   *     to be printed
+   * @param javacType the javac representation of the type, or null if this is a receiver parameter
+   * @param basetypeToPrint the string representation of the type
+   * @return the type as it would appear in Java source code, followed by a trailing space
+   */
+  private static String formatType(
+      final @Nullable ATypeElement aType, @Nullable TypeMirror javacType, String basetypeToPrint) {
+    StringBuilder sb = new StringBuilder();
+    formatType(sb, aType, javacType, basetypeToPrint);
+    return sb.toString();
   }
 
   /** Writes an import statement for each annotation used in an {@link AScene}. */
