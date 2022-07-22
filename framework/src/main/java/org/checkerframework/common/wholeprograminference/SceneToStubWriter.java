@@ -152,15 +152,14 @@ public final class SceneToStubWriter {
       sb.append("(");
       if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
         AnnotationFieldType aft = a.def().fieldTypes.get("value");
-        // TODO: pass in a StringBuilder.
-        sb.append(aft.format(a.fieldValues.get("value")));
+        aft.format(sb, a.fieldValues.get("value"));
       } else {
         // This simulates: new StringJoiner(", ", "@" + simpleAnnoName + "(", ")")
         for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
           AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
           sb.append(f.getKey());
           sb.append("=");
-          sb.append(aft.format(f.getValue()));
+          aft.format(sb, f.getValue());
           sb.append(", ");
         }
         sb.delete(sb.length() - 2, sb.length());
@@ -278,6 +277,23 @@ public final class SceneToStubWriter {
   }
 
   /**
+   * Formats a single formal parameter declaration.
+   *
+   * @param param the AField that represents the parameter
+   * @param parameterName the name of the parameter to display in the stub file. Stub files
+   *     disregard formal parameter names, so this is aesthetic in almost all cases. The exception
+   *     is the receiver parameter, whose name must be "this".
+   * @param basename the type name to use for the receiver parameter. Only used when the previous
+   *     argument is exactly the String "this".
+   * @return the formatted formal parameter, as if it were written in Java source code
+   */
+  private static String formatParameter(AField param, String parameterName, String basename) {
+    StringBuilder sb = new StringBuilder();
+    formatParameter(sb, param, parameterName, basename);
+    return sb.toString();
+  }
+
+  /**
    * Formats a single formal parameter declaration, as if it were written in Java source code.
    *
    * @param sb where to format the formal parameter to
@@ -347,23 +363,6 @@ public final class SceneToStubWriter {
       formatType(sb, aField.type, aField.getTypeMirror());
     }
     sb.append(fieldName);
-  }
-
-  /**
-   * Formats a single formal parameter declaration.
-   *
-   * @param param the AField that represents the parameter
-   * @param parameterName the name of the parameter to display in the stub file. Stub files
-   *     disregard formal parameter names, so this is aesthetic in almost all cases. The exception
-   *     is the receiver parameter, whose name must be "this".
-   * @param basename the type name to use for the receiver parameter. Only used when the previous
-   *     argument is exactly the String "this".
-   * @return the formatted formal parameter, as if it were written in Java source code
-   */
-  private static String formatParameter(AField param, String parameterName, String basename) {
-    StringBuilder sb = new StringBuilder();
-    formatParameter(sb, param, parameterName, basename);
-    return sb.toString();
   }
 
   /**
