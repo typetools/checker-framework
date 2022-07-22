@@ -4035,8 +4035,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             annotationsOnAnnotation =
                 annotation.getAnnotationType().asElement().getAnnotationMirrors();
           } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-            // Fix for Issue 348: If a CompletionFailure occurs,
-            // issue a warning.
+            // Fix for Issue 348: If a CompletionFailure occurs, issue a warning.
             checker.reportWarning(
                 annotation.getAnnotationType().asElement(),
                 "annotation.not.completed",

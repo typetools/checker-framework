@@ -1,3 +1,15 @@
+Version 3.24.0 (??)
+-------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Prefer `SystemUtil.jreVersion` to `SystemUtil.getJreVersion()`.
+
+**Closed issues:**
+
+
 Version 3.23.0 (July 11, 2022)
 ------------------------------
 
