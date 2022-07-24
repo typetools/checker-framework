@@ -38,6 +38,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -952,13 +953,15 @@ public class ElementUtils {
   }
 
   /** The {@code TypeElement.getRecordComponents()} method. */
-  private static Method getRecordComponentsMethod;
+  private static @MonotonicNonNull Method getRecordComponentsMethod = null;
 
   static {
-    try {
-      getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
-    } catch (NoSuchMethodException e) {
-      throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+    if (SystemUtil.jreVersion >= 16) {
+      try {
+        getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
+      } catch (NoSuchMethodException e) {
+        throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+      }
     }
   }
 

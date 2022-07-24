@@ -128,7 +128,7 @@ public final class TreeUtils {
   private static @MonotonicNonNull Method yieldGetValue = null;
 
   static {
-    if (SystemUtil.jreVersion > 11) {
+    if (SystemUtil.jreVersion >= 12) {
       try {
         caseGetExpressions = CaseTree.class.getDeclaredMethod("getExpressions");
         caseGetBody = CaseTree.class.getDeclaredMethod("getBody");
@@ -1715,7 +1715,7 @@ public final class TreeUtils {
    * @return the list of expressions in the case
    */
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
-    if (SystemUtil.jreVersion > 11) {
+    if (SystemUtil.jreVersion >= 12) {
       // Code for JDK 12 and later.
       try {
         @SuppressWarnings({"unchecked", "nullness"}) // reflective call
@@ -1783,15 +1783,15 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the pattern of {@code instanceOfTree} tree or null if the instanceof does not have a
-   * pattern.
+   * Returns the pattern of {@code instanceOfTree} tree. Returns null if the instanceof does not
+   * have a pattern, including if the JDK version does not support instance-of patterns.
    *
    * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
    * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
    */
   public static @Nullable Tree instanceOfGetPattern(InstanceOfTree instanceOfTree) {
     if (instanceOfGetPattern == null) {
-      throw new BugInCF("Don't call InstanceOfTree.getPattern on JDK <12");
+      return null;
     }
     try {
       return (Tree) instanceOfGetPattern.invoke(instanceOfTree);
