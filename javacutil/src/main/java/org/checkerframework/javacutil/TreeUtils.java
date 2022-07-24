@@ -121,7 +121,7 @@ public final class TreeUtils {
   /** The {@code InstanceOfTree.getPattern()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method bindingPatternGetPattern = null;
   /** The {@code SwitchExpressionTree.getExpression()} method. Null on JDK 11 and lower. */
-  private static @MonotonicNonNull Method switchExpressionGetExpressions = null;
+  private static @MonotonicNonNull Method switchExpressionGetExpression = null;
   /** The {@code SwitchExpressionTree.getCases()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method switchExpressionGetCases = null;
   /** The {@code YieldTree.getValue()} method. Null on JDK 11 and lower. */
@@ -136,7 +136,7 @@ public final class TreeUtils {
         bindingPatternGetVariable = bindingPatternClass.getMethod("getVariable");
         bindingPatternGetPattern = InstanceOfTree.class.getMethod("getPattern");
         Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
-        switchExpressionGetExpressions = switchExpressionClass.getMethod("getExpressions");
+        switchExpressionGetExpression = switchExpressionClass.getMethod("getExpression");
         switchExpressionGetCases = switchExpressionClass.getMethod("getCases");
         Class<?> yieldTreeClass = Class.forName("com.sun.source.tree.YieldTree");
         yieldGetValue = yieldTreeClass.getMethod("getValue");
@@ -1809,7 +1809,7 @@ public final class TreeUtils {
   public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
     try {
       ExpressionTree expressionTree =
-          (ExpressionTree) switchExpressionGetExpressions.invoke(switchExpressionTree);
+          (ExpressionTree) switchExpressionGetExpression.invoke(switchExpressionTree);
       if (expressionTree != null) {
         return expressionTree;
       }
