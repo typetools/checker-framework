@@ -244,6 +244,11 @@ public class TypeVisualizer {
       }
     }
 
+    /**
+     * Write this to a file.
+     *
+     * @param file the file to write to
+     */
     private void write(final File file) {
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
         writer.write("digraph " + graphName + "{");

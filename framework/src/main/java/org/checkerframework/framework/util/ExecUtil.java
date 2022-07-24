@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
+/** Utilities for executing external processes. */
 public class ExecUtil {
 
   public static int execute(final String[] cmd, final OutputStream std, final OutputStream err) {

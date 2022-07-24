@@ -322,6 +322,12 @@ public class TestUtilities {
     return optionList;
   }
 
+  /**
+   * Write all the lines in the given Iterable to the given File.
+   *
+   * @param file where to write the lines
+   * @param lines what lines to write
+   */
   public static void writeLines(File file, Iterable<?> lines) {
     try (final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
       Iterator<?> iter = lines.iterator();
@@ -380,6 +386,12 @@ public class TestUtilities {
     }
   }
 
+  /**
+   * Append a test configuration to the end of a file.
+   *
+   * @param file the file to write to
+   * @param config the configuration to append to the end of the file
+   */
   public static void writeTestConfiguration(File file, TestConfiguration config) {
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
       bw.write(config.toString());
