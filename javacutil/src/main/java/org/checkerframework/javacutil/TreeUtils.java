@@ -110,7 +110,7 @@ public final class TreeUtils {
   /** The value of Flags.COMPACT_RECORD_CONSTRUCTOR which does not exist in Java 9 or 11. */
   static final long Flags_COMPACT_RECORD_CONSTRUCTOR = 1L << 51;
 
-  // These variables cannot be static because they might be overwritten in the static block
+  // These variables cannot be final because they might be overwritten in the static block
   // immediately below.
   /** The {@code CaseTree.getExpressions()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetExpressions = null;
@@ -141,7 +141,7 @@ public final class TreeUtils {
         Class<?> yieldTreeClass = Class.forName("com.sun.source.tree.YieldTree");
         yieldGetValue = yieldTreeClass.getMethod("getValue");
       } catch (ClassNotFoundException | NoSuchMethodException e) {
-        throw new BugInCF("JDK 17+ reflection prolem", e);
+        throw new BugInCF("JDK 17+ reflection problem", e);
       }
     }
   }
@@ -1716,7 +1716,7 @@ public final class TreeUtils {
    */
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
     if (SystemUtil.jreVersion > 11) {
-      // Code for JDK 12 and later
+      // Code for JDK 12 and later.
       try {
         @SuppressWarnings({"unchecked", "nullness"}) // reflective call
         @NonNull List<? extends ExpressionTree> result =
@@ -1726,7 +1726,7 @@ public final class TreeUtils {
         throw new BugInCF("cannot find and/or call method CaseTree.getExpressions()", e);
       }
     } else {
-      // Code for JDK 11 or earlier
+      // Code for JDK 11 and earlier.
       @SuppressWarnings("deprecation") // deprecated on JDK 12 and later
       ExpressionTree expression = caseTree.getExpression();
       if (expression == null) {
@@ -1746,7 +1746,7 @@ public final class TreeUtils {
    * @return the body of the case tree
    */
   public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
-    if (SystemUtil.jreVersion > 12) {
+    if (SystemUtil.jreVersion <= 11) {
       throw new BugInCF("Don't call CaseTree.getBody on JDK 11");
     }
     try {
