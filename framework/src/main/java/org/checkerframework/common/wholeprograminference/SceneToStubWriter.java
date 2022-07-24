@@ -348,6 +348,7 @@ public final class SceneToStubWriter {
    * parameters, and {@link #printField(AField, String, PrintWriter, String)} should be called to
    * print field declarations. Both use this method as their underlying implementation.
    *
+   * @param sb where to write the formatted declaration to
    * @param aField the field declaration or formal parameter declaration to format; should not
    *     represent a local variable
    * @param fieldName the name to use for the declaration in the stub file. This doesn't matter for
