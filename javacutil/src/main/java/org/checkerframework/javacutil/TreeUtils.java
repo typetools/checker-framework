@@ -140,7 +140,6 @@ public final class TreeUtils {
         switchExpressionGetCases = switchExpressionClass.getMethod("getCases");
         Class<?> yieldTreeClass = Class.forName("com.sun.source.tree.YieldTree");
         yieldGetValue = yieldTreeClass.getMethod("getValue");
-
       } catch (ClassNotFoundException | NoSuchMethodException e) {
         throw new BugInCF("JDK 17+ reflection prolem", e);
       }
