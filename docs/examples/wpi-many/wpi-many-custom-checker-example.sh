@@ -17,15 +17,15 @@ export JAVA8_HOME=/usr/lib/jvm/java-1.8.0-openjdk
 export JAVA11_HOME=/usr/lib/jvm/java-11-openjdk
 export JAVA17_HOME=/usr/lib/jvm/java-17-oracle
 
-export ANDROID_HOME=${HOME}/compliance-experiments/fse20/android_home
+export ANDROID_HOME="${HOME}"/compliance-experiments/fse20/android_home
 
 # This directory must contain a copy of the Checker Framework that has
 # been built from source.
-export CHECKERFRAMEWORK=${HOME}/jsr308/checker-framework
+export CHECKERFRAMEWORK="${HOME}"/jsr308/checker-framework
 
 ## Change these to match your experimental setup.
 
-export PARENTDIR=${HOME}/compliance-experiments/fse20
+export PARENTDIR="${HOME}"/compliance-experiments/fse20
 checker=org.checkerframework.checker.noliteral.NoLiteralChecker
 checkername=no-literal
 repolist=securerandom.list

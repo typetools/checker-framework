@@ -1936,7 +1936,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Clients should generally call {@link #getReceiverType}.
    *
    * @param tree the expression that might have an implicit receiver
-   * @return the type of the implicit receiver
+   * @return the type of the implicit receiver. Returns null if the expression has an explicit
+   *     receiver or doesn't have a receiver.
    */
   protected @Nullable AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
     assert (tree.getKind() == Tree.Kind.IDENTIFIER
@@ -1977,7 +1978,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (thisType == null) {
       return null;
     }
-    // An implicit receiver is the first enclosing type that is a subtype of the type where
+    // An implicit receiver is the first enclosing type that is a subtype of the type where the
     // element is declared.
     while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
       thisType = thisType.getEnclosingType();
@@ -3547,9 +3548,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
    *
-   * @param tree the tree used to find the enclosing method.
+   * @param tree the tree used to find the enclosing method
    * @return receiver type of the most enclosing method being visited
-   * @deprecated Use {@link #getSelfType(Tree)} instead.
+   * @deprecated Use {@link #getSelfType(Tree)} instead
    */
   @Deprecated
   protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
@@ -3583,7 +3584,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns true if {@code tree} is within a constructor.
    *
-   * @param tree the tree that might be within a constructor.
+   * @param tree the tree that might be within a constructor
    * @return true if {@code tree} is within a constructor
    */
   protected final boolean isWithinConstructor(Tree tree) {
@@ -4034,8 +4035,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             annotationsOnAnnotation =
                 annotation.getAnnotationType().asElement().getAnnotationMirrors();
           } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-            // Fix for Issue 348: If a CompletionFailure occurs,
-            // issue a warning.
+            // Fix for Issue 348: If a CompletionFailure occurs, issue a warning.
             checker.reportWarning(
                 annotation.getAnnotationType().asElement(),
                 "annotation.not.completed",
@@ -5564,7 +5564,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns true if the type is immutable. Subclasses can override this method to add types that
    * are mutable, but the annotated type of an object is immutable.
    *
-   * @param type type to test.
+   * @param type type to test
    * @return true if the type is immutable
    */
   public boolean isImmutable(TypeMirror type) {

@@ -599,9 +599,8 @@ public class ElementUtils {
     try {
       superTypeMirror = typeElt.getSuperclass();
     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-      // Looking up a supertype failed. This sometimes happens
-      // when transitive dependencies are not on the classpath.
-      // As javac didn't complain, let's also not complain.
+      // Looking up a supertype failed. This sometimes happens when transitive dependencies are not
+      // on the classpath.  As javac didn't complain, let's also not complain.
       return null;
     }
 
@@ -794,6 +793,27 @@ public class ElementUtils {
    */
   public static boolean isBindingVariable(Element element) {
     return "BINDING_VARIABLE".equals(element.getKind().name());
+  }
+
+  /**
+   * Returns true if the element is a record accessor method.
+   *
+   * @param methodElement a method element
+   * @return true if the element is a record accessor method
+   */
+  public static boolean isRecordAccessor(ExecutableElement methodElement) {
+    TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
+    if (enclosing.getKind().toString().equals("RECORD")) {
+      String methodName = methodElement.getSimpleName().toString();
+      List<? extends Element> encloseds = enclosing.getEnclosedElements();
+      for (Element enclosed : encloseds) {
+        if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
+            && enclosed.getSimpleName().toString().equals(methodName)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**

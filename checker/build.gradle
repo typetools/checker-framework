@@ -45,8 +45,8 @@ dependencies {
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:1.0.4'
-    implementation 'org.plumelib:plume-util:1.5.8'
+    implementation 'org.plumelib:reflection-util:1.0.5'
+    implementation 'org.plumelib:plume-util:1.5.9'
 
     // Dependencies added to "shadow" appear as dependencies in Maven Central.
     shadow project(':checker-qual')
@@ -61,7 +61,7 @@ dependencies {
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
     // The AWS SDK is used for testing the Called Methods Checker.
-    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.238")
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.257")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')

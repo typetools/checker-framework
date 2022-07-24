@@ -680,10 +680,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds {@link Class} corresponding to a name.
+   * Finds the {@link Class} corresponding to a name.
    *
    * @param className a class name
-   * @return {@link Class} object corresponding to className, or null if none found
+   * @return the {@link Class} object corresponding to {@code className}, or null if none found
    */
   private static Class<?> loadClass(@ClassGetName String className) {
     assert className != null;

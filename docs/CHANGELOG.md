@@ -2,8 +2,21 @@ The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
 (It worked before, but gave a warning that it was not tested.)
 
 
-Version 3.23.0 (July 1, 2022)
------------------------------
+
+Version 3.24.0 (??)
+-------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Prefer `SystemUtil.jreVersion` to `SystemUtil.getJreVersion()`.
+
+**Closed issues:**
+
+
+Version 3.23.0 (July 11, 2022)
+------------------------------
 
 **User-visible changes:**
 
@@ -18,9 +31,9 @@ Checker warnings related to static owning fields.
 New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
 Checker warnings related to field initialization.
 
-**Implementation details:**
-
 **Closed issues:**
+
+#4855, #5151, #5166, #5172, #5175, #5181, #5189.
 
 
 Version 3.22.2 (June 14, 2022)
@@ -35,7 +48,7 @@ Version 3.22.1 (June 1, 2022)
 -----------------------------
 
 **Closed issues:**
-#58, #5136, #5138, #5142, #5143.,
+#58, #5136, #5138, #5142, #5143,
 
 
 Version 3.22.0 (May 2, 2022)

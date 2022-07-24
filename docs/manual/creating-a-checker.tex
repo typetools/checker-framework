@@ -477,7 +477,9 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and
-\<qual> should be placed in the same directory as your checker's source file.
+\<qual> should be placed in the same directory as your checker's source
+file (unless you are creating multiple distribution artifacts, one for your
+checker and one for its qualifiers).
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
@@ -501,6 +503,12 @@ The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 Most type systems should also include a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{creating-declarative-hierarchy}).
+
+One of the annotations must be meta-annotated with
+\refqualclass{framework/qual}{DefaultQualifierInHierarchy} or
+\refqualclasswithparams{framework/qual}{DefaultFor}{TypeUseLocation.OTHERWISE}.
+It is usually easiest to make the top type be the default; this may or may
+not be the correct default for the type system design.
 
 Choose good names for the qualifiers, because users will write these in
 their source code.
@@ -973,7 +981,9 @@ A checker must indicate the annotations that it supports (that make up its type
 hierarchy).
 
 By default, a checker supports all type annotations located in a
-subdirectory called \<qual> that's located in the same directory as the checker.
+subdirectory called \<qual> that's located in the same directory as the
+checker (unless you are creating multiple distribution artifacts, one for your
+checker and one for its qualifiers).
 A type annotation is meta-annotated with either
 \<@Target(ElementType.TYPE\_USE)>
 or
@@ -2355,8 +2365,8 @@ no tree is available for classes read from bytecode.
 
 There is a Tree interface for each Java source structure, e.g.,
 \code{ClassTree} for class declaration, \code{MethodInvocationTree}
-for a method invocation, and \code{ForEachTree} for an enhanced-for-loop
-statement.
+for a method invocation, and \code{ForEachTree} for an enhanced \<for>
+statement (also known as a foreach loop).
 
 You should limit your use of trees. A checker uses Trees mainly to
 traverse the source code and retrieve the types/elements corresponding to
@@ -2459,9 +2469,9 @@ other useful resources include the Java Infrastructure
 Developer's guide at
 \url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.asciidoc} and the compiler
 mailing list archives at
-\url{http://mail.openjdk.java.net/pipermail/compiler-dev/}
+\url{https://mail.openjdk.java.net/pipermail/compiler-dev/}
 (subscribe at
-\url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
+\url{https://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 
 
 \sectionAndLabel{Integrating a checker with the Checker Framework}{creating-integrating-a-checker}
