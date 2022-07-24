@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 
 public class ExecUtil {
 
@@ -62,22 +60,17 @@ public class ExecUtil {
       this.thread =
           new Thread(
               () -> {
-                final InputStreamReader in = new InputStreamReader(inStream);
-                try {
-
+                try (InputStreamReader in = new InputStreamReader(inStream)) {
                   int read = 0;
                   while (read > -1) {
                     read = in.read(buffer);
                     if (read > 0) {
                       out.write(buffer, 0, read);
                     }
-                    out.flush();
                   }
-
+                  out.flush();
                 } catch (IOException exc) {
                   exception = exc;
-                } finally {
-                  quietlyClose(in);
                 }
               });
       thread.start();
@@ -86,32 +79,6 @@ public class ExecUtil {
     public IOException join() throws InterruptedException {
       thread.join();
       return exception;
-    }
-  }
-
-  /**
-   * Close the given writer, ignoring exceptions.
-   *
-   * @param writer the writer to close
-   */
-  @SuppressWarnings("EmptyCatch") // the purpose of this method is to ignore exceptions
-  public static void quietlyClose(final Writer writer) {
-    try {
-      writer.close();
-    } catch (IOException ioExc) {
-    }
-  }
-
-  /**
-   * Close the given reader, ignoring exceptions.
-   *
-   * @param reader the reader to close
-   */
-  @SuppressWarnings("EmptyCatch") // the purpose of this method is to ignore exceptions
-  public static void quietlyClose(final Reader reader) {
-    try {
-      reader.close();
-    } catch (IOException ioExc) {
     }
   }
 }
