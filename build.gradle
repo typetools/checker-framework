@@ -28,7 +28,7 @@ ext {
 
     // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
     // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
-isJava17compatible = JavaVersion.current() == JavaVersion.VERSION_17 || JavaVersion.current() == JavaVersion.VERSION_18
+    isJava17compatible = JavaVersion.current() >= JavaVersion.VERSION_17
 
     errorproneJavacVersion = '9+181-r4173-1'
 
@@ -51,8 +51,10 @@ isJava17compatible = JavaVersion.current() == JavaVersion.VERSION_17 || JavaVers
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
 }
-// Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
-// and with text in #installation
+// Keep in sync with check in
+// framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
+// (org.checkerframework.framework.source.SourceChecker.init) and with text in
+// docs/manual/introduction.tex (#installation).
 switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_9:
     case JavaVersion.VERSION_1_10:

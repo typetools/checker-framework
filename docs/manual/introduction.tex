@@ -195,11 +195,13 @@ Alternately, you can build the latest development version from source
 
 
 \textbf{Requirement:}
-% Keep in sync with build.gradle and SourceChecker.init.
-You must have \textbf{JDK 8}, \textbf{JDK 11}, \textbf{JDK 17}, or \textbf{JDK 18} installed.
-The Checker Framework processes code written for any of those versions.
-(For running the Checker Framework under other JDK versions, see
+% Keep in sync with ../../build.gradle and with SourceChecker.init (in checker-framework/framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java).
+The Checker Framework is tested with \textbf{JDK 8, JDK 11, 17, and 18}, so
+you need to have one of those installed.
+(It seems to run on every JDK version $\ge$ 8, but isn't tested on all of
+them.  To run the Checker Framework under other JDK versions without a warning, see
 Section~\ref{permitUnsupportedJdkVersion}.)
+The Checker Framework processes code written for any of those versions.
 
 The installation process has two required steps and one
 optional step.
