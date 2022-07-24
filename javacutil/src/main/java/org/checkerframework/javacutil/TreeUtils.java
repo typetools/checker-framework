@@ -119,7 +119,7 @@ public final class TreeUtils {
   /** The {@code BindingPatternTree.getVariable()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method bindingPatternGetVariable = null;
   /** The {@code InstanceOfTree.getPattern()} method. Null on JDK 11 and lower. */
-  private static @MonotonicNonNull Method bindingPatternGetPattern = null;
+  private static @MonotonicNonNull Method instanceOfGetPattern = null;
   /** The {@code SwitchExpressionTree.getExpression()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method switchExpressionGetExpression = null;
   /** The {@code SwitchExpressionTree.getCases()} method. Null on JDK 11 and lower. */
@@ -134,7 +134,7 @@ public final class TreeUtils {
         caseGetBody = CaseTree.class.getDeclaredMethod("getBody");
         Class<?> bindingPatternClass = Class.forName("com.sun.source.tree.BindingPatternTree");
         bindingPatternGetVariable = bindingPatternClass.getMethod("getVariable");
-        bindingPatternGetPattern = InstanceOfTree.class.getMethod("getPattern");
+        instanceOfGetPattern = InstanceOfTree.class.getMethod("getPattern");
         Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
         switchExpressionGetExpression = switchExpressionClass.getMethod("getExpression");
         switchExpressionGetCases = switchExpressionClass.getMethod("getCases");
@@ -1746,14 +1746,13 @@ public final class TreeUtils {
    * @return the body of the case tree
    */
   public static @Nullable Tree caseTreeGetBody(CaseTree caseTree) {
-    if (SystemUtil.jreVersion <= 11) {
-      throw new BugInCF("Don't call CaseTree.getBody on JDK 11");
+    if (caseGetBody == null) {
+      throw new BugInCF("Don't call CaseTree.getBody on JDK <12");
     }
     try {
       return (Tree) caseGetBody.invoke(caseTree);
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      // Just assume that the case tree is of the form case <expression> : statement(s)
-      return null;
+      throw new BugInCF("Problem calling CaseTree.getBody", e);
     }
   }
 
@@ -1764,6 +1763,9 @@ public final class TreeUtils {
    * @return the binding variable of {@code bindingPatternTree}
    */
   public static VariableTree bindingPatternTreeGetVariable(Tree bindingPatternTree) {
+    if (bindingPatternGetVariable == null) {
+      throw new BugInCF("Don't call BindingPatternTree.getVariable on JDK <12.");
+    }
     try {
       VariableTree variableTree =
           (VariableTree) bindingPatternGetVariable.invoke(bindingPatternTree);
@@ -1788,8 +1790,11 @@ public final class TreeUtils {
    * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
    */
   public static @Nullable Tree instanceOfGetPattern(InstanceOfTree instanceOfTree) {
+    if (instanceOfGetPattern == null) {
+      throw new BugInCF("Don't call InstanceOfTree.getPattern on JDK <12");
+    }
     try {
-      return (Tree) bindingPatternGetPattern.invoke(instanceOfTree);
+      return (Tree) instanceOfGetPattern.invoke(instanceOfTree);
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new BugInCF(
           "TreeUtils.instanceOfGetPattern: reflection failed for tree: %s", instanceOfTree, e);
@@ -1807,6 +1812,9 @@ public final class TreeUtils {
    * @return the selector expression of {@code switchExpressionTree}
    */
   public static ExpressionTree switchExpressionTreeGetExpression(Tree switchExpressionTree) {
+    if (switchExpressionGetExpression == null) {
+      throw new BugInCF("Don't call SwitchExpressionTree.getExpression on JDK <12");
+    }
     try {
       ExpressionTree expressionTree =
           (ExpressionTree) switchExpressionGetExpression.invoke(switchExpressionTree);
@@ -1836,6 +1844,9 @@ public final class TreeUtils {
    * @return the cases of {@code switchExpressionTree}
    */
   public static List<? extends CaseTree> switchExpressionTreeGetCases(Tree switchExpressionTree) {
+    if (switchExpressionGetCases == null) {
+      throw new BugInCF("Don't call SwitchExpressionTree.getCases on JDK <12");
+    }
     try {
       @SuppressWarnings("unchecked")
       List<? extends CaseTree> cases =
@@ -1860,6 +1871,9 @@ public final class TreeUtils {
    * @return the value (expression) for {@code yieldTree}.
    */
   public static ExpressionTree yieldTreeGetValue(Tree yieldTree) {
+    if (yieldGetValue == null) {
+      throw new BugInCF("Don't call YieldTree.getValue on JDK <12");
+    }
     try {
       ExpressionTree expressionTree = (ExpressionTree) yieldGetValue.invoke(yieldTree);
       if (expressionTree != null) {
