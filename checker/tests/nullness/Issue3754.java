@@ -1,3 +1,5 @@
+// @above-java17-skip-test TODO: reinstate on JDK 18, false positives are probably due to issue #979
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Issue3754 {
