@@ -141,7 +141,7 @@ public final class TreeUtils {
         Class<?> yieldTreeClass = Class.forName("com.sun.source.tree.YieldTree");
         yieldGetValue = yieldTreeClass.getMethod("getValue");
       } catch (ClassNotFoundException | NoSuchMethodException e) {
-        throw new BugInCF("JDK 17+ reflection problem", e);
+        throw new BugInCF("JDK 12+ reflection problem", e);
       }
     }
   }
