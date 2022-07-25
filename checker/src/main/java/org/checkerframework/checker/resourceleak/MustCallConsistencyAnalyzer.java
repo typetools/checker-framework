@@ -1090,8 +1090,8 @@ class MustCallConsistencyAnalyzer {
    * Returns true if must-call type of node only contains close. This is a helper method for
    * handling try-with-resources statements.
    *
-   * @param node the node.
-   * @return true if must-call type of node only contains close.
+   * @param node the node
+   * @return true if must-call type of node only contains close
    */
   boolean isMustCallClose(Node node) {
     MustCallAnnotatedTypeFactory mcAtf =
