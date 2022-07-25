@@ -810,8 +810,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param root the compilation unit to be written
    */
   private void writeAjavaFile(String outputPath, CompilationUnitAnnos root) {
-    try {
-      Writer writer = new BufferedWriter(new FileWriter(outputPath));
+    try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
 
       // JavaParser can output using lexical preserving printing, which writes the file such that
       // its formatting is close to the original source file it was parsed from as
@@ -857,7 +856,6 @@ public class WholeProgramInferenceJavaParserStorage
           };
 
       writer.write(prettyPrinter.print(root.compilationUnit));
-      writer.close();
     } catch (IOException e) {
       throw new BugInCF("Error while writing ajava file " + outputPath, e);
     }
