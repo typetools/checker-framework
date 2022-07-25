@@ -82,6 +82,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     /** Unique identifier for serialization. */
     private static final long serialVersionUID = 4948452207518392627L;
     /** The result of {@link #getPath}. */
+    @SuppressWarnings("serial") // I do not intend to serialize Result objects
     TreePath path;
 
     /**
