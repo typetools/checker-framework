@@ -155,7 +155,7 @@ public class CheckerMain {
 
   /** Assert that required jars exist. */
   protected void assertValidState() {
-    if (SystemUtil.jreVersion < 9) {
+    if (SystemUtil.jreVersion == 8) {
       assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar, checkerUtilJar));
     } else {
       assertFilesExist(Arrays.asList(checkerJar, checkerQualJar, checkerUtilJar));

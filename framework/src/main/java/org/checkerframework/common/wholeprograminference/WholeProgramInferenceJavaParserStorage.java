@@ -766,10 +766,13 @@ public class WholeProgramInferenceJavaParserStorage
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
       prepareCompilationUnitForWriting(root);
-      String packageDir = AJAVA_FILES_PATH;
-      if (root.compilationUnit.getPackageDeclaration().isPresent()) {
-        packageDir +=
-            File.separator
+      String packageDir;
+      if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
+        packageDir = AJAVA_FILES_PATH;
+      } else {
+        packageDir =
+            AJAVA_FILES_PATH
+                + File.separator
                 + root.compilationUnit
                     .getPackageDeclaration()
                     .get()
@@ -1124,7 +1127,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>();
+        declarationAnnotations = new HashSet<>(1);
       }
 
       return declarationAnnotations.add(annotation);
@@ -1181,9 +1184,9 @@ public class WholeProgramInferenceJavaParserStorage
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
       if (preconditions == null) {
         return Collections.emptyMap();
+      } else {
+        return Collections.unmodifiableMap(preconditions);
       }
-
-      return Collections.unmodifiableMap(preconditions);
     }
 
     /**
@@ -1378,7 +1381,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>();
+        declarationAnnotations = new HashSet<>(1);
       }
 
       return declarationAnnotations.add(annotation);
