@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -808,8 +809,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param root the compilation unit to be written
    */
   private void writeAjavaFile(String outputPath, CompilationUnitAnnos root) {
-    try {
-      FileWriter writer = new FileWriter(outputPath);
+    try (Writer writer = new FileWriter(outputPath)) {
 
       // JavaParser can output using lexical preserving printing, which writes the file such that
       // its formatting is close to the original source file it was parsed from as
@@ -855,7 +855,6 @@ public class WholeProgramInferenceJavaParserStorage
           };
 
       writer.write(prettyPrinter.print(root.compilationUnit));
-      writer.close();
     } catch (IOException e) {
       throw new BugInCF("Error while writing ajava file " + outputPath, e);
     }
