@@ -754,7 +754,7 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
     if (outputFormat != OutputFormat.AJAVA) {
-      throw new BugInCF("WholeProgramInferenceJavaParser used with format " + outputFormat);
+      throw new BugInCF("WholeProgramInferenceJavaParser used with output format " + outputFormat);
     }
 
     File outputDir = new File(AJAVA_FILES_PATH);
@@ -765,10 +765,13 @@ public class WholeProgramInferenceJavaParserStorage
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
       prepareCompilationUnitForWriting(root);
-      String packageDir = AJAVA_FILES_PATH;
-      if (root.compilationUnit.getPackageDeclaration().isPresent()) {
-        packageDir +=
-            File.separator
+      String packageDir;
+      if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
+        packageDir = AJAVA_FILES_PATH;
+      } else {
+        packageDir =
+            AJAVA_FILES_PATH
+                + File.separator
                 + root.compilationUnit
                     .getPackageDeclaration()
                     .get()
@@ -1180,9 +1183,9 @@ public class WholeProgramInferenceJavaParserStorage
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
       if (preconditions == null) {
         return Collections.emptyMap();
+      } else {
+        return Collections.unmodifiableMap(preconditions);
       }
-
-      return Collections.unmodifiableMap(preconditions);
     }
 
     /**
