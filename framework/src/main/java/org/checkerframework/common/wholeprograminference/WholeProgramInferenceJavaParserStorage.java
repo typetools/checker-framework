@@ -1123,7 +1123,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>();
+        declarationAnnotations = new HashSet<>(1);
       }
 
       return declarationAnnotations.add(annotation);
@@ -1377,7 +1377,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>();
+        declarationAnnotations = new HashSet<>(1);
       }
 
       return declarationAnnotations.add(annotation);
