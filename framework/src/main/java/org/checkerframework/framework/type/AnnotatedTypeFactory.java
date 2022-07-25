@@ -3548,9 +3548,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
    *
-   * @param tree the tree used to find the enclosing method.
+   * @param tree the tree used to find the enclosing method
    * @return receiver type of the most enclosing method being visited
-   * @deprecated Use {@link #getSelfType(Tree)} instead.
+   * @deprecated Use {@link #getSelfType(Tree)} instead
    */
   @Deprecated
   protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
@@ -3584,7 +3584,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns true if {@code tree} is within a constructor.
    *
-   * @param tree the tree that might be within a constructor.
+   * @param tree the tree that might be within a constructor
    * @return true if {@code tree} is within a constructor
    */
   protected final boolean isWithinConstructor(Tree tree) {
@@ -5564,7 +5564,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns true if the type is immutable. Subclasses can override this method to add types that
    * are mutable, but the annotated type of an object is immutable.
    *
-   * @param type type to test.
+   * @param type type to test
    * @return true if the type is immutable
    */
   public boolean isImmutable(TypeMirror type) {
