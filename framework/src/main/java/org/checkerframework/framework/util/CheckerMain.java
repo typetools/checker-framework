@@ -155,7 +155,7 @@ public class CheckerMain {
 
   /** Assert that required jars exist. */
   protected void assertValidState() {
-    if (SystemUtil.jreVersion < 9) {
+    if (SystemUtil.jreVersion == 8) {
       assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar, checkerUtilJar));
     } else {
       assertFilesExist(Arrays.asList(checkerJar, checkerQualJar, checkerUtilJar));
@@ -576,11 +576,10 @@ public class CheckerMain {
     if (outputFilename != null) {
       String errorMessage = null;
 
-      try {
-        PrintWriter writer =
-            (outputFilename.equals("-")
-                ? new PrintWriter(System.out)
-                : new PrintWriter(outputFilename, "UTF-8"));
+      try (PrintWriter writer =
+          (outputFilename.equals("-")
+              ? new PrintWriter(System.out)
+              : new PrintWriter(outputFilename, "UTF-8"))) {
         for (int i = 0; i < args.size(); i++) {
           String arg = args.get(i);
 
@@ -594,19 +593,18 @@ public class CheckerMain {
             // Read argfile and include its parameters in the output file.
             String inputFilename = arg.substring(1);
 
-            BufferedReader br = new BufferedReader(new FileReader(inputFilename));
-            String line;
-            while ((line = br.readLine()) != null) {
-              writer.print(line);
-              writer.print(" ");
+            try (BufferedReader br = new BufferedReader(new FileReader(inputFilename))) {
+              String line;
+              while ((line = br.readLine()) != null) {
+                writer.print(line);
+                writer.print(" ");
+              }
             }
-            br.close();
           } else {
             writer.print(arg);
             writer.print(" ");
           }
         }
-        writer.close();
       } catch (IOException e) {
         errorMessage = e.toString();
       }
@@ -828,8 +826,7 @@ public class CheckerMain {
    */
   private List<@FullyQualifiedName String> getAllCheckerClassNames() {
     ArrayList<@FullyQualifiedName String> checkerClassNames = new ArrayList<>();
-    try {
-      final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkerJar));
+    try (JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkerJar))) {
       ZipEntry entry;
       while ((entry = checkerJarIs.getNextEntry()) != null) {
         final String name = entry.getName();
@@ -844,7 +841,6 @@ public class CheckerMain {
           checkerClassNames.add(fqName);
         }
       }
-      checkerJarIs.close();
     } catch (IOException e) {
       // Issue a warning instead of aborting execution.
       System.err.printf(

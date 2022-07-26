@@ -70,8 +70,7 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_18:
         break; // Supported versions
     default:
-        throw new GradleException("Build the Checker Framework with JDK 8, 11, 17, or 18." +
-                " Found version " + JavaVersion.current().majorVersion);
+        throw new GradleException("Unexpected Java version found: " + JavaVersion.current().majorVersion);
 }
 
 task setLocalRepo(type:Exec) {
