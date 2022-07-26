@@ -220,20 +220,18 @@ public class CFGVisualizeLauncher {
     Options.instance(context).put("compilePolicy", "ATTR_ONLY");
     JavaCompiler javac = new JavaCompiler(context);
 
-    JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
-
-    JavaFileObject l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
+    JavaFileObject l;
+    try (JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class)) {
+      l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
+    } catch (IOException e) {
+      throw new Error(e);
+    }
 
     PrintStream err = System.err;
     try {
       // Redirect syserr to nothing (and prevent the compiler from issuing
       // warnings about our exception).
-      System.setErr(
-          new PrintStream(
-              new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {}
-              }));
+      System.setErr(new PrintStream(OutputStream.nullOutputStream()));
       javac.compile(List.of(l), List.of(clas), List.of(cfgProcessor), List.nil());
     } catch (Throwable e) {
       // ok

@@ -549,7 +549,9 @@ public class I18nFormatterTreeUtil {
                     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658:
                     // Name.toString should be @PolySignature
                     @BinaryName String cname = e.getQualifiedName().toString();
-                    return Class.forName(cname);
+                    @SuppressWarnings("mustcall:assignment") // probably due to #979
+                    Class<? extends Object> result = Class.forName(cname);
+                    return result;
                   } catch (ClassNotFoundException e1) {
                     return null; // the lookup should work for all the classes we care about
                   }

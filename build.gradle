@@ -831,6 +831,8 @@ subprojects {
             ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'Purity',
             'org.checkerframework.framework.util.PurityChecker')
+        createCheckTypeTask(project.name, 'ResourceLeak',
+            'org.checkerframework.checker.resourceleak.ResourceLeakChecker')
         createCheckTypeTask(project.name, 'Signature',
             'org.checkerframework.checker.signature.SignatureChecker')
         // These pass on some subprojects, which the `typecheck` task runs.
