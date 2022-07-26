@@ -298,10 +298,7 @@ jobs:
 ## The downstream jobs are not currently needed because test-downstream.sh is empty.
 # - job: downstream_jdk8
 #   dependsOn:
-#    - junit_tests_jdk17
-#    - nonjunit_tests_jdk17
-#    - misc_jdk17
-#    - typecheck_jdk17
+#    - canary_jobs
 #    - downstream_jdk17
 #   pool:
 #     vmImage: 'ubuntu-latest'
@@ -313,10 +310,7 @@ jobs:
 #     displayName: test-downstream.sh
 # - job: downstream_jdk11
 #   dependsOn:
-#    - junit_tests_jdk17
-#    - nonjunit_tests_jdk17
-#    - misc_jdk17
-#    - typecheck_jdk17
+#    - canary_jobs
 #    - downstream_jdk17
 #   pool:
 #     vmImage: 'ubuntu-latest'
@@ -327,10 +321,7 @@ jobs:
 #   - bash: ./checker/bin-devel/test-downstream.sh
 #     displayName: test-downstream.sh
 # - job: downstream_jdk17
-#    - junit_tests_jdk17
-#    - nonjunit_tests_jdk17
-#    - misc_jdk17
-#    - typecheck_jdk17
+#    - canary_jobs
 #   pool:
 #     vmImage: 'ubuntu-latest'
 #   container: mdernst/cf-ubuntu-jdk17:latest
