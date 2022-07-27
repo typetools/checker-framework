@@ -350,7 +350,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
       if (this == obj) {
         return true;
       }
@@ -437,7 +437,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -2151,7 +2151,7 @@ class MustCallConsistencyAnalyzer {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
       if (this == o) {
         return true;
       }
