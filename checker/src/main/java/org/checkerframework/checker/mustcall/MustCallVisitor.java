@@ -265,7 +265,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   @Override
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-    if (castType.getKind().isPrimitive()) {
+    if (castType.getKind().isPrimitive() || exprType.getKind().isPrimitive()) {
       return true;
     }
     return super.isTypeCastSafe(castType, exprType);

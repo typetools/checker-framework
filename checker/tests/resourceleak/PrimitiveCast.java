@@ -1,4 +1,6 @@
 import java.util.List;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 
 public class PrimitiveCast {
 
@@ -7,5 +9,29 @@ public class PrimitiveCast {
       return (char) o;
     }
     return 'A';
+  }
+
+  char toChar1(@MustCall("hashCode") Character c) {
+    return (char) c;
+  }
+
+  char toChar2(@MustCallUnknown Character c) {
+    return (char) c;
+  }
+
+  char toChar3(@MustCall Character c) {
+    return (char) c;
+  }
+
+  @MustCall("hashCode") Character toCharacter1(char c) {
+    return (char) c;
+  }
+
+  @MustCallUnknown Character toCharacter2(char c) {
+    return (char) c;
+  }
+
+  @MustCall Character toCharacter3(char c) {
+    return (char) c;
   }
 }

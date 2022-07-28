@@ -22,7 +22,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -229,14 +228,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     }
 
     return super.visitVariable(node, p);
-  }
-
-  @Override
-  protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-    if (castType.getKind().isPrimitive()) {
-      return true;
-    }
-    return super.isTypeCastSafe(castType, exprType);
   }
 
   /**
