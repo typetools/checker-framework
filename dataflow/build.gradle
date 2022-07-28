@@ -125,7 +125,7 @@ task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification'
 }
 
 task constantPropagationTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-    description 'Test the constant propagation analysis for dataflow framework.'
+    description 'Test the constant propagation analysis of the dataflow framework.'
     inputs.file('tests/constant-propagation/Expected.txt')
     inputs.file('tests/constant-propagation/Test.java')
 
