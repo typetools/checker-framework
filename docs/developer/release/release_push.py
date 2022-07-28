@@ -545,7 +545,7 @@ def main(argv):
             + "\n"
             + "To post the Checker Framework release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-"
+            + "* Browse to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-"
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Checker Framework "
@@ -559,7 +559,7 @@ def main(argv):
             + "\n"
             + "To post the Annotation File Utilities release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/typetools/annotation-tools/releases/new?tag="
+            + "* Browse to https://github.com/typetools/annotation-tools/releases/new?tag="
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Annotation File Utilities "
@@ -572,7 +572,7 @@ def main(argv):
             + '* Click on the green "Publish release" button.\n'
         )
 
-        print(msg)
+        continue_or_exit(msg)
 
         print_step("Push Step 12. Announce the release.")  # MANUAL
         continue_or_exit(
@@ -580,8 +580,13 @@ def main(argv):
             + get_announcement_email(new_cf_version)
         )
 
+        print_step("Push Step 13. Prep for next Checker Framework release.")  # MANUAL
+        continue_or_exit(
+            "Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n"
+        )
+
         print_step(
-            "Push Step 13. Update the Checker Framework Gradle plugin."
+            "Push Step 14. Update the Checker Framework Gradle plugin.\nYou might have to wait a little while."
         )  # MANUAL
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
@@ -592,11 +597,6 @@ def main(argv):
             + "updates the version number of the Checker Framework\n"
             + "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
             + "The pull request's tests will fail; you will merge it in a day."
-        )
-
-        print_step("Push Step 14. Prep for next Checker Framework release.")  # MANUAL
-        continue_or_exit(
-            "Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n"
         )
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)

@@ -264,6 +264,9 @@ def build_checker_framework_release(
         ant_props,
     )
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    # Also rebuild the manual and API documentation, which come from source files that have just been changed.
+    # Otherwise the manual and API documentation show up in the grep command below.
+    execute("./gradlew allJavadoc manual", working_dir=CHECKER_FRAMEWORK)
 
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
