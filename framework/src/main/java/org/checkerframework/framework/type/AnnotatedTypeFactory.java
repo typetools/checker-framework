@@ -72,6 +72,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -428,7 +429,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   protected ReflectionResolver reflectionResolver;
 
   /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
-  protected AnnotationClassLoader loader;
+  @SuppressWarnings("builder:required.method.not.called") // type factories are not closed
+  protected @Owning AnnotationClassLoader loader;
 
   /**
    * Which whole-program inference output format to use, if doing whole-program inference. This
@@ -781,8 +783,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
       while (urls.hasMoreElements()) {
         URL url = urls.nextElement();
-        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-        lines.addAll(in.lines().collect(Collectors.toList()));
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+          lines.addAll(in.lines().collect(Collectors.toList()));
+        }
       }
       String[] result = lines.toArray(new String[0]);
       return result;
@@ -1116,9 +1119,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return a set of annotation class instances
    */
   @SafeVarargs
-  @SuppressWarnings("varargs")
+  @SuppressWarnings({
+    "varargs",
+    "builder:missing.creates.mustcall.for" // type factories are not closed
+  })
   private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
       Class<? extends Annotation>... explicitlyListedAnnotations) {
+    if (loader != null) {
+      loader.close();
+    }
     loader = createAnnotationClassLoader();
 
     Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();

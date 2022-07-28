@@ -2111,6 +2111,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return a new CFGVisualizer, or null if none will be used on this run
    */
+  @SuppressWarnings("mustcall:return") // hairy generics error message
   protected @Nullable CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
     if (checker.hasOption("flowdotdir")) {
       String flowdotdir = checker.getOption("flowdotdir");

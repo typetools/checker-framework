@@ -7,6 +7,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
@@ -144,7 +145,8 @@ public class ValueCheckerUtils {
     return values;
   }
 
-  private static List<?> convertToStringVal(List<?> origValues) {
+  @SuppressWarnings("mustcall:methodref.receiver") // generics; #979 ?
+  private static List<?> convertToStringVal(List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
       return null;
     }

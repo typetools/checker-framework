@@ -1,5 +1,6 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,6 +12,8 @@ import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -22,7 +25,7 @@ import org.plumelib.util.CollectionsPlume;
  * #readJavaSourceFiles} reads diagnostics from multiple Java source files, and {@link
  * #readDiagnosticFiles} reads diagnostics from multiple "diagnostic files".
  */
-public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
+public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Closeable {
 
   ///
   /// This class begins with the public static methods that clients use to read diagnostics.
@@ -158,7 +161,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
   private final String filename;
 
-  private LineNumberReader reader;
+  private @Owning @MustCall("close") LineNumberReader reader;
 
   private @Nullable String nextLine = null;
   private @GTENegativeOne int nextLineNumber = -1;
@@ -231,6 +234,15 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     nextLineNumber = reader.getLineNumber();
     if (nextLine == null) {
       reader.close();
+    }
+  }
+
+  @Override
+  public void close() {
+    try {
+      reader.close();
+    } catch (IOException e) {
+      throw new Error(e);
     }
   }
 }

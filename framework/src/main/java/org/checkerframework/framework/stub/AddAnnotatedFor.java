@@ -66,17 +66,16 @@ public class AddAnnotatedFor {
    * annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
    */
   public static void main(String[] args) throws IOException, DefException, ParseException {
-    AScene scene = new AScene();
-    String filename;
-    Reader r;
-    if (args.length > 0) {
-      filename = args[0];
-      r = new FileReader(filename);
-    } else {
-      filename = "System.in";
-      r = new InputStreamReader(System.in);
+    if (args.length > 1) {
+      System.err.println("Supply 0 or 1 command-line arguments.");
+      System.exit(1);
     }
-    IndexFileParser.parse(new LineNumberReader(r), filename, scene);
+    AScene scene = new AScene();
+    boolean useFile = args.length == 1;
+    String filename = useFile ? args[0] : "System.in";
+    try (Reader r = useFile ? new FileReader(filename) : new InputStreamReader(System.in)) {
+      IndexFileParser.parse(new LineNumberReader(r), filename, scene);
+    }
     scene.prune();
     addAnnotatedFor(scene);
     IndexFileWriter.write(scene, new PrintWriter(System.out, true));

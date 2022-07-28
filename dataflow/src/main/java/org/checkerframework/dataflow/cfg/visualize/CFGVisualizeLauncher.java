@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -231,7 +232,10 @@ public class CFGVisualizeLauncher {
     try {
       // Redirect syserr to nothing (and prevent the compiler from issuing
       // warnings about our exception).
-      System.setErr(new PrintStream(OutputStream.nullOutputStream()));
+      @SuppressWarnings(
+          "builder:required.method.not.called") // WHY? Annotated JDK should handle this.
+      @MustCall() OutputStream nullOS = OutputStream.nullOutputStream();
+      System.setErr(new PrintStream(nullOS));
       javac.compile(List.of(l), List.of(clas), List.of(cfgProcessor), List.nil());
     } catch (Throwable e) {
       // ok

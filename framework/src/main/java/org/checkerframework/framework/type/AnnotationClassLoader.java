@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -27,6 +28,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -60,7 +63,7 @@ import org.plumelib.reflection.Signatures;
  * #isSupportedAnnotationClass(Class)}. See {@code
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
-public class AnnotationClassLoader {
+public class AnnotationClassLoader implements Closeable {
   /** For issuing errors to the user. */
   protected final BaseTypeChecker checker;
 
@@ -96,7 +99,7 @@ public class AnnotationClassLoader {
   private final URL resourceURL;
 
   /** The class loader used to load annotation classes. */
-  protected final URLClassLoader classLoader;
+  protected final @Owning URLClassLoader classLoader;
 
   /**
    * The annotation classes bundled with a checker (located in its qual directory) that are deemed
@@ -167,6 +170,16 @@ public class AnnotationClassLoader {
     supportedBundledAnnotationClasses = new LinkedHashSet<>();
 
     loadBundledAnnotationClasses();
+  }
+
+  @EnsuresCalledMethods(value = "classLoader", methods = "close")
+  @Override
+  public void close() {
+    try {
+      classLoader.close();
+    } catch (IOException e) {
+      throw new Error(e);
+    }
   }
 
   /**
@@ -250,10 +263,10 @@ public class AnnotationClassLoader {
       // try to open up the jar file
       try {
         JarURLConnection connection = (JarURLConnection) url.openConnection();
-        JarFile jarFile = connection.getJarFile();
-
-        // check to see if the jar file contains the package
-        return checkJarForPackage(jarFile);
+        try (JarFile jarFile = connection.getJarFile()) {
+          // check to see if the jar file contains the package
+          return checkJarForPackage(jarFile);
+        }
       } catch (IOException e) {
         // do nothing for missing or un-openable Jar files
       }

@@ -17,6 +17,7 @@ import org.ajoberstar.grgit.Grgit
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 ext {
@@ -106,6 +107,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
     }
 
     configurations {

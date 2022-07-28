@@ -22,6 +22,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
@@ -379,7 +380,7 @@ public class StubGenerator {
    * @param lst a list to format
    * @return a string representation of the list, without surrounding square brackets
    */
-  private String formatList(List<?> lst) {
+  private String formatList(@MustCallUnknown List<? extends @MustCallUnknown Object> lst) {
     return StringsPlume.join(", ", lst);
   }
 
@@ -435,6 +436,8 @@ public class StubGenerator {
     javac.initModules(com.sun.tools.javac.util.List.nil());
     javac.enterDone();
 
+    @SuppressWarnings(
+        "builder:required.method.not.called") // don't know contract of ProcessingEnvironment
     ProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
 
     StubGenerator generator = new StubGenerator();
