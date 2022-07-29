@@ -14,6 +14,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -27,6 +28,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The visitor for the Must Call Checker. This visitor is similar to BaseTypeVisitor, but overrides
@@ -187,6 +189,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+
+    if (noMustCallObligation(varType) || noMustCallObligation(valueType)) {
+      return;
+    }
+
     if (commonAssignmentCheckOnResourceVariable) {
       commonAssignmentCheckOnResourceVariable = false;
       // The LHS has been marked as a resource variable.  Skip the standard common assignment check;
@@ -263,11 +270,29 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return null;
   }
 
-  @Override
-  protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-    if (castType.getKind().isPrimitive() || exprType.getKind().isPrimitive()) {
+  /**
+   * Returns true if the given type should never have a must-call obligation.
+   *
+   * @param atm the type to check
+   * @return true if the given type should never have a must-call obligation
+   */
+  private boolean noMustCallObligation(AnnotatedTypeMirror atm) {
+    if (atm.getKind().isPrimitive()) {
       return true;
     }
+    TypeMirror tm = atm.getUnderlyingType();
+    if (TypesUtils.isClass(tm) || TypesUtils.isString(tm)) {
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    if (noMustCallObligation(castType) || noMustCallObligation(exprType)) {
+      return true;
+    }
+
     return super.isTypeCastSafe(castType, exprType);
   }
 }
