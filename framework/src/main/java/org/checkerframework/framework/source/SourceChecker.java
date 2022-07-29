@@ -2057,7 +2057,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return false;
     }
 
-    while (true) {
+    while (true) { // iterate through the path; continue until path contains no declarations
       @Nullable TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
       if (declPath == null) {
         break;
@@ -2066,39 +2066,36 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
       Tree decl = declPath.getLeaf();
 
-      Element elt;
-      switch (decl.getKind()) {
-        case VARIABLE:
-          elt = TreeUtils.elementFromTree((VariableTree) decl);
-          if (shouldSuppressWarnings(elt, errKey)) {
-            return true;
-          }
-          break;
-        case METHOD:
-          elt = TreeUtils.elementFromTree((MethodTree) decl);
-          if (shouldSuppressWarnings(elt, errKey)) {
-            return true;
-          }
+      if (decl.getKind() == TreeKind.VARIABLE) {
+        Element elt = TreeUtils.elementFromTree((VariableTree) decl);
+        if (shouldSuppressWarnings(elt, errKey)) {
+          return true;
+        }
+      } else if (decl.getKind() == TreeKind.METHOD) {
+        Element elt = TreeUtils.elementFromTree((MethodTree) decl);
+        if (shouldSuppressWarnings(elt, errKey)) {
+          return true;
+        }
 
-          if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-            // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-            // because they may not have an @AnnotatedFor.
-            return false;
-          }
-          break;
-        default:
-          // A class tree
-          elt = TreeUtils.elementFromTree((ClassTree) decl);
-          if (shouldSuppressWarnings(elt, errKey)) {
-            return true;
-          }
+        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+          // because they may not have an @AnnotatedFor.
+          return false;
+        }
+      } else if (TreePathUtil.classTreeKinds().contains(decl.getKind())) {
+        // A class tree
+        elt = TreeUtils.elementFromTree((ClassTree) decl);
+        if (shouldSuppressWarnings(elt, errKey)) {
+          return true;
+        }
 
-          if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-            // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-            // because they may not have an @AnnotatedFor.
-            return false;
-          }
-          break;
+        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+          // because they may not have an @AnnotatedFor.
+          return false;
+        }
+      } else {
+        throw new BugInCF("Unexpected declaration kind: " + decl.getKind() + " " + decl);
       }
     }
 
