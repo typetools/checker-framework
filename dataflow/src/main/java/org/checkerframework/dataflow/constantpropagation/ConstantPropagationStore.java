@@ -166,8 +166,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
    * visualization.
    */
   @Override
-  @SuppressWarnings("nullness")
   public String visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {
-    return viz.visualizeStoreKeyVal("constant propagation", null);
+    return viz.visualizeStoreKeyVal("constant propagation", toString());
   }
 }
