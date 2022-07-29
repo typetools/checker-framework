@@ -2057,38 +2057,48 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return false;
     }
 
-    @Nullable VariableTree var = TreePathUtil.enclosingVariable(path);
-    if (var != null && shouldSuppressWarnings(TreeUtils.elementFromTree(var), errKey)) {
-      return true;
-    }
-
-    @Nullable MethodTree method = TreePathUtil.enclosingMethod(path);
-    if (method != null) {
-      @Nullable Element elt = TreeUtils.elementFromTree(method);
-
-      if (shouldSuppressWarnings(elt, errKey)) {
-        return true;
+    while (true) {
+      @Nullable TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
+      if (declPath == null) {
+        break;
+      } else {
+        path = declPath.getParentPath();
       }
+      Tree decl = declPath.getLeaf();
 
-      if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-        // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-        // because they may not have an @AnnotatedFor.
-        return false;
-      }
-    }
+      Element elt;
+      switch (decl.getKind()) {
+        case VARIABLE:
+          elt = TreeUtils.elementFromTree((VariableTree) decl);
+          if (shouldSuppressWarnings(elt, errKey)) {
+            return true;
+          }
+          break;
+        case METHOD:
+          elt = TreeUtils.elementFromTree((MethodTree) decl);
+          if (shouldSuppressWarnings(elt, errKey)) {
+            return true;
+          }
 
-    @Nullable ClassTree cls = TreePathUtil.enclosingClass(path);
-    if (cls != null) {
-      @Nullable Element elt = TreeUtils.elementFromTree(cls);
+          if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+            // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+            // because they may not have an @AnnotatedFor.
+            return false;
+          }
+          break;
+        default:
+          // A class tree
+          elt = TreeUtils.elementFromTree((ClassTree) decl);
+          if (shouldSuppressWarnings(elt, errKey)) {
+            return true;
+          }
 
-      if (shouldSuppressWarnings(elt, errKey)) {
-        return true;
-      }
-
-      if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-        // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-        // because they may not have an @AnnotatedFor.
-        return false;
+          if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+            // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+            // because they may not have an @AnnotatedFor.
+            return false;
+          }
+          break;
       }
     }
 

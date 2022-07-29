@@ -733,7 +733,7 @@ public final class TreeUtils {
   // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a
   // tree gets cast to ClassTree when it is actually a NewClassTree,
   // for example in enclosingClass above.
-  /** The set of kinds that represent classes. */
+  /** The kinds that represent classes. */
   private static final Set<Tree.Kind> classTreeKinds;
 
   static {
@@ -746,12 +746,34 @@ public final class TreeUtils {
   }
 
   /**
+   * The kinds that represent declarations that might have {@code @SuppressWarnings} written on
+   * them: classes, methods, and variables.
+   */
+  private static final Set<Tree.Kind> declarationTreeKinds;
+
+  static {
+    declarationTreeKinds = EnumSet.noneOf(Tree.Kind.class);
+    declarationTreeKinds.addAll(classTreeKinds);
+    declarationTreeKinds.add(Tree.Kind.METHOD);
+    declarationTreeKinds.add(Tree.Kind.VARIABLE);
+  }
+
+  /**
    * Return the set of kinds that represent classes.
    *
    * @return the set of kinds that represent classes
    */
   public static Set<Tree.Kind> classTreeKinds() {
     return classTreeKinds;
+  }
+
+  /**
+   * Return the set of kinds that represent declarations: classes, methods, and variables.
+   *
+   * @return the set of kinds that represent declarations
+   */
+  public static Set<Tree.Kind> declarationTreeKinds() {
+    return declarationTreeKinds;
   }
 
   /**
