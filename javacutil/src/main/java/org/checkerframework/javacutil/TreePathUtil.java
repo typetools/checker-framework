@@ -137,6 +137,18 @@ public final class TreePathUtil {
   }
 
   /**
+   * Gets the path to nearest enclosing declaration (class, method, or variable) of the tree node
+   * defined by the given {@link TreePath}.
+   *
+   * @param path the path defining the tree node
+   * @return path to the nearest enclosing class/method/variable in the path, or {@code null} if one
+   *     does not exist
+   */
+  public static @Nullable TreePath enclosingDeclarationPath(final TreePath path) {
+    return pathTillOfKind(path, TreeUtils.declarationTreeKinds());
+  }
+
+  /**
    * Gets the enclosing class of the tree node defined by the given {@link TreePath}. It returns a
    * {@link Tree}, from which {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
    * obtained.
