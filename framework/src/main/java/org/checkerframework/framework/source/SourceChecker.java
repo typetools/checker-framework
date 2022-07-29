@@ -2066,12 +2066,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
       Tree decl = declPath.getLeaf();
 
-      if (decl.getKind() == TreeKind.VARIABLE) {
+      if (decl.getKind() == Tree.Kind.VARIABLE) {
         Element elt = TreeUtils.elementFromTree((VariableTree) decl);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }
-      } else if (decl.getKind() == TreeKind.METHOD) {
+      } else if (decl.getKind() == Tree.Kind.METHOD) {
         Element elt = TreeUtils.elementFromTree((MethodTree) decl);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
@@ -2082,9 +2082,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           // because they may not have an @AnnotatedFor.
           return false;
         }
-      } else if (TreePathUtil.classTreeKinds().contains(decl.getKind())) {
+      } else if (TreeUtils.classTreeKinds().contains(decl.getKind())) {
         // A class tree
-        elt = TreeUtils.elementFromTree((ClassTree) decl);
+        Element elt = TreeUtils.elementFromTree((ClassTree) decl);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }
