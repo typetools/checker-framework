@@ -702,6 +702,7 @@ public final class SceneToStubWriter {
    * @param filename the name of the file to write (must end in .astub)
    * @param checker the checker, for computing preconditions
    */
+  @SuppressWarnings("builder:required.method.not.called") // looks like a false positive
   private static void writeImpl(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
     // Sort by package name first so that output is deterministic and default package
     // comes first; within package sort by class name.
@@ -726,35 +727,53 @@ public final class SceneToStubWriter {
 
     // The writer is not initialized until it is certain that at
     // least one class can be written, to avoid empty stub files.
+    FileWriter fileWriter = null;
     PrintWriter printWriter = null;
+    try {
 
-    // For each class
-    for (String clazz : classes) {
-      if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
-        if (!anyClassPrintable) {
-          try {
-            printWriter = new PrintWriter(new FileWriter(filename));
-          } catch (IOException e) {
-            throw new BugInCF("error writing file during WPI: " + filename);
-          }
+      // For each class
+      for (String clazz : classes) {
+        if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
+          if (!anyClassPrintable) {
+            try {
+              fileWriter = new FileWriter(filename);
+              printWriter = new PrintWriter(fileWriter);
+            } catch (IOException e) {
+              throw new BugInCF("error writing file during WPI: " + filename);
+            }
 
-          // Write out all imports
-          ImportDefWriter importDefWriter;
-          try {
-            importDefWriter = new ImportDefWriter(scene, printWriter);
-          } catch (DefException e) {
-            throw new BugInCF(e);
+            // Write out all imports
+            ImportDefWriter importDefWriter;
+            try {
+              importDefWriter = new ImportDefWriter(scene, printWriter);
+            } catch (DefException e) {
+              throw new BugInCF(e);
+            }
+            importDefWriter.visit();
+            printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
+            printWriter.println();
+            anyClassPrintable = true;
           }
-          importDefWriter.visit();
-          printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
-          printWriter.println();
-          anyClassPrintable = true;
+          printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
         }
-        printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
       }
-    }
-    if (printWriter != null) {
-      printWriter.flush();
+      if (printWriter != null) {
+        printWriter.flush();
+      }
+    } finally {
+      try {
+        if (printWriter != null) {
+          printWriter.close(); // does not throw IOException
+        }
+        // This should not be necessary, because fileWriter and printWriter are resource aliases.
+        if (fileWriter != null) {
+          fileWriter.close();
+        }
+      } catch (IOException e) {
+        // Nothing to do, unfortunately, since exceptions thrown from a finally block have no
+        // effect.
+        // throw new Error(e);
+      }
     }
   }
 

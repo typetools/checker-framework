@@ -113,6 +113,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
    * @param args command-line arguments
    */
   public void run(@CanonicalName String[] args) {
+    @SuppressWarnings(
+        "builder:required.method.not.called") // JavacProcessingEnvironment is not closed
     ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
     Elements elements = env.getElementUtils();
 

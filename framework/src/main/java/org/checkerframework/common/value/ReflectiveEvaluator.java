@@ -215,6 +215,7 @@ public class ReflectiveEvaluator {
         (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)), ele.getParameters());
   }
 
+  @SuppressWarnings("mustcall:assignment") // code is not relevant to @MustCall
   private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
     List<Object[]> tuples = new ArrayList<>();
