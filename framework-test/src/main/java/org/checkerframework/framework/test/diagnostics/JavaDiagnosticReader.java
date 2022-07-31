@@ -161,6 +161,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   private @Nullable String nextLine = null;
   private @GTENegativeOne int nextLineNumber = -1;
 
+  @SuppressWarnings("builder:required.method.not.called") // WHY?
   private JavaDiagnosticReader(File toRead, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = toRead.getName();
@@ -172,6 +173,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
     }
   }
 
+  @SuppressWarnings("builder:required.method.not.called") // WHY?
   private JavaDiagnosticReader(JavaFileObject toReadFileObject, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = new File(toReadFileObject.getName()).getName();
