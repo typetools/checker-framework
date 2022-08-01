@@ -109,7 +109,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
     Stubparser from JavaParser</a>.  Do this on your own computer; it doesn't have to be done on buffalo.
   </li>
-  <li>On your own computer, update the Checker Framework source code:
+  <li>On your own computer, update the Checker Framework source code <em>in the <code>master</code> branch</em>:
     <ul>
       <li>
         <b>Update the AWS Java SDK BOM dependency.</b> In file <code>checker/build.gradle</code>,
@@ -164,7 +164,9 @@ TreeAnnotator
         </p>
       </li>
       <li>
-        <b>Update the Annotation Tools version number.</b>  Manually search for occurrences of the old one.  (TODO: automate this.)
+        <b>Update the Annotation Tools version number/b>, again <em>in the <code>master</code> branch</em>.
+        in <code>annotation-file-utilities/build.gradle</code>.
+        (TODO: Are any other replacements necessary?)
       </li>
       <li>
         <b>Commit and push</b> these changes to typetools/master.
