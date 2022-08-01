@@ -48,7 +48,7 @@ public @interface EnsuresInitializedFields {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @PostconditionAnnotation(qualifier = InitializedFields.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
      * Return the repeatable annotations.
      *

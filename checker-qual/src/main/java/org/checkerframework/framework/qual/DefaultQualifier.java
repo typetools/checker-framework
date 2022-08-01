@@ -80,7 +80,7 @@ public @interface DefaultQualifier {
     ElementType.LOCAL_VARIABLE,
     ElementType.PARAMETER
   })
-  @interface List {
+  public static @interface List {
     /**
      * Return the repeatable annotations.
      *
