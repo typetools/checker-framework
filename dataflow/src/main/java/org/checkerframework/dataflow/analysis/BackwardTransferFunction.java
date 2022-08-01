@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.analysis;
 
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ public interface BackwardTransferFunction<V extends AbstractValue<V>, S extends 
      *     underlying AST is not a method)
      * @return the initial store that should be used at the normal exit block
      */
+    @SideEffectFree
     S initialNormalExitStore(UnderlyingAST underlyingAST, List<ReturnNode> returnNodes);
 
     /**
@@ -36,5 +38,6 @@ public interface BackwardTransferFunction<V extends AbstractValue<V>, S extends 
      * @param underlyingAST the underlying AST of the given control flow graph
      * @return the initial store that should be used at the exceptional exit block
      */
+    @SideEffectFree
     S initialExceptionalExitStore(UnderlyingAST underlyingAST);
 }
