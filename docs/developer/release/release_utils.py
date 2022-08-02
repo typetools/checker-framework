@@ -260,9 +260,9 @@ def update_repo(path, bareflag):
     """Pull the latest changes to the given repo and update. The bareflag
     parameter indicates whether the updated repo must be a bare git repo."""
     if bareflag:
-        execute("git fetch origin master:master --ff-only", working_dir=path)
+        execute("git fetch origin master:master", working_dir=path)
     else:
-        execute("git pull", working_dir=path)
+        execute("git pull --ff-only", working_dir=path)
 
 
 def commit_tag_and_push(version, path, tag_prefix):
@@ -321,7 +321,7 @@ def is_repo_cleaned_and_updated(repo):
     and up-to-date with respect to the repository it was cloned from."""
     # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
     if git_bare_repo_exists_at_path(repo):
-        execute("git fetch origin --ff-only", working_dir=repo)
+        execute("git fetch origin", working_dir=repo)
         is_updated = not execute(
             "git diff master..FETCH_HEAD", working_dir=repo, capture_output=True
         )
@@ -331,7 +331,7 @@ def is_repo_cleaned_and_updated(repo):
         is_clean = not execute(
             "git status --porcelain", working_dir=repo, capture_output=True
         )
-        execute("git fetch origin --ff-only", working_dir=repo)
+        execute("git fetch origin", working_dir=repo)
         is_updated = not execute(
             "git diff origin/master..master", working_dir=repo, capture_output=True
         )
