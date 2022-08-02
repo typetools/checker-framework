@@ -61,7 +61,7 @@ import sys
 debug = False
 ant_debug = ""
 
-# Currently only affects the Checker Framework tests, which run the longest
+# Currently only affects the Checker Framework tests, which run the longest.
 notest = False
 
 
@@ -217,10 +217,10 @@ def build_annotation_tools_release(version, afu_interm_dir):
 
     date = get_current_date()
 
-    build = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
+    buildfile = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
     ant_cmd = (
         'ant %s -buildfile %s -e update-versions -Drelease.ver="%s" -Drelease.date="%s"'
-        % (ant_debug, build, version, date)
+        % (ant_debug, buildfile, version, date)
     )
     execute(ant_cmd)
 
