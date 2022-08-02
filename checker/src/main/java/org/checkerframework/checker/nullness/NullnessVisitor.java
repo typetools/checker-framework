@@ -51,7 +51,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.basetype.TypeValidator;
-import org.checkerframework.framework.flow.CFCFGBuilder;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -376,10 +375,12 @@ public class NullnessVisitor
 
     boolean doVisitAssert = true;
 
-    if (checker.hasOption("assumeAssertionsAreEnabled")
-        || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, node)) {
-      doVisitAssert = true;
-    } else if (checker.hasOption("assumeAssertionsAreDisabled")) {
+    /// Commented for efficiency, since it sets `doVisitAssert` to its previous value.
+    // if (checker.hasOption("assumeAssertionsAreEnabled")
+    //     || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, node)) {
+    //   doVisitAssert = true;
+    // } else
+    if (checker.hasOption("assumeAssertionsAreDisabled")) {
       doVisitAssert = false;
     }
 
