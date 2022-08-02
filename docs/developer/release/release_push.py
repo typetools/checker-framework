@@ -41,7 +41,7 @@ from release_utils import print_step
 from release_utils import prompt_to_continue
 from release_utils import prompt_yes_no
 from release_utils import push_changes_prompt_if_fail
-from release_utils import read_command_line_option
+from release_utils import has_command_line_option
 from release_utils import read_first_line
 from release_utils import set_umask
 from release_utils import subprocess
@@ -292,7 +292,7 @@ def main(argv):
     set_umask()
 
     validate_args(argv)
-    test_mode = not read_command_line_option(argv, "release")
+    test_mode = not has_command_line_option(argv, "release")
 
     m2_settings = expanduser("~") + "/.m2/settings.xml"
     if not os.path.exists(m2_settings):
@@ -394,13 +394,13 @@ def main(argv):
 
     print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
-    print_step("5a: Stage the artifacts at Maven central.")
+    print_step("Step 5a: Stage the artifacts at Maven central.")
     if (not test_mode) or prompt_yes_no(
         "Stage Maven artifacts in Maven Central?", not test_mode
     ):
         stage_maven_artifacts_in_maven_central(new_cf_version)
 
-        print_step("5b: Close staged artifacts at Maven central.")
+        print_step("Step 5b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
             + " * Browse to https://oss.sonatype.org/#stagingRepositories\n"
@@ -417,7 +417,7 @@ def main(argv):
             "(You can also see the instructions at: http://central.sonatype.org/pages/releasing-the-deployment.html)\n"
         )
 
-        print_step("5c: Run Maven sanity test on Maven central artifacts.")
+        print_step("Step 5c: Run Maven sanity test on Maven central artifacts.")
         if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
             repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 

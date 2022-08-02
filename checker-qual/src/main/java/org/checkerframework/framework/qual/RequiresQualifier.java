@@ -45,7 +45,7 @@ public @interface RequiresQualifier {
   @Documented
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-  @interface List {
+  public static @interface List {
     /**
      * Returns the repeatable annotations.
      *

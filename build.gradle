@@ -36,7 +36,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.2.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -102,7 +102,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.23.1-SNAPSHOT'
+    version '3.24.0'
 
     repositories {
         mavenCentral()
@@ -328,6 +328,7 @@ task maybeCloneAndBuildDependencies() {
     }
     doLast {
         if (!file(stubparserJar).exists()) {
+            println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser.jar!) are:"
             exec {
                 workingDir "${stubparser}/javaparser-core/target"
                 executable 'ls'
@@ -984,6 +985,7 @@ subprojects {
             if (project.name.is('dataflow')) {
                 dependsOn('liveVariableTest')
                 dependsOn('issue3447Test')
+                dependsOn('constantPropagationTest')
             }
         }
 
@@ -1141,7 +1143,9 @@ task checkBasicStyle(group: 'Format') {
         }
     }
 }
+
 assemble.mustRunAfter(clean)
+
 task buildAll(group: 'Build') {
     description 'Build all jar files, including source and javadoc jars'
     dependsOn(allJavadoc)
@@ -1150,7 +1154,7 @@ task buildAll(group: 'Build') {
         dependsOn("${subproject.name}:javadocJar")
         dependsOn("${subproject.name}:sourcesJar")
     }
-    dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar')
+    dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
 }
 
 task releaseBuild(group: 'Build') {
@@ -1161,6 +1165,7 @@ task releaseBuild(group: 'Build') {
     }
     // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
     finalizedBy(buildAll)
+    finalizedBy('checker:copyJarsToDist')
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
