@@ -1165,7 +1165,7 @@ task releaseBuild(group: 'Build') {
     }
     // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
     finalizedBy(buildAll)
-    finalizedBy(copyJarsToDist)
+    finalizedBy('checker:copyJarsToDist')
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
