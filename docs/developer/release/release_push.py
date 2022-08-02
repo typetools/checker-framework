@@ -41,7 +41,7 @@ from release_utils import print_step
 from release_utils import prompt_to_continue
 from release_utils import prompt_yes_no
 from release_utils import push_changes_prompt_if_fail
-from release_utils import read_command_line_option
+from release_utils import has_command_line_option
 from release_utils import read_first_line
 from release_utils import set_umask
 from release_utils import subprocess
@@ -292,7 +292,7 @@ def main(argv):
     set_umask()
 
     validate_args(argv)
-    test_mode = not read_command_line_option(argv, "release")
+    test_mode = not has_command_line_option(argv, "release")
 
     m2_settings = expanduser("~") + "/.m2/settings.xml"
     if not os.path.exists(m2_settings):
