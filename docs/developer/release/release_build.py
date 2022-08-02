@@ -50,7 +50,7 @@ from release_utils import print_step
 from release_utils import prompt_to_continue
 from release_utils import prompt_w_default
 from release_utils import prompt_yes_no
-from release_utils import read_command_line_option
+from release_utils import has_command_line_option
 from release_utils import set_umask
 
 from distutils.dir_util import copy_tree
@@ -367,11 +367,11 @@ def main(argv):
 
     global debug
     global ant_debug
-    debug = read_command_line_option(argv, "--debug")
+    debug = has_command_line_option(argv, "--debug")
     if debug:
         ant_debug = "-debug"
     global notest
-    notest = read_command_line_option(argv, "--notest")
+    notest = has_command_line_option(argv, "--notest")
 
     afu_date = get_afu_date()
 

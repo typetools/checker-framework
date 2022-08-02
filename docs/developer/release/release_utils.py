@@ -24,7 +24,7 @@ from release_vars import execute
 # Parse Args Utils # TODO: Perhaps use argparse module
 
 
-def read_command_line_option(argv, argument):
+def has_command_line_option(argv, argument):
     """Returns True if the given command line arguments contain the specified
     argument, False otherwise."""
     for index in range(1, len(argv)):
