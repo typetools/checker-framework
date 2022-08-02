@@ -398,13 +398,13 @@ def main(argv):
     # i.e. indistinguishable from a freshly cloned repository.
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE
-    print_step("\n1a: Clone/update repositories.")  # MANUAL
+    print_step("\nStep 1a: Clone/update repositories.")  # MANUAL
     clone_or_update_repos()
 
     # This step ensures the previous step worked. It checks to see if we have any modified files, untracked files,
     # or outgoing changesets. If so, it fails.
 
-    print_step("1b: Verify repositories.")  # MANUAL
+    print_step("Step 1b: Verify repositories.")  # MANUAL
     check_repos(INTERM_REPOS, True, True)
     check_repos(BUILD_REPOS, True, False)
 
@@ -455,10 +455,10 @@ def main(argv):
 
     print_step("Build Step 5: Build projects and websites.")  # AUTO
 
-    print_step("5a: Build Annotation File Utilities.")
+    print_step("Step 5a: Build Annotation File Utilities.")
     build_annotation_tools_release(cf_version, afu_interm_dir)
 
-    print_step("5b: Build Checker Framework.")
+    print_step("Step 5b: Build Checker Framework.")
     build_checker_framework_release(
         cf_version,
         old_cf_version,
