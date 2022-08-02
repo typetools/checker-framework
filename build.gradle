@@ -1143,7 +1143,9 @@ task checkBasicStyle(group: 'Format') {
         }
     }
 }
+
 assemble.mustRunAfter(clean)
+
 task buildAll(group: 'Build') {
     description 'Build all jar files, including source and javadoc jars'
     dependsOn(allJavadoc)

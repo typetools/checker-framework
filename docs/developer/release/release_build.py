@@ -258,7 +258,9 @@ def build_checker_framework_release(
         '-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date="%s"'
         % (checker_dir, version, version, afu_build_properties, afu_release_date)
     )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is
+    # being built is used. Not the release.xml in the directory you ran
+    # release_build.py from.
     ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (
         ant_debug,
         ant_props,
@@ -276,7 +278,7 @@ def build_checker_framework_release(
         'If any occurrence is not acceptable, then stop the release, update target "update-checker-framework-versions" in file release.xml, and start over.'
     )
 
-    # build the checker framework binaries and documents.  Tests are run by release_push.py
+    # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
     gradle_cmd = "./gradlew releaseBuild"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
