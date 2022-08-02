@@ -225,7 +225,8 @@ def build_annotation_tools_release(version, afu_interm_dir):
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    gradle_cmd = "./gradlew releaseBuild -Pafu.version=%s -Pdeploy-dir=%s" % (
+    gradle_cmd = "./gradlew %s -Pafu.version=%s -Pdeploy-dir=%s" % (
+        "releaseBuildWithoutTest" if notest else "releaseBuild",
         version,
         afu_interm_dir,
     )
