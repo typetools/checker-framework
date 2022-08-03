@@ -1,4 +1,4 @@
-Version 3.24.0 (August 1, 2022)
+Version 3.24.0 (August 2, 2022)
 -------------------------------
 
 **User-visible changes:**
