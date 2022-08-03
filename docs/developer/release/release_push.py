@@ -185,10 +185,10 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        raise Exception(
-            "Non-zero return code (%s; see output in %s) while executing %s"
-            % (process.returncode, output, cmd)
-        )
+        msg = "Non-zero return code (%s; see output in %s) while executing %s" % (process.returncode, output, cmd)
+        print(msg); print("\n");
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            raise Exception(msg)
 
     return output
 
@@ -233,16 +233,17 @@ def check_all_links(
     if not is_checkerCheck_empty:
         print("\t" + checkerCheck + "\n")
     if errors_reported:
-        release_option = ""
-        if not test_mode:
-            release_option = " release"
-        raise Exception(
-            "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
-            + 'repository and pushing them to GitHub, running "python release_build.py all" again\n'
-            + '(in order to update the development site), and running "python release_push'
-            + release_option
-            + '" again.'
-        )
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            release_option = ""
+            if not test_mode:
+                release_option = " release"
+            raise Exception(
+                'The link checker reported errors.  Please fix them by committing changes to the mainline\n'
+                + 'repository and pushing them to GitHub, then updating the development and live sites by\n'
+                + 'running\n'
+                + '  python3 release_build.py all\n"
+                + '  python3 release_push' + release_option + '\n'
+            )
 
 
 def push_interm_to_release_repos():
@@ -534,12 +535,12 @@ def main(argv):
 
         msg = (
             "\n"
-            + "* Download the following files to your local machine."
+            + "Download the following files to your local machine."
             + "\n"
-            + "https://checkerframework.org/checker-framework-"
+            + "  https://checkerframework.org/checker-framework-"
             + new_cf_version
             + ".zip\n"
-            + "https://checkerframework.org/annotation-file-utilities/annotation-tools-"
+            + "  https://checkerframework.org/annotation-file-utilities/annotation-tools-"
             + new_cf_version
             + ".zip\n"
             + "\n"
