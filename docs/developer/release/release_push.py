@@ -587,8 +587,9 @@ def main(argv):
         )
 
         print_step(
-            "Push Step 14. Update the Checker Framework Gradle plugin.\nYou might have to wait a little while."
+            "Push Step 14. Update the Checker Framework Gradle plugin."
         )  # MANUAL
+        print("You might have to wait for Maven Central to propagate changes.\n")
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
             + "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
@@ -602,7 +603,7 @@ def main(argv):
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    print("Done with release_push.py")
+    print("Done with release_push.py.\n")
 
 
 if __name__ == "__main__":
