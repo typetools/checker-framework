@@ -283,6 +283,9 @@ def build_checker_framework_release(
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
     gradle_cmd = "./gradlew releaseBuild"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
+    gradle_cmd = "./gradlew copyJarsToDist"
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
+    raise Exception("Stopping here; pwd = " + CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
