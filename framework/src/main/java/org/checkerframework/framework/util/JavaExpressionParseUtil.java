@@ -1159,7 +1159,7 @@ public class JavaExpressionParseUtil {
         /** The error message key. */
         private final @CompilerMessageKey String errorKey;
         /** The arguments to the error message key. */
-        public final Object[] args;
+        public final transient Object[] args;
 
         /**
          * Create a new JavaExpressionParseException.

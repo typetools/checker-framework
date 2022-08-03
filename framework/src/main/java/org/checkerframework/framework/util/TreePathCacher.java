@@ -79,10 +79,18 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
         return null;
     }
 
+    /** Exception used for control flow. */
     private static class Result extends Error {
+        /** The serial version UID. */
         private static final long serialVersionUID = 4948452207518392627L;
-        final TreePath path;
+        /** The resulting TreePath. */
+        final transient TreePath path;
 
+        /**
+         * Create a new result.
+         *
+         * @param path the result TreePath
+         */
         Result(TreePath path) {
             this.path = path;
         }
