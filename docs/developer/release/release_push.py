@@ -185,8 +185,12 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        msg = "Non-zero return code (%s; see output in %s) while executing %s" % (process.returncode, output, cmd)
-        print(msg); print("\n");
+        msg = "Non-zero return code (%s; see output in %s) while executing %s" % (
+            process.returncode,
+            output,
+            cmd,
+        )
+        print(msg + "\n")
         if not prompt_yes_no("Continue despite link checker results?", True):
             raise Exception(msg)
 
@@ -238,11 +242,13 @@ def check_all_links(
             if not test_mode:
                 release_option = " release"
             raise Exception(
-                'The link checker reported errors.  Please fix them by committing changes to the mainline\n'
-                + 'repository and pushing them to GitHub, then updating the development and live sites by\n'
-                + 'running\n'
-                + '  python3 release_build.py all\n"
-                + '  python3 release_push' + release_option + '\n'
+                "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
+                + "repository and pushing them to GitHub, then updating the development and live sites by\n"
+                + "running\n"
+                + "  python3 release_build.py all\n"
+                + "  python3 release_push"
+                + release_option
+                + "\n"
             )
 
 
@@ -499,7 +505,9 @@ def main(argv):
     # available to the Java community through the Central repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central repository.")  # MANUAL
+    print_step(
+        "Push Step 10. Release staged artifacts in Central repository."
+    )  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
