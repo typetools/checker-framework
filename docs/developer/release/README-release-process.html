@@ -178,13 +178,12 @@ TreeAnnotator
   </li>
   <li>
       <strong>In a user-specific temporary directory, clone/update the Checker Framework repository (it contains the release scripts).</strong><br/>
-      <pre><code>
-  mkdir -p /scratch/$USER/cf-release
-  chmod -R types_www /scratch/$USER/cf-release
-  cd /scratch/$USER/cf-release
-  test -d checker-framework && (cd checker-framework && git pull --ff-only --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git
-  cd checker-framework/docs/developer/release
-        </code></pre>
+      <!-- This isn't a <pre> block because that formats differently than commands. -->
+      <code>mkdir -p /scratch/$USER/cf-release<br/></code>
+      <code>chmod -R types_www /scratch/$USER/cf-release<br/></code>
+      <code>cd /scratch/$USER/cf-release<br/></code>
+      <code>test -d checker-framework && (cd checker-framework && git pull --ff-only --quiet) || git clone --quiet https://github.com/typetools/checker-framework.git<br/></code>
+      <code>cd checker-framework/docs/developer/release<br/></code>
     (The release scripts will checkout and build all dependencies.)
   </li>
   <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
