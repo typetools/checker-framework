@@ -281,6 +281,11 @@ allprojects {
                         '-Xep:InvalidBlockTag:OFF',
                         // Recommends writing @InlineMe which is an Error-Prone-specific annotation
                         '-Xep:InlineMeSuggester:OFF',
+                        // Recommends writing @CanIgnoreReturnValue which is an Error-Prone-specific annotation.
+                        // It would be great if Error Prone recognized the @This annotation.
+                        '-Xep:CanIgnoreReturnValueSuggester:OFF',
+                        // Should be turned off when using the Checker Framework.
+                        '-Xep:ExtendsObject:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -698,7 +703,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-      ext.errorproneVersion = '2.14.0'
+      ext.errorproneVersion = '2.15.0'
       errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
       // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
