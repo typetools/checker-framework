@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.JCTree;
 
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SourceChecker;
@@ -231,7 +232,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(@Nullable Object o) {
             if (o instanceof TreeSpec) {
                 TreeSpec other = (TreeSpec) o;
                 return treeString.equals(other.treeString) && lineNumber == other.lineNumber;

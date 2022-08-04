@@ -10,7 +10,9 @@ import java.util.List;
 /** */
 public class FlowTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public FlowTest(List<File> testFiles) {
         super(testFiles, FlowTestChecker.class, "flow");
     }

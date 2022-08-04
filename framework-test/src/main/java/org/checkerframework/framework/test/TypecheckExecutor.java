@@ -73,7 +73,7 @@ public class TypecheckExecutor {
         final List<String> options = new ArrayList<>();
         options.add("-processor");
         options.add(String.join(",", configuration.getProcessors()));
-        if (SystemUtil.getJreVersion() == 8) {
+        if (SystemUtil.jreVersion == 8) {
             options.add("-source");
             options.add("8");
             options.add("-target");

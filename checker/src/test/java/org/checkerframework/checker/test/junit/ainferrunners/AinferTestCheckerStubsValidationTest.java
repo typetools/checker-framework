@@ -15,7 +15,9 @@ import java.util.List;
 @Category(AinferTestCheckerStubsTest.class)
 public class AinferTestCheckerStubsValidationTest extends AinferValidatePerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public AinferTestCheckerStubsValidationTest(List<File> testFiles) {
         super(
                 testFiles,

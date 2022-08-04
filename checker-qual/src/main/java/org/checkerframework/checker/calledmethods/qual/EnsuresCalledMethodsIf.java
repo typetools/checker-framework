@@ -63,7 +63,7 @@ public @interface EnsuresCalledMethodsIf {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @ConditionalPostconditionAnnotation(qualifier = CalledMethods.class)
     @InheritedAnnotation
-    @interface List {
+    public static @interface List {
         /**
          * Return the repeatable annotations.
          *

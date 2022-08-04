@@ -10,7 +10,9 @@ import java.util.List;
 /** */
 public class LubGlbTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public LubGlbTest(List<File> testFiles) {
         super(testFiles, LubGlbChecker.class, "lubglb");
     }

@@ -751,7 +751,7 @@ public class AnnotationUtils {
             CharSequence elementName,
             Class<T> expectedType,
             boolean useDefaults) {
-        // This implementation permits getElementValue a more detailed error message than if
+        // This implementation permits getElementValue to give a more detailed error message than if
         // getElementValue called getElementValueOrNull and threw an error if the result was null.
         try {
             return getElementValue(anno, elementName, expectedType, useDefaults);
@@ -779,7 +779,7 @@ public class AnnotationUtils {
             CharSequence elementName,
             Class<T> expectedType,
             boolean useDefaults) {
-        // This implementation permits getElementValue a more detailed error message than if
+        // This implementation permits getElementValue to give a more detailed error message than if
         // getElementValue called getElementValueOrNull and threw an error if the result was null.
         try {
             return getElementValueArray(anno, elementName, expectedType, useDefaults);

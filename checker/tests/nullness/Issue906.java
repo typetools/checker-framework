@@ -1,6 +1,8 @@
 // Test case for Issue 906
 // https://github.com/typetools/checker-framework/issues/906
-/** @author Michael Grafl */
+/**
+ * @author Michael Grafl
+ */
 public class Issue906 {
     @SuppressWarnings("unchecked")
     public <B, A extends B> void start(A a, Class<B> cb) {

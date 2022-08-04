@@ -55,8 +55,7 @@ public interface TypeHierarchy {
      *
      * @param subtype possible subtype
      * @param supertype possible supertype
-     * @return true if {@code subtype} is a subtype of {@code supertype} for all hierarchies
-     *     present.
+     * @return true if {@code subtype} is a subtype of {@code supertype} for all hierarchies present
      */
     boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
 }

@@ -16,6 +16,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.plumelib.util.CollectionsPlume;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -610,9 +611,9 @@ public class ElementUtils {
         try {
             superTypeMirror = typeElt.getSuperclass();
         } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-            // Looking up a supertype failed. This sometimes happens
-            // when transitive dependencies are not on the classpath.
-            // As javac didn't complain, let's also not complain.
+            // Looking up a supertype failed. This sometimes happens when transitive dependencies
+            // are not
+            // on the classpath.  As javac didn't complain, let's also not complain.
             return null;
         }
 
@@ -808,6 +809,27 @@ public class ElementUtils {
     }
 
     /**
+     * Returns true if the element is a record accessor method.
+     *
+     * @param methodElement a method element
+     * @return true if the element is a record accessor method
+     */
+    public static boolean isRecordAccessor(ExecutableElement methodElement) {
+        TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
+        if (enclosing.getKind().toString().equals("RECORD")) {
+            String methodName = methodElement.getSimpleName().toString();
+            List<? extends Element> encloseds = enclosing.getEnclosedElements();
+            for (Element enclosed : encloseds) {
+                if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
+                        && enclosed.getSimpleName().toString().equals(methodName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Check that a method Element matches a signature.
      *
      * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is
@@ -946,6 +968,22 @@ public class ElementUtils {
         return kind;
     }
 
+    /** The {@code TypeElement.getRecordComponents()} method. */
+    private static final @Nullable Method TYPEELEMENT_GETRECORDCOMPONENTS;
+
+    static {
+        if (SystemUtil.jreVersion >= 16) {
+            try {
+                TYPEELEMENT_GETRECORDCOMPONENTS =
+                        TypeElement.class.getMethod("getRecordComponents");
+            } catch (NoSuchMethodException e) {
+                throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+            }
+        } else {
+            TYPEELEMENT_GETRECORDCOMPONENTS = null;
+        }
+    }
+
     /**
      * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is
      * not available before JDK 16. On earlier JDKs, which don't support records anyway, an
@@ -959,12 +997,9 @@ public class ElementUtils {
     public static List<? extends Element> getRecordComponents(TypeElement element) {
         try {
             return (@NonNull List<? extends Element>)
-                    TypeElement.class.getMethod("getRecordComponents").invoke(element);
-        } catch (NoSuchMethodException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | InvocationTargetException e) {
-            throw new BugInCF("Cannot access TypeElement.getRecordComponents", e);
+                    TYPEELEMENT_GETRECORDCOMPONENTS.invoke(element);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw new Error("Cannot call TypeElement.getRecordComponents()", e);
         }
     }
 

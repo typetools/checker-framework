@@ -236,7 +236,7 @@ public class JavaStubifier {
                 return false;
             }
             AccessSpecifier as = node.getAccessSpecifier();
-            if (as == AccessSpecifier.PRIVATE || as == AccessSpecifier.PACKAGE_PRIVATE) {
+            if (as == AccessSpecifier.PRIVATE || as == AccessSpecifier.NONE) {
                 ((Node) node).remove();
                 return true;
             }

@@ -430,7 +430,7 @@ public class StubGenerator {
 
         Context context = new Context();
         Options options = Options.instance(context);
-        if (SystemUtil.getJreVersion() == 8) {
+        if (SystemUtil.jreVersion == 8) {
             options.put(Option.SOURCE, "8");
             options.put(Option.TARGET, "8");
         }

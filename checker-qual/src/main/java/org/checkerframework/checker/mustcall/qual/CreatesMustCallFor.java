@@ -102,7 +102,7 @@ public @interface CreatesMustCallFor {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD})
     @InheritedAnnotation
-    @interface List {
+    public static @interface List {
         /**
          * Return the repeatable annotations.
          *

@@ -51,8 +51,8 @@ dependencies {
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:1.0.4'
-    implementation 'org.plumelib:plume-util:1.5.8'
+    implementation 'org.plumelib:reflection-util:1.0.5'
+    implementation 'org.plumelib:plume-util:1.5.9'
 
     // Dependencies added to "shadow" appear as dependencies in Maven Central.
     shadow project(':checker-qual')
@@ -67,7 +67,7 @@ dependencies {
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
     // The AWS SDK is used for testing the Called Methods Checker.
-    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.257")
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.272")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
@@ -92,12 +92,17 @@ jar {
     }
 }
 
+// TODO: How does checker.jar get copied into the checker/dist directory?
 task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
     description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist.'
     dependsOn project(':checker-qual').tasks.jar
     doLast {
+        def checkerQualJarFile = file(project(':checker-qual').tasks.getByName("jar").archivePath)
+        if (!checkerQualJarFile.exists()) {
+            throw new GradleException("File not found: " + checkerQualJarFile)
+        }
         copy {
-            from file(project(':checker-qual').tasks.getByName("jar").archivePath)
+            from checkerQualJarFile
             into "${projectDir}/dist"
             rename { String fileName ->
                 // remove version number on checker-qual.jar
@@ -105,8 +110,12 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             }
         }
 
+        def checkerUtilJarFile = file(project(':checker-util').tasks.getByName("jar").archivePath)
+        if (!checkerUtilJarFile.exists()) {
+            throw new GradleException("File not found: " + checkerUtilJarFile)
+        }
         copy {
-            from file(project(':checker-util').tasks.getByName("jar").archivePath)
+            from checkerUtilJarFile
             into "${projectDir}/dist"
             rename { String fileName ->
                 // remove version number on checker-util.jar
@@ -114,6 +123,7 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             }
         }
 
+        // TODO: This file is only created under JDK 8.
         copy {
             from configurations.javacJar
             into "${projectDir}/dist"

@@ -19,7 +19,9 @@ import java.util.List;
 @Category(AinferTestCheckerAjavaTest.class)
 public class AinferTestCheckerAjavaTest extends AinferGeneratePerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public AinferTestCheckerAjavaTest(List<File> testFiles) {
         super(
                 testFiles,

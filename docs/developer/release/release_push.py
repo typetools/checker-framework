@@ -41,7 +41,7 @@ from release_utils import print_step
 from release_utils import prompt_to_continue
 from release_utils import prompt_yes_no
 from release_utils import push_changes_prompt_if_fail
-from release_utils import read_command_line_option
+from release_utils import has_command_line_option
 from release_utils import read_first_line
 from release_utils import set_umask
 from release_utils import subprocess
@@ -292,7 +292,7 @@ def main(argv):
     set_umask()
 
     validate_args(argv)
-    test_mode = not read_command_line_option(argv, "release")
+    test_mode = not has_command_line_option(argv, "release")
 
     m2_settings = expanduser("~") + "/.m2/settings.xml"
     if not os.path.exists(m2_settings):
@@ -394,13 +394,13 @@ def main(argv):
 
     print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
-    print_step("5a: Stage the artifacts at Maven central.")
+    print_step("Step 5a: Stage the artifacts at Maven central.")
     if (not test_mode) or prompt_yes_no(
         "Stage Maven artifacts in Maven Central?", not test_mode
     ):
         stage_maven_artifacts_in_maven_central(new_cf_version)
 
-        print_step("5b: Close staged artifacts at Maven central.")
+        print_step("Step 5b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
             + " * Browse to https://oss.sonatype.org/#stagingRepositories\n"
@@ -417,7 +417,7 @@ def main(argv):
             "(You can also see the instructions at: http://central.sonatype.org/pages/releasing-the-deployment.html)\n"
         )
 
-        print_step("5c: Run Maven sanity test on Maven central artifacts.")
+        print_step("Step 5c: Run Maven sanity test on Maven central artifacts.")
         if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
             repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
@@ -545,7 +545,7 @@ def main(argv):
             + "\n"
             + "To post the Checker Framework release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/eisop/checker-framework/releases/new?tag=checker-framework-"
+            + "* Browse to https://github.com/eisop/checker-framework/releases/new?tag=checker-framework-"
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Checker Framework "
@@ -559,7 +559,7 @@ def main(argv):
             + "\n"
             + "To post the Annotation File Utilities release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/eisop/annotation-tools/releases/new?tag="
+            + "* Browse to https://github.com/eisop/annotation-tools/releases/new?tag="
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Annotation File Utilities "
@@ -572,7 +572,7 @@ def main(argv):
             + '* Click on the green "Publish release" button.\n'
         )
 
-        print(msg)
+        continue_or_exit(msg)
 
         print_step("Push Step 12. Announce the release.")  # MANUAL
         continue_or_exit(
@@ -580,8 +580,13 @@ def main(argv):
             + get_announcement_email(new_cf_version)
         )
 
+        print_step("Push Step 13. Prep for next Checker Framework release.")  # MANUAL
+        continue_or_exit(
+            "Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n"
+        )
+
         print_step(
-            "Push Step 13. Update the Checker Framework Gradle plugin."
+            "Push Step 14. Update the Checker Framework Gradle plugin.\nYou might have to wait a little while."
         )  # MANUAL
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
@@ -592,11 +597,6 @@ def main(argv):
             + "updates the version number of the Checker Framework\n"
             + "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
             + "The pull request's tests will fail; you will merge it in a day."
-        )
-
-        print_step("Push Step 14. Prep for next Checker Framework release.")  # MANUAL
-        continue_or_exit(
-            "Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n"
         )
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
