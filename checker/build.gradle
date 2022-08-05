@@ -304,7 +304,7 @@ task jtregJdk11Tests(/* dependsOn: ':downloadJtreg', */ group: 'Verification') {
             return;
         }
         exec {
-            executable "${jtregHome}/bin/jtreg"
+            executable "jtreg"
             args = [
                     "-dir:${projectDir}/jtregJdk11",
                     "-workDir:${jtregOutput}/${name}/work",

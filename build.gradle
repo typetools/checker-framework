@@ -38,7 +38,7 @@ ext {
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
 
-    jtregHome = "${parentDir}/jtreg"
+    // jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -575,6 +575,7 @@ task manual(group: 'Documentation') {
     }
 }
 
+/*
 // No group so it does not show up in the output of `gradlew tasks`
 task downloadJtreg(type: Download) {
     description "Downloads and unpacks jtreg."
@@ -588,6 +589,7 @@ task downloadJtreg(type: Download) {
     // The default time between requests is 1 second, according to https://hc.apache.org/httpcomponents-client-5.1.x/current/httpclient5/apidocs/org/apache/hc/client5/http/impl/DefaultHttpRequestRetryStrategy.html .
     // It is not currently possible to wait longer between requests with the Download task.
     retries 3
+    // Untar the .tar.gz file
     doLast {
         copy {
             from tarTree(dest)
@@ -598,6 +600,7 @@ task downloadJtreg(type: Download) {
         }
     }
 }
+*/
 
 // See alternate implementation getCodeFormatScriptsInGradle below.
 // No group so it does not show up in the output of `gradlew tasks`
@@ -862,7 +865,7 @@ subprojects {
                 String tests = '.'
                 doLast {
                     exec {
-                        executable "${jtregHome}/bin/jtreg"
+                        executable "jtreg"
                         args = [
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",
