@@ -10,7 +10,7 @@ public class InstanceOfPatternVariable {
     if (x instanceof Map<?, ?> m) {
       // final var ct = (ClassOrInterfaceType) type;
 
-      @KeyFor("m") String y = null;
+      @KeyFor("m") Object y = m.keySet().iterator().next();
     }
   }
 }
