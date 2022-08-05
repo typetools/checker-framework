@@ -433,8 +433,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
         }
         // Calling Analysis.runAnalysisFor() may mutate the internal nodeValues map inside an
         // AbstractAnalysis object, and by default the AnalysisResult constructor just wraps this
-        // map
-        // without copying it.  So here the AnalysisResult maps must be copied, to preserve them.
+        // map without copying it.  So here the AnalysisResult maps must be copied, to preserve
+        // them.
+        // TODO: Wouldn't it be safer to do at the beginning of the called method?
         copyMapsIfNeeded();
         return runAnalysisFor(node, preOrPost, transferInput, nodeValues, analysisCaches);
     }
