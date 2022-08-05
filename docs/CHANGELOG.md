@@ -5,10 +5,6 @@ Version 3.24.0-eisop1 (August 5, 2022)
 
 Postconditions on the parameters of a constructor are now used at new object creations.
 
-**Implementation details:**
-
-**Closed issues:**
-
 
 Version 3.24.0 (August 3, 2022)
 -------------------------------
