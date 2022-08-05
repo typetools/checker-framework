@@ -245,9 +245,9 @@ public class Resolver {
     try {
       Env<AttrContext> env = getEnvForPath(path);
       Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
+      // Every kind in the documentation of Element.getKind() is explicitly tested, possibly in the
+      // "default:" case.
       switch (res.getKind()) {
-          // Every kind in the documentation of Element.getKind() is explicitly listed.
-        case BINDING_VARIABLE:
         case EXCEPTION_PARAMETER:
         case LOCAL_VARIABLE:
         case PARAMETER:
@@ -257,6 +257,9 @@ public class Resolver {
         case FIELD:
           return null;
         default:
+          if (ElementUtils.isBindingVariable(res)) {
+            return (VariableElement) res;
+          }
           if (res instanceof VariableElement) {
             throw new BugInCF("unhandled variable ElementKind " + res.getKind());
           }
