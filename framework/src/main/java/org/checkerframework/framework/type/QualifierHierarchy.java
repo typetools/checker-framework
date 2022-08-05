@@ -390,7 +390,7 @@ public interface QualifierHierarchy {
   }
 
   /**
-   * Throws an exception if the result and the inputs do not all have the same size .
+   * Throws an exception if the result and the inputs do not all have the same size.
    *
    * @param c1 the first collection
    * @param c2 the second collection
