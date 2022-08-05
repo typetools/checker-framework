@@ -289,9 +289,9 @@ task allCalledMethodsTests(type: Test, group: 'Verification') {
     dependsOn 'delombok'
 }
 
-// These are tests that should only be run with JDK 11.
-task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
-    description 'Run the jtreg tests made for JDK 11.'
+// These are tests that should only be run with JDK 11+.
+task jtregJdk11Tests(/* dependsOn: ':downloadJtreg', */ group: 'Verification') {
+    description 'Run the jtreg tests made for JDK 11+.'
     dependsOn('compileJava')
     dependsOn('compileTestJava')
     dependsOn('shadowJar')
@@ -300,7 +300,7 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     String name = 'all'
     doLast {
         if (isJava8) {
-            println "This test is only run with JDK 11."
+            println "This test is only run with JDK 11+."
             return;
         }
         exec {
