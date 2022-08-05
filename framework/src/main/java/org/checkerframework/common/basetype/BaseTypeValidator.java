@@ -349,11 +349,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // May be zero for a "diamond" (inferred type args in constructor invocation).
     int numTypeArgs = typeArgTree.getTypeArguments().size();
     if (numTypeArgs != 0) {
-      // TODO: this should be an equality, but in
-      // http://buffalo.cs.washington.edu:8080/job/jdk6-daikon-typecheck/2061/console
-      // it failed with:
-      // daikon/Debug.java; message: size mismatch for type arguments:
-      // @NonNull Object and Class<?>
+      // TODO: this should be an equality, but in the past it failed with:
+      //   daikon/Debug.java; message: size mismatch for type arguments:
+      //   @NonNull Object and Class<?>
       // but I didn't manage to reduce it to a test case.
       assert tatypes.size() <= numTypeArgs || skipChecks
           : "size mismatch for type arguments: " + type + " and " + typeArgTree;

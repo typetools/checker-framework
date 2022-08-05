@@ -1253,7 +1253,7 @@ some distinct challenges:
 A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
 Java expression</a>.  The representation for these
-(the <a href="https://checkerframework.org/api/org.checkerframework.dataflow.expression.JavaExpression.html"><code>JavaExpression</code></a>
+(the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
 class) is a hack.  The goal of this
 project is to remove it.
 </p>
@@ -1274,14 +1274,14 @@ a <code>JavaExpression</code>.
 <ul>
   <li>
     Replace every use
-    of <a href="https://checkerframework.org/api/org.checkerframework.dataflow.expression.JavaExpression.html"><code>JavaExpression</code></a>
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
     by a use of the JavaParser
     class <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html"><code>com.github.javaparser.ast.expr.Expression</code></a>.
   </li>
   <li>
     Replace every use of a subclass of <code>JavaExpression</code> (listed in the
     "Direct Known Subclasses" section of
-    the <a href="https://checkerframework.org/api/org.checkerframework.dataflow.expression.JavaExpression.html"><code>JavaExpression</code>
+    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code>
     API documentation)</a> by a use of a
     <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html">subclass of <code>Expression</code></a>.  For example, replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/MethodCallExpr.html"><code>MethodCallExpr</code></a>.

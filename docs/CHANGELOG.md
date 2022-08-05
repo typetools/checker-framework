@@ -1,13 +1,19 @@
-Version 3.24.0 (??)
--------------------
+Version 3.24.0 (August 3, 2022)
+-------------------------------
 
 **User-visible changes:**
+
+Performance improvements.
+
+Minor bug fixes and enhancements.
 
 **Implementation details:**
 
 Prefer `SystemUtil.jreVersion` to `SystemUtil.getJreVersion()`.
 
 **Closed issues:**
+
+#5200, #5216.
 
 
 Version 3.23.0 (July 11, 2022)

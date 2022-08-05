@@ -94,7 +94,7 @@ public @interface EnsuresLTLengthOf {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @PostconditionAnnotation(qualifier = LTLengthOf.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
      * Return the repeatable annotations.
      *
