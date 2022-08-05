@@ -34,6 +34,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   git \
   gradle \
   jq \
+  jtreg \
   libcurl3-gnutls \
   make \
   maven \
@@ -57,7 +58,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   hevea \
   imagemagick \
   junit \
-  jtreg \
   latexmk \
   librsvg2-bin \
   libasound2-dev libcups2-dev libfontconfig1-dev \
