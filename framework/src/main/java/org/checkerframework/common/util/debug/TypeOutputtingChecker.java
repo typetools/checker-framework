@@ -114,7 +114,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
    */
   public void run(@CanonicalName String[] args) {
     @SuppressWarnings(
-        "builder:required.method.not.called") // JavacProcessingEnvironment is not closed
+        "builder:required.method.not.called") // WHY? Annotated JDK has JavacProcessingEnvironmentx
     ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
     Elements elements = env.getElementUtils();
 

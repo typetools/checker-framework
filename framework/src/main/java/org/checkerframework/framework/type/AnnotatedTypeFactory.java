@@ -429,7 +429,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   protected ReflectionResolver reflectionResolver;
 
   /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
-  @SuppressWarnings("builder:required.method.not.called") // type factories are not closed
+  @SuppressWarnings("builder:required.method.not.called"
+  // Class loaders are not closed.  This is @Owning to prevent a warning at each assignment.
+  )
   protected @Owning AnnotationClassLoader loader;
 
   /**
@@ -1118,11 +1120,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     the returned set, for example, it is used frequently to add Bottom qualifiers
    * @return a set of annotation class instances
    */
-  @SafeVarargs
-  @SuppressWarnings({
-    "varargs",
-    "builder:missing.creates.mustcall.for" // type factories are not closed
-  })
+  @SuppressWarnings({"varargs", "unchecked"}) // @SafeVarargs is only applicable to static methods
   private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
       Class<? extends Annotation>... explicitlyListedAnnotations) {
     if (loader != null) {

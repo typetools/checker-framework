@@ -235,7 +235,7 @@ public class CFGVisualizeLauncher {
       @SuppressWarnings({
         "builder:required.method.not.called",
         "mustcall:assignment"
-      }) // WHY? Annotated JDK should handle this.
+      }) // WHY? Annotated JDK should handle this, and test case NullOutputStreamTest passes.
       @MustCall() OutputStream nullOS = OutputStream.nullOutputStream();
       System.setErr(new PrintStream(nullOS));
       javac.compile(List.of(l), List.of(clas), List.of(cfgProcessor), List.nil());
