@@ -428,7 +428,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   protected ReflectionResolver reflectionResolver;
 
-  /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
+  /** This loads type annotation classes via reflective lookup. */
   @SuppressWarnings("builder:required.method.not.called"
   // Class loaders are not closed.  This is @Owning to prevent a warning at each assignment.
   )
