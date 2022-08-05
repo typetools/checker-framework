@@ -834,7 +834,7 @@ subprojects {
             ['-Astubs=javax-lang-model-element-name.astub'])
         createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
             'org.checkerframework.checker.nullness.NullnessChecker',
-            ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
+            ['-AskipUses=com\\.sun\\.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'Purity',
             'org.checkerframework.framework.util.PurityChecker')
         createCheckTypeTask(project.name, 'Signature',

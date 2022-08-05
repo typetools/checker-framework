@@ -66,6 +66,10 @@ public class AddAnnotatedFor {
    * annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
    */
   public static void main(String[] args) throws IOException, DefException, ParseException {
+    if (args.length > 1) {
+      System.err.println("Supply 0 or 1 command-line arguments.");
+      System.exit(1);
+    }
     AScene scene = new AScene();
     String filename;
     Reader r;
