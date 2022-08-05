@@ -1736,8 +1736,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
         } catch (RuntimeException t) {
             // Sometimes the type arguments are inferred incorrectly, which causes crashes. Once
-            // #979
-            // is fixed this should be removed and crashes should be reported normally.
+            // #979 is fixed this should be removed and crashes should be reported normally.
             if (node.getTypeArguments().size() == typeargs.size()) {
                 // They type arguments were explicitly written.
                 throw t;

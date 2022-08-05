@@ -2120,8 +2120,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
                 if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
                     // Return false immediately. Do NOT check for AnnotatedFor in the enclosing
-                    // elements,
-                    // because they may not have an @AnnotatedFor.
+                    // elements, because they may not have an @AnnotatedFor.
                     return false;
                 }
             } else if (TreeUtils.classTreeKinds().contains(decl.getKind())) {
@@ -2133,8 +2132,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
                 if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
                     // Return false immediately. Do NOT check for AnnotatedFor in the enclosing
-                    // elements,
-                    // because they may not have an @AnnotatedFor.
+                    // elements, because they may not have an @AnnotatedFor.
                     return false;
                 }
             } else {
