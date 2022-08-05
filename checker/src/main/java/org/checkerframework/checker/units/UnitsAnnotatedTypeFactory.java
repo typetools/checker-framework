@@ -349,6 +349,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return areSameByClass(metaAnno, UnitsMultiple.class);
     }
 
+    /** A class loader for looking up annotations. */
+    private static final ClassLoader CLASSLOADER =
+            InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+
     /**
      * Look for an @UnitsRelations annotation on the qualifier and add it to the list of
      * UnitsRelations.
@@ -371,9 +375,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 Class<?> valueElement;
                 try {
-                    ClassLoader classLoader =
-                            InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
-                    valueElement = Class.forName(theclassname, true, classLoader);
+                    valueElement = Class.forName(theclassname, true, CLASSLOADER);
                 } catch (ClassNotFoundException e) {
                     String msg =
                             String.format(

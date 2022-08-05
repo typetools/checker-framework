@@ -22,8 +22,14 @@ ext {
     isJava15 = JavaVersion.current() == JavaVersion.VERSION_15
     isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
     isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
+    isJava18 = JavaVersion.current() == JavaVersion.VERSION_18
+    isJava19 = JavaVersion.current() == JavaVersion.VERSION_19
+    isJava20 = JavaVersion.current() == JavaVersion.VERSION_20
 
-    isJava17plus = isJava17
+    isJava20plus = isJava20
+    isJava19plus = isJava19 || isJava20plus
+    isJava18plus = isJava18 || isJava19plus
+    isJava17plus = isJava17 || isJava18plus
     isJava16plus = isJava16 || isJava17plus
     isJava15plus = isJava15 || isJava16plus
     isJava14plus = isJava14 || isJava15plus
@@ -37,7 +43,7 @@ ext {
     // afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.2.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
 
     jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
@@ -110,7 +116,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.23.0-eisop3-SNAPSHOT'
+    version '3.24.0'
 
     repositories {
         mavenCentral()
@@ -366,6 +372,7 @@ task maybeCloneAndBuildDependencies() {
     }
     doLast {
         if (!file(stubparserJar).exists()) {
+            println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser.jar!) are:"
             exec {
                 workingDir "${stubparser}/javaparser-core/target"
                 executable 'ls'
@@ -569,7 +576,7 @@ configurations {
 }
 
 dependencies {
-    requireJavadoc "org.plumelib:require-javadoc:1.0.3"
+    requireJavadoc "org.plumelib:require-javadoc:1.0.4"
 }
 
 task requireJavadoc(type: JavaExec, group: 'Documentation') {
@@ -1243,7 +1250,7 @@ task buildAll(group: 'Build') {
         dependsOn("${subproject.name}:javadocJar")
         dependsOn("${subproject.name}:sourcesJar")
     }
-    dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar')
+    dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
 }
 
 task releaseBuild(group: 'Build') {
@@ -1254,6 +1261,7 @@ task releaseBuild(group: 'Build') {
     }
     // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
     finalizedBy(buildAll)
+    finalizedBy('checker:copyJarsToDist')
 }
 
 // No group so it does not show up in the output of `gradlew tasks`

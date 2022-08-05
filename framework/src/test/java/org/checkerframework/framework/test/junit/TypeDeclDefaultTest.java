@@ -10,7 +10,9 @@ import java.util.List;
 /** Create the TypeDeclDefault test. */
 public class TypeDeclDefaultTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public TypeDeclDefaultTest(List<File> testFiles) {
         super(
                 testFiles,

@@ -3987,7 +3987,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param unaryTree increment or decrement tree
      * @param expr expression node to be incremented or decremented
      * @param isIncrement true when it's increment
-     * @param isPostfix true if {@code expr} is a postfix increment or decrement.
+     * @param isPostfix true if {@code expr} is a postfix increment or decrement
      * @return assignment node for corresponding increment or decrement
      */
     private AssignmentNode createIncrementOrDecrementAssign(

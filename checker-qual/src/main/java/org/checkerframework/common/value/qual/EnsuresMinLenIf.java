@@ -64,7 +64,7 @@ public @interface EnsuresMinLenIf {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
     @InheritedAnnotation
-    @interface List {
+    public static @interface List {
         /**
          * Return the repeatable annotations.
          *

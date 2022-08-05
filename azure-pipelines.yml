@@ -8,14 +8,28 @@ pr:
     include:
     - '*'
 
-
 jobs:
+
+# The dependsOn clauses are:
+#  * Everything depends on the canary jobs (the 4 main jdk17 jobs), except those jobs themselves.
+#  * Anything *_jdk8 or *_jdk11 depends on *_jdk17.
+
+- job: canary_jobs
+  dependsOn:
+   - junit_tests_jdk17
+   - nonjunit_tests_jdk17
+   - misc_jdk17
+   - typecheck_jdk17
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - bash: true
+    displayName: canary_jobs
+
 - job: junit_tests_jdk8
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
+   - canary_jobs
+   - junit_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -26,6 +40,9 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_tests_jdk11
+  dependsOn:
+   - canary_jobs
+   - junit_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -34,12 +51,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
-- job: junit_tests_jdk_latest
-  dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
+- job: junit_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-latest:latest
@@ -67,10 +79,8 @@ jobs:
 
 - job: nonjunit_tests_jdk8
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
+   - canary_jobs
+   - nonjunit_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -80,6 +90,9 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh
 - job: nonjunit_tests_jdk11
+  dependsOn:
+   - canary_jobs
+   - nonjunit_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -88,12 +101,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh
-- job: nonjunit_tests_jdk_latest
-  dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
+- job: nonjunit_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-latest:latest
@@ -119,10 +127,8 @@ jobs:
 
 - job: inference_tests_jdk8
   dependsOn:
-   - junit_tests_jdk11
-   - inference_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
+   - canary_jobs
+   - inference_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -132,6 +138,9 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
 - job: inference_tests_jdk11
+  dependsOn:
+   - canary_jobs
+   - inference_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -140,12 +149,9 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
-- job: inference_tests_jdk_latest
+- job: inference_tests_jdk17
   dependsOn:
-   - junit_tests_jdk11
-   - inference_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
+   - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-latest:latest
@@ -171,10 +177,8 @@ jobs:
 
 - job: misc_jdk8
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-   - misc_jdk11
-   - typecheck_jdk11
+   - canary_jobs
+   - misc_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
@@ -184,6 +188,9 @@ jobs:
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk11
+  dependsOn:
+   - canary_jobs
+   - misc_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11-plus:latest
@@ -192,12 +199,7 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
-- job: misc_jdk_latest
-  dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-   - misc_jdk11
-   - typecheck_jdk11
+- job: misc_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-latest-plus:latest
@@ -208,10 +210,8 @@ jobs:
     displayName: test-misc.sh
 - job: misc_jdk_next
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-   - misc_jdk11
-   - typecheck_jdk11
+   - canary_jobs
+   - typecheck_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-next-plus:latest
@@ -236,6 +236,9 @@ jobs:
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
 - job: typecheck_jdk11
+  dependsOn:
+   - canary_jobs
+   - typecheck_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11-plus:latest
@@ -244,12 +247,7 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
-- job: typecheck_jdk_latest
-  dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
+- job: typecheck_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-latest-plus:latest
@@ -275,12 +273,8 @@ jobs:
 
 - job: daikon_jdk8
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
-   ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk8" critical path.
-   # - daikon_jdk11
+   - canary_jobs
+   - daikon_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -291,6 +285,9 @@ jobs:
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
 - job: daikon_jdk11
+  dependsOn:
+   - canary_jobs
+   - daikon_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -302,12 +299,7 @@ jobs:
     displayName: test-daikon.sh
 - job: daikon_jdk17
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-   - misc_jdk11
-   - typecheck_jdk11
-   ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk17" critical path.
-   # - daikon_jdk11
+   - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
@@ -320,11 +312,8 @@ jobs:
 
 - job: guava_jdk8
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
-   - guava_jdk11
+   - canary_jobs
+   - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -334,6 +323,9 @@ jobs:
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
 - job: guava_jdk11
+  dependsOn:
+   - canary_jobs
+   - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -342,13 +334,9 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
-- job: guava_jdk_latest
+- job: guava_jdk17
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
-   - guava_jdk11
+   - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-latest:latest
@@ -375,11 +363,8 @@ jobs:
 
 - job: plume_lib_jdk8
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
-   - plume_lib_jdk11
+   - canary_jobs
+   - plume_lib_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -389,6 +374,9 @@ jobs:
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
 - job: plume_lib_jdk11
+  dependsOn:
+   - canary_jobs
+   - plume_lib_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -397,13 +385,9 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
-- job: plume_lib_jdk_latest
+- job: plume_lib_jdk17
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
-   - plume_lib_jdk11
+   - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-latest:latest
@@ -431,11 +415,8 @@ jobs:
 ## The downstream jobs are not currently needed because test-downstream.sh is empty.
 # - job: downstream_jdk8
 #   dependsOn:
-#    - junit_tests_jdk11
-#    - nonjunit_tests_jdk11
-#    - misc_jdk11
-#    - typecheck_jdk11
-#    - downstream_jdk11
+#    - canary_jobs
+#    - downstream_jdk17
 #   pool:
 #     vmImage: 'ubuntu-latest'
 #   container: mdernst/cf-ubuntu-jdk8:latest
@@ -445,6 +426,9 @@ jobs:
 #   - bash: ./checker/bin-devel/test-downstream.sh
 #     displayName: test-downstream.sh
 # - job: downstream_jdk11
+#   dependsOn:
+#    - canary_jobs
+#    - downstream_jdk17
 #   pool:
 #     vmImage: 'ubuntu-latest'
 #   container: mdernst/cf-ubuntu-jdk11:latest
@@ -455,11 +439,7 @@ jobs:
 #     displayName: test-downstream.sh
 # - job: downstream_jdk17
 #   dependsOn:
-#    - junit_tests_jdk11
-#    - nonjunit_tests_jdk11
-#    - misc_jdk11
-#    - typecheck_jdk11
-#    - downstream_jdk11
+#    - canary_jobs
 #   pool:
 #     vmImage: 'ubuntu-latest'
 #   container: mdernst/cf-ubuntu-jdk17:latest

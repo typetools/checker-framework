@@ -171,8 +171,11 @@ public class Heuristics {
      * if the leaf is within the "else" of a negated condition that matches the supplied matcher.
      */
     public static class WithinTrueBranch extends Matcher {
+        /** conditionMatcher for the condition */
         private final Matcher matcher;
-        /** @param conditionMatcher for the condition */
+        /**
+         * @param conditionMatcher for the condition
+         */
         public WithinTrueBranch(Matcher conditionMatcher) {
             this.matcher = conditionMatcher;
         }

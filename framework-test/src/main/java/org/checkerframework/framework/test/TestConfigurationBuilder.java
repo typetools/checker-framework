@@ -69,7 +69,7 @@ public class TestConfigurationBuilder {
             configBuilder.addOption("-d", outputClassDirectory.getAbsolutePath());
         }
 
-        if (SystemUtil.getJreVersion() == 8) {
+        if (SystemUtil.jreVersion == 8) {
             configBuilder.addOption("-source", "8").addOption("-target", "8");
         }
 

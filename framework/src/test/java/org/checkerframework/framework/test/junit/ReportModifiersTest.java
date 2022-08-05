@@ -8,7 +8,9 @@ import java.util.List;
 
 public class ReportModifiersTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public ReportModifiersTest(List<File> testFiles) {
         super(
                 testFiles,

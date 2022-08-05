@@ -24,6 +24,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 /** This file contains basic utility functions. */
 public class SystemUtil {
 
+    /** The major version of the JRE, such as 8, 11, or 17. */
+    @SuppressWarnings(
+            "deprecation") // remove when getJreVersion is made private (and not deprecated)
+    public static final int jreVersion = getJreVersion();
+
     /**
      * Returns the major JRE version.
      *
@@ -34,8 +39,13 @@ public class SystemUtil {
      * formats are considered. Up to Java 8, from a version string like `1.8.whatever`, this method
      * extracts 8. Since Java 9, from a version string like `11.0.1`, this method extracts 11.
      *
+     * <p>Starting in Java 9, there is the int {@code Runtime.version().feature()}, but that does
+     * not exist on JDK 8.
+     *
      * @return the major version number from "java.version"
+     * @deprecated use field {@link jreVersion} instead
      */
+    @Deprecated // 2022-07-14 not for removal, just to make private
     public static int getJreVersion() {
         final String jreVersionStr = System.getProperty("java.version");
 
@@ -90,7 +100,7 @@ public class SystemUtil {
      */
     public static @Nullable String getToolsJar() {
 
-        if (getJreVersion() > 8) {
+        if (jreVersion > 8) {
             return null;
         }
 
@@ -191,15 +201,14 @@ public class SystemUtil {
      */
     @Deprecated // 2021-03-10
     public static List<String> readFile(final File argFile) throws IOException {
-        final BufferedReader br = new BufferedReader(new FileReader(argFile));
-        String line;
-
-        List<String> lines = new ArrayList<>();
-        while ((line = br.readLine()) != null) {
-            lines.add(line);
+        try (final BufferedReader br = new BufferedReader(new FileReader(argFile))) {
+            String line;
+            List<String> lines = new ArrayList<>();
+            while ((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+            return lines;
         }
-        br.close();
-        return lines;
     }
 
     /**

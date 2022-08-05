@@ -9,7 +9,9 @@ import java.util.List;
 
 public class SupportedQualsTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public SupportedQualsTest(List<File> testFiles) {
         super(testFiles, SupportedQualsChecker.class, "simple");
     }

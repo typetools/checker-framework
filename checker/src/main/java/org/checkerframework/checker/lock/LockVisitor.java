@@ -85,7 +85,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     /**
      * Constructs a {@link LockVisitor}.
      *
-     * @param checker the type checker to use.
+     * @param checker the type checker to use
      */
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);

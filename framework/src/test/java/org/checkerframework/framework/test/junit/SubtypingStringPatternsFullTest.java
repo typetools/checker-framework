@@ -9,7 +9,9 @@ import java.util.List;
 /** Test suite for the Subtyping Checker, using {@code @QualifierForLiterals}. */
 public class SubtypingStringPatternsFullTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public SubtypingStringPatternsFullTest(List<File> testFiles) {
         super(
                 testFiles,

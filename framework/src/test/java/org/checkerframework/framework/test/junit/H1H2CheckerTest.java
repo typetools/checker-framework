@@ -10,7 +10,9 @@ import java.util.List;
 /** */
 public class H1H2CheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public H1H2CheckerTest(List<File> testFiles) {
         super(
                 testFiles,

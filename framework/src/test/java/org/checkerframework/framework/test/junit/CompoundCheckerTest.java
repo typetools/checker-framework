@@ -10,7 +10,9 @@ import java.util.List;
 /** Tests for the compound checker design pattern. */
 public class CompoundCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    /** @param testFiles the files containing test code, which will be type-checked */
+    /**
+     * @param testFiles the files containing test code, which will be type-checked
+     */
     public CompoundCheckerTest(List<File> testFiles) {
         super(
                 testFiles,

@@ -70,7 +70,7 @@ public @interface EnsuresKeyForIf {
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
     @ConditionalPostconditionAnnotation(qualifier = KeyFor.class)
     @InheritedAnnotation
-    @interface List {
+    public static @interface List {
         /**
          * Returns the repeatable annotations.
          *

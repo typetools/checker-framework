@@ -212,7 +212,7 @@ public class TestDiagnosticUtils {
      * line of the message, without the leading filename.
      *
      * @param original a javax diagnostic
-     * @param noMsgText whether to do work; if false, this returns a pair of (argument, "").
+     * @param noMsgText whether to do work; if false, this returns a pair of (argument, "")
      * @return the diagnostic, split into message and filename
      */
     public static Pair<String, String> formatJavaxToolString(String original, boolean noMsgText) {
