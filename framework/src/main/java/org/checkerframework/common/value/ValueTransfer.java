@@ -1,7 +1,6 @@
 package org.checkerframework.common.value;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
@@ -1538,12 +1537,11 @@ public class ValueTransfer extends CFTransfer {
     protected void processConditionalPostconditions(
             MethodInvocationNode n,
             ExecutableElement methodElement,
-            Tree tree,
+            ExpressionTree tree,
             CFStore thenStore,
             CFStore elseStore) {
         // For String.startsWith(String) and String.endsWith(String), refine the minimum length
         // of the receiver to the minimum length of the argument.
-
         ValueMethodIdentifier methodIdentifier = atypeFactory.getMethodIdentifier();
         if (methodIdentifier.isStartsWithMethod(methodElement)
                 || methodIdentifier.isEndsWithMethod(methodElement)) {
