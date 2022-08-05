@@ -787,14 +787,14 @@ public class ElementUtils {
   /**
    * Return true if the element is a binding variable.
    *
-   * <p>Note: This is to conditionally support Java 15 instanceof pattern matching. When available,
-   * this should use {@code ElementKind.BINDING_VARIABLE} directly.
+   * <p>This implementation compiles under JDK 8 and 11 as well as versions that contain {@code
+   * ElementKind.BINDING_VARIABLE}.
    *
    * @param element the element to test
    * @return true if the element is a binding variable
    */
   public static boolean isBindingVariable(Element element) {
-    return "BINDING_VARIABLE".equals(element.getKind().name());
+    return SystemUtil.jreVersion >= 16 && "BINDING_VARIABLE".equals(element.getKind().name());
   }
 
   /**
