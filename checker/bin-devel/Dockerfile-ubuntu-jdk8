@@ -24,6 +24,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   git \
   gradle \
   jq \
+  jtreg \
   libcurl3-gnutls \
   make \
   maven \

@@ -38,7 +38,6 @@ ext {
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
 
-    jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -575,27 +574,6 @@ task manual(group: 'Documentation') {
     }
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
-task downloadJtreg(type: Download) {
-    description "Downloads and unpacks jtreg."
-    onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
-    // src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
-    // If ci.adoptopenjdk.net is down, use this copy.
-    src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
-    dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
-    overwrite true
-    retries 3
-    doLast {
-        copy {
-            from tarTree(dest)
-            into "${jtregHome}/.."
-        }
-        exec {
-            commandLine('chmod',  '+x', "${jtregHome}/bin/jtdiff", "${jtregHome}/bin/jtreg")
-        }
-    }
-}
-
 // See alternate implementation getCodeFormatScriptsInGradle below.
 // No group so it does not show up in the output of `gradlew tasks`
 task getCodeFormatScripts() {
@@ -848,7 +826,7 @@ subprojects {
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
-            tasks.create(name: 'jtregTests', dependsOn: ':downloadJtreg', group: 'Verification') {
+            tasks.create(name: 'jtregTests', group: 'Verification') {
                 description 'Run the jtreg tests.'
                 dependsOn('compileJava')
                 dependsOn('compileTestJava')
@@ -859,7 +837,7 @@ subprojects {
                 String tests = '.'
                 doLast {
                     exec {
-                        executable "${jtregHome}/bin/jtreg"
+                        executable "jtreg"
                         args = [
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",
