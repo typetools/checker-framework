@@ -64,8 +64,17 @@ public class AddAnnotatedFor {
    * Reads JAIF from the file indicated by the first element, or standard input if the argument
    * array is empty; inserts any appropriate {@code @AnnotatedFor} annotations, based on the
    * annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
+   *
+   * @param args one jaif file, or empty to read from standard input
+   * @throws IOException if there is trouble reading or writing a file
+   * @throws DefException if two definitions cannot be unified
+   * @throws ParseException if the file is malformed
    */
   public static void main(String[] args) throws IOException, DefException, ParseException {
+    if (args.length > 1) {
+      System.err.println("Supply 0 or 1 command-line arguments.");
+      System.exit(1);
+    }
     AScene scene = new AScene();
     String filename;
     Reader r;
