@@ -78,12 +78,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       AnnotationMirror anyInheritableMustCall =
           atypeFactory.getDeclAnnotation(classEle, InheritableMustCall.class);
       // An @InheritableMustCall annotation that is directly present.
-      @SuppressWarnings("UnusedVariable")
       AnnotationMirror directInheritableMustCall =
           AnnotationUtils.getAnnotationByClass(
               classEle.getAnnotationMirrors(), InheritableMustCall.class);
-      AnnotationMirror mustCall = atypeFactory.getDeclAnnotation(classEle, MustCall.class);
       /*
+      AnnotationMirror mustCall = atypeFactory.getDeclAnnotation(classEle, MustCall.class);
       System.out.printf(
           "validateType(%s, %s)%n  classEle = %s%n"
               + "  inheritableMustCall on classEle or inherited = %s%n"
@@ -112,8 +111,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         // file.
         // There are two possible problems:
         //  1. There is an inconsistent @MustCall on this.
-        //  2. There is an explicit @InheritableMustCall here, and it is inconsistent with that on a
-        // supertype.
+        //  2. There is an explicit @InheritableMustCall here, and it is inconsistent with an
+        //     @InheritableMustCall annotation on a supertype.
 
         // Check for problem 1.
         AnnotationMirror explicitMustCall = atypeFactory.fromElement(classEle).getAnnotation();
@@ -147,9 +146,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         }
 
         // Check for problem 2.
-        // `inheritedImcs` is inherited @InheritableMustCall annotations.
-        if (directInheritableMustCall) {
+        if (directInheritableMustCall != null) {
 
+          // `inheritedImcs` is inherited @InheritableMustCall annotations.
           List<AnnotationMirror> inheritedImcs = new ArrayList<>();
           for (TypeElement elt : ElementUtils.getDirectSuperTypeElements(classEle, elements)) {
             AnnotationMirror imc = atypeFactory.getDeclAnnotation(elt, InheritableMustCall.class);
