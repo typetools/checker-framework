@@ -1,3 +1,15 @@
+Version 3.24.1 (??, 2022)
+-------------------------
+
+**User-visible changes:**
+
+Make `mustcall.not.inheritable` a warning rather than an error
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.24.0 (August 3, 2022)
 -------------------------------
 
