@@ -935,7 +935,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the methods that are overriden or implemented by a given method.
+   * Returns the methods that are overridden or implemented by a given method.
    *
    * @param m a method
    * @param types the type utilities

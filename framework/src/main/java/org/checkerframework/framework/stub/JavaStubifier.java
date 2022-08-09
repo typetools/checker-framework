@@ -186,7 +186,7 @@ public class JavaStubifier {
     @Override
     public MethodDeclaration visit(MethodDeclaration md, Void arg) {
       super.visit(md, arg);
-      // Non-private methods could be overriden with larger visibility.
+      // Non-private methods could be overridden with larger visibility.
       // So it is only safe to remove private methods, which can't be overridden.
       if (!removeIfPrivate(md)) {
         md.removeBody();
