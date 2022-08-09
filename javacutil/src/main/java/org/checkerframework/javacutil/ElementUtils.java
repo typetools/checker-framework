@@ -680,12 +680,14 @@ public class ElementUtils {
     final TypeMirror superclass = type.getSuperclass();
     final List<? extends TypeMirror> interfaces = type.getInterfaces();
     List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
-    if (superclass != null) {
+    if (superclass.getKind() != TypeKind.NONE) {
       result.add(TypesUtils.getTypeElement(superclass));
     }
     for (TypeMirror interfac : interfaces) {
-      result.add(TypesUtils.getTypeElement(interfac));
+      TypeElement interfaceElt = TypesUtils.getTypeElement(interfac);
+      result.add(interfaceElt);
     }
+    // System.out.printf("getDirectSuperTypeElements(%s) => %s%n", type, result);
     return result;
   }
 

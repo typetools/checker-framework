@@ -136,6 +136,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                   .getQualifierHierarchy()
                   .isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
+            // System.out.printf("1: %s %s%n", effectiveMCAnno, anyInheritableMustCall);
             checker.reportError(
                 tree,
                 "inconsistent.mustcall.subtype",
@@ -169,12 +170,13 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
           if (!atypeFactory.getQualifierHierarchy().isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
+            // System.out.printf("2: %s %s%n", inheritedMCAnno, effectiveMCAnno);
             checker.reportError(
                 tree,
                 "inconsistent.mustcall.subtype",
                 ElementUtils.getQualifiedName(classEle),
-                effectiveMCAnno,
-                anyInheritableMustCall);
+                inheritedMCAnno,
+                effectiveMCAnno);
             return false;
           }
         }
