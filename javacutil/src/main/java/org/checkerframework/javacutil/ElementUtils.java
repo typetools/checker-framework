@@ -630,7 +630,7 @@ public class ElementUtils {
       return Collections.emptyList();
     }
 
-    List<TypeElement> superelems = new ArrayList<>();
+    List<TypeElement> superElems = new ArrayList<>();
 
     // Set up a stack containing type, which is our starting point.
     Deque<TypeElement> stack = new ArrayDeque<>();
@@ -641,31 +641,31 @@ public class ElementUtils {
 
       // For each direct supertype of the current type element, if it
       // hasn't already been visited, push it onto the stack and
-      // add it to our superelems set.
+      // add it to our superElems set.
       TypeElement supercls = ElementUtils.getSuperClass(current);
       if (supercls != null) {
-        if (!superelems.contains(supercls)) {
+        if (!superElems.contains(supercls)) {
           stack.push(supercls);
-          superelems.add(supercls);
+          superElems.add(supercls);
         }
       }
 
       for (TypeMirror supertypeitf : current.getInterfaces()) {
         TypeElement superitf = (TypeElement) ((DeclaredType) supertypeitf).asElement();
-        if (!superelems.contains(superitf)) {
+        if (!superElems.contains(superitf)) {
           stack.push(superitf);
-          superelems.add(superitf);
+          superElems.add(superitf);
         }
       }
     }
 
     // Include java.lang.Object as implicit superclass for all classes and interfaces.
     TypeElement jlobject = elements.getTypeElement("java.lang.Object");
-    if (!superelems.contains(jlobject)) {
-      superelems.add(jlobject);
+    if (!superElems.contains(jlobject)) {
+      superElems.add(jlobject);
     }
 
-    return Collections.unmodifiableList(superelems);
+    return Collections.unmodifiableList(superElems);
   }
 
   /**
@@ -912,7 +912,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the methods that are overriden or implemented by a given method.
+   * Returns the methods that are overridden or implemented by a given method.
    *
    * @param m a method
    * @param types the type utilities
