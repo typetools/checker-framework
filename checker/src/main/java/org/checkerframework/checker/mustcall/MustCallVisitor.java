@@ -83,7 +83,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                   a ->
                       AnnotationUtils.areSameByName(
                           a, "org.checkerframework.checker.mustcall.qual.MustCall"))) {
-            checker.reportError(
+            checker.reportWarning(
                 tree, "mustcall.not.inheritable", ElementUtils.getQualifiedName(classEle));
           }
         }
