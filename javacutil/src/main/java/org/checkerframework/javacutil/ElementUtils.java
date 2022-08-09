@@ -669,6 +669,27 @@ public class ElementUtils {
   }
 
   /**
+   * Determine all type elements for the direct supertypes of the given type element. This is the
+   * union of the extends and implements clauses.
+   *
+   * @param type the type whose supertypes to return
+   * @param elements the Element utilities
+   * @return direct supertypes of {@code type}
+   */
+  public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
+    final TypeMirror superclass = type.getSuperclass();
+    final List<? extends TypeMirror> interfaces = type.getInterfaces();
+    List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
+    if (superclass != null) {
+      result.add(TypesUtils.getTypeElement(superclass));
+    }
+    for (TypeMirror interfac : interfaces) {
+      result.add(TypesUtils.getTypeElement(interfac));
+    }
+    return result;
+  }
+
+  /**
    * Return all fields declared in the given type or any superclass/interface.
    *
    * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of

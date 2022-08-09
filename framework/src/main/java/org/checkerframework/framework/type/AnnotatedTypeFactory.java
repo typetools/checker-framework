@@ -3810,9 +3810,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the actual annotation mirror used to annotate this element, whose name equals the
-   * passed annotation class. Returns null if none exists. Does not check for aliases of the
-   * annotation class.
+   * Returns the annotation mirror used to annotate this element, whose name equals the passed
+   * annotation class. Looks in the same places specified by {@link #getDeclAnnotation(Element,
+   * Class)}. Returns null if none exists. Does not check for aliases of the annotation class.
    *
    * <p>Call this method from a checker that needs to alias annotations for one purpose and not for
    * another. For example, in the Lock Checker, {@code @LockingFree} and {@code @ReleasesNoLocks}
@@ -3864,8 +3864,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the actual annotation mirror used to annotate this element, whose name equals the
-   * passed annotation class (or is an alias for it). Returns null if none exists. May return the
-   * canonical annotation that annotationName is an alias for.
+   * passed annotation class (or is an alias for it). Looks in the same places specified by {@link
+   * #getDeclAnnotation(Element, Class)}. Returns null if none exists. May return the canonical
+   * annotation that annotationName is an alias for.
    *
    * <p>This is the private implementation of the same-named, public method.
    *
