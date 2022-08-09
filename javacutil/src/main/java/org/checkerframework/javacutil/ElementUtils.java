@@ -681,10 +681,13 @@ public class ElementUtils {
     final List<? extends TypeMirror> interfaces = type.getInterfaces();
     List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
     if (superclass.getKind() != TypeKind.NONE) {
-      result.add(TypesUtils.getTypeElement(superclass));
+      @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.
+      @NonNull TypeElement superclassElement = TypesUtils.getTypeElement(superclass);
+      result.add(superclassElement);
     }
     for (TypeMirror interfac : interfaces) {
-      TypeElement interfaceElt = TypesUtils.getTypeElement(interfac);
+      @SuppressWarnings("nullness:assignment") // every interface is a type
+      @NonNull TypeElement interfaceElt = TypesUtils.getTypeElement(interfac);
       result.add(interfaceElt);
     }
     // System.out.printf("getDirectSuperTypeElements(%s) => %s%n", type, result);
