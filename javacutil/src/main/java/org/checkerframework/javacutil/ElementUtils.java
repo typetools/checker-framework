@@ -690,7 +690,6 @@ public class ElementUtils {
       @NonNull TypeElement interfaceElt = TypesUtils.getTypeElement(interfac);
       result.add(interfaceElt);
     }
-    // System.out.printf("getDirectSuperTypeElements(%s) => %s%n", type, result);
     return result;
   }
 
