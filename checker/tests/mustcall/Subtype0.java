@@ -41,7 +41,7 @@ public class Subtype0 {
   public class Subtype3 extends Subtype0 {}
 
   @InheritableMustCall({})
-  // :: error: super.invocation
+  // :: error: inconsistent.mustcall.subtype :: error: super.invocation
   public class Subtype4 extends Subtype0 {}
 
   @MustCall({"a"}) public class Subtype5 extends Subtype0 {}

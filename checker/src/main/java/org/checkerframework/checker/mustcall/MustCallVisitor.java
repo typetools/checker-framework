@@ -7,6 +7,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -76,6 +77,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // stub files and supertypes.
       AnnotationMirror anyInheritableMustCall =
           atypeFactory.getDeclAnnotation(classEle, InheritableMustCall.class);
+      // An @InheritableMustCall annotation that is directly present.
+      AnnotationMirror directInheritableMustCall =
+          AnnotationUtils.getAnnotationByClass(
+              classEle.getAnnotationMirrors(), InheritableMustCall.class);
       if (anyInheritableMustCall == null) {
         if (!ElementUtils.isFinal(classEle)) {
           // There is no @InheritableMustCall annotation on this or any superclass and this is a
@@ -92,8 +97,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         // file.
         // There are two possible problems:
         //  1. There is an inconsistent @MustCall on this.
-        //  2. There is an explicit @InheritableMustCall here, and it is inconsistent with that on a
-        // supertype.
+        //  2. There is an explicit @InheritableMustCall here, and it is inconsistent with an
+        //     @InheritableMustCall annotation on a supertype.
 
         // Check for problem 1.
         AnnotationMirror explicitMustCall = atypeFactory.fromElement(classEle).getAnnotation();
@@ -124,9 +129,42 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           }
         }
 
-        // TODO
         // Check for problem 2.
+        if (directInheritableMustCall != null) {
 
+          // `inheritedImcs` is inherited @InheritableMustCall annotations.
+          List<AnnotationMirror> inheritedImcs = new ArrayList<>();
+          for (TypeElement elt : ElementUtils.getDirectSuperTypeElements(classEle, elements)) {
+            AnnotationMirror imc = atypeFactory.getDeclAnnotation(elt, InheritableMustCall.class);
+            if (imc != null) {
+              inheritedImcs.add(imc);
+            }
+          }
+          if (!inheritedImcs.isEmpty()) {
+            // There is an inherited @InheritableMustCall annotation, in addition to the one written
+            // explicitly here.
+            List<String> inheritedMustCallVal = new ArrayList<>();
+            for (AnnotationMirror inheritedImc : inheritedImcs) {
+              inheritedMustCallVal.addAll(
+                  AnnotationUtils.getElementValueArray(
+                      inheritedImc, atypeFactory.inheritableMustCallValueElement, String.class));
+            }
+            AnnotationMirror inheritedMCAnno = atypeFactory.createMustCall(inheritedMustCallVal);
+
+            AnnotationMirror effectiveMCAnno = type.getAnnotation();
+
+            if (!atypeFactory.getQualifierHierarchy().isSubtype(inheritedMCAnno, effectiveMCAnno)) {
+
+              checker.reportError(
+                  tree,
+                  "inconsistent.mustcall.subtype",
+                  ElementUtils.getQualifiedName(classEle),
+                  inheritedMCAnno,
+                  effectiveMCAnno);
+              return false;
+            }
+          }
+        }
       }
     }
     return super.validateType(tree, type);
