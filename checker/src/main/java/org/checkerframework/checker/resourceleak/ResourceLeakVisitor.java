@@ -278,7 +278,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
               + ElementUtils.getQualifiedName(enclosingElement)
               + " has an empty @MustCall annotation";
     } else {
-      error = " [[checkOwningField() did not find a reason!]]"; // should be overwritten
+      error = " [[checkOwningField() did not find a reason!]]"; // should be reassigned
       List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
       for (Element siblingElement : siblingsOfOwningField) {
         if (siblingElement.getKind() == ElementKind.METHOD
