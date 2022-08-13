@@ -427,7 +427,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   protected ReflectionResolver reflectionResolver;
 
-  /** AnnotationClassLoader used to load type annotation classes via reflective lookup. */
+  /** This loads type annotation classes via reflective lookup. */
   protected AnnotationClassLoader loader;
 
   /**
@@ -3774,8 +3774,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *       exists and ignorejdkastub option is not supplied <br>
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker<br>
-   *   <li>Stub files provided via -Astubs compiler option
-   *   <li>Ajava files provided via -Aajava compiler option
+   *   <li>Stub files provided via {@code -Astubs} compiler option
+   *   <li>Ajava files provided via {@code -Aajava} compiler option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
@@ -3795,7 +3795,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <ul>
    *   <li>on the element
    *   <li>written in stubfiles
-   *   <li>inherited from overriden methods, (see {@link InheritedAnnotation})
+   *   <li>inherited from overridden methods, (see {@link InheritedAnnotation})
    *   <li>inherited from superclasses or super interfaces (see {@link Inherited})
    * </ul>
    *
@@ -3810,9 +3810,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the actual annotation mirror used to annotate this element, whose name equals the
-   * passed annotation class. Returns null if none exists. Does not check for aliases of the
-   * annotation class.
+   * Returns the annotation mirror used to annotate this element, whose name equals the passed
+   * annotation class. Looks in the same places specified by {@link #getDeclAnnotation(Element,
+   * Class)}. Returns null if none exists. Does not check for aliases of the annotation class.
    *
    * <p>Call this method from a checker that needs to alias annotations for one purpose and not for
    * another. For example, in the Lock Checker, {@code @LockingFree} and {@code @ReleasesNoLocks}
@@ -3864,8 +3864,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the actual annotation mirror used to annotate this element, whose name equals the
-   * passed annotation class (or is an alias for it). Returns null if none exists. May return the
-   * canonical annotation that annotationName is an alias for.
+   * passed annotation class (or is an alias for it). Looks in the same places specified by {@link
+   * #getDeclAnnotation(Element, Class)}. Returns null if none exists. May return the canonical
+   * annotation that annotationName is an alias for.
    *
    * <p>This is the private implementation of the same-named, public method.
    *
@@ -3914,7 +3915,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <ul>
    *   <li>on the element
    *   <li>written in stubfiles
-   *   <li>inherited from overriden methods, (see {@link InheritedAnnotation})
+   *   <li>inherited from overridden methods, (see {@link InheritedAnnotation})
    *   <li>inherited from superclasses or super interfaces (see {@link Inherited})
    * </ul>
    *
@@ -3934,7 +3935,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
     // Retrieving the annotations from the element.
     // This includes annotations inherited from superclasses, but not superinterfaces or
-    // overriden methods.
+    // overridden methods.
     List<? extends AnnotationMirror> fromEle = elements.getAllAnnotationMirrors(elt);
     for (AnnotationMirror annotation : fromEle) {
       try {
