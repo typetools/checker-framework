@@ -18,8 +18,8 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * <p>This method guarantees that {@code t.m()} is always called before the method returns.
  *
- * <p>If a class has any {@code @}{@link Owning} fields, then its {@code close()} method should be
- * annotated to close them:
+ * <p>If a class has any {@code @}{@link org.checkerframework.checker.mustcall.qual.Owning Owning}
+ * fields, then its {@code close()} method should be annotated to close them:
  *
  * <pre>
  * &#64;EnsuresCalledMethods(value = {"owningField1", "owningField2"}, methods = "close")
