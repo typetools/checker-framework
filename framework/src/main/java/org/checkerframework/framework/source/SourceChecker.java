@@ -440,8 +440,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected SourceVisitor<?, ?> visitor;
 
   /**
-   * Exceptions to -AwarnUnneededSuppressions processing. No warning about unneeded suppressions is
-   * issued if the SuppressWarnings string matches this pattern.
+   * Exceptions to {@code -AwarnUnneededSuppressions} processing. No warning about unneeded
+   * suppressions is issued if the SuppressWarnings string matches this pattern.
    */
   private @Nullable Pattern warnUnneededSuppressionsExceptions;
 
@@ -1276,13 +1276,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public static final String DETAILS_SEPARATOR = " $$ ";
 
   /**
-   * Returns all but the message key part of the message format output by -Adetailedmsgtext.
+   * Returns all but the message key part of the message format output by {@code -Adetailedmsgtext}.
    *
    * @param source the object from which to obtain source position information; may be an Element, a
    *     Tree, or null
    * @param defaultFormat the message key, in parentheses
    * @param args arguments for interpolation in the string corresponding to the given message key
-   * @return the first part of the message format output by -Adetailedmsgtext
+   * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
   private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
     StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
@@ -1865,10 +1865,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   ///
 
   /**
-   * Returns the argument to -AsuppressWarnings, split on commas, or null if no such argument. Only
-   * ever called once; the value is cached in field {@link #suppressWarningsStringsFromOption}.
+   * Returns the argument to {@code -AsuppressWarnings}, split on commas, or null if no such
+   * argument. Only ever called once; the value is cached in field {@link
+   * #suppressWarningsStringsFromOption}.
    *
-   * @return the argument to -AsuppressWarnings, split on commas, or null if no such argument
+   * @return the argument to {@code -AsuppressWarnings}, split on commas, or null if no such
+   *     argument
    */
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
     Map<String, String> options = getOptions();
