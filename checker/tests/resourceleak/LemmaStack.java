@@ -12,6 +12,7 @@
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -31,7 +32,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
       }
       session = new PrintWriter("filename.txt");
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException(e);
     }
   }
 

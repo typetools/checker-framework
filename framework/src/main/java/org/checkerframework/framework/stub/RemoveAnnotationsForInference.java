@@ -29,6 +29,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -207,7 +208,7 @@ public class RemoveAnnotationsForInference {
         pw.println(line);
       }
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException("problem writing " + absolutePath.toString(), e);
     }
   }
 

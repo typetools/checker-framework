@@ -1,5 +1,6 @@
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
 public class StaticOwningFieldOtherClass {}
@@ -13,7 +14,7 @@ class TestUtils {
     try {
       HasStaticOwningField.log = new FileWriter(filename);
     } catch (IOException ioe) {
-      throw new Error("Cannot write file " + filename, ioe);
+      throw new UncheckedIOException("Cannot write file " + filename, ioe);
     }
   }
 }
