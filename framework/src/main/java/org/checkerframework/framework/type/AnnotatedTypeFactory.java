@@ -781,8 +781,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
       while (urls.hasMoreElements()) {
         URL url = urls.nextElement();
-        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-        lines.addAll(in.lines().collect(Collectors.toList()));
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+          lines.addAll(in.lines().collect(Collectors.toList()));
+        }
       }
       String[] result = lines.toArray(new String[0]);
       return result;
@@ -1119,6 +1120,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   @SuppressWarnings("varargs")
   private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
       Class<? extends Annotation>... explicitlyListedAnnotations) {
+    if (loader != null) {
+      loader.close();
+    }
     loader = createAnnotationClassLoader();
 
     Set<Class<? extends Annotation>> annotations = loader.getBundledAnnotationClasses();

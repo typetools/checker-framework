@@ -726,6 +726,7 @@ public final class SceneToStubWriter {
 
     // The writer is not initialized until it is certain that at
     // least one class can be written, to avoid empty stub files.
+    FileWriter fileWriter = null;
     PrintWriter printWriter = null;
 
     // For each class
@@ -733,7 +734,8 @@ public final class SceneToStubWriter {
       if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
         if (!anyClassPrintable) {
           try {
-            printWriter = new PrintWriter(new FileWriter(filename));
+            fileWriter = new FileWriter(filename);
+            printWriter = new PrintWriter(fileWriter);
           } catch (IOException e) {
             throw new BugInCF("error writing file during WPI: " + filename);
           }

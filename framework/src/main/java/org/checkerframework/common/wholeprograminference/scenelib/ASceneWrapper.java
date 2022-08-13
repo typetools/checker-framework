@@ -165,7 +165,9 @@ public class ASceneWrapper {
                 aMethod.contracts = contractAnnotations;
               }
             }
-            IndexFileWriter.write(scene, new FileWriter(filepath));
+            try (FileWriter fw = new FileWriter(filepath)) {
+              IndexFileWriter.write(scene, fw);
+            }
             break;
           default:
             throw new BugInCF("Unhandled outputFormat " + outputFormat);
