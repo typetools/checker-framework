@@ -72,7 +72,6 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
-import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -429,9 +428,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   protected ReflectionResolver reflectionResolver;
 
   /** This loads type annotation classes via reflective lookup. */
-  // Class loaders are not closed.  (Just one is created per type factory.)
-  // This is @Owning to prevent a warning at each assignment.
-  protected @Owning AnnotationClassLoader loader;
+  protected AnnotationClassLoader loader;
 
   /**
    * Which whole-program inference output format to use, if doing whole-program inference. This
