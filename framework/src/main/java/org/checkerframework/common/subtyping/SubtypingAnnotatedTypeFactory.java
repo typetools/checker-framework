@@ -32,12 +32,6 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  /*
-  @SuppressWarnings({
-    "builder:missing.creates.mustcall.for",
-    "builder:required.method.not.called"
-  }) // "re-assigns the non-final, owning field this.loader".  why? loader field is `@NotOwning`
-  */
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     // Subtyping Checker doesn't have a qual directory, so we instantiate the loader here to
     // load externally declared annotations

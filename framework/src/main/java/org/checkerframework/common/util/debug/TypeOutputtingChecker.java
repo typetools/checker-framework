@@ -113,8 +113,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
    * @param args command-line arguments
    */
   public void run(@CanonicalName String[] args) {
-    @SuppressWarnings(
-        "builder:required.method.not.called") // WHY? Annotated JDK has JavacProcessingEnvironmentx
+    @SuppressWarnings("builder:required.method.not.called" // WHY? JdkCompiler.astub has
+    // JavacProcessingEnvironment
+    )
     ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
     Elements elements = env.getElementUtils();
 

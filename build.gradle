@@ -805,8 +805,9 @@ subprojects {
             }
         }
 
-        // Add tasks to run various checkers on all the main source sets.
+        // Tasks to run various checkers on all the main source sets.
         // These pass and are run by typecheckTests.
+        // When you add one here, also update a dependsOn line for the 'typecheck' task.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
@@ -990,7 +991,7 @@ subprojects {
         // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
         tasks.create(name: 'typecheck', group: 'Verification') {
             description 'Run the Checker Framework on itself'
-            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkSignature')
+            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkResourceLeak', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
             } else {

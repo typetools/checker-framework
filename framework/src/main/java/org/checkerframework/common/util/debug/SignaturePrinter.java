@@ -343,8 +343,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
     // Setup compiler environment
     Context context = new Context();
-    @SuppressWarnings(
-        "builder:required.method.not.called") // WHY? Annotated JDK has JavacProcessingEnvironment
+    @SuppressWarnings("builder:required.method.not.called" // WHY? JdkCompiler.astub has
+    // JavacProcessingEnvironment
+    )
     JavacProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
     SignaturePrinter printer = new SignaturePrinter();
     printer.init(env, checkerName);
