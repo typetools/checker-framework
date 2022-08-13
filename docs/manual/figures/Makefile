@@ -10,9 +10,9 @@ INKSCAPE_VERSION := $(shell inkscape --version 2>/dev/null)
 all: ${PDFFILES} clean-obsolete-files svg-copy
 
 svg-copy:
-	-chmod -f +w ../*.svg
+	-chmod -f u+w ../*.svg
 	cp -pf *.svg ..
-	chmod -f -w ../*.svg
+	chmod -f a-w ../*.svg
 
 %.pdf : %.svg
 ifdef RSVG_CONVERT_VERSION

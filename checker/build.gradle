@@ -104,7 +104,7 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
             }
         }
 
-        def checkerUtilJarFile = file(project(':checker-qual').tasks.getByName("jar").archivePath)
+        def checkerUtilJarFile = file(project(':checker-util').tasks.getByName("jar").archivePath)
         if (!checkerUtilJarFile.exists()) {
             throw new GradleException("File not found: " + checkerUtilJarFile)
         }

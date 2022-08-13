@@ -102,7 +102,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.24.0'
+    version '3.24.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -1165,6 +1165,7 @@ task releaseBuild(group: 'Build') {
     }
     // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
     finalizedBy(buildAll)
+    finalizedBy('checker:copyJarsToDist')
 }
 
 // No group so it does not show up in the output of `gradlew tasks`

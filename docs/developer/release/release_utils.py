@@ -130,7 +130,7 @@ def check_tools(tools):
     print(", ".join(tools))
     print(
         (
-            "Note: If you are NOT working on buffalo.cs.washington.edu then you "
+            "Note: If you are NOT working on the CSE file system then you "
             + "likely need to change the variables that are set in release.py\n"
             + 'Search for "Set environment variables".'
         )
@@ -269,7 +269,7 @@ def commit_tag_and_push(version, path, tag_prefix):
     """Commit the changes made for this release, add a tag for this release, and
     push these changes."""
     # Do nothing (instead of erring) if there is nothing to commit.
-    if execute('git diff-index --quiet HEAD', False, False, working_dir=path) == 0:
+    if execute("git diff-index --quiet HEAD", False, False, working_dir=path) == 0:
         execute('git commit -a -m "new release %s"' % (version), working_dir=path)
     execute("git tag %s%s" % (tag_prefix, version), working_dir=path)
     push_changes(path)
