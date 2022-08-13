@@ -31,7 +31,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
       }
       session = new PrintWriter("filename.txt");
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException(e);
     }
   }
 

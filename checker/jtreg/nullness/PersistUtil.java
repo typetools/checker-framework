@@ -81,7 +81,7 @@ public class PersistUtil {
         Files.copy(result.toPath(), resultCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         System.out.printf("comileTestFile: copied to %s %s%n", fCopy, resultCopy);
       } catch (IOException e) {
-        throw new Error(e);
+        throw new UncheckedIOException(e);
       }
     }
 

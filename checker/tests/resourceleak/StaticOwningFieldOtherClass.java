@@ -16,7 +16,7 @@ class TestUtils {
       // :: error: (required.method.not.called)
       HasStaticOwningField.log = new FileWriter(filename);
     } catch (IOException ioe) {
-      throw new Error("Cannot write file " + filename, ioe);
+      throw new UncheckedIOException("Cannot write file " + filename, ioe);
     }
   }
 }
