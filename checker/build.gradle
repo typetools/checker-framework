@@ -118,9 +118,6 @@ task copyJarsToDist(dependsOn: shadowJar, group: 'Build') {
         }
 
         // TODO: This file is only created under JDK 8.
-        if (!configurations.javacJar.isEmpty() && !configurations.javacJar.exists()) {
-            throw new GradleException("File not found: " + configurations.javacJar)
-        }
         copy {
             from configurations.javacJar
             into "${projectDir}/dist"

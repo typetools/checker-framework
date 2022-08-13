@@ -39,7 +39,7 @@ public class SystemUtil {
    * exist on JDK 8.
    *
    * @return the major version number from "java.version"
-   * @deprecated use field {@link jreVersion} instead
+   * @deprecated use field {@link #jreVersion} instead
    */
   @Deprecated // 2022-07-14 not for removal, just to make private
   public static int getJreVersion() {
