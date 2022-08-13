@@ -440,8 +440,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected SourceVisitor<?, ?> visitor;
 
   /**
-   * Exceptions to -AwarnUnneededSuppressions processing. No warning about unneeded suppressions is
-   * issued if the SuppressWarnings string matches this pattern.
+   * Exceptions to {@code -AwarnUnneededSuppressions} processing. No warning about unneeded
+   * suppressions is issued if the SuppressWarnings string matches this pattern.
    */
   private @Nullable Pattern warnUnneededSuppressionsExceptions;
 
@@ -1276,13 +1276,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public static final String DETAILS_SEPARATOR = " $$ ";
 
   /**
-   * Returns all but the message key part of the message format output by -Adetailedmsgtext.
+   * Returns all but the message key part of the message format output by {@code -Adetailedmsgtext}.
    *
    * @param source the object from which to obtain source position information; may be an Element, a
    *     Tree, or null
    * @param defaultFormat the message key, in parentheses
    * @param args arguments for interpolation in the string corresponding to the given message key
-   * @return the first part of the message format output by -Adetailedmsgtext
+   * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
   private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
     StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
@@ -1865,10 +1865,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   ///
 
   /**
-   * Returns the argument to -AsuppressWarnings, split on commas, or null if no such argument. Only
-   * ever called once; the value is cached in field {@link #suppressWarningsStringsFromOption}.
+   * Returns the argument to {@code -AsuppressWarnings}, split on commas, or null if no such
+   * argument. Only ever called once; the value is cached in field {@link
+   * #suppressWarningsStringsFromOption}.
    *
-   * @return the argument to -AsuppressWarnings, split on commas, or null if no such argument
+   * @return the argument to {@code -AsuppressWarnings}, split on commas, or null if no such
+   *     argument
    */
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
     Map<String, String> options = getOptions();
@@ -2057,7 +2059,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return false;
     }
 
-    while (true) {
+    while (true) { // iterate through the path; continue until path contains no declarations
       @Nullable TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
       if (declPath == null) {
         break;
@@ -2066,39 +2068,36 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
       Tree decl = declPath.getLeaf();
 
-      Element elt;
-      switch (decl.getKind()) {
-        case VARIABLE:
-          elt = TreeUtils.elementFromTree((VariableTree) decl);
-          if (shouldSuppressWarnings(elt, errKey)) {
-            return true;
-          }
-          break;
-        case METHOD:
-          elt = TreeUtils.elementFromTree((MethodTree) decl);
-          if (shouldSuppressWarnings(elt, errKey)) {
-            return true;
-          }
+      if (decl.getKind() == Tree.Kind.VARIABLE) {
+        Element elt = TreeUtils.elementFromTree((VariableTree) decl);
+        if (shouldSuppressWarnings(elt, errKey)) {
+          return true;
+        }
+      } else if (decl.getKind() == Tree.Kind.METHOD) {
+        Element elt = TreeUtils.elementFromTree((MethodTree) decl);
+        if (shouldSuppressWarnings(elt, errKey)) {
+          return true;
+        }
 
-          if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-            // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-            // because they may not have an @AnnotatedFor.
-            return false;
-          }
-          break;
-        default:
-          // A class tree
-          elt = TreeUtils.elementFromTree((ClassTree) decl);
-          if (shouldSuppressWarnings(elt, errKey)) {
-            return true;
-          }
+        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+          // because they may not have an @AnnotatedFor.
+          return false;
+        }
+      } else if (TreeUtils.classTreeKinds().contains(decl.getKind())) {
+        // A class tree
+        Element elt = TreeUtils.elementFromTree((ClassTree) decl);
+        if (shouldSuppressWarnings(elt, errKey)) {
+          return true;
+        }
 
-          if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-            // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-            // because they may not have an @AnnotatedFor.
-            return false;
-          }
-          break;
+        if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
+          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
+          // because they may not have an @AnnotatedFor.
+          return false;
+        }
+      } else {
+        throw new BugInCF("Unexpected declaration kind: " + decl.getKind() + " " + decl);
       }
     }
 

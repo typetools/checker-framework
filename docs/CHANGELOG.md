@@ -3,16 +3,34 @@ The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
 
 
 
-Version 3.24.0 (??)
--------------------
+Version 3.24.1 (??, 2022)
+-------------------------
 
 **User-visible changes:**
+
+Make `mustcall.not.inheritable` a warning rather than an error
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.24.0 (August 3, 2022)
+-------------------------------
+
+**User-visible changes:**
+
+Performance improvements.
+
+Minor bug fixes and enhancements.
 
 **Implementation details:**
 
 Prefer `SystemUtil.jreVersion` to `SystemUtil.getJreVersion()`.
 
 **Closed issues:**
+
+#5200, #5216.
 
 
 Version 3.23.0 (July 11, 2022)
@@ -4234,7 +4252,7 @@ Code Changes
     fixed mutability type handling for type casts and field access
     fixed bug, ensuring no primitives can be ReadOnly
     a method receiver type is now based on the correct annotation
-    fixed parameter type-checking for overriden methods
+    fixed parameter type-checking for overridden methods
     fixed bug on readonly field initialization
     added handling for unary trees
 

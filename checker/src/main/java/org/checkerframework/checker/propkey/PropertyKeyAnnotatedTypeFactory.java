@@ -155,8 +155,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         ClassLoader cl = this.getClass().getClassLoader();
         if (cl == null) {
-          // the class loader is null if the system class loader was
-          // used
+          // The class loader is null if the system class loader was used.
           cl = ClassLoader.getSystemClassLoader();
         }
         InputStream in = cl.getResourceAsStream(name);

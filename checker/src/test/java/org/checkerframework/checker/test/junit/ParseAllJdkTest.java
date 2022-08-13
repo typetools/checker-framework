@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Tests -AparseAllJdk option. */
+/** Tests {@code -AparseAllJdk} option. */
 public class ParseAllJdkTest extends CheckerFrameworkPerDirectoryTest {
 
   /**

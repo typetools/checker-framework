@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * annotated as {@link NotOwning}. Parameters and fields are treated as {@link NotOwning} by
  * default.
  *
- * <p>When the -AnoLightweightOwnership command-line argument is passed to the checker, this
+ * <p>When the {@code -AnoLightweightOwnership} command-line argument is passed to the checker, this
  * annotation and {@link NotOwning} are ignored.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker

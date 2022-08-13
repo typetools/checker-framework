@@ -428,9 +428,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       boolean issueConflictWarning,
       Tree errorNode) {
     assert (declaringType != null);
-    ExecutableElement uiOverriden = null;
-    ExecutableElement safeOverriden = null;
-    ExecutableElement polyOverriden = null;
+    ExecutableElement uiOverridden = null;
+    ExecutableElement safeOverridden = null;
+    ExecutableElement polyOverridden = null;
 
     // We must account for explicit annotation, type declaration annotations, and package
     // annotations.
@@ -464,7 +464,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       }
       Effect eff = getDeclaredEffect(overriddenMethodElt);
       if (eff.isSafe()) {
-        safeOverriden = overriddenMethodElt;
+        safeOverridden = overriddenMethodElt;
         if (isUI) {
           checker.reportError(
               errorNode,
@@ -472,7 +472,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
               declaringType,
               overridingMethod,
               overriddenType,
-              safeOverriden);
+              safeOverridden);
         } else if (isPolyUI) {
           checker.reportError(
               errorNode,
@@ -480,13 +480,13 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
               declaringType,
               overridingMethod,
               overriddenType,
-              safeOverriden);
+              safeOverridden);
         }
       } else if (eff.isUI()) {
-        uiOverriden = overriddenMethodElt;
+        uiOverridden = overriddenMethodElt;
       } else {
         assert eff.isPoly();
-        polyOverriden = overriddenMethodElt;
+        polyOverridden = overriddenMethodElt;
         if (isUI) {
           // Need to special case an anonymous class with @UI on the decl, because "new @UI Runnable
           // {...}" parses as @UI on an anon class decl extending Runnable
@@ -501,14 +501,14 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 declaringType,
                 overridingMethod,
                 overriddenType,
-                polyOverriden);
+                polyOverridden);
           }
         }
       }
     }
 
     // We don't need to issue warnings for overriding both poly and a concrete effect.
-    if (uiOverriden != null && safeOverriden != null && issueConflictWarning) {
+    if (uiOverridden != null && safeOverridden != null && issueConflictWarning) {
       // There may be more than two parent methods, but for now it's
       // enough to know there are at least 2 in conflict.
       checker.reportWarning(
@@ -516,24 +516,24 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
           "override.effect.warning.inheritance",
           declaringType,
           overridingMethod,
-          uiOverriden.getEnclosingElement().asType(),
-          uiOverriden,
-          safeOverriden.getEnclosingElement().asType(),
-          safeOverriden);
+          uiOverridden.getEnclosingElement().asType(),
+          uiOverridden,
+          safeOverridden.getEnclosingElement().asType(),
+          safeOverridden);
     }
 
     Effect min =
-        (safeOverriden != null
+        (safeOverridden != null
             ? new Effect(SafeEffect.class)
-            : (polyOverriden != null
+            : (polyOverridden != null
                 ? new Effect(PolyUIEffect.class)
-                : (uiOverriden != null ? new Effect(UIEffect.class) : null)));
+                : (uiOverridden != null ? new Effect(UIEffect.class) : null)));
     Effect max =
-        (uiOverriden != null
+        (uiOverridden != null
             ? new Effect(UIEffect.class)
-            : (polyOverriden != null
+            : (polyOverridden != null
                 ? new Effect(PolyUIEffect.class)
-                : (safeOverriden != null ? new Effect(SafeEffect.class) : null)));
+                : (safeOverridden != null ? new Effect(SafeEffect.class) : null)));
     if (debugSpew) {
       System.err.println(
           "Found "

@@ -1297,10 +1297,10 @@ public class AnnotatedTypes {
       final TypeElement type1Class = (TypeElement) type1Executable.getEnclosingElement();
       final TypeElement type2Class = (TypeElement) type2Executable.getEnclosingElement();
 
-      boolean methodIsOverriden =
+      boolean methodIsOverridden =
           elements.overrides(type1Executable, type2Executable, type1Class)
               || elements.overrides(type2Executable, type1Executable, type2Class);
-      if (methodIsOverriden) {
+      if (methodIsOverridden) {
         boolean haveSameIndex =
             type1Executable.getTypeParameters().indexOf(type1ParamElem)
                 == type2Executable.getTypeParameters().indexOf(type2ParamElem);

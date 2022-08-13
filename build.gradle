@@ -38,9 +38,8 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.2.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
 
-    jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -105,7 +104,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.23.1-SNAPSHOT'
+    version '3.24.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -284,6 +283,11 @@ allprojects {
                         '-Xep:InvalidBlockTag:OFF',
                         // Recommends writing @InlineMe which is an Error-Prone-specific annotation
                         '-Xep:InlineMeSuggester:OFF',
+                        // Recommends writing @CanIgnoreReturnValue which is an Error-Prone-specific annotation.
+                        // It would be great if Error Prone recognized the @This annotation.
+                        '-Xep:CanIgnoreReturnValueSuggester:OFF',
+                        // Should be turned off when using the Checker Framework.
+                        '-Xep:ExtendsObject:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -331,6 +335,7 @@ task maybeCloneAndBuildDependencies() {
     }
     doLast {
         if (!file(stubparserJar).exists()) {
+            println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser.jar!) are:"
             exec {
                 workingDir "${stubparser}/javaparser-core/target"
                 executable 'ls'
@@ -572,27 +577,6 @@ task manual(group: 'Documentation') {
     }
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
-task downloadJtreg(type: Download) {
-    description "Downloads and unpacks jtreg."
-    onlyIf { !(new File("${jtregHome}/lib/jtreg.jar").exists()) }
-    // src 'https://ci.adoptopenjdk.net/view/Dependencies/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz'
-    // If ci.adoptopenjdk.net is down, use this copy.
-    src 'https://checkerframework.org/jtreg-4.2.0-tip.tar.gz'
-    dest new File(buildDir, 'jtreg-4.2.0-tip.tar.gz')
-    overwrite true
-    retries 3
-    doLast {
-        copy {
-            from tarTree(dest)
-            into "${jtregHome}/.."
-        }
-        exec {
-            commandLine('chmod',  '+x', "${jtregHome}/bin/jtdiff", "${jtregHome}/bin/jtreg")
-        }
-    }
-}
-
 // See alternate implementation getCodeFormatScriptsInGradle below.
 // No group so it does not show up in the output of `gradlew tasks`
 task getCodeFormatScripts() {
@@ -700,7 +684,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-      ext.errorproneVersion = '2.14.0'
+      ext.errorproneVersion = '2.15.0'
       errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
       // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
@@ -831,7 +815,7 @@ subprojects {
             ['-Astubs=javax-lang-model-element-name.astub'])
         createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
             'org.checkerframework.checker.nullness.NullnessChecker',
-            ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
+            ['-AskipUses=com\\.sun\\.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'Purity',
             'org.checkerframework.framework.util.PurityChecker')
         createCheckTypeTask(project.name, 'Signature',
@@ -845,7 +829,7 @@ subprojects {
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
-            tasks.create(name: 'jtregTests', dependsOn: ':downloadJtreg', group: 'Verification') {
+            tasks.create(name: 'jtregTests', group: 'Verification') {
                 description 'Run the jtreg tests.'
                 dependsOn('compileJava')
                 dependsOn('compileTestJava')
@@ -856,7 +840,7 @@ subprojects {
                 String tests = '.'
                 doLast {
                     exec {
-                        executable "${jtregHome}/bin/jtreg"
+                        executable "jtreg"
                         args = [
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",
@@ -1145,7 +1129,9 @@ task checkBasicStyle(group: 'Format') {
         }
     }
 }
+
 assemble.mustRunAfter(clean)
+
 task buildAll(group: 'Build') {
     description 'Build all jar files, including source and javadoc jars'
     dependsOn(allJavadoc)
@@ -1154,7 +1140,7 @@ task buildAll(group: 'Build') {
         dependsOn("${subproject.name}:javadocJar")
         dependsOn("${subproject.name}:sourcesJar")
     }
-    dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar')
+    dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
 }
 
 task releaseBuild(group: 'Build') {
@@ -1165,6 +1151,7 @@ task releaseBuild(group: 'Build') {
     }
     // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
     finalizedBy(buildAll)
+    finalizedBy('checker:copyJarsToDist')
 }
 
 // No group so it does not show up in the output of `gradlew tasks`

@@ -41,7 +41,7 @@ from release_utils import print_step
 from release_utils import prompt_to_continue
 from release_utils import prompt_yes_no
 from release_utils import push_changes_prompt_if_fail
-from release_utils import read_command_line_option
+from release_utils import has_command_line_option
 from release_utils import read_first_line
 from release_utils import set_umask
 from release_utils import subprocess
@@ -185,10 +185,14 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        raise Exception(
-            "Non-zero return code (%s; see output in %s) while executing %s"
-            % (process.returncode, output, cmd)
+        msg = "Non-zero return code (%s; see output in %s) while executing %s" % (
+            process.returncode,
+            output,
+            cmd,
         )
+        print(msg + "\n")
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            raise Exception(msg)
 
     return output
 
@@ -233,16 +237,19 @@ def check_all_links(
     if not is_checkerCheck_empty:
         print("\t" + checkerCheck + "\n")
     if errors_reported:
-        release_option = ""
-        if not test_mode:
-            release_option = " release"
-        raise Exception(
-            "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
-            + 'repository and pushing them to GitHub, running "python release_build.py all" again\n'
-            + '(in order to update the development site), and running "python release_push'
-            + release_option
-            + '" again.'
-        )
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            release_option = ""
+            if not test_mode:
+                release_option = " release"
+            raise Exception(
+                "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
+                + "repository and pushing them to GitHub, then updating the development and live sites by\n"
+                + "running\n"
+                + "  python3 release_build.py all\n"
+                + "  python3 release_push"
+                + release_option
+                + "\n"
+            )
 
 
 def push_interm_to_release_repos():
@@ -292,7 +299,7 @@ def main(argv):
     set_umask()
 
     validate_args(argv)
-    test_mode = not read_command_line_option(argv, "release")
+    test_mode = not has_command_line_option(argv, "release")
 
     m2_settings = expanduser("~") + "/.m2/settings.xml"
     if not os.path.exists(m2_settings):
@@ -394,13 +401,13 @@ def main(argv):
 
     print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
-    print_step("5a: Stage the artifacts at Maven central.")
+    print_step("Step 5a: Stage the artifacts at Maven central.")
     if (not test_mode) or prompt_yes_no(
         "Stage Maven artifacts in Maven Central?", not test_mode
     ):
         stage_maven_artifacts_in_maven_central(new_cf_version)
 
-        print_step("5b: Close staged artifacts at Maven central.")
+        print_step("Step 5b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
             + " * Browse to https://oss.sonatype.org/#stagingRepositories\n"
@@ -417,7 +424,7 @@ def main(argv):
             "(You can also see the instructions at: http://central.sonatype.org/pages/releasing-the-deployment.html)\n"
         )
 
-        print_step("5c: Run Maven sanity test on Maven central artifacts.")
+        print_step("Step 5c: Run Maven sanity test on Maven central artifacts.")
         if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
             repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
@@ -498,7 +505,9 @@ def main(argv):
     # available to the Java community through the Central repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central repository.")  # MANUAL
+    print_step(
+        "Push Step 10. Release staged artifacts in Central repository."
+    )  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
@@ -534,12 +543,12 @@ def main(argv):
 
         msg = (
             "\n"
-            + "* Download the following files to your local machine."
+            + "Download the following files to your local machine."
             + "\n"
-            + "https://checkerframework.org/checker-framework-"
+            + "  https://checkerframework.org/checker-framework-"
             + new_cf_version
             + ".zip\n"
-            + "https://checkerframework.org/annotation-file-utilities/annotation-tools-"
+            + "  https://checkerframework.org/annotation-file-utilities/annotation-tools-"
             + new_cf_version
             + ".zip\n"
             + "\n"
@@ -586,8 +595,9 @@ def main(argv):
         )
 
         print_step(
-            "Push Step 14. Update the Checker Framework Gradle plugin.\nYou might have to wait a little while."
+            "Push Step 14. Update the Checker Framework Gradle plugin."
         )  # MANUAL
+        print("You might have to wait for Maven Central to propagate changes.\n")
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
             + "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
@@ -601,7 +611,7 @@ def main(argv):
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    print("Done with release_push.py")
+    print("Done with release_push.py.\n")
 
 
 if __name__ == "__main__":
