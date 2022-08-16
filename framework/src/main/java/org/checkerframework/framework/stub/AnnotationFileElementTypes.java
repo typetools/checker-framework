@@ -168,7 +168,7 @@ public class AnnotationFileElementTypes {
               AnnotationFileType.BUILTIN_STUB);
         }
       } catch (IOException e) {
-        throw new Error(e);
+        checker.message(Kind.NOTE, "Could not read annotation resource: " + jdkVersionStub);
       }
 
       // 2. Annotated JDK
@@ -336,7 +336,7 @@ public class AnnotationFileElementTypes {
             }
           }
         } catch (IOException e) {
-          throw new Error(e);
+          checker.message(Kind.NOTE, "Could not read annotation resource: " + path);
         }
       }
     }
