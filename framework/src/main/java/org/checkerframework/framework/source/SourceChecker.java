@@ -2638,8 +2638,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected Properties getProperties(Class<?> cls, String filePath, boolean permitNonExisting) {
     Properties prop = new Properties();
-    try {
-      InputStream base = cls.getResourceAsStream(filePath);
+    try (InputStream base = cls.getResourceAsStream(filePath)) {
 
       if (base == null) {
         // The property file was not found.

@@ -220,9 +220,12 @@ public class CFGVisualizeLauncher {
     Options.instance(context).put("compilePolicy", "ATTR_ONLY");
     JavaCompiler javac = new JavaCompiler(context);
 
-    JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
-
-    JavaFileObject l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
+    JavaFileObject l;
+    try (JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class)) {
+      l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
+    } catch (IOException e) {
+      throw new Error(e);
+    }
 
     PrintStream err = System.err;
     try {
