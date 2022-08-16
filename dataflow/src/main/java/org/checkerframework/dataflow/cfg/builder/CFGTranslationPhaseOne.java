@@ -191,7 +191,7 @@ import org.plumelib.util.CollectionsPlume;
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
  *
- * <p>The entry point to process a single body (e.g., method) is {@link process(TreePath,
+ * <p>The entry point to process a single body (e.g., method) is {@link #process(TreePath,
  * UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
