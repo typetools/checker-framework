@@ -70,6 +70,15 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * Bidirectional map to store temporary variables created for expressions with non-empty @MustCall
    * obligations and the corresponding trees. Keys are the artificial local variable nodes created
    * as temporary variables; values are the corresponding trees.
+   *
+   * <p>Note that in an ideal world, this would be an {@code IdentityBiMap}: that is, a BiMap using
+   * {@link java.util.IdentityHashMap} as both of the backing maps. However, Guava doesn't have such
+   * a map AND their implementation is incompatible with IdentityHashMap as a backing map, because
+   * even their {@link com.google.common.collect.AbstractBiMap} class uses {@code equals} calls in
+   * its implementation (and its documentation calls out that it and all its derived BiMaps are
+   * incompatible with IdentityHashMap as a backing map). Therefore, we use a regular BiMap. Doing
+   * so is safe iff 1) the LocalVariableNode keys all have different names, and 2) a standard Tree
+   * implementation that uses reference equality for equality (e.g., JCTree in javac) is used.
    */
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 

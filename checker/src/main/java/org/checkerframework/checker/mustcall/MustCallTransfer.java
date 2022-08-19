@@ -270,11 +270,14 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /** A unique identifier counter for node names. */
-  protected long uid = 0;
+  protected static long uid = 0;
 
   /**
-   * Creates a unique, abitrary string that can be used as a name for a temporary variable, using
+   * Creates a unique, arbitrary string that can be used as a name for a temporary variable, using
    * the given prefix. Can be used up to Long.MAX_VALUE times.
+   *
+   * <p>Note that the correctness of the Resource Leak Checker depends on these names actually being
+   * unique, because {@code LocalVariableNode}s derived from them are used as keys in a map.
    *
    * @param prefix the prefix for the name
    * @return a unique name that starts with the prefix
