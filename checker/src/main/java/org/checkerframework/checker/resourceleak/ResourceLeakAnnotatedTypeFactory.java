@@ -76,8 +76,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * a map AND their implementation is incompatible with IdentityHashMap as a backing map, because
    * even their {@code AbstractBiMap} class uses {@code equals} calls in its implementation (and its
    * documentation calls out that it and all its derived BiMaps are incompatible with
-   * IdentityHashMap as a backing map for this reason). Therefore, we use a regular BiMap. Doing
-   * so is safe iff 1) the LocalVariableNode keys all have different names, and 2) a standard Tree
+   * IdentityHashMap as a backing map for this reason). Therefore, we use a regular BiMap. Doing so
+   * is safe iff 1) the LocalVariableNode keys all have different names, and 2) a standard Tree
    * implementation that uses reference equality for equality (e.g., JCTree in javac) is used.
    */
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
