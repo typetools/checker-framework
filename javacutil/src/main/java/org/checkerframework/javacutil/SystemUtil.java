@@ -110,14 +110,14 @@ public class SystemUtil {
         throw new Error("Can't infer Java home; java.home=" + javaHomeProperty);
       }
     }
-    String toolsJarFilename = javaHome + File.separator + "lib" + File.separator + "tools.jar";
-    if (!new File(toolsJarFilename).exists()) {
+    File toolsJarFile = new File(new File(javaHome, "lib"), "tools.jar");
+    if (!toolsJarFile.exists()) {
       throw new Error(
           String.format(
               "File does not exist: %s ; JAVA_HOME=%s ; java.home=%s",
-              toolsJarFilename, javaHome, System.getProperty("java.home")));
+              toolsJarFile, javaHome, System.getProperty("java.home")));
     }
-    return javaHome + File.separator + "lib" + File.separator + "tools.jar";
+    return toolsJarFile.toString();
   }
 
   ///
