@@ -172,10 +172,7 @@ public class PerFileSuite extends Suite {
 
     String testCaseName() {
       File file = (File) parameters[0];
-      String name =
-          file.getPath()
-              .replace(".java", "")
-              .replace("tests" + System.getProperty("file.separator"), "");
+      String name = file.getPath().replace(".java", "").replace("tests" + File.separator, "");
       return name;
     }
 

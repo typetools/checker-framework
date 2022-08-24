@@ -393,8 +393,7 @@ public class AnnotationFileUtil {
     }
 
     // The file doesn't exist.  Maybe it is relative to the current working directory, so try that.
-    String workingDir = System.getProperty("user.dir") + System.getProperty("file.separator");
-    file = new File(workingDir + location);
+    file = new File(System.getProperty("user.dir"), location);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();
       addAnnotationFilesToList(file, resources, fileType);
