@@ -61,14 +61,8 @@ public class PersistUtil {
     if (rc != 0) {
       throw new Error("compilation failed. rc=" + rc);
     }
-    String path;
-    if (f.getParent() != null) {
-      path = f.getParent();
-    } else {
-      path = "";
-    }
 
-    File result = new File(path + testClass + ".class");
+    File result = new File(f.getParent(), testClass + ".class");
 
     // This diagnostic code preserves temporary files and prints the paths where they are preserved.
     if (false) {
