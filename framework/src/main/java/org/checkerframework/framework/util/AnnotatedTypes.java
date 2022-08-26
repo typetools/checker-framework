@@ -331,8 +331,8 @@ public class AnnotatedTypes {
    * @param t the receiver type
    * @param elem the element that should be viewed as member of t
    * @param type unsubstituted type of member
-   * @return the type of member as member of of, with initial type memberType; can be an alias to
-   *     memberType
+   * @return the type of member as member of {@code t}, with initial type memberType; can be an
+   *     alias to memberType
    */
   public static AnnotatedExecutableType asMemberOf(
       Types types,

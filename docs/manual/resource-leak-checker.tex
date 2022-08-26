@@ -252,7 +252,7 @@ must-call obligation; for example,
 
 \noindent
 The Resource Leak Checker issues a warning about every assignment of an
-object with with a must-call annotation into a static owning field,
+object with a must-call annotation into a static owning field,
 indicating that the obligation of the field's content might not be
 satisfied.  When those fields are used throughout execution, until the
 program exits, there is no good place to dispose of them, so these warnings
