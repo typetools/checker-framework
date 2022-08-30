@@ -827,6 +827,10 @@ Your antivirus program (e.g., Windows Security Virus \& threat protection)
 might make the build run very slowly, or might make it seem to stall.  Just
 give it time.
 
+If compilation fails, but you have not made any changes, then perhaps one
+of the supporting repositories is in an inconsistent state; see
+Section~\ref{building-related-repositories}.
+
 \item
 Once it is built, you may wish to put the Checker Framework's \<javac>
 even earlier in your \<PATH>:
@@ -903,7 +907,7 @@ Then, you can run arbitrary commands, including those that appear in the
 CI configuration files.
 
 
-\subsubsectionAndLabel{Related repositories}{building-related-repositories}
+\subsectionAndLabel{Related repositories}{building-related-repositories}
 
 Building the Checker Framework depends on other repositories, such as
 \href{https://github.com/typetools/annotation-tools/}{Annotation Tools} and
