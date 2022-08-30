@@ -140,6 +140,12 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return result;
   }
 
+  /**
+   * Loads the keys from all the property files.
+   *
+   * @param names A list of property files, separated by File.pathSeparator
+   * @return A set of all the keys found in all the property files.
+   */
   private Set<String> keysOfPropertyFiles(String names) {
     String[] namesArr = names.split(File.pathSeparator);
 
