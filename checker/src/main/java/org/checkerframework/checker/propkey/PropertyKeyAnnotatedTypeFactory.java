@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -140,7 +141,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   private Set<String> keysOfPropertyFiles(String names) {
-    String[] namesArr = names.split(":");
+    String[] namesArr = names.split(File.pathSeparator);
 
     if (namesArr == null) {
       checker.message(Kind.WARNING, "Couldn't parse the properties files: <" + names + ">");
