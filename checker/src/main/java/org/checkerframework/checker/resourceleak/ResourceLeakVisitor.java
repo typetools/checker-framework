@@ -263,7 +263,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       return;
     }
 
-    String error = "";
+    String error;
     Element enclosingElement = field.getEnclosingElement();
     List<String> enclosingMustCallValues = rlTypeFactory.getMustCallValue(enclosingElement);
 
@@ -272,7 +272,13 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           " The enclosing element "
               + ElementUtils.getQualifiedName(enclosingElement)
               + " doesn't have a @MustCall annotation";
+    } else if (enclosingMustCallValues.isEmpty()) {
+      error =
+          " The enclosing element "
+              + ElementUtils.getQualifiedName(enclosingElement)
+              + " has an empty @MustCall annotation";
     } else {
+      error = " [[checkOwningField() did not find a reason!]]"; // should be reassigned
       List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
       for (Element siblingElement : siblingsOfOwningField) {
         if (siblingElement.getKind() == ElementKind.METHOD

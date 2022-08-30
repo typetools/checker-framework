@@ -6,6 +6,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -270,16 +271,19 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /** A unique identifier counter for node names. */
-  protected long uid = 0;
+  protected static AtomicLong uid = new AtomicLong();
 
   /**
-   * Creates a unique, abitrary string that can be used as a name for a temporary variable, using
+   * Creates a unique, arbitrary string that can be used as a name for a temporary variable, using
    * the given prefix. Can be used up to Long.MAX_VALUE times.
+   *
+   * <p>Note that the correctness of the Resource Leak Checker depends on these names actually being
+   * unique, because {@code LocalVariableNode}s derived from them are used as keys in a map.
    *
    * @param prefix the prefix for the name
    * @return a unique name that starts with the prefix
    */
   protected String uniqueName(String prefix) {
-    return prefix + "-" + uid++;
+    return prefix + "-" + uid.getAndIncrement();
   }
 }

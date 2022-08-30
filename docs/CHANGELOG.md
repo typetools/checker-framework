@@ -10,6 +10,8 @@ Version 3.24.1 (??, 2022)
 
 Make `mustcall.not.inheritable` a warning rather than an error
 
+Added `DoNothingChecker` that does nothing.
+
 **Implementation details:**
 
 **Closed issues:**

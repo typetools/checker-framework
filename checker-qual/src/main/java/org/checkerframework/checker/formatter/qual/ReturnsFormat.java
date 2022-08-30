@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  *   <li>On success, the method returns the passed format string unmodified.
  * </ul>
  *
- * An example is {@link org.checkerframework.checker.formatter.util.FormatUtil#asFormat}.
+ * An example is {@code FormatUtil#asFormat()}.
  *
  * @checker_framework.manual #formatter-checker Format String Checker
  */

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -60,14 +61,8 @@ public class PersistUtil {
     if (rc != 0) {
       throw new Error("compilation failed. rc=" + rc);
     }
-    String path;
-    if (f.getParent() != null) {
-      path = f.getParent();
-    } else {
-      path = "";
-    }
 
-    File result = new File(path + testClass + ".class");
+    File result = new File(f.getParent(), testClass + ".class");
 
     // This diagnostic code preserves temporary files and prints the paths where they are preserved.
     if (false) {
@@ -81,7 +76,7 @@ public class PersistUtil {
         Files.copy(result.toPath(), resultCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         System.out.printf("comileTestFile: copied to %s %s%n", fCopy, resultCopy);
       } catch (IOException e) {
-        throw new Error(e);
+        throw new UncheckedIOException(e);
       }
     }
 

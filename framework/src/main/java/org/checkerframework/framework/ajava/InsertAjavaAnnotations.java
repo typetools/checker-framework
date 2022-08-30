@@ -79,21 +79,29 @@ public class InsertAjavaAnnotations {
     }
 
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-    JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
-    if (fileManager == null) {
-      System.err.println("Could not get file manager");
-      System.exit(1);
-    }
+    try (JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
+      if (fileManager == null) {
+        System.err.println("Could not get file manager");
+        System.exit(1);
+      }
 
-    CompilationTask cTask =
-        compiler.getTask(
-            null, fileManager, diagnostics, Collections.emptyList(), null, Collections.emptyList());
-    if (!(cTask instanceof JavacTask)) {
-      System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
-      System.exit(1);
-    }
+      CompilationTask cTask =
+          compiler.getTask(
+              null,
+              fileManager,
+              diagnostics,
+              Collections.emptyList(),
+              null,
+              Collections.emptyList());
+      if (!(cTask instanceof JavacTask)) {
+        System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
+        System.exit(1);
+      }
 
-    return ((JavacTask) cTask).getElements();
+      return ((JavacTask) cTask).getElements();
+    } catch (IOException e) {
+      throw new Error(e);
+    }
   }
 
   /** Represents some text to be inserted at a file and its location. */
