@@ -5,6 +5,10 @@ Version 3.24.1 (??, 2022)
 
 Make `mustcall.not.inheritable` a warning rather than an error
 
+The Property File Checker, Internationalization Checker, and Compiler
+Message Checker use `File.pathSeparator` to separate property file paths in
+`-Apropfiles`, rather than ':'.
+
 Added `DoNothingChecker` that does nothing.
 
 **Implementation details:**

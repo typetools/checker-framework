@@ -215,7 +215,7 @@ createCheckTypeTask(project.name, "CompilerMessages",
 checkCompilerMessages {
     doFirst {
         options.compilerArgs += [
-                '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + ":"
+                '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
                         + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
         ]
     }
