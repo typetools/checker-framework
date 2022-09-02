@@ -299,7 +299,7 @@ task allCalledMethodsTests(type: Test, group: 'Verification') {
 }
 
 // These are tests that should only be run with JDK 11+.
-task jtregJdk11Tests(group: 'Verification') {
+task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     description 'Run the jtreg tests made for JDK 11+.'
     dependsOn('compileJava')
     dependsOn('compileTestJava')
@@ -313,7 +313,7 @@ task jtregJdk11Tests(group: 'Verification') {
             return;
         }
         exec {
-            executable "jtreg"
+            executable "${jtregHome}/bin/jtreg"
             args = [
                     "-dir:${projectDir}/jtregJdk11",
                     "-workDir:${jtregOutput}/${name}/work",
