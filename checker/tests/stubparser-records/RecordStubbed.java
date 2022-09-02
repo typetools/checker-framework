@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * record but nullable in constructor and accessor via stubs
  */
 public record RecordStubbed(@Nullable String nxx, String nsxx, Integer xnn) {
-  RecordStubbed(Integer a, String b, String c) {
-    this(c, b, a);
-  }
+    RecordStubbed(Integer a, String b, String c) {
+        this(c, b, a);
+    }
 }
