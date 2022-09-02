@@ -107,7 +107,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
                             cl = ClassLoader.getSystemClassLoader();
                         }
                         try (InputStream in = cl.getResourceAsStream(name)) {
-
                             if (in != null) {
                                 prop.load(in);
                             } else {

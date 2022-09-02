@@ -174,9 +174,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     if (in != null) {
                         prop.load(in);
                     } else {
-                        // if the classloader didn't manage to load the file, try whether a
-                        // FileInputStream
-                        // works. For absolute paths this might help.
+                        // If the classloader didn't manage to load the file, try whether a
+                        // FileInputStream works. For absolute paths this might help.
                         try (InputStream fis = new FileInputStream(name)) {
                             prop.load(fis);
                         } catch (FileNotFoundException e) {
