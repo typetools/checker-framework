@@ -780,7 +780,8 @@ public class DependentTypesHelper {
     /**
      * This method is for subclasses to override to change JavaExpressions in some way before they
      * are inserted into new annotations. This method is called after parsing and
-     * viewpoint-adaptation have occurred. {@code javaExpr} may be a {@link PassThroughExpression}.
+     * viewpoint-adaptation have occurred. {@code javaExpr} may be a {@link
+     * DependentTypesHelper.PassThroughExpression}.
      *
      * <p>If {@code null} is returned then the expression is not added to the new annotation.
      *

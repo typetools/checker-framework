@@ -230,10 +230,12 @@ public final class CFGVisualizeLauncher {
         Options.instance(context).put("compilePolicy", "ATTR_ONLY");
         JavaCompiler javac = new JavaCompiler(context);
 
-        JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
-
-        JavaFileObject l =
-                fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
+        JavaFileObject l;
+        try (JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class)) {
+            l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
+        } catch (IOException e) {
+            throw new Error(e);
+        }
 
         PrintStream err = System.err;
         try {
@@ -241,6 +243,7 @@ public final class CFGVisualizeLauncher {
             // warnings about our exception).
             System.setErr(
                     new PrintStream(
+                            // In JDK 11+, this can be just "OutputStream.nullOutputStream()".
                             new OutputStream() {
                                 @Override
                                 public void write(int b) throws IOException {}

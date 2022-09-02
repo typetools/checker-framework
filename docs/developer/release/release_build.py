@@ -270,11 +270,15 @@ def build_checker_framework_release(
     # Update version numbers in the manual and API documentation,
     # which come from source files that have just been changed.
     # Otherwise the manual and API documentation show up in the grep command below.
-    execute("./gradlew allJavadoc manual", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew assemble", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew allJavadoc", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew manual", working_dir=CHECKER_FRAMEWORK)
 
     # Check that updating versions didn't overlook anything.
     print("Here are occurrences of the old version number, " + old_cf_version + ":")
-    grep_cmd = "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
+    grep_cmd = (
+        "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
+    )
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit(
         'If any occurrence is not acceptable, then stop the release, update target "update-checker-framework-versions" in file release.xml, and start over.'
@@ -322,12 +326,15 @@ def build_checker_framework_release(
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s" % (
-        checker_dir,
-        checker_framework_interm_dir,
-        "checker-framework-manual",
-        "checker-framework-dataflow-manual",
-        "checker-framework-webpage.html",
+    ant_props = (
+        "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s"
+        % (
+            checker_dir,
+            checker_framework_interm_dir,
+            "checker-framework-manual",
+            "checker-framework-dataflow-manual",
+            "checker-framework-webpage.html",
+        )
     )
 
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.

@@ -43,6 +43,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      * are shared in the same way that subcheckers share CFG structure; see {@link
      * #getSharedCFGForTree(Tree)}.
      */
-    /* package-private */ final HashMap<Tree, LocalVariableNode> tempVars = new HashMap<>();
+    /* package-private */ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
+            new IdentityHashMap<>(100);
 
     /** The MustCall.value field/element. */
     private final ExecutableElement mustCallValueElement =

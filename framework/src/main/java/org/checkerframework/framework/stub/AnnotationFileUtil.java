@@ -398,8 +398,7 @@ public class AnnotationFileUtil {
 
         // The file doesn't exist.  Maybe it is relative to the current working directory, so try
         // that.
-        String workingDir = System.getProperty("user.dir") + System.getProperty("file.separator");
-        file = new File(workingDir + location);
+        file = new File(System.getProperty("user.dir"), location);
         if (file.exists()) {
             List<AnnotationFileResource> resources = new ArrayList<>();
             addAnnotationFilesToList(file, resources, fileType);
@@ -452,19 +451,17 @@ public class AnnotationFileUtil {
         if (isAnnotationFile(location, fileType)) {
             resources.add(new FileAnnotationFileResource(location));
         } else if (isJar(location)) {
-            JarFile file;
-            try {
-                file = new JarFile(location);
+            try (JarFile file = new JarFile(location)) {
+                Enumeration<JarEntry> entries = file.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (isAnnotationFile(entry.getName(), fileType)) {
+                        resources.add(new JarEntryAnnotationFileResource(file, entry));
+                    }
+                }
             } catch (IOException e) {
                 System.err.println("AnnotationFileUtil: could not process JAR file: " + location);
                 return;
-            }
-            Enumeration<JarEntry> entries = file.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                if (isAnnotationFile(entry.getName(), fileType)) {
-                    resources.add(new JarEntryAnnotationFileResource(file, entry));
-                }
             }
         } else if (location.isDirectory()) {
             File[] directoryContents = location.listFiles();

@@ -377,7 +377,7 @@ Chapter~\ref{annotating-libraries}).  The
 annotations might appear in stub files (which appear
 in an \code{.astub} file together with the checker's source code)
 or in the form of annotated libraries (which appear
-in \url{https://github.com/typetools/}).
+in \url{https://github.com/eisop/}).
 
 \item
 If the compiler reports that it cannot find a method from the JDK or
@@ -660,7 +660,7 @@ If a checker reports a warning because a library contains \emph{incorrect} annot
 then please open a pull request that adds the annotations.  If the
 library's maintainers have added annotations, make a pull request to them.
 If the Checker Framework maintainers have added annotations,
-you can find the annotated source in \url{https://github.com/typetools/}.
+you can find the annotated source in \url{https://github.com/eisop/}.
 
 If a checker reports a warning because a library is \emph{not
 annotated}, please do not open a GitHub issue.
@@ -712,14 +712,23 @@ You may need to log out and log back in for the setting to take effect.
 \item[Ubuntu]
   Run the following commands:
 
+(This list should be the same as in
+\<checker/bin-devel/Dockerfile-ubuntu-jdk11-plus>; if your build fails
+because it is missing a package, try the commands there and report a bug
+in this manual.)
+
 % Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk11-plus
+
 \begin{Verbatim}
 sudo apt-get -qqy update
 sudo apt-get -qqy install \
  openjdk-11-jdk \
  ant cpp git gradle jq libcurl3-gnutls \
  make maven mercurial python3-pip python3-requests unzip wget \
- dia hevea imagemagick latexmk librsvg2-bin maven rsync \
+ autoconf devscripts dia hevea imagemagick junit latexmk \
+ librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
+ libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+ pdf2svg rsync shellcheck \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
 pip3 install html5validator
@@ -730,7 +739,7 @@ pip3 install html5validator
 In a startup file, write:
 % Can someone give a simpler command?
 % Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
+%   https://github.com/eisop/checker-framework/blob/master/checker/bin-devel/build.sh#L19
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
@@ -828,6 +837,10 @@ Your antivirus program (e.g., Windows Security Virus \& threat protection)
 might make the build run very slowly, or might make it seem to stall.  Just
 give it time.
 
+If compilation fails, but you have not made any changes, then perhaps one
+of the supporting repositories is in an inconsistent state; see
+Section~\ref{building-related-repositories}.
+
 \item
 Once it is built, you may wish to put the Checker Framework's \<javac>
 even earlier in your \<PATH>:
@@ -907,6 +920,25 @@ docker run -it mdernst/cf-ubuntu-jdk8 /bin/bash
 
 Then, you can run arbitrary commands, including those that appear in the
 CI configuration files.
+
+
+\subsectionAndLabel{Related repositories}{building-related-repositories}
+
+Building the Checker Framework depends on other repositories, such as
+\href{https://github.com/eisop/annotation-tools/}{Annotation Tools} and
+\href{https://github.com/eisop/stubparser/}{Stub Parser}.
+You need to have compatible versions of each.
+
+After you \<git pull> in one of the repositories, you should do so in the
+others as well.  The script \<checker/bin-devel/build.sh> pulls all the
+related repositories, so to build the latest development version of the
+Checker Framework you can do
+
+\begin{Verbatim}
+cd $CHECKERFRAMEWORK
+git pull
+checker/bin-devel/build.sh
+\end{Verbatim}
 
 
 \sectionAndLabel{Contributing}{contributing}

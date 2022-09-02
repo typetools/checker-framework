@@ -166,7 +166,7 @@ public class PerDirectorySuite extends Suite {
             if (file == null) {
                 throw new Error("root was passed? " + javaFiles.get(0));
             }
-            return file.getPath().replace("tests" + System.getProperty("file.separator"), "");
+            return file.getPath().replace("tests" + File.separator, "");
         }
 
         @Override

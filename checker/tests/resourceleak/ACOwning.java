@@ -62,7 +62,7 @@ class ACOwning {
     }
 
     @InheritableMustCall({})
-    // :: error: super.invocation.invalid
+    // :: error: super.invocation.invalid :: error: inconsistent.mustcall.subtype
     private class SubFoo extends Foo {
 
         void test() {

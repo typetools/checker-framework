@@ -185,10 +185,14 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        raise Exception(
-            "Non-zero return code (%s; see output in %s) while executing %s"
-            % (process.returncode, output, cmd)
+        msg = "Non-zero return code (%s; see output in %s) while executing %s" % (
+            process.returncode,
+            output,
+            cmd,
         )
+        print(msg + "\n")
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            raise Exception(msg)
 
     return output
 
@@ -233,16 +237,19 @@ def check_all_links(
     if not is_checkerCheck_empty:
         print("\t" + checkerCheck + "\n")
     if errors_reported:
-        release_option = ""
-        if not test_mode:
-            release_option = " release"
-        raise Exception(
-            "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
-            + 'repository and pushing them to GitHub, running "python release_build.py all" again\n'
-            + '(in order to update the development site), and running "python release_push'
-            + release_option
-            + '" again.'
-        )
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            release_option = ""
+            if not test_mode:
+                release_option = " release"
+            raise Exception(
+                "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
+                + "repository and pushing them to GitHub, then updating the development and live sites by\n"
+                + "running\n"
+                + "  python3 release_build.py all\n"
+                + "  python3 release_push"
+                + release_option
+                + "\n"
+            )
 
 
 def push_interm_to_release_repos():
@@ -498,7 +505,9 @@ def main(argv):
     # available to the Java community through the Central repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central repository.")  # MANUAL
+    print_step(
+        "Push Step 10. Release staged artifacts in Central repository."
+    )  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
@@ -534,12 +543,12 @@ def main(argv):
 
         msg = (
             "\n"
-            + "* Download the following files to your local machine."
+            + "Download the following files to your local machine."
             + "\n"
-            + "https://checkerframework.org/checker-framework-"
+            + "  https://checkerframework.org/checker-framework-"
             + new_cf_version
             + ".zip\n"
-            + "https://checkerframework.org/annotation-file-utilities/annotation-tools-"
+            + "  https://checkerframework.org/annotation-file-utilities/annotation-tools-"
             + new_cf_version
             + ".zip\n"
             + "\n"
@@ -586,8 +595,9 @@ def main(argv):
         )
 
         print_step(
-            "Push Step 14. Update the Checker Framework Gradle plugin.\nYou might have to wait a little while."
+            "Push Step 14. Update the Checker Framework Gradle plugin."
         )  # MANUAL
+        print("You might have to wait for Maven Central to propagate changes.\n")
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
             + "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
@@ -601,7 +611,7 @@ def main(argv):
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    print("Done with release_push.py")
+    print("Done with release_push.py.\n")
 
 
 if __name__ == "__main__":

@@ -173,12 +173,14 @@ public class PerFileSuite extends Suite {
             return getTestClass().getOnlyConstructor().newInstance(parameters);
         }
 
+        /**
+         * Returns the test case's name.
+         *
+         * @return the test case's name
+         */
         String testCaseName() {
             File file = (File) parameters[0];
-            String name =
-                    file.getPath()
-                            .replace(".java", "")
-                            .replace("tests" + System.getProperty("file.separator"), "");
+            String name = file.getPath().replace(".java", "").replace("tests" + File.separator, "");
             return name;
         }
 

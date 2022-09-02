@@ -42,7 +42,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   dia \
   hevea \
   imagemagick \
-  jtreg \
   junit \
   latexmk \
   librsvg2-bin \

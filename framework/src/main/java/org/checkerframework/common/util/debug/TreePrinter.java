@@ -8,6 +8,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -49,7 +50,7 @@ public class TreePrinter extends AbstractTypeProcessor {
         try {
             pretty.printUnit((JCCompilationUnit) tree.getCompilationUnit(), null);
         } catch (IOException e) {
-            throw new Error(e);
+            throw new UncheckedIOException(e);
         }
         System.out.println(out.toString());
     }

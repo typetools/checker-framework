@@ -7,8 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is used internally to annotate {@link
- * org.checkerframework.checker.i18nformatter.util.I18nFormatUtil#isFormat}.
+ * This annotation is used internally to annotate {@code I18nFormatUtil.isFormat()}.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */

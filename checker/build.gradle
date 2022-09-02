@@ -67,7 +67,7 @@ dependencies {
     testImplementation "com.amazonaws:aws-java-sdk-ec2"
     testImplementation "com.amazonaws:aws-java-sdk-kms"
     // The AWS SDK is used for testing the Called Methods Checker.
-    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.272")
+    testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.293")
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
@@ -224,7 +224,7 @@ createCheckTypeTask(project.name, "CompilerMessages",
 checkCompilerMessages {
     doFirst {
         options.compilerArgs += [
-                '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + ":"
+                '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
                         + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
         ]
     }
@@ -298,9 +298,9 @@ task allCalledMethodsTests(type: Test, group: 'Verification') {
     dependsOn 'delombok'
 }
 
-// These are tests that should only be run with JDK 11.
+// These are tests that should only be run with JDK 11+.
 task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
-    description 'Run the jtreg tests made for JDK 11.'
+    description 'Run the jtreg tests made for JDK 11+.'
     dependsOn('compileJava')
     dependsOn('compileTestJava')
     dependsOn('shadowJar')
@@ -309,7 +309,7 @@ task jtregJdk11Tests(dependsOn: ':downloadJtreg', group: 'Verification') {
     String name = 'all'
     doLast {
         if (isJava8) {
-            println "This test is only run with JDK 11."
+            println "This test is only run with JDK 11+."
             return;
         }
         exec {
@@ -790,6 +790,7 @@ task wpiManyTest(group: "Verification") {
         def typecheckFilesDir = "${project.projectDir}/build/wpi-many-tests-results/"
         try {
             exec {
+                environment CHECKERFRAMEWORK: "${projectDir}/.."
                 commandLine 'bin/wpi-many.sh',
                         '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
                         '-o', "${project.projectDir}/build/wpi-many-tests",

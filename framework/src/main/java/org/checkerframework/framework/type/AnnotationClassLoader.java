@@ -12,6 +12,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -62,7 +63,7 @@ import javax.tools.Diagnostic.Kind;
  * #isSupportedAnnotationClass(Class)}. See {@code
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
-public class AnnotationClassLoader {
+public class AnnotationClassLoader implements Closeable {
     /** For issuing errors to the user. */
     protected final BaseTypeChecker checker;
 
@@ -172,6 +173,15 @@ public class AnnotationClassLoader {
         loadBundledAnnotationClasses();
     }
 
+    @Override
+    public void close() {
+        try {
+            classLoader.close();
+        } catch (IOException e) {
+            checker.message(Kind.NOTE, "Failed to close AnnotationClassLoader");
+        }
+    }
+
     /**
      * Scans all classpaths and returns the resource URL to the jar which contains the checker's
      * qual package, or the qual package directory if it exists, or null if no jar or directory
@@ -253,10 +263,10 @@ public class AnnotationClassLoader {
             // try to open up the jar file
             try {
                 JarURLConnection connection = (JarURLConnection) url.openConnection();
-                JarFile jarFile = connection.getJarFile();
-
-                // check to see if the jar file contains the package
-                return checkJarForPackage(jarFile);
+                try (JarFile jarFile = connection.getJarFile()) {
+                    // check to see if the jar file contains the package
+                    return checkJarForPackage(jarFile);
+                }
             } catch (IOException e) {
                 // do nothing for missing or un-openable Jar files
             }

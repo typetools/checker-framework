@@ -19,6 +19,18 @@ import java.lang.annotation.Target;
  *
  * <p>This method guarantees that {@code t.m()} is always called before the method returns.
  *
+ * <p>If a class has any {@code @}{@link org.checkerframework.checker.mustcall.qual.Owning Owning}
+ * fields, then one or more of its must-call methods should be annotated to indicate that the
+ * must-call obligations are satisfied. The must-call methods are those named by the {@code @}{@link
+ * org.checkerframework.checker.mustcall.qual.MustCall MustCall} or {@code @}{@link
+ * org.checkerframework.checker.mustcall.qual.InheritableMustCall InheritableMustCall} annotation on
+ * the class declaration, such as {@code close()}. Here is a common example:
+ *
+ * <pre>
+ * &#64;EnsuresCalledMethods(value = {"owningField1", "owningField2"}, methods = "close")
+ * public void close() { ... }
+ * </pre>
+ *
  * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
 @PostconditionAnnotation(qualifier = CalledMethods.class)
