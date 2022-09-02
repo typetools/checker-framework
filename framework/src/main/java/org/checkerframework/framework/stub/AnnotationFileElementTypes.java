@@ -277,10 +277,9 @@ public class AnnotationFileElementTypes {
                 for (AnnotationFileResource resource : allFiles) {
                     try (InputStream annotationFileStream = resource.getInputStream()) {
                         // We use parseStubFile here even for ajava files because at this stage
-                        // ajava
-                        // files are parsed as stub files. The extra annotation data in an ajava
-                        // file is
-                        // parsed when type-checking the ajava file's corresponding Java file.
+                        // ajava files are parsed as stub files. The extra annotation data in an
+                        // ajava file is parsed when type-checking the ajava file's corresponding
+                        // Java file.
                         AnnotationFileParser.parseStubFile(
                                 resource.getDescription(),
                                 annotationFileStream,
@@ -321,8 +320,8 @@ public class AnnotationFileElementTypes {
                         // When using a compound checker, the target file may be found by the
                         // current checker's parent checkers. Also check this to avoid a false
                         // warning. Currently, only the original checker will try to parse the
-                        // target
-                        // file, the parent checkers are only used to reduce false warnings.
+                        // target file, the parent checkers are only used to reduce false
+                        // warnings.
                         SourceChecker currentChecker = checker;
                         boolean findByParentCheckers = false;
                         while (currentChecker != null) {

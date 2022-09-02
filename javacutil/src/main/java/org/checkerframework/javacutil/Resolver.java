@@ -307,8 +307,7 @@ public class Resolver {
             Env<AttrContext> env = getEnvForPath(path);
             Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
             // Every kind in the documentation of Element.getKind() is explicitly tested, possibly
-            // in the
-            // "default:" case.
+            // in the "default:" case.
             switch (res.getKind()) {
                 case EXCEPTION_PARAMETER:
                 case LOCAL_VARIABLE:

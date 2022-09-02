@@ -78,8 +78,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         if (TreeUtils.isClassTree(tree)) {
             TypeElement classEle = TreeUtils.elementFromDeclaration((ClassTree) tree);
             // If no @InheritableMustCall annotation is written here, `getDeclAnnotation()` gets one
-            // from
-            // stub files and supertypes.
+            // from stub files and supertypes.
             AnnotationMirror anyInheritableMustCall =
                     atypeFactory.getDeclAnnotation(classEle, InheritableMustCall.class);
             // An @InheritableMustCall annotation that is directly present.
@@ -89,8 +88,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             if (anyInheritableMustCall == null) {
                 if (!ElementUtils.isFinal(classEle)) {
                     // There is no @InheritableMustCall annotation on this or any superclass and
-                    // this is a
-                    // non-final class.
+                    // this is a non-final class.
                     // If an explicit @MustCall annotation is present, issue a warning suggesting
                     // that @InheritableMustCall is probably what the programmer means, for
                     // usability.
@@ -103,13 +101,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                 }
             } else {
                 // There is an @InheritableMustCall annotation on this, on a superclass, or in an
-                // annotation
-                // file.
+                // annotation file.
                 // There are two possible problems:
                 //  1. There is an inconsistent @MustCall on this.
                 //  2. There is an explicit @InheritableMustCall here, and it is inconsistent with
-                // an
-                //     @InheritableMustCall annotation on a supertype.
+                //     an @InheritableMustCall annotation on a supertype.
 
                 // Check for problem 1.
                 AnnotationMirror explicitMustCall =
@@ -161,8 +157,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                     }
                     if (!inheritedImcs.isEmpty()) {
                         // There is an inherited @InheritableMustCall annotation, in addition to the
-                        // one written
-                        // explicitly here.
+                        // one written explicitly here.
                         List<String> inheritedMustCallVal = new ArrayList<>();
                         for (AnnotationMirror inheritedImc : inheritedImcs) {
                             inheritedMustCallVal.addAll(
