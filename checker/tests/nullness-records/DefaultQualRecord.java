@@ -2,61 +2,61 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.DefaultQualifier;
 
 class StandardQualClass {
-    // :: error: (assignment.type.incompatible)
-    public static String s = null;
-    // :: error: (initialization.static.field.uninitialized)
-    public static String u;
+  // :: error: (assignment.type.incompatible)
+  public static String s = null;
+  // :: error: (initialization.static.field.uninitialized)
+  public static String u;
 }
 
 @DefaultQualifier(Nullable.class)
 class DefaultQualClass {
-    public static String s = null;
-    public static String u;
+  public static String s = null;
+  public static String u;
 }
 
 interface StandardQualInterface {
-    // :: error: (assignment.type.incompatible)
-    public static String s = null;
+  // :: error: (assignment.type.incompatible)
+  public static String s = null;
 }
 
 @DefaultQualifier(Nullable.class)
 interface DefaultQualInterface {
-    public static String s = null;
+  public static String s = null;
 }
 
 enum StandardQualEnum {
-    DUMMY;
-    // :: error: (assignment.type.incompatible)
-    public static String s = null;
-    // :: error: (initialization.static.field.uninitialized)
-    public static String u;
+  DUMMY;
+  // :: error: (assignment.type.incompatible)
+  public static String s = null;
+  // :: error: (initialization.static.field.uninitialized)
+  public static String u;
 }
 
 @DefaultQualifier(Nullable.class)
 enum DefaultQualEnum {
-    DUMMY;
-    public static String s = null;
-    public static String u;
+  DUMMY;
+  public static String s = null;
+  public static String u;
 }
 
 record StandardQualRecord(String m) {
-    // :: error: (assignment.type.incompatible)
-    public static String s = null;
-    // :: error: (initialization.static.field.uninitialized)
-    public static String u;
+  // :: error: (assignment.type.incompatible)
+  public static String s = null;
+  // :: error: (initialization.static.field.uninitialized)
+  public static String u;
 
-    StandardQualRecord {
-        // :: error: (assignment.type.incompatible)
-        m = null;
-    }
+  StandardQualRecord {
+    // :: error: (assignment.type.incompatible)
+    m = null;
+  }
 }
 
 @DefaultQualifier(Nullable.class)
 record DefaultQualRecord(String m) {
-    public static String s = null;
-    public static String u;
+  public static String s = null;
+  public static String u;
 
-    DefaultQualRecord {
-        m = null;
-    }
+  DefaultQualRecord {
+    m = null;
+  }
 }

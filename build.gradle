@@ -4,7 +4,7 @@ plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id 'de.undercouch.download' version '5.1.0'
+    id 'de.undercouch.download' version '5.1.1'
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id 'net.ltgt.errorprone' version '2.0.2'
@@ -45,7 +45,6 @@ ext {
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
 
-    jtregHome = "${parentDir}/jtreg"
     formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -116,7 +115,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.24.0-eisop2-SNAPSHOT'
+    version '3.25.0'
 
     repositories {
         mavenCentral()
@@ -310,6 +309,11 @@ allprojects {
                         '-Xep:InvalidBlockTag:OFF',
                         // Recommends writing @InlineMe which is an Error-Prone-specific annotation
                         '-Xep:InlineMeSuggester:OFF',
+                        // Recommends writing @CanIgnoreReturnValue which is an Error-Prone-specific annotation.
+                        // It would be great if Error Prone recognized the @This annotation.
+                        '-Xep:CanIgnoreReturnValueSuggester:OFF',
+                        // Should be turned off when using the Checker Framework.
+                        '-Xep:ExtendsObject:OFF',
                         // -Werror halts the build if Error Prone issues a warning, which ensures that
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
@@ -762,7 +766,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-        ext.errorproneVersion = '2.14.0'
+        ext.errorproneVersion = '2.15.0'
         errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
         // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
@@ -903,7 +907,7 @@ subprojects {
             ['-Astubs=javax-lang-model-element-name.astub'])
         createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
             'org.checkerframework.checker.nullness.NullnessChecker',
-            ['-AskipUses=com.sun.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
+            ['-AskipUses=com\\.sun\\.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'Purity',
             'org.checkerframework.framework.util.PurityChecker')
         createCheckTypeTask(project.name, 'Signature',
@@ -917,7 +921,7 @@ subprojects {
 
         // Add jtregTests to framework and checker modules
         if (project.name.is('framework') || project.name.is('checker')) {
-            tasks.create(name: 'jtregTests', dependsOn: ':downloadJtreg', group: 'Verification') {
+            tasks.create(name: 'jtregTests', group: 'Verification') {
                 description 'Run the jtreg tests.'
                 dependsOn('compileJava')
                 dependsOn('compileTestJava')
@@ -928,7 +932,7 @@ subprojects {
                 String tests = '.'
                 doLast {
                     exec {
-                        executable "${jtregHome}/bin/jtreg"
+                        executable "jtreg"
                         args = [
                                 "-dir:${projectDir}/jtreg",
                                 "-workDir:${jtregOutput}/${name}/work",

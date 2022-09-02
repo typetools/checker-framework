@@ -843,7 +843,8 @@ public class CheckerMain {
      */
     private List<@FullyQualifiedName String> getAllCheckerClassNames() {
         ArrayList<@FullyQualifiedName String> checkerClassNames = new ArrayList<>();
-        try (JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkerJar))) {
+        try (FileInputStream fis = new FileInputStream(checkerJar);
+                JarInputStream checkerJarIs = new JarInputStream(fis)) {
             ZipEntry entry;
             while ((entry = checkerJarIs.getNextEntry()) != null) {
                 final String name = entry.getName();

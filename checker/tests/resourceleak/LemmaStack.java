@@ -18,6 +18,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 
 @MustCall("close") public class LemmaStack implements Closeable {
 
@@ -32,7 +33,7 @@ import java.io.PrintWriter;
             }
             session = new PrintWriter("filename.txt");
         } catch (IOException e) {
-            throw new Error(e);
+            throw new UncheckedIOException(e);
         }
     }
 

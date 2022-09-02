@@ -13,7 +13,7 @@ import javax.lang.model.type.TypeMirror;
  * contains information valid when the previous boolean-valued expression was true, and the 'else'
  * store contains information valid when the expression was false.
  *
- * <p>{@link getRegularStore} returns the least upper bound of the two underlying stores.
+ * <p>{@link #getRegularStore} returns the least upper bound of the two underlying stores.
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis

@@ -66,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -163,13 +164,13 @@ class MustCallConsistencyAnalyzer {
      * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on
      * a node. The cache prevents repeatedly computing least upper bounds on stores
      */
-    private final Map<Node, CFStore> cmStoreAfter = new LinkedHashMap<>();
+    private final IdentityHashMap<Node, CFStore> cmStoreAfter = new IdentityHashMap<>();
 
     /**
      * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
      * node. The cache prevents repeatedly computing least upper bounds on stores
      */
-    private final Map<Node, CFStore> mcStoreAfter = new LinkedHashMap<>();
+    private final IdentityHashMap<Node, CFStore> mcStoreAfter = new IdentityHashMap<>();
 
     /** The Resource Leak Checker, used to issue errors. */
     private final ResourceLeakChecker checker;

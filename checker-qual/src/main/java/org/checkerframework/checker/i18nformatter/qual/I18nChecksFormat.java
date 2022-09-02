@@ -7,9 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is used internally to annotate {@link
- * org.checkerframework.checker.i18nformatter.util.I18nFormatUtil#hasFormat} (and will potentially
- * be used to annotate more such functions in the future).
+ * This annotation is used internally to annotate {@code I18nFormatUtil.hasFormat()} and similar
+ * methods.
  *
  * <p>Attach this annotation to a method with the following properties:
  *

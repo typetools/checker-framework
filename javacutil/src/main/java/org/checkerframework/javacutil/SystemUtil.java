@@ -43,7 +43,7 @@ public class SystemUtil {
      * not exist on JDK 8.
      *
      * @return the major version number from "java.version"
-     * @deprecated use field {@link jreVersion} instead
+     * @deprecated use field {@link #jreVersion} instead
      */
     @Deprecated // 2022-07-14 not for removal, just to make private
     public static int getJreVersion() {
@@ -114,14 +114,14 @@ public class SystemUtil {
                 throw new Error("Can't infer Java home; java.home=" + javaHomeProperty);
             }
         }
-        String toolsJarFilename = javaHome + File.separator + "lib" + File.separator + "tools.jar";
-        if (!new File(toolsJarFilename).exists()) {
+        File toolsJarFile = new File(new File(javaHome, "lib"), "tools.jar");
+        if (!toolsJarFile.exists()) {
             throw new Error(
                     String.format(
                             "File does not exist: %s ; JAVA_HOME=%s ; java.home=%s",
-                            toolsJarFilename, javaHome, System.getProperty("java.home")));
+                            toolsJarFile, javaHome, System.getProperty("java.home")));
         }
-        return javaHome + File.separator + "lib" + File.separator + "tools.jar";
+        return toolsJarFile.toString();
     }
 
     ///

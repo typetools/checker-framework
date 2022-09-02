@@ -7,7 +7,7 @@ import org.junit.runners.Parameterized.Parameters;
 import java.io.File;
 import java.util.List;
 
-/** Tests -AparseAllJdk option. */
+/** Tests {@code -AparseAllJdk} option. */
 public class ParseAllJdkTest extends CheckerFrameworkPerDirectoryTest {
 
     /**
