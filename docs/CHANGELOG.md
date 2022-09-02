@@ -15,7 +15,7 @@ Version 3.25.0 (September 1, 2022)
 
 **User-visible changes:**
 
-Make `mustcall.not.inheritable` a warning rather than an error
+Make `mustcall.not.inheritable` a warning rather than an error.
 
 The Property File Checker, Internationalization Checker, and Compiler
 Message Checker use `File.pathSeparator` to separate property file paths in
