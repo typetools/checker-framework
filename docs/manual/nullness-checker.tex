@@ -122,6 +122,15 @@ by the Checker Framework.
   checker will unsoundly assume that the argument to \<Map.get> is a key
   for the receiver map.  It will not do any checking of
   \refqualclass{checker/nullness/qual}{KeyFor} and related qualifiers.
+
+\item
+  \label{nullness-conservativeArgumentNullnessAfterInvocation}%
+  If you supply the `-AconservativeArgumentNullnessAfterInvocation` command-line option, the soundness of
+  the Nullness Checker is improved. In previous versions and without supplying the new flag, the receiver and
+  arguments that are passed to non-null parameters in a method call
+  or constructor invocation are assumed to be non-null after the invocation.
+  This assumption is unsound in general, but holds for most code.
+  Use this flag to soundly handle the nullness of the receiver and arguments in an invocation.
 \end{itemize}
 
 \item

@@ -35,7 +35,11 @@ import javax.annotation.processing.SupportedOptions;
     NullnessChecker.LINT_TRUSTARRAYLENZERO,
     NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
-@SupportedOptions({"assumeKeyFor", "jspecifyNullMarkedAlias"})
+@SupportedOptions({
+    "assumeKeyFor",
+    "jspecifyNullMarkedAlias",
+    "conservativeArgumentNullnessAfterInvocation"
+})
 @StubFiles({"junit-assertions.astub"})
 public class NullnessChecker extends InitializationChecker {
 

@@ -24,6 +24,7 @@ public class NullnessTest extends CheckerFrameworkPerDirectoryTest {
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-AcheckPurityAnnotations",
+                "-AconservativeArgumentNullnessAfterInvocation=true",
                 "-Xlint:deprecation",
                 "-Alint=soundArrayCreationNullness,"
                         + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
