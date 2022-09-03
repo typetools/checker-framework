@@ -1,4 +1,4 @@
-Version 3.25.0-eisop1 (September 2, 2022)
+Version 3.25.0-eisop1 (September 3, 2022)
 -----------------------------------------
 
 **User-visible changes:**
@@ -11,7 +11,9 @@ This assumption is unsound in general, but holds for most code.
 Use the new flag to soundly handle the nullness of the receiver and arguments in an invocation.
 In a future version, we might change the default for this option.
 
-**Implementation details:**
+Support the JSpecify NonNull annotation as an alias in the Nullness Checker.
+
+Fixed ordering of command-line and JDK stubs.
 
 **Closed issues:**
 
