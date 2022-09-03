@@ -396,22 +396,6 @@ public class AnnotationFileElementTypes {
      * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
      *     in the annotation file and in the element. {@code null} is returned if {@code element}
      *     does not appear in an annotation file.
-     * @deprecated use {@link #getDeclAnnotations}
-     */
-    @Deprecated // 2021-06-26
-    public Set<AnnotationMirror> getDeclAnnotation(Element elt) {
-        return getDeclAnnotations(elt);
-    }
-
-    /**
-     * Returns the set of declaration annotations for {@code e} containing only annotations
-     * explicitly written in an annotation file or the empty set if {@code e} does not appear in an
-     * annotation file.
-     *
-     * @param elt element for which annotations are returned
-     * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written
-     *     in the annotation file and in the element. {@code null} is returned if {@code element}
-     *     does not appear in an annotation file.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         parseEnclosingClass(elt);
@@ -497,7 +481,9 @@ public class AnnotationFileElementTypes {
                             recordComponentType.componentsByName.get(
                                     elt.getSimpleName().toString());
                     if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs()) {
-                        replaceAnnotations(memberType.getReturnType(), recordComponentStub.type);
+                        memberType
+                                .getReturnType()
+                                .replaceAnnotations(recordComponentStub.type.getAnnotations());
                     }
                 }
             }
@@ -511,28 +497,18 @@ public class AnnotationFileElementTypes {
                             recordComponentType.getComponentsInCanonicalConstructor();
                     if (componentsInCanonicalConstructor != null) {
                         for (int i = 0; i < componentsInCanonicalConstructor.size(); i++) {
-                            replaceAnnotations(
-                                    memberType.getParameterTypes().get(i),
-                                    componentsInCanonicalConstructor.get(i));
+                            memberType
+                                    .getParameterTypes()
+                                    .get(i)
+                                    .replaceAnnotations(
+                                            componentsInCanonicalConstructor
+                                                    .get(i)
+                                                    .getAnnotations());
                         }
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Replace annotations on destType with those from srcType, first removing any annotations on
-     * destType that are in the same hierarchy as any on srcType.
-     *
-     * @param destType the type whose annotations to remove/replace
-     * @param srcType the type whose annotations are copied to {@code destType}
-     */
-    private void replaceAnnotations(AnnotatedTypeMirror destType, AnnotatedTypeMirror srcType) {
-        for (AnnotationMirror annotation : srcType.getAnnotations()) {
-            destType.removeAnnotationInHierarchy(annotation);
-        }
-        destType.addAnnotations(srcType.getAnnotations());
     }
 
     /**
