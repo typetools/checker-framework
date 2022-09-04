@@ -5545,8 +5545,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Get the {@code value} field/element of the given contract list annotation.
    *
-   * @param contractListAnno a {@link RequiresQualifier.List}, {@link EnsuresQualifier.List}, or
-   *     {@link EnsuresQualifier.List}
+   * @param contractListAnno a {@link org.checkerframework.framework.qual.RequiresQualifier.List
+   *     RequiresQualifier.List}, {@link org.checkerframework.framework.qual.EnsuresQualifier.List
+   *     EnsuresQualifier.List}, or {@link
+   *     org.checkerframework.framework.qual.EnsuresQualifierIf.List EnsuresQualifierIf.List}
    * @return the {@code value} field/element of the given annotation
    */
   public List<AnnotationMirror> getContractListValues(AnnotationMirror contractListAnno) {
