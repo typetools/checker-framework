@@ -3774,7 +3774,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <ol>
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
    *       not supplied <br>
-   *   <li>jdkN.astub, where N is the Java version in the same directory as the checker, if it
+   *   <li>jdkN.astub (where N is the Java version) in the same directory as the checker, if it
    *       exists and ignorejdkastub option is not supplied <br>
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
    *       the checker<br>

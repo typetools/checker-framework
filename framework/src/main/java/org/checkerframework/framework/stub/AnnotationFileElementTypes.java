@@ -119,6 +119,7 @@ public class AnnotationFileElementTypes {
    * Parses the stub files in the following order:
    *
    * <ol>
+   *   <li>jdk.astub in this directory, if it exists and ignorejdkastub option is not supplied
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
    *       not supplied
    *   <li>If parsing annotated JDK as stub files, all package-info.java files under the jdk/
