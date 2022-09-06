@@ -1,6 +1,6 @@
 // Based on a false positive in Zookeeper.
 
-// @above-java17-skip-test TODO: reinstate on JDK 18, false positives are probably due to issue #979
+// @above-java17-jdk-skip-test TODO: reinstate on JDK 18, false positives may be due to issue #979
 
 import java.util.Map;
 
