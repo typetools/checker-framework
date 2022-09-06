@@ -27,10 +27,10 @@ import javax.lang.model.util.ElementFilter;
  * the {@code -proc:only} javac option to stop compilation after annotation processing. (But, in
  * general {@code -proc:only} causes type annotation processors not to be run.)
  *
- * <p>The utility will display the {@link Tree.Kind} of each node it encounters while scanning the
- * AST, indented according to its depth in the tree. Additionally, the names of identifiers and
- * member selection trees are displayed (since these names are not tree nodes and therefore not
- * directly visited during AST traversal).
+ * <p>The utility will display the {@link com.sun.source.tree.Tree.Kind Tree.Kind} of each node it
+ * encounters while scanning the AST, indented according to its depth in the tree. Additionally, the
+ * names of identifiers and member selection trees are displayed (since these names are not tree
+ * nodes and therefore not directly visited during AST traversal).
  *
  * @see org.checkerframework.common.util.debug.TreePrinter
  */

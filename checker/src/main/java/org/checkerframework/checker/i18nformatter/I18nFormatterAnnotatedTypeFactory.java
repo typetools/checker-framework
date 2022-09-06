@@ -2,6 +2,7 @@ package org.checkerframework.checker.i18nformatter;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -88,7 +89,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     if (checker.hasOption("propfiles")) {
       String names = checker.getOption("propfiles");
-      String[] namesArr = names.split(":");
+      String[] namesArr = names.split(File.pathSeparator);
 
       if (namesArr == null) {
         System.err.println("Couldn't parse the properties files: <" + names + ">");

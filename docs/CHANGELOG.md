@@ -3,18 +3,24 @@ The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
 
 
 
-Version 3.24.1 (??, 2022)
--------------------------
+Version 3.25.0 (September 1, 2022)
+----------------------------------
 
 **User-visible changes:**
 
 Make `mustcall.not.inheritable` a warning rather than an error
+
+The Property File Checker, Internationalization Checker, and Compiler
+Message Checker use `File.pathSeparator` to separate property file paths in
+`-Apropfiles`, rather than ':'.
 
 Added `DoNothingChecker` that does nothing.
 
 **Implementation details:**
 
 **Closed issues:**
+
+#5216, #5240, #5256, #5273.
 
 
 Version 3.24.0 (August 3, 2022)
