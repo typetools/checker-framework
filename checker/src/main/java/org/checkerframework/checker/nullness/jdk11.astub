@@ -15,10 +15,3 @@ public interface ProgramElementDoc extends Doc {
 
   @Nullable ClassDoc containingClass();
 }
-
-public interface Type {
-
-  @BinaryNameOrPrimitiveType String qualifiedTypeName();
-
-  @IdentifierOrPrimitiveType String simpleTypeName();
-}

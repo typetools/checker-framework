@@ -1,0 +1,16 @@
+// This file is for classes that appear in JDK 11 but not in JDK 17.
+
+package com.sun.javadoc;
+
+import java.io.File;
+import java.text.BreakIterator;
+import java.util.Locale;
+
+import org.checkerframework.common.value.qual.MinLen;
+
+public interface RootDoc extends Doc, DocErrorReporter {
+
+    String[] @MinLen(1) [] options();
+
+    ClassDoc @MinLen(1) [] specifiedClasses();
+}

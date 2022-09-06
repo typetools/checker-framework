@@ -150,10 +150,10 @@ public interface ProgramElementDoc extends Doc {
 public interface RootDoc extends Doc, DocErrorReporter {
 
     @SideEffectFree
-    String[] @MinLen(1) [] options();
+    String[] [] options();
 
     @SideEffectFree
-    ClassDoc @MinLen(1) [] specifiedClasses();
+    ClassDoc [] specifiedClasses();
 
     @SideEffectFree
     ClassDoc[] classes();
