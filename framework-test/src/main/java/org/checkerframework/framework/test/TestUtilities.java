@@ -49,6 +49,8 @@ public class TestUtilities {
   public static final boolean IS_AT_MOST_17_JVM = SystemUtil.jreVersion <= 17;
   /** True if the JVM is version 18 or above. */
   public static final boolean IS_AT_LEAST_18_JVM = SystemUtil.jreVersion >= 18;
+  /** True if the JVM is version 18 or lower. */
+  public static final boolean IS_AT_MOST_18_JVM = SystemUtil.jreVersion <= 18;
 
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -227,7 +229,9 @@ public class TestUtilities {
             || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
             || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-jdk-skip-test"))
             || (!IS_AT_LEAST_17_JVM && nextLine.contains("@below-java17-jdk-skip-test"))
-            || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-jdk-skip-test"))) {
+            || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-jdk-skip-test"))
+            || (!IS_AT_LEAST_18_JVM && nextLine.contains("@below-java18-jdk-skip-test"))
+            || (!IS_AT_MOST_18_JVM && nextLine.contains("@above-java18-jdk-skip-test"))) {
           return false;
         }
       }
