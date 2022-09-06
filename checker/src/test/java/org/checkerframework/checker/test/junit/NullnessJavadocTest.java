@@ -20,7 +20,6 @@ public class NullnessJavadocTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
-        toolsJarList(),
         "-Anomsgtext");
   }
 
