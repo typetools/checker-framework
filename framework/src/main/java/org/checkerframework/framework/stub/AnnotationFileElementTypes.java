@@ -149,7 +149,7 @@ public class AnnotationFileElementTypes {
       parseOneStubFile(checker.getClass(), "jdk.astub");
       parseOneStubFile(checker.getClass(), jdkVersionStub);
       // This needs to be special-cased for every jdkX.astub for which files exist. :-(
-      if (jdkVersionStub.equals("8")) {
+      if (annotatedJdkVersion.equals("8")) {
         String jdk11Stub = "jdk11.astub";
         parseOneStubFile(this.getClass(), jdk11Stub);
         parseOneStubFile(checker.getClass(), jdk11Stub);
