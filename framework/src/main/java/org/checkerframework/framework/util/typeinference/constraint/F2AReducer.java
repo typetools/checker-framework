@@ -9,7 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * reduces it by one step. The resulting constraint may still be reducible.
  *
  * <p>Generally reductions should map to corresponding rules in
- * https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.12.2.7
+ * https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.12.2.7
  */
 public class F2AReducer implements AFReducer {
 
