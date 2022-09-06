@@ -119,6 +119,7 @@ public class AnnotationFileElementTypes {
    * Parses the stub files in the following order:
    *
    * <ol>
+   *   <li>jdk.astub in this directory, if it exists and ignorejdkastub option is not supplied
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
    *       not supplied
    *   <li>If parsing annotated JDK as stub files, all package-info.java files under the jdk/
@@ -142,9 +143,17 @@ public class AnnotationFileElementTypes {
     if (!checker.hasOption("ignorejdkastub")) {
       // 1. jdk.astub
       // Only look in .jar files, and parse it right away.
-      parseOneStubFile(checker.getClass(), "jdk.astub");
       String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
+      parseOneStubFile(this.getClass(), "jdk.astub");
+      parseOneStubFile(this.getClass(), jdkVersionStub);
+      parseOneStubFile(checker.getClass(), "jdk.astub");
       parseOneStubFile(checker.getClass(), jdkVersionStub);
+      // This needs to be special-cased for every jdkX.astub for which files exist. :-(
+      if (annotatedJdkVersion.equals("8")) {
+        String jdk11Stub = "jdk11.astub";
+        parseOneStubFile(this.getClass(), jdk11Stub);
+        parseOneStubFile(checker.getClass(), jdk11Stub);
+      }
 
       // 2. Annotated JDK
       // This preps but does not parse the JDK files (except package-info.java files).
