@@ -3773,11 +3773,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <ol>
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
-   *       not supplied <br>
-   *   <li>jdkN.astub, where N is the Java version in the same directory as the checker, if it
-   *       exists and ignorejdkastub option is not supplied <br>
+   *       not supplied
+   *   <li>jdkN.astub (where N is the Java version or any higher value) in the same directory as the
+   *       checker, if it exists and ignorejdkastub option is not supplied
    *   <li>Stub files listed in @StubFiles annotation on the checker; must be in same directory as
-   *       the checker<br>
+   *       the checker
    *   <li>Stub files provided via {@code -Astubs} compiler option
    *   <li>Ajava files provided via {@code -Aajava} compiler option
    * </ol>
@@ -4854,7 +4854,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>Capture conversion is the process of converting wildcards in a parameterized type to fresh
    * type variables. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
    * for details.
    *
    * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
@@ -4873,7 +4873,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>Capture conversion is the process of converting wildcards in a parameterized type to fresh
    * type variables. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
    * for details.
    *
    * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
