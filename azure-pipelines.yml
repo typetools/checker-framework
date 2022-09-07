@@ -330,8 +330,9 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
-## "condition: false" because I can't seem to compile even the Guava mainline
-## (without annotations) using JDK 17 or JDK 18, as of 6 Sep 2022.  TODO: reinstate.
+# "condition: false" because as of 6 Sep 2022, the Error Prone compiler is crashing
+# when compiling Guava (even on the Guava mainline without type annotations).
+# TODO: reinstate.
 - job: guava_jdk17
   condition: false
   dependsOn:
