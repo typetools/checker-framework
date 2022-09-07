@@ -2,34 +2,34 @@
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Generic<G extends @Nullable Object> {}
+class Generic17<G extends @Nullable Object> {}
 
-class MyClass extends Generic<MyClass> {}
+class MyClass17 extends Generic17<MyClass17> {}
 
-class BoundedGeneric<B extends @Nullable CharSequence> {}
+class BoundedGeneric17<B extends @Nullable CharSequence> {}
 
-class RawTypesNullness {
-  Generic rawReturn() {
-    return new Generic();
+class RawTypesNullness17 {
+  Generic17 rawReturn() {
+    return new Generic17();
   }
 
-  Generic rawField = new Generic();
+  Generic17 rawField = new Generic17();
 }
 
-class TestBounded {
-  BoundedGeneric rawReturn() {
-    return new BoundedGeneric<>();
+class TestBounded17 {
+  BoundedGeneric17 rawReturn() {
+    return new BoundedGeneric17<>();
   }
 
-  BoundedGeneric rawField = new BoundedGeneric();
+  BoundedGeneric17 rawField = new BoundedGeneric17();
 
   void useBoundedWildCard() {
-    BoundedGeneric rawLocal = new BoundedGeneric<String>();
+    BoundedGeneric17 rawLocal = new BoundedGeneric17<String>();
     // :: warning: [unchecked] unchecked conversion
-    BoundedGeneric<? extends Object> generic1 = rawReturn();
+    BoundedGeneric17<? extends Object> generic1 = rawReturn();
     // :: warning: [unchecked] unchecked conversion
-    BoundedGeneric<? extends Object> generic2 = rawField;
+    BoundedGeneric17<? extends Object> generic2 = rawField;
     // :: warning: [unchecked] unchecked conversion
-    BoundedGeneric<? extends Object> generic3 = rawLocal;
+    BoundedGeneric17<? extends Object> generic3 = rawLocal;
   }
 }

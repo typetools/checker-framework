@@ -2,31 +2,31 @@
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-class Generic<G extends @Nullable Object> {}
+class Generic18<G extends @Nullable Object> {}
 
-class MyClass extends Generic<MyClass> {}
+class MyClass18 extends Generic18<MyClass18> {}
 
-class BoundedGeneric<B extends @Nullable CharSequence> {}
+class BoundedGeneric18<B extends @Nullable CharSequence> {}
 
-class RawTypesNullness {
-  Generic rawReturn() {
-    return new Generic();
+class RawTypesNullness18 {
+  Generic18 rawReturn() {
+    return new Generic18();
   }
 
-  Generic rawField = new Generic();
+  Generic18 rawField = new Generic18();
 }
 
-class TestBounded {
-  BoundedGeneric rawReturn() {
-    return new BoundedGeneric<>();
+class TestBounded18 {
+  BoundedGeneric18 rawReturn() {
+    return new BoundedGeneric18<>();
   }
 
-  BoundedGeneric rawField = new BoundedGeneric();
+  BoundedGeneric18 rawField = new BoundedGeneric18();
 
   void useBoundedWildCard() {
-    BoundedGeneric rawLocal = new BoundedGeneric<String>();
-    BoundedGeneric<? extends Object> generic1 = rawReturn();
-    BoundedGeneric<? extends Object> generic2 = rawField;
-    BoundedGeneric<? extends Object> generic3 = rawLocal;
+    BoundedGeneric18 rawLocal = new BoundedGeneric18<String>();
+    BoundedGeneric18<? extends Object> generic1 = rawReturn();
+    BoundedGeneric18<? extends Object> generic2 = rawField;
+    BoundedGeneric18<? extends Object> generic3 = rawLocal;
   }
 }
