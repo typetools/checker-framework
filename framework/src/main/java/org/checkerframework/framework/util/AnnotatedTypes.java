@@ -1549,7 +1549,7 @@ public class AnnotatedTypes {
    * Returns true if this type is extends bounded or unbounded.
    *
    * @param wildcardType the wildcard type to test
-   * @returns true if this type is extends bounded or unbounded
+   * @return true if this type is extends bounded or unbounded
    */
   public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
