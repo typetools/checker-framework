@@ -64,7 +64,10 @@ import org.plumelib.reflection.Signatures;
  * #isSupportedAnnotationClass(Class)}. See {@code
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
-// Don't check that AnnotationClassLoaders are closed. (Just one is created per type factory.)
+@SuppressWarnings(
+    "mustcall:inconsistent.mustcall.subtype" // Don't check that AnnotationClassLoaders are closed.
+// (Just one is created per type factory.)
+)
 @InheritableMustCall({})
 public class AnnotationClassLoader implements Closeable {
   /** For issuing errors to the user. */
