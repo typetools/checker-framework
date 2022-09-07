@@ -168,7 +168,9 @@ public class Heuristics {
    */
   public static class WithinTrueBranch extends Matcher {
     private final Matcher matcher;
-    /** @param conditionMatcher for the condition */
+    /**
+     * @param conditionMatcher for the condition
+     */
     public WithinTrueBranch(Matcher conditionMatcher) {
       this.matcher = conditionMatcher;
     }

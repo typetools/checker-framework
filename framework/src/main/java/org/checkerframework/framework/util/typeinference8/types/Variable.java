@@ -17,7 +17,9 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 /** An inference variable. */
 public class Variable extends AbstractType {
 
+  /** Bounds of this variable. */
   protected final VariableBounds variableBounds;
+
   /** Identification number. Used only to make debugging easier. */
   protected final int id;
 
@@ -62,7 +64,7 @@ public class Variable extends AbstractType {
   }
 
   /**
-   * REturn this variable's current bounds.
+   * Return this variable's current bounds.
    *
    * @return this variable's current bounds
    */

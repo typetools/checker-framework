@@ -597,7 +597,9 @@ public class AnnotationBuilder {
     throw new BugInCF("Couldn't find " + key + " element in " + annotationElt);
   }
 
-  /** @throws BugInCF if the type of {@code givenValue} is not the same as {@code expected} */
+  /**
+   * @throws BugInCF if the type of {@code givenValue} is not the same as {@code expected}
+   */
   private void checkSubtype(TypeMirror expected, Object givenValue) {
     if (expected.getKind().isPrimitive()) {
       expected = types.boxedClass((PrimitiveType) expected).asType();

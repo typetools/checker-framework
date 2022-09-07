@@ -6,6 +6,7 @@ import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
@@ -31,23 +32,42 @@ public class VariableBounds {
 
   /** The type to which this variable is instantiated. */
   private ProperType instantiation = null;
+
   /**
    * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
    * {@link AbstractType}s.
    */
   public final EnumMap<BoundKind, Set<AbstractType>> bounds = new EnumMap<>(BoundKind.class);
+
+  /**
+   * Qualifier bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to
+   * a set of {@link AbstractType}s. A qualifier bound is a bound on the primary annotation of this
+   * variable.
+   */
+  public final EnumMap<BoundKind, Set<AnnotationMirror>> qualifierBounds =
+      new EnumMap<>(BoundKind.class);
+
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
   public final ConstraintSet constraints = new ConstraintSet();
-  /** Whether or not this variable has a throws bounds. */
+
+  /** Whether this variable has a throws bounds. */
   public boolean hasThrowsBound = false;
+
   /** Saved bounds used in the event the first attempt at resolution fails. */
   public EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
+
+  /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
+  public EnumMap<BoundKind, LinkedHashSet<AnnotationMirror>> savedQualifierBounds = null;
 
   public VariableBounds(Java8InferenceContext context) {
     this.context = context;
     bounds.put(BoundKind.EQUAL, new LinkedHashSet<>());
     bounds.put(BoundKind.UPPER, new LinkedHashSet<>());
     bounds.put(BoundKind.LOWER, new LinkedHashSet<>());
+
+    qualifierBounds.put(BoundKind.EQUAL, new LinkedHashSet<>());
+    qualifierBounds.put(BoundKind.UPPER, new LinkedHashSet<>());
+    qualifierBounds.put(BoundKind.LOWER, new LinkedHashSet<>());
   }
 
   /** Save the current bounds in case the first attempt at resolution fails. */
@@ -56,6 +76,14 @@ public class VariableBounds {
     savedBounds.put(BoundKind.EQUAL, new LinkedHashSet<>(bounds.get(BoundKind.EQUAL)));
     savedBounds.put(BoundKind.UPPER, new LinkedHashSet<>(bounds.get(BoundKind.UPPER)));
     savedBounds.put(BoundKind.LOWER, new LinkedHashSet<>(bounds.get(BoundKind.LOWER)));
+
+    savedQualifierBounds = new EnumMap<>(BoundKind.class);
+    savedQualifierBounds.put(
+        BoundKind.EQUAL, new LinkedHashSet<>(qualifierBounds.get(BoundKind.EQUAL)));
+    savedQualifierBounds.put(
+        BoundKind.UPPER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.UPPER)));
+    savedQualifierBounds.put(
+        BoundKind.LOWER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.LOWER)));
   }
 
   /**
@@ -74,6 +102,13 @@ public class VariableBounds {
         instantiation = (ProperType) t;
       }
     }
+    qualifierBounds.clear();
+    qualifierBounds.put(
+        BoundKind.EQUAL, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.EQUAL)));
+    qualifierBounds.put(
+        BoundKind.UPPER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.UPPER)));
+    qualifierBounds.put(
+        BoundKind.LOWER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.LOWER)));
   }
 
   /**
@@ -95,6 +130,15 @@ public class VariableBounds {
       instantiation = ((ProperType) otherType).boxType();
     }
     if (bounds.get(kind).add(otherType)) {
+      addConstraintsFromComplementaryBounds(kind, otherType);
+      return true;
+    }
+    return false;
+  }
+
+  /** Adds {@code qualifier} as a qualifier bound against this variable. */
+  public boolean addQualifierBound(BoundKind kind, AnnotationMirror qualifier) {
+    if (qualifierBounds.get(kind).add(qualifier)) {
       addConstraintsFromComplementaryBounds(kind, otherType);
       return true;
     }

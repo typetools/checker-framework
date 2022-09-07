@@ -602,7 +602,9 @@ public class InvocationTypeInference {
     }
   }
 
-  /** @return true if actual and inferred are captures of the same wildcard or declared type. */
+  /**
+   * @return true if actual and inferred are captures of the same wildcard or declared type.
+   */
   private boolean areSameCapture(TypeMirror actual, TypeMirror inferred) {
     if (TypesUtils.isCapturedTypeVariable(actual) && TypesUtils.isCapturedTypeVariable(inferred)) {
       return context.types.isSameWildcard(

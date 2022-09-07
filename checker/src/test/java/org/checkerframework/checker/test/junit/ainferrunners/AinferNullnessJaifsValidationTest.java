@@ -13,7 +13,9 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @Category(AinferNullnessJaifsTest.class)
 public class AinferNullnessJaifsValidationTest extends CheckerFrameworkPerDirectoryTest {
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public AinferNullnessJaifsValidationTest(List<File> testFiles) {
     super(testFiles, NullnessChecker.class, "nullness", "-Anomsgtext");
   }

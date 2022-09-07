@@ -142,7 +142,9 @@ public class InferenceType extends AbstractType {
     return false;
   }
 
-  /** @return all inference variables mentioned in this type. */
+  /**
+   * @return all inference variables mentioned in this type.
+   */
   @Override
   public Collection<Variable> getInferenceVariables() {
     LinkedHashSet<Variable> variables = new LinkedHashSet<>();
