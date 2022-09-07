@@ -33,7 +33,7 @@ import org.checkerframework.javacutil.Pair;
  *
  * <p>In a way, this class is a hack: the Type representation for the Elements should contain all
  * annotations that we want. However, due to <a
- * href="http://mail.openjdk.java.net/pipermail/type-annotations-dev/2013-December/001449.html">javac
+ * href="https://mail.openjdk.org/pipermail/type-annotations-dev/2013-December/001449.html">javac
  * bugs</a> decoding the type annotations from the Element is necessary.
  *
  * <p>Even once these bugs are fixed, this class might be useful: in TypesIntoElements it is easy to

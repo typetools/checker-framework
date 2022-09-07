@@ -244,27 +244,21 @@ public class TypeVisualizer {
       }
     }
 
+    /**
+     * Write this to a file.
+     *
+     * @param file the file to write to
+     */
     private void write(final File file) {
-      try {
-        BufferedWriter writer = null;
-        try {
-          writer = new BufferedWriter(new FileWriter(file));
-          writer.write("digraph " + graphName + "{");
+      try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+        writer.write("digraph " + graphName + "{");
+        writer.newLine();
+        for (final String line : lines) {
+          writer.write(line + ";");
           writer.newLine();
-          for (final String line : lines) {
-            writer.write(line + ";");
-            writer.newLine();
-          }
-
-          writer.write("}");
-          writer.flush();
-        } catch (IOException e) {
-          throw new BugInCF(e, "Exception visualizing type:%nfile=%s%ntype=%s", file, type);
-        } finally {
-          if (writer != null) {
-            writer.close();
-          }
         }
+        writer.write("}");
+        writer.flush();
       } catch (IOException exc) {
         throw new BugInCF(exc, "Exception visualizing type:%nfile=%s%ntype=%s", file, type);
       }

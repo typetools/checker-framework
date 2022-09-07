@@ -92,7 +92,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
    *
    * @param sourceFiles the list of source files
    * @param extension the extension to use: either .astub or .ajava
-   * @return the appropriate -Aajava or -Astubs argument
+   * @return the appropriate {@code -Aajava} or {@code -Astubs} argument
    */
   private static String annotationArgFromFiles(
       List<File> sourceFiles, @StringVal({".astub", ".ajava"}) String extension) {
@@ -105,8 +105,8 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
   }
 
   /**
-   * Generates the correct argument to the -Aajava or -Astubs CF option corresponding to the source
-   * file {@code sourceFile} and the wpi output type.
+   * Generates the correct argument to the {@code -Aajava} or {@code -Astubs} CF option
+   * corresponding to the source file {@code sourceFile} and the wpi output type.
    *
    * @param sourceFile a java source file
    * @param extension the extension to use: either .astub or .ajava

@@ -10,7 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node for a method access, including a method accesses:
+ * A node for a method access, including a receiver:
  *
  * <pre>
  *   <em>expression</em> . <em>method</em> ()

@@ -41,7 +41,7 @@ from release_utils import print_step
 from release_utils import prompt_to_continue
 from release_utils import prompt_yes_no
 from release_utils import push_changes_prompt_if_fail
-from release_utils import read_command_line_option
+from release_utils import has_command_line_option
 from release_utils import read_first_line
 from release_utils import set_umask
 from release_utils import subprocess
@@ -185,10 +185,14 @@ def run_link_checker(site, output, additional_param=""):
     out_file.close()
 
     if process.returncode != 0:
-        raise Exception(
-            "Non-zero return code (%s; see output in %s) while executing %s"
-            % (process.returncode, output, cmd)
+        msg = "Non-zero return code (%s; see output in %s) while executing %s" % (
+            process.returncode,
+            output,
+            cmd,
         )
+        print(msg + "\n")
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            raise Exception(msg)
 
     return output
 
@@ -233,16 +237,19 @@ def check_all_links(
     if not is_checkerCheck_empty:
         print("\t" + checkerCheck + "\n")
     if errors_reported:
-        release_option = ""
-        if not test_mode:
-            release_option = " release"
-        raise Exception(
-            "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
-            + 'repository and pushing them to GitHub, running "python release_build.py all" again\n'
-            + '(in order to update the development site), and running "python release_push'
-            + release_option
-            + '" again.'
-        )
+        if not prompt_yes_no("Continue despite link checker results?", True):
+            release_option = ""
+            if not test_mode:
+                release_option = " release"
+            raise Exception(
+                "The link checker reported errors.  Please fix them by committing changes to the mainline\n"
+                + "repository and pushing them to GitHub, then updating the development and live sites by\n"
+                + "running\n"
+                + "  python3 release_build.py all\n"
+                + "  python3 release_push"
+                + release_option
+                + "\n"
+            )
 
 
 def push_interm_to_release_repos():
@@ -292,7 +299,7 @@ def main(argv):
     set_umask()
 
     validate_args(argv)
-    test_mode = not read_command_line_option(argv, "release")
+    test_mode = not has_command_line_option(argv, "release")
 
     m2_settings = expanduser("~") + "/.m2/settings.xml"
     if not os.path.exists(m2_settings):
@@ -394,19 +401,19 @@ def main(argv):
 
     print_step("Push Step 5: Stage Maven artifacts in Central")  # SEMIAUTO
 
-    print_step("5a: Stage the artifacts at Maven central.")
+    print_step("Step 5a: Stage the artifacts at Maven central.")
     if (not test_mode) or prompt_yes_no(
         "Stage Maven artifacts in Maven Central?", not test_mode
     ):
         stage_maven_artifacts_in_maven_central(new_cf_version)
 
-        print_step("5b: Close staged artifacts at Maven central.")
+        print_step("Step 5b: Close staged artifacts at Maven central.")
         continue_or_exit(
             "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts.\n"
             + " * Browse to https://oss.sonatype.org/#stagingRepositories\n"
             + " * Log in using your Sonatype credentials\n"
             + ' * In the search box at upper right, type "checker"\n'
-            + " * In the top pane, click on orgcheckerframework-XXXX\n"
+            + " * In the top pane, click on org.checkerframework-XXXX\n"
             + ' * Click "close" at the top\n'
             + " * For the close message, enter:  Checker Framework release "
             + new_cf_version
@@ -417,7 +424,7 @@ def main(argv):
             "(You can also see the instructions at: http://central.sonatype.org/pages/releasing-the-deployment.html)\n"
         )
 
-        print_step("5c: Run Maven sanity test on Maven central artifacts.")
+        print_step("Step 5c: Run Maven sanity test on Maven central artifacts.")
         if prompt_yes_no("Run Maven sanity test on Maven central artifacts?", True):
             repo_url = input("Please enter the repo URL of the closed artifacts:\n")
 
@@ -498,7 +505,9 @@ def main(argv):
     # available to the Java community through the Central repository. Follow the prompts. The Maven
     # artifacts (such as checker-qual.jar) are still needed, but the Maven plug-in is no longer maintained.
 
-    print_step("Push Step 10. Release staged artifacts in Central repository.")  # MANUAL
+    print_step(
+        "Push Step 10. Release staged artifacts in Central repository."
+    )  # MANUAL
     if test_mode:
         msg = (
             "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "
@@ -510,7 +519,7 @@ def main(argv):
         msg = (
             "Please 'release' the artifacts.\n"
             + "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and "
-            + "locate the orgcheckerframework repository and click on it.\n"
+            + "locate the org.checkerframework repository and click on it.\n"
             + "If you have a permissions problem, try logging out and back in.\n"
             + "Finally, click on the Release button at the top of the page. In the dialog box that pops up, "
             + 'leave the "Automatically drop" box checked. For the description, write '
@@ -534,18 +543,18 @@ def main(argv):
 
         msg = (
             "\n"
-            + "* Download the following files to your local machine."
+            + "Download the following files to your local machine."
             + "\n"
-            + "https://checkerframework.org/checker-framework-"
+            + "  https://checkerframework.org/checker-framework-"
             + new_cf_version
             + ".zip\n"
-            + "https://checkerframework.org/annotation-file-utilities/annotation-tools-"
+            + "  https://checkerframework.org/annotation-file-utilities/annotation-tools-"
             + new_cf_version
             + ".zip\n"
             + "\n"
             + "To post the Checker Framework release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-"
+            + "* Browse to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-"
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Checker Framework "
@@ -559,7 +568,7 @@ def main(argv):
             + "\n"
             + "To post the Annotation File Utilities release on GitHub:\n"
             + "\n"
-            + "* Go to https://github.com/typetools/annotation-tools/releases/new?tag="
+            + "* Browse to https://github.com/typetools/annotation-tools/releases/new?tag="
             + new_cf_version
             + "\n"
             + "* For the release title, enter: Annotation File Utilities "
@@ -572,7 +581,7 @@ def main(argv):
             + '* Click on the green "Publish release" button.\n'
         )
 
-        print(msg)
+        continue_or_exit(msg)
 
         print_step("Push Step 12. Announce the release.")  # MANUAL
         continue_or_exit(
@@ -580,28 +589,29 @@ def main(argv):
             + get_announcement_email(new_cf_version)
         )
 
+        print_step("Push Step 13. Prep for next Checker Framework release.")  # MANUAL
+        continue_or_exit(
+            "Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n"
+        )
+
         print_step(
-            "Push Step 13. Update the Checker Framework Gradle plugin."
+            "Push Step 14. Update the Checker Framework Gradle plugin."
         )  # MANUAL
+        print("You might have to wait for Maven Central to propagate changes.\n")
         continue_or_exit(
             "Please update the Checker Framework Gradle plugin:\n"
             + "https://github.com/kelloggm/checkerframework-gradle-plugin/blob/master/RELEASE.md#updating-the-checker-framework-version\n"
         )
         continue_or_exit(
             "Make a pull request to the Checker Framework that\n"
-            + "updates the version number of the Checker Framework"
-            + "Gradle Plugin in docs/example/lombok and docs/example/errorprone .\n"
+            + "updates the version number of the Checker Framework\n"
+            + "Gradle Plugin in docs/examples/lombok and docs/examples/errorprone .\n"
             + "The pull request's tests will fail; you will merge it in a day."
-        )
-
-        print_step("Push Step 14. Prep for next Checker Framework release.")  # MANUAL
-        continue_or_exit(
-            "Change the patch level (last number) of the Checker Framework version\nin build.gradle:  increment it and add -SNAPSHOT\n"
         )
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
-    print("Done with release_push.py")
+    print("Done with release_push.py.\n")
 
 
 if __name__ == "__main__":

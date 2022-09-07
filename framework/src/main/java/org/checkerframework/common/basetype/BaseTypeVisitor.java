@@ -187,7 +187,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The factory to use for obtaining "parsed" version of annotations. */
   protected final Factory atypeFactory;
 
-  /** For obtaining line numbers in -Ashowchecks debugging output. */
+  /** For obtaining line numbers in {@code -Ashowchecks} debugging output. */
   protected final SourcePositions positions;
 
   /** The element for java.util.Vector#copyInto. */
@@ -1680,7 +1680,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkThisConstructorCall(node);
       }
     } catch (RuntimeException t) {
-      // Sometimes the type arguments are inferred incorrect which causes crashes. Once #979
+      // Sometimes the type arguments are inferred incorrectly, which causes crashes. Once #979
       // is fixed this should be removed and crashes should be reported normally.
       if (node.getTypeArguments().size() == typeargs.size()) {
         // They type arguments were explicitly written.

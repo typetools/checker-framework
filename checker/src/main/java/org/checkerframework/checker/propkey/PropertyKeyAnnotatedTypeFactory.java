@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -139,8 +140,14 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return result;
   }
 
+  /**
+   * Obtains the keys from all the property files.
+   *
+   * @param names a list of property files, separated by {@link File#pathSeparator}
+   * @return a set of all the keys found in all the property files
+   */
   private Set<String> keysOfPropertyFiles(String names) {
-    String[] namesArr = names.split(":");
+    String[] namesArr = names.split(File.pathSeparator);
 
     if (namesArr == null) {
       checker.message(Kind.WARNING, "Couldn't parse the properties files: <" + names + ">");
@@ -155,35 +162,32 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         ClassLoader cl = this.getClass().getClassLoader();
         if (cl == null) {
-          // the class loader is null if the system class loader was
-          // used
+          // The class loader is null if the system class loader was used.
           cl = ClassLoader.getSystemClassLoader();
         }
-        InputStream in = cl.getResourceAsStream(name);
 
-        if (in == null) {
-          // if the classloader didn't manage to load the file, try whether a FileInputStream
-          // works. For absolute paths this might help.
-          try {
-            in = new FileInputStream(name);
-          } catch (FileNotFoundException e) {
-            // ignore
+        try (InputStream in = cl.getResourceAsStream(name)) {
+          if (in != null) {
+            prop.load(in);
+          } else {
+            // if the classloader didn't manage to load the file, try whether a FileInputStream
+            // works. For absolute paths this might help.
+            try (InputStream fis = new FileInputStream(name)) {
+              prop.load(fis);
+            } catch (FileNotFoundException e) {
+              checker.message(Kind.WARNING, "Couldn't find the properties file: " + name);
+              // report(null, "propertykeychecker.filenotfound", name);
+              // return Collections.emptySet();
+              continue;
+            }
           }
         }
 
-        if (in == null) {
-          checker.message(Kind.WARNING, "Couldn't find the properties file: " + name);
-          // report(null, "propertykeychecker.filenotfound", name);
-          // return Collections.emptySet();
-          continue;
-        }
-
-        prop.load(in);
         result.addAll(prop.stringPropertyNames());
+
       } catch (Exception e) {
-        // TODO: is there a nicer way to report messages, that are not
-        // connected to an AST node?
-        // One cannot use report, because it needs a node.
+        // TODO: is there a nicer way to report messages, that are not connected to an AST node?
+        // One cannot use `report`, because it needs a node.
         checker.message(Kind.WARNING, "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
         e.printStackTrace();
       }

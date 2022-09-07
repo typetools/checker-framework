@@ -2,7 +2,8 @@
 
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("a") class CreatesMustCallForSimple {
+@InheritableMustCall("a")
+class CreatesMustCallForSimple {
 
   @CreatesMustCallFor
   void reset() {}

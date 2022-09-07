@@ -551,8 +551,7 @@ public class I18nFormatterTreeUtil {
                     @BinaryName String cname = e.getQualifiedName().toString();
                     return Class.forName(cname);
                   } catch (ClassNotFoundException e1) {
-                    return null; // the lookup should work for all
-                    // the classes we care about
+                    return null; // the lookup should work for all the classes we care about
                   }
                 }
               },

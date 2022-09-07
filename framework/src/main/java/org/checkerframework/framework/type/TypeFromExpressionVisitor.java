@@ -362,7 +362,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     AnnotatedTypeMirror returnT = ex.getReturnType().asUse();
     if (TypesUtils.isCapturedTypeVariable(returnT.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(TreeUtils.typeOf(node))) {
-      // This seems to be a bug in javac.
+      // Sometimes javac types an expression as the upper bound of a captured type variable instead
+      // of the captured type variable itself. This seems to be a bug in javac. Detect this case and
+      // match the annotated type to the Java type.
       returnT = ((AnnotatedTypeVariable) returnT).getUpperBound();
     }
     return f.applyCaptureConversion(returnT);

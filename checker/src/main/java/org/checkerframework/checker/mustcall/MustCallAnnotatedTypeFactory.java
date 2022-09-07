@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * shared in the same way that subcheckers share CFG structure; see {@link
    * #getSharedCFGForTree(Tree)}.
    */
-  /* package-private */ final HashMap<Tree, LocalVariableNode> tempVars = new HashMap<>();
+  /* package-private */ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
+      new IdentityHashMap<>(100);
 
   /** The MustCall.value field/element. */
   final ExecutableElement mustCallValueElement =
@@ -395,8 +397,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * <p>This tree annotator treats non-owning method parameters as bottom, regardless of their
    * declared type, when they appear in the body of the method. Doing so is safe because being
    * non-owning means, by definition, that their must-call obligations are only relevant in the
-   * callee. (This behavior is disabled if the -AnoLightweightOwnership option is passed to the
-   * checker.)
+   * callee. (This behavior is disabled if the {@code -AnoLightweightOwnership} option is passed to
+   * the checker.)
    *
    * <p>The tree annotator also changes the type of resource variables to remove "close" from their
    * must-call types, because the try-with-resources statement guarantees that close() is called on

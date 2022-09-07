@@ -4,11 +4,12 @@
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
-import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
-@MustCall("close") class NonFinalFieldOnlyOverwrittenIfNull {
+@InheritableMustCall("close")
+class NonFinalFieldOnlyOverwrittenIfNull {
   @Owning @MonotonicNonNull InputStream is;
 
   @CreatesMustCallFor

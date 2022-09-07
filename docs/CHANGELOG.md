@@ -1,12 +1,79 @@
-Version 3.22.1 (June 1, 2022)
----------------------------------
+Version 3.25.0 (September 1, 2022)
+----------------------------------
+
+**User-visible changes:**
+
+Make `mustcall.not.inheritable` a warning rather than an error
+
+The Property File Checker, Internationalization Checker, and Compiler
+Message Checker use `File.pathSeparator` to separate property file paths in
+`-Apropfiles`, rather than ':'.
+
+Added `DoNothingChecker` that does nothing.
+
+**Implementation details:**
 
 **Closed issues:**
-#58, #5136, #5138, #5142, #5143.,
+
+#5216, #5240, #5256, #5273.
+
+
+Version 3.24.0 (August 3, 2022)
+-------------------------------
+
+**User-visible changes:**
+
+Performance improvements.
+
+Minor bug fixes and enhancements.
+
+**Implementation details:**
+
+Prefer `SystemUtil.jreVersion` to `SystemUtil.getJreVersion()`.
+
+**Closed issues:**
+
+#5200, #5216.
+
+
+Version 3.23.0 (July 11, 2022)
+------------------------------
+
+**User-visible changes:**
+
+By default, command-line argument `-AstubWarnIfNotFound` is treated as true
+for stub files provided on the command line and false for built-in stub
+files.  Use `-AstubWarnIfNotFound` to enable it for all stub files, and use
+new `-AstubNoWarnIfNotFound` to disable it for all stub files.
+
+New command-line argument `-ApermitStaticOwning` suppresses Resource Leak
+Checker warnings related to static owning fields.
+
+New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
+Checker warnings related to field initialization.
+
+**Closed issues:**
+
+#4855, #5151, #5166, #5172, #5175, #5181, #5189.
+
+
+Version 3.22.2 (June 14, 2022)
+------------------------------
+
+**Implementation details:**
+
+Expose CFG APIs to allow inserting jumps and throws
+
+
+Version 3.22.1 (June 1, 2022)
+-----------------------------
+
+**Closed issues:**
+#58, #5136, #5138, #5142, #5143,
 
 
 Version 3.22.0 (May 2, 2022)
----------------------------------
+----------------------------
 
 **User-visible changes:**
 
@@ -28,14 +95,14 @@ annotations, they are copied to the anonymous classes constructor.
 
 
 Version 3.21.4 (April 1, 2022)
----------------------------------
+------------------------------
 
 **Closed issues:**
 #5086.
 
 
 Version 3.21.3 (March 1, 2022)
----------------------------------
+------------------------------
 
 **Closed issues:**
 #2847, #4965, #5039, #5042, #5047.
@@ -4188,7 +4255,7 @@ Code Changes
     fixed mutability type handling for type casts and field access
     fixed bug, ensuring no primitives can be ReadOnly
     a method receiver type is now based on the correct annotation
-    fixed parameter type-checking for overriden methods
+    fixed parameter type-checking for overridden methods
     fixed bug on readonly field initialization
     added handling for unary trees
 

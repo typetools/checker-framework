@@ -118,7 +118,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.22.0'
+    ext.checkerFrameworkVersion = '3.22.2'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -191,7 +191,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.22.0'
+    ext.checkerFrameworkVersion = '3.22.2'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -210,7 +210,7 @@ gradlew assembleCheckTypes
 
 \sectionAndLabel{Ant task}{ant-task}
 
-If you use the \href{http://ant.apache.org/}{Ant} build tool to compile
+If you use the \href{https://ant.apache.org/}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
 that your Ant file already contains a compilation target that uses the
 \code{javac} task, and that the \<CHECKERFRAMEWORK> environment variable is set.
@@ -341,13 +341,13 @@ file showing how to enable the Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.22.0.jar',
+    binary_jar = 'checker-3.22.2.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.22.0.jar',
+    binary_jar = 'checker-qual-3.22.2.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -380,7 +380,7 @@ Buck actually executes.  Buck's invocation of the Checker Framework may
 produce errors that cannot be reproduced from the command line.  This is
 because Buck uses
 \href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/jvm/java/Jsr199Javac.java}{in-process
-  compilation}, potentially multi-threaded, and because Buck may use use
+  compilation}, potentially multi-threaded, and because Buck may use
 \href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/util/ClassLoaderCache.java}{multiple
   classloaders} that are cached.
 
@@ -411,21 +411,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.22.0/>.
+other than \<\${HOME}/checker-framework-3.22.2/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.22.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.22.2/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.2
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -446,7 +446,7 @@ other than \<\${HOME}/checker-framework-3.22.0/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.2
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -468,11 +468,11 @@ other than \<\${HOME}/checker-framework-3.22.0/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.22.2
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.22.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.22.2\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -551,9 +551,9 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.22.0/checker-qual-3.22.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.22.0/checker-util-3.22.0.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.22.0/checker-3.22.0-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.22.2/checker-qual-3.22.2.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.22.2/checker-util-3.22.2.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.22.2/checker-3.22.2-all.jar}
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
@@ -647,7 +647,7 @@ javac \
 -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
-The arguments are explained above, except for two of them:.
+The arguments are explained above, except for two of them:
 \begin{enumerate}
 
 \item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
@@ -660,7 +660,7 @@ required with JDK 17+ because the Checker Framework accesses non-exported member
 
 \end{enumerate}
 
-If this option is missing, \<javac> may issue the following warning:
+If this option is missing, \<javac> may issue one of the below warnings:
 \begin{Verbatim}
 WARNING: An illegal reflective access operation has occurred
 WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
@@ -668,6 +668,13 @@ WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
 WARNING: Please consider reporting this to the maintainers of org.checkerframework.javacutil.Resolver
 WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
 WARNING: All illegal access operations will be denied in a future release
+\end{Verbatim}
+
+\begin{Verbatim}
+java.lang.IllegalAccessError: class org.checkerframework.javacutil.AbstractTypeProcessor
+  (in unnamed module ...) cannot access class com.sun.tools.javac.processing.JavacProcessingEnvironment
+  (in module jdk.compiler) because module jdk.compiler does not export com.sun.tools.javac.processing
+  to unnamed module ...
 \end{Verbatim}
 
 
@@ -917,7 +924,7 @@ Checker Framework on that.  The
 
 \sectionAndLabel{Maven}{maven}
 
-If you use the \href{http://maven.apache.org/}{Maven} tool,
+If you use the \href{https://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
 instructions below.
 
@@ -1365,7 +1372,7 @@ will not appear in the editor.
 
 \sectionAndLabel{sbt}{sbt}
 
-\ahref{https://www.scala-sbt.org/}{sbt} is a build tool for
+\href{https://www.scala-sbt.org/}{sbt} is a build tool for
 Scala, Java, and more.
 
 Adjust the \<-processor> command-line argument for the processor(s)
