@@ -119,6 +119,7 @@ public class AnnotationFileElementTypes {
    * Parses the stub files in the following order:
    *
    * <ol>
+   *   <li>jdk.astub in this directory, if it exists and ignorejdkastub option is not supplied
    *   <li>jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
    *       not supplied
    *   <li>If parsing annotated JDK as stub files, all package-info.java files under the jdk/
@@ -139,36 +140,19 @@ public class AnnotationFileElementTypes {
   public void parseStubFiles() {
     parsing = true;
     BaseTypeChecker checker = factory.getChecker();
-    ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    // 1. jdk.astub
-    // Only look in .jar files, and parse it right away.
     if (!checker.hasOption("ignorejdkastub")) {
-      try (InputStream jdkStubIn = checker.getClass().getResourceAsStream("jdk.astub")) {
-        if (jdkStubIn != null) {
-          AnnotationFileParser.parseStubFile(
-              checker.getClass().getResource("jdk.astub").toString(),
-              jdkStubIn,
-              factory,
-              processingEnv,
-              annotationFileAnnos,
-              AnnotationFileType.BUILTIN_STUB);
-        }
-      } catch (IOException e) {
-        throw new Error(e);
-      }
+      // 1. jdk.astub
+      // Only look in .jar files, and parse it right away.
       String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
-      try (InputStream jdkVersionStubIn = checker.getClass().getResourceAsStream(jdkVersionStub)) {
-        if (jdkVersionStubIn != null) {
-          AnnotationFileParser.parseStubFile(
-              checker.getClass().getResource(jdkVersionStub).toString(),
-              jdkVersionStubIn,
-              factory,
-              processingEnv,
-              annotationFileAnnos,
-              AnnotationFileType.BUILTIN_STUB);
-        }
-      } catch (IOException e) {
-        throw new Error(e);
+      parseOneStubFile(this.getClass(), "jdk.astub");
+      parseOneStubFile(this.getClass(), jdkVersionStub);
+      parseOneStubFile(checker.getClass(), "jdk.astub");
+      parseOneStubFile(checker.getClass(), jdkVersionStub);
+      // This needs to be special-cased for every jdkX.astub for which files exist. :-(
+      if (annotatedJdkVersion.equals("8")) {
+        String jdk11Stub = "jdk11.astub";
+        parseOneStubFile(this.getClass(), jdk11Stub);
+        parseOneStubFile(checker.getClass(), jdk11Stub);
       }
 
       // 2. Annotated JDK
@@ -199,6 +183,32 @@ public class AnnotationFileElementTypes {
     }
 
     parsing = false;
+  }
+
+  /**
+   * Parse one .astub file.
+   *
+   * @param checkerClass the location of the resource in the checker.jar file
+   * @param stubFileName the basename of the .astub file
+   */
+  private void parseOneStubFile(Class<?> checkerClass, String stubFileName) {
+    BaseTypeChecker checker = factory.getChecker();
+    ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+    try (InputStream jdkVersionStubIn = checkerClass.getResourceAsStream(stubFileName)) {
+      if (jdkVersionStubIn != null) {
+        AnnotationFileParser.parseStubFile(
+            checkerClass.getResource(stubFileName).toString(),
+            jdkVersionStubIn,
+            factory,
+            processingEnv,
+            annotationFileAnnos,
+            AnnotationFileType.BUILTIN_STUB);
+      }
+    } catch (IOException e) {
+      checker.message(
+          Kind.NOTE,
+          "Could not read annotation resource from " + checkerClass + ": " + stubFileName);
+    }
   }
 
   /** Parses the ajava files passed through the -Aajava command-line option. */
@@ -336,7 +346,7 @@ public class AnnotationFileElementTypes {
             }
           }
         } catch (IOException e) {
-          throw new Error(e);
+          checker.message(Kind.NOTE, "Could not read annotation resource: " + path);
         }
       }
     }

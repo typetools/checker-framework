@@ -182,7 +182,7 @@ public class AnnotationClassLoader implements Closeable {
     try {
       classLoader.close();
     } catch (IOException e) {
-      throw new Error(e);
+      checker.message(Kind.NOTE, "Failed to close AnnotationClassLoader");
     }
   }
 

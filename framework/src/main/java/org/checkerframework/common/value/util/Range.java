@@ -300,7 +300,7 @@ public class Range {
    * 32-bit integers, convert the bounds to Integer type in accordance with Java twos-complement
    * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
    *
-   * @return this range, converted to to a 32-bit integral range
+   * @return this range, converted to a 32-bit integral range
    */
   @SuppressWarnings("UnnecessaryLongToIntConversion")
   public Range intRange() {
@@ -778,7 +778,7 @@ public class Range {
     // 1. create different methods for int type and long type and use them accordingly
     // 2. add an additional boolean parameter to indicate the type of the left-hand operand
     //
-    // see https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.19 for more
+    // see https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.19 for more
     // detail.
     if (right.isWithin(0, 31)) {
       if (this.isWithinInteger()) {

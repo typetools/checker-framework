@@ -1,13 +1,32 @@
-Version 3.24.1 (??, 2022)
--------------------------
+Version 3.26.0 (October 4, 2022)
+--------------------------------
+
+**User-visible changes:**
+
+Annotations are available for some new JDK 17 APIs (some of those
+introduced since JDK 11).
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.25.0 (September 1, 2022)
+----------------------------------
 
 **User-visible changes:**
 
 Make `mustcall.not.inheritable` a warning rather than an error
 
-**Implementation details:**
+The Property File Checker, Internationalization Checker, and Compiler
+Message Checker use `File.pathSeparator` to separate property file paths in
+`-Apropfiles`, rather than ':'.
+
+Added `DoNothingChecker` that does nothing.
 
 **Closed issues:**
+
+#5216, #5240, #5256, #5273.
 
 
 Version 3.24.0 (August 3, 2022)
