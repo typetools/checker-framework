@@ -330,7 +330,10 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
+## "condition: false" because I can't seem to compile even the Guava mainline
+## (without annotations) using JDK 17 or JDK 18, as of 6 Sep 2022.  TODO: reinstate.
 - job: guava_jdk17
+  condition: false
   dependsOn:
    - canary_jobs
   pool:
@@ -342,6 +345,7 @@ jobs:
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
 - job: guava_jdk18
+  condition: false
   dependsOn:
    - canary_jobs
    - guava_jdk17
