@@ -35,16 +35,6 @@ class TestBounded {
     BoundedGeneric<?> generic3 = rawLocal;
   }
 
-  void useBoundedWildCard() {
-    BoundedGeneric rawLocal = new BoundedGeneric<String>();
-    // :: warning: [unchecked] unchecked conversion
-    BoundedGeneric<? extends Object> generic1 = rawReturn();
-    // :: warning: [unchecked] unchecked conversion
-    BoundedGeneric<? extends Object> generic2 = rawField;
-    // :: warning: [unchecked] unchecked conversion
-    BoundedGeneric<? extends Object> generic3 = rawLocal;
-  }
-
   void useBoundedWildCard2() {
     BoundedGeneric rawLocal = new BoundedGeneric<String>();
     // :: warning: [unchecked] unchecked conversion
