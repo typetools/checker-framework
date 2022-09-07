@@ -10,6 +10,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1193,7 +1194,7 @@ public class QualifierDefaults {
     final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
 
     final BoundType boundType;
-    if (wildcard.isUnbound() && wildcard.bound != null) {
+    if (wildcard.kind == BoundKind.UNBOUND && wildcard.bound != null) {
       boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
 
     } else {
