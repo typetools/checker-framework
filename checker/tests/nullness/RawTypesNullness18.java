@@ -1,4 +1,4 @@
-// @below-java17-jdk-skip-test
+// @below-java18-jdk-skip-test
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
