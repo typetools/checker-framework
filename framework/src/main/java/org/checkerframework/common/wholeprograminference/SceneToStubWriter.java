@@ -79,7 +79,7 @@ public final class SceneToStubWriter {
    * A pattern matching the name of an anonymous inner class, a local class, or a class nested
    * within one of these types of classes. An anonymous inner class has a basename like Outer$1 and
    * a local class has a basename like Outer$1Inner. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">Java Language
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">Java Language
    * Specification, section 13.1</a>.
    */
   private static final Pattern anonymousInnerClassOrLocalClassPattern = Pattern.compile("\\$\\d+");
