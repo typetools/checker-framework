@@ -1513,23 +1513,44 @@ public class AnnotatedTypes {
   // For Wildcards, isSuperBound() and isExtendsBound() will return true if isUnbound() does.
   // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
 
+  /**
+   * Returns true if wildcard type is explicitly super bounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly super bounded
+   */
   public static boolean isExplicitlySuperBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound()
         && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
-  /** Returns true if wildcard type was explicitly unbounded. */
+  /**
+   * Returns true if wildcard type is explicitly extends bounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly extends bounded
+   */
   public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound()
         && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
-  /** Returns true if this type is super bounded or unbounded. */
+  /**
+   * Returns true if this type is super bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is super bounded or unbounded
+   */
   public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
   }
 
-  /** Returns true if this type is extends bounded or unbounded. */
+  /**
+   * Returns true if this type is extends bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @returns true if this type is extends bounded or unbounded
+   */
   public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
   }
