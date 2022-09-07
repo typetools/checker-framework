@@ -239,7 +239,12 @@ public class AnnotatedTypes {
 
   // Do not use `isUnbound()` because as of Java 18, it returns true for "?  extends Object".
 
-  /** This method identifies wildcard types that are unbound. */
+  /**
+   * This method identifies wildcard types that are unbound.
+   *
+   * @param wildcard the type to check
+   * @return true if the given card is an unbounded wildcard
+   */
   public static boolean hasNoExplicitBound(final AnnotatedTypeMirror wildcard) {
     return ((Type.WildcardType) wildcard.getUnderlyingType()).kind == BoundKind.UNBOUND;
   }
