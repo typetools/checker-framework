@@ -136,14 +136,14 @@ public class VariableBounds {
     return false;
   }
 
-  /** Adds {@code qualifier} as a qualifier bound against this variable. */
-  public boolean addQualifierBound(BoundKind kind, AnnotationMirror qualifier) {
-    if (qualifierBounds.get(kind).add(qualifier)) {
-      addConstraintsFromComplementaryBounds(kind, otherType);
-      return true;
-    }
-    return false;
-  }
+  //  /** Adds {@code qualifier} as a qualifier bound against this variable. */
+  //  public boolean addQualifierBound(BoundKind kind, AnnotationMirror qualifier) {
+  //    if (qualifierBounds.get(kind).add(qualifier)) {
+  //      addConstraintsFromComplementaryBounds(kind, qualifier);
+  //      return true;
+  //    }
+  //    return false;
+  //  }
 
   /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
   public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
