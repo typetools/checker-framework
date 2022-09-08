@@ -2600,10 +2600,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
         if (TreeUtils.hasSyntheticArgument(tree)) {
           p.add(con.getParameterTypes().get(0));
-        } else if (con.receiverType != null) {
-          p.add(con.receiverType);
+        } else if (con.getReceiverType() != null) {
+          p.add(con.getReceiverType());
         } else {
-          p.add(con.paramTypes.get(0));
+          p.add(con.getParameterTypes().get(0));
         }
         p.addAll(1, superCon.getParameterTypes());
         con.setParameterTypes(p);
