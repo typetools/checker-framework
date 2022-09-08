@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -1253,16 +1252,23 @@ public abstract class AnnotatedTypeMirror {
      *     of top-level classes
      */
     public @Nullable AnnotatedDeclaredType getReceiverType() {
-      if (receiverType == null && ElementUtils.hasReceiver(getElement())) {
-
-        TypeElement encl = ElementUtils.enclosingTypeElement(getElement());
-        if (getElement().getKind() == ElementKind.CONSTRUCTOR) {
-          // Can only reach this branch if we're the constructor of a nested class
-          encl = ElementUtils.enclosingTypeElement(encl.getEnclosingElement());
+      if (receiverType == null) {
+        Element = getElement();
+        if (ElementUtils.hasReceiver(element)) {
+          TypeElement encl;
+          switch (element.getKind()) {
+            case CONSTRUCTOR:
+              // Can only reach this branch if we're the constructor of a nested class
+              encl = ElementUtils.enclosingTypeElement(encl.getEnclosingElement());
+              break;
+            default:
+              encl = ElementUtils.enclosingTypeElement(element);
+              break;
+          }
+          AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory, false);
+          assert type instanceof AnnotatedDeclaredType;
+          receiverType = (AnnotatedDeclaredType) type;
         }
-        AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory, false);
-        assert type instanceof AnnotatedDeclaredType;
-        receiverType = (AnnotatedDeclaredType) type;
       }
       return receiverType;
     }
