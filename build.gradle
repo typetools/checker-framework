@@ -118,9 +118,7 @@ allprojects {
     }
 
     dependencies {
-        if (isJava8) {
-            javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
-        }
+        javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
