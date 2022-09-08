@@ -227,7 +227,7 @@ public class TestUtilities {
         if (nextLine.contains("@skip-test")
             || (!IS_AT_LEAST_9_JVM && nextLine.contains("@below-java9-jdk-skip-test"))
             || (!IS_AT_LEAST_11_JVM && nextLine.contains("@below-java11-jdk-skip-test"))
-            || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-skip-test"))
+            || (!IS_AT_MOST_11_JVM && nextLine.contains("@above-java11-jdk-skip-test"))
             || (!IS_AT_LEAST_17_JVM && nextLine.contains("@below-java17-jdk-skip-test"))
             || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-jdk-skip-test"))
             || (!IS_AT_LEAST_18_JVM && nextLine.contains("@below-java18-jdk-skip-test"))
