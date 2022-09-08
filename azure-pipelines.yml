@@ -309,7 +309,7 @@ jobs:
 - job: guava_jdk8
   dependsOn:
    - canary_jobs
-   - guava_jdk17
+   # - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -321,7 +321,7 @@ jobs:
 - job: guava_jdk11
   dependsOn:
    - canary_jobs
-   - guava_jdk17
+   # - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -332,7 +332,7 @@ jobs:
     displayName: test-guava.sh
 # "condition: false" because as of 6 Sep 2022, the Error Prone compiler is crashing
 # when compiling Guava (even on the Guava mainline without type annotations).
-# TODO: reinstate.
+# TODO: remove "condition: false" and reinstate dependences on this.
 - job: guava_jdk17
   condition: false
   dependsOn:
