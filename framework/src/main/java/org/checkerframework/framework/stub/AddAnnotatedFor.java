@@ -64,19 +64,23 @@ public class AddAnnotatedFor {
    * Reads JAIF from the file indicated by the first element, or standard input if the argument
    * array is empty; inserts any appropriate {@code @AnnotatedFor} annotations, based on the
    * annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
+   *
+   * @param args one jaif file, or empty to read from standard input
+   * @throws IOException if there is trouble reading or writing a file
+   * @throws DefException if two definitions cannot be unified
+   * @throws ParseException if the file is malformed
    */
   public static void main(String[] args) throws IOException, DefException, ParseException {
-    AScene scene = new AScene();
-    String filename;
-    Reader r;
-    if (args.length > 0) {
-      filename = args[0];
-      r = new FileReader(filename);
-    } else {
-      filename = "System.in";
-      r = new InputStreamReader(System.in);
+    if (args.length > 1) {
+      System.err.println("Supply 0 or 1 command-line arguments.");
+      System.exit(1);
     }
-    IndexFileParser.parse(new LineNumberReader(r), filename, scene);
+    AScene scene = new AScene();
+    boolean useFile = args.length == 1;
+    String filename = useFile ? args[0] : "System.in";
+    try (Reader r = useFile ? new FileReader(filename) : new InputStreamReader(System.in)) {
+      IndexFileParser.parse(new LineNumberReader(r), filename, scene);
+    }
     scene.prune();
     addAnnotatedFor(scene);
     IndexFileWriter.write(scene, new PrintWriter(System.out, true));

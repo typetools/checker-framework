@@ -85,7 +85,7 @@ public @interface RequiresNonNull {
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @PreconditionAnnotation(qualifier = NonNull.class)
-  @interface List {
+  public static @interface List {
     /**
      * Returns the repeatable annotations.
      *

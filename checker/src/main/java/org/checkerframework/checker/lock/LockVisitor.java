@@ -82,7 +82,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   /**
    * Constructs a {@link LockVisitor}.
    *
-   * @param checker the type checker to use.
+   * @param checker the type checker to use
    */
   public LockVisitor(BaseTypeChecker checker) {
     super(checker);
@@ -467,10 +467,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     SideEffectAnnotation seaOfOverriderMethod =
         atypeFactory.methodSideEffectAnnotation(
             TreeUtils.elementFromDeclaration(overriderTree), false);
-    SideEffectAnnotation seaOfOverridenMethod =
+    SideEffectAnnotation seaOfOverriddenMethod =
         atypeFactory.methodSideEffectAnnotation(overriddenMethodType.getElement(), false);
 
-    if (seaOfOverriderMethod.isWeakerThan(seaOfOverridenMethod)) {
+    if (seaOfOverriderMethod.isWeakerThan(seaOfOverriddenMethod)) {
       isValid = false;
       reportFailure(
           "override.sideeffect",

@@ -101,6 +101,7 @@ mkdir -p "$TESTDIR"
 cd "$TESTDIR" || (echo "can't do: cd $TESTDIR" && exit 1)
 
 # Get the list of checkers from the project's build.gradle file
+## TODO: These projects are annotated for additional checkers, like resourceleak. Add to these lists.
 test_wpi_plume_lib bcel-util         "formatter,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib bibtex-clean      "formatter,index,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib html-pretty-print "formatter,index,interning,lock,nullness,regex,signature"

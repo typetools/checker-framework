@@ -32,13 +32,13 @@ from failure to use interning.
 Interning is such an important design pattern that Java builds it in for
 these types: \<String>, \<Boolean>, \<Byte>, \<Character>, \<Integer>,
 \<Short>.  Every string literal in the program is guaranteed to be interned
-(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-3.html#jls-3.10.5}{JLS
+(\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-3.html#jls-3.10.5}{JLS
   \S3.10.5}), and the
 \sunjavadoc{java.base/java/lang/String.html\#intern()}{String.intern()} method
 performs interning for strings that are computed at run time.
 The \<valueOf> methods in wrapper classes always (\<Boolean>, \<Byte>) or
 sometimes (\<Character>, \<Integer>, \<Short>) return an interned result
-(\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
+(\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.7}{JLS \S5.1.7}).
 Users can also write their own interning methods for other types.
 
 It is a proper optimization to use \code{==}, rather than \code{equals()},
@@ -403,7 +403,7 @@ subclasses and superclasses of the given class.
 The Interning Checker conservatively assumes that the \<Character>, \<Integer>,
 and \<Short> \<valueOf> methods return a non-interned value.  In fact, these
 methods sometimes return an interned value and sometimes a non-interned
-value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.7}{JLS
+value, depending on the run-time argument (\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.7}{JLS
 \S5.1.7}).  If you know that the run-time argument to \<valueOf> implies that
 the result is interned, then you will need to suppress an error.
 (The Interning Checker should make use of the Value Checker to estimate the upper

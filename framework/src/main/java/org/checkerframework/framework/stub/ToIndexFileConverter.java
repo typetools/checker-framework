@@ -34,6 +34,8 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -154,8 +156,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       for (int i = 1; i < args.length; i++) {
         String f0 = args[i];
         String f1 = (f0.endsWith(".astub") ? f0.substring(0, f0.length() - 6) : f0) + ".jaif";
-        try (InputStream in = new FileInputStream(f0);
-            OutputStream out = new FileOutputStream(f1); ) {
+        try (InputStream in = new BufferedInputStream(new FileInputStream(f0));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(f1)); ) {
           convert(new AScene(scene), in, out);
         }
       }
@@ -680,10 +682,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds {@link Class} corresponding to a name.
+   * Finds the {@link Class} corresponding to a name.
    *
    * @param className a class name
-   * @return {@link Class} object corresponding to className, or null if none found
+   * @return the {@link Class} object corresponding to {@code className}, or null if none found
    */
   private static Class<?> loadClass(@ClassGetName String className) {
     assert className != null;

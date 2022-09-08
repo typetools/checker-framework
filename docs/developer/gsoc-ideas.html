@@ -522,7 +522,7 @@ One possible outcome is to identify
 <h2 id="case-study-signature">Signature strings</h2>
 
 <p>
-Determine whether the <a href="https://asm.ow2.org/">ASM library</a>, or
+Determine whether the <a href="https://asm.ow2.io/">ASM library</a>, or
 some other library, properly handles signature strings.
 </p>
 
@@ -545,7 +545,7 @@ some other library, properly handles signature strings.
 
 <p>
 Java 8 introduced the
-<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Optional.html"><code>Optional</code></a>
+<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html"><code>Optional</code></a>
 class, a container that is either empty or contains a non-null value.
 It is intended to solve the problem of null
 pointer exceptions.  However, <code>Optional</code> has <a href="https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html">its own problems</a>.
@@ -911,7 +911,7 @@ studies showing the utility of compile-time taint checking.
   <li>SQL injection
   <li>OS command injection
   <li>the <code>@PrivacySource</code> and <code>@PrivacySink</code>
-    annotations used by the Facebook <a href="http://fbinfer.com/">Infer
+    annotations used by the Facebook <a href="https://fbinfer.com/">Infer
     static analyzer</a>.
   <li>information flow
   <li>many of the <a href="http://cwe.mitre.org/top25/">CWE/SANS most
@@ -965,8 +965,8 @@ it never throws <code>UnsupportedOperationException</code>.
 <code>@MightNotSupport(operations)</code> indicates which methods might throw
 <code>UnsupportedOperationException</code>.
 Methods such
-as <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
-and <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
+as <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#asList(T...)">Arrays.asList</a>
+and <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collections.html#emptyList()">Collections.emptyList</a>
 must be annotated to return one of these less-capable supertypes.
 </p>
 
@@ -1205,7 +1205,7 @@ Compiler writers have come to realize that clarity of error
 messages is as important as the speed of the executable
 (<a href="https://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
 <a href="http://se.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
-<a href="http://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
+<a href="https://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
 </p>
 
 <p>
@@ -1253,7 +1253,7 @@ some distinct challenges:
 A number of type annotations take, as an
 argument, <a href="https://checkerframework.org/manual/#java-expressions-as-arguments">a
 Java expression</a>.  The representation for these
-(the <a href="https://checkerframework.org/api/org.checkerframework.dataflow.expression.JavaExpression.html"><code>JavaExpression</code></a>
+(the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
 class) is a hack.  The goal of this
 project is to remove it.
 </p>
@@ -1274,14 +1274,14 @@ a <code>JavaExpression</code>.
 <ul>
   <li>
     Replace every use
-    of <a href="https://checkerframework.org/api/org.checkerframework.dataflow.expression.JavaExpression.html"><code>JavaExpression</code></a>
+    of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code></a>
     by a use of the JavaParser
     class <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html"><code>com.github.javaparser.ast.expr.Expression</code></a>.
   </li>
   <li>
     Replace every use of a subclass of <code>JavaExpression</code> (listed in the
     "Direct Known Subclasses" section of
-    the <a href="https://checkerframework.org/api/org.checkerframework.dataflow.expression.JavaExpression.html"><code>JavaExpression</code>
+    the <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/JavaExpression.html"><code>JavaExpression</code>
     API documentation)</a> by a use of a
     <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/Expression.html">subclass of <code>Expression</code></a>.  For example, replace every use
     of <a href="https://checkerframework.org/api/org/checkerframework/dataflow/expression/MethodCall.html"><code>MethodCall</code></a> by <a href="https://www.javadoc.io/static/com.github.javaparser/javaparser-core/3.15.22/com/github/javaparser/ast/expr/MethodCallExpr.html"><code>MethodCallExpr</code></a>.
@@ -1374,7 +1374,7 @@ need to design a new one.
 
 <p>
 Perhaps one of these existing side effect analyses could be used:
-<a href="https://github.com/Sable/soot/wiki/Using-Side-Effect-Attributes">Soot</a>,
+<a href="https://github.com/soot-oss/soot/wiki/Using-Side-Effect-Attributes">Soot</a>,
 <a href="https://www.semanticscholar.org/paper/Precise-Interprocedural-Side-Effect-Analysis-Report-Geffken-Saffrich/d2bd29e20c99a10ab9d0c5ecf3acaf15606407d1?p2df">Geffken</a>.
 </p>
 

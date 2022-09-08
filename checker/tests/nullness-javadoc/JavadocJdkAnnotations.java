@@ -2,13 +2,15 @@ import com.sun.javadoc.Doc;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// @above-java11-skip-test com.sun.javadoc.Doc doesn't exist above 11.
+// @above-java11-jdk-skip-test com.sun.javadoc.Doc doesn't exist above 11.
 public class JavadocJdkAnnotations {
 
   @Nullable Object f = null;
 
   @SuppressWarnings("removal")
   void testPureAnnotation(Doc d) {
+    // This tests that @Pure and @SideEffectFree annotations are read.
+
     f = "non-null value";
     d.isIncluded();
     @NonNull Object x = f;

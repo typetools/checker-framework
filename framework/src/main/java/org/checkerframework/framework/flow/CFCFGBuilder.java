@@ -192,7 +192,7 @@ public class CFCFGBuilder extends CFGBuilder {
         }
       }
 
-      // In all other cases cases, instead get the type of the expression. This case is
+      // In all other cases, instead get the type of the expression. This case is
       // also triggered when the type from the element is not an array, which can occur
       // if the declaration of the local is a generic, such as in
       // framework/tests/all-systems/java8inference/Issue1775.java.

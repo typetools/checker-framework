@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * sequence's length.
  *
  * <p>The <a
- * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Arrays.html#binarySearch(java.lang.Object%5B%5D,int,int,java.lang.Object)">
+ * href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#binarySearch(java.lang.Object%5B%5D,int,int,java.lang.Object)">
  * {@code Arrays.binarySearch}</a> method is declared as
  *
  * <pre>{@code

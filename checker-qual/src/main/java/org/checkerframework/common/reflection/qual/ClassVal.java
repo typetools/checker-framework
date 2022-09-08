@@ -22,7 +22,7 @@ public @interface ClassVal {
   /**
    * The name of the type that this Class object represents. The name is a "fully-qualified binary
    * name" ({@link org.checkerframework.checker.signature.qual.FqBinaryName}): a primitive or <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">binary name</a>,
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">binary name</a>,
    * possibly followed by some number of array brackets.
    *
    * @return the name of the type that this Class object represents

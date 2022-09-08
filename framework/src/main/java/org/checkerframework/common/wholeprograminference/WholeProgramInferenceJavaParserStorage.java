@@ -1,6 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -14,31 +15,40 @@ import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.CloneVisitor;
+import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.printer.DefaultPrettyPrinter;
+import com.github.javaparser.printer.DefaultPrettyPrinterVisitor;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -56,6 +66,7 @@ import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConv
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
 import org.checkerframework.framework.ajava.JointJavacJavaParserVisitor;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -81,8 +92,7 @@ public class WholeProgramInferenceJavaParserStorage
    * Directory where .ajava files will be written to and read from. This directory is relative to
    * where the javac command is executed.
    */
-  public static final String AJAVA_FILES_PATH =
-      "build" + File.separator + "whole-program-inference" + File.separator;
+  public static final File AJAVA_FILES_PATH = new File("build", "whole-program-inference");
 
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
@@ -104,6 +114,31 @@ public class WholeProgramInferenceJavaParserStorage
 
   /** Whether the {@code -AinferOutputOriginal} option was supplied to the checker. */
   private final boolean inferOutputOriginal;
+
+  /**
+   * Returns the names of all qualifiers that are marked with {@link InvisibleQualifier}, and that
+   * are supported by the given type factory.
+   *
+   * @param atypeFactory a type factory
+   * @return the names of every invisible qualifier supported by {@code atypeFactory}
+   */
+  public static Set<String> getInvisibleQualifierNames(AnnotatedTypeFactory atypeFactory) {
+    return atypeFactory.getSupportedTypeQualifiers().stream()
+        .filter(WholeProgramInferenceJavaParserStorage::isInvisible)
+        .map(Class::getCanonicalName)
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * Is the definition of the given annotation class annotated with {@link InvisibleQualifier}?
+   *
+   * @param qual an annotation class
+   * @return true iff {@code qual} is meta-annotated with {@link InvisibleQualifier}
+   */
+  public static boolean isInvisible(Class<? extends Annotation> qual) {
+    return Arrays.stream(qual.getAnnotations())
+        .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class);
+  }
 
   /**
    * Constructs a new {@code WholeProgramInferenceJavaParser} that has not yet inferred any
@@ -215,7 +250,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public AnnotatedTypeMirror getFieldAnnotations(
+  public @Nullable AnnotatedTypeMirror getFieldAnnotations(
       Element element,
       String fieldName,
       AnnotatedTypeMirror lhsATM,
@@ -230,6 +265,12 @@ public class WholeProgramInferenceJavaParserStorage
     // and it won't have extra annotations, so just return the basic type:
     if (classAnnos.enumConstants.contains(fieldName)) {
       return lhsATM;
+    } else if (classAnnos.fields.get(fieldName) == null) {
+      // There might not be a corresponding entry for the field name
+      // in an anonymous class, if the field and class were defined in
+      // another compilation unit (for the same reason that a method
+      // might not have an entry, as in #getParameterAnnotations, above).
+      return null;
     } else {
       return classAnnos.fields.get(fieldName).getType(lhsATM, atypeFactory);
     }
@@ -712,10 +753,10 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public void writeResultsToFile(OutputFormat outputFormat, BaseTypeChecker checker) {
     if (outputFormat != OutputFormat.AJAVA) {
-      throw new BugInCF("WholeProgramInferenceJavaParser used with format " + outputFormat);
+      throw new BugInCF("WholeProgramInferenceJavaParser used with output format " + outputFormat);
     }
 
-    File outputDir = new File(AJAVA_FILES_PATH);
+    File outputDir = AJAVA_FILES_PATH;
     if (!outputDir.exists()) {
       outputDir.mkdirs();
     }
@@ -723,20 +764,22 @@ public class WholeProgramInferenceJavaParserStorage
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
       prepareCompilationUnitForWriting(root);
-      String packageDir = AJAVA_FILES_PATH;
-      if (root.compilationUnit.getPackageDeclaration().isPresent()) {
-        packageDir +=
-            File.separator
-                + root.compilationUnit
+      File packageDir;
+      if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
+        packageDir = AJAVA_FILES_PATH;
+      } else {
+        packageDir =
+            new File(
+                AJAVA_FILES_PATH,
+                root.compilationUnit
                     .getPackageDeclaration()
                     .get()
                     .getNameAsString()
-                    .replaceAll("\\.", File.separator);
+                    .replaceAll("\\.", File.separator));
       }
 
-      File packageDirFile = new File(packageDir);
-      if (!packageDirFile.exists()) {
-        packageDirFile.mkdirs();
+      if (!packageDir.exists()) {
+        packageDir.mkdirs();
       }
 
       String name = new File(path).getName();
@@ -745,11 +788,11 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       String nameWithChecker = name + "-" + checker.getClass().getCanonicalName() + ".ajava";
-      String outputPath = packageDir + File.separator + nameWithChecker;
+      File outputPath = new File(packageDir, nameWithChecker);
       if (this.inferOutputOriginal) {
-        String outputPathNoCheckerName = packageDir + File.separator + name + ".ajava";
+        File outputPathNoCheckerName = new File(packageDir, name + ".ajava");
         // Avoid re-writing this file for each checker that was run.
-        if (Files.notExists(Paths.get(outputPathNoCheckerName))) {
+        if (Files.notExists(outputPathNoCheckerName.toPath())) {
           writeAjavaFile(outputPathNoCheckerName, root);
         }
       }
@@ -766,9 +809,8 @@ public class WholeProgramInferenceJavaParserStorage
    * @param outputPath the path to which the ajava file should be written
    * @param root the compilation unit to be written
    */
-  private void writeAjavaFile(String outputPath, CompilationUnitAnnos root) {
-    try {
-      FileWriter writer = new FileWriter(outputPath);
+  private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
+    try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
 
       // JavaParser can output using lexical preserving printing, which writes the file such that
       // its formatting is close to the original source file it was parsed from as
@@ -776,9 +818,44 @@ public class WholeProgramInferenceJavaParserStorage
       // certain locations. This implementation could be used instead if it's fixed in JavaParser.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
-      DefaultPrettyPrinter prettyPrinter = new DefaultPrettyPrinter();
+      // Do not print invisible qualifiers, to avoid cluttering the output.
+      Set<String> invisibleQualifierNames = getInvisibleQualifierNames(this.atypeFactory);
+      DefaultPrettyPrinter prettyPrinter =
+          new DefaultPrettyPrinter() {
+            @Override
+            public String print(Node node) {
+              VoidVisitor<Void> visitor =
+                  new DefaultPrettyPrinterVisitor(getConfiguration()) {
+                    @Override
+                    public void visit(final MarkerAnnotationExpr n, final Void arg) {
+                      if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      super.visit(n, arg);
+                    }
+
+                    @Override
+                    public void visit(final SingleMemberAnnotationExpr n, final Void arg) {
+                      if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      super.visit(n, arg);
+                    }
+
+                    @Override
+                    public void visit(final NormalAnnotationExpr n, final Void arg) {
+                      if (invisibleQualifierNames.contains(n.getName().toString())) {
+                        return;
+                      }
+                      super.visit(n, arg);
+                    }
+                  };
+              node.accept(visitor, null);
+              return visitor.toString();
+            }
+          };
+
       writer.write(prettyPrinter.print(root.compilationUnit));
-      writer.close();
     } catch (IOException e) {
       throw new BugInCF("Error while writing ajava file " + outputPath, e);
     }
@@ -1047,7 +1124,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>();
+        declarationAnnotations = new HashSet<>(1);
       }
 
       return declarationAnnotations.add(annotation);
@@ -1104,9 +1181,9 @@ public class WholeProgramInferenceJavaParserStorage
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
       if (preconditions == null) {
         return Collections.emptyMap();
+      } else {
+        return Collections.unmodifiableMap(preconditions);
       }
-
-      return Collections.unmodifiableMap(preconditions);
     }
 
     /**
@@ -1301,7 +1378,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>();
+        declarationAnnotations = new HashSet<>(1);
       }
 
       return declarationAnnotations.add(annotation);

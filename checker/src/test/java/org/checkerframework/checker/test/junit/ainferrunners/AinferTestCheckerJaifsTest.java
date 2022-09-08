@@ -16,7 +16,9 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @Category(AinferTestCheckerJaifsTest.class)
 public class AinferTestCheckerJaifsTest extends AinferGeneratePerDirectoryTest {
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public AinferTestCheckerJaifsTest(List<File> testFiles) {
     super(
         testFiles,

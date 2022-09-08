@@ -101,7 +101,7 @@ public @interface EnsuresNonNullIf {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
      * Returns the repeatable annotations.
      *

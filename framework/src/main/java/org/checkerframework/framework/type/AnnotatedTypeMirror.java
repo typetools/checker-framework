@@ -162,7 +162,7 @@ public abstract class AnnotatedTypeMirror {
   }
 
   @Override
-  public final boolean equals(Object o) {
+  public final boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     }
@@ -748,7 +748,7 @@ public abstract class AnnotatedTypeMirror {
    * Returns the erasure type of the this type, according to JLS specifications.
    *
    * @see <a
-   *     href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.6</a>
+   *     href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.6</a>
    * @return the erasure of this AnnotatedTypeMirror, this is always a copy even if the erasure and
    *     the original type are equivalent
    */

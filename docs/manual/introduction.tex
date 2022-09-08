@@ -196,10 +196,7 @@ Alternately, you can build the latest development version from source
 
 \textbf{Requirement:}
 % Keep in sync with build.gradle and SourceChecker.init.
-You must have \textbf{JDK 8}, \textbf{JDK 11}, or \textbf{JDK 17} installed.
-% Possible replacement for the above.
-% You must have a supported LTS JDK installed: \textbf{JDK 8}, \textbf{JDK
-% 11}, or \textbf{JDK 17}.
+You must have a JDK (version 8 or later) installed.
 The Checker Framework processes code written for any of those versions.
 (For running the Checker Framework under other JDK versions, see
 Section~\ref{permitUnsupportedJdkVersion}.)
@@ -553,6 +550,7 @@ documentation.
 To pass an option to only a particular checker,
 prefix the option with the canonical or simple name
 of a checker, followed by an underscore ``\<\_>''.
+% For the implementation, see SourceChecker.OPTION_SEPARATOR.
 Such an option will apply only to a checker with that name or any subclass of that checker.
 For example, you can use
 \begin{Verbatim}
@@ -1247,8 +1245,8 @@ This method crashes if \<null> is passed to it:
 
 \noindent
 Therefore, the type of \<arg>
-should be \<@NonNull Object> (which you can write as just \<Object>, because
-\<@NonNull> is the default).  The Nullness Checker (\chapterpageref{nullness-checker})
+should be \<@NonNull Object> --- you can write this as just \<Object>, because
+\<@NonNull> is the default.  The Nullness Checker (\chapterpageref{nullness-checker})
 prevents null pointer exceptions by warning you whenever a client passes a
 value that might cause \<m1> to crash.
 
@@ -1264,7 +1262,8 @@ Here is another method:
 
 Method \<m2> behaves just like \<m1> in that it throws
 \<NullPointerException> if a client passes \<null>.  Therefore, their
-specifications should be identical (the argument is \<@NonNull>), so the
+specifications should be identical (the formal parameter type is annotated
+with \<@NonNull>), so the
 checker will issue the same warning if a client might pass \<null>.
 
 The same argument applies to any method that is guaranteed to throw an exception
@@ -1312,9 +1311,9 @@ and the Optional Checker issues a warning if the client calls
 \<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
 
 
-\paragraphAndLabel{Permitting crashes in called methods}{annotate-normal-behavior-skip-libraries}
-You can make a checker ignore crashes in library code (such as
-\<assertNotNull()>) that occur as a result of misuse by your code.
+\paragraphAndLabel{Permitting crashes in some called methods}{annotate-normal-behavior-skip-libraries}
+You can make a checker ignore crashes in library code, such as
+\<assertNotNull()>, that occur as a result of misuse by your code.
 This invalidates the checker's guarantee that your program will not crash.
 (Programmers and users typically care about all crashes, no matter which
 method is at the top of the call stack when the exception is thrown.)
@@ -1461,9 +1460,10 @@ There are three general causes for the warnings:
 \item[Type-checker weakness]
   There is a weakness in the type-checker.  Your code is safe --- it never
   suffers the error at run time --- but the checker cannot prove this fact.
-  (The checker is not omniscient, and it works modularly:  when type-checking a
-  method \<m>, it relies on the types, but not the code, of variables and
-  methods used by \<m>.)
+  (Recall that The checker works modularly:  when type-checking a
+  method \<m>, it relies on the types and signatures of variables and
+  methods used by \<m>, but not the initialization expressions or the
+  method bodies.)
 
   If possible, rewrite your code to be simpler for the checker to analyze;
   this is likely to make it easier for people to understand, too.
@@ -1472,12 +1472,12 @@ There are three general causes for the warnings:
   comment explaining how you know the code is correct even though the
   type-checker cannot deduce that fact.
 
-  (Do not add an \<if> test that can never fail, just to suppress a
+  Do not add an \<if> test that can never fail, just to suppress a
   warning.  Adding a gratuitous \<if> clutters the code and confuses
   readers.  A reader should assume that every \<if> condition can evaluate to true
   or false.  There is one exception to this rule:  an \<if> test may have a
   condition that you think will never evaluate to true, if its body just throws a
-  descriptive error message.)
+  descriptive error message.
 \end{description}
 
 For each warning issued by the checker, you need to determine which of the
@@ -1495,8 +1495,8 @@ same methodology in different words.)
 \paragraphAndLabel{Step 1: Explain correctness:  write a proof}{handling-warnings-step1}
 Write an explanation of why your code is correct and it
 never suffers the error at run time.  In other words, this is an informal proof
-that the type-checker's warning is incorrect.  Write it in natural language
-(e.g., English).
+that the type-checker's warning is incorrect.  Write it in natural language,
+such as English.
 
 Don't skip any steps in your proof.
 (For example, don't write an unsubstantiated claim such as ``\<x> is
@@ -1555,7 +1555,7 @@ If you need to annotate a method that is defined in a
 library that your code uses, see \chapterpageref{annotating-libraries}.
 
 Don't omit any parts of your proof.  When the Checker Framework analyzes
-a method, it examines only the specifications (not the implementations)
+a method, it examines only the signature/specification (not the implementation)
 of other methods.
 
 If there are complex facts in your proof that cannot be expressed as
@@ -1632,7 +1632,7 @@ or suppress warnings.
   \end{itemize}
 \item To suppress all warnings related to uses of
   \code{unannotated\_method}, use the \code{-AskipUses} command-line option
-  (see Section~\ref{askipuses}).  Beware:  a carelessly-written regular
+  (Section~\ref{askipuses}).  Beware:  a carelessly-written regular
   expression may suppress more warnings than you intend.
 \end{enumerate}
 

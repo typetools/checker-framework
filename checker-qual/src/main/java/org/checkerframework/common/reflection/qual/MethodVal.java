@@ -24,7 +24,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf({UnknownMethod.class})
 public @interface MethodVal {
   /**
-   * The <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">binary
+   * The <a href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">binary
    * name</a> of the class that declares this method.
    */
   String[] className();

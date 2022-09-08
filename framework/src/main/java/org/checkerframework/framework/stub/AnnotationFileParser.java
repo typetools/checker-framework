@@ -110,6 +110,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.CollectionsPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
@@ -417,7 +418,14 @@ public class AnnotationFileParser {
     // TODO: This should use SourceChecker.getOptions() to allow
     // setting these flags per checker.
     Map<String, String> options = processingEnv.getOptions();
-    this.warnIfNotFound = fileType.isCommandLine() || options.containsKey("stubWarnIfNotFound");
+    boolean stubWarnIfNotFoundOption = options.containsKey("stubWarnIfNotFound");
+    boolean stubNoWarnIfNotFoundOption = options.containsKey("stubNoWarnIfNotFound");
+    if (stubWarnIfNotFoundOption && stubNoWarnIfNotFoundOption) {
+      throw new UserError("Do not supply both -AstubWarnIfNotFound and -AstubNoWarnIfNotFound.");
+    }
+    this.warnIfNotFound =
+        stubWarnIfNotFoundOption || (fileType.isCommandLine() && !stubNoWarnIfNotFoundOption);
+
     this.warnIfNotFoundIgnoresClasses = options.containsKey("stubWarnIfNotFoundIgnoresClasses");
     this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
     this.warnIfStubRedundantWithBytecode =
@@ -2176,7 +2184,7 @@ public class AnnotationFileParser {
       }
     }
     if (!noWarn) {
-      if (methodDecl.getAccessSpecifier() == AccessSpecifier.PACKAGE_PRIVATE) {
+      if (methodDecl.getAccessSpecifier() == AccessSpecifier.NONE) {
         // This might be a false positive warning.  The stub parser permits a stub file to
         // omit the access specifier, but package-private methods aren't in the TypeElement.
         stubWarnNotFound(

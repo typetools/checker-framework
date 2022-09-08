@@ -703,22 +703,31 @@ for example, other Linux distributions will be similar to Ubuntu.
 %  * the default location of CTSYM, in checker/jdk/Makefile.
 Put the setting of the \<JAVA\_HOME> environment variable in a startup file
 such as \<.bash\_profile> or \<.bashrc>, if \<JAVA\_HOME> is not already
-set appropriately.  It must be the location of your JDK 8 or JDK 11
-installation (not the JRE installation, and not JDK 7 or earlier).
+set appropriately.  It must be the location of your JDK
+installation (not the JRE installation).
 You may need to log out and log back in for the setting to take effect.
 
 \begin{description}
 \item[Ubuntu]
   Run the following commands:
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk11-plus
+(This list should be the same as in
+\<checker/bin-devel/Dockerfile-ubuntu-jdk17-plus>; if your build fails
+because it is missing a package, try the commands there and report a bug
+in this manual.)
+
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk17-plus
+
 \begin{Verbatim}
 sudo apt-get -qqy update
 sudo apt-get -qqy install \
- openjdk-11-jdk \
- ant cpp git gradle jq libcurl3-gnutls \
+ openjdk-17-jdk \
+ ant cpp git gradle jq jtreg6 libcurl3-gnutls \
  make maven mercurial python3-pip python3-requests unzip wget \
- dia hevea imagemagick latexmk librsvg2-bin maven rsync \
+ autoconf devscripts dia hevea imagemagick junit latexmk \
+ librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
+ libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+ pdf2svg rsync shellcheck \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
 pip3 install html5validator
@@ -827,6 +836,10 @@ Your antivirus program (e.g., Windows Security Virus \& threat protection)
 might make the build run very slowly, or might make it seem to stall.  Just
 give it time.
 
+If compilation fails, but you have not made any changes, then perhaps one
+of the supporting repositories is in an inconsistent state; see
+Section~\ref{building-related-repositories}.
+
 \item
 Once it is built, you may wish to put the Checker Framework's \<javac>
 even earlier in your \<PATH>:
@@ -901,6 +914,25 @@ docker run -it mdernst/cf-ubuntu-jdk8 /bin/bash
 
 Then, you can run arbitrary commands, including those that appear in the
 CI configuration files.
+
+
+\subsectionAndLabel{Related repositories}{building-related-repositories}
+
+Building the Checker Framework depends on other repositories, such as
+\href{https://github.com/typetools/annotation-tools/}{Annotation Tools} and
+\href{https://github.com/typetools/stubparser/}{Stub Parser}.
+You need to have compatible versions of each.
+
+After you \<git pull> in one of the repositories, you should do so in the
+others as well.  The script \<checker/bin-devel/build.sh> pulls all the
+related repositories, so to build the latest development version of the
+Checker Framework you can do
+
+\begin{Verbatim}
+cd $CHECKERFRAMEWORK
+git pull
+checker/bin-devel/build.sh
+\end{Verbatim}
 
 
 \sectionAndLabel{Contributing}{contributing}

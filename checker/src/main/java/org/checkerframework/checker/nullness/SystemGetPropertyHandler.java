@@ -40,7 +40,7 @@ public class SystemGetPropertyHandler {
   /**
    * System properties that are defined at startup on every JVM.
    *
-   * <p>This list is from the Javadoc of System.getProperties, for Java 11.
+   * <p>This list is from the Javadoc of System.getProperties, for Java 17.
    */
   public static final Collection<String> predefinedSystemProperties =
       new HashSet<>(
@@ -58,6 +58,7 @@ public class SystemGetPropertyHandler {
               "java.vm.vendor",
               "java.vm.name",
               "java.specification.version",
+              "java.specification.maintenance.version",
               "java.specification.vendor",
               "java.specification.name",
               "java.class.version",
@@ -73,7 +74,15 @@ public class SystemGetPropertyHandler {
               "line.separator",
               "user.name",
               "user.home",
-              "user.dir"));
+              "user.dir",
+              "native.encoding",
+              "stdout.encoding",
+              "stderr.encoding",
+              "jdk.module.path",
+              "jdk.module.upgrade.path",
+              "jdk.module.main",
+              "jdk.module.main.class",
+              "file.encoding"));
 
   /**
    * Creates a SystemGetPropertyHandler.

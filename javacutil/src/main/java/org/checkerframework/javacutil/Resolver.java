@@ -157,9 +157,10 @@ public class Resolver {
       try {
         scope = (JavacScope) trees.getScope(iter);
       } catch (NullPointerException t) {
-        // Work around Issue #1059 by skipping through the TreePath until something
-        // doesn't crash. This probably returns the class scope, so users might not
-        // get the variables they expect. But that is better than crashing.
+        // Work around https://github.com/typetools/checker-framework/issues/1059 by skipping
+        // through the TreePath until something doesn't crash. This probably returns the class
+        // scope, so users might not get the variables they expect. But that is better than
+        // crashing.
         iter = iter.getParentPath();
       }
     }
@@ -244,11 +245,26 @@ public class Resolver {
     try {
       Env<AttrContext> env = getEnvForPath(path);
       Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
-      if (res.getKind() == ElementKind.LOCAL_VARIABLE || res.getKind() == ElementKind.PARAMETER) {
-        return (VariableElement) res;
-      } else {
-        // The Element might be FIELD or a SymbolNotFoundError.
-        return null;
+      // Every kind in the documentation of Element.getKind() is explicitly tested, possibly in the
+      // "default:" case.
+      switch (res.getKind()) {
+        case EXCEPTION_PARAMETER:
+        case LOCAL_VARIABLE:
+        case PARAMETER:
+        case RESOURCE_VARIABLE:
+          return (VariableElement) res;
+        case ENUM_CONSTANT:
+        case FIELD:
+          return null;
+        default:
+          if (ElementUtils.isBindingVariable(res)) {
+            return (VariableElement) res;
+          }
+          if (res instanceof VariableElement) {
+            throw new BugInCF("unhandled variable ElementKind " + res.getKind());
+          }
+          // The Element might be a SymbolNotFoundError.
+          return null;
       }
     } finally {
       log.popDiagnosticHandler(discardDiagnosticHandler);
@@ -424,7 +440,8 @@ public class Resolver {
   }
 
   /**
-   * Invoke a method reflectively.
+   * Invoke a method reflectively. This is like {@code Method.invoke()}, but it throws no checked
+   * exceptions.
    *
    * @param receiver the receiver
    * @param method the method to called

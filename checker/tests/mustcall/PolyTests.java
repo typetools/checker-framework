@@ -2,7 +2,8 @@
 
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("close") class PolyTests {
+@InheritableMustCall("close")
+class PolyTests {
   static @PolyMustCall Object id(@PolyMustCall Object obj) {
     return obj;
   }
