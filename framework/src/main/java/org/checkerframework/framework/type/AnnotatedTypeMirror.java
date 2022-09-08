@@ -1262,7 +1262,7 @@ public abstract class AnnotatedTypeMirror {
     public @Nullable AnnotatedDeclaredType getReceiverType() {
       if (receiverTypeComputed == false) {
         assert receiverType == null;
-        Element = getElement();
+        ExecutableElement = getElement();
         if (ElementUtils.hasReceiver(element)) {
           TypeElement encl;
           switch (element.getKind()) {
