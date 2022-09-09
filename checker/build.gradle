@@ -814,6 +814,18 @@ task wpiManyTest(group: "Verification") {
                 details.getFile().eachLine { line -> println(line) }
                 println("======== end of contents of ${filename} ========")
             }
+            // If any of these files are present, their contents should be an error
+            // message that might indicate what went wrong. Even their presenence,
+            // however, is intereseting (even if they are empty).
+            def cannotRunWpiFiles = fileTree(typecheckFilesDir).matching {
+                include "**/.cannot-run-wpi"
+            }
+            cannotRunWpiFiles.visit { FileVisitDetails details ->
+                def filename = "${typecheckFilesDir}" + details.getName()
+                println("======== printing contents of ${filename} ========")
+                details.getFile().eachLine { line -> println(line) }
+                println("======== end of contents of ${filename} ========")
+            }
             throw new GradleException("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
                     "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
         }
