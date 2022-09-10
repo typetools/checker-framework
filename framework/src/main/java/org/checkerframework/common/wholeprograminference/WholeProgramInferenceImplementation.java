@@ -706,7 +706,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   @Override
-  public void addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+  public void addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     if (!ElementUtils.isElementFromSourceCode(field)) {
       return;
     }

@@ -273,6 +273,20 @@ public final class TreeUtils {
   }
 
   /**
+   * Gets the {@link VariableElement} for the given Tree API node. For an object instantiation
+   * returns the value of the {@link JCNewClass#constructor} field.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
+   *     (JCTree)
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   */
+  @Pure
+  public static @Nullable VariableElement variableElementFromTree(Tree tree) {
+    return (VariableElement) elementFromTree(tree);
+  }
+
+  /**
    * Gets the {@link Element} for the given Tree API node. For an object instantiation returns the
    * value of the {@link JCNewClass#constructor} field.
    *
@@ -355,9 +369,23 @@ public final class TreeUtils {
    * @return the element for the given variable
    */
   public static VariableElement elementFromDeclaration(VariableTree node) {
-    VariableElement elt = (VariableElement) TreeUtils.elementFromTree(node);
+    VariableElement elt = TreeUtils.variableElementFromTree(node);
     assert elt != null : "@AssumeAssertion(nullness): tree kind";
     return elt;
+  }
+
+  /**
+   * Gets the VariableElement for the declaration corresponding to this use of an element.
+   *
+   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
+   * might be the first place someone looks for this functionality.
+   *
+   * @param node the tree corresponding to a use of an element
+   * @return the element for the corresponding declaration, {@code null} otherwise
+   */
+  @Pure
+  public static VariableElement variableElementFromUse(ExpressionTree node) {
+    return (VariableElement) TreeUtils.elementFromTree(node);
   }
 
   /**
