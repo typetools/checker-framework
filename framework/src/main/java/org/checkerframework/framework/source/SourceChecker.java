@@ -406,9 +406,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // TODO A checker should export itself through a separate interface, and maybe have an interface
   // for all the methods for which it's safe to override.
 
-  /** The line separator. */
-  private static final String LINE_SEPARATOR = System.lineSeparator().intern();
-
   /** The message key that will suppress all warnings (it matches any message key). */
   public static final String SUPPRESS_ALL_MESSAGE_KEY = "all";
 
@@ -2508,7 +2505,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param ce the internal error to output
    */
   private void logBugInCF(BugInCF ce) {
-    StringJoiner msg = new StringJoiner(LINE_SEPARATOR);
+    StringJoiner msg = new StringJoiner(System.lineSeparator());
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
           String.format(
