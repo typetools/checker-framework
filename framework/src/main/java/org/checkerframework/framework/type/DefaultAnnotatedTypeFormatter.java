@@ -273,13 +273,13 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       AnnotatedDeclaredType rcv;
       try {
         rcv = type.getReceiverType();
-        if (rcv != null) {
-          sb.append(visit(rcv, visiting));
-          sb.append(" this");
-        }
       } catch (NullPointerException e) {
         sb.append("[[NPE in getReceiverType()]], ");
         rcv = null;
+      }
+      if (rcv != null) {
+        sb.append(visit(rcv, visiting));
+        sb.append(" this");
       }
       if (!type.getParameterTypes().isEmpty()) {
         int p = 0;
