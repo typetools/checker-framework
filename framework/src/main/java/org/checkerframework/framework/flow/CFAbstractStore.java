@@ -1039,6 +1039,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns the current abstract value of a local variable, or {@code null} if no information is
    * available.
    *
+   * @param n the local variable
    * @return the current abstract value of a local variable, or {@code null} if no information is
    *     available
    */

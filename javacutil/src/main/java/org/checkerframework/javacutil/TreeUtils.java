@@ -366,6 +366,7 @@ public final class TreeUtils {
   /**
    * Gets the element for a variable corresponding to its declaration.
    *
+   * @param node the variable
    * @return the element for the given variable
    */
   public static VariableElement elementFromDeclaration(VariableTree node) {

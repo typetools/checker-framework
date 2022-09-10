@@ -54,6 +54,11 @@ public class LocalVariableNode extends Node {
     this.receiver = receiver;
   }
 
+  /**
+   * Returns the element associated with this local variable.
+   *
+   * @return the element associated with this local variable
+   */
   public VariableElement getElement() {
     VariableElement el;
     if (tree instanceof IdentifierTree) {
