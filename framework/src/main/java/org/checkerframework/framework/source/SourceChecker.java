@@ -591,8 +591,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return this.processingEnv;
   }
 
-  /** Set the processing environment of the current checker. */
-  /* This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it. */
+  /**
+   * Set the processing environment of the current checker.
+   *
+   * @param env the new processing environment
+   */
+  // This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it.
   protected void setProcessingEnvironment(ProcessingEnvironment env) {
     this.processingEnv = env;
     this.elements = processingEnv.getElementUtils();
