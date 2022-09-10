@@ -287,6 +287,19 @@ public final class TreeUtils {
   }
 
   /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
+   *     (JCTree)
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   */
+  @Pure
+  public static TypeElement elementFromTree(ClassTree tree) {
+    return (TypeElement) TreeInfo.symbolFor((JCTree) tree);
+  }
+
+  /**
    * Gets the {@link Element} for the given Tree API node. For an object instantiation returns the
    * value of the {@link JCNewClass#constructor} field.
    *
@@ -347,7 +360,7 @@ public final class TreeUtils {
    * @return the element for the given class
    */
   public static TypeElement elementFromDeclaration(ClassTree node) {
-    TypeElement elt = (TypeElement) TreeUtils.elementFromTree(node);
+    TypeElement elt = TreeUtils.elementFromTree(node);
     assert elt != null : "@AssumeAssertion(nullness): tree kind";
     return elt;
   }

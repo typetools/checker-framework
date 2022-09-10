@@ -241,16 +241,16 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
       // If the constructor is not annotated, check whether the class is.
       member = member.getEnclosingElement();
       report = this.atypeFactory.getDeclAnnotation(member, ReportCreation.class) != null;
-    }
-    if (!report) {
-      // Check whether any superclass/interface had the ReportCreation annotation.
-      List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement) member, elements);
-      for (TypeElement sup : suptypes) {
-        report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
-        if (report) {
-          // Set member to report the right member if found
-          member = sup;
-          break;
+      if (!report) {
+        // Check whether any superclass/interface had the ReportCreation annotation.
+        List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement) member, elements);
+        for (TypeElement sup : suptypes) {
+          report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
+          if (report) {
+            // Set member to report the right member if found
+            member = sup;
+            break;
+          }
         }
       }
     }
