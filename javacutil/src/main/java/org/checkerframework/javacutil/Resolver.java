@@ -362,7 +362,8 @@ public class Resolver {
                 FIND_METHOD, env, site, name, argtypes, typeargtypes, allowBoxing, useVarargs);
         setField(resolve, "currentResolutionContext", oldContext);
         ExecutableElement methodResult;
-        if (result.getKind() == ElementKind.METHOD || result.getKind() == ElementKind.CONSTRUCTOR) {
+        if (resolveResult.getKind() == ElementKind.METHOD
+            || resolveResult.getKind() == ElementKind.CONSTRUCTOR) {
           methodResult = (ExecutableElement) resolveResult;
         } else {
           methodResult = null;
