@@ -705,8 +705,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Actions that logically belong in the constructor, but need to run after the subclass
-   * constructor has completed. In particular, parseStubFiles() may try to do type resolution with
-   * this AnnotatedTypeFactory.
+   * constructor has completed. In particular, {@link AnnotationFileElementTypes#parseStubFiles()}
+   * may try to do type resolution with this AnnotatedTypeFactory.
    */
   protected void postInit() {
     this.qualHierarchy = createQualifierHierarchy();
@@ -1479,7 +1479,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Creates an AnnotatedTypeMirror for a variable or method declaration tree. The
-   * AnnotatedTypeMirror contains annotations explicitly written on the tree.
+   * AnnotatedTypeMirror contains annotations explicitly written on the tree, and possibly others as
+   * described below.
    *
    * <p>If a VariableTree is a parameter to a lambda, this method also adds annotations from the
    * declared type of the functional interface and the executable type of its method.

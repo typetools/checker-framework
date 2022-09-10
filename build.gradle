@@ -145,6 +145,9 @@ allprojects {
         // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
         "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     ]
+
+    reflectionUtilVersion = '1.0.5'
+    plumeUtilVersion = '1.5.9'
   }
 
 
