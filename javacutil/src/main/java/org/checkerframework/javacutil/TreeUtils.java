@@ -282,7 +282,7 @@ public final class TreeUtils {
    * @return the {@link Symbol} for the given tree, or null if one could not be found
    */
   @Pure
-  public static @Nullable VariableElement variableElementFromTree(Tree tree) {
+  public static VariableElement variableElementFromTree(Tree tree) {
     return (VariableElement) elementFromTree(tree);
   }
 

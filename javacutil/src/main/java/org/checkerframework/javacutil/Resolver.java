@@ -244,6 +244,7 @@ public class Resolver {
     Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
     try {
       Env<AttrContext> env = getEnvForPath(path);
+      // Either a VariableElement or a SymbolNotFoundError
       Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
       // Every kind in the documentation of Element.getKind() is explicitly tested, possibly in the
       // "default:" case.
