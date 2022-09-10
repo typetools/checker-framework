@@ -45,8 +45,8 @@ dependencies {
     // As of 2019-12-16, the version of reflection-util in the Annotation
     // File Utilities takes priority over this version, in the fat jar
     // file. :-( So update it and re-build it locally when updating this.
-    implementation 'org.plumelib:reflection-util:1.0.5'
-    implementation 'org.plumelib:plume-util:1.5.9'
+    implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
+    implementation "org.plumelib:plume-util:${plumeUtilVersion}"
 
     // Dependencies added to "shadow" appear as dependencies in Maven Central.
     shadow project(':checker-qual')
