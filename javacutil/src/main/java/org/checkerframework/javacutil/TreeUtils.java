@@ -386,7 +386,11 @@ public final class TreeUtils {
    */
   @Pure
   public static VariableElement variableElementFromUse(ExpressionTree node) {
-    return (VariableElement) TreeUtils.elementFromTree(node);
+    VariableElement result = (VariableElement) TreeUtils.elementFromTree(node);
+    if (result == null) {
+      throw new BugInCF("null element for %s [%s]", node, node.getClass());
+    }
+    return result;
   }
 
   /**
