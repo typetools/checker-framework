@@ -616,16 +616,14 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
-            Element element = TreeUtils.elementFromTree(javacTree);
+            ExecutableElement element = TreeUtils.elementFromTree(javacTree);
             if (element == null) {
               // element can be null if there is no element corresponding to the method,
               // which happens for certain kinds of anonymous classes, such as Ordering$1 in
               // PolyCollectorTypeVar.java in the all-systems test suite.
               return;
             }
-            // If elt is non-null, it is guaranteed to be an executable element.
-            ExecutableElement elt = (ExecutableElement) element;
-            String className = ElementUtils.getEnclosingClassName(elt);
+            String className = ElementUtils.getEnclosingClassName(element);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
             String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
             if (!enclosingClass.callableDeclarations.containsKey(executableSignature)) {

@@ -300,6 +300,45 @@ public final class TreeUtils {
   }
 
   /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
+   *     (JCTree)
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   */
+  @Pure
+  public static ExecutableElement elementFromTree(MethodInvocationTree tree) {
+    return (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
+   *     (JCTree)
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   */
+  @Pure
+  public static ExecutableElement elementFromTree(NewClassTree tree) {
+    return (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
+   *     (JCTree)
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   */
+  @Pure
+  public static ExecutableElement elementFromTree(MethodTree tree) {
+    return (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+  }
+
+  /**
    * Gets the {@link Element} for the given Tree API node. For an object instantiation returns the
    * value of the {@link JCNewClass#constructor} field.
    *
@@ -371,7 +410,7 @@ public final class TreeUtils {
    * @return the element for the given method
    */
   public static ExecutableElement elementFromDeclaration(MethodTree node) {
-    ExecutableElement elt = (ExecutableElement) TreeUtils.elementFromTree(node);
+    ExecutableElement elt = TreeUtils.elementFromTree(node);
     assert elt != null : "@AssumeAssertion(nullness): tree kind";
     return elt;
   }
@@ -430,11 +469,7 @@ public final class TreeUtils {
    */
   @Pure
   public static ExecutableElement elementFromUse(MethodInvocationTree node) {
-    Element el = TreeUtils.elementFromTree(node);
-    if (!(el instanceof ExecutableElement)) {
-      throw new BugInCF("Method elements should be ExecutableElement. Found: %s", el);
-    }
-    return (ExecutableElement) el;
+    return TreeUtils.elementFromTree(node);
   }
 
   /**
@@ -446,11 +481,7 @@ public final class TreeUtils {
    */
   @Pure
   public static ExecutableElement elementFromUse(NewClassTree node) {
-    Element el = TreeUtils.elementFromTree(node);
-    if (!(el instanceof ExecutableElement)) {
-      throw new BugInCF("Constructor elements should  be ExecutableElement. Found: %s", el);
-    }
-    return (ExecutableElement) el;
+    return TreeUtils.elementFromTree(node);
   }
 
   /**
@@ -484,6 +515,7 @@ public final class TreeUtils {
     return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
   }
 
+  // TODO: rename to elementFromTree or elementFromUse?
   /**
    * Determines the symbol for a constructor given an invocation via {@code new}.
    *
@@ -1476,10 +1508,10 @@ public final class TreeUtils {
    * @param env ProcessingEnvironment
    * @return the single abstract method declared by the type of the tree
    */
-  public static Symbol findFunction(Tree tree, ProcessingEnvironment env) {
+  public static ExecutableElement findFunction(Tree tree, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     Types javacTypes = Types.instance(ctx);
-    return javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
+    return (ExecutableElement) javacTypes.findDescriptorSymbol(((Type) typeOf(tree)).asElement());
   }
 
   /**

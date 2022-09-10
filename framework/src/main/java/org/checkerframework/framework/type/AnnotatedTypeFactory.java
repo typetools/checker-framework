@@ -4532,13 +4532,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // Functional method
-    Element fnElement = TreeUtils.findFunction(tree, processingEnv);
+    ExecutableElement fnElement = TreeUtils.findFunction(tree, processingEnv);
 
     // Function type
     AnnotatedExecutableType functionType =
-        (AnnotatedExecutableType)
-            AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
-
+        AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
     return Pair.of(functionalInterfaceType, functionType);
   }
 

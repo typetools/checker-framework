@@ -338,7 +338,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       return new Effect(UIEffect.class);
     }
     ExecutableElement functionalInterfaceMethodElt =
-        (ExecutableElement) TreeUtils.findFunction(lambdaTree, checker.getProcessingEnvironment());
+        TreeUtils.findFunction(lambdaTree, checker.getProcessingEnvironment());
     if (debugSpew) {
       System.err.println("functionalInterfaceMethodElt found for lambda");
     }
