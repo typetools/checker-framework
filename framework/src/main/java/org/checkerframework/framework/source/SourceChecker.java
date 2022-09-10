@@ -427,8 +427,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** Used to report error messages and warnings via the compiler. */
   protected Messager messager;
 
-  /** Used as a helper for the {@link SourceVisitor}. */
+  /** Element utilities. */
+  protected Elements elements;
+
+  /** Tree utilities; used as a helper for the {@link SourceVisitor}. */
   protected Trees trees;
+
+  /** Type utilities. */
+  protected Types types;
 
   /** The source tree that is being scanned. */
   protected @InternedDistinct CompilationUnitTree currentRoot;
@@ -582,10 +588,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return this.processingEnv;
   }
 
-  /** Set the processing environment of the current checker. */
-  /* This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it. */
+  /**
+   * Set the processing environment of the current checker.
+   *
+   * @param env the new processing environment
+   */
+  // This method is protected only to allow the AggregateChecker and BaseTypeChecker to call it.
   protected void setProcessingEnvironment(ProcessingEnvironment env) {
     this.processingEnv = env;
+    this.elements = processingEnv.getElementUtils();
+    this.trees = Trees.instance(processingEnv);
+    this.types = processingEnv.getTypeUtils();
   }
 
   /** Set the parent checker of the current checker. */
@@ -650,7 +663,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the element utilities associated with this
    */
   public Elements getElementUtils() {
-    return getProcessingEnvironment().getElementUtils();
+    return elements;
   }
 
   /**
@@ -659,7 +672,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the type utilities associated with this
    */
   public Types getTypeUtils() {
-    return getProcessingEnvironment().getTypeUtils();
+    return types;
   }
 
   /**
@@ -668,7 +681,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the tree utilities associated with this
    */
   public Trees getTreeUtils() {
-    return Trees.instance(getProcessingEnvironment());
+    return trees;
   }
 
   /**
