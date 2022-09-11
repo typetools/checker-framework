@@ -19,7 +19,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PackageNameNode extends Node {
 
-  /** The package name, an IdentifierTree or a MemberSelectTree. */
+  /** The package name, which is an IdentifierTree or a MemberSelectTree. */
   protected final Tree tree;
 
   /** The package named by this node. */

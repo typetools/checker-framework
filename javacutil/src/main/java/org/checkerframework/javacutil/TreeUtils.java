@@ -532,7 +532,6 @@ public final class TreeUtils {
     return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
   }
 
-  // TODO: rename to elementFromTree or elementFromUse?
   /**
    * Determines the symbol for a constructor given an invocation via {@code new}.
    *
@@ -540,6 +539,7 @@ public final class TreeUtils {
    * @param tree the constructor invocation
    * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
    */
+  // TODO: rename to elementFromTree or elementFromUse?
   public static ExecutableElement constructor(NewClassTree tree) {
     return (ExecutableElement) ((JCNewClass) tree).constructor;
   }
