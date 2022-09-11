@@ -422,7 +422,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
       }
-      if (isResourceVariable(TreeUtils.elementFromTree(node))) {
+      if (isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
       return super.visitIdentifier(node, type);
