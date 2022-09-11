@@ -106,7 +106,11 @@ public class StubGenerator {
     }
   }
 
-  /** Generate the stub file for all the classes within the package that contains {@code elt}. */
+  /**
+   * Generate the stub file for all the classes within the package that contains {@code elt}.
+   *
+   * @param elt a method or constructor; generate stub files for its package
+   */
   public void stubFromMethod(ExecutableElement elt) {
     if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD)) {
       return;

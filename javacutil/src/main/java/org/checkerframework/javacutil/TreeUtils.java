@@ -423,6 +423,7 @@ public final class TreeUtils {
   /**
    * Gets the element for a method corresponding to a declaration.
    *
+   * @param node a method declaration
    * @return the element for the given method
    */
   public static ExecutableElement elementFromDeclaration(MethodTree node) {

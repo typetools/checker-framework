@@ -29,6 +29,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
    * @param type the type whose annotations to change
    * @param element where to get annotations from
    * @param typeFactory the type factory
+   * @throws UnexpectedAnnotationLocationException if there is trouble
    */
   public static void apply(
       AnnotatedTypeMirror type, VariableElement element, AnnotatedTypeFactory typeFactory)

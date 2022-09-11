@@ -19,7 +19,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PackageNameNode extends Node {
 
+  /** The package name, an IdentifierTree or a MemberSelectTree. */
   protected final Tree tree;
+
   /** The package named by this node. */
   protected final PackageElement element;
 
@@ -42,6 +44,11 @@ public class PackageNameNode extends Node {
     this.parent = parent;
   }
 
+  /**
+   * Returns the element for this package.
+   *
+   * @return the element for this package
+   */
   public PackageElement getElement() {
     return element;
   }
