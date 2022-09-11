@@ -329,7 +329,11 @@ public final class TreeUtils {
    */
   @Pure
   public static VariableElement elementFromTree(VariableTree tree) {
-    return (VariableElement) elementFromTree((Tree) tree);
+    VariableElement result = (VariableElement) elementFromTree((Tree) tree);
+    if (result == null) {
+      throw new BugInCF("no element for tree of type %s: %s", tree.getClass(), tree);
+    }
+    return result;
   }
 
   /**
