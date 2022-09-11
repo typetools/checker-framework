@@ -328,11 +328,10 @@ public final class TreeUtils {
    * @return the Element for the given tree, or null if one could not be found
    */
   @Pure
-  public static VariableElement elementFromTree(VariableTree tree) {
+  public static @Nullable VariableElement elementFromTree(VariableTree tree) {
     VariableElement result = (VariableElement) elementFromTree((Tree) tree);
-    if (result == null) {
-      throw new BugInCF("no element for tree of type %s: %s", tree.getClass(), tree);
-    }
+    // `result` can be null, for example for this variable declaration:
+    //   PureFunc f1 = TestPure1::myPureMethod;
     return result;
   }
 
@@ -346,11 +345,8 @@ public final class TreeUtils {
    * @return the {@link Symbol} for the given tree, or null if one could not be found
    */
   @Pure
-  public static VariableElement variableElementFromTree(Tree tree) {
+  public static @Nullable VariableElement variableElementFromTree(Tree tree) {
     VariableElement result = (VariableElement) TreeInfo.symbolFor((JCTree) tree);
-    if (result == null) {
-      throw new BugInCF("no element for tree of type %s: %s", tree.getClass(), tree);
-    }
     return result;
   }
 
