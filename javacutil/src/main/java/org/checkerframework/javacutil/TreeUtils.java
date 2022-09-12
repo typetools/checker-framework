@@ -616,6 +616,7 @@ public final class TreeUtils {
   /**
    * Returns the name of the invoked method.
    *
+   * @param tree the method invocation
    * @return the name of the invoked method
    */
   public static Name methodName(MethodInvocationTree tree) {
@@ -632,6 +633,7 @@ public final class TreeUtils {
    * Returns true if the first statement in the body is a self constructor invocation within a
    * constructor.
    *
+   * @param tree the method declaration
    * @return true if the first statement in the body is a self constructor invocation within a
    *     constructor
    */
@@ -757,6 +759,9 @@ public final class TreeUtils {
    *   <li>a reference to a final variable initialized with a compile time constant
    *   <li>a String concatenation of two compile time constants
    * </ol>
+   *
+   * @param tree the tree to check
+   * @return true if the tree is a constant-time expression.
    */
   public static boolean isCompileTimeString(ExpressionTree tree) {
     tree = TreeUtils.withoutParens(tree);
