@@ -447,9 +447,6 @@ public final class TreeUtils {
   /**
    * Gets the VariableElement for the declaration corresponding to this use of an element.
    *
-   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
-   * might be the first place someone looks for this functionality.
-   *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
    */
@@ -466,9 +463,6 @@ public final class TreeUtils {
    * Gets the element for the declaration corresponding to this use of an element. To get the
    * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
    * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
-   *
-   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
-   * might be the first place someone looks for this functionality.
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
