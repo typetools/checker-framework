@@ -502,6 +502,7 @@ public abstract class JavaExpression {
    *
    * @param typeOfEle the type of {@code ele}
    * @param ele element whose JavaExpression is returned
+   * @param tree the tree for the variable
    * @return the Java expression corresponding to the given variable element {@code ele}
    */
   private static JavaExpression fromVariableElement(
