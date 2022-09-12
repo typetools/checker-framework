@@ -8,6 +8,9 @@ introduced since JDK 11).
 
 **Implementation details:**
 
+Use `TreeUtils.elementFromDeclaration` and `TreeUtils.elementFromUse` in
+preference to `TreeUtils.elementFromTree`, when possible.
+
 **Closed issues:**
 
 
