@@ -272,17 +272,48 @@ public final class TreeUtils {
     return t;
   }
 
+  // Obtaining Elements from Trees.
+  // There are three sets of methods:
+  //  * use elementFromDeclaration whenever the tree is a declaration
+  //  * use elementFromUse when the tree is a use
+  //  * use elementFromTree in other cases
+
+  /**
+   * Gets the element for a class corresponding to a declaration.
+   *
+   * @param tree class declaration
+   * @return the element for the given class
+   */
+  public static TypeElement elementFromDeclaration(ClassTree tree) {
+    TypeElement result = (TypeElement) TreeInfo.symbolFor((JCTree) tree);
+    assert result != null : "@AssumeAssertion(nullness): tree kind";
+    return result;
+  }
+
   /**
    * Gets the {@link Element} for the given Tree API node.
    *
    * @param tree the {@link Tree} node to get the symbol for
-   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
-   *     (JCTree)
    * @return the {@link Symbol} for the given tree, or null if one could not be found
+   * @deprecated use elementFromDeclaration
    */
+  @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
   public static TypeElement elementFromTree(ClassTree tree) {
-    return (TypeElement) TreeInfo.symbolFor((JCTree) tree);
+    return elementFromDeclaration(tree);
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   * @deprecated use elementFromDeclaration
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static TypeElement elementFromUse(ClassTree tree) {
+    return elementFromDeclaration(tree);
   }
 
   /**
@@ -290,7 +321,9 @@ public final class TreeUtils {
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the Element for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
    */
+  @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
   public static ExecutableElement elementFromTree(MethodInvocationTree tree) {
     ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
@@ -406,18 +439,6 @@ public final class TreeUtils {
         }
         return defaultResult;
     }
-  }
-
-  /**
-   * Gets the element for a class corresponding to a declaration.
-   *
-   * @param node class declaration
-   * @return the element for the given class
-   */
-  public static TypeElement elementFromDeclaration(ClassTree node) {
-    TypeElement elt = TreeUtils.elementFromTree(node);
-    assert elt != null : "@AssumeAssertion(nullness): tree kind";
-    return elt;
   }
 
   /**

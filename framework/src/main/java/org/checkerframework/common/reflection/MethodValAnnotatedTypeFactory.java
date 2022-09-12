@@ -343,7 +343,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * such a method is Class.getConstructor.
      */
     private boolean isGetConstructorMethodInvocation(MethodInvocationTree tree) {
-      return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetConstructor.class) != null;
+      return getDeclAnnotation(TreeUtils.elementFromUse(tree), GetConstructor.class) != null;
     }
 
     /**
@@ -351,7 +351,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * method is Class.getMethod.
      */
     private boolean isGetMethodMethodInvocation(MethodInvocationTree tree) {
-      return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetMethod.class) != null;
+      return getDeclAnnotation(TreeUtils.elementFromUse(tree), GetMethod.class) != null;
     }
 
     /**

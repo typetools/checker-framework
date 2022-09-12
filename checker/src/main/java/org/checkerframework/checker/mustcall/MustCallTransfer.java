@@ -259,7 +259,7 @@ public class MustCallTransfer extends CFTransfer {
       enclosingElement = TreeUtils.elementFromTree(tree).getEnclosingElement();
     } else {
       ClassTree classTree = TreePathUtil.enclosingClass(path);
-      enclosingElement = TreeUtils.elementFromTree(classTree);
+      enclosingElement = TreeUtils.elementFromDeclaration(classTree);
     }
     if (enclosingElement == null) {
       return null;

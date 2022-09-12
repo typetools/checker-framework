@@ -2096,7 +2096,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
       } else if (TreeUtils.classTreeKinds().contains(decl.getKind())) {
         // A class tree
-        Element elt = TreeUtils.elementFromTree((ClassTree) decl);
+        Element elt = TreeUtils.elementFromDeclaration((ClassTree) decl);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }

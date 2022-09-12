@@ -288,7 +288,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * a method is Class.forName.
      */
     private boolean isForNameMethodInvocation(MethodInvocationTree tree) {
-      return getDeclAnnotation(TreeUtils.elementFromTree(tree), ForName.class) != null;
+      return getDeclAnnotation(TreeUtils.elementFromUse(tree), ForName.class) != null;
     }
 
     /**
@@ -296,7 +296,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * a method is Object.getClassName.
      */
     private boolean isGetClassMethodInvocation(MethodInvocationTree tree) {
-      return getDeclAnnotation(TreeUtils.elementFromTree(tree), GetClass.class) != null;
+      return getDeclAnnotation(TreeUtils.elementFromUse(tree), GetClass.class) != null;
     }
 
     private List<String> getStringValues(ExpressionTree arg) {
