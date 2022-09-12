@@ -276,7 +276,7 @@ public final class TreeUtils {
   // There are three sets of methods:
   //  * use elementFromDeclaration whenever the tree is a declaration
   //  * use elementFromUse when the tree is a use
-  //  * use elementFromTree in other cases
+  //  * use elementFromTree in other cases; note that it may return null
 
   /**
    * Gets the element for a class corresponding to a declaration.
@@ -325,7 +325,31 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
+  public static ExecutableElement elementFromDeclaration(MethodInvocationTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the Element for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
   public static ExecutableElement elementFromTree(MethodInvocationTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Returns the ExecutableElement for the called method, from a call.
+   *
+   * @param node a method call
+   * @return the ExecutableElement for the called method
+   */
+  @Pure
+  public static ExecutableElement elementFromUse(MethodInvocationTree node) {
     ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
     return result;
   }
@@ -496,17 +520,6 @@ public final class TreeUtils {
    */
   @Pure
   public static @Nullable Element elementFromUse(ExpressionTree node) {
-    return TreeUtils.elementFromTree(node);
-  }
-
-  /**
-   * Returns the ExecutableElement for the called method, from a call.
-   *
-   * @param node a method call
-   * @return the ExecutableElement for the called method
-   */
-  @Pure
-  public static ExecutableElement elementFromUse(MethodInvocationTree node) {
     return TreeUtils.elementFromTree(node);
   }
 
