@@ -30,7 +30,7 @@ public class LocalVariable extends JavaExpression {
   }
 
   /**
-   * Creates a LocalVariable
+   * Creates a new LocalVariable.
    *
    * @param element the element for the local variable
    */
