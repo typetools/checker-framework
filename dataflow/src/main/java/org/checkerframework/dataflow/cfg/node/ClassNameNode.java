@@ -22,7 +22,7 @@ public class ClassNameNode extends Node {
   /** The tree for this node. */
   protected final @Nullable Tree tree;
 
-  /** The class named by this node. */
+  /** The class named by this node. Either a TypeElement or a TypeParameterElement. */
   protected final Element element;
 
   /** The parent name, if any. */

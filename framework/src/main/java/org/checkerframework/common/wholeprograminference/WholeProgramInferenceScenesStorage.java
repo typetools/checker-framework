@@ -201,8 +201,8 @@ public class WholeProgramInferenceScenesStorage
    * @param fieldElt the field
    * @return the annotations for a field
    */
-  private AField getFieldAnnos(Element fieldElt) {
-    String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
+  private AField getFieldAnnos(VariableElement fieldElt) {
+    String className = ElementUtils.getEnclosingClassName(fieldElt);
     String file = getFileForElement(fieldElt);
     AClass classAnnos = getClassAnnos(className, file, ((VarSymbol) fieldElt).enclClass());
     AField fieldAnnos = classAnnos.fields.getVivify(fieldElt.getSimpleName().toString());
@@ -368,7 +368,7 @@ public class WholeProgramInferenceScenesStorage
   }
 
   @Override
-  public boolean addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+  public boolean addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     if (!ElementUtils.isElementFromSourceCode(field)) {
       return false;
     }

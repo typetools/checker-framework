@@ -9,9 +9,9 @@ import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -1039,11 +1039,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns the current abstract value of a local variable, or {@code null} if no information is
    * available.
    *
+   * @param n the local variable
    * @return the current abstract value of a local variable, or {@code null} if no information is
    *     available
    */
   public @Nullable V getValue(LocalVariableNode n) {
-    Element el = n.getElement();
+    VariableElement el = n.getElement();
     return localVariableValues.get(new LocalVariable(el));
   }
 
