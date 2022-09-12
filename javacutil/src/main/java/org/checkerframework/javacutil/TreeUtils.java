@@ -397,9 +397,38 @@ public final class TreeUtils {
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
    *     (JCTree)
    * @return the {@link Symbol} for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
    */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static ExecutableElement elementFromDeclaration(NewClassTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
+   *     (JCTree)
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
   public static ExecutableElement elementFromTree(NewClassTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Gets the ExecutableElement for the called constructor, from a constructor invocation.
+   *
+   * @param tree a constructor invocation
+   * @return the ExecutableElement for the called constructor
+   * @see #constructor(NewClassTree)
+   */
+  @Pure
+  public static ExecutableElement elementFromUse(NewClassTree tree) {
     return (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
   }
 
@@ -533,18 +562,6 @@ public final class TreeUtils {
    */
   @Pure
   public static @Nullable Element elementFromUse(ExpressionTree tree) {
-    return TreeUtils.elementFromTree(tree);
-  }
-
-  /**
-   * Gets the ExecutableElement for the called constructor, from a constructor invocation.
-   *
-   * @param tree a constructor invocation
-   * @return the ExecutableElement for the called constructor
-   * @see #constructor(NewClassTree)
-   */
-  @Pure
-  public static ExecutableElement elementFromUse(NewClassTree tree) {
     return TreeUtils.elementFromTree(tree);
   }
 
