@@ -363,7 +363,7 @@ public final class TreeUtils {
    */
   @Pure
   public static @Nullable Element elementFromUse(ExpressionTree tree) {
-    return TreeUtils.elementFromTree(tree);
+    return TreeUtils.elementFromTree((Tree) tree);
   }
 
   /**
