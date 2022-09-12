@@ -433,17 +433,42 @@ public final class TreeUtils {
   }
 
   /**
-   * Gets the {@link Element} for the given Tree API node.
+   * Gets the element for a variable corresponding to its declaration.
    *
-   * @param tree the {@link Tree} node to get the symbol for
-   * @return the Element for the given tree, or null if one could not be found
+   * @param tree the variable
+   * @return the element for the given variable
    */
-  @Pure
-  public static @Nullable VariableElement elementFromTree(VariableTree tree) {
+  public static @Nullable VariableElement elementFromDeclaration(VariableTree tree) {
     VariableElement result = (VariableElement) elementFromTree((Tree) tree);
     // `result` can be null, for example for this variable declaration:
     //   PureFunc f1 = TestPure1::myPureMethod;
     return result;
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the Element for the given tree, or null if one could not be found
+   * @deprecated use elementFromDeclaration
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static @Nullable VariableElement elementFromTree(VariableTree tree) {
+    return elementFromDeclaration(tree);
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the Element for the given tree, or null if one could not be found
+   * @deprecated use elementFromDeclaration
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static @Nullable VariableElement elementFromUse(VariableTree tree) {
+    return elementFromDeclaration(tree);
   }
 
   /**
@@ -517,18 +542,6 @@ public final class TreeUtils {
         }
         return defaultResult;
     }
-  }
-
-  /**
-   * Gets the element for a variable corresponding to its declaration.
-   *
-   * @param tree the variable
-   * @return the element for the given variable
-   */
-  public static VariableElement elementFromDeclaration(VariableTree tree) {
-    VariableElement elt = TreeUtils.elementFromTree(tree);
-    assert elt != null : "@AssumeAssertion(nullness): tree kind";
-    return elt;
   }
 
   /**

@@ -660,7 +660,7 @@ public class WholeProgramInferenceJavaParserStorage
             // This seems to occur when javacTree is a local variable in the second
             // class located in a source file. If this check returns false, then the
             // below call to TreeUtils.elementFromDeclaration causes a crash.
-            if (TreeUtils.elementFromTree(javacTree) == null) {
+            if (TreeUtils.elementFromDeclaration(javacTree) == null) {
               return;
             }
 

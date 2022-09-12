@@ -2079,7 +2079,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       Tree decl = declPath.getLeaf();
 
       if (decl.getKind() == Tree.Kind.VARIABLE) {
-        Element elt = TreeUtils.elementFromTree((VariableTree) decl);
+        Element elt = TreeUtils.elementFromDeclaration((VariableTree) decl);
         if (shouldSuppressWarnings(elt, errKey)) {
           return true;
         }
