@@ -89,7 +89,7 @@ public class CFGProcessor extends BasicTypeProcessor {
       @Override
       public Void visitClass(ClassTree node, Void p) {
         TypeElement el = TreeUtils.elementFromDeclaration(node);
-        if (el.getSimpleName().contentEquals(className)) {
+        if (el != null && el.getSimpleName().contentEquals(className)) {
           classTree = node;
         }
         return super.visitClass(node, p);

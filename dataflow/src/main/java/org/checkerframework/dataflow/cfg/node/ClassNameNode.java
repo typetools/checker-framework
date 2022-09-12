@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -45,7 +46,11 @@ public class ClassNameNode extends Node {
   public ClassNameNode(ClassTree tree) {
     super(TreeUtils.typeOf(tree));
     this.tree = tree;
-    this.element = TreeUtils.elementFromDeclaration(tree);
+    Element elementTmp = TreeUtils.elementFromDeclaration(tree);
+    if (elementTmp == null) {
+      throw new BugInCF("s [%s]", tree, tree.getClass());
+    }
+    this.element = elementTmp;
     this.parent = null;
   }
 
