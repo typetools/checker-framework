@@ -558,6 +558,9 @@ public final class TreeUtils {
    * Gets the {@link Element} for the given Tree API node. For an object instantiation returns the
    * value of the {@link JCNewClass#constructor} field.
    *
+   * <p>Use this only when you do not statically know whether the tree is a declaration or a use of
+   * an element.
+   *
    * @param tree the {@link Tree} node to get the symbol for
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
    *     (JCTree)
