@@ -186,7 +186,7 @@ public class CFCFGBuilder extends CFGBuilder {
         // It is necessary to get the elt because just getting the type of expression
         // directly (via TreeUtils.typeOf) doesn't include annotations on the declarations
         // of local variables, for some reason.
-        Element elt = TreeUtils.elementFromTree(expression);
+        Element elt = TreeUtils.elementFromUse(expression);
         if (elt != null) {
           type = ElementUtils.getType(elt);
         }

@@ -3488,7 +3488,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // ========= Overriding Executable =========
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
     ExecutableElement compileTimeDeclaration =
-        (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
+        (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
 
     if (enclosingType.getKind() == TypeKind.DECLARED
         && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
@@ -4511,7 +4511,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected final boolean shouldSkipUses(ExpressionTree exprTree) {
     // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
 
-    Element elm = TreeUtils.elementFromTree(exprTree);
+    Element elm = TreeUtils.elementFromUse(exprTree);
     return checker.shouldSkipUses(elm);
   }
 

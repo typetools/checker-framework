@@ -317,6 +317,56 @@ public final class TreeUtils {
   }
 
   /**
+   * Gets the element for the declaration corresponding to this use of an element. To get the
+   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
+   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
+   *
+   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
+   * might be the first place someone looks for this functionality.
+   *
+   * @param tree the tree corresponding to a use of an element
+   * @return the element for the corresponding declaration, {@code null} otherwise
+   */
+  @Pure
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  public static @Nullable Element elementFromDeclaration(ExpressionTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Gets the element for the declaration corresponding to this use of an element. To get the
+   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
+   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
+   *
+   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
+   * might be the first place someone looks for this functionality.
+   *
+   * @param tree the tree corresponding to a use of an element
+   * @return the element for the corresponding declaration, {@code null} otherwise
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static @Nullable Element elementFromTree(ExpressionTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Gets the element for the declaration corresponding to this use of an element. To get the
+   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
+   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
+   *
+   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
+   * might be the first place someone looks for this functionality.
+   *
+   * @param tree the tree corresponding to a use of an element
+   * @return the element for the corresponding declaration, {@code null} otherwise
+   */
+  @Pure
+  public static @Nullable Element elementFromUse(ExpressionTree tree) {
+    return TreeUtils.elementFromTree(tree);
+  }
+
+  /**
    * Gets the {@link Element} for the given Tree API node.
    *
    * @param tree the {@link Tree} node to get the symbol for
@@ -487,6 +537,24 @@ public final class TreeUtils {
   }
 
   /**
+   * Gets the VariableElement for the declaration corresponding to this use of an element.
+   *
+   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
+   * might be the first place someone looks for this functionality.
+   *
+   * @param tree the tree corresponding to a use of an element
+   * @return the element for the corresponding declaration, {@code null} otherwise
+   */
+  @Pure
+  public static VariableElement variableElementFromUse(ExpressionTree tree) {
+    VariableElement result = (VariableElement) TreeUtils.elementFromTree(tree);
+    if (result == null) {
+      throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+    }
+    return result;
+  }
+
+  /**
    * Gets the {@link Element} for the given Tree API node. For an object instantiation returns the
    * value of the {@link JCNewClass#constructor} field.
    *
@@ -542,40 +610,6 @@ public final class TreeUtils {
         }
         return defaultResult;
     }
-  }
-
-  /**
-   * Gets the VariableElement for the declaration corresponding to this use of an element.
-   *
-   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
-   * might be the first place someone looks for this functionality.
-   *
-   * @param tree the tree corresponding to a use of an element
-   * @return the element for the corresponding declaration, {@code null} otherwise
-   */
-  @Pure
-  public static VariableElement variableElementFromUse(ExpressionTree tree) {
-    VariableElement result = (VariableElement) TreeUtils.elementFromTree(tree);
-    if (result == null) {
-      throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
-    }
-    return result;
-  }
-
-  /**
-   * Gets the element for the declaration corresponding to this use of an element. To get the
-   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
-   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
-   *
-   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
-   * might be the first place someone looks for this functionality.
-   *
-   * @param tree the tree corresponding to a use of an element
-   * @return the element for the corresponding declaration, {@code null} otherwise
-   */
-  @Pure
-  public static @Nullable Element elementFromUse(ExpressionTree tree) {
-    return TreeUtils.elementFromTree(tree);
   }
 
   /**
