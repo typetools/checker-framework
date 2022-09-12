@@ -1,3 +1,22 @@
+// TODO: remove this before merging into master.
+pluginManagement {
+  repositories {
+    mavenLocal {
+      content {
+        includeGroup 'com.diffplug.spotless'
+      }
+    }
+    gradlePluginPortal()
+  }
+  resolutionStrategy {
+    eachPlugin {
+      if (requested.id.id == 'com.diffplug.spotless') {
+        useModule('com.diffplug.spotless:spotless-plugin-gradle:6.11.0-SNAPSHOT')
+      }
+    }
+  }
+}
+
 rootProject.name = 'checker-framework'
 include 'checker'
 include 'javacutil'
