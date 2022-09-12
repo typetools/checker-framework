@@ -1599,7 +1599,8 @@ public final class TreeUtils {
    */
   public static boolean isLocalVariable(Tree tree) {
     if (tree.getKind() == Tree.Kind.VARIABLE) {
-      return elementFromDeclaration((VariableTree) tree).getKind() == ElementKind.LOCAL_VARIABLE;
+      VariableElement varElt = elementFromDeclaration((VariableTree) tree);
+      return varElt != null && varElt.getKind() == ElementKind.LOCAL_VARIABLE;
     } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
       ExpressionTree etree = (ExpressionTree) tree;
       assert isUseOfElement(etree) : "@AssumeAssertion(nullness): tree kind";
