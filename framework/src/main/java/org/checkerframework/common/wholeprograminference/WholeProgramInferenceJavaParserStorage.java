@@ -616,7 +616,7 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
-            ExecutableElement element = TreeUtils.elementFromTree(javacTree);
+            ExecutableElement element = TreeUtils.elementFromDeclaration(javacTree);
             if (element == null) {
               // element can be null if there is no element corresponding to the method,
               // which happens for certain kinds of anonymous classes, such as Ordering$1 in

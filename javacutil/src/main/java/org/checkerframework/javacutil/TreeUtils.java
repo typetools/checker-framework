@@ -355,14 +355,39 @@ public final class TreeUtils {
   }
 
   /**
+   * Gets the element for a method corresponding to a declaration.
+   *
+   * @param tree a method declaration
+   * @return the element for the given method
+   */
+  public static ExecutableElement elementFromDeclaration(MethodTree tree) {
+    return (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+  }
+
+  /**
    * Gets the {@link Element} for the given Tree API node.
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the Element for the given tree, or null if one could not be found
+   * @deprecated use elementFromDeclaration
    */
+  @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
   public static ExecutableElement elementFromTree(MethodTree tree) {
-    return (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+    return elementFromDeclaration(tree);
+  }
+
+  /**
+   * Gets the {@link Element} for the given Tree API node.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the Element for the given tree, or null if one could not be found
+   * @deprecated use elementFromDeclaration
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static ExecutableElement elementFromUse(MethodTree tree) {
+    return elementFromDeclaration(tree);
   }
 
   /**
@@ -463,18 +488,6 @@ public final class TreeUtils {
         }
         return defaultResult;
     }
-  }
-
-  /**
-   * Gets the element for a method corresponding to a declaration.
-   *
-   * @param tree a method declaration
-   * @return the element for the given method
-   */
-  public static ExecutableElement elementFromDeclaration(MethodTree tree) {
-    ExecutableElement elt = TreeUtils.elementFromTree(tree);
-    assert elt != null : "@AssumeAssertion(nullness): tree kind";
-    return elt;
   }
 
   /**
