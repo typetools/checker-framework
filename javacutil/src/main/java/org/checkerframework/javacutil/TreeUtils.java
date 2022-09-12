@@ -277,9 +277,11 @@ public final class TreeUtils {
   //  * use elementFromDeclaration whenever the tree is a declaration
   //  * use elementFromUse when the tree is a use
   //  * use elementFromTree in other cases; note that it may return null
+  // This section of the file groups methods by their receiver type; that is, it puts all
+  // `elementFrom*(FooTree)` methods together.
 
   /**
-   * Gets the element for a class corresponding to a declaration.
+   * Returns the type element corresponding to the given class declaration.
    *
    * @param tree class declaration
    * @return the element for the given class
@@ -291,7 +293,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Gets the {@link Element} for the given Tree API node.
+   * Returns the type element corresponding to the given class declaration.
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the {@link Symbol} for the given tree, or null if one could not be found
@@ -304,7 +306,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Gets the {@link Element} for the given Tree API node.
+   * Returns the type element corresponding to the given class declaration.
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the {@link Symbol} for the given tree, or null if one could not be found
@@ -317,9 +319,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Gets the element for the declaration corresponding to this use of an element. To get the
-   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
-   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
+   * Returns the element corresponding to the given use.
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
@@ -331,9 +331,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Gets the element for the declaration corresponding to this use of an element. To get the
-   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
-   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
+   * Returns the element corresponding to the given use.
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
@@ -345,9 +343,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Gets the element for the declaration corresponding to this use of an element. To get the
-   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
-   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
+   * Returns the element corresponding to the given use.
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
