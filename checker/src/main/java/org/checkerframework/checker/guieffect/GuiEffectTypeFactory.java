@@ -76,6 +76,12 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     this.postInit();
   }
 
+  /**
+   * Returns true if the given type is polymorphic.
+   *
+   * @param cls the type to test
+   * @return true if the given type is polymorphic
+   */
   public boolean isPolymorphicType(TypeElement cls) {
     assert (cls != null);
     return getDeclAnnotation(cls, PolyUIType.class) != null
