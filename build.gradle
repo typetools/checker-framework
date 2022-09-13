@@ -243,7 +243,7 @@ allprojects {
             options.deprecation = true
             options.compilerArgs += [
                     '-g',
-                    '-Werror',
+                    // '-Werror',
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
                     // warnings are suppressible with a "// fall through" comment.
@@ -292,7 +292,7 @@ allprojects {
                         // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
                         // stops as soon as it issues one warning, rather than outputting them all.
                         // https://github.com/google/error-prone/issues/436
-                        '-Werror',
+                        // '-Werror',
                 ]
             } else {
                 options.errorprone.enabled = false
