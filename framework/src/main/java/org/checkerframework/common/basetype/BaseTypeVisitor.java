@@ -4511,7 +4511,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected final boolean shouldSkipUses(ExpressionTree exprTree) {
     // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
 
-    Element elm = TreeUtils.elementFromUse(exprTree);
+    Element elm = TreeUtils.elementFromTree(exprTree);
     return checker.shouldSkipUses(elm);
   }
 

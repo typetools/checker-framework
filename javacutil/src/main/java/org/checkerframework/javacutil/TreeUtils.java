@@ -373,6 +373,47 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the element for the given expression.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the element for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static Element elementFromDeclaration(MemberSelectTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Returns the element for the given expression.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the element for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static Element elementFromTree(MemberSelectTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Returns the element for the given expression.
+   *
+   * @param tree a method call
+   * @return the element for the called method
+   */
+  @Pure
+  public static Element elementFromUse(MemberSelectTree tree) {
+    Element result = TreeInfo.symbolFor((JCTree) tree);
+    if (result == null) {
+      throw new BugInCF("tree = " + tree);
+    }
+    return result;
+  }
+
+  /**
    * Returns the ExecutableElement for the called method.
    *
    * @param tree the {@link Tree} node to get the symbol for

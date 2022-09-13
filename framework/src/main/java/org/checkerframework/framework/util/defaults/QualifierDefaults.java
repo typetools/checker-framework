@@ -490,7 +490,7 @@ public class QualifierDefaults {
     Element elt;
     switch (tree.getKind()) {
       case MEMBER_SELECT:
-        elt = TreeUtils.elementFromTree((MemberSelectTree) tree);
+        elt = TreeUtils.elementFromUse((MemberSelectTree) tree);
         break;
 
       case IDENTIFIER:
