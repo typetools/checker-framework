@@ -98,7 +98,7 @@ public class CFGProcessor extends BasicTypeProcessor {
       @Override
       public Void visitMethod(MethodTree node, Void p) {
         ExecutableElement el = TreeUtils.elementFromDeclaration(node);
-        if (el.getSimpleName().contentEquals(methodName)) {
+        if (el != null && el.getSimpleName().contentEquals(methodName)) {
           methodTree = node;
           // Stop execution by throwing an exception. This makes sure that compilation does not
           // proceed, and thus the AST is not modified by further phases of the compilation (and we

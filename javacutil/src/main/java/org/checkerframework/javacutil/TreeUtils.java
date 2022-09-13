@@ -821,7 +821,7 @@ public final class TreeUtils {
    */
   public static boolean isSynthetic(MethodTree tree) {
     ExecutableElement ee = TreeUtils.elementFromDeclaration(tree);
-    return isSynthetic(ee);
+    return ee != null && isSynthetic(ee);
   }
 
   /**
