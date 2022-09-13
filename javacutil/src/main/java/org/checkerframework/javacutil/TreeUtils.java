@@ -609,7 +609,7 @@ public final class TreeUtils {
    */
   public static ExecutableElement getSuperConstructor(NewClassTree newClassTree) {
     if (newClassTree.getClassBody() == null) {
-      return constructor(newClassTree);
+      return elementFromUse(newClassTree);
     }
     JCNewClass jcNewClass = (JCNewClass) newClassTree;
     // Anonymous constructor bodies, which are always synthetic, contain exactly one statement in
@@ -636,8 +636,9 @@ public final class TreeUtils {
    * @see #elementFromUse(NewClassTree)
    * @param tree the constructor invocation
    * @return the {@link ExecutableElement} corresponding to the constructor call in {@code tree}
+   * @deprecated use elementFromUse instead
    */
-  // TODO: rename to elementFromTree or elementFromUse?
+  @Deprecated // 2022-09-12
   public static ExecutableElement constructor(NewClassTree tree) {
     return (ExecutableElement) ((JCNewClass) tree).constructor;
   }
