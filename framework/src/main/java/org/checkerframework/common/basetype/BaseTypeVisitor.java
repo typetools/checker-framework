@@ -1923,7 +1923,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public Void visitNewClass(NewClassTree node, Void p) {
-    if (checker.shouldSkipUses(TreeUtils.constructor(node))) {
+    if (checker.shouldSkipUses(TreeUtils.elementFromUse(node))) {
       return super.visitNewClass(node, p);
     }
 

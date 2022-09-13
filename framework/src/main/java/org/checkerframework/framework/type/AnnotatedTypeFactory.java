@@ -2572,7 +2572,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Add computed annotations to the type.
     addComputedTypeAnnotations(tree, type);
 
-    ExecutableElement ctor = TreeUtils.constructor(tree);
+    ExecutableElement ctor = TreeUtils.elementFromUse(tree);
     AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
     constructorFromUsePreSubstitution(tree, con);
 
