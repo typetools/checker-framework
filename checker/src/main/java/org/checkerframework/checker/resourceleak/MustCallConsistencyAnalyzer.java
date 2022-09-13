@@ -1847,7 +1847,7 @@ class MustCallConsistencyAnalyzer {
       MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
       Set<Obligation> result = new LinkedHashSet<>(1);
       for (VariableTree param : method.getParameters()) {
-        Element paramElement = TreeUtils.elementFromDeclaration(param);
+        VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
         boolean hasMustCallAlias = typeFactory.hasMustCallAlias(paramElement);
         if (hasMustCallAlias
             || (typeFactory.declaredTypeHasMustCall(param)

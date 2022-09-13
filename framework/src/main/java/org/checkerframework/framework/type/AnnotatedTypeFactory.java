@@ -705,8 +705,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Actions that logically belong in the constructor, but need to run after the subclass
-   * constructor has completed. In particular, parseStubFiles() may try to do type resolution with
-   * this AnnotatedTypeFactory.
+   * constructor has completed. In particular, {@link AnnotationFileElementTypes#parseStubFiles()}
+   * may try to do type resolution with this AnnotatedTypeFactory.
    */
   protected void postInit() {
     this.qualHierarchy = createQualifierHierarchy();
@@ -1479,7 +1479,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Creates an AnnotatedTypeMirror for a variable or method declaration tree. The
-   * AnnotatedTypeMirror contains annotations explicitly written on the tree.
+   * AnnotatedTypeMirror contains annotations explicitly written on the tree, and possibly others as
+   * described below.
    *
    * <p>If a VariableTree is a parameter to a lambda, this method also adds annotations from the
    * declared type of the functional interface and the executable type of its method.
@@ -2571,7 +2572,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Add computed annotations to the type.
     addComputedTypeAnnotations(tree, type);
 
-    ExecutableElement ctor = TreeUtils.constructor(tree);
+    ExecutableElement ctor = TreeUtils.elementFromUse(tree);
     AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
     constructorFromUsePreSubstitution(tree, con);
 
@@ -2600,10 +2601,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
         if (TreeUtils.hasSyntheticArgument(tree)) {
           p.add(con.getParameterTypes().get(0));
-        } else if (con.receiverType != null) {
-          p.add(con.receiverType);
+        } else if (con.getReceiverType() != null) {
+          p.add(con.getReceiverType());
         } else {
-          p.add(con.paramTypes.get(0));
+          p.add(con.getParameterTypes().get(0));
         }
         p.addAll(1, superCon.getParameterTypes());
         con.setParameterTypes(p);
@@ -4532,13 +4533,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // Functional method
-    Element fnElement = TreeUtils.findFunction(tree, processingEnv);
+    ExecutableElement fnElement = TreeUtils.findFunction(tree, processingEnv);
 
     // Function type
     AnnotatedExecutableType functionType =
-        (AnnotatedExecutableType)
-            AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
-
+        AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
     return Pair.of(functionalInterfaceType, functionType);
   }
 

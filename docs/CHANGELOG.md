@@ -13,6 +13,8 @@ introduced since JDK 11).
 
 **Implementation details:**
 
+Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
+
 **Closed issues:**
 
 

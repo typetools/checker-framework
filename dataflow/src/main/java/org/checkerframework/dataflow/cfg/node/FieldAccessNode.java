@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -43,12 +44,13 @@ public class FieldAccessNode extends Node {
     if (tree instanceof MemberSelectTree) {
       MemberSelectTree mstree = (MemberSelectTree) tree;
       assert TreeUtils.isUseOfElement(mstree) : "@AssumeAssertion(nullness): tree kind";
-      this.element = (VariableElement) TreeUtils.elementFromUse(mstree);
-    } else {
-      assert tree instanceof IdentifierTree;
+      this.element = TreeUtils.variableElementFromUse(mstree);
+    } else if (tree instanceof IdentifierTree) {
       IdentifierTree itree = (IdentifierTree) tree;
       assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
-      this.element = (VariableElement) TreeUtils.elementFromUse(itree);
+      this.element = TreeUtils.variableElementFromUse(itree);
+    } else {
+      throw new BugInCF("unexpected tree %s [%s]", tree, tree.getClass());
     }
   }
 

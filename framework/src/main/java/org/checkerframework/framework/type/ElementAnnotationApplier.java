@@ -139,7 +139,7 @@ public class ElementAnnotationApplier {
       MethodTypeParamApplier.apply((AnnotatedTypeVariable) type, element, typeFactory);
 
     } else if (ParamApplier.accepts(type, element)) {
-      ParamApplier.apply(type, element, typeFactory);
+      ParamApplier.apply(type, (VariableElement) element, typeFactory);
 
     } else if (isCaptureConvertedTypeVar(element)) {
       // Types resulting from capture conversion cannot have explicit annotations

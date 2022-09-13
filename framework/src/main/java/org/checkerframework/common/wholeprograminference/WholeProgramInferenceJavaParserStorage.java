@@ -197,8 +197,8 @@ public class WholeProgramInferenceJavaParserStorage
    * @param fieldElt a field
    * @return the annotations for a field
    */
-  private FieldAnnos getFieldAnnos(Element fieldElt) {
-    String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
+  private FieldAnnos getFieldAnnos(VariableElement fieldElt) {
+    String className = ElementUtils.getEnclosingClassName(fieldElt);
     // Read in classes for the element.
     getFileForElement(fieldElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
@@ -355,7 +355,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public boolean addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+  public boolean addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     FieldAnnos fieldAnnos = getFieldAnnos(field);
     boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
@@ -616,16 +616,14 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
-            Element element = TreeUtils.elementFromTree(javacTree);
+            ExecutableElement element = TreeUtils.elementFromTree(javacTree);
             if (element == null) {
               // element can be null if there is no element corresponding to the method,
               // which happens for certain kinds of anonymous classes, such as Ordering$1 in
               // PolyCollectorTypeVar.java in the all-systems test suite.
               return;
             }
-            // If elt is non-null, it is guaranteed to be an executable element.
-            ExecutableElement elt = (ExecutableElement) element;
-            String className = ElementUtils.getEnclosingClassName(elt);
+            String className = ElementUtils.getEnclosingClassName(element);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
             String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
             if (!enclosingClass.callableDeclarations.containsKey(executableSignature)) {

@@ -195,7 +195,7 @@ public class ASceneWrapper {
     }
     if (classSymbol.isEnum()) {
       List<VariableElement> enumConstants = new ArrayList<>();
-      for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
+      for (Element e : classSymbol.getEnclosedElements()) {
         if (e.getKind() == ElementKind.ENUM_CONSTANT) {
           enumConstants.add((VariableElement) e);
         }

@@ -1416,7 +1416,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
-    ExecutableElement element = TreeUtils.elementFromUse(tree);
+    ExecutableElement element = method;
     if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node
       extendWithNode(target);

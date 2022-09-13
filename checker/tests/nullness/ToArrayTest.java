@@ -13,7 +13,6 @@ public final class ToArrayTest {
     Object[] seq1_array = seq1.toArray(new Object[] {});
   }
 
-  // No problem here, with explicit upper bound.
   public static void isReverse3(@NonNull Collection<? extends @NonNull Object> seq1) {
     @NonNull Object @NonNull [] seq1_array_TMP = new Object[] {};
     Object[] seq1_array = seq1.toArray(new Object[] {});

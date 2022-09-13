@@ -437,7 +437,7 @@ public abstract class JavaExpression {
           result = new ClassName(ele.asType());
           break;
         }
-        result = fromVariableElement(typeOfId, ele);
+        result = fromVariableElement(typeOfId, (VariableElement) ele);
         break;
 
       case UNARY_PLUS:
@@ -502,7 +502,7 @@ public abstract class JavaExpression {
    * @param ele element whose JavaExpression is returned
    * @return the Java expression corresponding to the given variable element {@code ele}
    */
-  private static JavaExpression fromVariableElement(TypeMirror typeOfEle, Element ele) {
+  private static JavaExpression fromVariableElement(TypeMirror typeOfEle, VariableElement ele) {
     switch (ele.getKind()) {
       case LOCAL_VARIABLE:
       case RESOURCE_VARIABLE:
@@ -520,7 +520,7 @@ public abstract class JavaExpression {
         } else {
           fieldAccessExpression = new ThisReference(enclosingTypeElement);
         }
-        return new FieldAccess(fieldAccessExpression, typeOfEle, (VariableElement) ele);
+        return new FieldAccess(fieldAccessExpression, typeOfEle, ele);
       default:
         if (ElementUtils.isBindingVariable(ele)) {
           return new LocalVariable(ele);
