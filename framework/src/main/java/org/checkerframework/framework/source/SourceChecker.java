@@ -2400,7 +2400,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param element an element
    * @return true iff the enclosing class of element should be skipped
    */
-  public final boolean shouldSkipUses(Element element) {
+  public final boolean shouldSkipUses(@Nullable Element element) {
     if (element == null) {
       return false;
     }

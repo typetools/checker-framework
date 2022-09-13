@@ -320,7 +320,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the element corresponding to the given use.
+   * Returns the element corresponding to the given tree.
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
@@ -332,16 +332,14 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the element corresponding to the given use.
+   * Returns the element corresponding to the given tree.
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
-   * @deprecated use elementFromUse
    */
-  @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
   public static @Nullable Element elementFromTree(ExpressionTree tree) {
-    return TreeUtils.elementFromUse(tree);
+    return TreeUtils.elementFromTree((Tree) tree);
   }
 
   /**
@@ -351,14 +349,18 @@ public final class TreeUtils {
    * @return the element for the corresponding declaration, {@code null} otherwise
    */
   @Pure
-  public static @Nullable Element elementFromUse(ExpressionTree tree) {
-    return TreeUtils.elementFromTree((Tree) tree);
+  public static Element elementFromUse(ExpressionTree tree) {
+    Element result = TreeUtils.elementFromTree(tree);
+    if (result == null) {
+      throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+    }
+    return result;
   }
 
   /**
    * Returns the VariableElement corresponding to the given use.
    *
-   * @param tree the tree corresponding to a use of an element
+   * @param tree the tree corresponding to a use of a VariableElement
    * @return the element for the corresponding declaration, {@code null} otherwise
    */
   @Pure
@@ -366,6 +368,47 @@ public final class TreeUtils {
     VariableElement result = (VariableElement) TreeUtils.elementFromTree(tree);
     if (result == null) {
       throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+    }
+    return result;
+  }
+
+  /**
+   * Returns the element for the given expression.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the element for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static Element elementFromDeclaration(MemberSelectTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Returns the element for the given expression.
+   *
+   * @param tree the {@link Tree} node to get the symbol for
+   * @return the element for the given tree, or null if one could not be found
+   * @deprecated use elementFromUse
+   */
+  @Deprecated // not for removal; retain to prevent calls to this overload
+  @Pure
+  public static Element elementFromTree(MemberSelectTree tree) {
+    return TreeUtils.elementFromUse(tree);
+  }
+
+  /**
+   * Returns the element for the given expression.
+   *
+   * @param tree a method call
+   * @return the element for the called method
+   */
+  @Pure
+  public static Element elementFromUse(MemberSelectTree tree) {
+    Element result = TreeInfo.symbolFor((JCTree) tree);
+    if (result == null) {
+      throw new BugInCF("tree = " + tree);
     }
     return result;
   }
@@ -414,7 +457,7 @@ public final class TreeUtils {
   /**
    * Returns the ExecutableElement for the given method declaration.
    *
-   * <p>The result can be null, when `tree` is a method in an anonymous class.
+   * <p>The result can be null, when {@code tree} is a method in an anonymous class.
    *
    * @param tree a method declaration
    * @return the element for the given method
@@ -663,6 +706,7 @@ public final class TreeUtils {
    * @param tree the ExpressionTree to test
    * @return whether the tree refers to an identifier, member select, or method invocation
    */
+  @EnsuresNonNullIf(result = true, expression = "elementFromTree(#1)")
   @EnsuresNonNullIf(result = true, expression = "elementFromUse(#1)")
   @Pure
   public static boolean isUseOfElement(ExpressionTree tree) {
@@ -672,6 +716,7 @@ public final class TreeUtils {
       case MEMBER_SELECT:
       case METHOD_INVOCATION:
       case NEW_CLASS:
+        assert elementFromTree(tree) != null : "@AssumeAssertion(nullness): inspection";
         assert elementFromUse(tree) != null : "@AssumeAssertion(nullness): inspection";
         return true;
       default:
