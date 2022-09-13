@@ -2121,7 +2121,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return getAnnotatedType(receiver);
     }
 
-    Element element = TreeUtils.elementFromUse(expression);
+    Element element = TreeUtils.elementFromTree(expression);
     if (element != null && ElementUtils.hasReceiver(element)) {
       // The tree references an element that has a receiver, but the tree does not have an explicit
       // receiver. So, the tree must have an implicit receiver of "this" or "Outer.this".

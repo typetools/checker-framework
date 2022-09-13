@@ -490,11 +490,11 @@ public class QualifierDefaults {
     Element elt;
     switch (tree.getKind()) {
       case MEMBER_SELECT:
-        elt = TreeUtils.elementFromUse((MemberSelectTree) tree);
+        elt = TreeUtils.elementFromTree((MemberSelectTree) tree);
         break;
 
       case IDENTIFIER:
-        elt = TreeUtils.elementFromUse((IdentifierTree) tree);
+        elt = TreeUtils.elementFromTree((IdentifierTree) tree);
         if (ElementUtils.isTypeDeclaration(elt)) {
           // If the Idenitifer is a type, then use the scope of the tree.
           elt = nearestEnclosingExceptLocal(tree);
