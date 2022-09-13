@@ -336,6 +336,7 @@ public final class TreeUtils {
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
+   * @deprecated use elementFromUse
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
@@ -370,7 +371,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the ExecutableElement for the given method invocation.
+   * Returns the ExecutableElement for the called method.
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the Element for the given tree, or null if one could not be found
@@ -383,7 +384,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the ExecutableElement for the given method invocation.
+   * Returns the ExecutableElement for the called method.
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the Element for the given tree, or null if one could not be found
@@ -396,7 +397,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the ExecutableElement for the given method invocation.
+   * Returns the ExecutableElement for the called method.
    *
    * @param tree a method call
    * @return the ExecutableElement for the called method
@@ -404,6 +405,9 @@ public final class TreeUtils {
   @Pure
   public static ExecutableElement elementFromUse(MethodInvocationTree tree) {
     ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+    if (result == null) {
+      throw new BugInCF("tree = " + tree);
+    }
     return result;
   }
 
@@ -485,7 +489,11 @@ public final class TreeUtils {
    */
   @Pure
   public static ExecutableElement elementFromUse(NewClassTree tree) {
-    return (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+    ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+    if (result == null) {
+      throw new BugInCF("null element for %s", tree);
+    }
+    return result;
   }
 
   /**
@@ -495,7 +503,7 @@ public final class TreeUtils {
    * @return the element for the given variable
    */
   public static @Nullable VariableElement elementFromDeclaration(VariableTree tree) {
-    VariableElement result = (VariableElement) elementFromTree((Tree) tree);
+    VariableElement result = (VariableElement) TreeInfo.symbolFor((JCTree) tree);
     // `result` can be null, for example for this variable declaration:
     //   PureFunc f1 = TestPure1::myPureMethod;
     return result;
@@ -538,6 +546,9 @@ public final class TreeUtils {
   @Pure
   public static @Nullable VariableElement variableElementFromTree(Tree tree) {
     VariableElement result = (VariableElement) TreeInfo.symbolFor((JCTree) tree);
+    if (result == null) {
+      throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+    }
     return result;
   }
 
