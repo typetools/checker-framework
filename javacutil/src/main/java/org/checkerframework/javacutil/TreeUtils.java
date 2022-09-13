@@ -449,7 +449,7 @@ public final class TreeUtils {
   public static ExecutableElement elementFromUse(MethodInvocationTree tree) {
     ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
     if (result == null) {
-      throw new BugInCF("tree = " + tree);
+      throw new BugInCF("tree = %s [%s]", tree, tree.getClass());
     }
     return result;
   }
