@@ -37,7 +37,7 @@ class TestBounded {
     BoundedGeneric<?> generic3 = rawLocal;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // only needed on JDK 17 and lower
   void useBoundedWildCard() {
     BoundedGeneric rawLocal = new BoundedGeneric<String>();
     BoundedGeneric<? extends Object> generic1 = rawReturn();
