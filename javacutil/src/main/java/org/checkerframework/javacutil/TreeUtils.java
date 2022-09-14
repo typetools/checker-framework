@@ -343,16 +343,18 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the element corresponding to the given use.
+   * Returns the element corresponding to the given use. The given tree must be a use of an element;
+   * for example, it cannot be a binary expression.
    *
-   * @param tree the tree corresponding to a use of an element
-   * @return the element for the corresponding declaration, {@code null} otherwise
+   * @param tree the tree, which must be a use of an element
+   * @return the element for the given use
    */
   @Pure
   public static Element elementFromUse(ExpressionTree tree) {
     Element result = TreeUtils.elementFromTree(tree);
     if (result == null) {
-      throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+      throw new BugInCF(
+          "argument to elementFromUse() has no element: %s [%s]", tree, tree.getClass());
     }
     return result;
   }
@@ -460,7 +462,7 @@ public final class TreeUtils {
    * <p>The result can be null, when {@code tree} is a method in an anonymous class.
    *
    * @param tree a method declaration
-   * @return the element for the given method
+   * @return the element for the given method, or null (e.g. for a method in an anonymous class)
    */
   public static @Nullable ExecutableElement elementFromDeclaration(MethodTree tree) {
     ExecutableElement elt = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
