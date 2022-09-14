@@ -23,13 +23,11 @@ class TestBounded17 {
 
   BoundedGeneric17 rawField = new BoundedGeneric17();
 
+  @SuppressWarnings("unchecked") // only needed on JDK 17 and lower
   void useBoundedWildCard() {
     BoundedGeneric17 rawLocal = new BoundedGeneric17<String>();
-    // :: warning: [unchecked] unchecked conversion
     BoundedGeneric17<? extends Object> generic1 = rawReturn();
-    // :: warning: [unchecked] unchecked conversion
     BoundedGeneric17<? extends Object> generic2 = rawField;
-    // :: warning: [unchecked] unchecked conversion
     BoundedGeneric17<? extends Object> generic3 = rawLocal;
   }
 }
