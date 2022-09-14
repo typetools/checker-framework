@@ -1451,7 +1451,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
     /* Check for the TerminatesExecution annotation. */
-    Element methodElement = TreeUtils.elementFromTree(tree);
+    ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
     boolean terminatesExecution =
         annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class) != null;
     if (terminatesExecution) {

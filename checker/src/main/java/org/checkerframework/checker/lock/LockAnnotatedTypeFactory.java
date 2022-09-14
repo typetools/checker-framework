@@ -687,7 +687,7 @@ public class LockAnnotatedTypeFactory
   @Override
   public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
     if (tree.getKind() == Tree.Kind.VARIABLE) {
-      translateJcipAndJavaxAnnotations(TreeUtils.elementFromTree((VariableTree) tree), type);
+      translateJcipAndJavaxAnnotations(TreeUtils.elementFromDeclaration((VariableTree) tree), type);
     }
 
     super.addComputedTypeAnnotations(tree, type, useFlow);

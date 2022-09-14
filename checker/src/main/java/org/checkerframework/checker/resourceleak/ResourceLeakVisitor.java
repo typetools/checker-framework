@@ -219,7 +219,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
   @Override
   public Void visitVariable(VariableTree node, Void p) {
-    Element varElement = TreeUtils.elementFromTree(node);
+    Element varElement = TreeUtils.elementFromDeclaration(node);
 
     if (varElement.getKind().isField()
         && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)

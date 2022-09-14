@@ -48,8 +48,10 @@ ext {
     // This value is always overwritten, but Gradle needs the variable to be initialized.
     localRepo = ".git"
 }
-// Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
-// and with text in #installation
+// Keep in sync with check in
+// framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
+// (org.checkerframework.framework.source.SourceChecker.init) and with text in
+// docs/manual/introduction.tex (#installation).
 switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_9:
     case JavaVersion.VERSION_1_10:
@@ -65,8 +67,7 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_17:
         break; // Supported versions
     default:
-        throw new GradleException("Build the Checker Framework with JDK 8, 11, or 17." +
-                " Found version " + JavaVersion.current().majorVersion);
+        throw new GradleException("Unexpected Java version found: " + JavaVersion.current().majorVersion);
 }
 
 task setLocalRepo(type:Exec) {
