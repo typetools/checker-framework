@@ -256,10 +256,10 @@ public class MustCallTransfer extends CFTransfer {
     Element enclosingElement;
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
-      enclosingElement = TreeUtils.elementFromTree(tree).getEnclosingElement();
+      enclosingElement = TreeUtils.elementFromUse(tree).getEnclosingElement();
     } else {
       ClassTree classTree = TreePathUtil.enclosingClass(path);
-      enclosingElement = TreeUtils.elementFromTree(classTree);
+      enclosingElement = TreeUtils.elementFromDeclaration(classTree);
     }
     if (enclosingElement == null) {
       return null;
