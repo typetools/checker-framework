@@ -548,7 +548,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (jreVersion != 8 && jreVersion != 11 && jreVersion != 17) {
       message(
           (hasOption("permitUnsupportedJdkVersion") ? Kind.NOTE : Kind.WARNING),
-          "Use JDK 8, 11, or 17 to run the Checker Framework.  You are using version %d.",
+          "The Checker Framework is tested with JDK 8, 11, and 17.  You are using version %d.",
           jreVersion);
     }
 
