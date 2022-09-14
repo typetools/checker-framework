@@ -12,7 +12,7 @@ plugins {
     id 'org.ajoberstar.grgit' version '4.1.1' apply false
 
     // Code formatting; defines targets "spotlessApply" and "spotlessCheck"
-    id "com.diffplug.spotless" version "6.11.0-SNAPSHOT"
+    id "com.diffplug.spotless" version "6.11.0"
 }
 apply plugin: "de.undercouch.download"
 
