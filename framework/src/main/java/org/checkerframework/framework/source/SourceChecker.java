@@ -415,6 +415,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** The message key emitted when an unused warning suppression is found. */
   public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY = "unneeded.suppression";
 
+  // Using a variable avoids a concatenation in an inner loop.
+  /** The message key suffix emitted when an unused warning suppression is found. */
+  private static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY_SUFFIX =
+      ":unneeded.suppression";
+
   /** File name of the localized messages. */
   protected static final String MSGS_FILE = "messages.properties";
 
@@ -1883,8 +1888,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     argument
    */
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
-    Map<String, String> options = getOptions();
     if (this.suppressWarningsStringsFromOption == null) {
+      Map<String, String> options = getOptions();
       if (!options.containsKey("suppressWarnings")) {
         return null;
       }
@@ -2159,6 +2164,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
 
   /**
+   * Returns true if the given error key is "unneeded.suppression", possibly prefixed by a
+   * checkername
+   *
+   * @param errKey an error key
+   * @return true if the given error key is "unneeded.suppression"
+   */
+  private boolean isUnnededSuppression(String errKey) {
+    int colonPos = errKey.indexOf(":");
+    if (errKey == -1) {
+      return errKey.equals(UNNEEDED_SUPPRESSION_KEY);
+    } else {
+      return errKey.substring(errKey, colonPos + 1).equals(UNNEEDED_SUPPRESSION_KEY)
+          && getSuppressWarningsPrefixes().contains(errKey.substring(0, colonPos));
+    }
+  }
+
+  /**
    * Determines whether all the warnings pertaining to a given element should be suppressed. Returns
    * true if the element is within the scope of a @SuppressWarnings annotation, one of whose values
    * suppresses all the checker's warnings.
@@ -2170,7 +2192,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
-    if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
+    if (isUnnededSuppression(errKey)) {
       // Never suppress an "unneeded.suppression" warning.
       // TODO: This choice is questionable, because these warnings should be suppressable just
       // like any others.  The reason for the choice is that if a user writes
