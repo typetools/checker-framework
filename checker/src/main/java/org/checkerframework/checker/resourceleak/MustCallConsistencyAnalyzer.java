@@ -1307,7 +1307,7 @@ class MustCallConsistencyAnalyzer {
       }
     } else if (permitInitializationLeak && TreeUtils.isConstructor(enclosingMethodTree)) {
       Element enclosingClassElement =
-          TreeUtils.elementFromTree(enclosingMethodTree).getEnclosingElement();
+          TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
         Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
         if (Objects.equals(enclosingClassElement, receiverElement)) {

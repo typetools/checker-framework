@@ -102,7 +102,7 @@ public class MustCallInferenceLogic {
     Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
 
     if (receiverEl != null && typeFactory.isCandidateOwningField(receiverEl)) {
-      Element method = TreeUtils.elementFromTree(mNode.getTree());
+      Element method = TreeUtils.elementFromUse(mNode.getTree());
       List<String> mustCallValues = typeFactory.getMustCallValue(receiverEl);
 
       // This assumes that any MustCall annotation has at most one element.

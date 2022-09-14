@@ -15,6 +15,9 @@ introduced since JDK 11).
 
 Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
 
+Use `TreeUtils.elementFromDeclaration` and `TreeUtils.elementFromUse` in
+preference to `TreeUtils.elementFromTree`, when possible.
+
 **Closed issues:**
 
 

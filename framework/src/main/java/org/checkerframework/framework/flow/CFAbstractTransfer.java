@@ -832,7 +832,7 @@ public abstract class CFAbstractTransfer<
       if (classTree == null) {
         return result;
       }
-      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
+      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromDeclaration(classTree);
 
       ExecutableElement methodElem =
           TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));
