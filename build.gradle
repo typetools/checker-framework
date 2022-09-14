@@ -155,6 +155,7 @@ allprojects {
     plumeUtilVersion = '1.5.9'
   }
 
+  if (!isJava8) {
   spotless {
     format 'misc', {
       // define the files to apply `misc` to
@@ -169,6 +170,7 @@ allprojects {
       googleJavaFormat()
       formatAnnotations()
     }
+  }
   }
 
     // After all the tasks have been created, modify some of them.
