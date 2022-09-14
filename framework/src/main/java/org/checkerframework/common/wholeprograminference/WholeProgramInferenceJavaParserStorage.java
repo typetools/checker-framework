@@ -528,7 +528,7 @@ public class WholeProgramInferenceJavaParserStorage
               // Ordering$1 in PolyCollectorTypeVar.java in the all-systems test suite.
               // addClass(ClassTree) in the then branch just below assumes that such an element
               // exists.
-              Element classElt = TreeUtils.elementFromTree(body);
+              Element classElt = TreeUtils.elementFromDeclaration(body);
               if (classElt != null) {
                 addClass(body);
               } else {
@@ -616,7 +616,7 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
-            ExecutableElement element = TreeUtils.elementFromTree(javacTree);
+            ExecutableElement element = TreeUtils.elementFromDeclaration(javacTree);
             if (element == null) {
               // element can be null if there is no element corresponding to the method,
               // which happens for certain kinds of anonymous classes, such as Ordering$1 in
@@ -660,7 +660,7 @@ public class WholeProgramInferenceJavaParserStorage
             // This seems to occur when javacTree is a local variable in the second
             // class located in a source file. If this check returns false, then the
             // below call to TreeUtils.elementFromDeclaration causes a crash.
-            if (TreeUtils.elementFromTree(javacTree) == null) {
+            if (TreeUtils.elementFromDeclaration(javacTree) == null) {
               return;
             }
 

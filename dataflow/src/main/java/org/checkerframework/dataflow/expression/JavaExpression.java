@@ -10,6 +10,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -437,7 +438,7 @@ public abstract class JavaExpression {
           result = new ClassName(ele.asType());
           break;
         }
-        result = fromVariableElement(typeOfId, (VariableElement) ele);
+        result = fromVariableElement(typeOfId, (VariableElement) ele, identifierTree);
         break;
 
       case UNARY_PLUS:
@@ -492,7 +493,8 @@ public abstract class JavaExpression {
    * @return a JavaExpression for {@code tree}
    */
   public static JavaExpression fromVariableTree(VariableTree tree) {
-    return fromVariableElement(TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree));
+    return fromVariableElement(
+        TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree), tree);
   }
 
   /**
@@ -500,9 +502,14 @@ public abstract class JavaExpression {
    *
    * @param typeOfEle the type of {@code ele}
    * @param ele element whose JavaExpression is returned
+   * @param tree the tree for the variable
    * @return the Java expression corresponding to the given variable element {@code ele}
    */
-  private static JavaExpression fromVariableElement(TypeMirror typeOfEle, VariableElement ele) {
+  private static JavaExpression fromVariableElement(
+      TypeMirror typeOfEle, @Nullable VariableElement ele, Tree tree) {
+    if (ele == null) {
+      return new Unknown(tree);
+    }
     switch (ele.getKind()) {
       case LOCAL_VARIABLE:
       case RESOURCE_VARIABLE:
@@ -692,6 +699,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public final JavaExpression atMethodBody(MethodTree methodTree) {
+    @SuppressWarnings("nullness:argument") // elementFromDeclaration is non-null for a parameter
     List<JavaExpression> parametersJe =
         CollectionsPlume.mapList(
             (VariableTree param) -> new LocalVariable(TreeUtils.elementFromDeclaration(param)),

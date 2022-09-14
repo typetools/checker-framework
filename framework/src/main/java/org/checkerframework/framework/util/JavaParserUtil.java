@@ -32,7 +32,7 @@ public class JavaParserUtil {
 
   /**
    * The Language Level to use when parsing if a specific level isn't applied. This should be the
-   * highest version of Java that the Checker Framework can process. Currently, Java 17.
+   * highest version of Java that the Checker Framework can process.
    */
   public static LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
 

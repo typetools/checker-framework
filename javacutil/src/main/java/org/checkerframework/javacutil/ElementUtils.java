@@ -381,7 +381,7 @@ public class ElementUtils {
    * @param elt an element
    * @return true if the element is a reference to a compile-time constant
    */
-  public static boolean isCompileTimeConstant(Element elt) {
+  public static boolean isCompileTimeConstant(@Nullable Element elt) {
     return elt != null
         && (elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.LOCAL_VARIABLE)
         && ((VariableElement) elt).getConstantValue() != null;
