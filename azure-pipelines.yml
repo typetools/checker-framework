@@ -257,7 +257,8 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
-# "condition: false" because as of 6 Sep 2022, the Error Prone compiler is crashing when compiling Guava.
+# "condition: false" because as of 6 Sep 2022, the Error Prone compiler is crashing
+# when compiling Guava (even on the Guava mainline without type annotations).
 # TODO: remove "condition: false" and reinstate dependences on this.
 - job: guava_jdk17
   condition: false
