@@ -10,6 +10,9 @@ plugins {
     id "net.ltgt.errorprone" version "2.0.2"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.1' apply false
+
+    // Code formatting; defines targets "spotlessApply" and "spotlessCheck"
+    id "com.diffplug.spotless" version "6.11.0"
 }
 apply plugin: "de.undercouch.download"
 
@@ -96,6 +99,7 @@ allprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: "de.undercouch.download"
     apply plugin: 'net.ltgt.errorprone'
+    apply plugin: 'com.diffplug.spotless'
 
     group 'org.checkerframework'
     // Increment the minor version (second number) rather than just the patch
@@ -151,6 +155,21 @@ allprojects {
     plumeUtilVersion = '1.5.9'
   }
 
+  spotless {
+    format 'misc', {
+      // define the files to apply `misc` to
+      target '*.gradle', '*.md', '.gitignore'
+
+      // define the steps to apply to those files
+      trimTrailingWhitespace()
+      indentWithSpaces(2)
+      endWithNewline()
+    }
+    java {
+      googleJavaFormat()
+      formatAnnotations()
+    }
+  }
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
