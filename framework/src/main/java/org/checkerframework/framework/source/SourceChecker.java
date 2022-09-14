@@ -1999,7 +1999,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Returns true if all the warnings pertaining to the given source should be suppressed. This
-   * implementation just that delegates to an overloaded, more specific version of {@code
+   * implementation just delegates to an overloaded, more specific version of {@code
    * shouldSuppressWarnings()}.
    *
    * @param src the position object to test; may be an Element, a Tree, or null
