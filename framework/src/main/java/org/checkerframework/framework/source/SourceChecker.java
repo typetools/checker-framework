@@ -2070,7 +2070,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     // iterate through the path; continue until path contains no declarations
-    for (TreePath declPath = path;
+    for (@Nullable TreePath declPath = path;
         declPath != null;
         declPath = TreePathUtil.enclosingDeclarationPath(declPath)) {
       Tree decl = declPath.getLeaf();
