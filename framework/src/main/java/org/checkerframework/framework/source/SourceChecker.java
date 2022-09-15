@@ -403,9 +403,6 @@ import org.plumelib.util.UtilPlume;
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
-  /** If true, output diagnostics about warnings suppressions. */
-  boolean debugWarningSuppression = false;
-
   // TODO A checker should export itself through a separate interface, and maybe have an interface
   // for all the methods for which it's safe to override.
 
@@ -1907,9 +1904,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * with this checker name or "allcheckers".
    */
   protected void warnUnneededSuppressions() {
-    if (debugWarningSuppression) {
-      System.out.printf("entering warnUnneededSuppressions()");
-    }
     if (!hasOption("warnUnneededSuppressions")) {
       return;
     }
@@ -1920,9 +1914,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
     warnUnneededSuppressions(elementsSuppress, prefixes, errorKeys);
     getVisitor().treesWithSuppressWarnings.clear();
-    if (debugWarningSuppression) {
-      System.out.printf("exiting  warnUnneededSuppressions()");
-    }
   }
 
   /**
@@ -1937,40 +1928,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected void warnUnneededSuppressions(
       Set<Element> elementsSuppress, Set<String> prefixes, Set<String> allErrorKeys) {
-    if (debugWarningSuppression) {
-      System.out.printf("warnUnneededSuppressions(%s, ...)%n", elementsSuppress);
-    }
     for (Tree tree : getVisitor().treesWithSuppressWarnings) {
-      if (debugWarningSuppression) {
-        System.out.printf(
-            "tree with @SuppressWarnings: %s%n", TreeUtils.toStringTruncated(tree, 80));
-      }
       Element elt = TreeUtils.elementFromTree(tree);
       // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
       // *some* warning doesn't mean that every value in it did so.
-      if (debugWarningSuppression) {
-        System.out.printf(
-            "elementsSuppress.contains(%s) = %s%n", elt, elementsSuppress.contains(elt));
-      }
       if (elementsSuppress.contains(elt)) {
         continue;
       }
       // tree has a @SuppressWarnings annotation that didn't suppress any warnings.
       SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
       String[] suppressWarningsStrings = suppressAnno.value();
-      if (debugWarningSuppression) {
-        System.out.printf(
-            "suppressWarningsStrings = %s%n", Arrays.toString(suppressWarningsStrings));
-      }
       for (String suppressWarningsString : suppressWarningsStrings) {
         if (warnUnneededSuppressionsExceptions != null
             && warnUnneededSuppressionsExceptions.matcher(suppressWarningsString).find(0)) {
           continue;
         }
         for (String prefix : prefixes) {
-          if (debugWarningSuppression) {
-            System.out.printf("  prefix: %s%n", prefix);
-          }
           if (suppressWarningsString.equals(prefix)
               || (suppressWarningsString.startsWith(prefix + ":")
                   && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
@@ -1992,11 +1965,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // TODO: look for @SuppressWarnings("unneeded.suppression") and if it exists, don't issue this
     // warning.
     boolean ssw = shouldSuppressWarnings(tree, "unneeded.suppression");
-    if (debugWarningSuppression) {
-      System.out.printf(
-          "shouldSuppressWarnings(%s, %s) => %s%n",
-          TreeUtils.toStringTruncated(tree, 80), suppressWarningsString, ssw);
-    }
 
     Tree swTree = findSuppressWarningsAnnotationTree(tree);
     report(
@@ -2072,11 +2040,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public boolean shouldSuppressWarnings(Tree tree, String errKey) {
 
-    if (debugWarningSuppression) {
-      System.out.printf(
-          "shouldSuppressWarnings(Tree %s, %s)%n", TreeUtils.toStringTruncated(tree, 80), errKey);
-    }
-
     Collection<String> prefixes = getSuppressWarningsPrefixes();
     if (prefixes.isEmpty() || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
       throw new BugInCF(
@@ -2108,11 +2071,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(@Nullable TreePath path, String errKey) {
-    if (debugWarningSuppression) {
-      System.out.printf(
-          "shouldSuppressWarnings(TreePath %s, %s)%n",
-          TreePathUtil.leafToStringTruncated(path, 80), errKey);
-    }
 
     if (path == null) {
       return false;
@@ -2217,7 +2175,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return true if the given error key is "unneeded.suppression"
    */
   private boolean keyIsUnneededSuppression(String errKey) {
-    // if (debugWarningSuppression) {System.out.printf("keyIsUnneededSuppression(%s)%n", errKey);}
     int colonPos = errKey.indexOf(":");
     boolean result;
     if (colonPos == -1) {
@@ -2226,9 +2183,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       result =
           errKey.substring(colonPos + 1).equals(UNNEEDED_SUPPRESSION_KEY)
               && getSuppressWarningsPrefixes().contains(errKey.substring(0, colonPos));
-    }
-    if (debugWarningSuppression) {
-      System.out.printf("keyIsUnneededSuppression(%s) => %s%n", errKey, result);
     }
     return result;
   }
@@ -2245,9 +2199,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(final @Nullable Element elt, String errKey) {
-    if (debugWarningSuppression) {
-      System.out.printf("shouldSuppressWarnings(Element %s, %s)%n", elt, errKey);
-    }
 
     if (false) {
       if (keyIsUnneededSuppression(errKey)) {
@@ -2257,36 +2208,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // `@SuppressWarnings("nullness")` that isn't needed, then that annotation would
         // suppress the unneeded suppression warning.  It would take extra work to permit more
         // desirable behavior in that case.
-        if (debugWarningSuppression) {
-          System.out.printf("shouldSuppressWarnings(Element %s, %s) => false%n", elt, errKey);
-        }
         return false;
       }
     }
 
     if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
-      if (debugWarningSuppression) {
-        System.out.printf("shouldSuppressWarnings(Element %s, %s) => true%n", elt, errKey);
-      }
       return true;
     }
 
     for (Element currElt = elt; currElt != null; currElt = currElt.getEnclosingElement()) {
-      if (debugWarningSuppression) {
-        System.out.printf(
-            "shouldSuppressWarnings(Element %s, %s), currElt = %s%n", elt, errKey, currElt);
-      }
       SuppressWarnings suppressWarningsAnno = currElt.getAnnotation(SuppressWarnings.class);
       if (suppressWarningsAnno != null) {
         String[] suppressWarningsStrings = suppressWarningsAnno.value();
         if (shouldSuppress(suppressWarningsStrings, errKey)) {
           if (hasOption("warnUnneededSuppressions")) {
             elementsWithSuppressedWarnings.add(currElt);
-          }
-          if (debugWarningSuppression) {
-            System.out.printf(
-                "shouldSuppressWarnings(Element %s, %s) [at elt = %s] => true%n",
-                elt, errKey, currElt);
           }
           return true;
         }
@@ -2296,9 +2232,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // enclosing elements, because they may not have an @AnnotatedFor.
         return false;
       }
-    }
-    if (debugWarningSuppression) {
-      System.out.printf("shouldSuppressWarnings(Element %s, %s) => false%n", elt, errKey);
     }
     return false;
   }
@@ -2351,33 +2284,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private boolean shouldSuppress(
       Set<String> prefixes, String @Nullable [] suppressWarningsInEffect, String messageKey) {
-    if (debugWarningSuppression) {
-      System.out.printf(
-          "shouldSuppress(%s, %s, %s)%n",
-          prefixes, Arrays.toString(suppressWarningsInEffect), messageKey);
-    }
     if (suppressWarningsInEffect == null) {
       return false;
     }
     // Is the name of the checker required to suppress a warning?
     boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
-    if (debugWarningSuppression) {
-      System.out.printf(
-          "shouldSuppress(%s, %s, %s): requirePrefix = %s%n",
-          prefixes, Arrays.toString(suppressWarningsInEffect), messageKey, requirePrefix);
-    }
 
     for (String currentSuppressWarningsInEffect : suppressWarningsInEffect) {
       int colonPos = currentSuppressWarningsInEffect.indexOf(":");
-      if (debugWarningSuppression) {
-        System.out.printf(
-            "shouldSuppress(%s, %s, %s)%n  currentSuppressWarningsInEffect = %s, colonpos = %d%n",
-            prefixes,
-            Arrays.toString(suppressWarningsInEffect),
-            messageKey,
-            currentSuppressWarningsInEffect,
-            colonPos);
-      }
       String messageKeyInSuppressWarningsString;
       if (colonPos == -1) {
         // The SuppressWarnings string has no colon, so it is not of the form
@@ -2386,30 +2300,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           // The value in the @SuppressWarnings is exactly a prefix.
           // Suppress the warning unless its message key is "unneeded.suppression".
           boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
-          if (debugWarningSuppression) {
-            System.out.printf(
-                "shouldSuppress(%s, %s, %s) => %s%n",
-                prefixes, Arrays.toString(suppressWarningsInEffect), messageKey, result);
-          }
           return result;
         } else if (requirePrefix) {
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix; check the next SuppressWarnings string.
-          if (debugWarningSuppression) {
-            System.out.printf(
-                "shouldSuppress(%s, %s, %s): continue%n",
-                prefixes, Arrays.toString(suppressWarningsInEffect), messageKey);
-          }
           continue;
         } else if (currentSuppressWarningsInEffect.equals(SUPPRESS_ALL_MESSAGE_KEY)) {
           // Prefixes aren't required and the SuppressWarnings string is "all".
           // Suppress the warning unless its message key is "unneeded.suppression".
           boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
-          if (debugWarningSuppression) {
-            System.out.printf(
-                "shouldSuppress(%s, %s, %s) => %s%n",
-                prefixes, Arrays.toString(suppressWarningsInEffect), messageKey, result);
-          }
           return result;
         }
         // The currentSuppressWarningsInEffect is not a prefix or a prefix:message-key, so it might
@@ -2427,25 +2326,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         messageKeyInSuppressWarningsString =
             currentSuppressWarningsInEffect.substring(colonPos + 1);
       }
-      if (debugWarningSuppression) {
-        System.out.printf(
-            "shouldSuppress(%s, %s, %s)%n  messageKeyInSuppressWarningsString = %s%n",
-            prefixes,
-            currentSuppressWarningsInEffect,
-            messageKey,
-            messageKeyInSuppressWarningsString);
-      }
       // Check if the message key in the warning suppression is part of the message key that
       // the checker is emiting.
       if (messageKey.equals(messageKeyInSuppressWarningsString)
           || messageKey.startsWith(messageKeyInSuppressWarningsString + ".")
           || messageKey.endsWith("." + messageKeyInSuppressWarningsString)
           || messageKey.contains("." + messageKeyInSuppressWarningsString + ".")) {
-        if (debugWarningSuppression) {
-          System.out.printf(
-              "shouldSuppress(%s, %s, %s) => true%n",
-              prefixes, currentSuppressWarningsInEffect, messageKey);
-        }
         return true;
       }
     }
