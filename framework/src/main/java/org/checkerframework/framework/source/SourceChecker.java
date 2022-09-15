@@ -1953,7 +1953,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         for (String prefix : prefixes) {
           System.out.printf("  prefix: %s%n", prefix);
           if (suppressWarningsString.equals(prefix)
-              || suppressWarningsString.startsWith(prefix + ":")) {
+              || (suppressWarningsString.startsWith(prefix + ":")
+                  && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
             reportUnneededSuppression(tree, suppressWarningsString);
             break; // Don't report the same warning string more than once.
           }
@@ -1969,6 +1970,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param suppressWarningsString the SuppressWarnings string that isn't needed
    */
   private void reportUnneededSuppression(Tree tree, String suppressWarningsString) {
+    // TODO: look for @SuppressWarnings("unneeded.suppression") and if it exists, don't issue this
+    // warning.
+    boolean ssw = shouldSuppressWarnings(tree, "unneeded.suppression");
+    System.out.printf(
+        "shouldSuppressWarnings(%s, %s) => %s%n",
+        TreeUtils.toStringTruncated(tree, 60), suppressWarningsString, ssw);
+
     Tree swTree = findSuppressWarningsAnnotationTree(tree);
     report(
         swTree,
@@ -2207,7 +2215,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     declaration with an appropriately-valued {@code @SuppressWarnings} annotation; false
    *     otherwise
    */
-  public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
+  public boolean shouldSuppressWarnings(final @Nullable Element elt, String errKey) {
+    Element eltOrig = elt;
     System.out.printf("shouldSuppressWarnings(Element %s, %s)%n", elt, errKey);
 
     if (keyIsUnneededSuppression(errKey)) {
@@ -2226,15 +2235,20 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return true;
     }
 
-    while (elt != null) {
-      SuppressWarnings suppressWarningsAnno = elt.getAnnotation(SuppressWarnings.class);
+    Element currElt = elt;
+    while (currElt != null) {
+      System.out.printf(
+          "shouldSuppressWarnings(Element %s, %s), now elt = %s%n", elt, errKey, currElt);
+      SuppressWarnings suppressWarningsAnno = currElt.getAnnotation(SuppressWarnings.class);
       if (suppressWarningsAnno != null) {
         String[] suppressWarningsStrings = suppressWarningsAnno.value();
         if (shouldSuppress(suppressWarningsStrings, errKey)) {
           if (hasOption("warnUnneededSuppressions")) {
-            elementsWithSuppressedWarnings.add(elt);
+            elementsWithSuppressedWarnings.add(currElt);
           }
-          System.out.printf("shouldSuppressWarnings(Element %s, %s) => true%n", elt, errKey);
+          System.out.printf(
+              "shouldSuppressWarnings(Element %s, %s) [at elt = %s] => true%n",
+              elt, errKey, currElt);
           return true;
         }
       }
@@ -2243,7 +2257,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // enclosing elements, because they may not have an @AnnotatedFor.
         return false;
       }
-      elt = elt.getEnclosingElement();
+      currElt = currElt.getEnclosingElement();
     }
     System.out.printf("shouldSuppressWarnings(Element %s, %s) => false%n", elt, errKey);
     return false;
