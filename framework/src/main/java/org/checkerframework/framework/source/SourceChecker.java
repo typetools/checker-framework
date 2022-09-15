@@ -1962,10 +1962,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param suppressWarningsString the SuppressWarnings string that isn't needed
    */
   private void reportUnneededSuppression(Tree tree, String suppressWarningsString) {
-    // TODO: look for @SuppressWarnings("unneeded.suppression") and if it exists, don't issue this
-    // warning.
-    boolean ssw = shouldSuppressWarnings(tree, "unneeded.suppression");
-
     Tree swTree = findSuppressWarningsAnnotationTree(tree);
     report(
         swTree,
@@ -2071,7 +2067,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(@Nullable TreePath path, String errKey) {
-
     if (path == null) {
       return false;
     }
@@ -2163,28 +2158,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
 
-  // TODO: I don't think the "possibly preceded by a checkername" part is necessary, and therefore
-  // this method is not necessary.
-  /**
-   * Returns true if the given error key is "unneeded.suppression", possibly prefixed by a
-   * checkername.
-   *
-   * @param errKey an error key
-   * @return true if the given error key is "unneeded.suppression"
-   */
-  private boolean keyIsUnneededSuppression(String errKey) {
-    int colonPos = errKey.indexOf(":");
-    boolean result;
-    if (colonPos == -1) {
-      result = errKey.equals(UNNEEDED_SUPPRESSION_KEY);
-    } else {
-      result =
-          errKey.substring(colonPos + 1).equals(UNNEEDED_SUPPRESSION_KEY)
-              && getSuppressWarningsPrefixes().contains(errKey.substring(0, colonPos));
-    }
-    return result;
-  }
-
   /**
    * Determines whether all the warnings pertaining to a given element should be suppressed. Returns
    * true if the element is within the scope of a @SuppressWarnings annotation, one of whose values
@@ -2196,19 +2169,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     declaration with an appropriately-valued {@code @SuppressWarnings} annotation; false
    *     otherwise
    */
-  public boolean shouldSuppressWarnings(final @Nullable Element elt, String errKey) {
-
-    if (false) {
-      if (keyIsUnneededSuppression(errKey)) {
-        // Never suppress an "unneeded.suppression" warning.
-        // TODO: This choice is questionable, because these warnings should be suppressable just
-        // like any others.  The reason for the choice is that if a user writes
-        // `@SuppressWarnings("nullness")` that isn't needed, then that annotation would
-        // suppress the unneeded suppression warning.  It would take extra work to permit more
-        // desirable behavior in that case.
-        return false;
-      }
-    }
+  public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
 
     if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
       return true;
