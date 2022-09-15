@@ -2069,10 +2069,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return false;
     }
 
+    @Nullable TreePath declPath = path;
+    if (!TreeUtils.isDeclarationTree(declPath.getLeaf())) {
+      declPath = TreePathUtil.enclosingDeclarationPath(declPath);
+    }
     // iterate through the path; continue until path contains no declarations
-    for (@Nullable TreePath declPath = path;
-        declPath != null;
-        declPath = TreePathUtil.enclosingDeclarationPath(declPath)) {
+    for (; declPath != null; declPath = TreePathUtil.enclosingDeclarationPath(declPath)) {
       Tree decl = declPath.getLeaf();
 
       if (decl.getKind() == Tree.Kind.VARIABLE) {
