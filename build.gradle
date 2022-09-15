@@ -154,7 +154,6 @@ allprojects {
     plumeUtilVersion = '1.5.9'
   }
 
-  if (!isJava8) {
   spotless {
     format 'misc', {
       // define the files to apply `misc` to
@@ -170,7 +169,16 @@ allprojects {
       formatAnnotations()
     }
   }
+  // The Spotless plugin uses the latest version of google-java-format
+  // that is compatible with the currently running JVM. Under Java 8,
+  // that is an older version that produces different formatting.
+  if (isJava8) {
+    spotlessApply.enabled = false
+    spotlessCheck.enabled = false
+    spotlessJavaApply.enabled = false
+    spotlessJavaCheck.enabled = false
   }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
