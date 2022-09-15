@@ -2068,18 +2068,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (path == null) {
       return false;
     }
-    System.out.printf("shouldSuppressWarnings(%s)%n", TreePathUtil.leafToStringTruncated(path, 60));
 
-    @Nullable TreePath declPath = path;
-    if (!TreeUtils.isDeclarationTree(declPath.getLeaf())) {
-      declPath = TreePathUtil.enclosingDeclarationPath(declPath);
-    }
     // iterate through the path; continue until path contains no declarations
-    for (; declPath != null; declPath = TreePathUtil.enclosingDeclarationPath(declPath)) {
-      System.out.printf(
-          "at top of loop, declPath = %s%n  enclosing = %s%n",
-          TreePathUtil.leafToStringTruncated(declPath, 60),
-          TreePathUtil.leafToStringTruncated(TreePathUtil.enclosingDeclarationPath(declPath), 60));
+    for (@Nullable TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
+        declPath != null;
+        declPath = TreePathUtil.enclosingDeclarationPath(declPath.getParentPath())) {
 
       Tree decl = declPath.getLeaf();
 
