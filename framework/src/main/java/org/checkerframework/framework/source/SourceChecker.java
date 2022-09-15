@@ -2068,6 +2068,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (path == null) {
       return false;
     }
+    System.out.printf("shouldSuppressWarnings(%s)%n", TreePathUtil.leafToStringTruncated(path, 60));
 
     @Nullable TreePath declPath = path;
     if (!TreeUtils.isDeclarationTree(declPath.getLeaf())) {
@@ -2075,6 +2076,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
     // iterate through the path; continue until path contains no declarations
     for (; declPath != null; declPath = TreePathUtil.enclosingDeclarationPath(declPath)) {
+      System.out.printf(
+          "at top of loop, declPath = %s%n  enclosing = %s%n",
+          TreePathUtil.leafToStringTruncated(declPath, 60),
+          TreePathUtil.leafToStringTruncated(TreePathUtil.enclosingDeclarationPath(declPath), 60));
+
       Tree decl = declPath.getLeaf();
 
       if (decl.getKind() == Tree.Kind.VARIABLE) {
