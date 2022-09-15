@@ -7,20 +7,12 @@
 # Fail if any command fails
 set -e
 
-# On commit we only need to check files that changed.
-# Need to keep checked files in sync with getJavaFilesToFormat in build.gradle.
-# Otherwise `./gradlew reformat` might not reformat a file that this
-# hook complains about.
+## Apply formatting.  This is slow (3+ seconds).
+./gradlew spotlessApply -q
+
 CHANGED_JAVA_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep '\.java$' | grep -v '/jdk/' | grep -v 'stubparser/' | grep -v '/nullness-javac-errors/' | grep -v 'dataflow/manual/examples/' | grep -v '/java17/' | grep -v 'records/') || true
 # echo "CHANGED_JAVA_FILES=${CHANGED_JAVA_FILES}"
 if [ -n "$CHANGED_JAVA_FILES" ]; then
-    ./gradlew getCodeFormatScripts -q
-    ## For debugging:
-    # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
-
-    # shellcheck disable=SC2086
-    python3 checker/bin-devel/.run-google-java-format/check-google-java-format.py ${CHANGED_JAVA_FILES} || (echo "Problem in pre-commit.  Try running: ./gradlew reformat" && /bin/false)
-
     BRANCH=$(git rev-parse --abbrev-ref HEAD)
     if [ "$BRANCH" = "master" ]; then
         git diff --staged > /tmp/diff.txt
