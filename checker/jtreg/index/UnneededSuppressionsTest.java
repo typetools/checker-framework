@@ -2,14 +2,16 @@
  * @test
  * @summary Test -AwarnUnneededSuppressions
  *
- * @compile/ref=UnneededSuppressionsTest.out -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker -AwarnUnneededSuppressions UnneededSuppressionsTest.java
+ * @compile/ref=UnneededSuppressionsTest.out -XDrawDiagnostics -processor org.checkerframework.checker.index.IndexChecker,org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions UnneededSuppressionsTest.java
  */
 
-import org.checkerframework.checker.index.qual.NonNegative;
-
+@SuppressWarnings("nullness:unneeded.suppression")
+/*
 @SuppressWarnings("index")
+*/
 public class UnneededSuppressionsTest {
 
+  /*
   void method(@NonNegative int i) {
     @SuppressWarnings("index")
     @NonNegative int x = i - 1;
@@ -42,4 +44,39 @@ public class UnneededSuppressionsTest {
 
   @SuppressWarnings("allcheckers:purity.not.deterministic.call")
   void method8() {}
+
+  @SuppressWarnings("nullness:return")
+  public String getClassAndUid0() {
+    return "hello";
+  }
+  */
+
+  @SuppressWarnings({"nullness:return"})
+  public String getClassAndUid1() {
+    return "hello";
+  }
+
+  /*
+  @SuppressWarnings({"nullness:return", "unneeded.suppression"})
+  public String getClassAndUid2() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness:return", "nullness:unneeded.suppression"})
+  public String getClassAndUid3() {
+    return "hello";
+  }
+  */
+
+  /*
+  @SuppressWarnings({"unneeded.suppression", "nullness:return"})
+  public String getClassAndUid5() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness:unneeded.suppression", "nullness:return"})
+  public String getClassAndUid6() {
+    return "hello";
+  }
+  */
 }

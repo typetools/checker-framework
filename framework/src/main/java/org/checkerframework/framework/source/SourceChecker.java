@@ -415,11 +415,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** The message key emitted when an unused warning suppression is found. */
   public static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY = "unneeded.suppression";
 
-  // Using a variable avoids a concatenation in an inner loop.
-  /** The message key suffix emitted when an unused warning suppression is found. */
-  private static final @CompilerMessageKey String UNNEEDED_SUPPRESSION_KEY_SUFFIX =
-      ":unneeded.suppression";
-
   /** File name of the localized messages. */
   protected static final String MSGS_FILE = "messages.properties";
 
@@ -1909,6 +1904,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * with this checker name or "allcheckers".
    */
   protected void warnUnneededSuppressions() {
+    System.out.printf("entering warnUnneededSuppressions()");
     if (!hasOption("warnUnneededSuppressions")) {
       return;
     }
@@ -1919,11 +1915,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
     warnUnneededSuppressions(elementsSuppress, prefixes, errorKeys);
     getVisitor().treesWithSuppressWarnings.clear();
+    System.out.printf("exiting  warnUnneededSuppressions()");
   }
 
   /**
    * Issues a warning about any {@code @SuppressWarnings} string that didn't suppress a warning, but
-   * starts with one of the given prefixes (checker names).
+   * starts with one of the given prefixes (checker names). Does nothing if the string doesn't start
+   * with a checker name.
    *
    * @param elementsSuppress elements with a {@code @SuppressWarnings} that actually suppressed a
    *     warning
@@ -1932,22 +1930,28 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected void warnUnneededSuppressions(
       Set<Element> elementsSuppress, Set<String> prefixes, Set<String> allErrorKeys) {
+    System.out.printf("warnUnneededSuppressions(%s, ...)%n", elementsSuppress);
     for (Tree tree : getVisitor().treesWithSuppressWarnings) {
+      System.out.printf("tree with @SuppressWarnings: %s%n", TreeUtils.toStringTruncated(tree, 60));
       Element elt = TreeUtils.elementFromTree(tree);
       // TODO: This test is too coarse.  The fact that this @SuppressWarnings suppressed
       // *some* warning doesn't mean that every value in it did so.
+      System.out.printf(
+          "elementsSuppress.contains(%s) = %s%n", elt, elementsSuppress.contains(elt));
       if (elementsSuppress.contains(elt)) {
         continue;
       }
       // tree has a @SuppressWarnings annotation that didn't suppress any warnings.
       SuppressWarnings suppressAnno = elt.getAnnotation(SuppressWarnings.class);
       String[] suppressWarningsStrings = suppressAnno.value();
+      System.out.printf("suppressWarningsStrings = %s%n", Arrays.toString(suppressWarningsStrings));
       for (String suppressWarningsString : suppressWarningsStrings) {
         if (warnUnneededSuppressionsExceptions != null
             && warnUnneededSuppressionsExceptions.matcher(suppressWarningsString).find(0)) {
           continue;
         }
         for (String prefix : prefixes) {
+          System.out.printf("  prefix: %s%n", prefix);
           if (suppressWarningsString.equals(prefix)
               || suppressWarningsString.startsWith(prefix + ":")) {
             reportUnneededSuppression(tree, suppressWarningsString);
@@ -1965,7 +1969,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param suppressWarningsString the SuppressWarnings string that isn't needed
    */
   private void reportUnneededSuppression(Tree tree, String suppressWarningsString) {
-    Tree swTree = findSuppressWarningsTree(tree);
+    Tree swTree = findSuppressWarningsAnnotationTree(tree);
     report(
         swTree,
         Kind.MANDATORY_WARNING,
@@ -1983,7 +1987,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param tree a class, method, or variable tree annotated with {@code @SuppressWarnings}
    * @return tree for {@code @SuppressWarnings} or {@code default} if one isn't found
    */
-  private Tree findSuppressWarningsTree(Tree tree) {
+  private Tree findSuppressWarningsAnnotationTree(Tree tree) {
     List<? extends AnnotationTree> annotations;
     if (TreeUtils.isClassTree(tree)) {
       annotations = ((ClassTree) tree).getModifiers().getAnnotations();
@@ -2004,7 +2008,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Returns true if all the warnings pertaining to the given source should be suppressed. This
-   * implementation just that delegates to an overloaded, more specific version of {@code
+   * implementation just delegates to an overloaded, more specific version of {@code
    * shouldSuppressWarnings()}.
    *
    * @param src the position object to test; may be an Element, a Tree, or null
@@ -2039,6 +2043,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public boolean shouldSuppressWarnings(Tree tree, String errKey) {
 
+    System.out.printf(
+        "shouldSuppressWarnings(Tree %s, %s)%n", TreeUtils.toStringTruncated(tree, 60), errKey);
+
     Collection<String> prefixes = getSuppressWarningsPrefixes();
     if (prefixes.isEmpty() || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
       throw new BugInCF(
@@ -2070,6 +2077,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(@Nullable TreePath path, String errKey) {
+    System.out.printf(
+        "shouldSuppressWarnings(TreePath %s, %s)%n",
+        TreePathUtil.leafToStringTruncated(path, 60), errKey);
+
     if (path == null) {
       return false;
     }
@@ -2170,14 +2181,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param errKey an error key
    * @return true if the given error key is "unneeded.suppression"
    */
-  private boolean isUnnededSuppression(String errKey) {
+  private boolean keyIsUnneededSuppression(String errKey) {
+    System.out.printf("keyIsUnneededSuppression(%s)%n", errKey);
     int colonPos = errKey.indexOf(":");
-    if (errKey == -1) {
-      return errKey.equals(UNNEEDED_SUPPRESSION_KEY);
+    boolean result;
+    if (colonPos == -1) {
+      result = errKey.equals(UNNEEDED_SUPPRESSION_KEY);
     } else {
-      return errKey.substring(errKey, colonPos + 1).equals(UNNEEDED_SUPPRESSION_KEY)
-          && getSuppressWarningsPrefixes().contains(errKey.substring(0, colonPos));
+      result =
+          errKey.substring(colonPos + 1).equals(UNNEEDED_SUPPRESSION_KEY)
+              && getSuppressWarningsPrefixes().contains(errKey.substring(0, colonPos));
     }
+    System.out.printf("keyIsUnneededSuppression(%s) => %s%n", errKey, result);
+    return result;
   }
 
   /**
@@ -2192,17 +2208,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
-    if (isUnnededSuppression(errKey)) {
+    System.out.printf("shouldSuppressWarnings(Element %s, %s)%n", elt, errKey);
+
+    if (keyIsUnneededSuppression(errKey)) {
       // Never suppress an "unneeded.suppression" warning.
       // TODO: This choice is questionable, because these warnings should be suppressable just
       // like any others.  The reason for the choice is that if a user writes
       // `@SuppressWarnings("nullness")` that isn't needed, then that annotation would
       // suppress the unneeded suppression warning.  It would take extra work to permit more
       // desirable behavior in that case.
+      System.out.printf("shouldSuppressWarnings(Element %s, %s) => false%n", elt, errKey);
       return false;
     }
 
     if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
+      System.out.printf("shouldSuppressWarnings(Element %s, %s) => true%n", elt, errKey);
       return true;
     }
 
@@ -2214,6 +2234,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           if (hasOption("warnUnneededSuppressions")) {
             elementsWithSuppressedWarnings.add(elt);
           }
+          System.out.printf("shouldSuppressWarnings(Element %s, %s) => true%n", elt, errKey);
           return true;
         }
       }
@@ -2224,6 +2245,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
       elt = elt.getEnclosingElement();
     }
+    System.out.printf("shouldSuppressWarnings(Element %s, %s) => false%n", elt, errKey);
     return false;
   }
 
@@ -2312,6 +2334,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
         messageKeyInSuppressWarningsString = suppressWarningsString.substring(colonPos + 1);
       }
+      System.out.printf(
+          "messageKey = %s, messageKeyInSuppressWarningsString = %s%n",
+          messageKey, messageKeyInSuppressWarningsString);
       // Check if the message key in the warning suppression is part of the message key that
       // the checker is emiting.
       if (messageKey.equals(messageKeyInSuppressWarningsString)
