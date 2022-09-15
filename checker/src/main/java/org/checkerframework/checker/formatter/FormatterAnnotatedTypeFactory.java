@@ -5,6 +5,9 @@ import com.sun.source.tree.Tree;
 import java.util.IllegalFormatException;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.afu.scenelib.annotations.Annotation;
+import org.checkerframework.afu.scenelib.annotations.el.AField;
+import org.checkerframework.afu.scenelib.annotations.el.AMethod;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
@@ -26,9 +29,6 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
 
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that

@@ -14,6 +14,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.afu.scenelib.annotations.Annotation;
+import org.checkerframework.afu.scenelib.annotations.el.AClass;
+import org.checkerframework.afu.scenelib.annotations.el.AField;
+import org.checkerframework.afu.scenelib.annotations.el.AMethod;
+import org.checkerframework.afu.scenelib.annotations.el.AScene;
+import org.checkerframework.afu.scenelib.annotations.el.ATypeElement;
+import org.checkerframework.afu.scenelib.annotations.el.DefException;
+import org.checkerframework.afu.scenelib.annotations.io.IndexFileWriter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.AnnotationConverter;
@@ -27,14 +35,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.CollectionsPlume;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.AScene;
-import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully

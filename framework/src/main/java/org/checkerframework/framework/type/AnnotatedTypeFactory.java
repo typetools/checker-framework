@@ -70,6 +70,8 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import org.checkerframework.afu.scenelib.annotations.el.AMethod;
+import org.checkerframework.afu.scenelib.annotations.el.ATypeElement;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -137,8 +139,6 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsPlume;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.ATypeElement;
 
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
