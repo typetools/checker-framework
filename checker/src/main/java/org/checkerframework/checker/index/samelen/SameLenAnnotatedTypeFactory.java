@@ -23,6 +23,7 @@ import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ArrayCreation;
@@ -177,14 +178,19 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * If the collections are disjoint, returns null. Otherwise, returns their union. The
      * collections must not contain duplicates.
      */
-    private Set<String> unionIfNotDisjoint(Collection<String> c1, Collection<String> c2) {
+    private @Nullable Set<String> unionIfNotDisjoint(Collection<String> c1, Collection<String> c2) {
       Set<String> result = new TreeSet<>(c1);
+      boolean disjoint = true;
       for (String s : c2) {
         if (!result.add(s)) {
-          return null;
+          disjoint = false;
         }
       }
-      return result;
+      if (!disjoint) {
+        return result;
+      } else {
+        return null;
+      }
     }
 
     // The GLB of two SameLen annotations is the union of the two sets of arrays, or is bottom

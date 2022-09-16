@@ -4,9 +4,6 @@
 
 public class ContainsSubstring {
 
-  @SuppressWarnings("samelen") // TODO: caused by a bug related to viewpoint adaptation. Make WPI
-  // actually viewpoint-adapt the annotations that it infers, then
-  // remove this warning suppression.
   public static void run() {
     String word1 = "\"Hamburg\"";
     String word2 = "burg";
