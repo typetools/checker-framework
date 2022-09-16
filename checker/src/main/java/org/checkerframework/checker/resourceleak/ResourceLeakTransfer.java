@@ -100,7 +100,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     }
 
     List<JavaExpression> targetExprs =
-        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
+        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressionsAtInvocation(
             n, rlTypeFactory, rlTypeFactory);
     AnnotationMirror defaultType = rlTypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {

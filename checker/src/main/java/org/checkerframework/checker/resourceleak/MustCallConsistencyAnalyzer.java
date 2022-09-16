@@ -587,7 +587,7 @@ class MustCallConsistencyAnalyzer {
 
     TreePath currentPath = typeFactory.getPath(node.getTree());
     List<JavaExpression> cmcfExpressions =
-        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
+        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressionsAtInvocation(
             node, typeFactory, typeFactory);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {

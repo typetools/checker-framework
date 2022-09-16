@@ -26,6 +26,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The visitor for the Resource Leak Checker. Responsible for checking that the rules for {@link
@@ -68,17 +69,27 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
     if (!cmcfValues.isEmpty()) {
       checkCreatesMustCallForOverrides(node, elt, mcAtf, cmcfValues);
-      //      checkCreatesMustCallForNonEmptyMustCall(node, elt, mcAtf, cmcfValues);
+      checkCreatesMustCallForTargetsHaveNonEmptyMustCall(node, mcAtf);
     }
     return super.visitMethod(node, p);
   }
 
-  //  private void checkCreatesMustCallForNonEmptyMustCall(
-  //      MethodTree node,
-  //      ExecutableElement elt,
-  //      MustCallAnnotatedTypeFactory mcAtf,
-  //      List<String> cmcfValues) {
-  //  }
+  private void checkCreatesMustCallForTargetsHaveNonEmptyMustCall(
+      MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
+    // Get all the JavaExpressions for all CreatesMustCallFor annotations
+    List<JavaExpression> createsMustCallExprs =
+        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressionsAtMethodDeclaration(
+            tree, mcAtf, mcAtf);
+    for (JavaExpression targetExpr : createsMustCallExprs) {
+      AnnotationMirror mustCallAnno =
+          mcAtf
+              .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
+              .getAnnotationInHierarchy(mcAtf.TOP);
+      if (rlTypeFactory.getMustCallValues(mustCallAnno).isEmpty()) {
+        checker.reportError(tree, "this.is.messed.up");
+      }
+    }
+  }
 
   private void checkCreatesMustCallForOverrides(
       MethodTree node,
@@ -198,7 +209,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * annotations on the given element.
    *
    * <p>Does no viewpoint-adaptation, unlike {@link
-   * CreatesMustCallForElementSupplier#getCreatesMustCallForExpressions} which does.
+   * CreatesMustCallForElementSupplier#getCreatesMustCallForExpressionsAtInvocation} which does.
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element

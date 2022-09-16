@@ -128,7 +128,7 @@ public class MustCallTransfer extends CFTransfer {
     updateStoreWithTempVar(result, n);
     if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
       List<JavaExpression> targetExprs =
-          CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
+          CreatesMustCallForElementSupplier.getCreatesMustCallForExpressionsAtInvocation(
               n, atypeFactory, atypeFactory);
       for (JavaExpression targetExpr : targetExprs) {
         AnnotationMirror defaultType =
