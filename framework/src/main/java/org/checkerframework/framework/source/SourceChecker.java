@@ -1945,7 +1945,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
         for (String prefix : prefixes) {
           if (suppressWarningsString.equals(prefix)
-              || suppressWarningsString.startsWith(prefix + ":")) {
+              || (suppressWarningsString.startsWith(prefix + ":")
+                  && !suppressWarningsString.equals(prefix + ":unneeded.suppression"))) {
             reportUnneededSuppression(tree, suppressWarningsString);
             break; // Don't report the same warning string more than once.
           }
@@ -2169,15 +2170,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     otherwise
    */
   public boolean shouldSuppressWarnings(@Nullable Element elt, String errKey) {
-    if (UNNEEDED_SUPPRESSION_KEY.equals(errKey)) {
-      // Never suppress an "unneeded.suppression" warning.
-      // TODO: This choice is questionable, because these warnings should be suppressable just
-      // like any others.  The reason for the choice is that if a user writes
-      // `@SuppressWarnings("nullness")` that isn't needed, then that annotation would
-      // suppress the unneeded suppression warning.  It would take extra work to permit more
-      // desirable behavior in that case.
-      return false;
-    }
 
     if (shouldSuppress(getSuppressWarningsStringsFromOption(), errKey)) {
       return true;
@@ -2265,16 +2257,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // prefix:partial-message-key.
         if (prefixes.contains(currentSuppressWarningsInEffect)) {
           // The value in the @SuppressWarnings is exactly a prefix.
-          // Suppress the warning no matter its message key.
-          return true;
+          // Suppress the warning unless its message key is "unneeded.suppression".
+          boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
+          return result;
         } else if (requirePrefix) {
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix; check the next SuppressWarnings string.
           continue;
         } else if (currentSuppressWarningsInEffect.equals(SUPPRESS_ALL_MESSAGE_KEY)) {
           // Prefixes aren't required and the SuppressWarnings string is "all".
-          // Suppress the warning no matter its message key.
-          return true;
+          // Suppress the warning unless its message key is "unneeded.suppression".
+          boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
+          return result;
         }
         // The currentSuppressWarningsInEffect is not a prefix or a prefix:message-key, so it might
         // be a message key.
