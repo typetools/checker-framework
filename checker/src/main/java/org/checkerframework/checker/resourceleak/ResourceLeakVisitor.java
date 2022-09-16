@@ -67,28 +67,44 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
     if (!cmcfValues.isEmpty()) {
-      // If this method overrides another method, it must create at least as many
-      // obligations. Without this check, dynamic dispatch might allow e.g. a field to be
-      // overwritten by a CMCF method, but the CMCF effect wouldn't occur.
-      for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
-        List<String> overriddenCmcfValues =
-            getCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
-        if (!overriddenCmcfValues.containsAll(cmcfValues)) {
-          String foundCmcfValueString = String.join(", ", cmcfValues);
-          String neededCmcfValueString = String.join(", ", overriddenCmcfValues);
-          String actualClassname = ElementUtils.getEnclosingClassName(elt);
-          String overriddenClassname = ElementUtils.getEnclosingClassName(overridden);
-          checker.reportError(
-              node,
-              "creates.mustcall.for.override.invalid",
-              actualClassname + "#" + elt,
-              overriddenClassname + "#" + overridden,
-              foundCmcfValueString,
-              neededCmcfValueString);
-        }
-      }
+      checkCreatesMustCallForOverrides(node, elt, mcAtf, cmcfValues);
+      //      checkCreatesMustCallForNonEmptyMustCall(node, elt, mcAtf, cmcfValues);
     }
     return super.visitMethod(node, p);
+  }
+
+  //  private void checkCreatesMustCallForNonEmptyMustCall(
+  //      MethodTree node,
+  //      ExecutableElement elt,
+  //      MustCallAnnotatedTypeFactory mcAtf,
+  //      List<String> cmcfValues) {
+  //  }
+
+  private void checkCreatesMustCallForOverrides(
+      MethodTree node,
+      ExecutableElement elt,
+      MustCallAnnotatedTypeFactory mcAtf,
+      List<String> cmcfValues) {
+    // If this method overrides another method, it must create at least as many
+    // obligations. Without this check, dynamic dispatch might allow e.g. a field to be
+    // overwritten by a CMCF method, but the CMCF effect wouldn't occur.
+    for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(elt, this.types)) {
+      List<String> overriddenCmcfValues =
+          getCreatesMustCallForValues(overridden, mcAtf, rlTypeFactory);
+      if (!overriddenCmcfValues.containsAll(cmcfValues)) {
+        String foundCmcfValueString = String.join(", ", cmcfValues);
+        String neededCmcfValueString = String.join(", ", overriddenCmcfValues);
+        String actualClassname = ElementUtils.getEnclosingClassName(elt);
+        String overriddenClassname = ElementUtils.getEnclosingClassName(overridden);
+        checker.reportError(
+            node,
+            "creates.mustcall.for.override.invalid",
+            actualClassname + "#" + elt,
+            overriddenClassname + "#" + overridden,
+            foundCmcfValueString,
+            neededCmcfValueString);
+      }
+    }
   }
 
   // Overwritten to check that destructors (i.e. methods responsible for resolving

@@ -20,6 +20,9 @@ class CreatesMustCallForInnerClass {
     void callBar() {
       Bar b = new Bar();
       // If this call to bar() were permitted with no errors, this would be unsound.
+      // Kind of weird; b is in fact an owning pointer, but we don't track it as such because
+      // Bar objects cannot have must-call obligations created for them.
+      // :: error: reset.not.owning
       b.bar();
     }
   }

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -834,6 +835,12 @@ class MustCallConsistencyAnalyzer {
     Tree callTree = node.getTree();
     if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
       // Constructor results from new expressions are always owning.
+      NewClassTree newClassTree = (NewClassTree) callTree;
+      ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
+      TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
+      if (typeElt != null && typeFactory.getMustCallValue(typeElt).isEmpty()) {
+        return false;
+      }
       return true;
     }
 
