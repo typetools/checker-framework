@@ -203,7 +203,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** Annotation processing environment and its associated type and tree utilities. */
   final ProcessingEnvironment env;
 
-  final Elements elements;
+  protected final Elements elements;
   final Types types;
   final Trees trees;
   public final TreeBuilder treeBuilder;
