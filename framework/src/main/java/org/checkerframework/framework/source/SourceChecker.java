@@ -2183,13 +2183,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return true;
     }
 
-    while (elt != null) {
-      SuppressWarnings suppressWarningsAnno = elt.getAnnotation(SuppressWarnings.class);
+    for (Element currElt = elt; currElt != null; currElt = currElt.getEnclosingElement()) {
+      SuppressWarnings suppressWarningsAnno = currElt.getAnnotation(SuppressWarnings.class);
       if (suppressWarningsAnno != null) {
         String[] suppressWarningsStrings = suppressWarningsAnno.value();
         if (shouldSuppress(suppressWarningsStrings, errKey)) {
           if (hasOption("warnUnneededSuppressions")) {
-            elementsWithSuppressedWarnings.add(elt);
+            elementsWithSuppressedWarnings.add(currElt);
           }
           return true;
         }
@@ -2199,7 +2199,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // enclosing elements, because they may not have an @AnnotatedFor.
         return false;
       }
-      elt = elt.getEnclosingElement();
     }
     return false;
   }
