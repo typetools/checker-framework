@@ -310,7 +310,7 @@ public abstract class CFAbstractTransfer<
       Element enclosingElement = null;
       if (enclosingTree.getKind() == Tree.Kind.METHOD) {
         // If it is in an initializer, we need to use locals from the initializer.
-        enclosingElement = TreeUtils.elementFromTree(enclosingTree);
+        enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -1013,7 +1013,7 @@ public abstract class CFAbstractTransfer<
     if (!shouldPerformWholeProgramInference(expressionTree)) {
       return false;
     }
-    Element elt = TreeUtils.elementFromTree(lhsTree);
+    VariableElement elt = (VariableElement) TreeUtils.elementFromTree(lhsTree);
     return !analysis.checker.shouldSuppressWarnings(elt, "");
   }
 
