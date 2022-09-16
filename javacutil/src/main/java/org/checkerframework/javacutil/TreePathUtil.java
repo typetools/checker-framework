@@ -53,17 +53,11 @@ public final class TreePathUtil {
    * @return the path to the enclosing tree of the given type, {@code null} otherwise
    */
   public static @Nullable TreePath pathTillOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
-    TreePath p = path;
-
-    while (p != null) {
-      Tree leaf = p.getLeaf();
-      assert leaf != null;
-      if (kinds.contains(leaf.getKind())) {
+    for (TreePath p = path; p != null; p = p.getParentPath()) {
+      if (kinds.contains(p.getLeaf().getKind())) {
         return p;
       }
-      p = p.getParentPath();
     }
-
     return null;
   }
 

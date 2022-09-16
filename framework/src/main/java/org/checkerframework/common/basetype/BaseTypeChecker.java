@@ -605,6 +605,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     Set<Element> elementsWithSuppressedWarnings =
         new HashSet<>(this.elementsWithSuppressedWarnings);
     this.elementsWithSuppressedWarnings.clear();
+
     Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
     Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
     for (BaseTypeChecker subChecker : subcheckers) {

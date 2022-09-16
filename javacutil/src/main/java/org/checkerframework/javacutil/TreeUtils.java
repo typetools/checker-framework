@@ -1065,6 +1065,16 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the given tree is a declaration.
+   *
+   * @param tree the tree to test
+   * @return true if the given tree is a declaration
+   */
+  public static boolean isDeclarationTree(Tree tree) {
+    return declarationTreeKinds.contains(tree.getKind());
+  }
+
+  /**
    * Is the given tree a type instantiation?
    *
    * <p>TODO: this is an under-approximation: e.g. an identifier could be either a type use or an
