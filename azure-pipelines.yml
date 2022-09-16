@@ -295,8 +295,8 @@ jobs:
 - job: daikon_jdk18
   dependsOn:
    - canary_jobs
-  #  ## Commented to reduce latency and eliminate the "daikon_jdk11 -> daikon_jdk18" critical path.
-  #  # - daikon_jdk11
+   # Could comment out the "daikon_jdk17" dependency to reduce latency.
+   - daikon_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk18:latest
