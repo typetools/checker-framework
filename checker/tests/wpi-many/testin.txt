@@ -1,7 +1,8 @@
-https://github.com/kelloggm/wpi-many-tests-bcel-util 9a7706607425e6fbbd2c3915364eef020c39a2f9
-https://github.com/kelloggm/wpi-many-tests-bibtex-clean 703c0190ab7d7436a5be6e160667f194da44fdee
-https://github.com/kelloggm/wpi-many-tests-html-pretty-print 37e5f4fa0506690c968ec6f3e316c1d0a111bded
-https://github.com/kelloggm/-wpi-many-tests-bibtex-clean bd6c1cff1ba3fb8a6ecbbb73561ec2a43d018a79
-# Test that the commenting feature works (if it doesn't then, this line will be read and fail, as it's not a URL).
-https://github.com/kelloggm/wpi-many-tests-ensures-called-methods e1e6d4c8c5ab4190b181fcbc95b5249c3a21afae
-https://github.com/Nargeshdb/wpi-many-tests-owning-field 3063897790d0514e8f54154ef38caedac657a189
+https://github.com/kelloggm/wpi-many-tests-bcel-util 74be0b18f893077223850d5ffb117e496c4b833a
+https://github.com/kelloggm/wpi-many-tests-bibtex-clean b7ac872c9323a0944015cd79014e45fb7a5d1c93
+https://github.com/kelloggm/wpi-many-tests-ensures-called-methods db816432c95a3d047a1e3f7966fefb1515cba7c9
+https://github.com/kelloggm/wpi-many-tests-html-pretty-print 1c4f2da82407e21eb89a9196f06d613a64af211a
+https://github.com/kelloggm/-wpi-many-tests-bibtex-clean 7a70d58b9fdaedd71c4af4a9dfca7d5fda9268dc
+# This comment line tests that the commenting feature works (if it doesn't then, this line will be read and fail, as it's not a URL).
+# TODO: Reinstate when https://github.com/Nargeshdb/wpi-many-tests-owning-field/pull/4 is merged.
+# https://github.com/Nargeshdb/wpi-many-tests-owning-field 3063897790d0514e8f54154ef38caedac657a189
