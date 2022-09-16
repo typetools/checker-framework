@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 package java.lang;
 
-class Object {
+class AnnoNotFound {
   // Annotation not imported.
   @Nullable String toString() { throw new RuntimeException("skeleton method"); }
 }

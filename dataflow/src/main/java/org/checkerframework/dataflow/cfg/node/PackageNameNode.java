@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.element.PackageElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -32,7 +33,11 @@ public class PackageNameNode extends Node {
     super(TreeUtils.typeOf(tree));
     this.tree = tree;
     assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-    this.element = (PackageElement) TreeUtils.elementFromUse(tree);
+    PackageElement element = (PackageElement) TreeUtils.elementFromUse(tree);
+    if (element == null) {
+      throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+    }
+    this.element = element;
     this.parent = null;
   }
 
@@ -40,7 +45,11 @@ public class PackageNameNode extends Node {
     super(TreeUtils.typeOf(tree));
     this.tree = tree;
     assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-    this.element = (PackageElement) TreeUtils.elementFromUse(tree);
+    PackageElement element = (PackageElement) TreeUtils.elementFromUse(tree);
+    if (element == null) {
+      throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+    }
+    this.element = element;
     this.parent = parent;
   }
 
