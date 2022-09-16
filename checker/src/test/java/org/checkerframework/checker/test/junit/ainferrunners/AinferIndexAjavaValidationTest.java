@@ -2,7 +2,7 @@ package org.checkerframework.checker.test.junit.ainferrunners;
 
 import java.io.File;
 import java.util.List;
-import org.checkerframework.checker.testchecker.ainfer.AinferTestChecker;
+import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.framework.test.AinferValidatePerDirectoryTest;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
@@ -12,26 +12,26 @@ import org.junit.runners.Parameterized.Parameters;
  * that with the ajava files in place, the errors that those annotations remove are no longer
  * issued.
  */
-@Category(AinferTestCheckerAjavaTest.class)
-public class AinferTestCheckerAjavaValidationTest extends AinferValidatePerDirectoryTest {
+@Category(AinferIndexAjavaTest.class)
+public class AinferIndexAjavaValidationTest extends AinferValidatePerDirectoryTest {
 
   /**
    * @param testFiles the files containing test code, which will be type-checked
    */
-  public AinferTestCheckerAjavaValidationTest(List<File> testFiles) {
+  public AinferIndexAjavaValidationTest(List<File> testFiles) {
     super(
         testFiles,
-        AinferTestChecker.class,
-        "testchecker",
-        "ainfer-testchecker/annotated",
-        AinferTestCheckerAjavaTest.class,
+        IndexChecker.class,
+        "index",
+        "ainfer-index/annotated",
+        AinferIndexAjavaTest.class,
         "-Anomsgtext",
-        ajavaArgFromFiles(testFiles, "testchecker"),
+        ajavaArgFromFiles(testFiles, "index"),
         "-Awarns");
   }
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"ainfer-testchecker/annotated/"};
+    return new String[] {"ainfer-index/annotated/"};
   }
 }

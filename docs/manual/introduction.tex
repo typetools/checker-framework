@@ -690,9 +690,13 @@ Type-checking modes:  enable/disable functionality
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
   issued by the checker.  This only warns about
   \<@SuppressWarnings> strings that contain a checker name
-  (Section~\ref{suppresswarnings-annotation-syntax}).  The
+  (for syntax, Section~\ref{suppresswarnings-annotation-syntax}).  The
   \<-ArequirePrefixInWarningSuppressions> command-line argument ensures
   that all \<@SuppressWarnings> strings contain a checker name.
+  An \<unneeded.suppression> warning can be suppressed only by
+  \<@SuppressWarnings("unneeded.suppression")>
+  or \<@SuppressWarnings("\emph{checkername}:unneeded.suppression")>,
+  not by \<@SuppressWarnings("\emph{checkername}")>.
 \item \<-AwarnUnneededSuppressionsExceptions=\emph{regex}> disables
   \<-AwarnUnneededSuppressions> for \<@SuppressWarnings> strings that
   contain a match for the regular expression.  Most users don't need this.
