@@ -28,6 +28,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -140,6 +141,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return !expr.containsUnknown()
         && !(expr instanceof ArrayCreation)
         && !(expr instanceof ClassName)
+        // avoid SameLen expressions with e.g. literal String constants
+        && !(expr instanceof ValueLiteral)
         // Big expressions cause a stack overflow in JavaExpressionParseUtil.
         // So limit them to an arbitrary length of 999.
         && expr.toString().length() < 1000;
