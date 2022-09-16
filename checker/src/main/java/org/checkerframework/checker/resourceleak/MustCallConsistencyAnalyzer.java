@@ -1575,9 +1575,19 @@ class MustCallConsistencyAnalyzer {
     }
     MethodInvocationTree methodInvocationTree = node.getTree();
     ExecutableElement executableElement = TreeUtils.elementFromUse(methodInvocationTree);
+    if (typeFactory.hasMustCallAlias(executableElement)) {
+      return false;
+    }
+    TypeMirror type = ElementUtils.getType(executableElement);
     // void methods are "not owning" by construction
-    return (ElementUtils.getType(executableElement).getKind() == TypeKind.VOID)
-        || (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) != null);
+    if (type.getKind() == TypeKind.VOID || type.getKind().isPrimitive()) {
+      return true;
+    }
+    TypeElement typeElt = TypesUtils.getTypeElement(type);
+    if (typeElt != null && typeFactory.getMustCallValue(typeElt).isEmpty()) {
+      return true;
+    }
+    return (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) != null);
   }
 
   /**
