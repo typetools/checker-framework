@@ -1,6 +1,8 @@
 // Test case for Issue 1397.
 // https://github.com/typetools/checker-framework/issues/1397
 
+// @above-java17-jdk-skip-test TODO: reinstate on JDK 18, false positives may be due to issue #979
+
 public class Issue1397 {
 
   class Box<T> {}

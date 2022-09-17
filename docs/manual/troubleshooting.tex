@@ -709,7 +709,9 @@ You may need to log out and log back in for the setting to take effect.
 
 \begin{description}
 \item[Ubuntu]
-  Run the following commands:
+  Run the following commands, which should be the same as those in
+  \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
+  is a JDK version such as 8, 11, 17, 18, etc.:
 
 (This list should be the same as in
 \<checker/bin-devel/Dockerfile-ubuntu-jdk17-plus>; if your build fails
@@ -724,13 +726,13 @@ sudo apt-get -qqy install \
  openjdk-17-jdk \
  ant cpp git gradle jq jtreg6 libcurl3-gnutls \
  make maven mercurial python3-pip python3-requests unzip wget \
- autoconf devscripts dia hevea imagemagick junit latexmk \
+ autoconf devscripts dia hevea imagemagick junit jtreg6 latexmk \
  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
- libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+ libx17-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
  pdf2svg rsync shellcheck \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
-pip3 install html5validator
+pip3 install black flake8 html5validator
 \end{Verbatim}
 
   You may have to answer questions about which time zone your computer is in.

@@ -1,3 +1,8 @@
+The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
+(It worked before, but gave a warning that it was not tested.)
+
+
+
 Version 3.26.0 (October 4, 2022)
 --------------------------------
 
