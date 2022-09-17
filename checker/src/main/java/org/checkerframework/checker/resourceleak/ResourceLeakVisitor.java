@@ -86,7 +86,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
               .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
               .getAnnotationInHierarchy(mcAtf.TOP);
       if (rlTypeFactory.getMustCallValues(mustCallAnno).isEmpty()) {
-        checker.reportError(tree, "this.is.messed.up");
+        checker.reportError(
+            tree,
+            "creates.mustcall.for.invalid.target",
+            targetExpr.toString(),
+            targetExpr.getType().toString());
       }
     }
   }
