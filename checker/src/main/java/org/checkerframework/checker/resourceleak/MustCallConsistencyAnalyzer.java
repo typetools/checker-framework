@@ -1570,7 +1570,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Is the return type of the invoked method one that should be tracked?
+   * Is the return type of the invoked method one that should not be tracked?
    *
    * @param node a method invocation
    * @return true iff the checker is not in no-lightweight-ownership mode and (1) the method has a

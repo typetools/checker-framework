@@ -76,7 +76,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
   /**
    * checks that any created must-call obligation has a declared type with a non-empty
-   * {@code @MustCall} type
+   * {@code @MustCall} obligation
    *
    * @param tree the method
    * @param mcAtf the type factory
@@ -103,7 +103,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Check that overriding method does not reduce the number of created must-call obligations
+   * Check that an overriding method does not reduce the number of created must-call obligations
    *
    * @param node overriding method
    * @param elt element for overriding method

@@ -9,7 +9,7 @@ class COInSubtype {
 
     void foo() {}
 
-    // This is no longer supported, even though a sub-class does have must-call obligations.
+    // This is not supported, even though a sub-class may have must-call obligations.
     // This pattern is not used in realistic code, and supporting it hurts checker performance.
     @CreatesMustCallFor("this")
     // :: error: creates.mustcall.for.invalid.target
