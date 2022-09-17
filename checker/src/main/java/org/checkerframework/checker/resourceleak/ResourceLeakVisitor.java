@@ -74,6 +74,13 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     return super.visitMethod(node, p);
   }
 
+  /**
+   * checks that any created must-call obligation has a declared type with a non-empty
+   * {@code @MustCall} type
+   *
+   * @param tree the method
+   * @param mcAtf the type factory
+   */
   private void checkCreatesMustCallForTargetsHaveNonEmptyMustCall(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
     // Get all the JavaExpressions for all CreatesMustCallFor annotations
@@ -95,6 +102,14 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     }
   }
 
+  /**
+   * Check that overriding method does not reduce the number of created must-call obligations
+   *
+   * @param node overriding method
+   * @param elt element for overriding method
+   * @param mcAtf the type factory
+   * @param cmcfValues must call values created by overriding method
+   */
   private void checkCreatesMustCallForOverrides(
       MethodTree node,
       ExecutableElement elt,
