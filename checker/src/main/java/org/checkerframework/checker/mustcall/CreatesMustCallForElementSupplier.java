@@ -46,7 +46,7 @@ public interface CreatesMustCallForElementSupplier {
   ExecutableElement getCreatesMustCallForListValueElement();
 
   /**
-   * Returns the elements of the @CreatesMustCallFor annotation on the invoked method, as
+   * Returns the elements of the @CreatesMustCallFor annotations on the invoked method, as
    * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
    * annotation.
    *
@@ -83,6 +83,21 @@ public interface CreatesMustCallForElementSupplier {
     return results;
   }
 
+  /**
+   * Returns the elements of the @CreatesMustCallFor annotations on the method declaration, as
+   * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
+   * annotation.
+   *
+   * <p>If any expression is unparseable, this method reports an error and returns the empty set.
+   *
+   * @param tree a method declaration
+   * @param atypeFactory the type factory to report errors and parse the expression string
+   * @param supplier a type factory that can supply the executable elements for CreatesMustCallFor
+   *     and CreatesMustCallFor.List's value elements. Usually, you should just pass atypeFactory
+   *     again. The arguments are different so that the given type factory's adherence to both
+   *     protocols are checked by the type system.
+   * @return the arguments of the method's @CreatesMustCallFor annotation, or an empty list
+   */
   static List<JavaExpression> getCreatesMustCallForExpressionsAtMethodDeclaration(
       MethodTree tree,
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
@@ -107,6 +122,14 @@ public interface CreatesMustCallForElementSupplier {
     return results;
   }
 
+  /**
+   * Returns the {@code CreatesMustCallFor} annotations on a method
+   *
+   * @param method the method
+   * @param atypeFactory the type factory to use for looking up annotations
+   * @param supplier supplier to use to get elements
+   * @return
+   */
   static List<AnnotationMirror> getCreatesMustCallForAnnos(
       ExecutableElement method,
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
@@ -137,11 +160,14 @@ public interface CreatesMustCallForElementSupplier {
    * of multiple such annotations, instead.
    *
    * @param createsMustCallFor a @CreatesMustCallFor annotation
+   * @param tree the tree on which to report an error if annotation cannot be parsed
+   * @param methodName name to use in error message if annotation cannot be parsed
    * @param atypeFactory the type factory
    * @param supplier a type factory that can supply the executable elements for CreatesMustCallFor
    *     and CreatesMustCallFor.List's value elements. Usually, you should just pass atypeFactory
    *     again. The arguments are different so that the given type factory's adherence to both
    *     protocols are checked by the type system.
+   * @param converter function to be used to create JavaExpression
    * @return the Java expression representing the target, or null if the target is unparseable
    */
   static @Nullable JavaExpression getCreatesMustCallForExpression(
@@ -176,6 +202,8 @@ public interface CreatesMustCallForElementSupplier {
   /**
    * Issues a createsmustcallfor.target.unparseable error.
    *
+   * @param tree the tree on which to report the error
+   * @param methodName method name to use in error message
    * @param atypeFactory the type factory to use to issue the error
    * @param unparseable the unparseable string
    */
