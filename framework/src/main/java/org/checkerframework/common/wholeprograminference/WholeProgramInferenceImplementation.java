@@ -226,6 +226,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   private void updateInferredExecutableParameterTypes(
       ExecutableElement methodElt, List<Node> arguments) {
 
+    // TODO: updates must be viewpoint adapted to the method invocation before
+    // they are stored on the method body
+
     String file = storage.getFileForElement(methodElt);
 
     for (int i = 0; i < arguments.size(); i++) {
@@ -300,6 +303,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       int paramIndex = varargsParam ? methodElt.getParameters().size() - 1 : i;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
+      // TODO: viewpoint adapt argATM here?
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
   }

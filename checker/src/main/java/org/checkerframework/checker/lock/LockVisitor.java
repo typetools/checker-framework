@@ -1012,6 +1012,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   /**
    * Returns true if the symbol for the given tree is final or effectively final. Package, class and
    * method symbols are unmodifiable and therefore considered final.
+   *
+   * @param tree the tree to test
+   * @return true if the symbol for the given tree is final or effectively final
    */
   private boolean isTreeSymbolEffectivelyFinalOrUnmodifiable(Tree tree) {
     Element elem = TreeUtils.elementFromTree(tree);
