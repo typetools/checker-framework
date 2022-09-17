@@ -128,7 +128,7 @@ public interface CreatesMustCallForElementSupplier {
    * @param method the method
    * @param atypeFactory the type factory to use for looking up annotations
    * @param supplier supplier to use to get elements
-   * @return
+   * @return the {@code CreatesMustCallFor} annotations
    */
   static List<AnnotationMirror> getCreatesMustCallForAnnos(
       ExecutableElement method,
