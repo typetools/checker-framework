@@ -3,7 +3,10 @@
 import org.checkerframework.checker.mustcall.qual.*;
 
 class CreatesMustCallForInnerClass {
+  @InheritableMustCall("foo")
   static class Foo {
+
+    void foo() {}
 
     @CreatesMustCallFor("this")
     void resetFoo() {}
@@ -11,6 +14,7 @@ class CreatesMustCallForInnerClass {
     /** non-static inner class */
     class Bar {
       @CreatesMustCallFor
+      // :: error: creates.mustcall.for.invalid.target
       void bar() {
         // :: error: reset.not.owning
         resetFoo();

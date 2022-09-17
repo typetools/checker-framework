@@ -7,7 +7,12 @@ import org.checkerframework.checker.mustcall.qual.*;
 class COInSubtype {
   static class Foo {
 
+    void foo() {}
+
+    // This is no longer supported, even though a sub-class does have must-call obligations.
+    // This pattern is not used in realistic code, and supporting it hurts checker performance.
     @CreatesMustCallFor("this")
+    // :: error: creates.mustcall.for.invalid.target
     void resetFoo() {}
   }
 
