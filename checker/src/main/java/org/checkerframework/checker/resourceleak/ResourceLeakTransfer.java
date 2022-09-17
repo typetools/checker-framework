@@ -3,7 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
-import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -100,7 +100,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     }
 
     List<JavaExpression> targetExprs =
-        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressionsAtInvocation(
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             n, rlTypeFactory, rlTypeFactory);
     AnnotationMirror defaultType = rlTypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {

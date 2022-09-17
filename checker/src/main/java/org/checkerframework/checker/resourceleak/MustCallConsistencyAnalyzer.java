@@ -34,7 +34,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -587,7 +587,7 @@ class MustCallConsistencyAnalyzer {
 
     TreePath currentPath = typeFactory.getPath(node.getTree());
     List<JavaExpression> cmcfExpressions =
-        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressionsAtInvocation(
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             node, typeFactory, typeFactory);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {

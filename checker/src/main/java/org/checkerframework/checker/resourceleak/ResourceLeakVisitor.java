@@ -13,7 +13,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
-import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
@@ -85,7 +85,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
     // Get all the JavaExpressions for all CreatesMustCallFor annotations
     List<JavaExpression> createsMustCallExprs =
-        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressionsAtMethodDeclaration(
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtMethodDeclaration(
             tree, mcAtf, mcAtf);
     for (JavaExpression targetExpr : createsMustCallExprs) {
       AnnotationMirror mustCallAnno =
@@ -228,7 +228,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * annotations on the given element.
    *
    * <p>Does no viewpoint-adaptation, unlike {@link
-   * CreatesMustCallForElementSupplier#getCreatesMustCallForExpressionsAtInvocation} which does.
+   * CreatesMustCallForToJavaExpression#getCreatesMustCallForExpressionsAtInvocation} which does.
    *
    * @param elt an executable element
    * @param mcAtf a MustCallAnnotatedTypeFactory, to source the value element
