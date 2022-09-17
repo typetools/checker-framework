@@ -587,7 +587,7 @@ public final class TreeUtils {
    * @param tree the {@link Tree} node to get the symbol for
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
    *     (JCTree)
-   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   * @return the {@link Symbol} for the given tree
    */
   @Pure
   public static VariableElement variableElementFromTree(Tree tree) {

@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 
@@ -103,4 +104,15 @@ public interface Store<S extends Store<S>> {
    * @return the String representation of this store
    */
   String visualize(CFGVisualizer<?, S, ?> viz);
+
+  // I'm not sure why this is necessary, but without it `Store.equals()` is treated as requiring a
+  // @NonNull argument.  TODO: fix.
+  /**
+   * Returns true if this is equal to the given argument.
+   *
+   * @param o the object to compare against this
+   * @return true if this is equal to the given argument
+   */
+  @Override
+  boolean equals(@Nullable Object o);
 }

@@ -1105,7 +1105,7 @@ public class JavaExpressionParseUtil {
     /** The error message key. */
     private @CompilerMessageKey String errorKey;
     /** The arguments to the error message key. */
-    @SuppressWarnings("serial")
+    @SuppressWarnings("serial") // I do not intend to serialize JavaExpressionParseException objects
     public final Object[] args;
 
     /**

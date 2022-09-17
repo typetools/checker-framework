@@ -542,13 +542,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // This is used to trigger AggregateChecker's setProcessingEnvironment.
     setProcessingEnvironment(unwrappedEnv);
 
-    // Keep in sync with check in checker-framework/build.gradle and text in installation
-    // section of manual.
+    // Keep in sync with check in checker-framework/build.gradle .
     int jreVersion = SystemUtil.jreVersion;
-    if (jreVersion != 8 && jreVersion != 11 && jreVersion != 17) {
+    if (jreVersion != 8 && jreVersion != 11 && jreVersion != 17 && jreVersion != 18) {
       message(
           (hasOption("permitUnsupportedJdkVersion") ? Kind.NOTE : Kind.WARNING),
-          "The Checker Framework is tested with JDK 8, 11, and 17.  You are using version %d.",
+          "The Checker Framework is tested with JDK 8, 11, 17, and 18.  You are using version"
+              + " %d.",
           jreVersion);
     }
 
