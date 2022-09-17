@@ -834,14 +834,12 @@ class MustCallConsistencyAnalyzer {
   private boolean shouldTrackInvocationResult(Set<Obligation> obligations, Node node) {
     Tree callTree = node.getTree();
     if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
-      // Constructor results from new expressions are always owning.
+      // Constructor results from new expressions are tracked as long as the declared type has a
+      // non-empty @MustCall annotation.
       NewClassTree newClassTree = (NewClassTree) callTree;
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
-      if (typeElt != null && typeFactory.getMustCallValue(typeElt).isEmpty()) {
-        return false;
-      }
-      return true;
+      return typeElt == null || !typeFactory.getMustCallValue(typeElt).isEmpty();
     }
 
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
@@ -862,7 +860,7 @@ class MustCallConsistencyAnalyzer {
       return false;
     }
     return !returnTypeIsMustCallAliasWithUntrackable((MethodInvocationNode) node)
-        && !hasNotOwningReturnType((MethodInvocationNode) node);
+        && !shouldNotTrackReturnType((MethodInvocationNode) node);
   }
 
   /**
@@ -1572,13 +1570,14 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Does the method being invoked have a not-owning return type?
+   * Is the return type of the invoked method one that should be tracked?
    *
    * @param node a method invocation
    * @return true iff the checker is not in no-lightweight-ownership mode and (1) the method has a
-   *     void return type, or (2) a NotOwning annotation is present on the method declaration
+   *     return type that need not be tracked, since it has no @MustCall obligation, or (2) a
+   *     NotOwning annotation is present on the method declaration
    */
-  private boolean hasNotOwningReturnType(MethodInvocationNode node) {
+  private boolean shouldNotTrackReturnType(MethodInvocationNode node) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
       // Default to always transferring at return if not using LO, just like Eclipse does.
       return false;
@@ -1586,17 +1585,20 @@ class MustCallConsistencyAnalyzer {
     MethodInvocationTree methodInvocationTree = node.getTree();
     ExecutableElement executableElement = TreeUtils.elementFromUse(methodInvocationTree);
     if (typeFactory.hasMustCallAlias(executableElement)) {
+      // assume tracking is required
       return false;
     }
     TypeMirror type = ElementUtils.getType(executableElement);
-    // void methods are "not owning" by construction
+    // void or primitive-returning methods are "not owning" by construction
     if (type.getKind() == TypeKind.VOID || type.getKind().isPrimitive()) {
       return true;
     }
     TypeElement typeElt = TypesUtils.getTypeElement(type);
+    // no need to track if type has no possible @MustCall obligation
     if (typeElt != null && typeFactory.getMustCallValue(typeElt).isEmpty()) {
       return true;
     }
+    // check for @NotOwning annotation
     return (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) != null);
   }
 
