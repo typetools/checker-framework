@@ -70,4 +70,16 @@ class CreatesMustCallForTargets {
   void a() throws Exception {
     is1.close();
   }
+
+  @CreatesMustCallFor("#1")
+  // :: error: creates.mustcall.for.invalid.target
+  static void testBadCreates(Object o) {}
+
+  static class BadCreatesField {
+    @Owning Object o;
+
+    @CreatesMustCallFor("this.o")
+    // :: error: creates.mustcall.for.invalid.target
+    void badCreatesOnField() {}
+  }
 }
