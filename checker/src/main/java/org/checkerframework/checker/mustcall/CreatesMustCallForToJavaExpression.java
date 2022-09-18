@@ -24,6 +24,9 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class CreatesMustCallForToJavaExpression {
 
+  // static utility methods only; don't create instances
+  private CreatesMustCallForToJavaExpression() {}
+
   /**
    * Returns the elements of the @CreatesMustCallFor annotations on the invoked method, as
    * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
