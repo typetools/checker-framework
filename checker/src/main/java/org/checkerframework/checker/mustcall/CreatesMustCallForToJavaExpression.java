@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class CreatesMustCallForToJavaExpression {
 
-  // static utility methods only; don't create instances
+  /** static utility methods only; don't create instances */
   private CreatesMustCallForToJavaExpression() {}
 
   /**
