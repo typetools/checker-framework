@@ -93,24 +93,23 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
 spotless {
   // Resolve the spottless plugin dependencies from the buildscript repositories rather than the
   // project repositories.  That way the spotless plugin does not use the locally built version of
-  // checker-qual as a dependency. Without this errors like the follow are issued when running
-  // a spotless task without a local built version of checker-qual.jar:
+  // checker-qual as a dependency. Without this, errors like the follow are issued when running
+  // a spotless task without a locally-built version of checker-qual.jar:
   // Could not determine the dependencies of task ':checker-qual:spotlessCheck'.
-  //> Could not create task ':checker-qual:spotlessJavaCheck'.
-  //   > Could not create task ':checker-qual:spotlessJava'.
-  //      > File signature can only be created for existing regular files, given: /
-  //      Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
+  //  > Could not create task ':checker-qual:spotlessJavaCheck'.
+  //     > Could not create task ':checker-qual:spotlessJava'.
+  //        > File signature can only be created for existing regular files, given:
+  //          /Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
   predeclareDepsFromBuildscript()
 }
 
 spotlessPredeclare {
   // Put all the formatters that have dependencies here.  Without this, errors like the following
   // will happen:
-  // * What went wrong:
-  //Could not determine the dependencies of task ':spotlessCheck'.
-  //> Could not create task ':spotlessJavaCheck'.
-  //   > Could not create task ':spotlessJava'.
-  //      > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
+  // Could not determine the dependencies of task ':spotlessCheck'.
+  //  > Could not create task ':spotlessJavaCheck'.
+  //     > Could not create task ':spotlessJava'.
+  //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
     googleJavaFormat()
   }
