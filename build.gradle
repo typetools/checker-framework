@@ -156,6 +156,9 @@ allprojects {
   }
 
   spotless {
+    // TODO: Temporarily disable running spotlessCheck with the build task.
+    enforceCheck false
+
     format 'misc', {
       // define the files to apply `misc` to
       target '*.gradle', '*.md', '.gitignore'
