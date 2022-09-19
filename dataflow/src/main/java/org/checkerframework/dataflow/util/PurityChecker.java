@@ -178,8 +178,10 @@ public class PurityChecker {
   /** Helper class to keep {@link PurityChecker}'s interface clean. */
   protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
+    /** The purity result. */
     PurityResult purityResult = new PurityResult();
 
+    /** The annotation provider (typically an AnnotatedTypeFactory). */
     protected final AnnotationProvider annoProvider;
 
     /**

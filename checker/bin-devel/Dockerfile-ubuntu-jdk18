@@ -1,8 +1,10 @@
-# Create a Docker image that is ready to run the full Checker Framework tests,
-# including building the manual and Javadoc, using JDK 11.
+# Create a Docker image that is ready to run the main Checker Framework tests,
+# using JDK 18.
+# (This is OpenJDK, not Oracle JDK.  There are different instructions for
+# installing a LTS release of Java.)
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-FROM ubuntu
+FROM ubuntu:rolling
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 # According to
@@ -13,7 +15,7 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
-  openjdk-11-jdk
+  openjdk-18-jdk
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
@@ -33,29 +35,18 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
+# Maven 3.6.3 (the default on Ubuntu 22.04) does not run under JDK 18.
+# (Don't try to use a variable here for the Maven version.)
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz \
+&& tar xzvf apache-maven-3.8.6-bin.tar.gz
+ENV PATH="/apache-maven-3.8.6/bin:$PATH"
+
+# Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && apt-get -qqy install \
-  autoconf \
-  devscripts \
-  dia \
-  hevea \
-  imagemagick \
-  junit \
-  latexmk \
-  librsvg2-bin \
-  libasound2-dev libcups2-dev libfontconfig1-dev \
-  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
-  pdf2svg \
-  rsync \
-  shellcheck \
-  texlive-font-utils \
-  texlive-fonts-recommended \
-  texlive-latex-base \
-  texlive-latex-extra \
-  texlive-latex-recommended
-
-RUN pip3 install black flake8 html5validator
+  default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get clean \
