@@ -3,6 +3,7 @@ package org.checkerframework.common.wholeprograminference;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.HashSet;
 import java.util.List;
@@ -162,7 +163,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = objectCreationNode.getArguments();
-    updateInferredExecutableParameterTypes(constructorElt, arguments);
+    // TODO: only compute this TreePath if necessary? It might be expensive. The TreePath is
+    // only necessary when a dependent type might need to be viewpoint adapted.
+    updateInferredExecutableParameterTypes(
+        constructorElt, arguments, atypeFactory.getPath(objectCreationNode.getTree()));
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
   }
 
@@ -197,7 +201,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = methodInvNode.getArguments();
-    updateInferredExecutableParameterTypes(methodElt, arguments);
+    // TODO: only compute this TreePath if necessary? It might be expensive. The TreePath is
+    // only necessary when a dependent type might need to be viewpoint adapted.
+    updateInferredExecutableParameterTypes(
+        methodElt, arguments, atypeFactory.getPath(methodInvNode.getTree()));
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
   }
 
@@ -222,9 +229,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param methodElt the element of the method or constructor being invoked
    * @param arguments the arguments of the invocation
+   * @param curPath the path to the method or constructor invocation, used to viewpoint adapt any
+   *     dependent types when storing out newly-inferred annotations
    */
   private void updateInferredExecutableParameterTypes(
-      ExecutableElement methodElt, List<Node> arguments) {
+      ExecutableElement methodElt, List<Node> arguments, TreePath curPath) {
 
     String file = storage.getFileForElement(methodElt);
 
@@ -301,9 +310,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
       if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-        ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) this.atypeFactory)
+        ((GenericAnnotatedTypeFactory) this.atypeFactory)
             .getDependentTypesHelper()
-            .delocalize(argATM, (MethodTree) atypeFactory.declarationFromElement(methodElt));
+            .delocalizeAtCallsite(argATM, curPath, arguments, methodElt);
       }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }

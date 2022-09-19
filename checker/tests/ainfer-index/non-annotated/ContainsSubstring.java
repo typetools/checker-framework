@@ -7,11 +7,6 @@ public class ContainsSubstring {
   public static void run() {
     String word1 = "\"Hamburg\"";
     String word2 = "burg";
-    // The existence of word3 here forces the inferred @SameLen
-    // annotation to include a local variable that isn't a parameter
-    // to compute(), to test that such local variables are viewpoint-adapted
-    // correctly.
-    String word3 = word1;
     System.out.println(compute(word1, word2));
   }
 
