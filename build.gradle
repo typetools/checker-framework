@@ -156,7 +156,7 @@ allprojects {
   }
 
   spotless {
-    // TODO: Temporarily disable running spotlessCheck with the build task.
+    // TODO: Remove the line below.
     enforceCheck false
 
     format 'misc', {
