@@ -181,6 +181,9 @@ allprojects {
   }
 
   spotless {
+    // TODO: Remove the line below.
+    enforceCheck false
+
     // If you add any formatters to this block that require dependencies here, then you must also
     // add them to spotlessPredeclare block.
     format 'misc', {
