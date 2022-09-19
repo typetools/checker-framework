@@ -1985,7 +1985,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // An implicit receiver is the first enclosing type that is a subtype of the type where the
     // element is declared.
-    while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
+    while (thisType != null && !isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
       thisType = thisType.getEnclosingType();
     }
     return thisType;
