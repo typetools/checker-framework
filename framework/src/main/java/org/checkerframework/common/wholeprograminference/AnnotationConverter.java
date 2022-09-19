@@ -34,6 +34,9 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class AnnotationConverter {
 
+  /** Creates a new AnnotationConverter. */
+  AnnotationConverter() {}
+
   /**
    * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link
    * org.checkerframework.afu.scenelib.annotations.Annotation}.
