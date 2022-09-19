@@ -692,6 +692,11 @@ public class DependentTypesHelper {
                   }
                   return super.convert(javaExpr);
                 }
+
+                @Override
+                public JavaExpression visitLocalVariable(LocalVariable local, Void unused) {
+                  return null;
+                }
               };
           return jec.convert(expr);
         };
