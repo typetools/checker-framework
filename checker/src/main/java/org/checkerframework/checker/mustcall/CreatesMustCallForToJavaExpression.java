@@ -136,10 +136,8 @@ public class CreatesMustCallForToJavaExpression {
   }
 
   /**
-   * Parses a single CreatesMustCallFor annotation. Clients should use {@link
-   * #getCreatesMustCallForExpressionsAtInvocation(MethodInvocationNode,
-   * GenericAnnotatedTypeFactory, CreatesMustCallForElementSupplier)}, which handles the possibility
-   * of multiple such annotations, instead.
+   * Parses a single CreatesMustCallFor annotation. If the target expression cannot be parsed,
+   * issues a checker error.
    *
    * @param createsMustCallFor a @CreatesMustCallFor annotation
    * @param tree the tree on which to report an error if annotation cannot be parsed
