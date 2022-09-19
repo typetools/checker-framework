@@ -17,7 +17,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -28,7 +27,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
@@ -647,49 +645,6 @@ public class DependentTypesHelper {
           "delocalize(%s, %s) created %s%n",
           atm, TreeUtils.toStringTruncated(methodDeclTree, 65), stringToJavaExpr);
     }
-    convertAnnotatedTypeMirror(stringToJavaExpr, atm);
-  }
-
-  /**
-   * Delocalizes dependent type annotations in {@code atm} so that they can be placed on the
-   * declaration of the given method being invoked. Used by whole program inference to infer
-   * dependent types for method parameters based on the actual arguments used at call sites.
-   *
-   * @param atm the annotated type mirror to delocalize
-   * @param path path to the method invocation
-   * @param arguments the actual arguments to the method
-   * @param methodElt the declaration of the method being invoked
-   */
-  public void delocalizeAtCallsite(
-      AnnotatedTypeMirror atm, TreePath path, List<Node> arguments, ExecutableElement methodElt) {
-
-    if (!hasDependentType(atm)) {
-      return;
-    }
-
-    List<JavaExpression> argsAsExprs =
-        arguments.stream().map(LocalVariable::fromNode).collect(Collectors.toList());
-
-    StringToJavaExpression stringToJavaExpr =
-        stringExpr -> {
-          JavaExpression expr =
-              StringToJavaExpression.atPath(stringExpr, path, factory.getChecker());
-          JavaExpressionConverter jec =
-              new JavaExpressionConverter() {
-                @Override
-                public JavaExpression convert(JavaExpression javaExpr) {
-                  // if javaExpr is an argument to the method,
-                  // then return formal parameter expression.
-                  int index = argsAsExprs.indexOf(javaExpr);
-                  if (index != -1) {
-                    return FormalParameter.getFormalParameters(methodElt).get(index);
-                  }
-                  return super.convert(javaExpr);
-                }
-              };
-          return jec.convert(expr);
-        };
-
     convertAnnotatedTypeMirror(stringToJavaExpr, atm);
   }
 
