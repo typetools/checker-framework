@@ -29,7 +29,9 @@ ext {
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
-    isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
+    // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
+    // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
+    isJava17compatible = JavaVersion.current() >= JavaVersion.VERSION_17
 
     errorproneJavacVersion = '9+181-r4173-1'
 
@@ -52,22 +54,20 @@ ext {
     localRepo = ".git"
 }
 // Keep in sync with check in
-// framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java
-// (org.checkerframework.framework.source.SourceChecker.init) and with text in
-// docs/manual/introduction.tex (#installation).
+// framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java .
 switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_9:
     case JavaVersion.VERSION_1_10:
     case JavaVersion.VERSION_12:
-    case JavaVersion.VERSION_18:
     case JavaVersion.VERSION_19:
     case JavaVersion.VERSION_20:
-        logger.warn("The Checker Framework has only been tested with JDK 8, 11, and 17." +
-                " Found version " + JavaVersion.current().majorVersion + ".");
+        logger.note("The Checker Framework has only been tested with JDK 8, 11, 17, and 18." +
+                " You are using JDK " + JavaVersion.current().majorVersion + ".");
         break;
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
     case JavaVersion.VERSION_17:
+    case JavaVersion.VERSION_18:
         break; // Supported versions
     default:
         throw new GradleException("Unexpected Java version found: " + JavaVersion.current().majorVersion);
@@ -93,24 +93,23 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
 spotless {
   // Resolve the spottless plugin dependencies from the buildscript repositories rather than the
   // project repositories.  That way the spotless plugin does not use the locally built version of
-  // checker-qual as a dependency. Without this errors like the follow are issued when running
-  // a spotless task without a local built version of checker-qual.jar:
+  // checker-qual as a dependency. Without this, errors like the follow are issued when running
+  // a spotless task without a locally-built version of checker-qual.jar:
   // Could not determine the dependencies of task ':checker-qual:spotlessCheck'.
-  //> Could not create task ':checker-qual:spotlessJavaCheck'.
-  //   > Could not create task ':checker-qual:spotlessJava'.
-  //      > File signature can only be created for existing regular files, given: /
-  //      Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
+  //  > Could not create task ':checker-qual:spotlessJavaCheck'.
+  //     > Could not create task ':checker-qual:spotlessJava'.
+  //        > File signature can only be created for existing regular files, given:
+  //          /Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
   predeclareDepsFromBuildscript()
 }
 
 spotlessPredeclare {
   // Put all the formatters that have dependencies here.  Without this, errors like the following
   // will happen:
-  // * What went wrong:
-  //Could not determine the dependencies of task ':spotlessCheck'.
-  //> Could not create task ':spotlessJavaCheck'.
-  //   > Could not create task ':spotlessJava'.
-  //      > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
+  // Could not determine the dependencies of task ':spotlessCheck'.
+  //  > Could not create task ':spotlessJavaCheck'.
+  //     > Could not create task ':spotlessJava'.
+  //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
     googleJavaFormat()
   }
@@ -477,8 +476,8 @@ List<String> getJavaFilesToFormat(projectName) {
                 && !details.path.contains("calledmethods-delomboked")
                 && !details.path.contains("returnsreceiverdelomboked")
                 && !details.path.contains("build")
-                && (isJava17 || !details.path.contains("-records"))
-                && (isJava17 || !details.path.contains("java17"))
+                && (isJava17compatible || !details.path.contains("-records"))
+                && (isJava17compatible || !details.path.contains("java17"))
                 && details.name.endsWith('.java')) {
             javaFiles.add(details.file)
         }

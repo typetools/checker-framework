@@ -5283,8 +5283,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return awt.getUnderlyingType().getSuperBound() == null;
   }
 
-  /** Accessor for the element utilities. */
-  public Elements getElementUtils() {
+  /**
+   * Returns the utility class for working with {@link Element}s.
+   *
+   * @return the utility class for working with {@link Element}s
+   */
+  public final Elements getElementUtils() {
     return this.elements;
   }
 

@@ -79,7 +79,7 @@ echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
 ## Compile
 
 # Downloading the gradle wrapper sometimes fails.
-# If so, the next command gets another chance to try the download.
+# If so, the next command gives another chance to try the download.
 (./gradlew help || sleep 10) > /dev/null 2>&1
 
 echo "running \"./gradlew assemble\" for checker-framework"
