@@ -658,23 +658,30 @@ public class DependentTypesHelper {
 
   /**
    * Delocalizes dependent type annotations in {@code atm} so that they can be placed on the
-   * declaration of the given method being invoked. Used by whole program inference to infer
-   * dependent types for method parameters based on the actual arguments used at call sites.
+   * declaration of the given method or constructor being invoked. Used by whole program inference
+   * to infer dependent types for method/constructor parameters based on the actual arguments used
+   * at call sites.
    *
    * @param atm the annotated type mirror to delocalize
-   * @param path path to the method invocation
-   * @param arguments the actual arguments to the method
-   * @param methodElt the declaration of the method being invoked
+   * @param invocationTree the method or constructor invocation
+   * @param arguments the actual arguments to the method or constructor
+   * @param methodElt the declaration of the method or constructor being invoked
    */
   public void delocalizeAtCallsite(
-      AnnotatedTypeMirror atm, TreePath path, List<Node> arguments, ExecutableElement methodElt) {
+      AnnotatedTypeMirror atm,
+      Tree invocationTree,
+      List<Node> arguments,
+      ExecutableElement methodElt) {
 
     if (!hasDependentType(atm)) {
       return;
     }
 
+    // For use in stringToJavaExpr below, to avoid re-computation. Especially
+    // important for the TreePath, which is expensive to compute.
     List<JavaExpression> argsAsExprs =
         arguments.stream().map(LocalVariable::fromNode).collect(Collectors.toList());
+    TreePath path = factory.getPath(invocationTree);
 
     StringToJavaExpression stringToJavaExpr =
         stringExpr -> {
