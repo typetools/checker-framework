@@ -15,7 +15,7 @@ public class ContainsSubstring {
     System.out.println(compute(word1, word2));
   }
 
-  public static boolean compute(String word1, String word2) {
+  public static boolean compute(String word1, String otherWord) {
     // content doesn't matter
     return false;
   }
