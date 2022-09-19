@@ -1,3 +1,5 @@
+// @above-java17-jdk-skip-test TODO: reinstate on JDK 18, false negatives may be due to issue #979
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Generic<G extends @Nullable Object> {}
@@ -35,7 +37,7 @@ class TestBounded {
     BoundedGeneric<?> generic3 = rawLocal;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") // only needed on JDK 17 and lower
   void useBoundedWildCard() {
     BoundedGeneric rawLocal = new BoundedGeneric<String>();
     BoundedGeneric<? extends Object> generic1 = rawReturn();

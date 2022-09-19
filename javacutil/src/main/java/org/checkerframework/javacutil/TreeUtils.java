@@ -324,6 +324,7 @@ public final class TreeUtils {
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
+   * @deprecated use elementFromUse or elementFromTree
    */
   @Pure
   @Deprecated // not for removal; retain to prevent calls to this overload
@@ -367,7 +368,7 @@ public final class TreeUtils {
    */
   @Pure
   public static VariableElement variableElementFromUse(ExpressionTree tree) {
-    VariableElement result = (VariableElement) TreeUtils.elementFromTree(tree);
+    VariableElement result = TreeUtils.variableElementFromTree(tree);
     if (result == null) {
       throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
     }
@@ -586,7 +587,7 @@ public final class TreeUtils {
    * @param tree the {@link Tree} node to get the symbol for
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
    *     (JCTree)
-   * @return the {@link Symbol} for the given tree, or null if one could not be found
+   * @return the {@link Symbol} for the given tree
    */
   @Pure
   public static VariableElement variableElementFromTree(Tree tree) {
@@ -1062,6 +1063,16 @@ public final class TreeUtils {
 
   public static Set<Tree.Kind> typeTreeKinds() {
     return typeTreeKinds;
+  }
+
+  /**
+   * Returns true if the given tree is a declaration.
+   *
+   * @param tree the tree to test
+   * @return true if the given tree is a declaration
+   */
+  public static boolean isDeclarationTree(Tree tree) {
+    return declarationTreeKinds.contains(tree.getKind());
   }
 
   /**

@@ -68,6 +68,13 @@ else
   has_java17="yes"
 fi
 
+# shellcheck disable=SC2153 # testing for JAVA18_HOME, not a typo of JAVA_HOME
+if [ "${JAVA18_HOME}" = "" ]; then
+  has_java18="no"
+else
+  has_java18="yes"
+fi
+
 if [ "${has_java_home}" = "yes" ]; then
     java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
@@ -81,6 +88,10 @@ if [ "${has_java_home}" = "yes" ]; then
     if [ "${has_java17}" = "no" ] && [ "${java_version}" = 17 ]; then
       export JAVA17_HOME="${JAVA_HOME}"
       has_java17="yes"
+    fi
+    if [ "${has_java18}" = "no" ] && [ "${java_version}" = 18 ]; then
+      export JAVA18_HOME="${JAVA_HOME}"
+      has_java18="yes"
     fi
 fi
 
@@ -99,8 +110,13 @@ if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
     exit 7
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ]; then
-    echo "No Java 8, 11, or 17 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA17_HOME must be set."
+if [ "${has_java18}" = "yes" ] && [ ! -d "${JAVA18_HOME}" ]; then
+    echo "JAVA18_HOME is set to a non-existent directory ${JAVA18_HOME}"
+    exit 7
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java18}" = "no" ]; then
+    echo "No Java 8, 11, 17, or 18 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA18_HOME must be set."
     exit 8
 fi
 
