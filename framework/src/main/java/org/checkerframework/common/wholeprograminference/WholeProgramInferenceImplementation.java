@@ -16,6 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.afu.scenelib.annotations.util.JVMNames;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -47,7 +48,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import scenelib.annotations.util.JVMNames;
 
 /**
  * This is the primary implementation of {@link
@@ -238,11 +238,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       VariableElement ve;
       boolean varargsParam = i >= methodElt.getParameters().size() - 1 && methodElt.isVarArgs();
       if (varargsParam && this.atypeFactory.wpiOutputFormat == OutputFormat.JAIF) {
-        // The AFU's annotator.Main produces a non-compilable source file when JAIF-based WPI
-        // tries to output an annotated varargs parameter, such as when running the test
-        // checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
-        // Until that bug is fixed, do not attempt to infer information about varargs parameters
-        // in JAIF mode.
+        // The AFU's org.checkerframework.afu.annotator.Main produces a non-compilable source file
+        // when JAIF-based WPI tries to output an annotated varargs parameter, such as when running
+        // the test checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
+        // Until that bug is fixed, do not attempt to infer information about varargs parameters in
+        // JAIF mode.
         if (showWpiFailedInferences) {
           printFailedInferenceDebugMessage(
               "Annotations cannot be placed on varargs parameters in -Ainfer=jaifs mode, because"

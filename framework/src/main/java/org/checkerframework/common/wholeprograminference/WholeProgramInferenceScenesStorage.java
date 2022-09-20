@@ -18,6 +18,15 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.afu.scenelib.annotations.Annotation;
+import org.checkerframework.afu.scenelib.annotations.el.AClass;
+import org.checkerframework.afu.scenelib.annotations.el.AField;
+import org.checkerframework.afu.scenelib.annotations.el.AMethod;
+import org.checkerframework.afu.scenelib.annotations.el.AScene;
+import org.checkerframework.afu.scenelib.annotations.el.ATypeElement;
+import org.checkerframework.afu.scenelib.annotations.el.TypePathEntry;
+import org.checkerframework.afu.scenelib.annotations.io.IndexFileParser;
+import org.checkerframework.afu.scenelib.annotations.util.JVMNames;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -40,24 +49,16 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.AScene;
-import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.TypePathEntry;
-import scenelib.annotations.io.IndexFileParser;
-import scenelib.annotations.util.JVMNames;
 
 /**
  * This class stores annotations using scenelib objects.
  *
  * <p>The set of annotations inferred for a certain class is stored in an {@link
- * scenelib.annotations.el.AScene}, which {@code writeScenes()} can write into a file. For example,
- * a class {@code my.pakkage.MyClass} will have its members' inferred types stored in a Scene, and
- * later written into a file named {@code my.pakkage.MyClass.jaif} if using {@link
- * OutputFormat#JAIF}, or {@code my.pakkage.MyClass.astub} if using {@link OutputFormat#STUB}.
+ * org.checkerframework.afu.scenelib.annotations.el.AScene}, which {@code writeScenes()} can write
+ * into a file. For example, a class {@code my.pakkage.MyClass} will have its members' inferred
+ * types stored in a Scene, and later written into a file named {@code my.pakkage.MyClass.jaif} if
+ * using {@link OutputFormat#JAIF}, or {@code my.pakkage.MyClass.astub} if using {@link
+ * OutputFormat#STUB}.
  *
  * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
  * #JAIF_FILES_PATH} directory (regardless of output format). Having more information in those
@@ -361,7 +362,7 @@ public class WholeProgramInferenceScenesStorage
 
     AMethod methodAnnos = getMethodAnnos(methodElt);
 
-    scenelib.annotations.Annotation sceneAnno =
+    org.checkerframework.afu.scenelib.annotations.Annotation sceneAnno =
         AnnotationConverter.annotationMirrorToAnnotation(anno);
     boolean isNewAnnotation = methodAnnos.tlAnnotationsHere.add(sceneAnno);
     return isNewAnnotation;
@@ -375,7 +376,7 @@ public class WholeProgramInferenceScenesStorage
 
     AField fieldAnnos = getFieldAnnos(field);
 
-    scenelib.annotations.Annotation sceneAnno =
+    org.checkerframework.afu.scenelib.annotations.Annotation sceneAnno =
         AnnotationConverter.annotationMirrorToAnnotation(anno);
 
     boolean isNewAnnotation = fieldAnnos.tlAnnotationsHere.add(sceneAnno);
@@ -689,10 +690,12 @@ public class WholeProgramInferenceScenesStorage
 
   /**
    * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} to contain the
-   * {@link scenelib.annotations.Annotation}s of an {@link scenelib.annotations.el.ATypeElement}.
+   * {@link org.checkerframework.afu.scenelib.annotations.Annotation}s of an {@link
+   * org.checkerframework.afu.scenelib.annotations.el.ATypeElement}.
    *
    * @param result the AnnotatedTypeMirror to be modified
-   * @param storageLocation the {@link scenelib.annotations.el.ATypeElement} used
+   * @param storageLocation the {@link
+   *     org.checkerframework.afu.scenelib.annotations.el.ATypeElement} used
    */
   private void updateAtmFromATypeElement(AnnotatedTypeMirror result, ATypeElement storageLocation) {
     Set<Annotation> annos = getSupportedAnnosInSet(storageLocation.tlAnnotationsHere);
@@ -792,11 +795,12 @@ public class WholeProgramInferenceScenesStorage
   }
 
   /**
-   * Updates an {@link scenelib.annotations.el.ATypeElement} to have the annotations of an {@link
-   * org.checkerframework.framework.type.AnnotatedTypeMirror} passed as argument. Annotations in the
-   * original set that should be ignored (see {@link #shouldIgnore}) are not added to the resulting
-   * set. This method also checks if the AnnotatedTypeMirror has explicit annotations in source
-   * code, and if that is the case no annotations are added for that location.
+   * Updates an {@link org.checkerframework.afu.scenelib.annotations.el.ATypeElement} to have the
+   * annotations of an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} passed as
+   * argument. Annotations in the original set that should be ignored (see {@link #shouldIgnore})
+   * are not added to the resulting set. This method also checks if the AnnotatedTypeMirror has
+   * explicit annotations in source code, and if that is the case no annotations are added for that
+   * location.
    *
    * <p>This method removes from the ATypeElement all annotations supported by this object's
    * AnnotatedTypeFactory before inserting new ones. It is assumed that every time this method is
