@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -33,7 +34,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -586,7 +587,7 @@ class MustCallConsistencyAnalyzer {
 
     TreePath currentPath = typeFactory.getPath(node.getTree());
     List<JavaExpression> cmcfExpressions =
-        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             node, typeFactory, typeFactory);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
@@ -833,8 +834,14 @@ class MustCallConsistencyAnalyzer {
   private boolean shouldTrackInvocationResult(Set<Obligation> obligations, Node node) {
     Tree callTree = node.getTree();
     if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
-      // Constructor results from new expressions are always owning.
-      return true;
+      // Constructor results from new expressions are tracked as long as the declared type has a
+      // non-empty @MustCall annotation.
+      NewClassTree newClassTree = (NewClassTree) callTree;
+      ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
+      TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
+      return typeElt == null
+          || !typeFactory.getMustCallValue(typeElt).isEmpty()
+          || !typeFactory.getMustCallValue(newClassTree).isEmpty();
     }
 
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
@@ -855,7 +862,7 @@ class MustCallConsistencyAnalyzer {
       return false;
     }
     return !returnTypeIsMustCallAliasWithUntrackable((MethodInvocationNode) node)
-        && !hasNotOwningReturnType((MethodInvocationNode) node);
+        && shouldTrackReturnType((MethodInvocationNode) node);
   }
 
   /**
@@ -1565,22 +1572,39 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Does the method being invoked have a not-owning return type?
+   * Is the return type of the invoked method one that should be tracked?
    *
    * @param node a method invocation
-   * @return true iff the checker is not in no-lightweight-ownership mode and (1) the method has a
-   *     void return type, or (2) a NotOwning annotation is present on the method declaration
+   * @return true iff the checker is in no-lightweight-ownership mode, or the method has a
+   *     {@code @MustCallAlias} annotation, or (1) the method has a return type that needs to be
+   *     tracked (i.e., it has a non-empty {@code @MustCall} obligation and (2) the method
+   *     declaration does not have a {@code @NotOwning} annotation
    */
-  private boolean hasNotOwningReturnType(MethodInvocationNode node) {
+  private boolean shouldTrackReturnType(MethodInvocationNode node) {
     if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
       // Default to always transferring at return if not using LO, just like Eclipse does.
-      return false;
+      return true;
     }
     MethodInvocationTree methodInvocationTree = node.getTree();
     ExecutableElement executableElement = TreeUtils.elementFromUse(methodInvocationTree);
-    // void methods are "not owning" by construction
-    return (ElementUtils.getType(executableElement).getKind() == TypeKind.VOID)
-        || (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) != null);
+    if (typeFactory.hasMustCallAlias(executableElement)) {
+      // assume tracking is required
+      return true;
+    }
+    TypeMirror type = ElementUtils.getType(executableElement);
+    // void or primitive-returning methods are "not owning" by construction
+    if (type.getKind() == TypeKind.VOID || type.getKind().isPrimitive()) {
+      return false;
+    }
+    TypeElement typeElt = TypesUtils.getTypeElement(type);
+    // no need to track if type has no possible @MustCall obligation
+    if (typeElt != null
+        && typeFactory.getMustCallValue(typeElt).isEmpty()
+        && typeFactory.getMustCallValue(methodInvocationTree).isEmpty()) {
+      return false;
+    }
+    // check for absence of @NotOwning annotation
+    return (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null);
   }
 
   /**
