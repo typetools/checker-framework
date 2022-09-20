@@ -19,7 +19,7 @@ PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
 status=0
 
 ## Code style and formatting
-./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all
+./gradlew checkBasicStyle spotlessCheck --console=plain --warning-mode=all
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
   exit 1
