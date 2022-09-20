@@ -43,7 +43,6 @@ ext {
     stubparser = "${parentDir}/stubparser"
     stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
 
-    formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
 
@@ -200,6 +199,16 @@ allprojects {
       formatAnnotations()
     }
   }
+  // The Spotless plugin uses the latest version of google-java-format
+  // that is compatible with the currently running JVM. Under Java 8,
+  // that is an older version that produces different formatting.
+  if (isJava8) {
+    spotlessApply.enabled = false
+    spotlessCheck.enabled = false
+    spotlessJavaApply.enabled = false
+    spotlessJavaCheck.enabled = false
+  }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -447,74 +456,6 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
     }
 }
 
-/**
- * Returns a list of all the Java files that should be formatted for the given project. These are:
- *
- * All Java files in the main sourceSet.
- * All Java files in the tests directory that compile.
- *
- * @param projectName name of the project to format
- * @return a list of all Java files that should be formatted for projectName
- */
-List<String> getJavaFilesToFormat(projectName) {
-    List<File> javaFiles = new ArrayList<>();
-    project(':' + projectName).sourceSets.forEach { set ->
-        javaFiles.addAll(set.java.files)
-    }
-
-    // Collect all Java files in tests directory
-    fileTree("${project(projectName).projectDir}/tests").visit { details ->
-        // If you change this, also change checker/bin-devel/git.pre-commit
-        if (!details.path.contains("nullness-javac-errors")
-                && !details.path.contains("calledmethods-delomboked")
-                && !details.path.contains("returnsreceiverdelomboked")
-                && !details.path.contains("build")
-                && (isJava17compatible || !details.path.contains("-records"))
-                && (isJava17compatible || !details.path.contains("java17"))
-                && details.name.endsWith('.java')) {
-            javaFiles.add(details.file)
-        }
-    }
-
-    // Collect all Java files in jtreg directory
-    fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
-            javaFiles.add(details.file)
-        }
-    }
-
-    // Collect all Java files in jtregJdk11 directory
-    fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
-            javaFiles.add(details.file)
-        }
-    }
-
-    List<String> args = new ArrayList<>(javaFiles.size());
-    for (File f : javaFiles) {
-        args += project(projectName).relativePath(f)
-    }
-    return args
-}
-
-task writeListOfJavaFilesToFormat(group: 'Format') {
-  description "Writes a list of Java files subject to formatting, to ${buildDir}/javafiles.txt"
-  doLast {
-    mkdir buildDir
-    File list = new File("${buildDir}/javafiles.txt");
-    list.createNewFile();
-    FileWriter fileWriter = new FileWriter(list)
-    subprojects.forEach {
-      if (!it.name.startsWith("checker-qual-android")) {
-        for (String fileName : getJavaFilesToFormat(it.name)) {
-          fileWriter.write(fileName)
-          fileWriter.write(System.lineSeparator())
-        }
-      }
-    }
-  }
-}
-
 task htmlValidate(type: Exec, group: 'Format') {
     description 'Validate that HTML files are well-formed'
     executable 'html5validator'
@@ -625,43 +566,6 @@ task manual(group: 'Documentation') {
     }
 }
 
-// See alternate implementation getCodeFormatScriptsInGradle below.
-// No group so it does not show up in the output of `gradlew tasks`
-task getCodeFormatScripts() {
-    description 'Obtain or update the run-google-java-format scripts'
-    if (file(formatScriptsHome).exists()) {
-        exec {
-            workingDir formatScriptsHome
-            executable 'git'
-            args = ['pull', '-q']
-            ignoreExitValue = true
-        }
-    } else {
-        exec {
-            workingDir "${formatScriptsHome}/../"
-            executable 'git'
-            args = ['clone', '-q', '--depth', '1', 'https://github.com/plume-lib/run-google-java-format.git', '.run-google-java-format']
-        }
-    }
-}
-
-// This implementation is preferable to the above because it does work in Gradle rather than in bash.
-// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97 .
-// No group so it does not show up in the output of `gradlew tasks`
-task getCodeFormatScriptsInGradle {
-  description "Obtain the run-google-java-format scripts"
-  doLast {
-    if (! new File(formatScriptsHome).exists()) {
-      // There is no support for the --depth argument:
-      // https://github.com/ajoberstar/grgit/issues/155   https://bugs.eclipse.org/bugs/show_bug.cgi?id=475615
-      def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/plume-lib/run-google-java-format.git')
-    } else {
-      def rgjfGit = Grgit.open(dir: formatScriptsHome)
-      rgjfGit.pull()
-    }
-  }
-}
-
 // No group so it does not show up in the output of `gradlew tasks`
 task getPlumeScripts() {
     description 'Obtain or update plume-scripts'
@@ -741,46 +645,6 @@ subprojects {
         // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
         exclude group: 'org.checkerframework'
       }
-    }
-
-    task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
-        description 'Check whether the source code is properly formatted'
-        // checker-qual-android project has no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual-android') }
-        executable 'python3'
-
-        doFirst {
-            if (isJava8) {
-                println 'The checkFormat task cannot be run on Java 8.  Please use Java 11+.'
-                return
-            }
-            args += "${formatScriptsHome}/check-google-java-format.py"
-            args += getJavaFilesToFormat(project.name)
-            // Since the scripts are downloaded from third-party Github, the environment variable
-            // is the only way to add the necessary open:
-            environment('JDK_JAVA_OPTIONS', '--add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED')
-        }
-        ignoreExitValue = true
-        doLast {
-            if (!executionResult.isPresent() || executionResult.get().getExitValue() != 0) {
-                throw new RuntimeException('Found improper formatting, try running:  ./gradlew reformat"')
-            }
-        }
-    }
-
-    task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
-        description 'Format the Java source code'
-        // checker-qual-android project has no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual-android') }
-        executable 'python3'
-        doFirst {
-            if (isJava8) {
-                println 'The reformat task cannot be run on Java 8.  Please use Java 11+.'
-                return
-            }
-            args += "${formatScriptsHome}/run-google-java-format.py"
-            args += getJavaFilesToFormat(project.name)
-        }
     }
 
     shadowJar {
@@ -1072,7 +936,6 @@ task checkBasicStyle(group: 'Format') {
                                   '.html-tools',
                                   '.idea',
                                   '.plume-scripts',
-                                  '.run-google-java-format',
                                   'annotated',
                                   'api',
                                   'plume-bib',
