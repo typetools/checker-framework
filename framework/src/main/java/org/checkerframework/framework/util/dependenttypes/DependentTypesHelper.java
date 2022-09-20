@@ -679,8 +679,7 @@ public class DependentTypesHelper {
 
     // For use in stringToJavaExpr below, to avoid re-computation. Especially
     // important for the TreePath, which is expensive to compute.
-    List<JavaExpression> argsAsExprs =
-        arguments.stream().map(LocalVariable::fromNode).collect(Collectors.toList());
+    List<JavaExpression> argsAsExprs = CollectionsPlume.mapList(LocalVariable::fromNode, arguments);
     TreePath path = factory.getPath(invocationTree);
 
     StringToJavaExpression stringToJavaExpr =
