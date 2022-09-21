@@ -178,7 +178,13 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * If the collections are disjoint, returns null. Otherwise, returns their union. The
      * collections must not contain duplicates.
      */
-    private @Nullable Set<String> unionIfNotDisjoint(Collection<String> c1, Collection<String> c2) {
+    private @Nullable Collection<String> unionIfNotDisjoint(
+        Collection<String> c1, Collection<String> c2) {
+      if (c1.isEmpty()) {
+        return c2;
+      } else if (c2.isEmpty()) {
+        return c1;
+      }
       Set<String> result = new TreeSet<>(c1);
       boolean disjoint = true;
       for (String s : c2) {
@@ -203,7 +209,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> a2Val =
             AnnotationUtils.getElementValueArray(a2, sameLenValueElement, String.class);
 
-        Set<String> exprs = unionIfNotDisjoint(a1Val, a2Val);
+        Collection<String> exprs = unionIfNotDisjoint(a1Val, a2Val);
         if (exprs == null) {
           return BOTTOM;
         } else {
