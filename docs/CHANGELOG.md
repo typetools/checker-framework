@@ -18,6 +18,9 @@ Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
 Use `TreeUtils.elementFromDeclaration` and `TreeUtils.elementFromUse` in
 preference to `TreeUtils.elementFromTree`, when possible.
 
+Use Spotless for formatting; the relevant commands are `./gradlew spotlessCheck`
+and `./gradlew spotlessApply`.
+
 **Closed issues:**
 
 
