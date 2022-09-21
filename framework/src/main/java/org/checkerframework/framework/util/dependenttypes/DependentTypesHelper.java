@@ -38,6 +38,7 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -698,8 +699,16 @@ public class DependentTypesHelper {
                   return super.convert(javaExpr);
                 }
 
+                // Local variables and this references at the call site that do not
+                // correspond to any parameter need to be removed from the dependent
+                // type annotation, which returning null from these methods accomplishes.
                 @Override
                 public JavaExpression visitLocalVariable(LocalVariable local, Void unused) {
+                  return null;
+                }
+
+                @Override
+                public JavaExpression visitThisReference(ThisReference thisRef, Void unused) {
                   return null;
                 }
               };

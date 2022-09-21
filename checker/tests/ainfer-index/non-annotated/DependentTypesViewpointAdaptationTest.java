@@ -3,18 +3,8 @@
 // whose argument was a constant String, e.g., @SameLen({ ""Hamburg"", "word1" })
 
 import org.checkerframework.checker.index.qual.SameLen;
-import org.checkerframework.checker.index.qual.NonNegative;
 
 public class DependentTypesViewpointAdaptationTest {
-
-  // These taken from https://checkerframework.org/manual/#index-annotating-fixed-size
-  // to make this class a valid target for SameLen.
-  private final Object @SameLen("this") [] delegate;
-
-  @SuppressWarnings("index") // constructor creates object of size @SameLen(this) by definition
-  DependentTypesViewpointAdaptationTest(@NonNegative int size) {
-    delegate = new Object[size];
-  }
 
   public static void run() {
     String word1 = "\"Hamburg\"";
@@ -47,7 +37,17 @@ public class DependentTypesViewpointAdaptationTest {
     compute3(this, t1);
   }
 
-  public boolean compute3(DependentTypesViewpointAdaptationTest t1,
+  public static boolean compute3(DependentTypesViewpointAdaptationTest t1,
+      DependentTypesViewpointAdaptationTest t2) {
+    // content doesn't matter
+    return false;
+  }
+
+  public void thisTestNoUse(@SameLen("this") DependentTypesViewpointAdaptationTest t1) {
+    compute4(t1, t1);
+  }
+
+  public static boolean compute4(DependentTypesViewpointAdaptationTest t1,
       DependentTypesViewpointAdaptationTest t2) {
     // content doesn't matter
     return false;
