@@ -32,13 +32,23 @@ public class DependentTypesViewpointAdaptationTest {
     return false;
   }
 
-  public static void thisTest(@SameLen("#2") DependentTypesViewpointAdaptationTest t1,
+  public static void receiverTest(@SameLen("#2") DependentTypesViewpointAdaptationTest t1,
       @SameLen("#1") DependentTypesViewpointAdaptationTest t2) {
     t1.compute2(t2);
   }
 
   public boolean compute2(DependentTypesViewpointAdaptationTest this,
       DependentTypesViewpointAdaptationTest other) {
+    // content doesn't matter
+    return false;
+  }
+
+  public void thisTest(@SameLen("this") DependentTypesViewpointAdaptationTest t1) {
+    compute3(this, t1);
+  }
+
+  public boolean compute3(DependentTypesViewpointAdaptationTest t1,
+      DependentTypesViewpointAdaptationTest t2) {
     // content doesn't matter
     return false;
   }
