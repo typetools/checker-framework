@@ -4,6 +4,8 @@
 import java.io.IOException;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 
+@SuppressWarnings(
+    "declaration.inconsistent.with.implements.clause") // stronger @InheritableMustCall
 @InheritableMustCall({"close", "foo"})
 public class CloseableAndMore implements AutoCloseable {
   void foo() {}
