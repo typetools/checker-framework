@@ -816,6 +816,12 @@ public class ElementUtils {
           ElementKind.RESOURCE_VARIABLE,
           ElementKind.EXCEPTION_PARAMETER);
 
+  /**
+   * Return true if the element is a local variable.
+   *
+   * @param elt the element to test
+   * @return true if the argument is a local variable
+   */
   public static boolean isLocalVariable(Element elt) {
     return localVariableElementKinds.contains(elt.getKind());
   }
