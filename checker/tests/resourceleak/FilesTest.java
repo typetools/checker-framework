@@ -7,7 +7,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 public class FilesTest {
 
   void bad(Path p) throws IOException {
-    // error: [required.method.not.called]
+    // :: error: (required.method.not.called)
     Stream<Path> s = Files.list(p);
   }
 
