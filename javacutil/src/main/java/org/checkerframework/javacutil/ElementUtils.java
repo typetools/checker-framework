@@ -809,6 +809,17 @@ public class ElementUtils {
     return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
   }
 
+  /** The set of kinds that represent local variables. */
+  private static final Set<ElementKind> localVariableElementKinds =
+      EnumSet.of(
+          ElementKind.LOCAL_VARIABLE,
+          ElementKind.RESOURCE_VARIABLE,
+          ElementKind.EXCEPTION_PARAMETER);
+
+  public static boolean isLocalVariable(Element elt) {
+    return localVariableElementKinds.contains(elt.getKind());
+  }
+
   /**
    * Return true if the element is a binding variable.
    *

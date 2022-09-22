@@ -1915,6 +1915,8 @@ public abstract class GenericAnnotatedTypeFactory<
       case CONSTRUCTOR:
       case METHOD:
       case FIELD:
+      case RESOURCE_VARIABLE:
+      case EXCEPTION_PARAMETER:
       case LOCAL_VARIABLE:
       case PARAMETER:
         break;
@@ -1961,7 +1963,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param type where the defaults are applied
    */
   private void applyLocalVariableQualifierParameterDefaults(Element elt, AnnotatedTypeMirror type) {
-    if (elt.getKind() != ElementKind.LOCAL_VARIABLE
+    if (!ElementUtils.isLocalVariable(elt)
         || getQualifierParameterHierarchies(type).isEmpty()
         || variablesUnderInitialization.contains(elt)) {
       return;
@@ -2218,7 +2220,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+    if (element != null && ElementUtils.isLocalVariable(element)) {
       if (type.getKind() == TypeKind.DECLARED) {
         // If this is a type for a local variable, don't apply the default to the primary location.
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
