@@ -11,14 +11,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.afu.scenelib.annotations.Annotation;
-import org.checkerframework.afu.scenelib.annotations.el.AnnotationDef;
-import org.checkerframework.afu.scenelib.annotations.field.AnnotationFieldType;
-import org.checkerframework.afu.scenelib.annotations.field.ArrayAFT;
-import org.checkerframework.afu.scenelib.annotations.field.BasicAFT;
-import org.checkerframework.afu.scenelib.annotations.field.ClassTokenAFT;
-import org.checkerframework.afu.scenelib.annotations.field.EnumAFT;
-import org.checkerframework.afu.scenelib.annotations.field.ScalarAFT;
+import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
+import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
+import org.checkerframework.afu.scenelib.field.ArrayAFT;
+import org.checkerframework.afu.scenelib.field.BasicAFT;
+import org.checkerframework.afu.scenelib.field.ClassTokenAFT;
+import org.checkerframework.afu.scenelib.field.EnumAFT;
+import org.checkerframework.afu.scenelib.field.ScalarAFT;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -28,8 +28,7 @@ import org.plumelib.reflection.Signatures;
 import org.plumelib.util.CollectionsPlume;
 
 /**
- * This class contains static methods that convert between {@link
- * org.checkerframework.afu.scenelib.annotations.Annotation} and {@link
+ * This class contains static methods that convert between {@link Annotation} and {@link
  * javax.lang.model.element.AnnotationMirror}.
  */
 public class AnnotationConverter {
@@ -38,8 +37,7 @@ public class AnnotationConverter {
   AnnotationConverter() {}
 
   /**
-   * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link
-   * org.checkerframework.afu.scenelib.annotations.Annotation}.
+   * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link Annotation}.
    *
    * @param am the AnnotationMirror
    * @return the Annotation
@@ -85,8 +83,7 @@ public class AnnotationConverter {
   }
 
   /**
-   * Converts an {@link org.checkerframework.afu.scenelib.annotations.Annotation} into an {@link
-   * javax.lang.model.element.AnnotationMirror}.
+   * Converts an {@link Annotation} into an {@link javax.lang.model.element.AnnotationMirror}.
    *
    * @param anno the Annotation
    * @param processingEnv the ProcessingEnvironment
