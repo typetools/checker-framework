@@ -806,7 +806,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
     // It is possible that rhsATM is a type variable but atmFromStorage is not, which
     // would cause a ClassCastException in updateAtmWithLub(). This can
-    // happen for example when a local variable of type ? extends T is assigned to a
+    // happen for example when an expression of type ? extends T is assigned to a
     // field of type T, such as in the test ainfer-index/non-annotated/Dataset6Crash.java.
     try {
       updateAtmWithLub(rhsATM, atmFromStorage);
