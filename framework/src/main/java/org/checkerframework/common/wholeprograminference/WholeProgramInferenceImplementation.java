@@ -811,6 +811,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     try {
       updateAtmWithLub(rhsATM, atmFromStorage);
     } catch (ClassCastException c) {
+      System.out.println("Catching a ClassCastException: " + c);
+      System.out.println(
+          "The cast must be one of the following two AnnotatedTypeMirrors. The"
+              + " type to cast to is decided by the kind of rhsATM.");
+      System.out.println("rhsATM: " + rhsATM);
+      System.out.println("rhsATM.getKind(): " + rhsATM.getKind());
+      System.out.println("atmFromStorage: " + atmFromStorage);
+      System.out.println("atmFromStorage.getKind(): " + atmFromStorage.getKind());
+
       AnnotatedTypeMirror compatibleRHSAtm =
           AnnotatedTypes.asSuper(this.atypeFactory, rhsATM, atmFromStorage);
       updateAtmWithLub(compatibleRHSAtm, atmFromStorage);
