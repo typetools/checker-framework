@@ -175,8 +175,14 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the collections are disjoint, returns null. Otherwise, returns their union. The
-     * collections must not contain duplicates.
+     * If the collections are both non-empty and disjoint, returns null. Otherwise, returns their
+     * union. The collections must not contain duplicates.
+     *
+     * @param c1 a collection of Strings (intended to be the value argument of a SameLen annotation)
+     * @param c2 another collection of Strings
+     * @return if the two inputs are disjoint (i.e., have no elements in common) and both are
+     *     non-empty, returns null. Otherwise, returns the union of the two collections (which, if
+     *     one collection is empty, is just the other collection).
      */
     private @Nullable Collection<String> unionIfNotDisjoint(
         Collection<String> c1, Collection<String> c2) {
