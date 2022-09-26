@@ -673,6 +673,9 @@ public class DependentTypesHelper {
       List<Node> arguments,
       ExecutableElement methodElt) {
 
+    // TODO: this method should also take the receiver parameter, if there was one at the callsite,
+    // as an argument. Before it does, WPI needs to infer receiver types from callsites.
+
     if (!hasDependentType(atm)) {
       return;
     }

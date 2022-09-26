@@ -228,6 +228,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   private void updateInferredExecutableParameterTypes(
       ExecutableElement methodElt, List<Node> arguments, Tree invocationTree) {
 
+    // TODO: this method should be updated to:
+    // 1. take the receiver parameter of the method being invoked as an argument, in node form,
+    //    if there is one (the argument should be null otherwise)
+    // 2. infer types for the method declaration based on the type of the receiver
+    // 3. DependentTypesHelper#delocalizeAtCallsite should be updated to handle dependent types
+    //    that refer to the receiver (there is a (commented-out) test for this in
+    //    tests/ainfer-index/non-annotated/DependentTypesViewpointAdapationTest.java).
+
     String file = storage.getFileForElement(methodElt);
 
     for (int i = 0; i < arguments.size(); i++) {
