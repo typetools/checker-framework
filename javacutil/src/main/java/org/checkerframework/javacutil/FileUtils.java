@@ -1,4 +1,5 @@
-// TODO: Move into plume-util, and then delete this class.import
+// TODO: When plume-util 1.6.0 is released, deprecate createTempFile in favor of
+// FilesPlume.createTempFile().
 package org.checkerframework.javacutil;
 
 import java.io.File;

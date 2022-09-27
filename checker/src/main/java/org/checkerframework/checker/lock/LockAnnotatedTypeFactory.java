@@ -90,7 +90,9 @@ public class LockAnnotatedTypeFactory
     try {
       log =
           new PrintStream(
-              FileUtils.createTempFile(new File(".").toPath(), "latf", ".log").toFile());
+              FileUtils.createTempFile(
+                      new File(System.getProperty("user.dir")).toPath(), "latf", ".log")
+                  .toFile());
     } catch (IOException e) {
       throw new Error(e);
     }
