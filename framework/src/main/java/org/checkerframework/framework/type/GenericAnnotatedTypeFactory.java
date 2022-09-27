@@ -1303,7 +1303,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
       TreePath preTreePath = getVisitorTreePath();
 
-      // Don't use getPath, because that depends on the assignmentContext path.
+      // Don't call AnnotatedTypeFactory#getPath, because it uses visitorTreePath.
       setVisitorTreePath(TreePath.getPath(this.root, ct));
 
       // start with the captured store as initialization store

@@ -1017,7 +1017,7 @@ task checkBasicStyle(group: 'Format') {
                 RandomAccessFile file
                 try {
                     file = new RandomAccessFile(it.file, 'r')
-                    int end = file.length() - 1;
+                    long end = file.length() - 1;
                     if (end > 0) {
                         file.seek(end)
                         byte last = file.readByte()
