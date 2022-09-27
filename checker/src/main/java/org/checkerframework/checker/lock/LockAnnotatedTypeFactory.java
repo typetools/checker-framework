@@ -507,41 +507,41 @@ public class LockAnnotatedTypeFactory
   // package-private
   SideEffectAnnotation methodSideEffectAnnotation(
       Element element, boolean issueErrorIfMoreThanOnePresent) {
-    if (element != null) {
-      Set<SideEffectAnnotation> sideEffectAnnotationPresent =
-          EnumSet.noneOf(SideEffectAnnotation.class);
-      for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
-        if (getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null) {
-          sideEffectAnnotationPresent.add(sea);
-        }
-      }
-
-      int count = sideEffectAnnotationPresent.size();
-
-      if (count == 0) {
-        return defaults.applyConservativeDefaults(element)
-            ? SideEffectAnnotation.MAYRELEASELOCKS
-            : SideEffectAnnotation.RELEASESNOLOCKS;
-      }
-
-      if (count > 1 && issueErrorIfMoreThanOnePresent) {
-        // TODO: Turn on after figuring out how this interacts with inherited annotations.
-        // checker.reportError(element, "multiple.sideeffect.annotations");
-      }
-
-      SideEffectAnnotation weakest = null;
-      // At least one side effect annotation was found. Return the weakest.
-      for (SideEffectAnnotation sea : sideEffectAnnotationPresent) {
-        if (weakest == null || sea.isWeakerThan(weakest)) {
-          weakest = sea;
-        }
-      }
-      return weakest;
+    if (element == null) {
+      // When there is not enough information to determine the correct side effect annotation,
+      // return the weakest one.
+      return SideEffectAnnotation.weakest();
     }
 
-    // When there is not enough information to determine the correct side effect annotation,
-    // return the weakest one.
-    return SideEffectAnnotation.weakest();
+    Set<SideEffectAnnotation> sideEffectAnnotationPresent =
+        EnumSet.noneOf(SideEffectAnnotation.class);
+    for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
+      if (getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null) {
+        sideEffectAnnotationPresent.add(sea);
+      }
+    }
+
+    int count = sideEffectAnnotationPresent.size();
+
+    if (count == 0) {
+      return defaults.applyConservativeDefaults(element)
+          ? SideEffectAnnotation.MAYRELEASELOCKS
+          : SideEffectAnnotation.RELEASESNOLOCKS;
+    }
+
+    if (count > 1 && issueErrorIfMoreThanOnePresent) {
+      // TODO: Turn on after figuring out how this interacts with inherited annotations.
+      // checker.reportError(element, "multiple.sideeffect.annotations");
+    }
+
+    SideEffectAnnotation weakest = null;
+    // At least one side effect annotation was found. Return the weakest.
+    for (SideEffectAnnotation sea : sideEffectAnnotationPresent) {
+      if (weakest == null || sea.isWeakerThan(weakest)) {
+        weakest = sea;
+      }
+    }
+    return weakest;
   }
 
   /**
