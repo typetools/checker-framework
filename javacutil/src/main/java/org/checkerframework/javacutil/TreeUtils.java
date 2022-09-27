@@ -1677,11 +1677,11 @@ public final class TreeUtils {
   public static boolean isLocalVariable(Tree tree) {
     if (tree.getKind() == Tree.Kind.VARIABLE) {
       VariableElement varElt = elementFromDeclaration((VariableTree) tree);
-      return varElt != null && varElt.getKind() == ElementKind.LOCAL_VARIABLE;
+      return varElt != null && ElementUtils.isLocalVariable(varElt);
     } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
       ExpressionTree etree = (ExpressionTree) tree;
       assert isUseOfElement(etree) : "@AssumeAssertion(nullness): tree kind";
-      return elementFromUse(etree).getKind() == ElementKind.LOCAL_VARIABLE;
+      return ElementUtils.isLocalVariable(elementFromUse(etree));
     }
     return false;
   }
