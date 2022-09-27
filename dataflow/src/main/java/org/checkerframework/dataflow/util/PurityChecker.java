@@ -218,6 +218,10 @@ public class PurityChecker {
       return super.visitCatch(node, ignore);
     }
 
+    /** Represents a method that is both deterministic and side-effect free. */
+    private static final EnumSet<Pure.Kind> detAndSeFree =
+        EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
+
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(node);
@@ -227,7 +231,7 @@ public class PurityChecker {
         EnumSet<Pure.Kind> purityKinds =
             (assumeDeterministic && assumeSideEffectFree)
                 // Avoid computation if not necessary
-                ? EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE)
+                ? detAndSeFree
                 : PurityUtils.getPurityKinds(annoProvider, elt);
         boolean det = assumeDeterministic || purityKinds.contains(Kind.DETERMINISTIC);
         boolean seFree = assumeSideEffectFree || purityKinds.contains(Kind.SIDE_EFFECT_FREE);

@@ -1820,8 +1820,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Flow analysis will be performed if all of the following are true.
    *
    * <ul>
-   *   <li>tree is a {@link ClassTree}
-   *   <li>Flow analysis has not already been performed on tree
+   *   <li>{@code tree} is a {@link ClassTree}
+   *   <li>Flow analysis has not already been performed on {@code tree}
    * </ul>
    *
    * @param tree the tree to check and possibly perform flow analysis on
@@ -1831,8 +1831,9 @@ public abstract class GenericAnnotatedTypeFactory<
     // on the ClassTree before it's called on any code contained in the class,
     // so that we can perform flow analysis on the class.  Previously we
     // used TreePath.getPath to find enclosing classes, but that call
-    // alone consumed more than 10% of execution time.  See BaseTypeVisitor
-    // .visitClass for the call to getAnnotatedType that triggers analysis.
+    // alone consumed more than 10% of execution time.  See
+    // BaseTypeVisitor.visitClass for the call to getAnnotatedType that
+    // triggers analysis.
     if (tree instanceof ClassTree) {
       ClassTree classTree = (ClassTree) tree;
       if (!scannedClasses.containsKey(classTree)) {

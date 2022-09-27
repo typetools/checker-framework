@@ -103,7 +103,7 @@ public class PurityUtils {
   }
 
   /**
-   * Returns the types of purity of the method {@code methodTree}.
+   * Returns the purity annotations on the method {@code methodTree}.
    *
    * @param provider how to get annotations
    * @param methodTree a method to test
@@ -119,18 +119,19 @@ public class PurityUtils {
   }
 
   /**
-   * Returns the types of purity of the method {@code methodElement}.
+   * Returns the purity annotations on the method {@code methodElement}.
    *
    * @param provider how to get annotations
    * @param methodElement a method to test
    * @return the types of purity of the method {@code methodElement}
    */
-  // TODO: should the return type be an EnumSet?
   public static EnumSet<Pure.Kind> getPurityKinds(
       AnnotationProvider provider, ExecutableElement methodElement) {
+    // Special case for record accessors
     if (ElementUtils.isRecordAccessor(methodElement)) {
       return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
     }
+
     AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);
     AnnotationMirror sefAnnotation =
         provider.getDeclAnnotation(methodElement, SideEffectFree.class);
