@@ -977,7 +977,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     // check "no" purity
-    EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+    EnumSet<Pure.Kind> kinds = PurityUtils.getPurityAnnotations(atypeFactory, node);
     // @Deterministic makes no sense for a void method or constructor
     boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
     if (isDeterministic) {
@@ -3707,9 +3707,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       // check purity annotations
       EnumSet<Pure.Kind> superPurity =
-          PurityUtils.getPurityKinds(atypeFactory, overridden.getElement());
+          PurityUtils.getPurityAnnotations(atypeFactory, overridden.getElement());
       EnumSet<Pure.Kind> subPurity =
-          PurityUtils.getPurityKinds(atypeFactory, overrider.getElement());
+          PurityUtils.getPurityAnnotations(atypeFactory, overrider.getElement());
       if (!subPurity.containsAll(superPurity)) {
         checker.reportError(
             overriderTree,
