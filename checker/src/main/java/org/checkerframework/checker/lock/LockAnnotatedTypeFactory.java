@@ -500,15 +500,15 @@ public class LockAnnotatedTypeFactory
    * annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS as the
    * conservative default.
    *
-   * @param element the method element
+   * @param methodElement the method element
    * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect
    *     annotation is present on the method
    * @return the side effect annotation that is present on the given method
    */
   // package-private
   SideEffectAnnotation methodSideEffectAnnotation(
-      ExecutableElement element, boolean issueErrorIfMoreThanOnePresent) {
-    if (element == null) {
+      ExecutableElement methodElement, boolean issueErrorIfMoreThanOnePresent) {
+    if (methodElement == null) {
       // When there is not enough information to determine the correct side effect annotation,
       // return the weakest one.
       return SideEffectAnnotation.weakest();
@@ -517,7 +517,7 @@ public class LockAnnotatedTypeFactory
     Set<SideEffectAnnotation> sideEffectAnnotationPresent =
         EnumSet.noneOf(SideEffectAnnotation.class);
     for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
-      if (getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null) {
+      if (getDeclAnnotationNoAliases(methodElement, sea.getAnnotationClass()) != null) {
         sideEffectAnnotationPresent.add(sea);
       }
     }
@@ -525,14 +525,14 @@ public class LockAnnotatedTypeFactory
     int count = sideEffectAnnotationPresent.size();
 
     if (count == 0) {
-      return defaults.applyConservativeDefaults(element)
+      return defaults.applyConservativeDefaults(methodElement)
           ? SideEffectAnnotation.MAYRELEASELOCKS
           : SideEffectAnnotation.RELEASESNOLOCKS;
     }
 
     if (count > 1 && issueErrorIfMoreThanOnePresent) {
       // TODO: Turn on after figuring out how this interacts with inherited annotations.
-      // checker.reportError(element, "multiple.sideeffect.annotations");
+      // checker.reportError(methodElement, "multiple.sideeffect.annotations");
     }
 
     SideEffectAnnotation weakest = null;
