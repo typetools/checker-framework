@@ -1312,8 +1312,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
-      // Queue up classes (for top-level whire loop) and methods (for within this try construct);
-      // analyze top-level blocks and variable initializers as they are encountered.
+      // Queue up classes (for top-level `while` loop) and methods (for within this `try`
+      // construct); analyze top-level blocks and variable initializers as they are encountered.
       try {
         List<CFGMethod> methods = new ArrayList<>();
         List<? extends Tree> members = ct.getMembers();
