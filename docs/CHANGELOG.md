@@ -15,6 +15,8 @@ introduced since JDK 11).
 
 Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
 
+Added method `isSideEffectFree()` to the `AnnotationProvider` interface.
+
 Deprecated `CFAbstractStore.isSideEffectFree()` in favor of new method
 `AnnotationProvider.isSideEffectFree()`.  Note the different contracts of
 `PurityUtils.isSideEffectFree()` and `AnnotationProvider.isSideEffectFree()`.
