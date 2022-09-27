@@ -13,7 +13,9 @@ introduced since JDK 11).
 
 **Implementation details:**
 
-Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
+Deprecated methods:
+ * `TreeUtils.constructor()` => `TreeUtils.elementFromUse()`
+ * `PurityUtils.getPurityKinds()` => `PurityUtils.getPurityAnnotations()`
 
 Use `TreeUtils.elementFromDeclaration` and `TreeUtils.elementFromUse` in
 preference to `TreeUtils.elementFromTree`, when possible.
