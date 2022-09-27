@@ -180,7 +180,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param atypeFactory the type factory used to retrieve annotations on the method element
    * @param method the method element
    * @return whether the method is side-effect-free
-   * @deprecated use {@link AnnotationProvider#isSideEffectFree}
+   * @deprecated use {@link org.checkerframework.javacutil.AnnotationProvider#isSideEffectFree}
    */
   @Deprecated // 2022-09-27
   protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
