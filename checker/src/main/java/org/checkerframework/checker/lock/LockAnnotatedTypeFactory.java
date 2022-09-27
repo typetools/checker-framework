@@ -4,9 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +61,6 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.FileUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.CollectionsPlume;
@@ -83,20 +79,6 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class LockAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
-
-  static final PrintStream log;
-
-  static {
-    try {
-      log =
-          new PrintStream(
-              FileUtils.createTempFile(
-                      new File(System.getProperty("user.dir")).toPath(), "latf", ".log")
-                  .toFile());
-    } catch (IOException e) {
-      throw new Error(e);
-    }
-  }
 
   /** dependent type annotation error message for when the expression is not effectively final. */
   public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
@@ -147,16 +129,6 @@ public class LockAnnotatedTypeFactory
   /** Create a new LockAnnotatedTypeFactory. */
   public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
-
-    // This alias is only true for the Lock Checker. All other checkers must
-    // ignore the @LockingFree annotation.
-    // addAliasedDeclAnnotation(LockingFree.class, SideEffectFree.class, SIDEEFFECTFREE);
-
-    // This alias is only true for the Lock Checker. All other checkers must
-    // ignore the @ReleasesNoLocks annotation.  Note that ReleasesNoLocks is
-    // not truly side-effect-free even as far as the Lock Checker is concerned,
-    // so there is additional handling of this annotation in the Lock Checker.
-    // addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class, SIDEEFFECTFREE);
 
     jcipGuardedBy = classForNameOrNull("net.jcip.annotations.GuardedBy");
 
@@ -531,17 +503,6 @@ public class LockAnnotatedTypeFactory
       return SideEffectAnnotation.weakest();
     }
 
-    boolean doLog =
-        element.getEnclosingElement().toString().endsWith("InstructionContextQueue")
-            && element.toString().startsWith("add(");
-
-    if (doLog) {
-      log.printf(
-          "methodSideEffectAnnotation(%s . %s, %s)%n",
-          element.getEnclosingElement(), element, issueErrorIfMoreThanOnePresent);
-      log.printf("  decl annotations = %s%n", getDeclAnnotations(element));
-    }
-
     Set<SideEffectAnnotation> sideEffectAnnotationPresent =
         EnumSet.noneOf(SideEffectAnnotation.class);
     for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
@@ -551,12 +512,6 @@ public class LockAnnotatedTypeFactory
     }
 
     int count = sideEffectAnnotationPresent.size();
-    if (doLog) {
-      log.printf(
-          "  methodSideEffectAnnotation(): present (size %d) = %s%n",
-          count, sideEffectAnnotationPresent);
-    }
-
     if (count == 0) {
       return defaults.applyConservativeDefaults(element)
           ? SideEffectAnnotation.MAYRELEASELOCKS
@@ -574,11 +529,6 @@ public class LockAnnotatedTypeFactory
       if (weakest == null || sea.isWeakerThan(weakest)) {
         weakest = sea;
       }
-    }
-    if (doLog) {
-      log.printf(
-          "  methodSideEffectAnnotation(%s . %s, %s) => %s%n",
-          element.getEnclosingElement(), element, issueErrorIfMoreThanOnePresent, weakest);
     }
     return weakest;
   }

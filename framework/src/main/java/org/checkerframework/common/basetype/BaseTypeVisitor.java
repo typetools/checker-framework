@@ -230,6 +230,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * command line.
    */
   private final boolean checkPurity;
+  // TODO: Given that setting this to false is problematic, should it be removed entirely?
   /**
    * True if purity annotations should be inferred.
    *
