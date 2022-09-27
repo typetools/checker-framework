@@ -303,7 +303,7 @@ else
     # Don't match arguments like "-J--add-opens=jdk.compiler/com.sun.tools.java"
     # or "--add-opens=jdk.compiler/com.sun.tools.java".
     # shellcheck disable=SC2046
-    grep -oh "\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | grep -v '^\-\-add\-opens' | sort | uniq > "${listpath}"
+    grep -oh "^\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | grep -v '^\-\-add\-opens' | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
         echo "${listpath} has size zero"
@@ -321,9 +321,12 @@ else
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
     # shellcheck disable=SC2046
-    "${SCRIPTDIR}/.scc/scc" --output "${OUTDIR}-results/loc.txt" \
-        $(< "${listpath}")
-
+    if ! "${SCRIPTDIR}/.scc/scc" --output "${OUTDIR}-results/loc.txt" $(< "${listpath}") ; then
+      echo "Problem in wpi-many.sh while running scc."
+      echo "  listpath = ${listpath}"
+      echo "  generated from ${OUTDIR}-results/results_available.txt"
+      exit 1
+    fi
     rm -f "${listpath}"
   else
     echo "skipping computation of lines of code because the operating system is not linux: ${OSTYPE}}"
