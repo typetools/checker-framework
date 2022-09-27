@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** An AnnotationProvider that is independent of any type hierarchy. */
@@ -40,5 +41,28 @@ public class BasicAnnotationProvider implements AnnotationProvider {
   public @Nullable AnnotationMirror getAnnotationMirror(
       Tree tree, Class<? extends Annotation> target) {
     return null;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>This implementation returns true if the {@code @SideEffectFree} annotation is present on the
+   * given method.
+   */
+  @Override
+  public boolean isSideEffectFree(ExecutableElement methodElement) {
+    List<? extends AnnotationMirror> annotationMirrors = methodElement.getAnnotationMirrors();
+
+    // Then look at the real annotations.
+    for (AnnotationMirror am : annotationMirrors) {
+      @SuppressWarnings("deprecation") // method intended for use by the hierarchy
+      boolean found =
+          AnnotationUtils.areSameByName(am, "org.checkerframework.dataflow.qual.SideEffectFree");
+      if (found) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

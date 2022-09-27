@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // This class exists to break a circular dependency between the dataflow framework and
@@ -31,4 +32,13 @@ public interface AnnotationProvider {
    * @return the annotation on {@code tree} that has the class {@code target}, or null
    */
   @Nullable AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target);
+
+  /**
+   * Returns true if the given method is side-effect-free according to this AnnotationProvider
+   * &mdash; that is, if a call to the given method does not undo flow-sensitive type refinement.
+   *
+   * @param methodElement a method
+   * @return true if a call to the method does not undo flow-sensitive type refinement
+   */
+  public boolean isSideEffectFree(ExecutableElement methodElement);
 }

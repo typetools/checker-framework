@@ -805,4 +805,12 @@ public class LockAnnotatedTypeFactory
     // Return the resulting AnnotationMirror
     return builder.build();
   }
+
+  @Override
+  public boolean isSideEffectFree(ExecutableElement method) {
+    SideEffectAnnotation seAnno = methodSideEffectAnnotation(method, false);
+    return seAnno == SideEffectAnnotation.RELEASESNOLOCKS
+        || seAnno == SideEffectAnnotation.LOCKINGFREE
+        || super.isSideEffectFree(method);
+  }
 }

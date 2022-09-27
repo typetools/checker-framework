@@ -337,6 +337,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
 
   /**
+   * True if all methods should be assumed to be @SideEffectFree, for the purposes of
+   * org.checkerframework.dataflow analysis.
+   */
+  private final boolean assumeSideEffectFree;
+
+  /**
    * Initializes all fields of {@code type}.
    *
    * @param type annotated type mirror
@@ -517,6 +523,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.processingEnv = checker.getProcessingEnvironment();
     // this.root = root;
     this.checker = checker;
+    this.assumeSideEffectFree =
+        checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
+
     this.trees = Trees.instance(processingEnv);
     this.elements = processingEnv.getElementUtils();
     this.types = processingEnv.getTypeUtils();
@@ -5422,8 +5431,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Checks that the collection contains the annotation. Using Collection.contains does not always
-   * work, because it does not use areSame for comparison.
+   * Checks that the collection contains the annotation. Using {@code Collection.contains} does not
+   * always work, because it does not use {@code areSame()} for comparison.
    *
    * <p>This method is faster than {@link AnnotationUtils#containsSameByClass(Collection, Class)}
    * because is caches the name of the class rather than computing it each time.
@@ -5582,5 +5591,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return true;
     }
     return ImmutableTypes.isImmutable(TypeAnnotationUtils.unannotatedType(type).toString());
+  }
+
+  @Override
+  public boolean isSideEffectFree(ExecutableElement methodElement) {
+    if (assumeSideEffectFree) {
+      return true;
+    }
+
+    for (AnnotationMirror anno : getDeclAnnotations(methodElement)) {
+      if (areSameByClass(anno, org.checkerframework.dataflow.qual.SideEffectFree.class)
+          || areSameByClass(anno, org.checkerframework.dataflow.qual.Pure.class)
+          || areSameByClass(anno, org.jmlspecs.annotation.Pure.class)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
