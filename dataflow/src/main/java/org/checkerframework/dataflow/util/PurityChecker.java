@@ -232,7 +232,7 @@ public class PurityChecker {
             (assumeDeterministic && assumeSideEffectFree)
                 // Avoid computation if not necessary
                 ? detAndSeFree
-                : PurityUtils.getPurityAnnotations(annoProvider, elt);
+                : PurityUtils.getPurityKinds(annoProvider, elt);
         boolean det = assumeDeterministic || purityKinds.contains(Kind.DETERMINISTIC);
         boolean seFree = assumeSideEffectFree || purityKinds.contains(Kind.SIDE_EFFECT_FREE);
         if (!det && !seFree) {

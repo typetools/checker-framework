@@ -31,7 +31,7 @@ public class PurityUtils {
    * @return whether the method has any purity annotations
    */
   public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree methodTree) {
-    return !getPurityAnnotations(provider, methodTree).isEmpty();
+    return !getPurityKinds(provider, methodTree).isEmpty();
   }
 
   /**
@@ -43,7 +43,7 @@ public class PurityUtils {
    */
   public static boolean hasPurityAnnotation(
       AnnotationProvider provider, ExecutableElement methodElement) {
-    return !getPurityAnnotations(provider, methodElement).isEmpty();
+    return !getPurityKinds(provider, methodElement).isEmpty();
   }
 
   /**
@@ -70,7 +70,7 @@ public class PurityUtils {
    */
   public static boolean isDeterministic(
       AnnotationProvider provider, ExecutableElement methodElement) {
-    EnumSet<Pure.Kind> kinds = getPurityAnnotations(provider, methodElement);
+    EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
     return kinds.contains(Kind.DETERMINISTIC);
   }
 
@@ -98,22 +98,8 @@ public class PurityUtils {
    */
   public static boolean isSideEffectFree(
       AnnotationProvider provider, ExecutableElement methodElement) {
-    EnumSet<Pure.Kind> kinds = getPurityAnnotations(provider, methodElement);
+    EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
     return kinds.contains(Kind.SIDE_EFFECT_FREE);
-  }
-
-  /**
-   * Returns the purity annotations of the method {@code methodTree}.
-   *
-   * @param provider how to get annotations
-   * @param methodTree a method to test
-   * @return the types of purity of the method {@code methodTree}
-   * @deprecated use {@code getPurityAnnotations}
-   */
-  @Deprecated // 2022-09-27
-  public static EnumSet<Pure.Kind> getPurityKinds(
-      AnnotationProvider provider, MethodTree methodTree) {
-    return getPurityAnnotations(provider, methodTree);
   }
 
   /**
@@ -123,13 +109,13 @@ public class PurityUtils {
    * @param methodTree a method to test
    * @return the types of purity of the method {@code methodTree}
    */
-  public static EnumSet<Pure.Kind> getPurityAnnotations(
+  public static EnumSet<Pure.Kind> getPurityKinds(
       AnnotationProvider provider, MethodTree methodTree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
     if (methodElement == null) {
       throw new BugInCF("Could not find element for tree: " + methodTree);
     }
-    return getPurityAnnotations(provider, methodElement);
+    return getPurityKinds(provider, methodElement);
   }
 
   /**
@@ -138,22 +124,8 @@ public class PurityUtils {
    * @param provider how to get annotations
    * @param methodElement a method to test
    * @return the types of purity of the method {@code methodElement}
-   * @deprecated use {@code getPurityAnnotations}
    */
-  @Deprecated // 2022-09-27
   public static EnumSet<Pure.Kind> getPurityKinds(
-      AnnotationProvider provider, ExecutableElement methodElement) {
-    return getPurityAnnotations(provider, methodElement);
-  }
-
-  /**
-   * Returns the types of purity of the method {@code methodElement}.
-   *
-   * @param provider how to get annotations
-   * @param methodElement a method to test
-   * @return the types of purity of the method {@code methodElement}
-   */
-  public static EnumSet<Pure.Kind> getPurityAnnotations(
       AnnotationProvider provider, ExecutableElement methodElement) {
     // Special case for record accessors
     if (ElementUtils.isRecordAccessor(methodElement)) {
