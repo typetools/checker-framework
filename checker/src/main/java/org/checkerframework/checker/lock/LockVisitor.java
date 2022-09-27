@@ -86,13 +86,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    */
   public LockVisitor(BaseTypeChecker checker) {
     super(checker);
-    for (String checkerName : atypeFactory.getCheckerNames()) {
-      if (!(checkerName.equals("lock")
-          || checkerName.equals("LockChecker")
-          || checkerName.equals("org.checkerframework.checker.lock.LockChecker"))) {
-        break;
-      }
-    }
   }
 
   @Override
