@@ -1289,6 +1289,7 @@ public abstract class GenericAnnotatedTypeFactory<
       return;
     }
 
+    // class trees and their initial stores
     Queue<Pair<ClassTree, Store>> classQueue = new ArrayDeque<>();
     List<FieldInitialValue<Value>> fieldValues = new ArrayList<>();
 
