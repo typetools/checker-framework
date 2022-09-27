@@ -1289,14 +1289,14 @@ public abstract class GenericAnnotatedTypeFactory<
       return;
     }
 
-    Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
+    Queue<Pair<ClassTree, Store>> classQueue = new ArrayDeque<>();
     List<FieldInitialValue<Value>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
-    queue.add(Pair.of(classTree, null));
+    classQueue.add(Pair.of(classTree, null));
 
-    while (!queue.isEmpty()) {
-      final Pair<ClassTree, Store> qel = queue.remove();
+    while (!classQueue.isEmpty()) {
+      final Pair<ClassTree, Store> qel = classQueue.remove();
       final ClassTree ct = qel.first;
       final Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
@@ -1352,7 +1352,7 @@ public abstract class GenericAnnotatedTypeFactory<
               if (initializer != null) {
                 boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
                 analyze(
-                    queue,
+                    classQueue,
                     lambdaQueue,
                     new CFGStatement(vt, ct),
                     fieldValues,
@@ -1376,12 +1376,12 @@ public abstract class GenericAnnotatedTypeFactory<
             case ENUM:
               // Visit inner and nested class trees.
               // TODO: Use no store for them? What can be captured?
-              queue.add(Pair.of((ClassTree) m, capturedStore));
+              classQueue.add(Pair.of((ClassTree) m, capturedStore));
               break;
             case BLOCK:
               BlockTree b = (BlockTree) m;
               analyze(
-                  queue,
+                  classQueue,
                   lambdaQueue,
                   new CFGStatement(b, ct),
                   fieldValues,
@@ -1402,7 +1402,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // fields of superclasses.
         for (CFGMethod met : methods) {
           analyze(
-              queue,
+              classQueue,
               lambdaQueue,
               met,
               fieldValues,
@@ -1419,7 +1419,7 @@ public abstract class GenericAnnotatedTypeFactory<
               (MethodTree)
                   TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Tree.Kind.METHOD);
           analyze(
-              queue,
+              classQueue,
               lambdaQueue,
               new CFGLambda(lambdaPair.first, classTree, mt),
               fieldValues,
@@ -1468,7 +1468,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Analyze the AST {@code ast} and store the result. Additional operations that should be
    * performed after analysis should be implemented in {@link #postAnalyze(ControlFlowGraph)}.
    *
-   * @param queue the queue for encountered class trees and their initial stores
+   * @param queue the classQueue for encountered class trees and their initial stores
    * @param lambdaQueue the queue for encountered lambda expression trees and their initial stores
    * @param ast the AST to analyze
    * @param fieldValues the abstract values for all fields of the same class
@@ -1480,7 +1480,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
   protected void analyze(
-      Queue<Pair<ClassTree, Store>> queue,
+      Queue<Pair<ClassTree, Store>> classQueue,
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<Value>> fieldValues,
@@ -1559,7 +1559,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // add classes declared in CFG
     for (ClassTree cls : cfg.getDeclaredClasses()) {
-      queue.add(Pair.of(cls, getStoreBefore(cls)));
+      classQueue.add(Pair.of(cls, getStoreBefore(cls)));
     }
     // add lambdas declared in CFG
     for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
