@@ -503,10 +503,11 @@ public class LockAnnotatedTypeFactory
    * @param element the method element
    * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect
    *     annotation is present on the method
+   * @return the side effect annotation that is present on the given method
    */
   // package-private
   SideEffectAnnotation methodSideEffectAnnotation(
-      Element element, boolean issueErrorIfMoreThanOnePresent) {
+      ExecutableElement element, boolean issueErrorIfMoreThanOnePresent) {
     if (element == null) {
       // When there is not enough information to determine the correct side effect annotation,
       // return the weakest one.
