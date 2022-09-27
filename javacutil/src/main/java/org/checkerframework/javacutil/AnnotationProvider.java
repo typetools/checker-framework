@@ -37,6 +37,9 @@ public interface AnnotationProvider {
    * Returns true if the given method is side-effect-free according to this AnnotationProvider
    * &mdash; that is, if a call to the given method does not undo flow-sensitive type refinement.
    *
+   * <p>Note that this method takes account of this AnnotationProvider's semantics, whereas {@code
+   * org.checkerframework.dataflow.util.PurityUtils#isSideEffectFree} does not.
+   *
    * @param methodElement a method
    * @return true if a call to the method does not undo flow-sensitive type refinement
    */
