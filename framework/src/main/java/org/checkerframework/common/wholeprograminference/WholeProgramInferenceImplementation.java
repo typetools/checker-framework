@@ -162,7 +162,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = objectCreationNode.getArguments();
-    updateInferredExecutableParameterTypes(constructorElt, arguments);
+    updateInferredExecutableParameterTypes(constructorElt, arguments, objectCreationNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
   }
 
@@ -197,7 +197,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = methodInvNode.getArguments();
-    updateInferredExecutableParameterTypes(methodElt, arguments);
+    updateInferredExecutableParameterTypes(methodElt, arguments, methodInvNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
   }
 
@@ -222,12 +222,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param methodElt the element of the method or constructor being invoked
    * @param arguments the arguments of the invocation
+   * @param invocationTree the method or constructor invocation, used to viewpoint adapt any
+   *     dependent types when storing newly-inferred annotations
    */
   private void updateInferredExecutableParameterTypes(
-      ExecutableElement methodElt, List<Node> arguments) {
+      ExecutableElement methodElt, List<Node> arguments, Tree invocationTree) {
 
-    // TODO: updates must be viewpoint adapted to the method invocation before
-    // they are stored on the method body
+    // TODO: this method should be updated to:
+    // 1. take the receiver parameter of the method being invoked as an argument, in node form,
+    //    if there is one (the argument should be null otherwise)
+    // 2. infer types for the method declaration based on the type of the receiver
+    // 3. DependentTypesHelper#delocalizeAtCallsite should be updated to handle dependent types
+    //    that refer to the receiver (there is a (commented-out) test for this in
+    //    tests/ainfer-index/non-annotated/DependentTypesViewpointAdapationTest.java).
 
     String file = storage.getFileForElement(methodElt);
 
@@ -303,7 +310,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       int paramIndex = varargsParam ? methodElt.getParameters().size() - 1 : i;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
-      // TODO: viewpoint adapt argATM here?
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+        ((GenericAnnotatedTypeFactory) this.atypeFactory)
+            .getDependentTypesHelper()
+            .delocalizeAtCallsite(argATM, invocationTree, arguments, methodElt);
+      }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
   }
