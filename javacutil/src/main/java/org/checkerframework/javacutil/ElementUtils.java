@@ -164,7 +164,7 @@ public class ElementUtils {
    * @param elem the enclosed element of a package
    * @return the innermost package element
    */
-  public static PackageElement enclosingPackage(final Element elem) {
+  public static PackageElement enclosingPackage(Element elem) {
     Element result = elem;
     while (result != null && result.getKind() != ElementKind.PACKAGE) {
       @Nullable Element encl = result.getEnclosingElement();
@@ -182,10 +182,10 @@ public class ElementUtils {
    * again.
    *
    * @param elem the package to start from
+   * @param elements the element
    * @return the parent package element or {@code null}
    */
-  public static @Nullable PackageElement parentPackage(
-      final PackageElement elem, final Elements e) {
+  public static @Nullable PackageElement parentPackage(PackageElement elem, Elements elements) {
     // The following might do the same thing:
     //   ((Symbol) elt).owner;
     // TODO: verify and see whether the change is worth it.
@@ -194,7 +194,7 @@ public class ElementUtils {
     if (fqn != null && !fqn.isEmpty()) {
       int dotPos = fqn.lastIndexOf('.');
       if (dotPos != -1) {
-        return e.getPackageElement(fqn.substring(0, dotPos));
+        return elements.getPackageElement(fqn.substring(0, dotPos));
       }
     }
     return null;
@@ -381,7 +381,7 @@ public class ElementUtils {
    * @param elt an element
    * @return true if the element is a reference to a compile-time constant
    */
-  public static boolean isCompileTimeConstant(Element elt) {
+  public static boolean isCompileTimeConstant(@Nullable Element elt) {
     return elt != null
         && (elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.LOCAL_VARIABLE)
         && ((VariableElement) elt).getConstantValue() != null;
@@ -807,6 +807,23 @@ public class ElementUtils {
    */
   public static boolean isTypeDeclaration(Element elt) {
     return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
+  }
+
+  /** The set of kinds that represent local variables. */
+  private static final Set<ElementKind> localVariableElementKinds =
+      EnumSet.of(
+          ElementKind.LOCAL_VARIABLE,
+          ElementKind.RESOURCE_VARIABLE,
+          ElementKind.EXCEPTION_PARAMETER);
+
+  /**
+   * Return true if the element is a local variable.
+   *
+   * @param elt the element to test
+   * @return true if the argument is a local variable
+   */
+  public static boolean isLocalVariable(Element elt) {
+    return localVariableElementKinds.contains(elt.getKind());
   }
 
   /**

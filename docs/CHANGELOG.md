@@ -3,13 +3,26 @@ Version 3.26.0 (October 4, 2022)
 
 **User-visible changes:**
 
+The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
+(It worked before, but gave a warning that it was not tested.)
+
 Annotations are available for some new JDK 17 APIs (some of those
 introduced since JDK 11).
 
 Added `-AnoWarnMemoryConstraints` to change the "Memory constraints are impeding
 performance; please increase max heap size" message from a warning to a note.
 
+'unneeded.suppression' warnings can now themeselves be suppressed.
+
 **Implementation details:**
+
+Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
+
+Use `TreeUtils.elementFromDeclaration` and `TreeUtils.elementFromUse` in
+preference to `TreeUtils.elementFromTree`, when possible.
+
+For code formatting, use `./gradlew spotlessCheck` and `./gradlew spotlessApply`.
+The `checkFormat` and `reformat` Gradle tasks have been removed.
 
 **Closed issues:**
 

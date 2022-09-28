@@ -22,6 +22,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -218,7 +219,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
   @Override
   public Void visitAssignment(AssignmentTree node, Void p) {
-    Element member = TreeUtils.elementFromUse(node.getVariable());
+    VariableElement member = (VariableElement) TreeUtils.elementFromUse(node.getVariable());
     boolean report = this.atypeFactory.getDeclAnnotation(member, ReportWrite.class) != null;
 
     if (report) {
@@ -241,16 +242,16 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
       // If the constructor is not annotated, check whether the class is.
       member = member.getEnclosingElement();
       report = this.atypeFactory.getDeclAnnotation(member, ReportCreation.class) != null;
-    }
-    if (!report) {
-      // Check whether any superclass/interface had the ReportCreation annotation.
-      List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement) member, elements);
-      for (TypeElement sup : suptypes) {
-        report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
-        if (report) {
-          // Set member to report the right member if found
-          member = sup;
-          break;
+      if (!report) {
+        // Check whether any superclass/interface had the ReportCreation annotation.
+        List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement) member, elements);
+        for (TypeElement sup : suptypes) {
+          report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
+          if (report) {
+            // Set member to report the right member if found
+            member = sup;
+            break;
+          }
         }
       }
     }

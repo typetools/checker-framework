@@ -354,18 +354,18 @@ public class AnnotationFileElementTypes {
 
   /**
    * Returns the annotated type for {@code e} containing only annotations explicitly written in an
-   * annotation file or {@code null} if {@code e} does not appear in an annotation file.
+   * annotation file. Returns {@code null} if {@code e} does not appear in an annotation file.
    *
    * @param e an Element whose type is returned
    * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written in
-   *     the annotation file and in the element. {@code null} is returned if {@code element} does
-   *     not appear in an annotation file.
+   *     the annotation file and in the element. Returns {@code null} if {@code element} does not
+   *     appear in an annotation file.
    */
-  public AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
+  public @Nullable AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
     if (parsing) {
       return null;
     }
-    parseEnclosingClass(e);
+    parseEnclosingJdkClass(e);
     AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
     return type == null ? null : type.deepCopy();
   }
@@ -401,7 +401,7 @@ public class AnnotationFileElementTypes {
       return Collections.emptySet();
     }
 
-    parseEnclosingClass(elt);
+    parseEnclosingJdkClass(elt);
     String eltName = ElementUtils.getQualifiedName(elt);
     if (annotationFileAnnos.declAnnos.containsKey(eltName)) {
       return annotationFileAnnos.declAnnos.get(eltName);
@@ -613,12 +613,12 @@ public class AnnotationFileElementTypes {
   ///
 
   /**
-   * Parses the outermost enclosing class of {@code e} if there exists an annotation file for it and
-   * it has not already been parsed.
+   * Parses the outermost enclosing class of {@code e} if it is in the JDK, there exists an
+   * annotation file for it, and it has not already been parsed.
    *
    * @param e element whose outermost enclosing class will be parsed
    */
-  private void parseEnclosingClass(Element e) {
+  private void parseEnclosingJdkClass(Element e) {
     if (!shouldParseJdk) {
       return;
     }

@@ -310,7 +310,7 @@ public abstract class CFAbstractTransfer<
       Element enclosingElement = null;
       if (enclosingTree.getKind() == Tree.Kind.METHOD) {
         // If it is in an initializer, we need to use locals from the initializer.
-        enclosingElement = TreeUtils.elementFromTree(enclosingTree);
+        enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -418,9 +418,9 @@ public abstract class CFAbstractTransfer<
    */
   private void addFinalLocalValues(S store, Element enclosingElement) {
     // add information about effectively final variables (from outer scopes)
-    for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
+    for (Map.Entry<VariableElement, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
 
-      Element elem = e.getKey();
+      VariableElement elem = e.getKey();
 
       // TODO: There is a design flaw where the values of final local values leaks
       // into other methods of the same class. For example, in
@@ -808,7 +808,7 @@ public abstract class CFAbstractTransfer<
       } else if (lhs instanceof LocalVariableNode
           && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
-        VariableElement param = (VariableElement) ((LocalVariableNode) lhs).getElement();
+        VariableElement param = ((LocalVariableNode) lhs).getElement();
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -832,7 +832,7 @@ public abstract class CFAbstractTransfer<
       if (classTree == null) {
         return result;
       }
-      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
+      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromDeclaration(classTree);
 
       ExecutableElement methodElem =
           TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));
@@ -1013,7 +1013,7 @@ public abstract class CFAbstractTransfer<
     if (!shouldPerformWholeProgramInference(expressionTree)) {
       return false;
     }
-    Element elt = TreeUtils.elementFromTree(lhsTree);
+    VariableElement elt = (VariableElement) TreeUtils.elementFromTree(lhsTree);
     return !analysis.checker.shouldSuppressWarnings(elt, "");
   }
 

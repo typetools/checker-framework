@@ -196,7 +196,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     if (tree instanceof MethodInvocationTree) {
       declaration = TreeUtils.elementFromUse((MethodInvocationTree) tree);
     } else if (tree instanceof MemberReferenceTree) {
-      declaration = (ExecutableElement) TreeUtils.elementFromTree(tree);
+      declaration = (ExecutableElement) TreeUtils.elementFromUse(tree);
     } else {
       throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
     }
@@ -416,13 +416,13 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
-      Element elt = TreeUtils.elementFromTree(node);
+      Element elt = TreeUtils.elementFromUse(node);
       if (elt.getKind() == ElementKind.PARAMETER
           && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
               || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
       }
-      if (isResourceVariable(TreeUtils.elementFromTree(node))) {
+      if (isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
       return super.visitIdentifier(node, type);

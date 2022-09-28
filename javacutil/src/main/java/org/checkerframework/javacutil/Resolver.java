@@ -244,6 +244,7 @@ public class Resolver {
     Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
     try {
       Env<AttrContext> env = getEnvForPath(path);
+      // Either a VariableElement or a SymbolNotFoundError.
       Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
       // Every kind in the documentation of Element.getKind() is explicitly tested, possibly in the
       // "default:" case.
@@ -324,6 +325,8 @@ public class Resolver {
    *
    * <p>(This method takes into account autoboxing.)
    *
+   * <p>This method is a wrapper around {@code com.sun.tools.javac.comp.Resolve.findMethod}.
+   *
    * @param methodName name of the method to find
    * @param receiverType type of the receiver of the method
    * @param path tree path
@@ -355,14 +358,18 @@ public class Resolver {
         Object methodContext = buildMethodContext();
         Object oldContext = getField(resolve, "currentResolutionContext");
         setField(resolve, "currentResolutionContext", methodContext);
-        Element result =
+        Element resolveResult =
             wrapInvocationOnResolveInstance(
                 FIND_METHOD, env, site, name, argtypes, typeargtypes, allowBoxing, useVarargs);
         setField(resolve, "currentResolutionContext", oldContext);
-        if (result.getKind() == ElementKind.METHOD || result.getKind() == ElementKind.CONSTRUCTOR) {
-          return (ExecutableElement) result;
+        ExecutableElement methodResult;
+        if (resolveResult.getKind() == ElementKind.METHOD
+            || resolveResult.getKind() == ElementKind.CONSTRUCTOR) {
+          methodResult = (ExecutableElement) resolveResult;
+        } else {
+          methodResult = null;
         }
-        return null;
+        return methodResult;
       } catch (Throwable t) {
         Error err =
             new AssertionError(

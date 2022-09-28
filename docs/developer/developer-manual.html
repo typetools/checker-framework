@@ -139,8 +139,10 @@ Frequently-used tasks:
 <ul>
   <li> <code>assemble</code>: builds all jars.
   <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
+  <li> <code>copyJarsToDist</code>: builds only the jars required to use checker/bin/javac; faster than assemble.
   <li> <code>allTests</code>: runs all tests.
-  <li> <code>reformat</code>: reformats Java files.
+  <li> <code>spotlessApply</code>: reformats Java files.
+  <li> <code>spotlessCheck</code>: checks formatting of Java files.
   <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
   <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
 </ul>
@@ -190,7 +192,7 @@ Java code conventions</a>.
 </p>
 
 <p>
-From the command line, you can format your code by running <code>./gradlew reformat</code>.
+From the command line, you can format your code by running <code>./gradlew spotlessApply</code>.
 You
 can <a href="https://github.com/google/google-java-format#using-the-formatter">configure
 your IDE</a> (Eclipse or IntelliJ) to use the formatting.

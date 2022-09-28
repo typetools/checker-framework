@@ -1923,7 +1923,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public Void visitNewClass(NewClassTree node, Void p) {
-    if (checker.shouldSkipUses(TreeUtils.constructor(node))) {
+    if (checker.shouldSkipUses(TreeUtils.elementFromUse(node))) {
       return super.visitNewClass(node, p);
     }
 
@@ -3488,7 +3488,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // ========= Overriding Executable =========
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
     ExecutableElement compileTimeDeclaration =
-        (ExecutableElement) TreeUtils.elementFromTree(memberReferenceTree);
+        (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
 
     if (enclosingType.getKind() == TypeKind.DECLARED
         && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {

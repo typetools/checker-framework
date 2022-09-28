@@ -1,3 +1,5 @@
+// @above-java17-jdk-skip-test TODO: reinstate on JDK 18, false positives may be due to issue #979
+
 import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.framework.testchecker.lib.UncheckedByteCode;
 

@@ -20,6 +20,7 @@ public class AinferTestCheckerJaifsValidationTest extends AinferValidatePerDirec
     super(
         testFiles,
         AinferTestChecker.class,
+        "testchecker",
         "ainfer-testchecker/non-annotated",
         AinferTestCheckerJaifsTest.class,
         "-Anomsgtext",

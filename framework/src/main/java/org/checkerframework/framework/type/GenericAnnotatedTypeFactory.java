@@ -41,6 +41,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -123,8 +125,6 @@ import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -1264,7 +1264,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return the value of effectively final local variables
    */
-  public HashMap<Element, Value> getFinalLocalValues() {
+  public HashMap<VariableElement, Value> getFinalLocalValues() {
     return flowResult.getFinalLocalValues();
   }
 
@@ -1289,21 +1289,22 @@ public abstract class GenericAnnotatedTypeFactory<
       return;
     }
 
-    Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
+    // class trees and their initial stores
+    Queue<Pair<ClassTree, Store>> classQueue = new ArrayDeque<>();
     List<FieldInitialValue<Value>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
-    queue.add(Pair.of(classTree, null));
+    classQueue.add(Pair.of(classTree, null));
 
-    while (!queue.isEmpty()) {
-      final Pair<ClassTree, Store> qel = queue.remove();
+    while (!classQueue.isEmpty()) {
+      final Pair<ClassTree, Store> qel = classQueue.remove();
       final ClassTree ct = qel.first;
       final Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
       TreePath preTreePath = getVisitorTreePath();
 
-      // Don't use getPath, because that depends on the assignmentContext path.
+      // Don't call AnnotatedTypeFactory#getPath, because it uses visitorTreePath.
       setVisitorTreePath(TreePath.getPath(this.root, ct));
 
       // start with the captured store as initialization store
@@ -1312,6 +1313,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
+      // Queue up classes (for top-level `while` loop) and methods (for within this `try`
+      // construct); analyze top-level blocks and variable initializers as they are encountered.
       try {
         List<CFGMethod> methods = new ArrayList<>();
         List<? extends Tree> members = ct.getMembers();
@@ -1323,6 +1326,14 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         for (Tree m : members) {
           switch (TreeUtils.getKindRecordAsClass(m)) {
+            case CLASS: // Including RECORD
+            case ANNOTATION_TYPE:
+            case INTERFACE:
+            case ENUM:
+              // Visit inner and nested class trees.
+              // TODO: Use no store for them? What can be captured?
+              classQueue.add(Pair.of((ClassTree) m, capturedStore));
+              break;
             case METHOD:
               MethodTree mt = (MethodTree) m;
 
@@ -1352,7 +1363,7 @@ public abstract class GenericAnnotatedTypeFactory<
               if (initializer != null) {
                 boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
                 analyze(
-                    queue,
+                    classQueue,
                     lambdaQueue,
                     new CFGStatement(vt, ct),
                     fieldValues,
@@ -1370,18 +1381,10 @@ public abstract class GenericAnnotatedTypeFactory<
               }
               fieldValues.add(new FieldInitialValue<>(fieldExpr, declaredValue, null));
               break;
-            case CLASS: // Including RECORD
-            case ANNOTATION_TYPE:
-            case INTERFACE:
-            case ENUM:
-              // Visit inner and nested class trees.
-              // TODO: Use no store for them? What can be captured?
-              queue.add(Pair.of((ClassTree) m, capturedStore));
-              break;
             case BLOCK:
               BlockTree b = (BlockTree) m;
               analyze(
-                  queue,
+                  classQueue,
                   lambdaQueue,
                   new CFGStatement(b, ct),
                   fieldValues,
@@ -1402,7 +1405,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // fields of superclasses.
         for (CFGMethod met : methods) {
           analyze(
-              queue,
+              classQueue,
               lambdaQueue,
               met,
               fieldValues,
@@ -1419,7 +1422,7 @@ public abstract class GenericAnnotatedTypeFactory<
               (MethodTree)
                   TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Tree.Kind.METHOD);
           analyze(
-              queue,
+              classQueue,
               lambdaQueue,
               new CFGLambda(lambdaPair.first, classTree, mt),
               fieldValues,
@@ -1468,7 +1471,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Analyze the AST {@code ast} and store the result. Additional operations that should be
    * performed after analysis should be implemented in {@link #postAnalyze(ControlFlowGraph)}.
    *
-   * @param queue the queue for encountered class trees and their initial stores
+   * @param classQueue the queue for encountered class trees and their initial stores
    * @param lambdaQueue the queue for encountered lambda expression trees and their initial stores
    * @param ast the AST to analyze
    * @param fieldValues the abstract values for all fields of the same class
@@ -1480,7 +1483,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
   protected void analyze(
-      Queue<Pair<ClassTree, Store>> queue,
+      Queue<Pair<ClassTree, Store>> classQueue,
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<Value>> fieldValues,
@@ -1559,7 +1562,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // add classes declared in CFG
     for (ClassTree cls : cfg.getDeclaredClasses()) {
-      queue.add(Pair.of(cls, getStoreBefore(cls)));
+      classQueue.add(Pair.of(cls, getStoreBefore(cls)));
     }
     // add lambdas declared in CFG
     for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
@@ -1820,8 +1823,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Flow analysis will be performed if all of the following are true.
    *
    * <ul>
-   *   <li>tree is a {@link ClassTree}
-   *   <li>Flow analysis has not already been performed on tree
+   *   <li>{@code tree} is a {@link ClassTree}
+   *   <li>Flow analysis has not already been performed on {@code tree}
    * </ul>
    *
    * @param tree the tree to check and possibly perform flow analysis on
@@ -1831,8 +1834,9 @@ public abstract class GenericAnnotatedTypeFactory<
     // on the ClassTree before it's called on any code contained in the class,
     // so that we can perform flow analysis on the class.  Previously we
     // used TreePath.getPath to find enclosing classes, but that call
-    // alone consumed more than 10% of execution time.  See BaseTypeVisitor
-    // .visitClass for the call to getAnnotatedType that triggers analysis.
+    // alone consumed more than 10% of execution time.  See
+    // BaseTypeVisitor.visitClass for the call to getAnnotatedType that
+    // triggers analysis.
     if (tree instanceof ClassTree) {
       ClassTree classTree = (ClassTree) tree;
       if (!scannedClasses.containsKey(classTree)) {
@@ -1915,6 +1919,8 @@ public abstract class GenericAnnotatedTypeFactory<
       case CONSTRUCTOR:
       case METHOD:
       case FIELD:
+      case RESOURCE_VARIABLE:
+      case EXCEPTION_PARAMETER:
       case LOCAL_VARIABLE:
       case PARAMETER:
         break;
@@ -1961,7 +1967,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param type where the defaults are applied
    */
   private void applyLocalVariableQualifierParameterDefaults(Element elt, AnnotatedTypeMirror type) {
-    if (elt.getKind() != ElementKind.LOCAL_VARIABLE
+    if (!ElementUtils.isLocalVariable(elt)
         || getQualifierParameterHierarchies(type).isEmpty()
         || variablesUnderInitialization.contains(elt)) {
       return;
@@ -2218,7 +2224,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+    if (element != null && ElementUtils.isLocalVariable(element)) {
       if (type.getKind() == TypeKind.DECLARED) {
         // If this is a type for a local variable, don't apply the default to the primary location.
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;

@@ -20,6 +20,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -106,13 +107,12 @@ public class InitializationVisitor<
       // cast is safe: a field access can only be an IdentifierTree or MemberSelectTree
       ExpressionTree lhs = (ExpressionTree) varTree;
       ExpressionTree y = valueExp;
-      Element el = TreeUtils.elementFromUse(lhs);
+      VariableElement el = TreeUtils.variableElementFromUse(lhs);
       AnnotatedTypeMirror xType = atypeFactory.getReceiverType(lhs);
       AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
       // the special FBC rules do not apply if there is an explicit
       // UnknownInitialization annotation
-      Set<AnnotationMirror> fieldAnnotations =
-          atypeFactory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
+      Set<AnnotationMirror> fieldAnnotations = atypeFactory.getAnnotatedType(el).getAnnotations();
       if (!AnnotationUtils.containsSameByName(
           fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
         if (!ElementUtils.isStatic(el)
@@ -418,10 +418,12 @@ public class InitializationVisitor<
     // Remove fields with a relevant @SuppressWarnings annotation.
     violatingFields.removeIf(
         f ->
-            checker.shouldSuppressWarnings(TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
+            checker.shouldSuppressWarnings(
+                TreeUtils.elementFromDeclaration(f), FIELDS_UNINITIALIZED_KEY));
     nonviolatingFields.removeIf(
         f ->
-            checker.shouldSuppressWarnings(TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
+            checker.shouldSuppressWarnings(
+                TreeUtils.elementFromDeclaration(f), FIELDS_UNINITIALIZED_KEY));
 
     if (!violatingFields.isEmpty()) {
       if (errorAtField) {
@@ -446,7 +448,7 @@ public class InitializationVisitor<
       List<VariableTree> uninitFields = new ArrayList<>(violatingFields);
       uninitFields.addAll(nonviolatingFields);
       for (VariableTree fieldTree : uninitFields) {
-        Element elt = TreeUtils.elementFromTree(fieldTree);
+        Element elt = TreeUtils.elementFromDeclaration(fieldTree);
         wpi.updateFieldFromType(
             fieldTree,
             elt,
