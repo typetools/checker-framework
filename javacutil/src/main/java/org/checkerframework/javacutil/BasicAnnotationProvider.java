@@ -55,7 +55,6 @@ public class BasicAnnotationProvider implements AnnotationProvider {
 
     // Then look at the real annotations.
     for (AnnotationMirror am : annotationMirrors) {
-      @SuppressWarnings("deprecation") // method intended for use by the hierarchy
       boolean found =
           AnnotationUtils.areSameByName(am, "org.checkerframework.dataflow.qual.SideEffectFree");
       if (found) {

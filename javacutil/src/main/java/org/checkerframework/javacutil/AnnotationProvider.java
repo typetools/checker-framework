@@ -43,5 +43,5 @@ public interface AnnotationProvider {
    * @param methodElement a method
    * @return true if a call to the method does not undo flow-sensitive type refinement
    */
-  public boolean isSideEffectFree(ExecutableElement methodElement);
+  boolean isSideEffectFree(ExecutableElement methodElement);
 }
