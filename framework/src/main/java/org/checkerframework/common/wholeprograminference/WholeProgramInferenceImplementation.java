@@ -23,6 +23,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -32,6 +33,7 @@ import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
@@ -248,21 +250,28 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     //    tests/ainfer-index/non-annotated/DependentTypesViewpointAdapationTest.java).
 
     String file = storage.getFileForElement(methodElt);
-    if (receiver != null) {
+    // TODO: why can a constructor possibly have a non-null receiver? That makes no sense, because
+    // only updateFromMethodInvocation calls this method with a non-null value.
+    if (receiver != null && !methodElt.getSimpleName().contentEquals("<init>")) {
       Tree receiverTree = receiver.getTree();
-      // receiverTree can be null, even when receiver isn't. TODO: figure out why
-      if (receiverTree != null) {
-        AnnotatedTypeMirror receiverArgATM = atypeFactory.getAnnotatedType(receiverTree);
-        AnnotatedTypeMirror receiverParamATM = atypeFactory.getReceiverType(invocationTree);
-        atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
-        T receiverAnnotations = storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
-        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+
+      AnnotatedTypeMirror receiverArgATM;
+      // receiverTree is null when the "this" is implicit, such as in x(), where
+      // x is an instance method of the currently-under-analysis class.
+      if (receiverTree == null) {
+        receiverArgATM = atypeFactory.getSelfType(invocationTree);
+      } else {
+        receiverArgATM = atypeFactory.getAnnotatedType(receiverTree);
+      }
+      AnnotatedTypeMirror receiverParamATM = atypeFactory.getReceiverType(invocationTree);
+      atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
+      T receiverAnnotations = storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
           ((GenericAnnotatedTypeFactory) this.atypeFactory)
               .getDependentTypesHelper()
               .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
-        }
-        updateAnnotationSet(receiverAnnotations, TypeUseLocation.PARAMETER, receiverArgATM, receiverParamATM, file);
       }
+      updateAnnotationSet(receiverAnnotations, TypeUseLocation.PARAMETER, receiverArgATM, receiverParamATM, file);
     }
 
     for (int i = 0; i < arguments.size(); i++) {

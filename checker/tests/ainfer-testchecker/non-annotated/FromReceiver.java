@@ -32,4 +32,19 @@ public class FromReceiver {
     // :: warning: assignment
     @Sibling1 FromReceiver f = this;
   }
+
+  public static void source2(@Sibling1 FromReceiver f1) {
+    f1.sinkNoThis3();
+    f1.sinkExplicitThis3();
+  }
+
+  public void sinkNoThis3() {
+    // :: warning: assignment
+    @Sibling1 FromReceiver f = this;
+  }
+
+  public void sinkExplicitThis3(FromReceiver this) {
+    // :: warning: assignment
+    @Sibling1 FromReceiver f = this;
+  }
 }
