@@ -12,6 +12,7 @@ echo "CHECKERFRAMEWORK=$CHECKERFRAMEWORK"
 export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
+echo "initial JAVA_HOME=${JAVA_HOME}"
 if [ "$(uname)" == "Darwin" ] ; then
   export JAVA_HOME=${JAVA_HOME:-$(/usr/libexec/java_home)}
 else
