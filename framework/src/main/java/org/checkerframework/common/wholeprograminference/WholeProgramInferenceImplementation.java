@@ -815,26 +815,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
-    // It is possible that rhsATM is a type variable but atmFromStorage is not, which
-    // would cause a ClassCastException in updateAtmWithLub(). This can
-    // happen for example when an expression of type ? extends T is assigned to a
-    // field of type T, such as in the test ainfer-index/non-annotated/Dataset6Crash.java.
-    try {
-      updateAtmWithLub(rhsATM, atmFromStorage);
-    } catch (ClassCastException c) {
-      System.out.println("Catching a ClassCastException: " + c);
-      System.out.println(
-          "The cast must be one of the following two AnnotatedTypeMirrors. The"
-              + " type to cast to is decided by the kind of rhsATM.");
-      System.out.println("rhsATM: " + rhsATM);
-      System.out.println("rhsATM.getKind(): " + rhsATM.getKind());
-      System.out.println("atmFromStorage: " + atmFromStorage);
-      System.out.println("atmFromStorage.getKind(): " + atmFromStorage.getKind());
-
-      AnnotatedTypeMirror compatibleRHSAtm =
-          AnnotatedTypes.asSuper(this.atypeFactory, rhsATM, atmFromStorage);
-      updateAtmWithLub(compatibleRHSAtm, atmFromStorage);
-    }
+    updateAtmWithLub(rhsATM, atmFromStorage);
     if (lhsATM instanceof AnnotatedTypeVariable) {
       Set<AnnotationMirror> upperAnnos =
           ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
@@ -876,6 +857,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param ajavaATM the annotated type on the ajava file
    */
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
+
+    if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
+      // This can happen e.g. when recursing into the bounds of a type variable:
+      // the bound on sourceCodeATM might be a declared type (such as T), while
+      // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
+      // that case, use asSuper to make the two ATMs fully-compatible.
+      sourceCodeATM = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+    }
 
     switch (sourceCodeATM.getKind()) {
       case TYPEVAR:
