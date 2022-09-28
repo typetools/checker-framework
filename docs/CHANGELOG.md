@@ -9,6 +9,9 @@ The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
 Annotations are available for some new JDK 17 APIs (some of those
 introduced since JDK 11).
 
+Added `-AnoWarnMemoryConstraints` to change the "Memory constraints are impeding
+performance; please increase max heap size" message from a warning to a note.
+
 'unneeded.suppression' warnings can now themeselves be suppressed.
 
 **Implementation details:**
