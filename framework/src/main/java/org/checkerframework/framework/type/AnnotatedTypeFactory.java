@@ -5422,8 +5422,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Checks that the collection contains the annotation. Using Collection.contains does not always
-   * work, because it does not use areSame for comparison.
+   * Checks that the collection contains the annotation. Using {@code Collection.contains} does not
+   * always work, because it does not use {@code areSame()} for comparison.
    *
    * <p>This method is faster than {@link AnnotationUtils#containsSameByClass(Collection, Class)}
    * because is caches the name of the class rather than computing it each time.
