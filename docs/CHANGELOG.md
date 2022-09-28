@@ -18,11 +18,19 @@ performance; please increase max heap size" message from a warning to a note.
 
 Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
 
+Added method `isSideEffectFree()` to the `AnnotationProvider` interface.
+
+Deprecated `CFAbstractStore.isSideEffectFree()` in favor of new method
+`AnnotationProvider.isSideEffectFree()`.  Note the different contracts of
+`PurityUtils.isSideEffectFree()` and `AnnotationProvider.isSideEffectFree()`.
+
 Use `TreeUtils.elementFromDeclaration` and `TreeUtils.elementFromUse` in
 preference to `TreeUtils.elementFromTree`, when possible.
 
 For code formatting, use `./gradlew spotlessCheck` and `./gradlew spotlessApply`.
 The `checkFormat` and `reformat` Gradle tasks have been removed.
+
+Removed variable `BaseTypeVisitor.inferPurity`.
 
 **Closed issues:**
 
