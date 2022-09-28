@@ -27,6 +27,8 @@ preference to `TreeUtils.elementFromTree`, when possible.
 For code formatting, use `./gradlew spotlessCheck` and `./gradlew spotlessApply`.
 The `checkFormat` and `reformat` Gradle tasks have been removed.
 
+Removed variable `BaseTypeVisitor.inferPurity`.
+
 **Closed issues:**
 
 
