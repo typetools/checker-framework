@@ -20,7 +20,6 @@ public class BasicAnnotationProvider implements AnnotationProvider {
       Element elt, Class<? extends Annotation> anno) {
     List<? extends AnnotationMirror> annotationMirrors = elt.getAnnotationMirrors();
 
-    // Then look at the real annotations.
     for (AnnotationMirror am : annotationMirrors) {
       @SuppressWarnings("deprecation") // method intended for use by the hierarchy
       boolean found = AnnotationUtils.areSameByClass(am, anno);
@@ -53,7 +52,6 @@ public class BasicAnnotationProvider implements AnnotationProvider {
   public boolean isSideEffectFree(ExecutableElement methodElement) {
     List<? extends AnnotationMirror> annotationMirrors = methodElement.getAnnotationMirrors();
 
-    // Then look at the real annotations.
     for (AnnotationMirror am : annotationMirrors) {
       @SuppressWarnings("deprecation") // method intended for use by the hierarchy
       boolean found =
