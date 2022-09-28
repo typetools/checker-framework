@@ -793,26 +793,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    // If the rhsATM and the lhsATM have different kinds (which can happen e.g. when
-    // an array type is substituted for a type parameter), do not attempt to update
-    // the inferred type, because this method is written with the assumption
-    // that rhsATM and lhsATM are the same kind.
-    if (rhsATM.getKind() != lhsATM.getKind()) {
-      // The one difference in kinds situation that this method can account for is the RHS being
-      // a literal null expression.
-      if (!(rhsATM instanceof AnnotatedNullType)) {
-        if (showWpiFailedInferences) {
-          printFailedInferenceDebugMessage(
-              "type structure mismatch, so cannot transfer inferred type"
-                  + "to declared type.\nDeclared type kind: "
-                  + rhsATM.getKind()
-                  + "\nInferred type kind: "
-                  + lhsATM.getKind());
-        }
-        return;
-      }
-    }
-
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
     updateAtmWithLub(rhsATM, atmFromStorage);
@@ -857,6 +837,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param ajavaATM the annotated type on the ajava file
    */
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
+
+    if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
+      // Ignore null types: passing them to asSuper causes a crash, as they cannot be
+      // substituted for type variables. If sourceCodeATM is a null type, only the primary
+      // annotation will be considered anyway, so there is no danger of recursing into
+      // typevar bounds.
+      if (sourceCodeATM.getKind() != TypeKind.NULL) {
+        // This can happen e.g. when recursing into the bounds of a type variable:
+        // the bound on sourceCodeATM might be a declared type (such as T), while
+        // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
+        // that case, use asSuper to make the two ATMs fully-compatible.
+        sourceCodeATM = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+      }
+    }
 
     switch (sourceCodeATM.getKind()) {
       case TYPEVAR:
