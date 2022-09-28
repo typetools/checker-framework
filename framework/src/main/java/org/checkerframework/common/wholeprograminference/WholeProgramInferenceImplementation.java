@@ -1,6 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -17,8 +18,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.afu.scenelib.util.JVMNames;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -162,7 +165,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = objectCreationNode.getArguments();
-    updateInferredExecutableParameterTypes(constructorElt, arguments, objectCreationNode.getTree());
+    updateInferredExecutableParameterTypes(constructorElt, arguments, null, objectCreationNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
   }
 
@@ -197,7 +200,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = methodInvNode.getArguments();
-    updateInferredExecutableParameterTypes(methodElt, arguments, methodInvNode.getTree());
+    Node receiver = methodInvNode.getTarget().getReceiver();
+    // Static methods have a "receiver" that is a class name rather than an expression.
+    // Do not attempt to use the class name as a receiver expression for inference
+    // purposes.
+    if (receiver instanceof ClassNameNode) {
+      receiver = null;
+    }
+    updateInferredExecutableParameterTypes(methodElt, arguments, receiver, methodInvNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
   }
 
@@ -222,11 +232,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param methodElt the element of the method or constructor being invoked
    * @param arguments the arguments of the invocation
+   * @param receiver the receiver node, if there is one; null if there is not
    * @param invocationTree the method or constructor invocation, used to viewpoint adapt any
    *     dependent types when storing newly-inferred annotations
    */
   private void updateInferredExecutableParameterTypes(
-      ExecutableElement methodElt, List<Node> arguments, Tree invocationTree) {
+      ExecutableElement methodElt, List<Node> arguments, @Nullable Node receiver, ExpressionTree invocationTree) {
 
     // TODO: this method should be updated to:
     // 1. take the receiver parameter of the method being invoked as an argument, in node form,
@@ -237,6 +248,22 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     //    tests/ainfer-index/non-annotated/DependentTypesViewpointAdapationTest.java).
 
     String file = storage.getFileForElement(methodElt);
+    if (receiver != null) {
+      Tree receiverTree = receiver.getTree();
+      // receiverTree can be null, even when receiver isn't. TODO: figure out why
+      if (receiverTree != null) {
+        AnnotatedTypeMirror receiverArgATM = atypeFactory.getAnnotatedType(receiverTree);
+        AnnotatedTypeMirror receiverParamATM = atypeFactory.getReceiverType(invocationTree);
+        atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
+        T receiverAnnotations = storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
+        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+          ((GenericAnnotatedTypeFactory) this.atypeFactory)
+              .getDependentTypesHelper()
+              .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
+        }
+        updateAnnotationSet(receiverAnnotations, TypeUseLocation.PARAMETER, receiverArgATM, receiverParamATM, file);
+      }
+    }
 
     for (int i = 0; i < arguments.size(); i++) {
       Node arg = arguments.get(i);
@@ -313,7 +340,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
         ((GenericAnnotatedTypeFactory) this.atypeFactory)
             .getDependentTypesHelper()
-            .delocalizeAtCallsite(argATM, invocationTree, arguments, methodElt);
+            .delocalizeAtCallsite(argATM, invocationTree, arguments, receiver, methodElt);
       }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }

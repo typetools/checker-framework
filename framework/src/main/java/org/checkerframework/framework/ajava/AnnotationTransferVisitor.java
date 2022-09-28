@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * A visitor that adds all annotations from a {@code AnnotatedTypeMirror} to the corresponding
@@ -36,9 +37,9 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
       AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
       if (target.getTypeArguments().isPresent()) {
         NodeList<Type> types = target.getTypeArguments().get();
-        for (int i = 0; i < types.size(); i++) {
-          types.get(i).accept(this, declaredType.getTypeArguments().get(i));
-        }
+          for (int i = 0; i < types.size(); i++) {
+            types.get(i).accept(this, declaredType.getTypeArguments().get(i));
+          }
       }
     }
 

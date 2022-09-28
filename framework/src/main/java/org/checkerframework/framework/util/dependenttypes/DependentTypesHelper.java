@@ -33,6 +33,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.units.qual.N;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -665,12 +666,14 @@ public class DependentTypesHelper {
    * @param atm the annotated type mirror to delocalize
    * @param invocationTree the method or constructor invocation
    * @param arguments the actual arguments to the method or constructor
+   * @param receiver the actual receiver, if there was one; null if not
    * @param methodElt the declaration of the method or constructor being invoked
    */
   public void delocalizeAtCallsite(
       AnnotatedTypeMirror atm,
       Tree invocationTree,
       List<Node> arguments,
+      @Nullable Node receiver,
       ExecutableElement methodElt) {
 
     // TODO: this method should also take the receiver parameter, if there was one at the callsite,
@@ -683,6 +686,7 @@ public class DependentTypesHelper {
     // For use in stringToJavaExpr below, to avoid re-computation. Especially
     // important for the TreePath, which is expensive to compute.
     List<JavaExpression> argsAsExprs = CollectionsPlume.mapList(LocalVariable::fromNode, arguments);
+    JavaExpression receiverAsExpr = receiver == null ? null : LocalVariable.fromNode(receiver);
     TreePath path = factory.getPath(invocationTree);
 
     StringToJavaExpression stringToJavaExpr =
@@ -698,6 +702,9 @@ public class DependentTypesHelper {
                   int index = argsAsExprs.indexOf(javaExpr);
                   if (index != -1) {
                     return FormalParameter.getFormalParameters(methodElt).get(index);
+                  }
+                  if (javaExpr.equals(receiverAsExpr)) {
+                    return new ThisReference(ElementUtils.enclosingTypeElement(methodElt).asType());
                   }
                   return super.convert(javaExpr);
                 }
