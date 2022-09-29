@@ -14,9 +14,9 @@ import os
 from os.path import expanduser
 
 from release_vars import AFU_LIVE_RELEASES_DIR
+from release_vars import ANNO_FILE_UTILITIES
 from release_vars import CF_VERSION
 from release_vars import CHECKER_FRAMEWORK
-from release_vars import ANNO_TOOLS
 from release_vars import CHECKER_LIVE_RELEASES_DIR
 from release_vars import CHECKLINK
 from release_vars import DEV_SITE_DIR
@@ -387,7 +387,7 @@ def main(argv):
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
         ant_cmd = "./gradlew test"
-        execute(ant_cmd, True, False, ANNO_TOOLS)
+        execute(ant_cmd, True, False, ANNO_FILE_UTILITIES)
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
     # This step stages (but doesn't release) the Checker Framework's Maven artifacts in the Sonatypes
