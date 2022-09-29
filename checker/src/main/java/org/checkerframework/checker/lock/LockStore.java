@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
@@ -17,7 +16,6 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -169,25 +167,14 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   }
 
   @Override
-  protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-    LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
-    SourceChecker checker = lockAnnotatedTypeFactory.getChecker();
-    return checker.hasOption("assumeSideEffectFree")
-        || checker.hasOption("assumePure")
-        || lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false)
-            == SideEffectAnnotation.RELEASESNOLOCKS
-        || super.isSideEffectFree(atypeFactory, method);
-  }
-
-  @Override
   public void updateForMethodCall(
       MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
     super.updateForMethodCall(n, atypeFactory, val);
     ExecutableElement method = n.getTarget().getMethod();
     // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
-    // Lockannotatedtypefactory, but it affects only one of the two type hierarchies, so it
-    // cannot use that logic.
-    if (!isSideEffectFree(atypeFactory, method)) {
+    // Lockannotatedtypefactory, but it affects only the LockPosssiblyHeld type hierarchy (not the
+    // @GuardedBy hierarchy), so it cannot use that logic.
+    if (!atypeFactory.isSideEffectFree(method)) {
       // After the call to super.updateForMethodCall, only final fields are left in fieldValues (if
       // the method called is side-effecting). For the LockPossiblyHeld hierarchy, even a final
       // field might be locked or unlocked by a side-effecting method.  So, final fields must be set

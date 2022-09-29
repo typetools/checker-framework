@@ -20,6 +20,17 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.afu.scenelib.el.AClass;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
+import org.checkerframework.afu.scenelib.el.AScene;
+import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
+import org.checkerframework.afu.scenelib.el.DefCollector;
+import org.checkerframework.afu.scenelib.el.DefException;
+import org.checkerframework.afu.scenelib.el.TypePathEntry;
+import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -30,17 +41,6 @@ import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.AScene;
-import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.AnnotationDef;
-import scenelib.annotations.el.DefCollector;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.TypePathEntry;
-import scenelib.annotations.field.AnnotationFieldType;
 
 // In this file, "base name" means "type without its package part in binary name format".
 // For example, "Outer$Inner" is a base name.
@@ -79,7 +79,7 @@ public final class SceneToStubWriter {
    * A pattern matching the name of an anonymous inner class, a local class, or a class nested
    * within one of these types of classes. An anonymous inner class has a basename like Outer$1 and
    * a local class has a basename like Outer$1Inner. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">Java Language
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">Java Language
    * Specification, section 13.1</a>.
    */
   private static final Pattern anonymousInnerClassOrLocalClassPattern = Pattern.compile("\\$\\d+");

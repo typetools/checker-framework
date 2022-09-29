@@ -6,6 +6,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
@@ -236,9 +237,16 @@ public class AnnotatedTypes {
     }
   }
 
-  /** This method identifies wildcard types that are unbound. */
+  // Do not use `isUnbound()` because as of Java 18, it returns true for "?  extends Object".
+
+  /**
+   * This method identifies wildcard types that are unbound.
+   *
+   * @param wildcard the type to check
+   * @return true if the given card is an unbounded wildcard
+   */
   public static boolean hasNoExplicitBound(final AnnotatedTypeMirror wildcard) {
-    return ((Type.WildcardType) wildcard.getUnderlyingType()).isUnbound();
+    return ((Type.WildcardType) wildcard.getUnderlyingType()).kind == BoundKind.UNBOUND;
   }
 
   /**
@@ -249,7 +257,7 @@ public class AnnotatedTypes {
   public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
     final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
     return wildcardType.isSuperBound()
-        && !((WildcardType) wildcard.getUnderlyingType()).isUnbound();
+        && ((WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
   /**
@@ -260,7 +268,7 @@ public class AnnotatedTypes {
   public static boolean hasExplicitExtendsBound(final AnnotatedTypeMirror wildcard) {
     final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
     return wildcardType.isExtendsBound()
-        && !((WildcardType) wildcard.getUnderlyingType()).isUnbound();
+        && ((WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
   /**
@@ -1533,25 +1541,47 @@ public class AnnotatedTypes {
     return result;
   }
 
-  // For Wildcards, isSuperBound and isExtendsBound will return true if isUnbound does.
+  // For Wildcards, isSuperBound() and isExtendsBound() will return true if isUnbound() does.
+  // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
 
+  /**
+   * Returns true if wildcard type is explicitly super bounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly super bounded
+   */
   public static boolean isExplicitlySuperBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound()
-        && !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+        && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
-  /** Returns true if wildcard type was explicitly unbounded. */
+  /**
+   * Returns true if wildcard type is explicitly extends bounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly extends bounded
+   */
   public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound()
-        && !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+        && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
-  /** Returns true if this type is super bounded or unbounded. */
+  /**
+   * Returns true if this type is super bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is super bounded or unbounded
+   */
   public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
   }
 
-  /** Returns true if this type is extends bounded or unbounded. */
+  /**
+   * Returns true if this type is extends bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is extends bounded or unbounded
+   */
   public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
   }

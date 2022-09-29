@@ -193,7 +193,7 @@ public interface WholeProgramInference {
    * @param fieldElt the field to annotate
    * @param anno the declaration annotation to add to the field
    */
-  void addFieldDeclarationAnnotation(Element fieldElt, AnnotationMirror anno);
+  void addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
 
   /**
    * Writes the inferred results to a file. Ideally, it should be called at the end of the

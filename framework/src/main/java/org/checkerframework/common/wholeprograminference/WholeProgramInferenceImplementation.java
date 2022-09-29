@@ -16,6 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -47,7 +48,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import scenelib.annotations.util.JVMNames;
 
 /**
  * This is the primary implementation of {@link
@@ -162,7 +162,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = objectCreationNode.getArguments();
-    updateInferredExecutableParameterTypes(constructorElt, arguments);
+    updateInferredExecutableParameterTypes(constructorElt, arguments, objectCreationNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
   }
 
@@ -197,7 +197,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = methodInvNode.getArguments();
-    updateInferredExecutableParameterTypes(methodElt, arguments);
+    updateInferredExecutableParameterTypes(methodElt, arguments, methodInvNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
   }
 
@@ -222,9 +222,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param methodElt the element of the method or constructor being invoked
    * @param arguments the arguments of the invocation
+   * @param invocationTree the method or constructor invocation, used to viewpoint adapt any
+   *     dependent types when storing newly-inferred annotations
    */
   private void updateInferredExecutableParameterTypes(
-      ExecutableElement methodElt, List<Node> arguments) {
+      ExecutableElement methodElt, List<Node> arguments, Tree invocationTree) {
+
+    // TODO: this method should be updated to:
+    // 1. take the receiver parameter of the method being invoked as an argument, in node form,
+    //    if there is one (the argument should be null otherwise)
+    // 2. infer types for the method declaration based on the type of the receiver
+    // 3. DependentTypesHelper#delocalizeAtCallsite should be updated to handle dependent types
+    //    that refer to the receiver (there is a (commented-out) test for this in
+    //    tests/ainfer-index/non-annotated/DependentTypesViewpointAdapationTest.java).
 
     String file = storage.getFileForElement(methodElt);
 
@@ -235,11 +245,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       VariableElement ve;
       boolean varargsParam = i >= methodElt.getParameters().size() - 1 && methodElt.isVarArgs();
       if (varargsParam && this.atypeFactory.wpiOutputFormat == OutputFormat.JAIF) {
-        // The AFU's annotator.Main produces a non-compilable source file when JAIF-based WPI
-        // tries to output an annotated varargs parameter, such as when running the test
-        // checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
-        // Until that bug is fixed, do not attempt to infer information about varargs parameters
-        // in JAIF mode.
+        // The AFU's org.checkerframework.afu.annotator.Main produces a non-compilable source file
+        // when JAIF-based WPI tries to output an annotated varargs parameter, such as when running
+        // the test checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
+        // Until that bug is fixed, do not attempt to infer information about varargs parameters in
+        // JAIF mode.
         if (showWpiFailedInferences) {
           printFailedInferenceDebugMessage(
               "Annotations cannot be placed on varargs parameters in -Ainfer=jaifs mode, because"
@@ -300,6 +310,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       int paramIndex = varargsParam ? methodElt.getParameters().size() - 1 : i;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+        ((GenericAnnotatedTypeFactory) this.atypeFactory)
+            .getDependentTypesHelper()
+            .delocalizeAtCallsite(argATM, invocationTree, arguments, methodElt);
+      }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
   }
@@ -706,7 +721,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   @Override
-  public void addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+  public void addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     if (!ElementUtils.isElementFromSourceCode(field)) {
       return;
     }
@@ -778,26 +793,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    // If the rhsATM and the lhsATM have different kinds (which can happen e.g. when
-    // an array type is substituted for a type parameter), do not attempt to update
-    // the inferred type, because this method is written with the assumption
-    // that rhsATM and lhsATM are the same kind.
-    if (rhsATM.getKind() != lhsATM.getKind()) {
-      // The one difference in kinds situation that this method can account for is the RHS being
-      // a literal null expression.
-      if (!(rhsATM instanceof AnnotatedNullType)) {
-        if (showWpiFailedInferences) {
-          printFailedInferenceDebugMessage(
-              "type structure mismatch, so cannot transfer inferred type"
-                  + "to declared type.\nDeclared type kind: "
-                  + rhsATM.getKind()
-                  + "\nInferred type kind: "
-                  + lhsATM.getKind());
-        }
-        return;
-      }
-    }
-
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
     updateAtmWithLub(rhsATM, atmFromStorage);
@@ -842,6 +837,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param ajavaATM the annotated type on the ajava file
    */
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
+
+    if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
+      // Ignore null types: passing them to asSuper causes a crash, as they cannot be
+      // substituted for type variables. If sourceCodeATM is a null type, only the primary
+      // annotation will be considered anyway, so there is no danger of recursing into
+      // typevar bounds.
+      if (sourceCodeATM.getKind() != TypeKind.NULL) {
+        // This can happen e.g. when recursing into the bounds of a type variable:
+        // the bound on sourceCodeATM might be a declared type (such as T), while
+        // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
+        // that case, use asSuper to make the two ATMs fully-compatible.
+        sourceCodeATM = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+      }
+    }
 
     switch (sourceCodeATM.getKind()) {
       case TYPEVAR:
