@@ -1,5 +1,5 @@
 // Test case for https://github.com/typetools/checker-framework/issues/5245
-
+// @below-java9-jdk-skip-test
 import java.util.List;
 
 class Issue5245<E> {
