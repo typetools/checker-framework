@@ -1920,6 +1920,10 @@ should only do it if you have discovered a bug in a checker, you have
 already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
 
+\item \code{-AnoWarnMemoryConstraints}: when memory constraints are
+impeding performance, issue a note rather than a warning.
+This prevents the message from being elevated to an error by \code{-Werror}.
+
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 
 \end{itemize}

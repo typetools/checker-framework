@@ -1,4 +1,4 @@
-// @above-java17-jdk-skip-test TODO: reinstate on JDK 18, false positives may be due to issue #979
+// @above-java17-jdk-skip-test TODO: reinstate, false positives may be due to issue #979
 
 package wildcards;
 

@@ -296,6 +296,9 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.logBugInCF
   "noPrintErrorStack",
 
+  // If true, issue a NOTE rather than a WARNING when performance is impeded by memory constraints.
+  "noWarnMemoryConstraints",
+
   // Only output error code, useful for testing framework
   // org.checkerframework.framework.source.SourceChecker.message(Kind, Object, String, Object...)
   "nomsgtext",
@@ -547,8 +550,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (jreVersion != 8 && jreVersion != 11 && jreVersion != 17 && jreVersion != 18) {
       message(
           (hasOption("permitUnsupportedJdkVersion") ? Kind.NOTE : Kind.WARNING),
-          "The Checker Framework is tested with JDK 8, 11, 17, and 18.  You are using version"
-              + " %d.",
+          "The Checker Framework is tested with JDK 8, 11, 17, and 18."
+              + " You are using version %d.",
           jreVersion);
     }
 
@@ -950,7 +953,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (!warnedAboutGarbageCollection) {
       String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
       if (gcUsageMessage != null) {
-        messager.printMessage(Kind.WARNING, gcUsageMessage);
+        boolean noWarnMemoryConstraints =
+            (processingEnv != null
+                && processingEnv.getOptions() != null
+                && processingEnv.getOptions().containsKey("noWarnMemoryConstraints"));
+        Kind kind = noWarnMemoryConstraints ? Kind.NOTE : Kind.WARNING;
+        messager.printMessage(kind, gcUsageMessage);
         warnedAboutGarbageCollection = true;
       }
     }
