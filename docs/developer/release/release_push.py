@@ -18,6 +18,7 @@ from release_vars import ANNO_FILE_UTILITIES
 from release_vars import CF_VERSION
 from release_vars import CHECKER_FRAMEWORK
 from release_vars import CHECKER_LIVE_RELEASES_DIR
+from release_vars import CHECKER_LIVE_API_DIR
 from release_vars import CHECKLINK
 from release_vars import DEV_SITE_DIR
 from release_vars import DEV_SITE_URL
@@ -36,6 +37,7 @@ from release_utils import continue_or_exit
 from release_utils import current_distribution_by_website
 from release_utils import delete_if_exists
 from release_utils import delete_path
+from release_utils import delete_path_if_exists
 from release_utils import ensure_group_access
 from release_utils import get_announcement_email
 from release_utils import print_step
@@ -119,6 +121,7 @@ def copy_releases_to_live_site(cf_version):
     Framework from the dev site to the live site."""
     CHECKER_INTERM_RELEASES_DIR = os.path.join(DEV_SITE_DIR, "releases")
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, cf_version)
+    delete_path_if_exists(CHECKER_LIVE_API_DIR)
     promote_release(CHECKER_LIVE_RELEASES_DIR, cf_version)
     AFU_INTERM_RELEASES_DIR = os.path.join(
         DEV_SITE_DIR, "annotation-file-utilities", "releases"
