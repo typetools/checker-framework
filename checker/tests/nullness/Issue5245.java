@@ -2,8 +2,8 @@
 
 import java.util.List;
 
-class CFRepro<E> {
-  final CFRepro<List<String>> repro = new CFRepro<>(List.of());
+class Issue5245<E> {
+  final Issue5245<List<String>> repro = new Issue5245<>(List.of());
 
-  <V extends E> CFRepro(V unknownObj) {}
+  <V extends E> Issue5245(V unknownObj) {}
 }
