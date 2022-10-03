@@ -36,10 +36,8 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
       AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
       if (target.getTypeArguments().isPresent()) {
         NodeList<Type> types = target.getTypeArguments().get();
-        if (types.size() == declaredType.getTypeArguments().size()) {
-          for (int i = 0; i < types.size(); i++) {
-            types.get(i).accept(this, declaredType.getTypeArguments().get(i));
-          }
+        for (int i = 0; i < types.size(); i++) {
+          types.get(i).accept(this, declaredType.getTypeArguments().get(i));
         }
       }
     }
