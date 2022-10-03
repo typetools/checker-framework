@@ -5490,6 +5490,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {}
 
   /**
+   * Returns whether whole-program inference should infer types for receiver expressions. For some
+   * type systems, such as nullness, it doesn't make sense for WPI to do inference on receivers.
+   *
+   * @return true if WPI should infer types for method receiver parameters, false otherwise
+   */
+  public boolean wpiShouldInferTypesForReceivers() {
+    return true;
+  }
+
+  /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an annotation file.
    *

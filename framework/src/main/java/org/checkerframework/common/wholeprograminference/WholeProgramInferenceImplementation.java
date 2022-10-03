@@ -244,10 +244,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       ExpressionTree invocationTree) {
 
     String file = storage.getFileForElement(methodElt);
-    // TODO: why can a constructor possibly have a non-null receiver? That makes no sense, because
-    // only updateFromMethodInvocation calls this method with a non-null value for receiver.
-    // Maybe calls to super()? Regardless, this code should not be called on constructors.
-    if (receiver != null && !methodElt.getSimpleName().contentEquals("<init>")) {
+    // Need to check both that receiver is non-null and that this is not a constructor
+    // invocation: despite updateFromObjectCreation always passes null, it's possible
+    // for updateFromMethodInvocation to actually be a constructor invocation with a
+    // receiver: for example, when calling an inner class's constructor, the receiver
+    // can be an instance of the enclosing class. Constructor invocations should never
+    // have information inferred about their receivers.
+    if (receiver != null
+        && atypeFactory.wpiShouldInferTypesForReceivers()
+        && !methodElt.getSimpleName().contentEquals("<init>")) {
       AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
       AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
       AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();
