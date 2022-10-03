@@ -374,6 +374,7 @@ test {
         excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerStubsTest'
         excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferTestCheckerAjavaTest'
         excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferNullnessJaifsTest'
+        excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferNullnessAjavaTest'
         excludeCategories 'org.checkerframework.checker.test.junit.ainferrunners.AinferIndexAjavaTest'
     }
 }
