@@ -1,11 +1,9 @@
 // Test case for https://github.com/typetools/checker-framework/issues/5245
-
-// @skip-test until the bug is fixed
-
+// @below-java9-jdk-skip-test
 import java.util.List;
 
-class CFRepro<E> {
-  final CFRepro<List<String>> repro = new CFRepro<>(List.of());
+class Issue5245<E> {
+  final Issue5245<List<String>> repro = new Issue5245<>(List.of());
 
-  <V extends E> CFRepro(V unknownObj) {}
+  <V extends E> Issue5245(V unknownObj) {}
 }

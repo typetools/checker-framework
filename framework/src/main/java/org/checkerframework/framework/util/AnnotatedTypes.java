@@ -562,7 +562,7 @@ public class AnnotatedTypes {
     }
 
     for (int i = 0; i < ownerParams.size(); ++i) {
-      mappings.put(ownerParams.get(i).getUnderlyingType(), baseParams.get(i));
+      mappings.put(ownerParams.get(i).getUnderlyingType(), baseParams.get(i).asUse());
     }
   }
 
