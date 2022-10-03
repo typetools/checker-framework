@@ -23,7 +23,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.ImplicitThisNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -33,7 +32,6 @@ import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
-import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
@@ -167,7 +165,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = objectCreationNode.getArguments();
-    updateInferredExecutableParameterTypes(constructorElt, arguments, null, objectCreationNode.getTree());
+    updateInferredExecutableParameterTypes(
+        constructorElt, arguments, null, objectCreationNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
   }
 
@@ -239,39 +238,29 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *     dependent types when storing newly-inferred annotations
    */
   private void updateInferredExecutableParameterTypes(
-      ExecutableElement methodElt, List<Node> arguments, @Nullable Node receiver, ExpressionTree invocationTree) {
-
-    // TODO: this method should be updated to:
-    // 1. take the receiver parameter of the method being invoked as an argument, in node form,
-    //    if there is one (the argument should be null otherwise)
-    // 2. infer types for the method declaration based on the type of the receiver
-    // 3. DependentTypesHelper#delocalizeAtCallsite should be updated to handle dependent types
-    //    that refer to the receiver (there is a (commented-out) test for this in
-    //    tests/ainfer-index/non-annotated/DependentTypesViewpointAdapationTest.java).
+      ExecutableElement methodElt,
+      List<Node> arguments,
+      @Nullable Node receiver,
+      ExpressionTree invocationTree) {
 
     String file = storage.getFileForElement(methodElt);
     // TODO: why can a constructor possibly have a non-null receiver? That makes no sense, because
-    // only updateFromMethodInvocation calls this method with a non-null value.
+    // only updateFromMethodInvocation calls this method with a non-null value for receiver.
+    // Maybe calls to super()? Regardless, this code should not be called on constructors.
     if (receiver != null && !methodElt.getSimpleName().contentEquals("<init>")) {
-      Tree receiverTree = receiver.getTree();
-
-      AnnotatedTypeMirror receiverArgATM;
-      // receiverTree is null when the "this" is implicit, such as in x(), where
-      // x is an instance method of the currently-under-analysis class.
-      if (receiverTree == null) {
-        receiverArgATM = atypeFactory.getSelfType(invocationTree);
-      } else {
-        receiverArgATM = atypeFactory.getAnnotatedType(receiverTree);
-      }
-      AnnotatedTypeMirror receiverParamATM = atypeFactory.getReceiverType(invocationTree);
+      AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
+      AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
+      AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();
       atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
-      T receiverAnnotations = storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
+      T receiverAnnotations =
+          storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
       if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-          ((GenericAnnotatedTypeFactory) this.atypeFactory)
-              .getDependentTypesHelper()
-              .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
+        ((GenericAnnotatedTypeFactory) this.atypeFactory)
+            .getDependentTypesHelper()
+            .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
       }
-      updateAnnotationSet(receiverAnnotations, TypeUseLocation.PARAMETER, receiverArgATM, receiverParamATM, file);
+      updateAnnotationSet(
+          receiverAnnotations, TypeUseLocation.PARAMETER, receiverArgATM, receiverParamATM, file);
     }
 
     for (int i = 0; i < arguments.size(); i++) {
