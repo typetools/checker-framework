@@ -841,7 +841,7 @@ task ainferTest(group: 'Verification') {
     dependsOn('ainferTestCheckerStubTest')
     dependsOn('ainferTestCheckerAjavaTest')
     dependsOn('ainferNullnessJaifTest')
-    dependsOn('AinferNullnessAjavaTest')
+    dependsOn('ainferNullnessAjavaTest')
     dependsOn('ainferIndexAjavaTest')
 }
 
