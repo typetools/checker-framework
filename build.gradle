@@ -800,7 +800,7 @@ subprojects {
                       args += "${tests}"
                     }
                   } catch (Exception ex) {
-                    if(ex.getCause() != null && ex.getCause().getCause()!= null) {
+                    if (ex.getCause() != null && ex.getCause().getCause()!= null) {
                       String msg = ex.getCause().getLocalizedMessage()
                       msg += ":\n"+ex.getCause().getCause().getLocalizedMessage()
                       msg += "\nHave you installed jtreg?"
