@@ -803,7 +803,7 @@ subprojects {
                     if(ex.getCause() != null && ex.getCause().getCause()!= null) {
                       String msg = ex.getCause().getLocalizedMessage()
                       msg += ":\n"+ex.getCause().getCause().getLocalizedMessage()
-                      msg += "\n Have you installed jtreg?"
+                      msg += "\nHave you installed jtreg?"
                       println msg
                     }
                     throw ex
