@@ -57,6 +57,6 @@ record RecordPurityGeneric<A, B>(A a, B b)
     if (a() == null || b() == null)
       return "";
     else
-      return foo() + a().toString() + " " + b().toString();
+      return a().toString() + " " + b().toString();
   }
 }
