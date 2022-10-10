@@ -285,7 +285,7 @@ public class InferenceFactory {
     if (tree.getKind() == Tree.Kind.NEW_CLASS) {
       receiverTree = ((NewClassTree) tree).getEnclosingExpression();
       if (receiverTree == null && ((NewClassTree) tree).getClassBody() == null) {
-        TypeMirror t = TreeUtils.constructor((NewClassTree) tree).getReceiverType();
+        TypeMirror t = TreeUtils.elementFromUse((NewClassTree) tree).getReceiverType();
         if (t instanceof DeclaredType) {
           return (DeclaredType) t;
         }
@@ -357,7 +357,7 @@ public class InferenceFactory {
       NewClassTree newClassTree = (NewClassTree) expressionTree;
       List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
       if (!typeArgs.isEmpty()) {
-        ExecutableElement e = TreeUtils.constructor(newClassTree);
+        ExecutableElement e = TreeUtils.elementFromUse(newClassTree);
         List<? extends TypeParameterElement> typeParams =
             ElementUtils.enclosingTypeElement(e).getTypeParameters();
         List<TypeVariable> typeVariables = new ArrayList<>();
@@ -864,7 +864,7 @@ public class InferenceFactory {
   public ConstraintSet getCheckedExceptionConstraints(
       ExpressionTree expression, AbstractType targetType, Theta map) {
     ConstraintSet constraintSet = new ConstraintSet();
-    ExecutableElement ele = (ExecutableElement) TreeUtils.findFunction(expression, context.env);
+    ExecutableElement ele = TreeUtils.findFunction(expression, context.env);
     // The types in the function type's throws clause that are not proper types.
     List<Variable> es = new ArrayList<>();
     List<ProperType> properTypes = new ArrayList<>();
