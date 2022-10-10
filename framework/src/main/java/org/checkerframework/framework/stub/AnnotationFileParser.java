@@ -1145,8 +1145,8 @@ public class AnnotationFileParser {
                 stubDebug(
                         String.format(
                                 "parseType:  mismatched sizes for typeParameters=%s (size %d) and"
-                                    + " typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s"
-                                    + " (%s); typeBeingParsed=%s",
+                                        + " typeArguments=%s (size %d); decl=%s; elt=%s (%s); type=%s"
+                                        + " (%s); typeBeingParsed=%s",
                                 typeParameters,
                                 numParams,
                                 typeArguments,
@@ -1845,7 +1845,7 @@ public class AnnotationFileParser {
             String msg =
                     String.format(
                             "annotateTypeParameters: mismatched sizes:  typeParameters (size"
-                                + " %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).",
+                                    + " %d)=%s;  typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).",
                             typeParameters.size(),
                             typeParameters,
                             typeArguments.size(),
@@ -3186,7 +3186,7 @@ public class AnnotationFileParser {
 
         @Override
         public Void visitVariable(VariableTree javacTree, Node javaParserNode) {
-            if (TreeUtils.elementFromTree(javacTree) != null) {
+            if (TreeUtils.elementFromDeclaration(javacTree) != null) {
                 VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
                 if (elt != null) {
                     if (elt.getKind() == ElementKind.FIELD) {
@@ -3206,7 +3206,7 @@ public class AnnotationFileParser {
         @Override
         public Void visitMethod(MethodTree javacTree, Node javaParserNode) {
             List<AnnotatedTypeVariable> variablesToClear = null;
-            Element elt = TreeUtils.elementFromTree(javacTree);
+            Element elt = TreeUtils.elementFromDeclaration(javacTree);
             if (elt != null && javaParserNode instanceof CallableDeclaration<?>) {
                 variablesToClear =
                         processCallableDeclaration(

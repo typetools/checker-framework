@@ -12,7 +12,7 @@ jobs:
 
 # The dependsOn clauses are:
 #  * Everything depends on the canary jobs (the 4 main jdk17 jobs), except those jobs themselves.
-#  * Anything *_jdk8 or *_jdk11 depends on *_jdk17.
+#  * Anything *_jdk8, *_jdk11, or *_jdk18 depends on *_jdk17.
 
 - job: canary_jobs
   dependsOn:
@@ -76,6 +76,18 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
+- job: junit_tests_jdk18
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk18:latest
+  timeoutInMinutes: 70
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cftests-junit.sh
+    displayName: test-cftests-junit.sh
 
 - job: nonjunit_tests_jdk8
   dependsOn:
@@ -119,6 +131,17 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-next:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
+    displayName: test-cftests-nonjunit.sh
+- job: nonjunit_tests_jdk18
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk18:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -174,6 +197,18 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
+- job: inference_tests_jdk18
+  dependsOn:
+   - canary_jobs
+   - inference_tests_jdk17
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk18:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cftests-inference.sh
+    displayName: test-cftests-inference.sh
 
 - job: misc_jdk8
   dependsOn:
@@ -208,7 +243,19 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
-- job: misc_jdk_next
+- job: misc_jdk18
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk18-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 1000
+  - bash: ./checker/bin-devel/test-misc.sh
+    displayName: test-misc.sh
+
+- job: typecheck_jdk8
   dependsOn:
    - canary_jobs
    - typecheck_jdk17
@@ -270,6 +317,17 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
+- job: typecheck_jdk18
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk18-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 1000
+  - bash: ./checker/bin-devel/test-typecheck.sh
+    displayName: test-typecheck.sh
 
 - job: daikon_jdk8
   dependsOn:
@@ -309,11 +367,25 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
+- job: daikon_jdk18
+  dependsOn:
+   - canary_jobs
+   # Could comment out the "daikon_jdk17" dependency to reduce latency.
+   - daikon_jdk17
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk18:latest
+  timeoutInMinutes: 70
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-daikon.sh
+    displayName: test-daikon.sh
 
 - job: guava_jdk8
   dependsOn:
    - canary_jobs
-   - guava_jdk17
+   # - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -325,7 +397,7 @@ jobs:
 - job: guava_jdk11
   dependsOn:
    - canary_jobs
-   - guava_jdk17
+   # - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -334,7 +406,11 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
+# "condition: false" because as of 6 Sep 2022, the Error Prone compiler is crashing
+# when compiling Guava (even on the Guava mainline without type annotations).
+# TODO: remove "condition: false" and reinstate dependences on this.
 - job: guava_jdk17
+  condition: false
   dependsOn:
    - canary_jobs
   pool:
@@ -355,6 +431,19 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: wmdietl/cf-ubuntu-jdk-next:latest
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-guava.sh
+    displayName: test-guava.sh
+- job: guava_jdk18
+  condition: false
+  dependsOn:
+   - canary_jobs
+   - guava_jdk17
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk18:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -396,16 +485,13 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
-- job: plume_lib_jdk_next
+- job: plume_lib_jdk18
   dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
-   - plume_lib_jdk11
+   - canary_jobs
+   - plume_lib_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: wmdietl/cf-ubuntu-jdk-next:latest
+  container: mdernst/cf-ubuntu-jdk18:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -443,6 +529,18 @@ jobs:
 #   pool:
 #     vmImage: 'ubuntu-latest'
 #   container: mdernst/cf-ubuntu-jdk17:latest
+#   steps:
+#   - checkout: self
+#     fetchDepth: 25
+#   - bash: ./checker/bin-devel/test-downstream.sh
+#     displayName: test-downstream.sh
+# - job: downstream_jdk18
+#   dependsOn:
+#    - canary_jobs
+#    - downstream_jdk17
+#   pool:
+#     vmImage: 'ubuntu-latest'
+#   container: mdernst/cf-ubuntu-jdk18:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25

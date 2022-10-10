@@ -90,8 +90,7 @@ public class ThrowCatchTest {
     // Test Exception parameters
     void unionTypes() {
         try {
-        } catch (
-                @AlwaysSafe NullPointerPolyUIException
+        } catch (@AlwaysSafe NullPointerPolyUIException
                 | @AlwaysSafe ArrayStorePolyUIException unionParam) {
 
         }

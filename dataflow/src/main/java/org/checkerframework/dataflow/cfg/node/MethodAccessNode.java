@@ -4,6 +4,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Collection;
@@ -27,12 +28,22 @@ public class MethodAccessNode extends Node {
 
     // TODO: add method to get modifiers (static, access level, ..)
 
+    /**
+     * Create a new MethodAccessNode.
+     *
+     * @param tree the expression that is a method access
+     * @param receiver the receiver
+     */
     public MethodAccessNode(ExpressionTree tree, Node receiver) {
         super(TreeUtils.typeOf(tree));
         assert TreeUtils.isMethodAccess(tree);
         this.tree = tree;
         assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-        this.method = (ExecutableElement) TreeUtils.elementFromUse(tree);
+        ExecutableElement method = (ExecutableElement) TreeUtils.elementFromUse(tree);
+        if (method == null) {
+            throw new BugInCF("tree %s [%s]", tree, tree.getClass());
+        }
+        this.method = method;
         this.receiver = receiver;
     }
 

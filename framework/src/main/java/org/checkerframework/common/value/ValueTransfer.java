@@ -661,7 +661,7 @@ public class ValueTransfer extends CFTransfer {
             return false;
         }
 
-        Element element = TreeUtils.elementFromUse((ExpressionTree) node.getTree());
+        Element element = TreeUtils.elementFromTree((ExpressionTree) node.getTree());
         return !ElementUtils.isCompileTimeConstant(element);
     }
 

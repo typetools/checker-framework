@@ -118,7 +118,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.25.0-eisop1'
+    ext.checkerFrameworkVersion = '3.26.0'
     implementation "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
@@ -149,9 +149,9 @@ gradlew assembleCheckTypes
 \end{Verbatim}
 \end{enumerate}
 
-\subsectionAndLabel{JDK 11}{android-jdk11}
-This section shows what changes to make if you are using JDK 11.  They should work for JDK 9+, but
-we have only tested them with JDK 11.
+\subsectionAndLabel{JDK 11+}{android-jdk11}
+This section shows what changes to make if you are using JDK 11 or later.
+% We have tested them with JDK 11.
 
 \begin{enumerate}
 
@@ -191,7 +191,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.25.0-eisop1'
+    ext.checkerFrameworkVersion = '3.26.0'
     implementation "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "io.github.eisop:checker-qual-android:${checkerFrameworkVersion}"
@@ -341,13 +341,13 @@ file showing how to enable the Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.25.0-eisop1.jar',
+    binary_jar = 'checker-3.26.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.25.0-eisop1.jar',
+    binary_jar = 'checker-qual-3.26.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -411,21 +411,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.25.0-eisop1/>.
+other than \<\${HOME}/checker-framework-3.26.0/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.25.0-eisop1/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.26.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.25.0-eisop1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.26.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -446,7 +446,7 @@ other than \<\${HOME}/checker-framework-3.25.0-eisop1/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.25.0-eisop1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.26.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -468,11 +468,11 @@ other than \<\${HOME}/checker-framework-3.25.0-eisop1/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.25.0-eisop1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.26.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.25.0-eisop1\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.26.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -621,7 +621,8 @@ This section shows what arguments to pass to the OpenJDK or OracleJDK
 \<javac> (\emph{not} the \<javac> wrapper script of
 Section~\ref{javac-wrapper}) to run the Checker
 Framework, if you are using JDK 9 or later.  These
-instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK 17.
+instructions should work on JDK 9 or later, but we only test with supported
+versions of Java: JDK 11, JDK 17, and JDK 18.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
@@ -804,7 +805,7 @@ to run a checker within IntelliJ IDEA on every compile:
 
 \begin{enumerate}
 
-\item Change the project SDK to 11, as explained at
+\item Change the project SDK to 11 or later, as explained at
   \url{https://www.jetbrains.com/help/idea/sdk.html#change-project-sdk}.
 
 \item Make sure the language level for your project is 8 or higher, as explained at
@@ -1392,7 +1393,7 @@ javacOptions ++= Seq(
 \end{Verbatim}
 
 
-\subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
+\subsectionAndLabel{JDK 11 and later, for non-modularized code}{sbt-jdk11-nonmodularized-code}
 
 % Keep list of --add-opens and --add-exports in sync with the "maven" and "javac-jdk11-non-modularized" sections,
 % the method CheckerMain#getExecArguments, checker-framework/build.gradle in compilerArgsForRunningCFs,

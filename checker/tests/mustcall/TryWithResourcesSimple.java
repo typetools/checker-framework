@@ -23,8 +23,8 @@ public class TryWithResourcesSimple {
         // This is illegal, because getFancySock()'s return type has another MC method beyond
         // "close",
         // which is the only MC method for Socket itself.
-        // :: error: assignment.type.incompatible
         try (Socket socket = getFancySocket()) {
+            // :: error: assignment.type.incompatible
             @MustCall({}) Object s = socket;
         } catch (Exception e) {
 

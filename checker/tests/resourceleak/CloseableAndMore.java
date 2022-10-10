@@ -5,6 +5,8 @@ import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 
 import java.io.IOException;
 
+@SuppressWarnings(
+        "declaration.inconsistent.with.implements.clause") // stronger @InheritableMustCall
 @InheritableMustCall({"close", "foo"})
 public class CloseableAndMore implements AutoCloseable {
     void foo() {}
@@ -15,7 +17,7 @@ public class CloseableAndMore implements AutoCloseable {
     public static void test_bad() {
         // :: error: required.method.not.called
         try (CloseableAndMore c = new CloseableAndMore()) {
-
+            // empty body
         } catch (Exception e) {
         }
     }

@@ -10,6 +10,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Type.WildcardType;
 
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -593,7 +594,7 @@ public class QualifierDefaults {
         applyToTypeVar =
                 defaultTypeVarLocals
                         && elt != null
-                        && elt.getKind() == ElementKind.LOCAL_VARIABLE
+                        && ElementUtils.isLocalVariable(elt)
                         && type.getKind() == TypeKind.TYPEVAR;
         applyDefaultsElement(elt, type);
         applyToTypeVar = false;
@@ -1322,7 +1323,7 @@ public class QualifierDefaults {
         final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
 
         final BoundType boundType;
-        if (wildcard.isUnbound() && wildcard.bound != null) {
+        if (wildcard.kind == BoundKind.UNBOUND && wildcard.bound != null) {
             boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
 
         } else {

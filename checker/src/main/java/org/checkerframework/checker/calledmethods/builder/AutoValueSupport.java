@@ -16,6 +16,7 @@ import org.plumelib.util.ArraysPlume;
 
 import java.beans.Introspector;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -276,6 +277,10 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
                 .collect(Collectors.toList());
     }
 
+    /** Method names for {@link #isAutoValueRequiredProperty} to ignore. */
+    private Set<String> isAutoValueRequiredPropertyIgnored =
+            new HashSet<>(Arrays.asList("equals", "hashCode", "toString", "<init>", "toBuilder"));
+
     /**
      * Does member represent a required property of an AutoValue class?
      *
@@ -283,19 +288,17 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
      * @param avBuilderSetterNames names of all setters in corresponding AutoValue builder class
      * @return true if {@code member} is required
      */
-    private boolean isAutoValueRequiredProperty(Element member, Set<String> avBuilderSetterNames) {
+    private boolean isAutoValueRequiredProperty(
+            ExecutableElement member, Set<String> avBuilderSetterNames) {
         String name = member.getSimpleName().toString();
         // Ignore java.lang.Object overrides, constructors, and toBuilder methods in AutoValue
         // classes.
         // Strictly speaking, this code should check return types, etc. to handle strange
         // overloads and other corner cases. They seem unlikely enough that we are skipping for now.
-        if (ArraysPlume.indexOf(
-                        new String[] {"equals", "hashCode", "toString", "<init>", "toBuilder"},
-                        name)
-                != -1) {
+        if (isAutoValueRequiredPropertyIgnored.contains(name)) {
             return false;
         }
-        TypeMirror returnType = ((ExecutableElement) member).getReturnType();
+        TypeMirror returnType = member.getReturnType();
         if (returnType.getKind() == TypeKind.VOID) {
             return false;
         }

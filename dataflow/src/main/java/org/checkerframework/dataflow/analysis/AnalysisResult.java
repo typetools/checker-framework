@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
@@ -57,7 +57,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
     protected IdentityHashMap<UnaryTree, BinaryTree> postfixLookup;
 
     /** Map from (effectively final) local variable elements to their abstract value. */
-    protected final HashMap<Element, V> finalLocalValues;
+    protected final HashMap<VariableElement, V> finalLocalValues;
 
     /** The stores before every method call. */
     protected final IdentityHashMap<Block, TransferInput<V, S>> stores;
@@ -96,7 +96,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
             IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, BinaryTree> postfixLookup,
-            HashMap<Element, V> finalLocalValues,
+            HashMap<VariableElement, V> finalLocalValues,
             Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
         this.nodeValues = UnmodifiableIdentityHashMap.wrap(nodeValues);
         this.treeLookup = UnmodifiableIdentityHashMap.wrap(treeLookup);
@@ -121,7 +121,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
             IdentityHashMap<Block, TransferInput<V, S>> stores,
             IdentityHashMap<Tree, Set<Node>> treeLookup,
             IdentityHashMap<UnaryTree, BinaryTree> postfixLookup,
-            HashMap<Element, V> finalLocalValues) {
+            HashMap<VariableElement, V> finalLocalValues) {
         this(
                 nodeValues,
                 stores,
@@ -195,7 +195,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
      *
      * @return the value of effectively final local variables
      */
-    public HashMap<Element, V> getFinalLocalValues() {
+    public HashMap<VariableElement, V> getFinalLocalValues() {
         return finalLocalValues;
     }
 

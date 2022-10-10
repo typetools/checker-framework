@@ -37,7 +37,7 @@ import javax.lang.model.util.Types;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10.2">JLS section
  * 4.10.2</a>.
  *
  * @see Types#directSupertypes(TypeMirror)

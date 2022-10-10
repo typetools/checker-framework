@@ -217,7 +217,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     protected final Trees trees;
 
     /** TreeBuilder instance. */
-    protected final TreeBuilder treeBuilder;
+    public final TreeBuilder treeBuilder;
 
     /** AnnotationProvider instance. */
     protected final AnnotationProvider annotationProvider;
@@ -1461,7 +1461,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
-        ExecutableElement element = TreeUtils.elementFromUse(tree);
+        ExecutableElement element = method;
         if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
             // No NullPointerException can be thrown, use normal node
             extendWithNode(target);
@@ -1498,7 +1498,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
         /* Check for the TerminatesExecution annotation. */
-        Element methodElement = TreeUtils.elementFromTree(tree);
+        ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
         boolean terminatesExecution =
                 annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class)
                         != null;

@@ -4,12 +4,24 @@ plugins {
     // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow (v5 requires Gradle 5)
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     // https://plugins.gradle.org/plugin/de.undercouch.download
-    id 'de.undercouch.download' version '5.1.2'
+    id 'de.undercouch.download' version '5.2.0'
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
     id 'net.ltgt.errorprone' version '2.0.2'
     // https://docs.gradle.org/current/userguide/eclipse_plugin.html
     id 'eclipse'
+    // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
+    id 'org.ajoberstar.grgit' version '4.1.1' apply false
+
+    // Code formatting; defines targets "spotlessApply" and "spotlessCheck"
+    id 'com.diffplug.spotless' version '6.11.0'
+}
+apply plugin: "de.undercouch.download"
+
+import org.ajoberstar.grgit.Grgit
+
+repositories {
+    mavenCentral()
 }
 
 ext {
@@ -34,6 +46,10 @@ ext {
     isJava15plus = isJava15 || isJava16plus
     isJava14plus = isJava14 || isJava15plus
 
+    // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
+    // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
+    // isJava17compatible = JavaVersion.current() >= JavaVersion.VERSION_17
+
     errorproneJavacVersion = '9+181-r4173-1'
 
     parentDir = file("${rootDir}/../").absolutePath
@@ -43,10 +59,9 @@ ext {
     // afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.3.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.4.jar"
 
     jtregHome = "${parentDir}/jtreg"
-    formatScriptsHome = "${project(':checker').projectDir}/bin-devel/.run-google-java-format"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
 
@@ -57,29 +72,18 @@ ext {
     localRepo = ".git"
 }
 
-// Keep in sync with check in org.checkerframework.framework.source.SourceChecker.init
-// and with text in #installation
+// Keep in sync with check in
+// framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java .
 switch (JavaVersion.current()) {
-    case JavaVersion.VERSION_1_9:
-    case JavaVersion.VERSION_1_10:
-    case JavaVersion.VERSION_12:
-    case JavaVersion.VERSION_13:
-    case JavaVersion.VERSION_14:
-    case JavaVersion.VERSION_15:
-    case JavaVersion.VERSION_16:
-    case JavaVersion.VERSION_18:
-    case JavaVersion.VERSION_19:
-    case JavaVersion.VERSION_20:
-        logger.warn("The Checker Framework has only been tested with JDK 8, 11, and 17." +
-                " Found version " + JavaVersion.current().majorVersion);
-        break;
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
     case JavaVersion.VERSION_17:
+    case JavaVersion.VERSION_18:
         break; // Supported versions
     default:
-        throw new GradleException("Build the Checker Framework with JDK 8, 11, or 17." +
-                " Found version " + JavaVersion.current().majorVersion);
+        logger.info("The Checker Framework has only been tested with JDK 8, 11, 17, and 18." +
+                " You are using JDK " + JavaVersion.current().majorVersion + ".");
+        break;
 }
 
 task setLocalRepo(type:Exec) {
@@ -99,6 +103,31 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
     into localRepo + "/hooks"
 }
 
+spotless {
+  // Resolve the spottless plugin dependencies from the buildscript repositories rather than the
+  // project repositories.  That way the spotless plugin does not use the locally built version of
+  // checker-qual as a dependency. Without this, errors like the follow are issued when running
+  // a spotless task without a locally-built version of checker-qual.jar:
+  // Could not determine the dependencies of task ':checker-qual:spotlessCheck'.
+  //  > Could not create task ':checker-qual:spotlessJavaCheck'.
+  //     > Could not create task ':checker-qual:spotlessJava'.
+  //        > File signature can only be created for existing regular files, given:
+  //          /Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
+  predeclareDepsFromBuildscript()
+}
+
+spotlessPredeclare {
+  // Put all the formatters that have dependencies here.  Without this, errors like the following
+  // will happen:
+  // Could not determine the dependencies of task ':spotlessCheck'.
+  //  > Could not create task ':spotlessJavaCheck'.
+  //     > Could not create task ':spotlessJava'.
+  //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
+  java {
+    googleJavaFormat()
+  }
+}
+
 allprojects {
     tasks.withType(JavaCompile).configureEach {
         options.fork = true
@@ -109,6 +138,7 @@ allprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'de.undercouch.download'
     apply plugin: 'net.ltgt.errorprone'
+    apply plugin: 'com.diffplug.spotless'
 
     group 'io.github.eisop'
 
@@ -116,7 +146,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.25.1-eisop1-SNAPSHOT'
+    version '3.26.0'
 
     repositories {
         mavenCentral()
@@ -133,9 +163,7 @@ allprojects {
     }
 
     dependencies {
-        if (isJava8) {
-            javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
-        }
+        javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
         errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
 
@@ -176,7 +204,50 @@ allprojects {
                 // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
                 "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
         ]
+
+        reflectionUtilVersion = '1.0.5'
+        plumeUtilVersion = '1.5.9'
     }
+
+    spotless {
+        // If you add any formatters to this block that require dependencies here, then you must also
+        // add them to spotlessPredeclare block.
+        format 'misc', {
+            // define the files to apply `misc` to
+            target '*.gradle', '*.md', '.gitignore'
+
+            // define the steps to apply to those files
+            trimTrailingWhitespace()
+            indentWithSpaces(2)
+            endWithNewline()
+        }
+        java {
+            target 'checker/**/*.java',
+                'checker-qual/**/*.java',
+                'checker-util/**/*.java',
+                'dataflow/**/*.java',
+                'docs/examples/**/*.java',
+                'docs/tutorial/**/*.java',
+                'framework/**/*.java',
+                'framework-test/**/*.java',
+                'javacutil/**/*.java'
+            targetExclude 'dataflow/manual/examples/',
+                '**/nullness-javac-errors/*'
+            googleJavaFormat().aosp()
+            importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+            formatAnnotations()
+        }
+    }
+    // The Spotless plugin uses the latest version of google-java-format
+    // that is compatible with the currently running JVM. Under Java 8,
+    // that is an older version that produces different formatting.
+    if (isJava8) {
+        spotlessApply.enabled = false
+        spotlessCheck.enabled = false
+        spotlessJavaApply.enabled = false
+        spotlessJavaCheck.enabled = false
+    }
+
 
     // After all the tasks have been created, modify some of them.
     afterEvaluate {
@@ -442,85 +513,6 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
     }
 }
 
-/**
- * Returns a list of all the Java files that should be formatted for the given project. These are:
- *
- * All Java files in the main sourceSet.
- * All Java files in the tests directory that compile.
- *
- * @param projectName name of the project to format
- * @return a list of all Java files that should be formatted for projectName
- */
-List<String> getJavaFilesToFormat(projectName) {
-    List<File> javaFiles = new ArrayList<>();
-    project(':' + projectName).sourceSets.forEach { set ->
-        javaFiles.addAll(set.java.files)
-    }
-
-    // Collect all Java files in tests directory
-    fileTree("${project(projectName).projectDir}/tests").visit { details ->
-        // If you change this, also change checker/bin-devel/git.pre-commit
-        if (!details.path.contains("nullness-javac-errors")
-                && !details.path.contains("calledmethods-delomboked")
-                && !details.path.contains("returnsreceiverdelomboked")
-                && !details.path.contains("build")
-                && (isJava16plus || !details.path.contains("-records"))
-                // TODO: directories should be renamed `-switchexpr` or some such,
-                // as they  only contain examples for switch expressions, which were
-                // added in Java 14, not Java 17.
-                && (isJava14plus || !details.path.contains("java17"))
-                && details.name.endsWith('.java')) {
-            javaFiles.add(details.file)
-        }
-    }
-
-    // Collect all Java files in jtreg directory
-    fileTree("${project(projectName).projectDir}/jtreg").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
-            javaFiles.add(details.file)
-        }
-    }
-
-    // Collect all Java files in jtregJdk11 directory
-    fileTree("${project(projectName).projectDir}/jtregJdk11").visit { details ->
-        if (!details.path.contains("nullness-javac-errors") && details.name.endsWith('.java')) {
-            javaFiles.add(details.file)
-        }
-    }
-
-    // Add documentation example and tutorial
-    fileTree("${rootDir}/docs").visit { details ->
-        if (details.name.endsWith('.java')) {
-            javaFiles.add(details.file)
-        }
-    }
-    // Don't reformat the sources in dataflow/manual/examples/
-
-    List<String> args = new ArrayList<>(javaFiles.size());
-    for (File f : javaFiles) {
-        args += project(projectName).relativePath(f)
-    }
-    return args
-}
-
-task writeListOfJavaFilesToFormat(group: 'Format') {
-    description "Writes a list of Java files subject to formatting, to ${buildDir}/javafiles.txt"
-    doLast {
-        mkdir buildDir
-        File list = new File("${buildDir}/javafiles.txt");
-        list.createNewFile();
-        FileWriter fileWriter = new FileWriter(list)
-        subprojects.forEach {
-            if (!it.name.startsWith("checker-qual-android")) {
-                for (String fileName : getJavaFilesToFormat(it.name)) {
-                    fileWriter.write(fileName)
-                    fileWriter.write(System.lineSeparator())
-                }
-            }
-        }
-    }
-}
-
 task htmlValidate(type: Exec, group: 'Format') {
     description 'Validate that HTML files are well-formed'
     executable 'html5validator'
@@ -658,45 +650,6 @@ task downloadJtreg(type: Download) {
     }
 }
 
-// See alternate implementation getCodeFormatScriptsInGradle below.
-// No group so it does not show up in the output of `gradlew tasks`
-task getCodeFormatScripts() {
-    description 'Obtain or update the run-google-java-format scripts'
-    if (file(formatScriptsHome).exists()) {
-        exec {
-            workingDir formatScriptsHome
-            executable 'git'
-            args = ['pull', '-q']
-            ignoreExitValue = true
-        }
-    } else {
-        exec {
-            workingDir "${formatScriptsHome}/../"
-            executable 'git'
-            args = ['clone', '-q', '--depth', '1', 'https://github.com/eisop-plume-lib/run-google-java-format.git', '.run-google-java-format']
-        }
-    }
-}
-
-/* Remove unused dependency on grgit, which doesn't work on Java 8 as of version 5.0.0
-// This implementation is preferable to the above because it does work in Gradle rather than in bash.
-// However, it fails in the presence of worktrees: https://github.com/ajoberstar/grgit/issues/97 .
-// No group so it does not show up in the output of `gradlew tasks`
-task getCodeFormatScriptsInGradle {
-    description "Obtain the run-google-java-format scripts"
-    doLast {
-        if (! new File(formatScriptsHome).exists()) {
-            // There is no support for the --depth argument:
-            // https://github.com/ajoberstar/grgit/issues/155   https://bugs.eclipse.org/bugs/show_bug.cgi?id=475615
-            def rgjfGit = Grgit.clone(dir: formatScriptsHome, uri: 'https://github.com/eisop-plume-lib/run-google-java-format.git')
-        } else {
-            def rgjfGit = Grgit.open(dir: formatScriptsHome)
-            rgjfGit.pull()
-        }
-    }
-}
-*/
-
 // No group so it does not show up in the output of `gradlew tasks`
 task getPlumeScripts() {
     description 'Obtain or update plume-scripts'
@@ -775,48 +728,6 @@ subprojects {
         annotatedGuava ('org.checkerframework.annotatedlib:guava:30.1.1-jre') {
             // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
             exclude group: 'org.checkerframework'
-        }
-    }
-
-    task checkFormat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
-        description 'Check whether the source code is properly formatted'
-        // checker-qual-android project has no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual-android') }
-        executable 'python3'
-
-        doFirst {
-            if (isJava8) {
-                println 'The checkFormat task cannot be run on Java 8.  Please use Java 11+.'
-                return
-            }
-            args += "${formatScriptsHome}/check-google-java-format.py"
-            args += "--aosp" // 4 space indentation
-            args += getJavaFilesToFormat(project.name)
-            // Since the scripts are downloaded from third-party Github, the environment variable
-            // is the only way to add the necessary open:
-            environment('JDK_JAVA_OPTIONS', '--add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED')
-        }
-        ignoreExitValue = true
-        doLast {
-            if (!executionResult.isPresent() || executionResult.get().getExitValue() != 0) {
-                throw new RuntimeException('Found improper formatting, try running:  ./gradlew reformat"')
-            }
-        }
-    }
-
-    task reformat(type: Exec, dependsOn: [getCodeFormatScripts, pythonIsInstalled], group: 'Format') {
-        description 'Format the Java source code'
-        // checker-qual-android project has no source, so skip
-        onlyIf {!project.name.startsWith('checker-qual-android') }
-        executable 'python3'
-        doFirst {
-            if (isJava8) {
-                println 'The reformat task cannot be run on Java 8.  Please use Java 11+.'
-                return
-            }
-            args += "${formatScriptsHome}/run-google-java-format.py"
-            args += "--aosp" // 4 space indentation
-            args += getJavaFilesToFormat(project.name)
         }
     }
 
@@ -1124,7 +1035,6 @@ task checkBasicStyle(group: 'Format') {
                                   '.html-tools',
                                   '.idea',
                                   '.plume-scripts',
-                                  '.run-google-java-format',
                                   'annotated',
                                   'api',
                                   'plume-bib',
@@ -1263,6 +1173,9 @@ task releaseBuild(group: 'Build') {
     dependsOn(clean)
     doFirst {
         release = true
+        if (!isJava8) {
+          throw new RuntimeException("You must use Java 8 when making a release. You are using " + JavaVersion.current() + ".")
+        }
     }
     // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
     finalizedBy(buildAll)

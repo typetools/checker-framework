@@ -570,7 +570,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
             return;
         }
 
-        VariableElement fieldElement = (VariableElement) TreeUtils.elementFromTree(tree);
+        VariableElement fieldElement = TreeUtils.variableElementFromTree(tree);
         Object value = fieldElement.getConstantValue();
         if (value != null) {
             // The field is a compile-time constant.
@@ -644,7 +644,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
      * @param type the type of that tree
      */
     private void visitEnumConstant(ExpressionTree tree, AnnotatedTypeMirror type) {
-        Element decl = TreeUtils.elementFromTree(tree);
+        Element decl = TreeUtils.elementFromUse(tree);
         if (decl.getKind() != ElementKind.ENUM_CONSTANT) {
             return;
         }

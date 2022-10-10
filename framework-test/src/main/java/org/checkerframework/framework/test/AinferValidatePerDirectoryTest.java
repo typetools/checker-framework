@@ -25,8 +25,11 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
     /** The class of the corresponding generation test. */
     private final Class<? extends AinferGeneratePerDirectoryTest> generationTest;
 
-    /** The directory where inference output files are found. */
-    private static final String INFERENCE_BASE_DIR = "tests/ainfer-testchecker/inference-output/";
+    /**
+     * The short name of the checker, as used in the naming conventions for files, e.g. "index" for
+     * the Index Checker or "testchecker" for the AInferTestChecker.
+     */
+    private final String CHECKER_SHORT_NAME;
 
     /**
      * The number of letters in ".java", used when stripping off the extension from the name of a
@@ -42,6 +45,8 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
      *
      * @param testFiles the files containing test code, which will be type-checked
      * @param checker the class for the checker to use
+     * @param checkerShortName the short name of the checker, as used in the naming conventions for
+     *     files, e.g. "index" for the Index Checker or "testchecker" for the AInferTestChecker
      * @param testDir the path to the directory of test inputs
      * @param generationTest the class of the test that must run before this test, if this is the
      *     second of a pair of tests
@@ -50,11 +55,24 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
     protected AinferValidatePerDirectoryTest(
             List<File> testFiles,
             Class<? extends AbstractProcessor> checker,
+            String checkerShortName,
             String testDir,
             Class<? extends AinferGeneratePerDirectoryTest> generationTest,
             String... checkerOptions) {
         super(testFiles, checker, testDir, checkerOptions);
         this.generationTest = generationTest;
+        this.CHECKER_SHORT_NAME = checkerShortName;
+    }
+
+    /**
+     * The directory where inference output files are found.
+     *
+     * @param checkerShortName the short name of the checker, as used in the naming conventions for
+     *     files, e.g. "index" for the Index Checker or "testchecker" for the AInferTestChecker
+     * @return the (relative) directory in which the inference output files can be found
+     */
+    private static String getInferenceBaseDir(String checkerShortName) {
+        return "tests/ainfer-" + checkerShortName + "/inference-output/";
     }
 
     /**
@@ -62,13 +80,15 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
      * because the framework issues a warning if a .ajava file with no corresponding source file is
      * specified.
      *
-     * <p>Assumes that ajava files will be in the {@link #INFERENCE_BASE_DIR} directory.
+     * <p>Assumes that ajava files will be in the {@link #getInferenceBaseDir(String)} directory.
      *
      * @param sourceFiles the list of source files
+     * @param checkerShortName the short name of the checker, as used in the naming conventions for
+     *     files, e.g. "index" for the Index Checker or "testchecker" for the AInferTestChecker
      * @return the appropriate -Aajava argument
      */
-    protected static String ajavaArgFromFiles(List<File> sourceFiles) {
-        return annotationArgFromFiles(sourceFiles, ".ajava");
+    protected static String ajavaArgFromFiles(List<File> sourceFiles, String checkerShortName) {
+        return annotationArgFromFiles(sourceFiles, getInferenceBaseDir(checkerShortName), ".ajava");
     }
 
     /**
@@ -76,13 +96,15 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
      * because the framework issues a warning if a .astub file with no corresponding source file is
      * specified.
      *
-     * <p>Assumes that astub files will be in the {@link #INFERENCE_BASE_DIR} directory.
+     * <p>Assumes that astub files will be in the {@link #getInferenceBaseDir(String)} directory.
      *
      * @param sourceFiles the list of source files
+     * @param checkerShortName the short name of the checker, as used in the naming conventions for
+     *     files, e.g. "index" for the Index Checker or "testchecker" for the AInferTestChecker
      * @return the appropriate -Astubs argument
      */
-    protected static String astubsArgFromFiles(List<File> sourceFiles) {
-        return annotationArgFromFiles(sourceFiles, ".astub");
+    protected static String astubsArgFromFiles(List<File> sourceFiles, String checkerShortName) {
+        return annotationArgFromFiles(sourceFiles, getInferenceBaseDir(checkerShortName), ".astub");
     }
 
     /**
@@ -90,18 +112,22 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
      * necessary because the framework issues a warning if a .ajava file or a stub file with no
      * corresponding source file is specified.
      *
-     * <p>Assumes that ajava/astub files will be in the {@link #INFERENCE_BASE_DIR} directory.
+     * <p>Assumes that ajava/astub files will be in the {@link #getInferenceBaseDir(String)}
+     * directory.
      *
      * @param sourceFiles the list of source files
+     * @param inferenceBaseDir the base directory in which inference output is placed
      * @param extension the extension to use: either .astub or .ajava
      * @return the appropriate {@code -Aajava} or {@code -Astubs} argument
      */
     private static String annotationArgFromFiles(
-            List<File> sourceFiles, @StringVal({".astub", ".ajava"}) String extension) {
+            List<File> sourceFiles,
+            String inferenceBaseDir,
+            @StringVal({".astub", ".ajava"}) String extension) {
         String checkerArg = extension.equals(".astub") ? "-Astubs=" : "-Aajava=";
         return checkerArg
                 + sourceFiles.stream()
-                        .map(f -> annotationFilenameFromSourceFile(f, extension))
+                        .map(f -> annotationFilenameFromSourceFile(f, inferenceBaseDir, extension))
                         .filter(s -> !s.isEmpty())
                         .collect(Collectors.joining(":"));
     }
@@ -111,11 +137,14 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
      * corresponding to the source file {@code sourceFile} and the wpi output type.
      *
      * @param sourceFile a java source file
+     * @param inferenceBaseDir the base directory in which inference output is placed
      * @param extension the extension to use: either .astub or .ajava
      * @return the ajava argument for the corresponding ajava files, if there are any
      */
     private static String annotationFilenameFromSourceFile(
-            File sourceFile, @StringVal({".astub", ".ajava"}) String extension) {
+            File sourceFile,
+            String inferenceBaseDir,
+            @StringVal({".astub", ".ajava"}) String extension) {
         String fileBaseName =
                 sourceFile
                         .getName()
@@ -127,7 +156,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
         // and (2) separate astub files are generated for inner classes.
         try (DirectoryStream<Path> dirStream =
                 Files.newDirectoryStream(
-                        Paths.get(INFERENCE_BASE_DIR), "*" + fileBaseName + "{-,$}*" + extension)) {
+                        Paths.get(inferenceBaseDir), "*" + fileBaseName + "{-,$}*" + extension)) {
             dirStream.forEach(f -> sb.append(f).append(":"));
         } catch (IOException ignored) {
 
@@ -143,7 +172,8 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
     public void run() {
         // Only run if annotated files have been created.
         // See ainferTest task.
-        if (generationTest != null && !new File("tests/ainfer-testchecker/annotated/").exists()) {
+        if (generationTest != null
+                && !new File("tests/ainfer-" + CHECKER_SHORT_NAME + "/annotated/").exists()) {
             throw new RuntimeException(generationTest + " must be run before this test.");
         }
         super.run();

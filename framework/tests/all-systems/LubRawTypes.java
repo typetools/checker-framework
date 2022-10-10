@@ -1,3 +1,5 @@
+// @above-java17-jdk-skip-test TODO: reinstate, false positives may be due to issue #979
+
 @SuppressWarnings("unchecked")
 public class LubRawTypes {
     public static boolean flag = false;

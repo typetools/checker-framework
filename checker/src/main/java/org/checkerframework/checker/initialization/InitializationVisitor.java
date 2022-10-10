@@ -44,6 +44,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 /* NO-AFU
    import org.checkerframework.common.wholeprograminference.WholeProgramInference;
@@ -119,13 +120,13 @@ public class InitializationVisitor<
             // cast is safe: a field access can only be an IdentifierTree or MemberSelectTree
             ExpressionTree lhs = (ExpressionTree) varTree;
             ExpressionTree y = valueExp;
-            Element el = TreeUtils.elementFromUse(lhs);
+            VariableElement el = TreeUtils.variableElementFromUse(lhs);
             AnnotatedTypeMirror xType = atypeFactory.getReceiverType(lhs);
             AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
             // the special FBC rules do not apply if there is an explicit
             // UnknownInitialization annotation
             Set<AnnotationMirror> fieldAnnotations =
-                    atypeFactory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
+                    atypeFactory.getAnnotatedType(el).getAnnotations();
             if (!AnnotationUtils.containsSameByName(
                     fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
                 if (!ElementUtils.isStatic(el)
@@ -434,11 +435,11 @@ public class InitializationVisitor<
         violatingFields.removeIf(
                 f ->
                         checker.shouldSuppressWarnings(
-                                TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
+                                TreeUtils.elementFromDeclaration(f), FIELDS_UNINITIALIZED_KEY));
         nonviolatingFields.removeIf(
                 f ->
                         checker.shouldSuppressWarnings(
-                                TreeUtils.elementFromTree(f), FIELDS_UNINITIALIZED_KEY));
+                                TreeUtils.elementFromDeclaration(f), FIELDS_UNINITIALIZED_KEY));
 
         if (!violatingFields.isEmpty()) {
             if (errorAtField) {
@@ -457,21 +458,21 @@ public class InitializationVisitor<
         }
 
         /* NO-AFU
-               // Support -Ainfer command-line argument.
-               WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-               if (wpi != null) {
-                   // For each uninitialized field, treat it as if the default value is assigned to it.
-                   List<VariableTree> uninitFields = new ArrayList<>(violatingFields);
-                   uninitFields.addAll(nonviolatingFields);
-                   for (VariableTree fieldTree : uninitFields) {
-                       Element elt = TreeUtils.elementFromTree(fieldTree);
-                       wpi.updateFieldFromType(
-                               fieldTree,
-                               elt,
-                               fieldTree.getName().toString(),
-                               atypeFactory.getDefaultValueAnnotatedType(elt.asType()));
-                   }
-               }
+        // Support -Ainfer command-line argument.
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        if (wpi != null) {
+          // For each uninitialized field, treat it as if the default value is assigned to it.
+          List<VariableTree> uninitFields = new ArrayList<>(violatingFields);
+          uninitFields.addAll(nonviolatingFields);
+          for (VariableTree fieldTree : uninitFields) {
+            Element elt = TreeUtils.elementFromDeclaration(fieldTree);
+            wpi.updateFieldFromType(
+                fieldTree,
+                elt,
+                fieldTree.getName().toString(),
+                atypeFactory.getDefaultValueAnnotatedType(elt.asType()));
+          }
+        }
         */
     }
 }

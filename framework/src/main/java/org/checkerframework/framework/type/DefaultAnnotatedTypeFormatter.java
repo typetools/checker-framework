@@ -276,7 +276,13 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 sb.append("METHOD");
             }
             sb.append('(');
-            AnnotatedDeclaredType rcv = type.getReceiverType();
+            AnnotatedDeclaredType rcv;
+            try {
+                rcv = type.getReceiverType();
+            } catch (NullPointerException e) {
+                sb.append("[[NPE in getReceiverType()]], ");
+                rcv = null;
+            }
             if (rcv != null) {
                 sb.append(visit(rcv, visiting));
                 sb.append(" this");

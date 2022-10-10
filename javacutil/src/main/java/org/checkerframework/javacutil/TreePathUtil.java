@@ -36,7 +36,8 @@ public final class TreePathUtil {
     ///
 
     /**
-     * Gets path to the first (innermost) enclosing tree of the specified kind.
+     * Gets path to the first (innermost) enclosing tree of the given kind. May return {@code path}
+     * itself.
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
@@ -47,7 +48,8 @@ public final class TreePathUtil {
     }
 
     /**
-     * Gets path to the first (innermost) enclosing tree with any one of the specified kinds.
+     * Gets path to the first (innermost) enclosing tree with any one of the given kinds. May return
+     * {@code path} itself.
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
@@ -55,23 +57,17 @@ public final class TreePathUtil {
      */
     public static @Nullable TreePath pathTillOfKind(
             final TreePath path, final Set<Tree.Kind> kinds) {
-        TreePath p = path;
-
-        while (p != null) {
-            Tree leaf = p.getLeaf();
-            assert leaf != null;
-            if (kinds.contains(leaf.getKind())) {
+        for (TreePath p = path; p != null; p = p.getParentPath()) {
+            if (kinds.contains(p.getLeaf().getKind())) {
                 return p;
             }
-            p = p.getParentPath();
         }
-
         return null;
     }
 
     /**
      * Gets path to the first (innermost) enclosing class tree, where class is defined by the {@link
-     * TreeUtils#classTreeKinds()} method.
+     * TreeUtils#classTreeKinds()} method. May return {@code path} itself.
      *
      * @param path the path defining the tree node
      * @return the path to the enclosing class tree, {@code null} otherwise
@@ -81,7 +77,7 @@ public final class TreePathUtil {
     }
 
     /**
-     * Gets path to the first (innermost) enclosing method tree.
+     * Gets path to the first (innermost) enclosing method tree. May return {@code path} itself.
      *
      * @param path the path defining the tree node
      * @return the path to the enclosing class tree, {@code null} otherwise
@@ -95,7 +91,8 @@ public final class TreePathUtil {
     ///
 
     /**
-     * Gets the first (innermost) enclosing tree in path, of the specified kind.
+     * Gets the first (innermost) enclosing tree in path, of the given kind. May return the leaf of
+     * {@code path} itself.
      *
      * @param path the path defining the tree node
      * @param kind the kind of the desired tree
@@ -106,7 +103,8 @@ public final class TreePathUtil {
     }
 
     /**
-     * Gets the first (innermost) enclosing tree in path, with any one of the specified kinds.
+     * Gets the first (innermost) enclosing tree in path, with any one of the given kinds. May
+     * return the leaf of {@code path} itself.
      *
      * @param path the path defining the tree node
      * @param kinds the set of kinds of the desired tree
@@ -118,7 +116,8 @@ public final class TreePathUtil {
     }
 
     /**
-     * Gets the first (innermost) enclosing tree in path, of the specified class.
+     * Gets the first (innermost) enclosing tree in path, of the given class. May return the leaf of
+     * {@code path} itself.
      *
      * @param <T> the type of {@code treeClass}
      * @param path the path defining the tree node
@@ -142,7 +141,7 @@ public final class TreePathUtil {
 
     /**
      * Gets the path to nearest enclosing declaration (class, method, or variable) of the tree node
-     * defined by the given {@link TreePath}.
+     * defined by the given {@link TreePath}. May return the leaf of {@code path} itself.
      *
      * @param path the path defining the tree node
      * @return path to the nearest enclosing class/method/variable in the path, or {@code null} if
@@ -155,7 +154,7 @@ public final class TreePathUtil {
     /**
      * Gets the enclosing class of the tree node defined by the given {@link TreePath}. It returns a
      * {@link Tree}, from which {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
-     * obtained.
+     * obtained. May return the leaf of {@code path} itself.
      *
      * @param path the path defining the tree node
      * @return the enclosing class (or interface) as given by the path, or {@code null} if one does
@@ -166,7 +165,8 @@ public final class TreePathUtil {
     }
 
     /**
-     * Gets the enclosing variable of a tree node defined by the given {@link TreePath}.
+     * Gets the enclosing variable of a tree node defined by the given {@link TreePath}. May return
+     * the leaf of {@code path} itself.
      *
      * @param path the path defining the tree node
      * @return the enclosing variable as given by the path, or {@code null} if one does not exist
@@ -178,7 +178,7 @@ public final class TreePathUtil {
     /**
      * Gets the enclosing method of the tree node defined by the given {@link TreePath}. It returns
      * a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element}
-     * can be obtained.
+     * can be obtained. May return the leaf of {@code path} itself.
      *
      * <p>Also see {@code AnnotatedTypeFactory#getEnclosingMethod} and {@code
      * AnnotatedTypeFactory#getEnclosingClassOrMethod}, which do not require a TreePath.
@@ -193,7 +193,8 @@ public final class TreePathUtil {
     /**
      * Gets the enclosing method or lambda expression of the tree node defined by the given {@link
      * TreePath}. It returns a {@link Tree}, from which an {@code
-     * checkers.types.AnnotatedTypeMirror} or {@link Element} can be obtained.
+     * checkers.types.AnnotatedTypeMirror} or {@link Element} can be obtained. May return the leaf
+     * of {@code path} itself.
      *
      * @param path the path defining the tree node
      * @return the enclosing method or lambda as given by the path, or {@code null} if one does not
@@ -204,7 +205,8 @@ public final class TreePathUtil {
     }
 
     /**
-     * Returns the top-level block that encloses the given path, or null if none does.
+     * Returns the top-level block that encloses the given path, or null if none does. Never returns
+     * the leaf of {@code path} itself.
      *
      * @param path a path
      * @return the top-level block that encloses the given path, or null if none does
@@ -223,7 +225,8 @@ public final class TreePathUtil {
     }
 
     /**
-     * Gets the first (innermost) enclosing tree in path, that is not a parenthesis.
+     * Gets the first (innermost) enclosing tree in path, that is not a parenthesis. Never returns
+     * the leaf of {@code path} itself.
      *
      * @param path the path defining the tree node
      * @return a pair of a non-parenthesis tree that contains the argument, and its child that is

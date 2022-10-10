@@ -479,8 +479,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false;
         }
 
-        Tree left = node.getLeftOperand();
-        Tree right = node.getRightOperand();
+        ExpressionTree left = node.getLeftOperand();
+        ExpressionTree right = node.getRightOperand();
 
         // Only valid if we're comparing identifiers.
         if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER)) {
@@ -771,8 +771,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             return false;
         }
 
-        Tree left = TreeUtils.withoutParens(node.getLeftOperand());
-        Tree right = TreeUtils.withoutParens(node.getRightOperand());
+        ExpressionTree left = TreeUtils.withoutParens(node.getLeftOperand());
+        ExpressionTree right = TreeUtils.withoutParens(node.getRightOperand());
 
         // Only valid if we're comparing identifiers.
         if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER)) {

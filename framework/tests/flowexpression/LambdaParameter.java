@@ -26,16 +26,14 @@ public class LambdaParameter {
                     return "";
                 };
         Function<@FlowExp("methodParam") String, String> func4 =
-                (
-                        @FlowExp("methodParam") String lambdaParam) -> {
+                (@FlowExp("methodParam") String lambdaParam) -> {
                     return "";
                 };
     }
 
     void method2(String methodParam, @FlowExp("#1") String methodParam2) {
         Function<@FlowExp("methodParam") String, String> func1 =
-                (
-                        @FlowExp("methodParam") String lambdaParam) -> {
+                (@FlowExp("methodParam") String lambdaParam) -> {
                     @FlowExp("methodParam") String a = methodParam2;
                     @FlowExp("methodParam") String b = lambdaParam;
                     return "";
@@ -51,8 +49,7 @@ public class LambdaParameter {
                     return "";
                 };
         Function<@FlowExp("local") String, String> func2 =
-                (
-                        @FlowExp("local") String lambdaParam) -> {
+                (@FlowExp("local") String lambdaParam) -> {
                     return "";
                 };
     }
@@ -61,8 +58,7 @@ public class LambdaParameter {
         String local = "";
         @FlowExp("local") String otherLocal = null;
         Function<@FlowExp("local") String, String> func1 =
-                (
-                        @FlowExp("local") String lambdaParam) -> {
+                (@FlowExp("local") String lambdaParam) -> {
                     @FlowExp("local") String a = otherLocal;
                     @FlowExp("local") String b = lambdaParam;
                     return "";

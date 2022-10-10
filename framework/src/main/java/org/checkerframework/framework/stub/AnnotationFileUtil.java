@@ -489,21 +489,21 @@ public class AnnotationFileUtil {
      * @return true if elt is the canonical constructor of the record containing it
      */
     public static boolean isCanonicalConstructor(ExecutableElement elt, Types types) {
-        if (elt.getKind() != ElementKind.CONSTRUCTOR) {
-            return false;
-        }
-        Element enclosing = elt.getEnclosingElement();
-        // Can't use RECORD enum constant as it's not available before JDK 16:
-        if (!enclosing.getKind().name().equals("RECORD")) {
-            return false;
-        }
-        List<? extends Element> recordComponents =
-                ElementUtils.getRecordComponents((TypeElement) enclosing);
-        if (recordComponents.size() == elt.getParameters().size()) {
-            for (int i = 0; i < recordComponents.size(); i++) {
-                if (!types.isSameType(
-                        recordComponents.get(i).asType(), elt.getParameters().get(i).asType())) {
-                    return false;
+        if (elt.getKind() == ElementKind.CONSTRUCTOR) {
+            TypeElement enclosing = (TypeElement) elt.getEnclosingElement();
+            // Can't use RECORD enum constant as it's not available before JDK 16:
+            if (enclosing.getKind().name().equals("RECORD")) {
+                List<? extends Element> recordComponents =
+                        ElementUtils.getRecordComponents(enclosing);
+                if (recordComponents.size() == elt.getParameters().size()) {
+                    for (int i = 0; i < recordComponents.size(); i++) {
+                        if (!types.isSameType(
+                                recordComponents.get(i).asType(),
+                                elt.getParameters().get(i).asType())) {
+                            return false;
+                        }
+                    }
+                    return true;
                 }
             }
             return true;

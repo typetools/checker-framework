@@ -38,7 +38,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
     /** The root of the AST that this {@link SourceVisitor} will scan. */
     protected CompilationUnitTree root;
 
-    /** A set of trees that are annotated with {@code @SuppressWarnings}. */
+    /** The trees that are annotated with {@code @SuppressWarnings}. */
     public final List<Tree> treesWithSuppressWarnings;
 
     /** Whether or not a warning should be issued for unneeded warning suppressions. */

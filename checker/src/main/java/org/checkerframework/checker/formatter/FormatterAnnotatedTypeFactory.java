@@ -3,6 +3,7 @@ package org.checkerframework.checker.formatter;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
+import org.checkerframework.afu.scenelib.annotations.Annotation;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
@@ -28,13 +29,6 @@ import java.lang.annotation.Annotation;
 import java.util.IllegalFormatException;
 
 import javax.lang.model.element.AnnotationMirror;
-
-/* NO-AFU
-   import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
-   import scenelib.annotations.Annotation;
-   import scenelib.annotations.el.AField;
-   import scenelib.annotations.el.AMethod;
-*/
 
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that

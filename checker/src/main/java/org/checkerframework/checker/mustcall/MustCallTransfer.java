@@ -131,7 +131,7 @@ public class MustCallTransfer extends CFTransfer {
         updateStoreWithTempVar(result, n);
         if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
             List<JavaExpression> targetExprs =
-                    CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
+                    CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
                             n, atypeFactory, atypeFactory);
             for (JavaExpression targetExpr : targetExprs) {
                 AnnotationMirror defaultType =
@@ -260,10 +260,10 @@ public class MustCallTransfer extends CFTransfer {
         Element enclosingElement;
         TreePath path = atypeFactory.getPath(tree);
         if (path == null) {
-            enclosingElement = TreeUtils.elementFromTree(tree).getEnclosingElement();
+            enclosingElement = TreeUtils.elementFromUse(tree).getEnclosingElement();
         } else {
             ClassTree classTree = TreePathUtil.enclosingClass(path);
-            enclosingElement = TreeUtils.elementFromTree(classTree);
+            enclosingElement = TreeUtils.elementFromDeclaration(classTree);
         }
         if (enclosingElement == null) {
             return null;
