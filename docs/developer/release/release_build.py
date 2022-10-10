@@ -61,16 +61,11 @@ import sys
 debug = False
 ant_debug = ""
 
-# Currently only affects the Checker Framework tests, which run the longest.
-notest = False
-
 
 def print_usage():
     """Print usage information."""
     print("Usage:    python3 release_build.py [options]")
     print("\n  --debug  turns on debugging mode which produces verbose output")
-    print("\n  --notest  disables tests to speed up scripts; for debugging only")
-
 
 def clone_or_update_repos():
     """Clone the relevant repos from scratch or update them if they exist and
@@ -225,8 +220,7 @@ def build_annotation_tools_release(version, afu_interm_dir):
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    gradle_cmd = "./gradlew %s -Pafu.version=%s -Pdeploy-dir=%s" % (
-        "releaseBuildWithoutTest" if notest else "releaseBuild",
+    gradle_cmd = "./gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s" % (
         version,
         afu_interm_dir,
     )
@@ -383,8 +377,6 @@ def main(argv):
     debug = has_command_line_option(argv, "--debug")
     if debug:
         ant_debug = "-debug"
-    global notest
-    notest = has_command_line_option(argv, "--notest")
 
     afu_date = get_afu_date()
 

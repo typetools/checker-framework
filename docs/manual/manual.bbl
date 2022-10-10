@@ -386,7 +386,7 @@ Martin Kellogg, Narges Shadab, Manu Sridharan, and Michael~D. Ernst.
 \newblock Lightweight and modular resource leak verification.
 \newblock In {\em ESEC/FSE 2021: The ACM 29th joint European Software
   Engineering Conference and Symposium on the Foundations of Software
-  Engineering (ESEC/FSE)}, Athens, Greece, August 2021.
+  Engineering (ESEC/FSE)}, pages 181--192, Athens, Greece, August 2021.
 
 \bibitem[KSSE22]{KelloggSSE2022}
 Martin Kellogg, Narges Shadab, Manu Sridharan, and Michael~D. Ernst.
@@ -497,7 +497,7 @@ Ana Milanova and Jan Vitek.
 Rashmi Mudduluru, Jason Waataja, Suzanne Millstein, and Michael~D. Ernst.
 \newblock Verifying determinism in sequential programs.
 \newblock In {\em ICSE 2021, Proceedings of the 43rd International Conference
-  on Software Engineering}, Madrid, Spain, May 2021.
+  on Software Engineering}, pages 37--49, Madrid, Spain, May 2021.
 
 \bibitem[Noa10]{Noack2010}
 Gunther Noack.

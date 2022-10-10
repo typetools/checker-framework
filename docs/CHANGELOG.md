@@ -1,4 +1,4 @@
-Version 3.26.0 (October 4, 2022)
+Version 3.26.0 (October 3, 2022)
 --------------------------------
 
 **User-visible changes:**
@@ -33,6 +33,8 @@ The `checkFormat` and `reformat` Gradle tasks have been removed.
 Removed variable `BaseTypeVisitor.inferPurity`.
 
 **Closed issues:**
+
+#5081, #5159, #5245, #5302, #5319, #5323.
 
 
 Version 3.25.0 (September 1, 2022)
