@@ -118,7 +118,7 @@ public class ElementAnnotationApplier {
       TypeVarUseApplier.apply(type, element, typeFactory);
 
     } else if (VariableApplier.accepts(type, element)) {
-      if (element.getKind() != ElementKind.LOCAL_VARIABLE) {
+      if (!ElementUtils.isLocalVariable(element)) {
         // For local variables we have the source code,
         // so there is no need to look at the Element.
         // This is needed to avoid a bug in the JDK:
@@ -139,7 +139,7 @@ public class ElementAnnotationApplier {
       MethodTypeParamApplier.apply((AnnotatedTypeVariable) type, element, typeFactory);
 
     } else if (ParamApplier.accepts(type, element)) {
-      ParamApplier.apply(type, element, typeFactory);
+      ParamApplier.apply(type, (VariableElement) element, typeFactory);
 
     } else if (isCaptureConvertedTypeVar(element)) {
       // Types resulting from capture conversion cannot have explicit annotations

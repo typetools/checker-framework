@@ -149,9 +149,9 @@ gradlew assembleCheckTypes
 \end{Verbatim}
 \end{enumerate}
 
-\subsectionAndLabel{JDK 11}{android-jdk11}
-This section shows what changes to make if you are using JDK 11.  They should work for JDK 9+, but
-we have only tested them with JDK 11.
+\subsectionAndLabel{JDK 11+}{android-jdk11}
+This section shows what changes to make if you are using JDK 11 or later.
+% We have tested them with JDK 11.
 
 \begin{enumerate}
 
@@ -621,7 +621,8 @@ This section shows what arguments to pass to the OpenJDK or OracleJDK
 \<javac> (\emph{not} the \<javac> wrapper script of
 Section~\ref{javac-wrapper}) to run the Checker
 Framework, if you are using JDK 9 or later.  These
-instructions should work on JDK 9 or later, but we only test with JDK 11 and JDK 17.
+instructions should work on JDK 9 or later, but we only test with supported
+versions of Java: JDK 11, JDK 17, and JDK 18.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
@@ -804,7 +805,7 @@ to run a checker within IntelliJ IDEA on every compile:
 
 \begin{enumerate}
 
-\item Change the project SDK to 11, as explained at
+\item Change the project SDK to 11 or later, as explained at
   \url{https://www.jetbrains.com/help/idea/sdk.html#change-project-sdk}.
 
 \item Make sure the language level for your project is 8 or higher, as explained at
@@ -1392,7 +1393,7 @@ javacOptions ++= Seq(
 \end{Verbatim}
 
 
-\subsectionAndLabel{JDK 11, for non-modularized code}{sbt-jdk11-nonmodularized-code}
+\subsectionAndLabel{JDK 11 and later, for non-modularized code}{sbt-jdk11-nonmodularized-code}
 
 % Keep list of --add-opens and --add-exports in sync with the "maven" and "javac-jdk11-non-modularized" sections,
 % the method CheckerMain#getExecArguments, checker-framework/build.gradle in compilerArgsForRunningCFs,

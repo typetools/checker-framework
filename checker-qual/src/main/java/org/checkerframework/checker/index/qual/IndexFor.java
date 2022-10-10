@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * different lengths.
  *
  * <p>The <a
- * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#charAt(int)">
+ * href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#charAt(int)">
  * {@code String.charAt(int)}</a> method is declared as
  *
  * <pre>{@code

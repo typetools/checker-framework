@@ -56,6 +56,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -78,7 +79,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-import scenelib.annotations.util.JVMNames;
 
 /**
  * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
@@ -197,8 +197,8 @@ public class WholeProgramInferenceJavaParserStorage
    * @param fieldElt a field
    * @return the annotations for a field
    */
-  private FieldAnnos getFieldAnnos(Element fieldElt) {
-    String className = ElementUtils.getEnclosingClassName((VariableElement) fieldElt);
+  private FieldAnnos getFieldAnnos(VariableElement fieldElt) {
+    String className = ElementUtils.getEnclosingClassName(fieldElt);
     // Read in classes for the element.
     getFileForElement(fieldElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
@@ -355,7 +355,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
-  public boolean addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+  public boolean addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     FieldAnnos fieldAnnos = getFieldAnnos(field);
     boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
@@ -528,7 +528,7 @@ public class WholeProgramInferenceJavaParserStorage
               // Ordering$1 in PolyCollectorTypeVar.java in the all-systems test suite.
               // addClass(ClassTree) in the then branch just below assumes that such an element
               // exists.
-              Element classElt = TreeUtils.elementFromTree(body);
+              Element classElt = TreeUtils.elementFromDeclaration(body);
               if (classElt != null) {
                 addClass(body);
               } else {
@@ -616,16 +616,14 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
-            Element element = TreeUtils.elementFromTree(javacTree);
+            ExecutableElement element = TreeUtils.elementFromDeclaration(javacTree);
             if (element == null) {
               // element can be null if there is no element corresponding to the method,
               // which happens for certain kinds of anonymous classes, such as Ordering$1 in
               // PolyCollectorTypeVar.java in the all-systems test suite.
               return;
             }
-            // If elt is non-null, it is guaranteed to be an executable element.
-            ExecutableElement elt = (ExecutableElement) element;
-            String className = ElementUtils.getEnclosingClassName(elt);
+            String className = ElementUtils.getEnclosingClassName(element);
             ClassOrInterfaceAnnos enclosingClass = classToAnnos.get(className);
             String executableSignature = JVMNames.getJVMMethodSignature(javacTree);
             if (!enclosingClass.callableDeclarations.containsKey(executableSignature)) {
@@ -662,7 +660,7 @@ public class WholeProgramInferenceJavaParserStorage
             // This seems to occur when javacTree is a local variable in the second
             // class located in a source file. If this check returns false, then the
             // below call to TreeUtils.elementFromDeclaration causes a crash.
-            if (TreeUtils.elementFromTree(javacTree) == null) {
+            if (TreeUtils.elementFromDeclaration(javacTree) == null) {
               return;
             }
 

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * An integer that is either -1 or is a valid index for each of the given sequences.
  *
  * <p>The <a
- * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html#indexOf(java.lang.String)">
+ * href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html#indexOf(java.lang.String)">
  * {@code String.indexOf(String)}</a> method is declared as
  *
  * <pre><code>

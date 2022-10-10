@@ -195,14 +195,7 @@ Alternately, you can build the latest development version from source
 
 
 \textbf{Requirement:}
-% Keep in sync with build.gradle and SourceChecker.init.
-You must have \textbf{JDK 8}, \textbf{JDK 11}, or \textbf{JDK 17} installed.
-% Possible replacement for the above.
-% You must have a supported LTS JDK installed: \textbf{JDK 8}, \textbf{JDK
-% 11}, or \textbf{JDK 17}.
-The Checker Framework processes code written for any of those versions.
-(For running the Checker Framework under other JDK versions, see
-Section~\ref{permitUnsupportedJdkVersion}.)
+You must have a JDK (version 8 or later) installed.
 
 The installation process has two required steps and one
 optional step.
@@ -695,9 +688,13 @@ Type-checking modes:  enable/disable functionality
   Issue a warning if a \<@SuppressWarnings> did not suppress a warning
   issued by the checker.  This only warns about
   \<@SuppressWarnings> strings that contain a checker name
-  (Section~\ref{suppresswarnings-annotation-syntax}).  The
+  (for syntax, Section~\ref{suppresswarnings-annotation-syntax}).  The
   \<-ArequirePrefixInWarningSuppressions> command-line argument ensures
   that all \<@SuppressWarnings> strings contain a checker name.
+  An \<unneeded.suppression> warning can be suppressed only by
+  \<@SuppressWarnings("unneeded.suppression")>
+  or \<@SuppressWarnings("\emph{checkername}:unneeded.suppression")>,
+  not by \<@SuppressWarnings("\emph{checkername}")>.
 \item \<-AwarnUnneededSuppressionsExceptions=\emph{regex}> disables
   \<-AwarnUnneededSuppressions> for \<@SuppressWarnings> strings that
   contain a match for the regular expression.  Most users don't need this.
@@ -827,7 +824,7 @@ the Subtyping Checker (see Chapter~\ref{subtyping-checker}) and the Fenum Checke
 
 
 Here are some standard javac command-line options that you may find useful.
-Many of them contain the word ``processor'', because in javac jargon, a
+Many of them contain ``processor'' or ``proc'', because in javac jargon, a
 checker is an ``annotation processor''.
 
 \begin{itemize}
@@ -856,10 +853,6 @@ checker is an ``annotation processor''.
   whenever a compiler warning/error is produced. Useful when debugging
   the compiler or a checker.
 \end{itemize}
-
-The Checker Framework does not support \<-source 1.7> or earlier.  You must
-supply \<-source 1.8> or later, or no \<-source> command-line argument,
-when running \<javac>.
 
 
 \subsectionAndLabel{Checker auto-discovery}{checker-auto-discovery}

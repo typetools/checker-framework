@@ -86,16 +86,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    */
   public LockVisitor(BaseTypeChecker checker) {
     super(checker);
-    for (String checkerName : atypeFactory.getCheckerNames()) {
-      if (!(checkerName.equals("lock")
-          || checkerName.equals("LockChecker")
-          || checkerName.equals("org.checkerframework.checker.lock.LockChecker"))) {
-        // The Lock Checker redefines CFAbstractStore#isSideEffectFree in a way that is incompatible
-        // with (semantically different than) other checkers.
-        inferPurity = false;
-        break;
-      }
-    }
   }
 
   @Override
@@ -1012,6 +1002,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   /**
    * Returns true if the symbol for the given tree is final or effectively final. Package, class and
    * method symbols are unmodifiable and therefore considered final.
+   *
+   * @param tree the tree to test
+   * @return true if the symbol for the given tree is final or effectively final
    */
   private boolean isTreeSymbolEffectivelyFinalOrUnmodifiable(Tree tree) {
     Element elem = TreeUtils.elementFromTree(tree);

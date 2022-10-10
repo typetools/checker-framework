@@ -2,7 +2,7 @@ package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.Objects;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class LocalVariable extends JavaExpression {
   /** The element for this local variable. */
-  protected final Element element;
+  protected final VariableElement element;
 
   /**
    * Creates a new LocalVariable.
@@ -30,11 +30,11 @@ public class LocalVariable extends JavaExpression {
   }
 
   /**
-   * Creates a LocalVariable
+   * Creates a new LocalVariable.
    *
    * @param element the element for the local variable
    */
-  public LocalVariable(Element element) {
+  public LocalVariable(VariableElement element) {
     super(ElementUtils.getType(element));
     this.element = element;
   }
@@ -56,7 +56,7 @@ public class LocalVariable extends JavaExpression {
    * @param element2 the second element to compare
    * @return true if the two elements are the same
    */
-  protected static boolean sameElement(Element element1, Element element2) {
+  protected static boolean sameElement(VariableElement element1, VariableElement element2) {
     VarSymbol vs1 = (VarSymbol) element1;
     VarSymbol vs2 = (VarSymbol) element2;
     // If a LocalVariable is created via JavaExpressionParseUtil#parse, then `vs1.equals(vs2)` will
@@ -71,7 +71,7 @@ public class LocalVariable extends JavaExpression {
    *
    * @return the element for this variable
    */
-  public Element getElement() {
+  public VariableElement getElement() {
     return element;
   }
 

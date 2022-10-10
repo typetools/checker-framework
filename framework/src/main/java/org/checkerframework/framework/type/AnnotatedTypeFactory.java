@@ -71,6 +71,8 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import org.checkerframework.afu.scenelib.el.AMethod;
+import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -138,8 +140,6 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsPlume;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.ATypeElement;
 
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
@@ -338,6 +338,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
 
   /**
+   * True if all methods should be assumed to be @SideEffectFree, for the purposes of
+   * org.checkerframework.dataflow analysis.
+   */
+  private final boolean assumeSideEffectFree;
+
+  /**
    * Initializes all fields of {@code type}.
    *
    * @param type annotated type mirror
@@ -518,6 +524,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.processingEnv = checker.getProcessingEnvironment();
     // this.root = root;
     this.checker = checker;
+    this.assumeSideEffectFree =
+        checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
+
     this.trees = Trees.instance(processingEnv);
     this.elements = processingEnv.getElementUtils();
     this.types = processingEnv.getTypeUtils();
@@ -706,8 +715,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Actions that logically belong in the constructor, but need to run after the subclass
-   * constructor has completed. In particular, parseStubFiles() may try to do type resolution with
-   * this AnnotatedTypeFactory.
+   * constructor has completed. In particular, {@link AnnotationFileElementTypes#parseStubFiles()}
+   * may try to do type resolution with this AnnotatedTypeFactory.
    */
   protected void postInit() {
     this.qualHierarchy = createQualifierHierarchy();
@@ -1483,7 +1492,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Creates an AnnotatedTypeMirror for a variable or method declaration tree. The
-   * AnnotatedTypeMirror contains annotations explicitly written on the tree.
+   * AnnotatedTypeMirror contains annotations explicitly written on the tree, and possibly others as
+   * described below.
    *
    * <p>If a VariableTree is a parameter to a lambda, this method also adds annotations from the
    * declared type of the functional interface and the executable type of its method.
@@ -1955,7 +1965,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         : "Unexpected tree kind: " + tree.getKind();
 
     // Return null if the element kind has no receiver.
-    Element element = TreeUtils.elementFromTree(tree);
+    Element element = TreeUtils.elementFromUse(tree);
     assert element != null : "Unexpected null element for tree: " + tree;
     if (!ElementUtils.hasReceiver(element)) {
       return null;
@@ -1988,7 +1998,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // An implicit receiver is the first enclosing type that is a subtype of the type where the
     // element is declared.
-    while (!isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
+    while (thisType != null && !isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
       thisType = thisType.getEnclosingType();
     }
     return thisType;
@@ -2124,7 +2134,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return getAnnotatedType(receiver);
     }
 
-    Element element = TreeUtils.elementFromUse(expression);
+    Element element = TreeUtils.elementFromTree(expression);
     if (element != null && ElementUtils.hasReceiver(element)) {
       // The tree references an element that has a receiver, but the tree does not have an explicit
       // receiver. So, the tree must have an implicit receiver of "this" or "Outer.this".
@@ -2604,7 +2614,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Add computed annotations to the type.
     addComputedTypeAnnotations(tree, type);
 
-    ExecutableElement ctor = TreeUtils.constructor(tree);
+    ExecutableElement ctor = TreeUtils.elementFromUse(tree);
     AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
     constructorFromUsePreSubstitution(tree, con);
 
@@ -2633,10 +2643,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
         if (TreeUtils.hasSyntheticArgument(tree)) {
           p.add(con.getParameterTypes().get(0));
-        } else if (con.receiverType != null) {
-          p.add(con.receiverType);
+        } else if (con.getReceiverType() != null) {
+          p.add(con.getReceiverType());
         } else {
-          p.add(con.paramTypes.get(0));
+          p.add(con.getParameterTypes().get(0));
         }
         p.addAll(1, superCon.getParameterTypes());
         con.setParameterTypes(p);
@@ -4565,13 +4575,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     // Functional method
-    Element fnElement = TreeUtils.findFunction(tree, processingEnv);
+    ExecutableElement fnElement = TreeUtils.findFunction(tree, processingEnv);
 
     // Function type
     AnnotatedExecutableType functionType =
-        (AnnotatedExecutableType)
-            AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
-
+        AnnotatedTypes.asMemberOf(types, this, functionalInterfaceType, fnElement);
     return Pair.of(functionalInterfaceType, functionType);
   }
 
@@ -4894,7 +4902,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>Capture conversion is the process of converting wildcards in a parameterized type to fresh
    * type variables. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
    * for details.
    *
    * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
@@ -4913,7 +4921,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>Capture conversion is the process of converting wildcards in a parameterized type to fresh
    * type variables. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.10">JLS 5.1.10</a>
    * for details.
    *
    * <p>If {@code type} is not a declared type or if it does not have any wildcard type arguments,
@@ -5332,8 +5340,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return awt.getUnderlyingType().getSuperBound() == null;
   }
 
-  /** Accessor for the element utilities. */
-  public Elements getElementUtils() {
+  /**
+   * Returns the utility class for working with {@link Element}s.
+   *
+   * @return the utility class for working with {@link Element}s
+   */
+  public final Elements getElementUtils() {
     return this.elements;
   }
 
@@ -5467,8 +5479,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Checks that the collection contains the annotation. Using Collection.contains does not always
-   * work, because it does not use areSame for comparison.
+   * Checks that the collection contains the annotation. Using {@code Collection.contains} does not
+   * always work, because it does not use {@code areSame()} for comparison.
    *
    * <p>This method is faster than {@link AnnotationUtils#containsSameByClass(Collection, Class)}
    * because is caches the name of the class rather than computing it each time.
@@ -5627,5 +5639,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return true;
     }
     return ImmutableTypes.isImmutable(TypeAnnotationUtils.unannotatedType(type).toString());
+  }
+
+  @Override
+  public boolean isSideEffectFree(ExecutableElement methodElement) {
+    if (assumeSideEffectFree) {
+      return true;
+    }
+
+    for (AnnotationMirror anno : getDeclAnnotations(methodElement)) {
+      if (areSameByClass(anno, org.checkerframework.dataflow.qual.SideEffectFree.class)
+          || areSameByClass(anno, org.checkerframework.dataflow.qual.Pure.class)
+          || areSameByClass(anno, org.jmlspecs.annotation.Pure.class)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

@@ -19,7 +19,7 @@ PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
 status=0
 
 ## Code style and formatting
-./gradlew checkBasicStyle checkFormat --console=plain --warning-mode=all
+./gradlew checkBasicStyle spotlessCheck --console=plain --warning-mode=all
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
   exit 1
@@ -37,7 +37,9 @@ make -C docs/developer/release
 ./gradlew javadocPrivate --console=plain --warning-mode=all || status=1
 # For refactorings that touch a lot of code that you don't understand, create
 # top-level file SKIP-REQUIRE-JAVADOC.  Delete it after the pull request is merged.
-if [ ! -f SKIP-REQUIRE-JAVADOC ]; then
+if [ -f SKIP-REQUIRE-JAVADOC ]; then
+  echo "Skipping requireJavadoc because file SKIP-REQUIRE-JAVADOC exists."
+else
   (./gradlew requireJavadoc --console=plain --warning-mode=all > /tmp/warnings-rjp.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-rjp.txt || status=1
   (./gradlew javadocDoclintAll --console=plain --warning-mode=all > /tmp/warnings-jda.txt 2>&1) || true

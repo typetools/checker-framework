@@ -240,7 +240,7 @@ public class NullnessVisitor
   /** Case 1: Check for null dereferencing. */
   @Override
   public Void visitMemberSelect(MemberSelectTree node, Void p) {
-    Element e = TreeUtils.elementFromTree(node);
+    Element e = TreeUtils.elementFromUse(node);
     if (e.getKind() == ElementKind.CLASS) {
       if (atypeFactory.containsNullnessAnnotation(null, node.getExpression())) {
         checker.reportError(node, "nullness.on.outer");
