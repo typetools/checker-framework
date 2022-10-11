@@ -1091,6 +1091,25 @@ public final class TreeUtils {
     }
 
     /**
+     * Return the set of kinds that represent classes.
+     *
+     * @return the set of kinds that represent classes
+     */
+    public static Set<Tree.Kind> classTreeKinds() {
+        return classTreeKinds;
+    }
+
+    /**
+     * Is the given tree kind a class, i.e. a class, enum, interface, or annotation type.
+     *
+     * @param tree the tree to test
+     * @return true, iff the given kind is a class kind
+     */
+    public static boolean isClassTree(Tree tree) {
+        return classTreeKinds().contains(tree.getKind());
+    }
+
+    /**
      * The kinds that represent declarations that might have {@code @SuppressWarnings} written on
      * them: classes, methods, and variables.
      */
@@ -1104,15 +1123,6 @@ public final class TreeUtils {
     }
 
     /**
-     * Return the set of kinds that represent classes.
-     *
-     * @return the set of kinds that represent classes
-     */
-    public static Set<Tree.Kind> classTreeKinds() {
-        return classTreeKinds;
-    }
-
-    /**
      * Return the set of kinds that represent declarations: classes, methods, and variables.
      *
      * @return the set of kinds that represent declarations
@@ -1122,15 +1132,16 @@ public final class TreeUtils {
     }
 
     /**
-     * Is the given tree kind a class, i.e. a class, enum, interface, or annotation type.
+     * Returns true if the given tree is a declaration.
      *
      * @param tree the tree to test
-     * @return true, iff the given kind is a class kind
+     * @return true if the given tree is a declaration
      */
-    public static boolean isClassTree(Tree tree) {
-        return classTreeKinds().contains(tree.getKind());
+    public static boolean isDeclarationTree(Tree tree) {
+        return declarationTreeKinds.contains(tree.getKind());
     }
 
+    /** The kinds that represent types. */
     private static final Set<Tree.Kind> typeTreeKinds =
             EnumSet.of(
                     Tree.Kind.PRIMITIVE_TYPE,
@@ -1142,18 +1153,13 @@ public final class TreeUtils {
                     Tree.Kind.SUPER_WILDCARD,
                     Tree.Kind.ANNOTATED_TYPE);
 
+    /**
+     * Return the set of kinds that represent types.
+     *
+     * @return the set of kinds that represent types
+     */
     public static Set<Tree.Kind> typeTreeKinds() {
         return typeTreeKinds;
-    }
-
-    /**
-     * Returns true if the given tree is a declaration.
-     *
-     * @param tree the tree to test
-     * @return true if the given tree is a declaration
-     */
-    public static boolean isDeclarationTree(Tree tree) {
-        return declarationTreeKinds.contains(tree.getKind());
     }
 
     /**
