@@ -7,27 +7,27 @@
 
 class UnneededSuppressionsTest {
 
-    @SuppressWarnings({"nullness:return"})
+    @SuppressWarnings({"nullness:return.type.incompatible"})
     public String getClassAndUid1() {
         return "hello";
     }
 
-    @SuppressWarnings({"nullness:return", "unneeded.suppression"})
+    @SuppressWarnings({"nullness:return.type.incompatible", "unneeded.suppression"})
     public String getClassAndUid2() {
         return "hello";
     }
 
-    @SuppressWarnings({"nullness:return", "nullness:unneeded.suppression"})
+    @SuppressWarnings({"nullness:return.type.incompatible", "nullness:unneeded.suppression"})
     public String getClassAndUid3() {
         return "hello";
     }
 
-    @SuppressWarnings({"unneeded.suppression", "nullness:return"})
+    @SuppressWarnings({"unneeded.suppression", "nullness:return.type.incompatible"})
     public String getClassAndUid5() {
         return "hello";
     }
 
-    @SuppressWarnings({"nullness:unneeded.suppression", "nullness:return"})
+    @SuppressWarnings({"nullness:unneeded.suppression", "nullness:return.type.incompatible"})
     public String getClassAndUid6() {
         return "hello";
     }

@@ -1,5 +1,5 @@
-UnneededSuppressionsTest.java:22:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "lowerbound" is not used by IndexChecker
-UnneededSuppressionsTest.java:24:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "upperbound:assignment" is not used by IndexChecker
-UnneededSuppressionsTest.java:39:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "index:foo.bar.baz" is not used by IndexChecker
-UnneededSuppressionsTest.java:42:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "allcheckers:purity.not.deterministic.call" is not used by IndexChecker
+UnneededSuppressionsTest.java:22:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "lowerbound" is not used by IndexChecker
+UnneededSuppressionsTest.java:24:9: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "upperbound:assignment.type.incompatible" is not used by IndexChecker
+UnneededSuppressionsTest.java:39:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "index:foo.bar.baz" is not used by IndexChecker
+UnneededSuppressionsTest.java:42:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "allcheckers:purity.not.deterministic.call" is not used by IndexChecker
 4 warnings

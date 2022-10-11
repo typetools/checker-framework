@@ -8,7 +8,7 @@
 @SuppressWarnings("unneeded.suppression")
 class UnneededSuppressionsClassAnnotated {
 
-    @SuppressWarnings("nullness:return")
+    @SuppressWarnings("nullness:return.type.incompatible")
     public String getClassAndUid0() {
         return "hello";
     }

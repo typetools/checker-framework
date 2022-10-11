@@ -8,7 +8,7 @@ import java.util.List;
 
 public class NullTypeVarTest {
 
-    // :: warning: assignment
+    // :: warning: assignment.type.incompatible
     private String indentString = null;
 
     private List<String> indentStrings;
