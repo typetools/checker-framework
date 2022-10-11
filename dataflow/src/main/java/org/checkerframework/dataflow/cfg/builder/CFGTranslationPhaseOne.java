@@ -1461,8 +1461,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
-        ExecutableElement element = method;
-        if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
+        if (ElementUtils.isStatic(method) || receiver instanceof ThisNode) {
             // No NullPointerException can be thrown, use normal node
             extendWithNode(target);
         } else {
@@ -1487,7 +1486,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         MethodInvocationNode node =
                 new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-        List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
+        List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
         Set<TypeMirror> thrownSet =
                 new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
         // Add exceptions explicitly mentioned in the throws clause.
@@ -1498,10 +1497,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
         /* Check for the TerminatesExecution annotation. */
-        ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
         boolean terminatesExecution =
-                annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class)
-                        != null;
+                annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null;
         if (terminatesExecution) {
             extendedNode.setTerminatesExecution(true);
         }
