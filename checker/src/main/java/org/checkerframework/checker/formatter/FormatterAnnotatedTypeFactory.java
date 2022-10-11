@@ -3,7 +3,6 @@ package org.checkerframework.checker.formatter;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
-import org.checkerframework.afu.scenelib.annotations.Annotation;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;

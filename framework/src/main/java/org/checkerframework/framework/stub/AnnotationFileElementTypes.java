@@ -211,7 +211,8 @@ public class AnnotationFileElementTypes {
                         factory,
                         processingEnv,
                         annotationFileAnnos,
-                        AnnotationFileType.BUILTIN_STUB);
+                        AnnotationFileType.BUILTIN_STUB,
+                        this);
             }
         } catch (IOException e) {
             checker.message(
@@ -392,9 +393,6 @@ public class AnnotationFileElementTypes {
      *     not appear in an annotation file.
      */
     public @Nullable AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
-        if (parsing) {
-            return null;
-        }
         parseEnclosingJdkClass(e);
         AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
         return type == null ? null : type.deepCopy();
