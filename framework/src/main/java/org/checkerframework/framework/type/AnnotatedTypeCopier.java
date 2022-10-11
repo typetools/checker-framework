@@ -193,35 +193,43 @@ public class AnnotatedTypeCopier
         }
 
         List<? extends AnnotatedTypeMirror> originalParameterTypes = original.getParameterTypes();
-        List<AnnotatedTypeMirror> copyParamTypes = new ArrayList<>(originalParameterTypes.size());
-        for (final AnnotatedTypeMirror param : originalParameterTypes) {
-            copyParamTypes.add(visit(param, originalToCopy));
+        if (originalParameterTypes.size() != 0) {
+            List<AnnotatedTypeMirror> copyParamTypes =
+                    new ArrayList<>(originalParameterTypes.size());
+            for (final AnnotatedTypeMirror param : originalParameterTypes) {
+                copyParamTypes.add(visit(param, originalToCopy));
+            }
+            copy.setParameterTypes(copyParamTypes);
         }
-        copy.setParameterTypes(copyParamTypes);
 
         List<? extends AnnotatedTypeMirror> originalThrownTypes = original.getThrownTypes();
-        List<AnnotatedTypeMirror> copyThrownTypes = new ArrayList<>(originalThrownTypes.size());
-        for (final AnnotatedTypeMirror thrown : original.getThrownTypes()) {
-            copyThrownTypes.add(visit(thrown, originalToCopy));
+        if (originalThrownTypes.size() != 0) {
+            List<AnnotatedTypeMirror> copyThrownTypes = new ArrayList<>(originalThrownTypes.size());
+            for (final AnnotatedTypeMirror thrown : original.getThrownTypes()) {
+                copyThrownTypes.add(visit(thrown, originalToCopy));
+            }
+            copy.setThrownTypes(copyThrownTypes);
         }
-        copy.setThrownTypes(copyThrownTypes);
 
         copy.setReturnType(visit(original.getReturnType(), originalToCopy));
 
         List<AnnotatedTypeVariable> originalTypeVariables = original.getTypeVariables();
-        List<AnnotatedTypeVariable> copyTypeVarTypes =
-                new ArrayList<>(originalTypeVariables.size());
-        for (final AnnotatedTypeVariable typeVariable : originalTypeVariables) {
-            // This field is needed to identify exactly when the declaration of an executable's
-            // type parameter is visited.  When subtypes of this class visit the type parameter's
-            // component types, they will likely set visitingExecutableTypeParam to false.
-            // Therefore, we set this variable on each iteration of the loop.
-            // See TypeVariableSubstitutor.Visitor.visitTypeVariable for an example of this.
-            visitingExecutableTypeParam = true;
-            copyTypeVarTypes.add((AnnotatedTypeVariable) visit(typeVariable, originalToCopy));
+        if (originalTypeVariables.size() != 0) {
+            List<AnnotatedTypeVariable> copyTypeVarTypes =
+                    new ArrayList<>(originalTypeVariables.size());
+            for (final AnnotatedTypeVariable typeVariable : originalTypeVariables) {
+                // This field is needed to identify exactly when the declaration of an executable's
+                // type parameter is visited.  When subtypes of this class visit the type
+                // parameter's component types, they will likely set visitingExecutableTypeParam to
+                // false.
+                // Therefore, we set this variable on each iteration of the loop.
+                // See TypeVariableSubstitutor.Visitor.visitTypeVariable for an example of this.
+                visitingExecutableTypeParam = true;
+                copyTypeVarTypes.add((AnnotatedTypeVariable) visit(typeVariable, originalToCopy));
+            }
+            copy.setTypeVariables(copyTypeVarTypes);
+            visitingExecutableTypeParam = false;
         }
-        copy.setTypeVariables(copyTypeVarTypes);
-        visitingExecutableTypeParam = false;
 
         return copy;
     }
