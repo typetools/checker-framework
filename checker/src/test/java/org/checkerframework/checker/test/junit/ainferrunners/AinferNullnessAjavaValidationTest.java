@@ -26,7 +26,6 @@ public class AinferNullnessAjavaValidationTest extends AinferValidatePerDirector
                 "nullness",
                 "ainfer-nullness/annotated",
                 AinferNullnessAjavaTest.class,
-                "-Anomsgtext",
                 ajavaArgFromFiles(testFiles, "nullness"),
                 "-Awarns");
     }

@@ -28,7 +28,6 @@ public class AinferIndexAjavaTest extends AinferGeneratePerDirectoryTest {
                 testFiles,
                 IndexChecker.class,
                 "ainfer-index/non-annotated",
-                "-Anomsgtext",
                 "-Ainfer=ajava",
                 // "-Aajava=tests/ainfer-index/input-annotation-files/",
                 "-Awarns");
