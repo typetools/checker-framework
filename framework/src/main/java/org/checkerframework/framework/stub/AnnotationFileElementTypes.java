@@ -152,7 +152,12 @@ public class AnnotationFileElementTypes {
         ++parsingCount;
         BaseTypeChecker checker = factory.getChecker();
         if (!checker.hasOption("ignorejdkastub")) {
-            // 1. jdk.astub
+            // 1. Annotated JDK
+            // This preps but does not parse the JDK files (except package-info.java files).
+            // The JDK source code files will be parsed later, on demand.
+            prepJdkStubs();
+
+            // 2. jdk.astub
             // Only look in .jar files, and parse it right away.
             String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
             parseOneStubFile(this.getClass(), "jdk.astub");
@@ -165,11 +170,6 @@ public class AnnotationFileElementTypes {
                 parseOneStubFile(this.getClass(), jdk11Stub);
                 parseOneStubFile(checker.getClass(), jdk11Stub);
             }
-
-            // 2. Annotated JDK
-            // This preps but does not parse the JDK files (except package-info.java files).
-            // The JDK source code files will be parsed later, on demand.
-            prepJdkStubs();
         }
 
         // 3. Stub files listed in @StubFiles annotation on the checker
