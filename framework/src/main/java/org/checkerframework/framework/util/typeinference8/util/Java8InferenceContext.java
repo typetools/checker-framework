@@ -128,10 +128,10 @@ public class Java8InferenceContext {
    * @return whether or not the {@code expression} is a lambda parameter
    */
   public boolean isLambdaParam(ExpressionTree expression) {
-    Element element = TreeUtils.elementFromUse(expression);
+    Element element = TreeUtils.elementFromTree(expression);
     if (element == null || element.getKind() != ElementKind.PARAMETER) {
       return false;
     }
-    return lambdaParms.contains(element);
+    return lambdaParms.contains((VariableElement) element);
   }
 }

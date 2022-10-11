@@ -149,16 +149,14 @@ public class InvocationTypeInference {
       InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
       result = inferInternal(invocation, invocationType);
     } catch (FalseBoundException ex) {
+      // TODO: For now, rethrow the exception so that the tests crash.
       // This should never happen, if javac infers type arguments so should the Checker
       // Framework. However, given how buggy javac inference is, this probably will, so deal with it
       // gracefully.
-
       //      checker.reportError(invocation, "type.inference.failed");
       throw ex;
       //      return null;
     }
-
-    //    checkResult(result, invocation, e);
     return result;
   }
 
