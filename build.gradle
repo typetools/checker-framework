@@ -232,7 +232,8 @@ allprojects {
                 'framework-test/**/*.java',
                 'javacutil/**/*.java'
             targetExclude 'dataflow/manual/examples/',
-                '**/nullness-javac-errors/*'
+                '**/nullness-javac-errors/*',
+                '*/build/**'
             googleJavaFormat().aosp()
             importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
             formatAnnotations()
