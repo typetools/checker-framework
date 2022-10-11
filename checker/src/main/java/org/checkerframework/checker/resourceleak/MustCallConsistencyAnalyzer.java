@@ -865,8 +865,7 @@ class MustCallConsistencyAnalyzer {
         Tree callTree = node.getTree();
         if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
             // Constructor results from new expressions are tracked as long as the declared type has
-            // a
-            // non-empty @MustCall annotation.
+            // a non-empty @MustCall annotation.
             NewClassTree newClassTree = (NewClassTree) callTree;
             ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
             TypeElement typeElt =

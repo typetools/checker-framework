@@ -363,8 +363,7 @@ public class JavaParserUtil {
                     currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_17;
                     break;
                     // As of 2022-09-27, JavaParser's ParserConfiguration.LanguageLevel does not yet
-                    // have a
-                    // constant for JDK 18.
+                    // have a constant for JDK 18.
                     // case "RELEASE_18":
                     //   currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
                     //   break;

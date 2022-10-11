@@ -194,8 +194,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
                 // to the Value Checker's getAnnotatedType() method can fail during parsing:
                 // the check in GenericAnnotatedTypeFactory#addComputedTypeAnnotations only
                 // checks if the **current** type factory is parsing, not whether the parent
-                // checker's
-                // type factory is parsing.
+                // checker's type factory is parsing.
                 && !ajavaTypes.isParsing()
                 && TreeUtils.isExpressionTree(tree)
                 && (iUseFlow || tree instanceof LiteralTree)) {

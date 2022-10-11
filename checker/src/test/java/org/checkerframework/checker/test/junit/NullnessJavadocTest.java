@@ -21,8 +21,8 @@ public class NullnessJavadocTest extends CheckerFrameworkPerDirectoryTest {
                 testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
-                toolsJarList()); // required for JDK 8 (maybe not required for JDK 11, but it does
-        // no harm)
+                // required for JDK 8 (maybe not required for JDK 11, but it does no harm)
+                toolsJarList());
     }
 
     /**
