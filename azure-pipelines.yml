@@ -261,21 +261,6 @@ jobs:
    - typecheck_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: wmdietl/cf-ubuntu-jdk-next-plus:latest
-  steps:
-  - checkout: self
-    fetchDepth: 1000
-  - bash: ./checker/bin-devel/test-misc.sh
-    displayName: test-misc.sh
-
-- job: typecheck_jdk8
-  dependsOn:
-   - junit_tests_jdk11
-   - nonjunit_tests_jdk11
-#   - misc_jdk11
-   - typecheck_jdk11
-  pool:
-    vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8-plus:latest
   steps:
   - checkout: self
