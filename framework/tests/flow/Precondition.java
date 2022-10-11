@@ -12,7 +12,7 @@ public class Precondition {
   @RequiresQualifier(expression = "f1", qualifier = Odd.class)
   void requiresF1() {
     // :: error: (assignment)
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     @Odd String l2 = f1;
   }
 
@@ -20,7 +20,7 @@ public class Precondition {
   @RequiresQualifier(expression = "f1", qualifier = Odd.class)
   int requiresF1AndPure() {
     // :: error: (assignment)
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     @Odd String l2 = f1;
     return 1;
   }
@@ -29,14 +29,14 @@ public class Precondition {
   void requiresF1Value() {
     // :: error: (assignment)
     @Odd String l1 = f1;
-    @Value String l2 = f1;
+    @ValueTypeAnno String l2 = f1;
   }
 
   @RequiresQualifier(expression = "---", qualifier = Odd.class)
   // :: error: (flowexpr.parse.error)
   void error() {
     // :: error: (assignment)
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     // :: error: (assignment)
     @Odd String l2 = f1;
   }
@@ -44,7 +44,7 @@ public class Precondition {
   @RequiresQualifier(expression = "#1", qualifier = Odd.class)
   void requiresParam(String p) {
     // :: error: (assignment)
-    @Value String l1 = p;
+    @ValueTypeAnno String l1 = p;
     @Odd String l2 = p;
   }
 
@@ -53,9 +53,9 @@ public class Precondition {
       qualifier = Odd.class)
   void requiresParams(String p1, String p2) {
     // :: error: (assignment)
-    @Value String l1 = p1;
+    @ValueTypeAnno String l1 = p1;
     // :: error: (assignment)
-    @Value String l2 = p2;
+    @ValueTypeAnno String l2 = p2;
     @Odd String l3 = p1;
     @Odd String l4 = p2;
   }
@@ -94,7 +94,7 @@ public class Precondition {
     requiresF1();
   }
 
-  void t4(@Odd String p1, String p2, @Value String p3) {
+  void t4(@Odd String p1, String p2, @ValueTypeAnno String p3) {
     f1 = p1;
     requiresF1();
     f1 = p3;
@@ -121,10 +121,10 @@ public class Precondition {
   @RequiresQualifier(expression = "f1", qualifier = Value.class)
   @RequiresQualifier(expression = "f2", qualifier = Odd.class)
   void multi() {
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     @Odd String l2 = f2;
     // :: error: (assignment)
-    @Value String l3 = f2;
+    @ValueTypeAnno String l3 = f2;
     // :: error: (assignment)
     @Odd String l4 = f1;
   }
@@ -134,10 +134,10 @@ public class Precondition {
     @RequiresQualifier(expression = "f2", qualifier = Odd.class)
   })
   void multi_explicit_requiresqualifierlist() {
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     @Odd String l2 = f2;
     // :: error: (assignment)
-    @Value String l3 = f2;
+    @ValueTypeAnno String l3 = f2;
     // :: error: (assignment)
     @Odd String l4 = f1;
   }
@@ -146,7 +146,7 @@ public class Precondition {
   // :: error: (flowexpr.parse.error)
   void error2() {}
 
-  void t5(@Odd String p1, String p2, @Value String p3) {
+  void t5(@Odd String p1, String p2, @ValueTypeAnno String p3) {
     // :: error: (contracts.precondition)
     multi();
     f1 = p3;

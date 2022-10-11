@@ -51,7 +51,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new FlowQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
   }
 
-  /** FlowQualifierHierarchy: {@code @Value(a) <: @Value(b) iff a == b} */
+  /** FlowQualifierHierarchy: {@code @ValueTypeAnno(a) <: @ValueValueTypeAnno(b) iff a == b} */
   class FlowQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
     final QualifierKind VALUE_KIND;
 
