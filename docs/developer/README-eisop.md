@@ -11,9 +11,8 @@ To update EISOP with changes in a different Checker Framework fork, follow these
 1. Create a new branch, named e.g. `typetools-3.18.0-merge`.
 
 1. If necessary, change to consistent formatting:
-    - Remove `--aosp` from `build.gradle`, `checker/bin-devel/git.pre-commit`, and `.git/hooks/pre-commit`.
-      (Why is the hook not a link?)
-    - Run `./gradlew reformat` and commit results as e.g. `Change to typetools formatting`.
+    - Remove `.aosp()` from `build.gradle`.
+    - Run `./gradlew spotlessApply` and commit results as e.g. `Change to typetools formatting`.
 
 1. Look up the commit IDs for the range you want to include, e.g. previous and current releases.
 
