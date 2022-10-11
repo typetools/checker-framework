@@ -125,9 +125,8 @@ public class StubGenerator {
             currentIndention = "    ";
             indent();
         }
-        ExecutableElement method = elt;
 
-        printMethodDecl(method);
+        printMethodDecl(elt);
     }
 
     /** Generate the stub file for provided class. The generated file includes the package name. */
