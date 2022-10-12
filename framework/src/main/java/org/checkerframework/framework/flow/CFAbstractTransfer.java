@@ -323,7 +323,7 @@ public abstract class CFAbstractTransfer<
             Element enclosingElement = null;
             if (enclosingTree.getKind() == Tree.Kind.METHOD) {
                 // If it is in an initializer, we need to use locals from the initializer.
-                enclosingElement = TreeUtils.elementFromTree(enclosingTree);
+                enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
 
             } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -447,9 +447,10 @@ public abstract class CFAbstractTransfer<
      */
     private void addFinalLocalValues(S store, Element enclosingElement) {
         // add information about effectively final variables (from outer scopes)
-        for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
+        for (Map.Entry<VariableElement, V> e :
+                analysis.atypeFactory.getFinalLocalValues().entrySet()) {
 
-            Element elem = e.getKey();
+            VariableElement elem = e.getKey();
 
             // TODO: There is a design flaw where the values of final local values leaks
             // into other methods of the same class. For example, in
@@ -853,25 +854,22 @@ public abstract class CFAbstractTransfer<
         V rhsValue = in.getValueOfSubNode(rhs);
 
         /* NO-AFU
-               if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
-                   // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD.
-                   if (lhs instanceof FieldAccessNode
-                           || (lhs instanceof LocalVariableNode
-                                   && ((LocalVariableNode) lhs).getElement().getKind()
-                                           == ElementKind.FIELD)) {
-                       // Updates inferred field type
-                       analysis.atypeFactory
-                               .getWholeProgramInference()
-                               .updateFromFieldAssignment(lhs, rhs);
-                   } else if (lhs instanceof LocalVariableNode
-                           && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
-                       // lhs is a formal parameter of some method
-                       VariableElement param = (VariableElement) ((LocalVariableNode) lhs).getElement();
-                       analysis.atypeFactory
-                               .getWholeProgramInference()
-                               .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
-                   }
-               }
+        if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
+          // Fields defined in interfaces are LocalVariableNodes with ElementKind of FIELD.
+          if (lhs instanceof FieldAccessNode
+              || (lhs instanceof LocalVariableNode
+                  && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.FIELD)) {
+            // Updates inferred field type
+            analysis.atypeFactory.getWholeProgramInference().updateFromFieldAssignment(lhs, rhs);
+          } else if (lhs instanceof LocalVariableNode
+              && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
+            // lhs is a formal parameter of some method
+            VariableElement param = ((LocalVariableNode) lhs).getElement();
+            analysis
+                .atypeFactory
+                .getWholeProgramInference()
+                .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
+          }
         */
 
         if (n.isSynthetic() && in.containsTwoStores()) {
@@ -895,33 +893,29 @@ public abstract class CFAbstractTransfer<
         TransferResult<V, S> result = super.visitReturn(n, p);
 
         /* NO-AFU
-               if (shouldPerformWholeProgramInference(n.getTree())) {
-                   // Retrieves class containing the method
-                   ClassTree classTree = analysis.getContainingClass(n.getTree());
-                   // classTree is null e.g. if this is a return statement in a lambda.
-                   if (classTree == null) {
-                       return result;
-                   }
-                   ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
+        if (shouldPerformWholeProgramInference(n.getTree())) {
+          // Retrieves class containing the method
+          ClassTree classTree = analysis.getContainingClass(n.getTree());
+          // classTree is null e.g. if this is a return statement in a lambda.
+          if (classTree == null) {
+            return result;
+          }
+          ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromDeclaration(classTree);
 
-                   ExecutableElement methodElem =
-                           TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));
+          ExecutableElement methodElem =
+              TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));
 
-                   Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-                           AnnotatedTypes.overriddenMethods(
-                                   analysis.atypeFactory.getElementUtils(),
-                                   analysis.atypeFactory,
-                                   methodElem);
+          Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
+              AnnotatedTypes.overriddenMethods(
+                  analysis.atypeFactory.getElementUtils(), analysis.atypeFactory, methodElem);
 
-                   // Updates the inferred return type of the method
-                   analysis.atypeFactory
-                           .getWholeProgramInference()
-                           .updateFromReturn(
-                                   n,
-                                   classSymbol,
-                                   analysis.getContainingMethod(n.getTree()),
-                                   overriddenMethods);
-               }
+          // Updates the inferred return type of the method
+          analysis
+              .atypeFactory
+              .getWholeProgramInference()
+              .updateFromReturn(
+                  n, classSymbol, analysis.getContainingMethod(n.getTree()), overriddenMethods);
+        }
         */
 
         return result;
@@ -1104,13 +1098,13 @@ public abstract class CFAbstractTransfer<
      */
     /* NO-AFU
     private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-        // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
-        // before calling InternalUtils.symbol(lhs).
-        if (!shouldPerformWholeProgramInference(expressionTree)) {
-            return false;
-        }
-        Element elt = TreeUtils.elementFromTree(lhsTree);
-        return !analysis.checker.shouldSuppressWarnings(elt, "");
+      // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
+      // before calling InternalUtils.symbol(lhs).
+      if (!shouldPerformWholeProgramInference(expressionTree)) {
+        return false;
+      }
+      VariableElement elt = (VariableElement) TreeUtils.elementFromTree(lhsTree);
+      return !analysis.checker.shouldSuppressWarnings(elt, "");
     }
     */
 
@@ -1198,8 +1192,8 @@ public abstract class CFAbstractTransfer<
         } else {
             throw new BugInCF(
                     "processPostconditionsAndConditionalPostconditions in CFAbstractTransfer"
-                        + " expects a MethodInvocationNode or ObjectCreationNode argument; received"
-                        + " a "
+                            + " expects a MethodInvocationNode or ObjectCreationNode argument; received"
+                            + " a "
                             + n.getClass().getSimpleName());
         }
 

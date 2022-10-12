@@ -141,6 +141,7 @@ AFU_LIVE_SITE = os.path.join(LIVE_SITE_DIR, "annotation-file-utilities")
 AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
 
 CHECKER_LIVE_RELEASES_DIR = os.path.join(LIVE_SITE_DIR, "releases")
+CHECKER_LIVE_API_DIR = os.path.join(LIVE_SITE_DIR, "api")
 
 os.environ["PARENT_DIR"] = BUILD_DIR
 os.environ["CHECKERFRAMEWORK"] = CHECKER_FRAMEWORK

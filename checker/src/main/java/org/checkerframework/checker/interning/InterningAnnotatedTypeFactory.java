@@ -204,7 +204,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
-            Element e = TreeUtils.elementFromTree(node);
+            Element e = TreeUtils.elementFromUse(node);
             if (atypeFactory.getDeclAnnotation(e, FindDistinct.class) != null) {
                 // TODO: See note above about this being a poor implementation.
                 type.replaceAnnotation(INTERNED_DISTINCT);

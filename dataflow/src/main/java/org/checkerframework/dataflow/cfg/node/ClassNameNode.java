@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.Objects;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -25,7 +27,7 @@ public class ClassNameNode extends Node {
     /** The tree for this node. */
     protected final @Nullable Tree tree;
 
-    /** The class named by this node. */
+    /** The class named by this node. Either a TypeElement or a TypeParameterElement. */
     protected final Element element;
 
     /** The parent name, if any. */
@@ -36,7 +38,10 @@ public class ClassNameNode extends Node {
         assert tree.getKind() == Tree.Kind.IDENTIFIER;
         this.tree = tree;
         assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-        this.element = TreeUtils.elementFromUse(tree);
+        Element element = TreeUtils.elementFromUse(tree);
+        assert element instanceof TypeElement || element instanceof TypeParameterElement
+                : "@AssumeAssertion(nullness)";
+        this.element = element;
         this.parent = null;
     }
 
@@ -48,7 +53,10 @@ public class ClassNameNode extends Node {
     public ClassNameNode(ClassTree tree) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
-        this.element = TreeUtils.elementFromDeclaration(tree);
+        Element element = TreeUtils.elementFromDeclaration(tree);
+        assert element instanceof TypeElement || element instanceof TypeParameterElement
+                : "@AssumeAssertion(nullness)";
+        this.element = element;
         this.parent = null;
     }
 
@@ -56,7 +64,10 @@ public class ClassNameNode extends Node {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-        this.element = TreeUtils.elementFromUse(tree);
+        Element element = TreeUtils.elementFromUse(tree);
+        assert element instanceof TypeElement || element instanceof TypeParameterElement
+                : "@AssumeAssertion(nullness)";
+        this.element = element;
         this.parent = parent;
     }
 
@@ -64,6 +75,7 @@ public class ClassNameNode extends Node {
         super(type);
         this.tree = null;
         this.element = element;
+        assert element instanceof TypeElement || element instanceof TypeParameterElement;
         this.parent = null;
     }
 

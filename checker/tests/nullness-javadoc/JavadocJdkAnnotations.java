@@ -10,6 +10,8 @@ public class JavadocJdkAnnotations {
 
     @SuppressWarnings("removal")
     void testPureAnnotation(Doc d) {
+        // This tests that @Pure and @SideEffectFree annotations are read.
+
         f = "non-null value";
         d.isIncluded();
         @NonNull Object x = f;

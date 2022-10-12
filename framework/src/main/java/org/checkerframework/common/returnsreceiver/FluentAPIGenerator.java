@@ -58,14 +58,14 @@ public class FluentAPIGenerator {
             @Override
             public boolean returnsThis(AnnotatedExecutableType t) {
                 ExecutableElement element = t.getElement();
-                Element enclosingElement = element.getEnclosingElement();
+                TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
                 boolean inAutoValueBuilder =
                         AnnotationUtils.containsSameByName(
                                 enclosingElement.getAnnotationMirrors(), AUTO_VALUE_BUILDER);
 
                 if (!inAutoValueBuilder) {
                     // see if superclass is an AutoValue Builder, to handle generated code
-                    TypeMirror superclass = ((TypeElement) enclosingElement).getSuperclass();
+                    TypeMirror superclass = enclosingElement.getSuperclass();
                     // if enclosingElement is an interface, the superclass has TypeKind NONE
                     if (superclass.getKind() != TypeKind.NONE) {
                         // update enclosingElement to be for the superclass for this case

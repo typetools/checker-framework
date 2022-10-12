@@ -35,7 +35,7 @@ import javax.lang.model.util.Types;
  * options passed to DefaultTypeHierarchy.
  *
  * <p>Subtyping rules of the JLS can be found in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10">section 4.10,
+ * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10">section 4.10,
  * "Subtyping"</a>.
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
@@ -246,11 +246,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
      * by {@code outside} is a superset of, or equal to, the set of types denoted by {@code inside}.
      *
      * <p>Containment is described in <a
-     * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
+     * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.5.1">JLS section
      * 4.5.1 "Type Arguments of Parameterized Types"</a>.
      *
      * <p>As described in <a
-     * href=https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2>JLS section
+     * href=https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10.2>JLS section
      * 4.10.2 Subtyping among Class and Interface Types</a>, a declared type S is considered a
      * supertype of another declared type T only if all of S's type arguments "contain" the
      * corresponding type arguments of the subtype T.

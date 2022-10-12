@@ -22,6 +22,7 @@ import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.utils.StringEscapeUtils;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -222,7 +223,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
 
         @Override
         public Expression visitString(String value, Void p) {
-            return new StringLiteralExpr(value);
+            return new StringLiteralExpr(StringEscapeUtils.escapeJava(value));
         }
 
         @Override

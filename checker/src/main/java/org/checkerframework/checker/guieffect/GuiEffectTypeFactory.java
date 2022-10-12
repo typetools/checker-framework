@@ -37,7 +37,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -80,38 +79,12 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-    // Could move this to a public method on the checker class
-    public ExecutableElement findJavaOverride(ExecutableElement overrider, TypeMirror parentType) {
-        if (parentType.getKind() != TypeKind.NONE) {
-            if (debugSpew) {
-                System.err.println("Searching for overridden methods from " + parentType);
-            }
-
-            TypeElement overriderClass = (TypeElement) overrider.getEnclosingElement();
-            TypeElement elem = (TypeElement) ((DeclaredType) parentType).asElement();
-            if (debugSpew) {
-                System.err.println("necessary TypeElements acquired: " + elem);
-            }
-
-            for (Element e : elem.getEnclosedElements()) {
-                if (debugSpew) {
-                    System.err.println("Considering element " + e);
-                }
-                if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
-                    ExecutableElement ex = (ExecutableElement) e;
-                    boolean overrides = elements.overrides(overrider, ex, overriderClass);
-                    if (overrides) {
-                        return ex;
-                    }
-                }
-            }
-            if (debugSpew) {
-                System.err.println("Done considering elements of " + parentType);
-            }
-        }
-        return null;
-    }
-
+    /**
+     * Returns true if the given type is polymorphic.
+     *
+     * @param cls the type to test
+     * @return true if the given type is polymorphic
+     */
     public boolean isPolymorphicType(TypeElement cls) {
         assert (cls != null);
         return getDeclAnnotation(cls, PolyUIType.class) != null
@@ -343,8 +316,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             return new Effect(UIEffect.class);
         }
         ExecutableElement functionalInterfaceMethodElt =
-                (ExecutableElement)
-                        TreeUtils.findFunction(lambdaTree, checker.getProcessingEnvironment());
+                TreeUtils.findFunction(lambdaTree, checker.getProcessingEnvironment());
         if (debugSpew) {
             System.err.println("functionalInterfaceMethodElt found for lambda");
         }

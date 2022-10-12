@@ -1,0 +1,2 @@
+UnneededSuppressionsTest.java:10:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness:return.type.incompatible" is not used by NullnessChecker
+1 warning

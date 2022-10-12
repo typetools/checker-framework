@@ -202,15 +202,15 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
             } else if (!isPoly && !hasSubtypeOfAnno) {
                 throw new TypeSystemError(
                         "AnnotatedTypeFactory: %s does not specify its super qualifiers.%nAdd an"
-                            + " @SubtypeOf or @PolymorphicQualifier annotation to it,%nor if it is"
-                            + " an alias, exclude it from `createSupportedTypeQualifiers()`.",
+                                + " @SubtypeOf or @PolymorphicQualifier annotation to it,%nor if it is"
+                                + " an alias, exclude it from `createSupportedTypeQualifiers()`.",
                         qualifierKind);
             } else if (isPoly) {
                 if (qualifierKind.top == null) {
                     throw new TypeSystemError(
                             "PolymorphicQualifier, %s, has to specify a type hierarchy in its"
-                                + " @PolymorphicQualifier meta-annotation, if more than one exists;"
-                                + " top types: [%s].",
+                                    + " @PolymorphicQualifier meta-annotation, if more than one exists;"
+                                    + " top types: [%s].",
                             qualifierKind, StringsPlume.join(", ", tops));
                 } else if (!tops.contains(qualifierKind.top)) {
                     throw new TypeSystemError(

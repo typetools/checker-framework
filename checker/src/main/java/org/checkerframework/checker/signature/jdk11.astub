@@ -1,0 +1,25 @@
+// This file is for classes that appear in JDK 11 but not in JDK 17.
+
+package com.sun.javadoc;
+
+import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.checker.signature.qual.BinaryNameOrPrimitiveType;
+import org.checkerframework.checker.signature.qual.FqBinaryName;
+import org.checkerframework.checker.signature.qual.IdentifierOrPrimitiveType;
+
+public interface Parameter {
+
+  @FqBinaryName String typeName();
+}
+
+public interface ProgramElementDoc extends Doc {
+
+  @BinaryName String qualifiedName();
+}
+
+public interface Type {
+
+  @BinaryNameOrPrimitiveType String qualifiedTypeName();
+
+  @IdentifierOrPrimitiveType String simpleTypeName();
+}

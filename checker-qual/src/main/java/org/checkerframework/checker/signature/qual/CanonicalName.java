@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * Every canonical name is a fully-qualified name, but not every fully-qualified name is a canonical
  * name.
  *
- * <p><a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-6.html#jls-6.7">JLS section
+ * <p><a href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-6.html#jls-6.7">JLS section
  * 6.7</a> gives the following example:
  *
  * <blockquote>

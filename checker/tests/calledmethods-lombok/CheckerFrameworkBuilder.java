@@ -21,12 +21,12 @@ public class CheckerFrameworkBuilder {
      * of the copied code correctly.
      */
     public static void testOldCalledMethodsGood(
-                    @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder pb) {
+            @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder pb) {
         pb.build();
     }
 
     public static void testOldCalledMethodsBad(
-                    @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y"}) CheckerFrameworkBuilderBuilder pb) {
+            @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y"}) CheckerFrameworkBuilderBuilder pb) {
         // :: error: finalizer.invocation.invalid
         pb.build(); // pb requires y, z
     }
@@ -197,8 +197,7 @@ public class CheckerFrameworkBuilder {
 
     @org.checkerframework.dataflow.qual.SideEffectFree
     @java.lang.SuppressWarnings("all")
-    public static CheckerFrameworkBuilder.
-            @org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
+    public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
         return new CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder();
     }
 }

@@ -50,7 +50,7 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
      *     typechecked ends with. Usually, this takes the form "all-systems/ProblematicFile.java".
      */
     protected void doNotTypecheck(
-                    @UnderInitialization(CheckerFrameworkPerDirectoryTest.class) CheckerFrameworkWPIPerDirectoryTest this,
+            @UnderInitialization(CheckerFrameworkPerDirectoryTest.class) CheckerFrameworkWPIPerDirectoryTest this,
             String endswith) {
         int removeIndex = -1;
         for (int i = 0; i < testFiles.size(); i++) {
@@ -59,8 +59,8 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
                 if (removeIndex != -1) {
                     Assert.fail(
                             "When attempting to exclude a file, found more than one match in the"
-                                + " test suite. Check the test code and use a more-specific removal"
-                                + " key. Attempting to exclude: "
+                                    + " test suite. Check the test code and use a more-specific removal"
+                                    + " key. Attempting to exclude: "
                                     + endswith);
                 }
                 removeIndex = i;

@@ -5,13 +5,14 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
-import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
 
 /**
  * A node representing a package name used in an expression such as a constructor invocation.
@@ -22,9 +23,11 @@ import javax.lang.model.element.Element;
  */
 public class PackageNameNode extends Node {
 
+    /** The package name, which is an IdentifierTree or a MemberSelectTree. */
     protected final Tree tree;
+
     /** The package named by this node. */
-    protected final Element element;
+    protected final PackageElement element;
 
     /** The parent name, if any. */
     protected final @Nullable PackageNameNode parent;
@@ -33,7 +36,11 @@ public class PackageNameNode extends Node {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-        this.element = TreeUtils.elementFromUse(tree);
+        PackageElement element = (PackageElement) TreeUtils.elementFromUse(tree);
+        if (element == null) {
+            throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+        }
+        this.element = element;
         this.parent = null;
     }
 
@@ -41,11 +48,20 @@ public class PackageNameNode extends Node {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
         assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
-        this.element = TreeUtils.elementFromUse(tree);
+        PackageElement element = (PackageElement) TreeUtils.elementFromUse(tree);
+        if (element == null) {
+            throw new BugInCF("null element for %s [%s]", tree, tree.getClass());
+        }
+        this.element = element;
         this.parent = parent;
     }
 
-    public Element getElement() {
+    /**
+     * Returns the element for this package.
+     *
+     * @return the element for this package
+     */
+    public PackageElement getElement() {
         return element;
     }
 

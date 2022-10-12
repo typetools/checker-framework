@@ -10,19 +10,10 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 #  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
-# Instructions for installing Java 17 on Ubuntu:
-# https://www.linuxuprising.com/2021/09/how-to-install-oracle-java-17-lts-on.html
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install software-properties-common \
-&& add-apt-repository ppa:linuxuprising/java
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& echo oracle-java17-installer shared/accepted-oracle-license-v1-3 select true | /usr/bin/debconf-set-selections \
-&& echo oracle-java17-installer shared/accepted-oracle-licence-v1-3 boolean true | /usr/bin/debconf-set-selections \
 && apt-get -qqy install \
-  oracle-java17-installer --install-recommends
+  openjdk-17-jdk
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \

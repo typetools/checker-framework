@@ -158,8 +158,9 @@ public class TestTreeKinds {
         MyClass o = new MyClass();
         MyClass f = new MyClass();
 
-        // The following test cases were inspired from annotator.find.ASTPathCriterion.isSatisfiedBy
-        // in the Annotation File Utilities
+        // The following test cases were inspired by
+        // org.checkerframework.afu.annotator.find.ASTPathCriterion.isSatisfiedBy
+        // in the Annotation File Utilities.
 
         // TODO: File a bug for the dataflow issue mentioned in the line below.
         // TODO: uncomment: Hits a bug in dataflow:

@@ -704,34 +704,36 @@ for example, other Linux distributions will be similar to Ubuntu.
 %  * the default location of CTSYM, in checker/jdk/Makefile.
 Put the setting of the \<JAVA\_HOME> environment variable in a startup file
 such as \<.bash\_profile> or \<.bashrc>, if \<JAVA\_HOME> is not already
-set appropriately.  It must be the location of your JDK 8 or JDK 11
-installation (not the JRE installation, and not JDK 7 or earlier).
+set appropriately.  It must be the location of your JDK
+installation (not the JRE installation).
 You may need to log out and log back in for the setting to take effect.
 
 \begin{description}
 \item[Ubuntu]
-  Run the following commands:
+  Run the following commands, which should be the same as those in
+  \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
+  is a JDK version such as 8, 11, 17, etc.:
 
 (This list should be the same as in
-\<checker/bin-devel/Dockerfile-ubuntu-jdk11-plus>; if your build fails
+\<checker/bin-devel/Dockerfile-ubuntu-jdk17-plus>; if your build fails
 because it is missing a package, try the commands there and report a bug
 in this manual.)
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk11-plus
+% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk17-plus
 
 \begin{Verbatim}
 sudo apt-get -qqy update
 sudo apt-get -qqy install \
- openjdk-11-jdk \
+ openjdk-17-jdk \
  ant cpp git gradle jq libcurl3-gnutls \
  make maven mercurial python3-pip python3-requests unzip wget \
  autoconf devscripts dia hevea imagemagick junit latexmk \
  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
- libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+ libx17-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
  pdf2svg rsync shellcheck \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
-pip3 install html5validator
+pip3 install black flake8 html5validator
 \end{Verbatim}
 
   You may have to answer questions about which time zone your computer is in.

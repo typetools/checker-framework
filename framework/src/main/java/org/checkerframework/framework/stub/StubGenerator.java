@@ -109,8 +109,12 @@ public class StubGenerator {
         }
     }
 
-    /** Generate the stub file for all the classes within the provided package. */
-    public void stubFromMethod(Element elt) {
+    /**
+     * Generate the stub file for all the classes within the package that contains {@code elt}.
+     *
+     * @param elt a method or constructor; generate stub files for its package
+     */
+    public void stubFromMethod(ExecutableElement elt) {
         if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD)) {
             return;
         }
@@ -121,9 +125,8 @@ public class StubGenerator {
             currentIndention = "    ";
             indent();
         }
-        ExecutableElement method = (ExecutableElement) elt;
 
-        printMethodDecl(method);
+        printMethodDecl(elt);
     }
 
     /** Generate the stub file for provided class. The generated file includes the package name. */

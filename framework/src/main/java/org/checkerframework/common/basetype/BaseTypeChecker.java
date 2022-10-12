@@ -418,8 +418,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return the type factory of the requested subchecker or null if not found
      */
     @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-    public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
-            @Nullable T getTypeFactoryOfSubchecker(Class<? extends BaseTypeChecker> subCheckerClass) {
+    public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubchecker(Class<? extends BaseTypeChecker> subCheckerClass) {
         return getTypeFactory().getTypeFactoryOfSubchecker(subCheckerClass);
     }
 
@@ -614,6 +613,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         Set<Element> elementsWithSuppressedWarnings =
                 new HashSet<>(this.elementsWithSuppressedWarnings);
         this.elementsWithSuppressedWarnings.clear();
+
         Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
         Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
         for (BaseTypeChecker subChecker : subcheckers) {
