@@ -25,7 +25,7 @@ public class Precondition {
     return 1;
   }
 
-  @RequiresQualifier(expression = "f1", qualifier = Value.class)
+  @RequiresQualifier(expression = "f1", qualifier = ValueTypeAnno.class)
   void requiresF1Value() {
     // :: error: (assignment)
     @Odd String l1 = f1;
@@ -118,7 +118,7 @@ public class Precondition {
   }
 
   /** *** multiple preconditions ***** */
-  @RequiresQualifier(expression = "f1", qualifier = Value.class)
+  @RequiresQualifier(expression = "f1", qualifier = ValueTypeAnno.class)
   @RequiresQualifier(expression = "f2", qualifier = Odd.class)
   void multi() {
     @ValueTypeAnno String l1 = f1;
@@ -130,7 +130,7 @@ public class Precondition {
   }
 
   @RequiresQualifier.List({
-    @RequiresQualifier(expression = "f1", qualifier = Value.class),
+    @RequiresQualifier(expression = "f1", qualifier = ValueTypeAnno.class),
     @RequiresQualifier(expression = "f2", qualifier = Odd.class)
   })
   void multi_explicit_requiresqualifierlist() {
@@ -142,7 +142,7 @@ public class Precondition {
     @Odd String l4 = f1;
   }
 
-  @RequiresQualifier.List({@RequiresQualifier(expression = "--", qualifier = Value.class)})
+  @RequiresQualifier.List({@RequiresQualifier(expression = "--", qualifier = ValueTypeAnno.class)})
   // :: error: (flowexpr.parse.error)
   void error2() {}
 

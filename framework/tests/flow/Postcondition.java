@@ -38,35 +38,35 @@ public class Postcondition {
     throw new RuntimeException();
   }
 
-  @EnsuresQualifier(expression = "f1", qualifier = Value.class)
+  @EnsuresQualifier(expression = "f1", qualifier = ValueTypeAnno.class)
   // :: error: (contracts.postcondition)
   void valueF1() {}
 
-  @EnsuresQualifier(expression = "---", qualifier = Value.class)
+  @EnsuresQualifier(expression = "---", qualifier = ValueTypeAnno.class)
   // :: error: (flowexpr.parse.error)
   void error() {}
 
-  @EnsuresQualifier(expression = "#1.#2", qualifier = Value.class)
+  @EnsuresQualifier(expression = "#1.#2", qualifier = ValueTypeAnno.class)
   // :: error: (flowexpr.parse.error)
   void error2(final String p1, final String p2) {}
 
-  @EnsuresQualifier(expression = "f1", qualifier = Value.class)
+  @EnsuresQualifier(expression = "f1", qualifier = ValueTypeAnno.class)
   void exception() {
     throw new RuntimeException();
   }
 
-  @EnsuresQualifier(expression = "#1", qualifier = Value.class)
+  @EnsuresQualifier(expression = "#1", qualifier = ValueTypeAnno.class)
   void param1(final @ValueTypeAnno String f) {}
 
   @EnsuresQualifier(
       expression = {"#1", "#2"},
-      qualifier = Value.class)
+      qualifier = ValueTypeAnno.class)
   // :: error: (flowexpr.parameter.not.final)
   void param2(@ValueTypeAnno String f, @ValueTypeAnno String g) {
     f = g;
   }
 
-  @EnsuresQualifier(expression = "#1", qualifier = Value.class)
+  @EnsuresQualifier(expression = "#1", qualifier = ValueTypeAnno.class)
   // :: error: (flowexpr.parse.index.too.big)
   void param3() {}
 
@@ -116,7 +116,7 @@ public class Postcondition {
   /** *** many postcondition ***** */
   @EnsuresQualifier.List({
     @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
-    @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+    @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
   })
   void oddValueF1(@ValueTypeAnno String p1) {
     f1 = null;
@@ -124,7 +124,7 @@ public class Postcondition {
   }
 
   @EnsuresQualifier(expression = "f1", qualifier = Odd.class)
-  @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+  @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
   void oddValueF1_repeated1(@ValueTypeAnno String p1) {
     f1 = null;
     f2 = p1;
@@ -133,14 +133,14 @@ public class Postcondition {
   @EnsuresQualifier.List({
     @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
   })
-  @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+  @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
   void oddValueF1_repeated2(@ValueTypeAnno String p1) {
     f1 = null;
     f2 = p1;
   }
 
   @EnsuresQualifier(expression = "f1", qualifier = Odd.class)
-  @EnsuresQualifier.List({@EnsuresQualifier(expression = "f2", qualifier = Value.class)})
+  @EnsuresQualifier.List({@EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)})
   void oddValueF1_repeated3(@ValueTypeAnno String p1) {
     f1 = null;
     f2 = p1;
@@ -148,7 +148,7 @@ public class Postcondition {
 
   @EnsuresQualifier.List({
     @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
-    @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+    @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
   })
   // :: error: (contracts.postcondition)
   void oddValueF1_invalid(@ValueTypeAnno String p1) {}
@@ -264,7 +264,7 @@ public class Postcondition {
   /** *** many conditional postcondition ***** */
   @EnsuresQualifierIf.List({
     @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Odd.class),
-    @EnsuresQualifierIf(result = false, expression = "f1", qualifier = Value.class)
+    @EnsuresQualifierIf(result = false, expression = "f1", qualifier = ValueTypeAnno.class)
   })
   boolean condsOddF1(boolean b, @ValueTypeAnno String p1) {
     if (b) {
@@ -277,7 +277,7 @@ public class Postcondition {
 
   @EnsuresQualifierIf.List({
     @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Odd.class),
-    @EnsuresQualifierIf(result = false, expression = "f1", qualifier = Value.class)
+    @EnsuresQualifierIf(result = false, expression = "f1", qualifier = ValueTypeAnno.class)
   })
   boolean condsOddF1_invalid(boolean b, @ValueTypeAnno String p1) {
     if (b) {
