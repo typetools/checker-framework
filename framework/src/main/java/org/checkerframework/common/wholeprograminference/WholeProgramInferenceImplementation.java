@@ -265,7 +265,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
       }
       updateAnnotationSet(
-          receiverAnnotations, TypeUseLocation.PARAMETER, receiverArgATM, receiverParamATM, file);
+          receiverAnnotations, TypeUseLocation.RECEIVER, receiverArgATM, receiverParamATM, file);
     }
 
     for (int i = 0; i < arguments.size(); i++) {
