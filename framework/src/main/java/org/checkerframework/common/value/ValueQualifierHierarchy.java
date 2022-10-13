@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
@@ -74,10 +74,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<@Regex String> regexes =
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.matchesRegexValueElement, String.class);
-        values =
-            values.stream()
-                .filter(value -> regexes.stream().anyMatch(value::matches))
-                .collect(Collectors.toList());
+        // Retain the @StringVal values such that one of the regexes matches it.
+        values = anyMatches(values, regexes);
         break;
       default:
         return atypeFactory.BOTTOMVAL;
@@ -453,7 +451,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<String> regexes =
             AnnotationUtils.getElementValueArray(
                 superAnno, atypeFactory.matchesRegexValueElement, String.class);
-        return strings.stream().allMatch(string -> regexes.stream().anyMatch(string::matches));
+        return allMatch(strings, regexes);
       case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
         // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths.
         List<Integer> superIntValues = atypeFactory.getArrayLength(superAnno);
@@ -477,5 +475,55 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       default:
         return false;
     }
+  }
+
+  // TODO: Move (part?) of this into plume-util's RegexUtil.
+  /**
+   * Return the strings such that any one of the regexes matches it.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return the strings such that any one of the regexes matches it
+   */
+  private List<String> anyMatches(List<String> strings, List<@Regex String> regexes) {
+    List<Pattern> patterns = new ArrayList<>(regexes.size());
+    for (String regex : regexes) {
+      patterns.add(Pattern.compile(regex));
+    }
+    List<String> result = new ArrayList<String>(strings.size());
+    for (String s : strings) {
+      for (Pattern p : patterns) {
+        if (p.matcher(s).matches()) {
+          result.add(s);
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
+  // TODO: Move (part?) of this into plume-util's RegexUtil.
+  /**
+   * Return true if every string is matched by at least one regex.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return true if every string is matched by at least one regex
+   */
+  private boolean allMatch(List<String> strings, List<@Regex String> regexes) {
+    List<Pattern> patterns = new ArrayList<>(regexes.size());
+    for (String regex : regexes) {
+      patterns.add(Pattern.compile(regex));
+    }
+    outer:
+    for (String s : strings) {
+      for (Pattern p : patterns) {
+        if (p.matcher(s).matches()) {
+          continue outer;
+        }
+      }
+      return false;
+    }
+    return true;
   }
 }
