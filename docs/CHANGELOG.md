@@ -7,6 +7,7 @@ Version 3.26.0-eisop1 (October 13, 2022)
 
 **Closed issues:**
 
+eisop#348.
 
 
 Version 3.26.0 (October 3, 2022)

@@ -2749,7 +2749,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     p.add(con.getParameterTypes().get(0));
                 }
                 p.addAll(1, superCon.getParameterTypes());
-                con.setParameterTypes(p);
+                con.setParameterTypes(Collections.unmodifiableList(p));
             }
             con.getReturnType().replaceAnnotations(superCon.getReturnType().getAnnotations());
         } else {
