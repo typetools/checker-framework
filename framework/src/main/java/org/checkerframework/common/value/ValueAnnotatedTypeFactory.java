@@ -1052,7 +1052,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return BOTTOMVAL;
     }
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MatchesRegex.class);
-    builder.setValue("value", regexes.toArray(new String[0]));
+    builder.setValue("value", regexes.toArray(new String[regexes.size()]));
     return builder.build();
   }
 

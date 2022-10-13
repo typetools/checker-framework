@@ -413,7 +413,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private AnnotationMirror ensuresCMAnno(String expression, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
     builder.setValue("value", new String[] {expression});
-    builder.setValue("methods", calledMethods.toArray(new String[0]));
+    builder.setValue("methods", calledMethods.toArray(new String[calledMethods.size()]));
     AnnotationMirror am = builder.build();
     return am;
   }

@@ -368,7 +368,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   public AnnotationMirror createSameLen(Collection<String> exprs) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
-    String[] exprArray = exprs.toArray(new String[0]);
+    String[] exprArray = exprs.toArray(new String[exprs.size()]);
     builder.setValue("value", exprArray);
     return builder.build();
   }

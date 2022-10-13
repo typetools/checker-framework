@@ -105,7 +105,7 @@ public class RangeTest {
         }
       }
     }
-    ranges = rangesList.toArray(new Range[0]);
+    ranges = rangesList.toArray(new Range[rangesList.size()]);
   }
 
   /** The element is a member of the range. */
