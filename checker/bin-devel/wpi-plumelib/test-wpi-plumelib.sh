@@ -89,6 +89,8 @@ test_wpi_plume_lib() {
         AJAVADIR="$(sed -n 's/Directory for generated ajava files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
         echo "AJAVADIR=$AJAVADIR"
         find "$AJAVADIR" -type f -print0 | xargs -0 more
+        echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
+        diff -u expected.txt actual.txt
       fi
       exit 1
     fi
