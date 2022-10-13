@@ -233,6 +233,8 @@ allprojects {
                 'javacutil/**/*.java'
             def stdExclude = [ 'dataflow/manual/examples/',
                 '**/nullness-javac-errors/*',
+                '**/calledmethods-delomboked/*',
+                '**/returnsreceiverdelomboked/*',
                 '*/build/**',
                 '*/tests/build/**']
             if (isJava16plus) {
