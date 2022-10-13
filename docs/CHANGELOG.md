@@ -1,13 +1,13 @@
 Version 3.26.0-eisop1 (October 13, 2022)
 ----------------------------------------
 
-**User-visible changes:**
-
 **Implementation details:**
+
+Documentation improvements and various code fixes.
 
 **Closed issues:**
 
-eisop#348.
+eisop#333, eisop#348.
 
 
 Version 3.26.0 (October 3, 2022)
