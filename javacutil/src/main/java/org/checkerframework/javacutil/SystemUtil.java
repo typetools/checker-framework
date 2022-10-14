@@ -21,6 +21,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /** This file contains basic utility functions. */
 public class SystemUtil {
 
+  /** Do not instantiate. */
+  private SystemUtil() {
+    throw new Error("Do not instantiate.");
+  }
+
   /** The major version number of the Java runtime (JRE), such as 8, 11, or 17. */
   @SuppressWarnings("deprecation") // remove @SuppressWarnings when getJreVersion() isn't deprecated
   public static final int jreVersion = getJreVersion();
