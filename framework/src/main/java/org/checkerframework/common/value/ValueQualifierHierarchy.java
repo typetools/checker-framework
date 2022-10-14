@@ -486,10 +486,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return the strings such that any one of the regexes matches it
    */
   private List<String> anyMatches(List<String> strings, List<@Regex String> regexes) {
-    List<Pattern> patterns = new ArrayList<>(regexes.size());
-    for (String regex : regexes) {
-      patterns.add(Pattern.compile(regex));
-    }
+    List<Pattern> patterns = CollectionsPlume.mapList(Pattern::compile, regexes);
     List<String> result = new ArrayList<String>(strings.size());
     for (String s : strings) {
       for (Pattern p : patterns) {
