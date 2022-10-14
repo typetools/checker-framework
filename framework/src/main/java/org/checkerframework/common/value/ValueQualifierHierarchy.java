@@ -74,6 +74,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<@Regex String> regexes =
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.matchesRegexValueElement, String.class);
+        // Retain the @StringVal values such that one of the regexes matches it.
         values =
             values.stream()
                 .filter(value -> regexes.stream().anyMatch(value::matches))
@@ -325,6 +326,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
     // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen,
     // a StringVal with one of them, or a StringVal and a MatchesRegex.
+    // Each of these converts one annotation to the other, then makes a recursive call.
     if (arrayLenAnno != null && arrayLenRangeAnno != null) {
       return leastUpperBound(
           arrayLenRangeAnno, atypeFactory.convertArrayLenToArrayLenRange(arrayLenAnno));

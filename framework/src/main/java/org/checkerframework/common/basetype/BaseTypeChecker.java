@@ -807,7 +807,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
       }
 
       options.addAll(
-          expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
+          expandCFOptions(
+              Arrays.asList(this.getClass()), options.toArray(new String[options.size()])));
 
       supportedOptions = Collections.unmodifiableSet(options);
     }
