@@ -75,7 +75,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<@Regex String> matchesRegexes =
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.matchesRegexValueElement, String.class);
-        // TODO: This is expensive because each regex is compiled multiple times.
         // Retain the @StringVal values such that one of the regexes matches it.
         values =
             values.stream()

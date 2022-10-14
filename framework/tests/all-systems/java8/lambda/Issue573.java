@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/573
 
 // Full test case:
-// http://hg.openjdk.java.net/jdk8u/jdk8u/jdk/file/f0851bc0e7bf/src/share/classes/java/time/chrono/Chronology.java
+// http://hg.openjdk.org/jdk8u/jdk8u/jdk/file/f0851bc0e7bf/src/share/classes/java/time/chrono/Chronology.java
 
 import java.io.Serializable;
 import java.time.chrono.ChronoLocalDate;

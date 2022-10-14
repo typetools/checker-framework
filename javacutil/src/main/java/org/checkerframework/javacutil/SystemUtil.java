@@ -53,7 +53,7 @@ public class SystemUtil {
       return Integer.parseInt(v);
     }
 
-    // See http://openjdk.java.net/jeps/223
+    // See https://openjdk.org/jeps/223
     // We only care about the major version number.
     final Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
     final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
