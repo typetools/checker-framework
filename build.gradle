@@ -222,22 +222,28 @@ allprojects {
             dependsOn(':checker:shadowJar')
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
-                options.encoding = 'UTF-8'
-                if (!name.equals("javadocDoclintAll")) {
-                    options.memberLevel = javadocMemberLevel
-                }
-                classpath += configurations.getByName('checkerFatJar').asFileTree
-                if (isJava8) {
-                    classpath += configurations.javacJar
-                }
-                options.taglets 'org.checkerframework.taglet.ManualTaglet'
-                options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
+              options.encoding = 'UTF-8'
+              if (!name.equals("javadocDoclintAll")) {
+                options.memberLevel = javadocMemberLevel
+              }
+              classpath += configurations.getByName('checkerFatJar').asFileTree
+              if (isJava8) {
+                classpath += configurations.javacJar
+              }
+              options.taglets 'org.checkerframework.taglet.ManualTaglet'
+              options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
 
-                // We want to link to Java 9 documentation of the compiler classes since we use Java 9
-                // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
-                // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
-                // TODO, this creates broken links to the com.sun.tools.javac package.
+              // We want to link to Java 9 documentation of the compiler classes since we use Java 9
+              // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
+              // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
+              // TODO, this creates broken links to the com.sun.tools.javac package.
+              // Only add the links of building with Java 8.  This prevents the following error:
+              // warning: URL https://docs.oracle.com/javase/8/docs/api/element-list was redirected
+              // to https://docs.oracle.com/en/java/javase/19/ -- Update the command-line options
+              // to suppress this warning.
+              if (isJava8) {
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
+              }
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
