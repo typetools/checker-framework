@@ -1,18 +1,15 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
@@ -22,40 +19,40 @@ import org.checkerframework.javacutil.TypesUtils;
  * Represents a constraint between two {@link AbstractType}. One of:
  *
  * <ul>
- *   <li>{@link Kind#TYPE_COMPATIBILITY} {@code < S -> T >}: A type S is compatible in a loose
- *       invocation context with type T
- *   <li>{@link Kind#SUBTYPE} {@code < S <: T >}: A reference type S is a subtype of a reference
- *       type T
- *   <li>{@link Kind#CONTAINED} {@code < S <= T >}: A type argument S is contained by a type
- *       argument T.
- *   <li>{@link Kind#TYPE_EQUALITY} {@code < S = T >}: A type S is the same as a type T, or a type
- *       argument S is the same as type argument T.
+ *   <li>{@link Kind#QUALIFIER_SUBTYPE} {@code < Q <: R >}: A qualifier Q is a subtype of a
+ *       qualifier R.
+ *   <li>{@link Kind#QUALIFIER_EQUALITY} {@code < Q = R >}: A qualifier R is the same as a qualifier
+ *       R.
  * </ul>
  */
-public class Typing extends Constraint {
+public class QualifierTyping implements ReductionResult {
+  enum Kind {
 
-  /** One of the abstract types in this constraint. {@link #T} is the other. */
-  private AbstractType S;
+    /** {@code < Q <: R >}: A qualifier Q is a subtype of a qualifier R. */
+    QUALIFIER_SUBTYPE,
+    /** {@code < Q = R >}: A qualifier R is the same as a qualifier R. */
+    QUALIFIER_EQUALITY,
+  }
+
+  private final Set<AnnotationMirror> Q;
+  private final Set<AnnotationMirror> R;
 
   /**
-   * Kind of constraint. One of: {@link Kind#TYPE_COMPATIBILITY}, {@link Kind#SUBTYPE}, {@link
-   * Kind#CONTAINED}, or {@link Kind#TYPE_EQUALITY}
+   * Kind of constraint. One of: {@link Kind#QUALIFIER_SUBTYPE} or {@link Kind#QUALIFIER_EQUALITY}.
    */
   private final Kind kind;
 
-  public Typing(AbstractType S, AbstractType t, Kind kind) {
-    super(t);
-    assert S != null;
+  public QualifierTyping(Set<AnnotationMirror> Q, Set<AnnotationMirror> R, Kind kind) {
+    assert Q != null && R != null;
     switch (kind) {
-      case TYPE_COMPATIBILITY:
-      case SUBTYPE:
-      case CONTAINED:
-      case TYPE_EQUALITY:
+      case QUALIFIER_SUBTYPE:
+      case QUALIFIER_EQUALITY:
         break;
       default:
         throw new BugInCF("Unexpected kind: " + kind);
     }
-    this.S = S;
+    this.R = R;
+    this.Q = Q;
     this.kind = kind;
   }
 
@@ -71,30 +68,6 @@ public class Typing extends Constraint {
   @Override
   public Kind getKind() {
     return kind;
-  }
-
-  @Override
-  public List<Variable> getInputVariables() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public List<Variable> getOutputVariables() {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public List<Variable> getInferenceVariables() {
-    Set<Variable> vars = new HashSet<>();
-    vars.addAll(T.getInferenceVariables());
-    vars.addAll(S.getInferenceVariables());
-    return new ArrayList<>(vars);
-  }
-
-  @Override
-  public void applyInstantiations(List<Variable> instantiations) {
-    super.applyInstantiations(instantiations);
-    S = S.applyInstantiations(instantiations);
   }
 
   @Override
@@ -143,20 +116,16 @@ public class Typing extends Constraint {
     if (S.isVariable() || T.isVariable()) {
       if (S.isVariable()) {
         if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
-          ((Variable) S)
-              .getBounds()
-              .addBound(VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
+          ((Variable) S).getBounds().addBound(BoundKind.UPPER, T.getTypeVarLowerBound());
         } else {
-          ((Variable) S).getBounds().addBound(VariableBounds.BoundKind.UPPER, T);
+          ((Variable) S).getBounds().addBound(BoundKind.UPPER, T);
         }
       }
       if (T.isVariable()) {
         if (TypesUtils.isCapturedTypeVariable(S.getJavaType())) {
-          ((Variable) T)
-              .getBounds()
-              .addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
+          ((Variable) T).getBounds().addBound(BoundKind.LOWER, S.getTypeVarUpperBound());
         }
-        ((Variable) T).getBounds().addBound(VariableBounds.BoundKind.LOWER, S);
+        ((Variable) T).getBounds().addBound(BoundKind.LOWER, S);
       }
       return ConstraintSet.TRUE;
     }
@@ -200,7 +169,7 @@ public class Typing extends Constraint {
       ConstraintSet set = new ConstraintSet();
       for (AbstractType b : Bs) {
         AbstractType a = As.next();
-        set.add(new Typing(b, a, Kind.CONTAINED));
+        set.add(new QualifierTyping(b, a, Kind.CONTAINED));
       }
 
       return set;
@@ -222,7 +191,8 @@ public class Typing extends Constraint {
     if (msArrayType.isPrimitiveArray() && T.isPrimitiveArray()) {
       return ConstraintSet.TRUE;
     } else {
-      return new Typing(msArrayType.getComponentType(), T.getComponentType(), Kind.SUBTYPE);
+      return new QualifierTyping(
+          msArrayType.getComponentType(), T.getComponentType(), Kind.SUBTYPE);
     }
   }
 
@@ -234,9 +204,9 @@ public class Typing extends Constraint {
     if (S.getTypeKind() == TypeKind.INTERSECTION) {
       return ConstraintSet.TRUE;
     } else if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
-      return new Typing(S, T.getTypeVarLowerBound(), Kind.SUBTYPE);
+      return new QualifierTyping(S, T.getTypeVarLowerBound(), Kind.SUBTYPE);
     } else if (T.getTypeKind() == TypeKind.WILDCARD && T.isLowerBoundedWildcard()) {
-      return new Typing(S, T.getWildcardLowerBound(), Kind.SUBTYPE);
+      return new QualifierTyping(S, T.getWildcardLowerBound(), Kind.SUBTYPE);
     } else {
       return ConstraintSet.FALSE;
     }
@@ -249,7 +219,7 @@ public class Typing extends Constraint {
   private ReductionResult reduceSubtypingIntersection() {
     ConstraintSet constraintSet = new ConstraintSet();
     for (AbstractType bound : T.getIntersectionBounds()) {
-      constraintSet.add(new Typing(S, bound, Kind.SUBTYPE));
+      constraintSet.add(new QualifierTyping(S, bound, Kind.SUBTYPE));
     }
     return constraintSet;
   }
@@ -261,7 +231,7 @@ public class Typing extends Constraint {
   private ReductionResult reduceContained() {
     if (T.getTypeKind() != TypeKind.WILDCARD) {
       if (S.getTypeKind() != TypeKind.WILDCARD) {
-        return new Typing(S, T, Kind.TYPE_EQUALITY);
+        return new QualifierTyping(S, T, Kind.TYPE_EQUALITY);
       } else {
         return ConstraintSet.FALSE;
       }
@@ -271,19 +241,19 @@ public class Typing extends Constraint {
       AbstractType bound = T.getWildcardUpperBound();
       if (S.getTypeKind() == TypeKind.WILDCARD) {
         if (S.isUnboundWildcard() || S.isUpperBoundedWildcard()) {
-          return new Typing(S.getWildcardUpperBound(), bound, Kind.SUBTYPE);
+          return new QualifierTyping(S.getWildcardUpperBound(), bound, Kind.SUBTYPE);
         } else {
-          return new Typing(S.getWildcardLowerBound(), bound, Kind.TYPE_EQUALITY);
+          return new QualifierTyping(S.getWildcardLowerBound(), bound, Kind.TYPE_EQUALITY);
         }
       } else {
-        return new Typing(S, bound, Kind.SUBTYPE);
+        return new QualifierTyping(S, bound, Kind.SUBTYPE);
       }
     } else { // T is lower bounded wildcard
       AbstractType tPrime = T.getWildcardLowerBound();
       if (S.getTypeKind() != TypeKind.WILDCARD) {
-        return new Typing(tPrime, S, Kind.SUBTYPE);
+        return new QualifierTyping(tPrime, S, Kind.SUBTYPE);
       } else if (S.isLowerBoundedWildcard()) {
-        return new Typing(tPrime, S.getWildcardLowerBound(), Kind.SUBTYPE);
+        return new QualifierTyping(tPrime, S.getWildcardLowerBound(), Kind.SUBTYPE);
       } else {
         return ConstraintSet.FALSE;
       }
@@ -304,9 +274,9 @@ public class Typing extends Constraint {
       }
       return ((ProperType) S).isAssignable((ProperType) T);
     } else if (S.isProper() && S.getTypeKind().isPrimitive()) {
-      return new Typing(((ProperType) S).boxType(), T, Kind.TYPE_COMPATIBILITY);
+      return new QualifierTyping(((ProperType) S).boxType(), T, Kind.TYPE_COMPATIBILITY);
     } else if (T.isProper() && T.getTypeKind().isPrimitive()) {
-      return new Typing(S, ((ProperType) T).boxType(), Kind.TYPE_EQUALITY);
+      return new QualifierTyping(S, ((ProperType) T).boxType(), Kind.TYPE_EQUALITY);
     } else if (T.isParameterizedType() && !S.isVariable()) {
       // Otherwise, if T is a parameterized type of the form G<T1, ..., Tn>,
       // and there exists no type of the form G<...> that is a supertype of S,
@@ -322,7 +292,7 @@ public class Typing extends Constraint {
       }
     }
 
-    return new Typing(S, T, Kind.SUBTYPE);
+    return new QualifierTyping(S, T, Kind.SUBTYPE);
   }
 
   /**
@@ -351,10 +321,10 @@ public class Typing extends Constraint {
 
     if (S.isVariable() || T.isVariable()) {
       if (S.isVariable()) {
-        ((Variable) S).getBounds().addBound(VariableBounds.BoundKind.EQUAL, T);
+        ((Variable) S).getBounds().addBound(BoundKind.EQUAL, T);
       }
       if (T.isVariable()) {
-        ((Variable) T).getBounds().addBound(VariableBounds.BoundKind.EQUAL, S);
+        ((Variable) T).getBounds().addBound(BoundKind.EQUAL, S);
       }
       return ConstraintSet.TRUE;
     }
@@ -367,7 +337,8 @@ public class Typing extends Constraint {
       ConstraintSet constraintSet = new ConstraintSet();
       for (int i = 0; i < tTypeArgs.size(); i++) {
         if (tTypeArgs.get(i) != sTypeArgs.get(i)) {
-          constraintSet.add(new Typing(tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
+          constraintSet.add(
+              new QualifierTyping(tTypeArgs.get(i), sTypeArgs.get(i), Kind.TYPE_EQUALITY));
         }
       }
       return constraintSet;
@@ -376,16 +347,18 @@ public class Typing extends Constraint {
     AbstractType sComponentType = S.getComponentType();
     AbstractType tComponentType = T.getComponentType();
     if (sComponentType != null && tComponentType != null) {
-      return new Typing(sComponentType, tComponentType, Kind.TYPE_EQUALITY);
+      return new QualifierTyping(sComponentType, tComponentType, Kind.TYPE_EQUALITY);
     }
 
     if (T.getTypeKind() == TypeKind.WILDCARD && S.getTypeKind() == TypeKind.WILDCARD) {
       if (T.isUnboundWildcard() && S.isUnboundWildcard()) {
         return ConstraintSet.TRUE;
       } else if (!S.isLowerBoundedWildcard() && !T.isLowerBoundedWildcard()) {
-        return new Typing(S.getWildcardUpperBound(), T.getWildcardUpperBound(), Kind.TYPE_EQUALITY);
+        return new QualifierTyping(
+            S.getWildcardUpperBound(), T.getWildcardUpperBound(), Kind.TYPE_EQUALITY);
       } else if (T.isLowerBoundedWildcard() && S.isLowerBoundedWildcard()) {
-        return new Typing(T.getWildcardLowerBound(), S.getWildcardLowerBound(), Kind.TYPE_EQUALITY);
+        return new QualifierTyping(
+            T.getWildcardLowerBound(), S.getWildcardLowerBound(), Kind.TYPE_EQUALITY);
       }
     }
     return ConstraintSet.FALSE;
@@ -420,7 +393,7 @@ public class Typing extends Constraint {
       return false;
     }
 
-    Typing typing = (Typing) o;
+    QualifierTyping typing = (QualifierTyping) o;
 
     return S.equals(typing.S) && kind == typing.kind;
   }

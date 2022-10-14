@@ -41,10 +41,10 @@ public class VariableBounds {
 
   /**
    * Qualifier bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to
-   * a set of {@link AbstractType}s. A qualifier bound is a bound on the primary annotation of this
-   * variable.
+   * a set of {@link AnnotationMirror}s. A qualifier bound is a bound on the primary annotation of
+   * this variable.
    */
-  public final EnumMap<BoundKind, Set<AnnotationMirror>> qualifierBounds =
+  public final EnumMap<BoundKind, Set<Set<AnnotationMirror>>> qualifierBounds =
       new EnumMap<>(BoundKind.class);
 
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
@@ -57,7 +57,7 @@ public class VariableBounds {
   public EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
 
   /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
-  public EnumMap<BoundKind, LinkedHashSet<AnnotationMirror>> savedQualifierBounds = null;
+  public EnumMap<BoundKind, LinkedHashSet<Set<AnnotationMirror>>> savedQualifierBounds = null;
 
   public VariableBounds(Java8InferenceContext context) {
     this.context = context;
@@ -136,14 +136,51 @@ public class VariableBounds {
     return false;
   }
 
-  //  /** Adds {@code qualifier} as a qualifier bound against this variable. */
-  //  public boolean addQualifierBound(BoundKind kind, AnnotationMirror qualifier) {
-  //    if (qualifierBounds.get(kind).add(qualifier)) {
-  //      addConstraintsFromComplementaryBounds(kind, qualifier);
-  //      return true;
-  //    }
-  //    return false;
-  //  }
+  /** Adds {@code qualifier} as a qualifier bound against this variable. */
+  public void addQualifierBound(BoundKind kind, Set<AnnotationMirror> qualifiers) {
+    addConstraintsFromComplementaryQualifierBounds(kind, qualifiers);
+    qualifierBounds.get(kind).add(qualifiers);
+  }
+
+  /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
+  public void addConstraintsFromComplementaryQualifierBounds(
+      BoundKind kind, Set<AnnotationMirror> s) {
+    if (kind == BoundKind.EQUAL) {
+      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
+        if (s != t) {
+          constraints.add(new Typing(s, t, Kind.TYPE_EQUALITY));
+        }
+      }
+    } else if (kind == BoundKind.LOWER) {
+      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
+        if (s != t) {
+          constraints.add(new Typing(s, t, Kind.SUBTYPE));
+        }
+      }
+    } else { // UPPER
+      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
+        if (s != t) {
+          constraints.add(new Typing(t, s, Kind.SUBTYPE));
+        }
+      }
+    }
+
+    if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
+      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.LOWER)) {
+        if (s != t) {
+          constraints.add(new Typing(t, s, Kind.SUBTYPE));
+        }
+      }
+    }
+
+    if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
+      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.UPPER)) {
+        if (s != t) {
+          constraints.add(new Typing(s, t, Kind.SUBTYPE));
+        }
+      }
+    }
+  }
 
   /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
   public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
