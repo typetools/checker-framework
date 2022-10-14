@@ -85,7 +85,8 @@ test_wpi_plume_lib() {
       diff -u expected.txt actual.txt
       if [ -n "$AZURE_HTTP_USER_AGENT" ] || [ -n "$CIRCLE_PR_USERNAME" ] || [ -n "$GITHUB_HEAD_REF" ] || [ "$TRAVIS" = "true" ] ; then
         # Running under continuous integration.  Output files that may be useful for debugging.
-        more "$TESTDIR/$project"/dljc-out/*
+        rm -f "$DLJC_OUT_DIR"/dljc.cache
+        more "$DLJC_OUT_DIR"/*
         AJAVADIR="$(sed -n 's/Directory for generated annotation files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
         echo "AJAVADIR=$AJAVADIR"
         find "$AJAVADIR" -type f -print0 | xargs -0 more
