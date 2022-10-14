@@ -4957,7 +4957,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // Javac used a declared type instead of a captured type variable.  This seems to happen
           // when the bounds of the captured type variable would have been identical. This seems to
           // be a violation of the JLS, but javac does this, so the Checker Framework must handle
-          // that case. (See https://bugs.openjdk.java.net/browse/JDK-8054309.)
+          // that case. (See https://bugs.openjdk.org/browse/JDK-8054309.)
           replaceAnnotations(
               ((AnnotatedWildcardType) uncapturedTypeArg).getSuperBound(), capturedTypeArg);
         }
@@ -5172,7 +5172,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // be the same type as upperbound.getUnderlyingType().  See
       // framework/tests/all-systems/Issue4890Interfaces.java,
       // framework/tests/all-systems/Issue4890.java and framework/tests/all-systems/Issue4877.java.
-      // (I think this is  https://bugs.openjdk.java.net/browse/JDK-8039222.)
+      // (I think this is  https://bugs.openjdk.org/browse/JDK-8039222.)
       for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) upperBound).getBounds()) {
         if (types.isSameType(
             bound.underlyingType, capturedTypeVar.getUpperBound().getUnderlyingType())) {
