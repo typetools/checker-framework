@@ -1358,6 +1358,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return list;
   }
 
+  /**
+   * Returns true if {@link #isIntRange(AnnotationMirror)} returns true for any annotation in the
+   * given set.
+   *
+   * @param anmSet a set of annotations
+   * @return true if any annotation is {@link IntRange} or related
+   */
   public boolean isIntRange(Set<AnnotationMirror> anmSet) {
     for (AnnotationMirror anm : anmSet) {
       if (isIntRange(anm)) {
