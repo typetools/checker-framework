@@ -444,7 +444,7 @@ public class ElementAnnotationUtil {
     // If the AnnotatedDeclaredType is a component of an array type, then apply anno to all
     // possible inner types.
     // NOTE: This workaround can be removed once
-    // https://bugs.openjdk.java.net/browse/JDK-8208470 is fixed
+    // https://bugs.openjdk.org/browse/JDK-8208470 is fixed
     // The number of enclosing types is outerToInner.size() - 1; there only is
     // work to do if outerToInner contains more than one element.
     if (anno != null && isComponentTypeOfArray && location.isEmpty() && outerToInner.size() > 1) {

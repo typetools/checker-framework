@@ -136,7 +136,7 @@ not checked by any tool.  Instead, programmers have to do their best to
 obey the <code>@Nullable</code> specifications in the source code.  This is
 a lost opportunity, since documentation is most useful when it is
 automatically processed and verified.  (For several years, Google tried
-using <a href="http://findbugs.sourceforge.net/">FindBugs</a>, but they
+using <a href="https://findbugs.sourceforge.net/">FindBugs</a>, but they
 eventually abandoned it:  its analysis is too weak, suffering too many
 false positives and false negatives.)
 </p>
@@ -381,7 +381,7 @@ needs to be written.
   </li>
   <li>
     Bug detection tools. such
-    as <a href="http://findbugs.sourceforge.net/">FindBugs</a> or
+    as <a href="https://findbugs.sourceforge.net/">FindBugs</a> or
     the <a href="https://checkerframework.org/">Checker Framework</a>, have
     extremely verbose output when first run on a program.  Programmers
     could examine and fix only the warnings about code they have changed

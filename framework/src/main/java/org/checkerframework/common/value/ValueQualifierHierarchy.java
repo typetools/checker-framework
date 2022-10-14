@@ -323,6 +323,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
     // Special handling for dealing with the lub of an ArrayLenRange and an ArrayLen,
     // a StringVal with one of them, or a StringVal and a MatchesRegex.
+    // Each of these converts one annotation to the other, then makes a recursive call.
     if (arrayLenAnno != null && arrayLenRangeAnno != null) {
       return leastUpperBound(
           arrayLenRangeAnno, atypeFactory.convertArrayLenToArrayLenRange(arrayLenAnno));
