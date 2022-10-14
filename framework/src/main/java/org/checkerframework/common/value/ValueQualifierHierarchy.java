@@ -510,10 +510,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return true if every string is matched by at least one regex
    */
   private boolean allMatch(List<String> strings, List<@Regex String> regexes) {
-    List<Pattern> patterns = new ArrayList<>(regexes.size());
-    for (String regex : regexes) {
-      patterns.add(Pattern.compile(regex));
-    }
+    List<Pattern> patterns = CollectionsPlume.mapList(Pattern::compile, regexes);
     outer:
     for (String s : strings) {
       for (Pattern p : patterns) {
