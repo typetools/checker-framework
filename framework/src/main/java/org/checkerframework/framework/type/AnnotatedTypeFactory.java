@@ -794,7 +794,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           lines.addAll(in.lines().collect(Collectors.toList()));
         }
       }
-      String[] result = lines.toArray(new String[0]);
+      String[] result = lines.toArray(new String[lines.size()]);
       return result;
     } catch (IOException e) {
       throw new BugInCF(e);
