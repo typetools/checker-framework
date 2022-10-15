@@ -364,13 +364,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       List<@Regex String> regexes =
           AnnotationUtils.getElementValueArray(
               doesNotMatchRegexAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
-      for (String regex : regexes) {
-        Pattern p = Pattern.compile(regex);
-        for (String stringVal : stringVals) {
-          if (p.matcher(stringVal).matches()) {
-            return atypeFactory.UNKNOWNVAL;
-          }
-        }
+      if (anyMatches(stringVals, reegxes)) {
+        return atypeFactory.UNKNOWNVAL;
       }
       return doesNotMatchRegexAnno;
     }
@@ -460,19 +455,19 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         return superValues.containsAll(subValues);
       }
     }
-    switch (superQualName + subQualName) {
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
+    switch (subQualName + superQualName) {
+      case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
         List<Double> superValues = atypeFactory.getDoubleValues(superAnno);
         List<Double> subValues =
             atypeFactory.convertLongListToDoubleList(atypeFactory.getIntValues(subAnno));
         return superValues.containsAll(subValues);
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+      case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
         Range superRange = atypeFactory.getRange(superAnno);
         List<Long> subLongValues = atypeFactory.getArrayLenOrIntValue(subAnno);
         Range subLongRange = Range.create(subLongValues);
         return superRange.contains(subLongRange);
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
         Range subRange = atypeFactory.getRange(subAnno);
         if (subRange.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
           return false;
@@ -480,8 +475,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<Double> superDoubleValues = atypeFactory.getDoubleValues(superAnno);
         List<Double> subDoubleValues = ValueCheckerUtils.getValuesFromRange(subRange, Double.class);
         return superDoubleValues.containsAll(subDoubleValues);
-      case ValueAnnotatedTypeFactory.INTVAL_NAME + ValueAnnotatedTypeFactory.INTRANGE_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
         Range subRange2 = atypeFactory.getRange(subAnno);
         if (subRange2.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
           return false;
@@ -489,13 +484,13 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<Long> superValues2 = atypeFactory.getArrayLenOrIntValue(superAnno);
         List<Long> subValues2 = ValueCheckerUtils.getValuesFromRange(subRange2, Long.class);
         return superValues2.containsAll(subValues2);
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
 
         // Allow @ArrayLen(0) to be converted to @StringVal("")
         List<String> superStringValues = atypeFactory.getStringValues(superAnno);
         return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
-      case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
         {
           List<String> strings = atypeFactory.getStringValues(subAnno);
           List<String> regexes =
@@ -503,8 +498,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                   superAnno, atypeFactory.matchesRegexValueElement, String.class);
           return allMatch(strings, regexes);
         }
-      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME
-          + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME
+          + ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
         {
           List<String> strings = atypeFactory.getStringValues(subAnno);
           List<String> regexes =
@@ -512,7 +507,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
                   superAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
           return noneMatch(strings, regexes);
         }
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
         // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths.
         List<Integer> superIntValues = atypeFactory.getArrayLength(superAnno);
         List<String> subStringValues = atypeFactory.getStringValues(subAnno);
@@ -522,7 +517,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           }
         }
         return true;
-      case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME + ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
         // StringVal is a subtype of ArrayLenRange, if all the strings have a length in the range.
         Range superRange2 = atypeFactory.getRange(superAnno);
         List<String> subValues3 = atypeFactory.getStringValues(subAnno);
