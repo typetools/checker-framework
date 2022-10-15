@@ -364,7 +364,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       List<@Regex String> regexes =
           AnnotationUtils.getElementValueArray(
               doesNotMatchRegexAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
-      if (anyMatches(stringVals, reegxes)) {
+      if (allMatch(stringVals, regexes)) {
         return atypeFactory.UNKNOWNVAL;
       }
       return doesNotMatchRegexAnno;
@@ -435,7 +435,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         Range subRange = atypeFactory.getRange(subAnno);
         return superRange.contains(subRange);
       } else if (subQualName.equals(ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME)) {
-        @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<String> superValues =
             AnnotationUtils.getElementValueArray(
                 superAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);

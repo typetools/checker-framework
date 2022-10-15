@@ -188,7 +188,7 @@ allprojects {
     }
     java {
       googleJavaFormat()
-      // Remove addTypeAnnotation after a release of Spotless.
+      // Remove addTypeAnnotation after the next release of Spotless.
       formatAnnotations().addTypeAnnotation("DoesNotMatchRegex")
     }
   }
