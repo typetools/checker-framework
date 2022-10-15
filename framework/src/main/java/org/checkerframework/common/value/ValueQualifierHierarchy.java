@@ -532,7 +532,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
   }
 
-  // TODO: Move (part?) of this into plume-util's RegexUtil.
+  // TODO: Move the below into plume-util's RegexUtil.
+
   /**
    * Return the strings such that any one of the regexes matches it.
    *
@@ -554,7 +555,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     return result;
   }
 
-  // TODO: Move (part?) of this into plume-util's RegexUtil.
   /**
    * Return true if every string is matched by at least one regex.
    *
