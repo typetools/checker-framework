@@ -379,31 +379,32 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
     superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);
-    String subQual = AnnotationUtils.annotationName(subAnno);
-    if (subQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
+    String subQualName = AnnotationUtils.annotationName(subAnno);
+    if (subQualName.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
       superAnno = atypeFactory.convertToUnknown(superAnno);
     }
-    String superQual = AnnotationUtils.annotationName(superAnno);
-    if (superQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)
-        || subQual.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
+    String superQualName = AnnotationUtils.annotationName(superAnno);
+    if (superQualName.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)
+        || subQualName.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       return true;
-    } else if (superQual.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)
-        || subQual.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
+    } else if (superQualName.equals(ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)
+        || subQualName.equals(ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
       return false;
-    } else if (superQual.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
-      return subQual.equals(ValueAnnotatedTypeFactory.POLY_NAME);
-    } else if (subQual.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
+    } else if (superQualName.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
+      return subQualName.equals(ValueAnnotatedTypeFactory.POLY_NAME);
+    } else if (subQualName.equals(ValueAnnotatedTypeFactory.POLY_NAME)) {
       return false;
-    } else if (superQual.equals(subQual)) {
-      // Same type, so might be subtype
-      if (subQual.equals(ValueAnnotatedTypeFactory.INTRANGE_NAME)
-          || subQual.equals(ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
+    } else if (superQualName.equals(subQualName)) {
+      // Same annotation name, so might be subtype
+      if (subQualName.equals(ValueAnnotatedTypeFactory.INTRANGE_NAME)
+          || subQualName.equals(ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
         // Special case for range-based annotations
         Range superRange = atypeFactory.getRange(superAnno);
         Range subRange = atypeFactory.getRange(subAnno);
         return superRange.contains(subRange);
       } else {
-        // The annotations are one of: ArrayLen, BoolVal, DoubleVal, EnumVal, StringVal.
+        // The annotations have the same name, which is one of:
+        // ArrayLen, BoolVal, DoubleVal, EnumVal, StringVal.
         @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> superValues =
             AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, false);
@@ -413,7 +414,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         return superValues.containsAll(subValues);
       }
     }
-    switch (superQual + subQual) {
+    switch (superQualName + subQualName) {
       case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME + ValueAnnotatedTypeFactory.INTVAL_NAME:
         List<Double> superValues = atypeFactory.getDoubleValues(superAnno);
         List<Double> subValues =
