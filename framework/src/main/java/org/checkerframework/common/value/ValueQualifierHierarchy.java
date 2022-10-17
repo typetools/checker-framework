@@ -72,11 +72,18 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         values = range;
         break;
       case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-        List<@Regex String> regexes =
+        List<@Regex String> matchesRegexes =
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.matchesRegexValueElement, String.class);
         // Retain the @StringVal values such that one of the regexes matches it.
-        values = anyMatches(values, regexes);
+        values = anyMatches(values, matchesRegexes);
+        break;
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+        List<@Regex String> doesNotMatchRegexes =
+            AnnotationUtils.getElementValueArray(
+                otherAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
+        // Retain the @StringVal values such that none of the regexes matches it.
+        values = noneMatches(values, doesNotMatchRegexes);
         break;
       default:
         return atypeFactory.BOTTOMVAL;
@@ -253,6 +260,12 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           List<@Regex String> regexes = atypeFactory.getMatchesRegexValues(a1);
           SystemUtil.addWithoutDuplicates(regexes, atypeFactory.getMatchesRegexValues(a2));
           return atypeFactory.createMatchesRegexAnnotation(regexes);
+        case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+          // The LUB is the intersection of the sets.
+          List<@Regex String> regexes1 = atypeFactory.getDoesNotMatchRegexValues(a1);
+          List<@Regex String> regexes2 = atypeFactory.getDoesNotMatchRegexValues(a2);
+          regexes1.retainAll(regexes2);
+          return atypeFactory.createDoesNotMatchRegexAnnotation(regexes1);
         default:
           throw new TypeSystemError("default case: %s %s %s%n", qual1, a1, a2);
       }
@@ -266,6 +279,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     AnnotationMirror arrayLenRangeAnno = null;
     AnnotationMirror stringValAnno = null;
     AnnotationMirror matchesRegexAnno = null;
+    AnnotationMirror doesNotMatchRegexAnno = null;
     AnnotationMirror intValAnno = null;
     AnnotationMirror intRangeAnno = null;
     AnnotationMirror doubleValAnno = null;
@@ -282,6 +296,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         break;
       case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
         matchesRegexAnno = a1;
+        break;
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+        doesNotMatchRegexAnno = a1;
         break;
       case ValueAnnotatedTypeFactory.INTVAL_NAME:
         intValAnno = a1;
@@ -308,6 +325,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         break;
       case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
         matchesRegexAnno = a2;
+        break;
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+        doesNotMatchRegexAnno = a2;
         break;
       case ValueAnnotatedTypeFactory.INTVAL_NAME:
         intValAnno = a2;
@@ -336,6 +356,18 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     } else if (stringValAnno != null && matchesRegexAnno != null) {
       return leastUpperBound(
           matchesRegexAnno, atypeFactory.convertStringValToMatchesRegex(stringValAnno));
+    }
+
+    if (stringValAnno != null && doesNotMatchRegexAnno != null) {
+      // The lub is either doesNotMatchRegexAnno or UNKNOWNVAL.
+      List<String> stringVals = atypeFactory.getStringValues(stringValAnno);
+      List<@Regex String> regexes =
+          AnnotationUtils.getElementValueArray(
+              doesNotMatchRegexAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
+      if (allMatch(stringVals, regexes)) {
+        return atypeFactory.UNKNOWNVAL;
+      }
+      return doesNotMatchRegexAnno;
     }
 
     // Annotations are both in the same hierarchy, but they are not the same.
@@ -402,9 +434,17 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         Range superRange = atypeFactory.getRange(superAnno);
         Range subRange = atypeFactory.getRange(subAnno);
         return superRange.contains(subRange);
+      } else if (subQualName.equals(ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME)) {
+        List<String> superValues =
+            AnnotationUtils.getElementValueArray(
+                superAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
+        List<String> subValues =
+            AnnotationUtils.getElementValueArray(
+                subAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
+        return subValues.containsAll(superValues);
       } else {
         // The annotations have the same name, which is one of:
-        // ArrayLen, BoolVal, DoubleVal, EnumVal, StringVal.
+        // ArrayLen, BoolVal, DoubleVal, EnumVal, StringVal, MatchesRegex.
         @SuppressWarnings("deprecation") // concrete annotation class is not known
         List<Object> superValues =
             AnnotationUtils.getElementValueArray(superAnno, "value", Object.class, false);
@@ -450,11 +490,22 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         List<String> superStringValues = atypeFactory.getStringValues(superAnno);
         return superStringValues.contains("") && atypeFactory.getMaxLenValue(subAnno) == 0;
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-        List<String> strings = atypeFactory.getStringValues(subAnno);
-        List<String> regexes =
-            AnnotationUtils.getElementValueArray(
-                superAnno, atypeFactory.matchesRegexValueElement, String.class);
-        return allMatch(strings, regexes);
+        {
+          List<String> strings = atypeFactory.getStringValues(subAnno);
+          List<String> regexes =
+              AnnotationUtils.getElementValueArray(
+                  superAnno, atypeFactory.matchesRegexValueElement, String.class);
+          return allMatch(strings, regexes);
+        }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME
+          + ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+        {
+          List<String> strings = atypeFactory.getStringValues(subAnno);
+          List<String> regexes =
+              AnnotationUtils.getElementValueArray(
+                  superAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
+          return noneMatch(strings, regexes);
+        }
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
         // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths.
         List<Integer> superIntValues = atypeFactory.getArrayLength(superAnno);
@@ -480,7 +531,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     }
   }
 
-  // TODO: Move (part?) of this into plume-util's RegexUtil.
+  // TODO: Move the below into plume-util's RegexUtil.
+
   /**
    * Return the strings such that any one of the regexes matches it.
    *
@@ -502,7 +554,6 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     return result;
   }
 
-  // TODO: Move (part?) of this into plume-util's RegexUtil.
   /**
    * Return true if every string is matched by at least one regex.
    *
@@ -520,6 +571,47 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
         }
       }
       return false;
+    }
+    return true;
+  }
+
+  /**
+   * Return the strings that are matched by no regex.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return the strings such that none one of the regexes matches it
+   */
+  private List<String> noneMatches(List<String> strings, List<@Regex String> regexes) {
+    List<Pattern> patterns = CollectionsPlume.mapList(Pattern::compile, regexes);
+    List<String> result = new ArrayList<String>(strings.size());
+    outer:
+    for (String s : strings) {
+      for (Pattern p : patterns) {
+        if (p.matcher(s).matches()) {
+          continue outer;
+        }
+      }
+      result.add(s);
+    }
+    return result;
+  }
+
+  /**
+   * Return true if no string is matched by any regex.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return true if no string is matched by any regex
+   */
+  private boolean noneMatch(List<String> strings, List<@Regex String> regexes) {
+    for (String regex : regexes) {
+      Pattern p = Pattern.compile(regex);
+      for (String s : strings) {
+        if (p.matcher(s).matches()) {
+          return false;
+        }
+      }
     }
     return true;
   }
