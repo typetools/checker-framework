@@ -520,7 +520,7 @@ then write a \<@SuppressWarnings> annotation.
 The semantics of
 \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
 cannot be captured by the nullness type system syntax. The nullness type of the
-returned array depends on the size of the passed parameter. In particular, the
+returned array depends on the \emph{size} of the passed parameter. In particular, the
 returned array component is of type \<@NonNull> if the following conditions
 hold:
 
