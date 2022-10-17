@@ -1052,7 +1052,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return BOTTOMVAL;
     }
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MatchesRegex.class);
-    builder.setValue("value", regexes.toArray(new String[0]));
+    builder.setValue("value", regexes.toArray(new String[regexes.size()]));
     return builder.build();
   }
 
@@ -1293,10 +1293,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns the set of possible values as a sorted list with no duplicate values. Returns the empty
-   * list if no values are possible (for dead code). Returns null if any value is possible -- that
-   * is, if no estimate can be made -- and this includes when there is no constant-value annotation
-   * so the argument is null.
+   * Returns the set of possible regexes as a sorted list with no duplicate values. Returns the
+   * empty list if no values are possible (for dead code). Returns null if any value is possible --
+   * that is, if no estimate can be made -- and this includes when there is no @MatchesRegex
+   * annotation so the argument is null.
    *
    * @param matchesRegexAnno a {@code @MatchesRegex} annotation, or null
    * @return the possible values, deduplicated and sorted

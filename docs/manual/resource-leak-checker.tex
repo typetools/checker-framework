@@ -479,7 +479,7 @@ One way to prevent this false positive warning is to declare the field as \<fina
 Alternately, to suppress all warnings related to field assignments in the
 constructor and in initializer blocks, pass the
 \<-ApermitInitializationLeak> command-line argument.  This makes the
-checker unsound:  the Resoure Leak Checker will not warn if the constructor
+checker unsound:  the Resource Leak Checker will not warn if the constructor
 and initializers set a field more than once.  The amount of leakage is
 limited to how many times the field is set.
 

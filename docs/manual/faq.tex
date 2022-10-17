@@ -66,8 +66,8 @@ the answers, or other questions to include here.
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
-\\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
 \\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
+\\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -1195,48 +1195,7 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 
-\subsectionAndLabel{What is the difference between type annotations and declaration annotations?}{faq-type-vs-declaration-annotations}
-
-Java has two distinct varieties of annotation:  type annotations and
-declaration annotations.
-
-A \textbf{type annotation} can be written on any use of a \textbf{type}.
-It conceptually creates a new, more specific type.
-That is, it describes what values the type represents.
-
-As an example, the \<int> type contains these values: ..., -2, -1, 0, 1, 2, ...  \\
-The \<@Positive int> type contains these values:  1, 2, ...   \\
-Therefore, \<@Positive int> is a subtype of \<int>.
-
-A \textbf{declaration annotation} can be written on any \textbf{declaration} (a class, method, or variable).  It describes the thing being declared, but does not describe run-time values.  Here are examples of declaration annotations:
-
-\begin{Verbatim}
-    @Deprecated    // programmers should not use this class
-    class MyClass { ... }
-
-    @Override      // this method overrides a method in a supertype
-    void myMethod() { ... }
-
-    @SuppressWarnings(...) // compiler should not warn about the initialization expr
-    int myField = INITIALIZATION-EXPRESSION;
-\end{Verbatim}
-
-Here are examples that use both a declaration annotation and a type annotation:
-
-\begin{Verbatim}
-    @Override
-    @Regex String getPattern() { ... }
-
-    @GuardedBy("myLock")
-    @NonNull String myField;
-\end{Verbatim}
-
-Note that the type annotation describes the value, and the declaration annotation says something about the method or use of the field.
-
-As a matter of style, declaration annotations are written on their own line, and type annotations are written directly before the type, on the same line.
-
-
-\label{declaration-annotations-moved} % temporary, for backward compatibility
+\label{declaration-annotations-moved} % 2021-04-16 temporary, for backward compatibility
 \subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
 
 When a declaration annotation is an alias for a type annotation, the
@@ -1277,6 +1236,47 @@ conflicts.  These are available in package
 \href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
 on Maven Central.  Once the users are ready to upgrade to Java 8+ type
 annotations, those compatibility annotations are no longer necessary.
+
+
+\subsectionAndLabel{What is the difference between type annotations and declaration annotations?}{faq-type-vs-declaration-annotations}
+
+Java has two distinct varieties of annotation:  type annotations and
+declaration annotations.
+
+A \textbf{type annotation} can be written on any use of a \textbf{type}.
+It conceptually creates a new, more specific type.
+That is, it describes what values the type represents.
+
+As an example, the \<int> type contains these values: ..., -2, -1, 0, 1, 2, ...  \\
+The \<@Positive int> type contains these values:  1, 2, ...   \\
+Therefore, \<@Positive int> is a subtype of \<int>.
+
+A \textbf{declaration annotation} can be written on any \textbf{declaration} (a class, method, or variable).  It describes the thing being declared, but does not describe run-time values.  Here are examples of declaration annotations:
+
+\begin{Verbatim}
+    @Deprecated    // programmers should not use this class
+    class MyClass { ... }
+
+    @Override      // this method overrides a method in a supertype
+    void myMethod() { ... }
+
+    @SuppressWarnings(...) // compiler should not warn about the initialization expr
+    int myField = INITIALIZATION-EXPRESSION;
+\end{Verbatim}
+
+Here are examples that use both a declaration annotation and a type annotation:
+
+\begin{Verbatim}
+    @Override
+    @Regex String getPattern() { ... }
+
+    @GuardedBy("myLock")
+    @NonNull String myField;
+\end{Verbatim}
+
+Note that the type annotation describes the value, and the declaration annotation says something about the method or use of the field.
+
+As a matter of style, declaration annotations are written on their own line, and type annotations are written directly before the type, on the same line.
 
 
 \sectionAndLabel{Semantics of type annotations}{faq-semantics-section}
@@ -1743,7 +1743,7 @@ Section~\ref{checker-guarantees}).
 
 An alternate approach is to use a bug detector such as
 \href{https://errorprone.info/}{Error Prone},
-\href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
+\href{https://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
 \href{https://github.com/spotbugs/spotbugs}{SpotBugs},
 \href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001},
 \href{https://pmd.github.io/}{PMD}~\cite{Copeland2005},
