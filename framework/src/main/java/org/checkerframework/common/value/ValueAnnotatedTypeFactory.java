@@ -1579,4 +1579,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     return super.isImmutable(type);
   }
+
+  /**
+   * Accessor method that checks whether the (protected) {@link #root} field is null. Useful for
+   * super-checkers so that they can avoid calling flow-sensitive analysis functions when flow is
+   * unavailable, such as when parsing ajava files.
+   *
+   * @return true iff {@link #root} is null
+   */
+  public boolean isRootNull() {
+    return root == null;
+  }
 }
