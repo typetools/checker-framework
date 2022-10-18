@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
@@ -12,7 +11,7 @@ import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.RegexUtil;
 
 /** The qualifier hierarchy for the Value type system. */
 final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
@@ -76,14 +75,14 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.matchesRegexValueElement, String.class);
         // Retain the @StringVal values such that one of the regexes matches it.
-        values = anyMatches(values, matchesRegexes);
+        values = RegexUtil.matchesSomeRegex(values, matchesRegexes);
         break;
       case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
         List<@Regex String> doesNotMatchRegexes =
             AnnotationUtils.getElementValueArray(
                 otherAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
         // Retain the @StringVal values such that none of the regexes matches it.
-        values = noneMatches(values, doesNotMatchRegexes);
+        values = RegexUtil.matchesNoRegex(values, doesNotMatchRegexes);
         break;
       default:
         return atypeFactory.BOTTOMVAL;
@@ -364,7 +363,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       List<@Regex String> regexes =
           AnnotationUtils.getElementValueArray(
               doesNotMatchRegexAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
-      if (allMatch(stringVals, regexes)) {
+      if (RegexUtil.everyStringMatchesSomeRegex(stringVals, regexes)) {
         return atypeFactory.UNKNOWNVAL;
       }
       return doesNotMatchRegexAnno;
@@ -495,7 +494,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           List<String> regexes =
               AnnotationUtils.getElementValueArray(
                   superAnno, atypeFactory.matchesRegexValueElement, String.class);
-          return allMatch(strings, regexes);
+          return RegexUtil.everyStringMatchesSomeRegex(strings, regexes);
         }
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME
           + ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
@@ -504,7 +503,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           List<String> regexes =
               AnnotationUtils.getElementValueArray(
                   superAnno, atypeFactory.doesNotMatchRegexValueElement, String.class);
-          return noneMatch(strings, regexes);
+          return RegexUtil.noStringMatchesAnyRegex(strings, regexes);
         }
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME + ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
         // StringVal is a subtype of ArrayLen, if all the strings have one of the correct lengths.
@@ -529,90 +528,5 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       default:
         return false;
     }
-  }
-
-  // TODO: Move the below into plume-util's RegexUtil.
-
-  /**
-   * Return the strings such that any one of the regexes matches it.
-   *
-   * @param strings a collection of strings
-   * @param regexes a collection of regular expressions
-   * @return the strings such that any one of the regexes matches it
-   */
-  private List<String> anyMatches(List<String> strings, List<@Regex String> regexes) {
-    List<Pattern> patterns = CollectionsPlume.mapList(Pattern::compile, regexes);
-    List<String> result = new ArrayList<String>(strings.size());
-    for (String s : strings) {
-      for (Pattern p : patterns) {
-        if (p.matcher(s).matches()) {
-          result.add(s);
-          break;
-        }
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Return true if every string is matched by at least one regex.
-   *
-   * @param strings a collection of strings
-   * @param regexes a collection of regular expressions
-   * @return true if every string is matched by at least one regex
-   */
-  private boolean allMatch(List<String> strings, List<@Regex String> regexes) {
-    List<Pattern> patterns = CollectionsPlume.mapList(Pattern::compile, regexes);
-    outer:
-    for (String s : strings) {
-      for (Pattern p : patterns) {
-        if (p.matcher(s).matches()) {
-          continue outer;
-        }
-      }
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Return the strings that are matched by no regex.
-   *
-   * @param strings a collection of strings
-   * @param regexes a collection of regular expressions
-   * @return the strings such that none one of the regexes matches it
-   */
-  private List<String> noneMatches(List<String> strings, List<@Regex String> regexes) {
-    List<Pattern> patterns = CollectionsPlume.mapList(Pattern::compile, regexes);
-    List<String> result = new ArrayList<String>(strings.size());
-    outer:
-    for (String s : strings) {
-      for (Pattern p : patterns) {
-        if (p.matcher(s).matches()) {
-          continue outer;
-        }
-      }
-      result.add(s);
-    }
-    return result;
-  }
-
-  /**
-   * Return true if no string is matched by any regex.
-   *
-   * @param strings a collection of strings
-   * @param regexes a collection of regular expressions
-   * @return true if no string is matched by any regex
-   */
-  private boolean noneMatch(List<String> strings, List<@Regex String> regexes) {
-    for (String regex : regexes) {
-      Pattern p = Pattern.compile(regex);
-      for (String s : strings) {
-        if (p.matcher(s).matches()) {
-          return false;
-        }
-      }
-    }
-    return true;
   }
 }
