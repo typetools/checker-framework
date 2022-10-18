@@ -1581,11 +1581,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Accessor method that checks whether the (protected) {@link #root} field is null. Useful for
-   * super-checkers so that they can avoid calling flow-sensitive analysis functions when flow is
-   * unavailable, such as when parsing ajava files.
+   * Returns true if the (protected) {@code root} field is null. Useful for super-checkers so that
+   * they can avoid calling flow-sensitive analysis functions when flow is unavailable, such as when
+   * parsing ajava files.
    *
-   * @return true iff {@link #root} is null
+   * @return true if the (protected) {@code root} field is null
    */
   public boolean isRootNull() {
     return root == null;
