@@ -1,6 +1,7 @@
 package org.checkerframework.checker.test.junit;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
@@ -17,7 +18,7 @@ public class IndexInitializedFieldsTest extends CheckerFrameworkPerDirectoryTest
   public IndexInitializedFieldsTest(List<File> testFiles) {
     super(
         testFiles,
-        List.of(
+        Arrays.asList(
             "org.checkerframework.checker.index.IndexChecker",
             "org.checkerframework.common.initializedfields.InitializedFieldsChecker"),
         "index-initializedfields",
