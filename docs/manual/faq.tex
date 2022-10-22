@@ -68,7 +68,7 @@ the answers, or other questions to include here.
 fully-qualified type name?
 \\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
 \\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
-\\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?
+\\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?  Where should I write type annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -1280,7 +1280,13 @@ Note that the type annotation describes the value, and the declaration annotatio
 As a matter of style, declaration annotations are written on their own line, and type annotations are written directly before the type, on the same line.
 
 
-\subsectionAndLabel{How should type annotations be formatted in source code?}{faq-type-annotation-formatting}
+\subsectionAndLabel{How should type annotations be formatted in source code?  Where should I write type annotations?}{faq-type-annotation-formatting}
+
+The
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-9.html#jls-9.7.4}{Java
+  Language Specification, section 9.7.4} says:  ``It is customary, though
+not required, to write declaration annotations before all other modifiers,
+and type annotations immediately before the type to which they apply.''
 
 A type annotation should be written immediately before the type it
 qualifies, on the same line.  There should not be any modifiers (such as
