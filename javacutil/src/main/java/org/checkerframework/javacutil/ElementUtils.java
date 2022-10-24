@@ -846,6 +846,11 @@ public class ElementUtils {
    * @return true if the element is a record accessor method
    */
   public static boolean isRecordAccessor(ExecutableElement methodElement) {
+    // Can only be a record accessor if it has no parameters.
+    if (!methodElement.getParameters().isEmpty()) {
+      return false;
+    }
+
     TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
     if (enclosing.getKind().toString().equals("RECORD")) {
       String methodName = methodElement.getSimpleName().toString();

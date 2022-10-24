@@ -7,7 +7,7 @@ plugins {
     id "de.undercouch.download" version "5.2.1"
     id 'java'
     // https://github.com/tbroyer/gradle-errorprone-plugin
-    id "net.ltgt.errorprone" version "2.0.2"
+    id "net.ltgt.errorprone" version "3.0.1"
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.1' apply false
 
@@ -41,7 +41,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.4.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.7.jar"
 
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -170,7 +170,7 @@ allprojects {
     ]
 
     reflectionUtilVersion = '1.0.5'
-    plumeUtilVersion = '1.5.9'
+    plumeUtilVersion = '1.6.0'
   }
 
   spotless {
@@ -188,7 +188,8 @@ allprojects {
     }
     java {
       googleJavaFormat()
-      formatAnnotations()
+      // Remove addTypeAnnotation after the next release of Spotless.
+      formatAnnotations().addTypeAnnotation("DoesNotMatchRegex")
     }
   }
   // The Spotless plugin uses the latest version of google-java-format
@@ -222,22 +223,28 @@ allprojects {
             dependsOn(':checker:shadowJar')
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
-                options.encoding = 'UTF-8'
-                if (!name.equals("javadocDoclintAll")) {
-                    options.memberLevel = javadocMemberLevel
-                }
-                classpath += configurations.getByName('checkerFatJar').asFileTree
-                if (isJava8) {
-                    classpath += configurations.javacJar
-                }
-                options.taglets 'org.checkerframework.taglet.ManualTaglet'
-                options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
+              options.encoding = 'UTF-8'
+              if (!name.equals("javadocDoclintAll")) {
+                options.memberLevel = javadocMemberLevel
+              }
+              classpath += configurations.getByName('checkerFatJar').asFileTree
+              if (isJava8) {
+                classpath += configurations.javacJar
+              }
+              options.taglets 'org.checkerframework.taglet.ManualTaglet'
+              options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
 
-                // We want to link to Java 9 documentation of the compiler classes since we use Java 9
-                // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
-                // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
-                // TODO, this creates broken links to the com.sun.tools.javac package.
+              // We want to link to Java 9 documentation of the compiler classes since we use Java 9
+              // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
+              // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
+              // TODO, this creates broken links to the com.sun.tools.javac package.
+              // Only add the links of building with Java 8.  This prevents the following error:
+              // warning: URL https://docs.oracle.com/javase/8/docs/api/element-list was redirected
+              // to https://docs.oracle.com/en/java/javase/19/ -- Update the command-line options
+              // to suppress this warning.
+              if (isJava8) {
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
+              }
                 // This file is looked for by Javadoc.
                 file("${destinationDir}/resources/fonts/").mkdirs()
                 ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
@@ -260,7 +267,7 @@ allprojects {
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
             // --add-exports are not required, (nor are they allowed with target 8). See
-            // https://openjdk.java.net/jeps/247 for details on compiling for older versions.
+            // https://openjdk.org/jeps/247 for details on compiling for older versions.
 
             // When sourceCompatibilty is changed to 11, then the following will be required.
             // options.compilerArgs += [
@@ -278,7 +285,7 @@ allprojects {
             // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
             // reflective access to private members.
             //
-            // From https://openjdk.java.net/jeps/261, Section titled: "Breaking encapsulation"
+            // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
             // "The effect of each instance [of --add-exports] is to add a qualified export of the
             // named package from the source module to the target module. This is, essentially, a
             // command-line form of an exports clause in a module declaration[...].
@@ -296,7 +303,7 @@ allprojects {
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
                     // warnings are suppressible with a "// fall through" comment.
-                    // -classfile: classgraph jar file and https://bugs.openjdk.java.net/browse/JDK-8190452
+                    // -classfile: classgraph jar file and https://bugs.openjdk.org/browse/JDK-8190452
                     "-Xlint:-options,-fallthrough,-classfile",
                     "-Xlint",
             ]
@@ -628,7 +635,7 @@ subprojects {
         //  * Temporarily comment out "-Werror" elsewhere in this file
         //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
         //  * Uncomment "-Werror"
-      ext.errorproneVersion = '2.15.0'
+      ext.errorproneVersion = '2.16'
       errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
       // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.

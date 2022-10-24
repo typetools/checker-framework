@@ -161,8 +161,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    * <p>Issues a warning if any @ArrayLen/@ArrayLenRange annotations contain a negative array
    * length.
    *
-   * <p>Issues a warning if any {@literal @}MatchesRegex annotation contains an invalid regular
-   * expression.
+   * <p>Issues a warning if any {@literal @}MatchesRegex or {@literal @}DoesNotMatchRegex annotation
+   * contains an invalid regular expression.
    */
   /* Implementation note: the ValueTypeAnnotator replaces such invalid annotations with valid ones.
    * Therefore, the usual validation in #validateType cannot perform this validation.
@@ -236,14 +236,26 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
         break;
       case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
-        List<String> regexes =
+        List<String> matchesRegexes =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.matchesRegexValueElement, String.class);
-        for (String regex : regexes) {
+        for (String regex : matchesRegexes) {
           try {
             Pattern.compile(regex);
           } catch (PatternSyntaxException pse) {
             checker.reportWarning(node, "invalid.matches.regex", pse.getMessage());
+          }
+        }
+        break;
+      case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
+        List<String> doesNotMatchRegexes =
+            AnnotationUtils.getElementValueArray(
+                anno, atypeFactory.doesNotMatchRegexValueElement, String.class);
+        for (String regex : doesNotMatchRegexes) {
+          try {
+            Pattern.compile(regex);
+          } catch (PatternSyntaxException pse) {
+            checker.reportWarning(node, "invalid.doesnotmatch.regex", pse.getMessage());
           }
         }
         break;

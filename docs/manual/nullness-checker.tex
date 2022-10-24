@@ -517,10 +517,15 @@ then write a \<@SuppressWarnings> annotation.
 
 % Implemented in org.checkerframework.checker.nullness.CollectionToArrayHeuristics
 
-The semantics of
+The nullness semantics of
 \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
-cannot be captured by the nullness type system syntax. The nullness type of the
-returned array depends on the size of the passed parameter. In particular, the
+cannot be captured by just the nullness type system, though the Nullness
+Checker contains special-case code to type-check calls to \<toArray>.
+Therefore, you will probably have to write \<@SuppressWarnings("nullness")>
+on any overriding definitions of \<toArray>.
+
+The nullness type of the
+returned array depends on the \emph{size} of the passed parameter. In particular, the
 returned array component is of type \<@NonNull> if the following conditions
 hold:
 
@@ -1105,7 +1110,7 @@ Section~\ref{checker-options}).
 
 FindBugs and SpotBugs have a non-standard definition of
 \<@Nullable>.  This treatment is not documented in its own
-% \href{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
+% \href{https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 \href{https://www.javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/latest/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
 nullness analysis; it means the same thing as \<@NonNull> when applied to a
