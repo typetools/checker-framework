@@ -1933,7 +1933,7 @@ public final class TreeUtils {
       case BYTE:
         return TreeUtils.createLiteral(TypeTag.BYTE, (byte) 0, typeMirror, processingEnv);
       case CHAR:
-        return TreeUtils.createLiteral(TypeTag.CHAR, '\u0000', typeMirror, processingEnv);
+        return TreeUtils.createLiteral(TypeTag.CHAR, (int) '\u0000', typeMirror, processingEnv);
       case SHORT:
         return TreeUtils.createLiteral(TypeTag.SHORT, (short) 0, typeMirror, processingEnv);
       case LONG:
@@ -1945,7 +1945,7 @@ public final class TreeUtils {
       case DOUBLE:
         return TreeUtils.createLiteral(TypeTag.DOUBLE, 0.0d, typeMirror, processingEnv);
       case BOOLEAN:
-        return TreeUtils.createLiteral(TypeTag.BOOLEAN, false, typeMirror, processingEnv);
+        return TreeUtils.createLiteral(TypeTag.BOOLEAN, 0, typeMirror, processingEnv);
       default:
         return TreeUtils.createLiteral(
             TypeTag.BOT, null, processingEnv.getTypeUtils().getNullType(), processingEnv);

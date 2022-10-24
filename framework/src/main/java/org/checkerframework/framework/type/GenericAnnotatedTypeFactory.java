@@ -1869,7 +1869,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (analysis.isRunning()) {
       as = analysis.getValue(tree);
     }
-    if (as == null) {
+    if (as == null && flowResult != null) {
       as = flowResult.getValue(tree);
     }
     return as;

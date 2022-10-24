@@ -1579,15 +1579,4 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     return super.isImmutable(type);
   }
-
-  /**
-   * Returns true if the (protected) {@code root} field is null. Useful for super-checkers so that
-   * they can avoid calling flow-sensitive analysis functions when flow is unavailable, such as when
-   * parsing ajava files.
-   *
-   * @return true if the (protected) {@code root} field is null
-   */
-  public boolean isRootNull() {
-    return root == null;
-  }
 }

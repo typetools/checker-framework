@@ -232,9 +232,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   @Override
   public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
     super.addComputedTypeAnnotations(element, type);
-    if (element != null
-        && !ajavaTypes.isParsing()
-        && !getValueAnnotatedTypeFactory().isRootNull()) {
+    if (element != null && !ajavaTypes.isParsing()) {
       AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(element);
       addUpperBoundTypeFromValueType(valueType, type);
     }
@@ -246,11 +244,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     // If dataflow shouldn't be used to compute this type, then do not use the result from
     // the Value Checker, because dataflow is used to compute that type.  (Without this,
     // "int i = 1; --i;" fails.)
-    if (iUseFlow
-        && tree != null
-        && !ajavaTypes.isParsing()
-        && TreeUtils.isExpressionTree(tree)
-        && !getValueAnnotatedTypeFactory().isRootNull()) {
+    if (iUseFlow && tree != null && !ajavaTypes.isParsing() && TreeUtils.isExpressionTree(tree)) {
       AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
       addUpperBoundTypeFromValueType(valueType, type);
     }
