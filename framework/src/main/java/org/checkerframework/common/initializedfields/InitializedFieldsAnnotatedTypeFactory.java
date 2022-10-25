@@ -53,6 +53,9 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       @SuppressWarnings("signature:argument") // -processor is a binary name
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = createTypeFactoryForProcessor(checkerName);
       if (atf != null) {
+        for (BaseTypeChecker subchecker : atf.getChecker().getSubcheckers()) {
+          defaultValueAtypeFactories.add(subchecker.getTypeFactory());
+        }
         defaultValueAtypeFactories.add(atf);
       }
     }
