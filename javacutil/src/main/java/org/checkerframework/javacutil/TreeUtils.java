@@ -1929,6 +1929,7 @@ public final class TreeUtils {
    */
   public static LiteralTree getDefaultValueTree(
       TypeMirror typeMirror, ProcessingEnvironment processingEnv) {
+    typeMirror = TypeAnnotationUtils.unannotatedType(typeMirror);
     switch (typeMirror.getKind()) {
       case BYTE:
       case SHORT:

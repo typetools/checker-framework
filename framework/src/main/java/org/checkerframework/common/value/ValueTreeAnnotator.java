@@ -35,7 +35,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -580,7 +579,6 @@ class ValueTreeAnnotator extends TreeAnnotator {
   /** Returns true iff the given type is in the domain of the Constant Value Checker. */
   private boolean handledByValueChecker(AnnotatedTypeMirror type) {
     TypeMirror tm = type.getUnderlyingType();
-    tm = TypeAnnotationUtils.unannotatedType(tm);
     /* TODO: compare performance to the more readable.
     return TypesUtils.isPrimitive(tm)
             || TypesUtils.isBoxedPrimitive(tm)
