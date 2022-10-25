@@ -872,6 +872,14 @@ public class NullnessAnnotatedTypeFactory
     }
   }
 
+  @Override
+  public boolean wpiShouldInferTypesForReceivers() {
+    // All receivers must be non-null, or the dereference involved in
+    // the method call would fail (and cause an NPE). So, WPI should not
+    // infer non-null or nullable annotations on method receiver parameters.
+    return false;
+  }
+
   // This implementation overrides the superclass implementation to:
   //  * check for @MonotonicNonNull
   //  * output @RequiresNonNull rather than @RequiresQualifier.
