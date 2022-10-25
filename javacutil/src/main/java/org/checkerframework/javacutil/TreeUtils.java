@@ -1929,23 +1929,28 @@ public final class TreeUtils {
    */
   public static LiteralTree getDefaultValueTree(
       TypeMirror typeMirror, ProcessingEnvironment processingEnv) {
+    typeMirror = TypeAnnotationUtils.unannotatedType(typeMirror);
     switch (typeMirror.getKind()) {
       case BYTE:
-        return TreeUtils.createLiteral(TypeTag.BYTE, (byte) 0, typeMirror, processingEnv);
-      case CHAR:
-        return TreeUtils.createLiteral(TypeTag.CHAR, '\u0000', typeMirror, processingEnv);
       case SHORT:
-        return TreeUtils.createLiteral(TypeTag.SHORT, (short) 0, typeMirror, processingEnv);
+      case INT:
+        // Byte should be (byte) 0, but this probably doesn't matter so just use int 0;
+        // Short should be (short) 0, but this probably doesn't matter so just use int 0;
+        return TreeUtils.createLiteral(TypeTag.INT, 0, typeMirror, processingEnv);
+      case CHAR:
+        // Value of a char literal needs to be stored as an integer because LiteralTree#getValue
+        // converts it from an integer to a char before being returned.
+        return TreeUtils.createLiteral(TypeTag.CHAR, (int) '\u0000', typeMirror, processingEnv);
       case LONG:
         return TreeUtils.createLiteral(TypeTag.LONG, 0L, typeMirror, processingEnv);
       case FLOAT:
         return TreeUtils.createLiteral(TypeTag.FLOAT, 0.0f, typeMirror, processingEnv);
-      case INT:
-        return TreeUtils.createLiteral(TypeTag.INT, 0, typeMirror, processingEnv);
       case DOUBLE:
         return TreeUtils.createLiteral(TypeTag.DOUBLE, 0.0d, typeMirror, processingEnv);
       case BOOLEAN:
-        return TreeUtils.createLiteral(TypeTag.BOOLEAN, false, typeMirror, processingEnv);
+        // Value of a boolean literal needs to be stored as an integer because LiteralTree#getValue
+        // converts it from an integer to a boolean before being returned.
+        return TreeUtils.createLiteral(TypeTag.BOOLEAN, 0, typeMirror, processingEnv);
       default:
         return TreeUtils.createLiteral(
             TypeTag.BOT, null, processingEnv.getTypeUtils().getNullType(), processingEnv);
