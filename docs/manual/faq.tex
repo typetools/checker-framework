@@ -66,8 +66,9 @@ the answers, or other questions to include here.
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
-\\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
 \\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
+\\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
+\\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?  Where should I write type annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -1195,6 +1196,49 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 
+\label{declaration-annotations-moved} % 2021-04-16 temporary, for backward compatibility
+\subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
+
+When a declaration annotation is an alias for a type annotation, the
+Checker Framework may move the annotation before replacing it by the
+canonical version. (If the declaration annotation is in an \<org.checkerframework>
+package, it is not moved.)
+
+For example,
+
+\begin{Verbatim}
+  import android.support.annotation.NonNull;
+  ...
+  @NonNull Object [] returnsArray();
+\end{Verbatim}
+
+\noindent
+is treated as if the programmer had written
+
+\begin{Verbatim}
+  import org.checkerframework.checker.nullness.qual.NonNull;
+  ...
+  Object @NonNull [] returnsArray();
+\end{Verbatim}
+
+\noindent
+because Android's \<@NonNull> annotation is a declaration annotation, which
+is understood to apply to the top-level return type of the annotated method.
+
+When possible, you should use type annotations rather than declaration
+annotations.
+
+Users who are using old Java 5--7 declaration annotations (for instance,
+from the FindBugs tool, which has not been maintained since 2015, and from
+its successor SpotBugs, which has not yet adopted type annotations, even
+though type annotations were added to Java in 2014) can use annotations in
+package \<org.checkerframework.checker.nullness.compatqual> to avoid name
+conflicts.  These are available in package
+\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
+on Maven Central.  Once the users are ready to upgrade to Java 8+ type
+annotations, those compatibility annotations are no longer necessary.
+
+
 \subsectionAndLabel{What is the difference between type annotations and declaration annotations?}{faq-type-vs-declaration-annotations}
 
 Java has two distinct varieties of annotation:  type annotations and
@@ -1236,47 +1280,109 @@ Note that the type annotation describes the value, and the declaration annotatio
 As a matter of style, declaration annotations are written on their own line, and type annotations are written directly before the type, on the same line.
 
 
-\label{declaration-annotations-moved} % temporary, for backward compatibility
-\subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
+\subsectionAndLabel{How should type annotations be formatted in source code?  Where should I write type annotations?}{faq-type-annotation-formatting}
 
-When a declaration annotation is an alias for a type annotation, the
-Checker Framework may move the annotation before replacing it by the
-canonical version. (If the declaration annotation is in an \<org.checkerframework>
-package, it is not moved.)
+The
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-9.html#jls-9.7.4}{Java
+  Language Specification, section 9.7.4} says:  ``It is customary, though
+not required, to write declaration annotations before all other modifiers,
+and type annotations immediately before the type to which they apply.''
 
-For example,
-
-\begin{Verbatim}
-  import android.support.annotation.NonNull;
-  ...
-  @NonNull Object [] returnsArray();
-\end{Verbatim}
-
-\noindent
-is treated as if the programmer had written
+A type annotation should be written immediately before the type it
+qualifies, on the same line.  There should not be any modifiers (such as
+\<public>) between them.  This emphasizes that the type qualifier plus the
+Java basetype is a logical unit, which aids people reading the code.
 
 \begin{Verbatim}
-  import org.checkerframework.checker.nullness.qual.NonNull;
-  ...
-  Object @NonNull [] returnsArray();
+  // Wrong formatting
+  @Positive
+  public int numItems;
+
+  // Right
+  public @Positive int numItems;
+
+  // Wrong formatting
+  @Nullable
+  public Object getThing() {
+    ...
+  }
+
+  // Right
+  public @Nullable Object getThing() {
+    ...
+  }
 \end{Verbatim}
 
-\noindent
-because Android's \<@NonNull> annotation is a declaration annotation, which
-is understood to apply to the top-level return type of the annotated method.
+By contrast, declaration annotations are conventionally written on their own line.
 
-When possible, you should use type annotations rather than declaration
-annotations.
+\begin{Verbatim}
+  // Wrong formatting
+  @Deprecated URL toURL() {
+    ...
+  }
 
-Users who are using old Java 5--7 declaration annotations (for instance,
-from the FindBugs tool, which has not been maintained since 2015, and from
-its successor SpotBugs, which has not yet adopted type annotations, even
-though type annotations were added to Java in 2014) can use annotations in
-package \<org.checkerframework.checker.nullness.compatqual> to avoid name
-conflicts.  These are available in package
-\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
-on Maven Central.  Once the users are ready to upgrade to Java 8+ type
-annotations, those compatibility annotations are no longer necessary.
+  // Right
+  @Deprecated
+  URL toURL() {
+    ...
+  }
+\end{Verbatim}
+
+The preferred order of modifiers is
+\begin{enumerate}
+\item declaration annotations
+\item keyword modifiers such as \<public> and \<strictfp>
+\item type annotations
+\item type
+\end{enumerate}
+
+Here is an example of a declaration annotation and a type annotation on a class declaration:
+
+\begin{Verbatim}
+  @Deprecated
+  public @Interned class Level {
+    ...
+  }
+\end{Verbatim}
+
+% Here are some code examples from Oracle showing the preferred style:
+%
+% https://docs.oracle.com/javase/tutorial/java/annotations/basics.html
+% https://docs.oracle.com/javase/tutorial/java/annotations/type_annotations.html
+%
+% Here are citations from Google:
+%
+% https://google.github.io/styleguide/javaguide.html#s4.8.5-annotations
+% google/google-java-format#5
+%
+% Note that the GJF manual incorrectly uses the name "type-use annotation"
+% when it should use the standard term "type annotation".
+
+The popular
+\href{https://github.com/google/google-java-format}{google-java-format}
+tool formats type annotations incorrectly, with type annotations on their
+own line instead of on the same line with the type they modify.  (Actually,
+you can see from method \ahref{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
+it handles two \<@Nullable> annotations correctly, but all other type
+annotations incorrectly!  This would be fixed by merging
+\ahref{https://github.com/google/google-java-format/pull/802}{pull request
+  \#802}.)
+Until this bug in google-java-format is fixed, you have these options:
+\begin{itemize}
+\item
+  Run google-java-format via
+  \ahref{https://github.com/diffplug/spotless}{Spotless} and use the
+  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatannotations}{\<formatAnnotations>}
+  step to correct the formatting of type annotations.
+\item
+  Run google-java-format via \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format}
+%% Uncomment when the successor to https://github.com/palantir/palantir-java-format/pull/805 is merged.
+% \item
+%   Use
+%   \href{https://github.com/palantir/palantir-java-format}{palantir-java-format},
+%   which is a variant of google-java-format that fixes the bug (among other
+%   differences from google-java-format).
+\end{itemize}
 
 
 \sectionAndLabel{Semantics of type annotations}{faq-semantics-section}

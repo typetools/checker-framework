@@ -29,6 +29,7 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.qual.DoesNotMatchRegex;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.EnumVal;
 import org.checkerframework.common.value.qual.IntRange;
@@ -111,6 +112,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Fully-qualified class name of {@link MatchesRegex}. */
   public static final String MATCHES_REGEX_NAME =
       "org.checkerframework.common.value.qual.MatchesRegex";
+  /** Fully-qualified class name of {@link DoesNotMatchRegex}. */
+  public static final String DOES_NOT_MATCH_REGEX_NAME =
+      "org.checkerframework.common.value.qual.DoesNotMatchRegex";
 
   /** The maximum number of values allowed in an annotation's array. */
   protected static final int MAX_VALUES = 10;
@@ -161,6 +165,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The value() element/field of a @MatchesRegex annotation. */
   public final ExecutableElement matchesRegexValueElement =
       TreeUtils.getMethod(MatchesRegex.class, "value", 0, processingEnv);
+  /** The value() element/field of a @DoesNotMatchRegex annotation. */
+  public final ExecutableElement doesNotMatchRegexValueElement =
+      TreeUtils.getMethod(DoesNotMatchRegex.class, "value", 0, processingEnv);
   /** The value() element/field of a @MinLen annotation. */
   protected final ExecutableElement minLenValueElement =
       TreeUtils.getMethod(MinLen.class, "value", 0, processingEnv);
@@ -265,6 +272,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             BoolVal.class,
             StringVal.class,
             MatchesRegex.class,
+            DoesNotMatchRegex.class,
             DoubleVal.class,
             BottomVal.class,
             UnknownVal.class,
@@ -1057,6 +1065,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
+   * Creates an {@code DoesNotMatchRegex} annotation for the given regular expressions.
+   *
+   * @param regexes a list of Java regular expressions
+   * @return a DoesNotMatchRegex annotation with those values
+   */
+  public AnnotationMirror createDoesNotMatchRegexAnnotation(@Nullable List<@Regex String> regexes) {
+    if (regexes == null) {
+      return BOTTOMVAL;
+    }
+    if (regexes.isEmpty()) {
+      return UNKNOWNVAL;
+    }
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoesNotMatchRegex.class);
+    builder.setValue("value", regexes.toArray(new String[regexes.size()]));
+    return builder.build();
+  }
+
+  /**
    * Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation.
    *
    * @param stringValAnno a StringVal annotation
@@ -1312,6 +1338,33 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return list;
   }
 
+  /**
+   * Returns the set of possible regexes as a sorted list with no duplicate values. Returns the
+   * empty list if no values are possible (for dead code). Returns null if any value is possible --
+   * that is, if no estimate can be made -- and this includes when there is no @DoesNotMatchRegex
+   * annotation so the argument is null.
+   *
+   * @param doesNotMatchRegexAnno a {@code @DoesNotMatchRegex} annotation, or null
+   * @return the possible values, deduplicated and sorted
+   */
+  public List<String> getDoesNotMatchRegexValues(AnnotationMirror doesNotMatchRegexAnno) {
+    if (doesNotMatchRegexAnno == null) {
+      return null;
+    }
+    List<String> list =
+        AnnotationUtils.getElementValueArray(
+            doesNotMatchRegexAnno, doesNotMatchRegexValueElement, String.class);
+    list = CollectionsPlume.withoutDuplicates(list);
+    return list;
+  }
+
+  /**
+   * Returns true if {@link #isIntRange(AnnotationMirror)} returns true for any annotation in the
+   * given set.
+   *
+   * @param anmSet a set of annotations
+   * @return true if any annotation is {@link IntRange} or related
+   */
   public boolean isIntRange(Set<AnnotationMirror> anmSet) {
     for (AnnotationMirror anm : anmSet) {
       if (isIntRange(anm)) {
