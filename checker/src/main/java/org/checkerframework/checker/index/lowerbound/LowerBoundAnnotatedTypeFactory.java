@@ -184,12 +184,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     // the Value Checker, because dataflow is used to compute that type.  (Without this,
     // "int i = 1; --i;" fails.)
     if (tree != null
-        // Necessary to check that an ajava file isn't being parsed, because the call
-        // to the Value Checker's getAnnotatedType() method can fail during parsing:
-        // the check in GenericAnnotatedTypeFactory#addComputedTypeAnnotations only
-        // checks if the **current** type factory is parsing, not whether the parent checker's
-        // type factory is parsing.
-        && !ajavaTypes.isParsing()
         && TreeUtils.isExpressionTree(tree)
         && (iUseFlow || tree instanceof LiteralTree)) {
       AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);

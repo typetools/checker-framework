@@ -54,6 +54,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       @SuppressWarnings("signature:argument") // -processor is a binary name
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = createTypeFactoryForProcessor(checkerName);
       if (atf != null) {
+        // Add all the subcheckers so that default values are checked for the subcheckers.
         for (BaseTypeChecker subchecker : atf.getChecker().getSubcheckers()) {
           defaultValueAtypeFactories.add(subchecker.getTypeFactory());
         }
@@ -218,6 +219,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     for (GenericAnnotatedTypeFactory<?, ?, ?, ?> defaultValueAtypeFactory :
         defaultValueAtypeFactories) {
       defaultValueAtypeFactory.setRoot(root);
+      // Set the root on all the subcheckers, too.
       for (BaseTypeChecker subchecker : defaultValueAtypeFactory.getChecker().getSubcheckers()) {
         AnnotatedTypeFactory subATF =
             defaultValueAtypeFactory.getTypeFactoryOfSubchecker(subchecker.getClass());
