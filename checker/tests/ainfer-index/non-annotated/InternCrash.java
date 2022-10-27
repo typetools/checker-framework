@@ -1,4 +1,6 @@
 // Test case based on a crash encountered when running WPI on plume-util's Intern.java.
+// The crash was caused by an AnnotatedDeclaredType being unsafely cast to an AnnotatedArrayType
+// during WPI.
 
 public final class InternCrash {
 
@@ -8,7 +10,6 @@ public final class InternCrash {
 
   public static Object intern(Object a) {
     if (a instanceof String[]) {
-      // Crash caused by this line.
       String[] asArray = (String[]) a;
       return intern(asArray);
     } else {
