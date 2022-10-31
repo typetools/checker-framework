@@ -114,7 +114,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-    if (!computingAnnotatedTypeMirrorOfLHS && !ajavaTypes.isParsing()) {
+    if (!computingAnnotatedTypeMirrorOfLHS) {
       addSignednessGlbAnnotation(tree, type);
     }
 
@@ -155,15 +155,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           || javaTypeKind == TypeKind.SHORT
           || javaTypeKind == TypeKind.INT
           || javaTypeKind == TypeKind.LONG) {
-        // To avoid a crash when running the InitializedFields Checker with the Signedness Checker,
-        // special case the literal 0 here rather than using the Value Checker.
-        if (tree instanceof LiteralTree) {
-          Object value = ((LiteralTree) tree).getValue();
-          if (value instanceof Number && ((Number) value).longValue() == 0) {
-            type.replaceAnnotation(SIGNEDNESS_GLB);
-            return;
-          }
-        }
         ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
         // These annotations are trusted rather than checked.  Maybe have an option to
