@@ -717,8 +717,9 @@ subprojects {
             }
         }
 
-        // Add tasks to run various checkers on all the main source sets.
+        // Tasks to run various checkers on all the main source sets.
         // These pass and are run by typecheckTests.
+        // When you add one here, also update a dependsOn item for the 'typecheck' task.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
