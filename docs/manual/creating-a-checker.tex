@@ -2386,6 +2386,8 @@ them.  Then, the checker performs any needed checks on the types/elements instea
 To obtain the position (line number and column number) of a Tree,
 cast the Tree to a \<com.sun.tools.javac.tree.JCTree> and then use one of
 its methods, such as \<pos()> which returns a \<JCDiagnostic.DiagnosticPosition>.
+\<com.sun.source.tree.CompilationUnitTree> has a LineMap lets you convert
+positions to line numbers.
 
 
 \subsubsectionAndLabel{Using the APIs}{creating-using-the-apis}
