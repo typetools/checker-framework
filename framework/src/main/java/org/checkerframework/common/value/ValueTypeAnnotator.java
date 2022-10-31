@@ -140,6 +140,16 @@ class ValueTypeAnnotator extends TypeAnnotator {
       if (!allRegexesCompile(regexes)) {
         atm.replaceAnnotation(typeFactory.BOTTOMVAL);
       }
+    } else if (AnnotationUtils.areSameByName(
+        anno, ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME)) {
+      // If the annotation contains an invalid regex, replace it with bottom. ValueVisitor
+      // will issue a warning where the annotation was written.
+      List<String> regexes =
+          AnnotationUtils.getElementValueArray(
+              anno, typeFactory.doesNotMatchRegexValueElement, String.class);
+      if (!allRegexesCompile(regexes)) {
+        atm.replaceAnnotation(typeFactory.BOTTOMVAL);
+      }
     } else {
       // In here the annotation is @*Val where (*) is not Int, String but other types
       // (Bool, Double, or Enum).

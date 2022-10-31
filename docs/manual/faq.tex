@@ -68,6 +68,7 @@ the answers, or other questions to include here.
 fully-qualified type name?
 \\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
 \\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
+\\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?  Where should I write type annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -1277,6 +1278,111 @@ Here are examples that use both a declaration annotation and a type annotation:
 Note that the type annotation describes the value, and the declaration annotation says something about the method or use of the field.
 
 As a matter of style, declaration annotations are written on their own line, and type annotations are written directly before the type, on the same line.
+
+
+\subsectionAndLabel{How should type annotations be formatted in source code?  Where should I write type annotations?}{faq-type-annotation-formatting}
+
+The
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-9.html#jls-9.7.4}{Java
+  Language Specification, section 9.7.4} says:  ``It is customary, though
+not required, to write declaration annotations before all other modifiers,
+and type annotations immediately before the type to which they apply.''
+
+A type annotation should be written immediately before the type it
+qualifies, on the same line.  There should not be any modifiers (such as
+\<public>) between them.  This emphasizes that the type qualifier plus the
+Java basetype is a logical unit, which aids people reading the code.
+
+\begin{Verbatim}
+  // Wrong formatting
+  @Positive
+  public int numItems;
+
+  // Right
+  public @Positive int numItems;
+
+  // Wrong formatting
+  @Nullable
+  public Object getThing() {
+    ...
+  }
+
+  // Right
+  public @Nullable Object getThing() {
+    ...
+  }
+\end{Verbatim}
+
+By contrast, declaration annotations are conventionally written on their own line.
+
+\begin{Verbatim}
+  // Wrong formatting
+  @Deprecated URL toURL() {
+    ...
+  }
+
+  // Right
+  @Deprecated
+  URL toURL() {
+    ...
+  }
+\end{Verbatim}
+
+The preferred order of modifiers is
+\begin{enumerate}
+\item declaration annotations
+\item keyword modifiers such as \<public> and \<strictfp>
+\item type annotations
+\item type
+\end{enumerate}
+
+Here is an example of a declaration annotation and a type annotation on a class declaration:
+
+\begin{Verbatim}
+  @Deprecated
+  public @Interned class Level {
+    ...
+  }
+\end{Verbatim}
+
+% Here are some code examples from Oracle showing the preferred style:
+%
+% https://docs.oracle.com/javase/tutorial/java/annotations/basics.html
+% https://docs.oracle.com/javase/tutorial/java/annotations/type_annotations.html
+%
+% Here are citations from Google:
+%
+% https://google.github.io/styleguide/javaguide.html#s4.8.5-annotations
+% google/google-java-format#5
+%
+% Note that the GJF manual incorrectly uses the name "type-use annotation"
+% when it should use the standard term "type annotation".
+
+The popular
+\href{https://github.com/google/google-java-format}{google-java-format}
+tool formats type annotations incorrectly, with type annotations on their
+own line instead of on the same line with the type they modify.  (Actually,
+you can see from method \ahref{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
+it handles two \<@Nullable> annotations correctly, but all other type
+annotations incorrectly!  This would be fixed by merging
+\ahref{https://github.com/google/google-java-format/pull/802}{pull request
+  \#802}.)
+Until this bug in google-java-format is fixed, you have these options:
+\begin{itemize}
+\item
+  Run google-java-format via
+  \ahref{https://github.com/diffplug/spotless}{Spotless} and use the
+  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatannotations}{\<formatAnnotations>}
+  step to correct the formatting of type annotations.
+\item
+  Run google-java-format via \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format}
+%% Uncomment when the successor to https://github.com/palantir/palantir-java-format/pull/805 is merged.
+% \item
+%   Use
+%   \href{https://github.com/palantir/palantir-java-format}{palantir-java-format},
+%   which is a variant of google-java-format that fixes the bug (among other
+%   differences from google-java-format).
+\end{itemize}
 
 
 \sectionAndLabel{Semantics of type annotations}{faq-semantics-section}

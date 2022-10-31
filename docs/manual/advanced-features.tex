@@ -162,7 +162,7 @@ qualifier at all.
 Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
-particular, programmers rarely write qualifiers in method bodies (except occasionally on
+particular, programmers rarely write qualifiers in method bodies (except on
 type arguments and array component types).
 
 The following steps determine the effective
@@ -726,8 +726,8 @@ than --- that is, a subtype of --- its declared or defaulted (Section~\ref{defau
 This is called ``flow-sensitive type refinement'' or ``local type inference''.
 
 Due to local type refinement, a programmer typically
-does not have to write any qualifiers on local variables within a method body
-(except occasionally on type arguments).
+does not write any qualifiers on local variables within a method body
+(except on type arguments and array component types).
 However, the programmer must write type annotations for method
 signatures (arguments and return values) and fields, unless the default
 annotations are correct.

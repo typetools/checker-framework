@@ -412,7 +412,10 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
-    if (newATM.getKind() == TypeKind.ARRAY) {
+    // Need to check both newATM and curATM, because one might be a declared type
+    // even if the other is an array: it is permitted to assign e.g., a String[]
+    // to a location with static type Object **and vice-versa** (if a cast is used).
+    if (newATM.getKind() == TypeKind.ARRAY && curATM.getKind() == TypeKind.ARRAY) {
       AnnotatedArrayType newAAT = (AnnotatedArrayType) newATM;
       AnnotatedArrayType oldAAT = (AnnotatedArrayType) curATM;
       AnnotatedArrayType aatToUpdate = (AnnotatedArrayType) typeToUpdate;
