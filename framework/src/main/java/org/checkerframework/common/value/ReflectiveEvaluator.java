@@ -31,7 +31,7 @@ import org.plumelib.util.StringsPlume;
 public class ReflectiveEvaluator {
 
   /** The checker that is using this ReflectiveEvaluator. */
-  private BaseTypeChecker checker;
+  private final BaseTypeChecker checker;
 
   /**
    * Whether to report warnings about problems with evaluation. Controlled by the -AreportEvalWarns

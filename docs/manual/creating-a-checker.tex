@@ -1920,6 +1920,10 @@ should only do it if you have discovered a bug in a checker, you have
 already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
 
+\item \code{-AnoWarnMemoryConstraints}: when memory constraints are
+impeding performance, issue a note rather than a warning.
+This prevents the message from being elevated to an error by \code{-Werror}.
+
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 
 \end{itemize}
@@ -2296,7 +2300,7 @@ Also ensure that the Javadoc links back to the manual, using the
 
 Since this section of the manual was written, the useful ``The Hitchhiker's
 Guide to javac'' has become available at
-\url{http://openjdk.java.net/groups/compiler/doc/hhgtjavac/index.html}.
+\url{https://openjdk.org/groups/compiler/doc/hhgtjavac/index.html}.
 See it first, and then refer to this section.  (This section of the manual
 should be revised, or parts eliminated, in light of that document.)
 
@@ -2470,9 +2474,9 @@ other useful resources include the Java Infrastructure
 Developer's guide at
 \url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.asciidoc} and the compiler
 mailing list archives at
-\url{https://mail.openjdk.java.net/pipermail/compiler-dev/}
+\url{https://mail.openjdk.org/pipermail/compiler-dev/}
 (subscribe at
-\url{https://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
+\url{https://mail.openjdk.org/mailman/listinfo/compiler-dev}).
 
 
 \sectionAndLabel{Integrating a checker with the Checker Framework}{creating-integrating-a-checker}

@@ -203,10 +203,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** Annotation processing environment and its associated type and tree utilities. */
   final ProcessingEnvironment env;
 
-  final Elements elements;
+  /** The javac element utilities. */
+  protected final Elements elements;
+  /** The javac type utilities. */
   final Types types;
+  /** The javac tree utilities. */
   final Trees trees;
+  /** The tree builder. */
   public final TreeBuilder treeBuilder;
+  /** The annotation provider, e.g., a type factory. */
   final AnnotationProvider annotationProvider;
 
   /** Can assertions be assumed to be disabled? */
@@ -1416,7 +1421,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
-    ExecutableElement element = TreeUtils.elementFromUse(tree);
+    ExecutableElement element = method;
     if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node
       extendWithNode(target);
@@ -1451,7 +1456,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
     /* Check for the TerminatesExecution annotation. */
-    Element methodElement = TreeUtils.elementFromTree(tree);
+    ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
     boolean terminatesExecution =
         annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class) != null;
     if (terminatesExecution) {

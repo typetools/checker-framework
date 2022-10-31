@@ -11,7 +11,7 @@ public class MetaPrecondition {
   @RequiresOdd("f1")
   void requiresF1() {
     // :: error: (assignment)
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     @Odd String l2 = f1;
   }
 
@@ -19,7 +19,7 @@ public class MetaPrecondition {
   @RequiresOdd("f1")
   int requiresF1AndPure() {
     // :: error: (assignment)
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     @Odd String l2 = f1;
     return 1;
   }
@@ -28,7 +28,7 @@ public class MetaPrecondition {
   // :: error: (flowexpr.parse.error)
   void error() {
     // :: error: (assignment)
-    @Value String l1 = f1;
+    @ValueTypeAnno String l1 = f1;
     // :: error: (assignment)
     @Odd String l2 = f1;
   }
@@ -36,16 +36,16 @@ public class MetaPrecondition {
   @RequiresOdd("#1")
   void requiresParam(String p) {
     // :: error: (assignment)
-    @Value String l1 = p;
+    @ValueTypeAnno String l1 = p;
     @Odd String l2 = p;
   }
 
   @RequiresOdd({"#1", "#2"})
   void requiresParams(String p1, String p2) {
     // :: error: (assignment)
-    @Value String l1 = p1;
+    @ValueTypeAnno String l1 = p1;
     // :: error: (assignment)
-    @Value String l2 = p2;
+    @ValueTypeAnno String l2 = p2;
     @Odd String l3 = p1;
     @Odd String l4 = p2;
   }

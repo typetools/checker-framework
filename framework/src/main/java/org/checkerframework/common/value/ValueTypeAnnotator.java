@@ -137,13 +137,8 @@ class ValueTypeAnnotator extends TypeAnnotator {
       List<String> regexes =
           AnnotationUtils.getElementValueArray(
               anno, typeFactory.matchesRegexValueElement, String.class);
-      for (String regex : regexes) {
-        try {
-          Pattern.compile(regex);
-        } catch (PatternSyntaxException pse) {
-          atm.replaceAnnotation(typeFactory.BOTTOMVAL);
-          break;
-        }
+      if (!allRegexesCompile(regexes)) {
+        atm.replaceAnnotation(typeFactory.BOTTOMVAL);
       }
     } else {
       // In here the annotation is @*Val where (*) is not Int, String but other types
@@ -156,5 +151,22 @@ class ValueTypeAnnotator extends TypeAnnotator {
         atm.replaceAnnotation(typeFactory.UNKNOWNVAL);
       }
     }
+  }
+
+  /**
+   * Returns true if all the given strings are valid regexes.
+   *
+   * @param regexes a list of strings that might all be regexes
+   * @return true if all the given strings are valid regexes
+   */
+  private boolean allRegexesCompile(List<String> regexes) {
+    for (String regex : regexes) {
+      try {
+        Pattern.compile(regex);
+      } catch (PatternSyntaxException e) {
+        return false;
+      }
+    }
+    return true;
   }
 }

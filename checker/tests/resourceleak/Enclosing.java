@@ -13,6 +13,7 @@ class Enclosing {
     @Owning Foo foo;
 
     @CreatesMustCallFor("this")
+    // :: error: creates.mustcall.for.invalid.target
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();

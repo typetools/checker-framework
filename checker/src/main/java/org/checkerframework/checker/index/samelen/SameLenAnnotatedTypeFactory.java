@@ -23,11 +23,13 @@ import org.checkerframework.checker.index.qual.PolySameLen;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.index.qual.SameLenBottom;
 import org.checkerframework.checker.index.qual.SameLenUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -140,6 +142,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return !expr.containsUnknown()
         && !(expr instanceof ArrayCreation)
         && !(expr instanceof ClassName)
+        // avoid SameLen expressions with e.g. literal String constants
+        && !(expr instanceof ValueLiteral)
         // Big expressions cause a stack overflow in JavaExpressionParseUtil.
         // So limit them to an arbitrary length of 999.
         && expr.toString().length() < 1000;
@@ -171,17 +175,34 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the collections are disjoint, returns null. Otherwise, returns their union. The
-     * collections must not contain duplicates.
+     * If the collections are both non-empty and disjoint, returns null. Otherwise, returns their
+     * union. The collections must not contain duplicates.
+     *
+     * @param c1 a collection of Strings (intended to be the value argument of a SameLen annotation)
+     * @param c2 another collection of Strings
+     * @return if the two inputs are disjoint (i.e., have no elements in common) and both are
+     *     non-empty, returns null. Otherwise, returns the union of the two collections (which, if
+     *     one collection is empty, is just the other collection).
      */
-    private Set<String> unionIfNotDisjoint(Collection<String> c1, Collection<String> c2) {
+    private @Nullable Collection<String> unionIfNotDisjoint(
+        Collection<String> c1, Collection<String> c2) {
+      if (c1.isEmpty()) {
+        return c2;
+      } else if (c2.isEmpty()) {
+        return c1;
+      }
       Set<String> result = new TreeSet<>(c1);
+      boolean disjoint = true;
       for (String s : c2) {
         if (!result.add(s)) {
-          return null;
+          disjoint = false;
         }
       }
-      return result;
+      if (!disjoint) {
+        return result;
+      } else {
+        return null;
+      }
     }
 
     // The GLB of two SameLen annotations is the union of the two sets of arrays, or is bottom
@@ -194,7 +215,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> a2Val =
             AnnotationUtils.getElementValueArray(a2, sameLenValueElement, String.class);
 
-        Set<String> exprs = unionIfNotDisjoint(a1Val, a2Val);
+        Collection<String> exprs = unionIfNotDisjoint(a1Val, a2Val);
         if (exprs == null) {
           return BOTTOM;
         } else {
@@ -342,12 +363,15 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   ///
 
   /**
-   * Creates a @SameLen annotation whose values are the given strings, from an <em>ordered</em>
-   * collection such as a list or TreeSet in which the strings are in alphabetical order.
+   * Creates a @SameLen annotation whose values are the given strings.
+   *
+   * @param exprs the values for the @SameLen annotation. This must be an <em>ordered</em>
+   *     collection such as a list or TreeSet in which the strings are in alphabetical order.
+   * @return a @SameLen annotation whose values are the given strings
    */
   public AnnotationMirror createSameLen(Collection<String> exprs) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
-    String[] exprArray = exprs.toArray(new String[0]);
+    String[] exprArray = exprs.toArray(new String[exprs.size()]);
     builder.setValue("value", exprArray);
     return builder.build();
   }

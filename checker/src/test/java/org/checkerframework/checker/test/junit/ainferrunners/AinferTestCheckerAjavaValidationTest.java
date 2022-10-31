@@ -22,10 +22,11 @@ public class AinferTestCheckerAjavaValidationTest extends AinferValidatePerDirec
     super(
         testFiles,
         AinferTestChecker.class,
+        "testchecker",
         "ainfer-testchecker/annotated",
         AinferTestCheckerAjavaTest.class,
         "-Anomsgtext",
-        ajavaArgFromFiles(testFiles),
+        ajavaArgFromFiles(testFiles, "testchecker"),
         "-Awarns");
   }
 

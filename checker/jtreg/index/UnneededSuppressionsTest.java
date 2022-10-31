@@ -7,7 +7,6 @@
 
 import org.checkerframework.checker.index.qual.NonNegative;
 
-@SuppressWarnings("index")
 public class UnneededSuppressionsTest {
 
   void method(@NonNegative int i) {

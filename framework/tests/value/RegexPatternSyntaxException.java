@@ -4,5 +4,5 @@ import org.checkerframework.common.value.qual.*;
 
 public class RegexPatternSyntaxException {
   // :: warning: invalid.matches.regex
-  void stringConstants(@MatchesRegex("(a*") String a) {}
+  void stringConstants1(@MatchesRegex("(a*") String a) {}
 }

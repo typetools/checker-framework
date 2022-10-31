@@ -2,11 +2,11 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
-import org.checkerframework.framework.testchecker.util.Value;
+import org.checkerframework.framework.testchecker.util.ValueTypeAnno;
 
 public class CustomContractWithArgs {
   // Postcondition for Value
-  @PostconditionAnnotation(qualifier = Value.class)
+  @PostconditionAnnotation(qualifier = ValueTypeAnno.class)
   @interface EnsuresValue {
     public String[] value();
 
@@ -15,7 +15,7 @@ public class CustomContractWithArgs {
   }
 
   // Conditional postcondition for LTLengthOf
-  @ConditionalPostconditionAnnotation(qualifier = Value.class)
+  @ConditionalPostconditionAnnotation(qualifier = ValueTypeAnno.class)
   @interface EnsuresValueIf {
     public boolean result();
 
@@ -26,7 +26,7 @@ public class CustomContractWithArgs {
   }
 
   // Precondition for LTLengthOf
-  @PreconditionAnnotation(qualifier = Value.class)
+  @PreconditionAnnotation(qualifier = ValueTypeAnno.class)
   @interface RequiresValue {
     public String[] value();
 
@@ -37,7 +37,8 @@ public class CustomContractWithArgs {
   class Base {
     Object o;
 
-    @Value(10) Object o10;
+    @ValueTypeAnno(10)
+    Object o10;
 
     @EnsuresValue(value = "o", targetValue = 10)
     void ensures() {

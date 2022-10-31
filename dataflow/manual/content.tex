@@ -1740,10 +1740,11 @@ Type factories that extend from \code{GeneralAnnotatedTypeFactory}
 and set the constructor parameter \code{useFlow} to true will automatically
 run dataflow analysis and use the result of the analysis when creating an
 \code{AnnotatedTypeMirror}.  The first time that a \code{GenericAnnotatedTypeFactory}
-instance visits a \code{ClassTree}, the type factory runs the dataflow analysis on all the field initializers of the class first, then the bodies of methods in
+instance visits a \code{ClassTree}, the type factory runs the dataflow analysis
+on all the field initializers of the class first, then the bodies of methods in
 the class, and then finally the dataflow analysis is
-ran recursively on the members of nested classes. The result of
-dataflow analysis are stored in the \code{GenericAnnotatedTypeFactory} instance.
+run recursively on the members of nested classes. The result of
+dataflow analysis is stored in the \code{GenericAnnotatedTypeFactory} instance.
 
 When creating an \code{AnnotatedTypeMirror} for a tree node, the type factory
 queries the result of the dataflow analysis to determine if a more refined
