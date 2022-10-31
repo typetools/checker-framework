@@ -21,7 +21,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
@@ -148,26 +147,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
     private @MonotonicNonNull Map<String, String> options = null;
 
     /**
-     * TreePathCacher to share between instances. Initialized either in getTreePathCacher (which is
-     * also called from instantiateSubcheckers).
-     */
-    private TreePathCacher treePathCacher = null;
-
-    /**
      * The list of suppress warnings prefixes supported by this checker or any of its subcheckers
      * (including indirect subcheckers). Do not access this field directly; instead, use {@link
      * #getSuppressWarningsPrefixesOfSubcheckers}.
      */
     private @MonotonicNonNull Collection<String> suppressWarningsPrefixesOfSubcheckers = null;
-
-    @Override
-    protected void setRoot(CompilationUnitTree newRoot) {
-        super.setRoot(newRoot);
-        if (parentChecker == null) {
-            // Only clear the path cache if this is the main checker.
-            treePathCacher.clear();
-        }
-    }
 
     /**
      * Returns the set of subchecker classes on which this checker depends. Returns an empty set if
@@ -493,15 +477,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
         }
 
         return subcheckers;
-    }
-
-    /** Get the shared TreePathCacher instance. */
-    public TreePathCacher getTreePathCacher() {
-        if (treePathCacher == null) {
-            // In case it wasn't already set in instantiateSubcheckers.
-            treePathCacher = new TreePathCacher();
-        }
-        return treePathCacher;
     }
 
     @Override

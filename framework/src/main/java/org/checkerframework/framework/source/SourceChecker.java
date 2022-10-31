@@ -11,10 +11,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.DiagnosticSource;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Position;
 
 import io.github.classgraph.ClassGraph;
 
@@ -22,6 +24,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -29,6 +32,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.OptionConfiguration;
+import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -61,6 +65,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -552,6 +557,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     /** List of upstream checker names. Includes the current checker. */
     protected List<@FullyQualifiedName String> upstreamCheckerNames;
 
+    /**
+     * TreePathCacher to share between instances. Initialized in getTreePathCacher (which is also
+     * called from {@link BaseTypeChecker#instantiateSubcheckers(LinkedHashMap)}).
+     */
+    protected TreePathCacher treePathCacher = null;
+
     @Override
     public final synchronized void init(ProcessingEnvironment env) {
         ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
@@ -648,6 +659,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     protected void setRoot(CompilationUnitTree newRoot) {
         this.currentRoot = newRoot;
         visitor.setRoot(currentRoot);
+
+        if (parentChecker == null) {
+            // Only clear the path cache if this is the main checker.
+            treePathCacher.clear();
+        }
     }
 
     /**
@@ -762,6 +778,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             messagesProperties.putAll(getProperties(checker, MSGS_FILE, true));
         }
         return messagesProperties;
+    }
+
+    /**
+     * Get the shared TreePathCacher instance.
+     *
+     * @return the shared TreePathCacher instance.
+     */
+    public TreePathCacher getTreePathCacher() {
+        if (treePathCacher == null) {
+            // In case it wasn't already set in instantiateSubcheckers.
+            treePathCacher = new TreePathCacher();
+        }
+        return treePathCacher;
     }
 
     /**
@@ -1112,6 +1141,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         if (shouldSuppressWarnings(source, messageKey)) {
             return;
         }
+        Object preciseSource = getSourceWithPrecisePosition(source);
 
         if (args != null) {
             for (int i = 0; i < args.length; ++i) {
@@ -1134,7 +1164,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             // The -Adetailedmsgtext command-line option was given, so output
             // a stylized error message for easy parsing by a tool.
             fmtString =
-                    detailedMsgTextPrefix(source, defaultFormat, args)
+                    detailedMsgTextPrefix(preciseSource, defaultFormat, args)
                             + fullMessageOf(messageKey, defaultFormat);
         } else {
             fmtString =
@@ -1156,13 +1186,50 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             kind = Kind.MANDATORY_WARNING;
         }
 
-        if (source instanceof Element) {
-            messager.printMessage(kind, messageText, (Element) source);
-        } else if (source instanceof Tree) {
-            printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
+        if (preciseSource instanceof Element) {
+            messager.printMessage(kind, messageText, (Element) preciseSource);
+        } else if (preciseSource instanceof Tree) {
+            printOrStoreMessage(kind, messageText, (Tree) preciseSource, currentRoot);
         } else {
-            throw new BugInCF("invalid position source, class=" + source.getClass());
+            throw new BugInCF("invalid position source, class=" + preciseSource.getClass());
         }
+    }
+
+    /**
+     * This method improves the source position information for message reporting. If the given
+     * {@code source} does not have a precise location, it will try to return an object with a
+     * precise location that encloses the {@code source}; otherwise, it simply returns the {@code
+     * source}.
+     *
+     * <p>Currently, missing position only happens to artificial trees generated by the compiler.
+     * For example, a lambda expression "s -&gt; ..." in the source code can be de-sugared into
+     * "(Type s) -&gt; ..." in the corresponding {@link Tree}, where the "Type" {@link Tree} is an
+     * artificial tree.
+     *
+     * @param source the original source position information; may be an Element, a Tree, or null
+     * @return a source that may have more precise position information
+     */
+    private @PolyNull Object getSourceWithPrecisePosition(@PolyNull Object source) {
+        if (!(source instanceof JCTree)) {
+            return source;
+        }
+
+        JCTree tree = (JCTree) source;
+        if (tree.getPreferredPosition() != Position.NOPOS) {
+            return tree;
+        }
+
+        TreePath path = getTreePathCacher().getPath(currentRoot, tree);
+        if (path == null) {
+            return tree;
+        }
+
+        // find the first parent in AST path that has a precise preferred position
+        while (((JCTree) path.getLeaf()).getPreferredPosition() == Position.NOPOS
+                && path.getParentPath() != null) {
+            path = path.getParentPath();
+        }
+        return path.getLeaf();
     }
 
     /**
@@ -2087,7 +2154,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      *     otherwise
      */
     public boolean shouldSuppressWarnings(Tree tree, String errKey) {
-
         Collection<String> prefixes = getSuppressWarningsPrefixes();
         if (prefixes.isEmpty()
                 || (prefixes.contains(SUPPRESS_ALL_PREFIX) && prefixes.size() == 1)) {
@@ -2103,9 +2169,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             return true;
         }
 
-        // trees.getPath might be slow, but this is only used in error reporting
-        @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
-
+        @Nullable TreePath path = getTreePathCacher().getPath(currentRoot, tree);
         return shouldSuppressWarnings(path, errKey);
     }
 
@@ -2872,6 +2936,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * @return path to the current compilation unit
      */
     public TreePath getPathToCompilationUnit() {
-        return TreePath.getPath(currentRoot, currentRoot);
+        return getTreePathCacher().getPath(currentRoot, currentRoot);
     }
 }
