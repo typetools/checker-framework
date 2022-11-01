@@ -1,13 +1,13 @@
-Version 3.26.1 (November 1, 2022)
+Version 3.27.0 (November 1, 2022)
 ---------------------------------
 
 **User-visible changes:**
 
 The Constant Value Checker supports new annotation `@DoesNotMatchRegex`.
 
-**Implementation details:**
-
 **Closed issues:**
+
+#5238, #5360, #5362, #5387.
 
 
 Version 3.26.0 (October 3, 2022)
