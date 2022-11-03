@@ -782,12 +782,10 @@ public class DependentTypesHelper {
                                 public JavaExpression visitMethodCall(
                                         MethodCall methodCall, Void unused) {
                                     // To delocalize a method call, first delocalize its receiver
-                                    // and its
-                                    // parameters. If any of them are null - that is, represent
-                                    // local variables
-                                    // - return null, because the method call expression shouldn't
-                                    // be included
-                                    // in the delocalized result.
+                                    // and its parameters. If any of them are null - that is,
+                                    // represent local variables - return null, because the method
+                                    // call expression shouldn't be included in the delocalized
+                                    // result.
                                     JavaExpression convertedReceiver =
                                             convert(methodCall.getReceiver());
                                     if (convertedReceiver == null) {
