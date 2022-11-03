@@ -140,7 +140,9 @@ public abstract class AggregateChecker extends SourceChecker {
             options.addAll(checker.getSupportedOptions());
         }
         options.addAll(
-                expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
+                expandCFOptions(
+                        Arrays.asList(this.getClass()),
+                        options.toArray(new String[options.size()])));
         return options;
     }
 

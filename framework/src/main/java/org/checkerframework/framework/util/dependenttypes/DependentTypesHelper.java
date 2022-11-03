@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.SourceChecker;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -712,12 +714,14 @@ public class DependentTypesHelper {
      * @param atm the annotated type mirror to delocalize
      * @param invocationTree the method or constructor invocation
      * @param arguments the actual arguments to the method or constructor
+     * @param receiver the actual receiver, if there was one; null if not
      * @param methodElt the declaration of the method or constructor being invoked
      */
     public void delocalizeAtCallsite(
             AnnotatedTypeMirror atm,
             Tree invocationTree,
             List<Node> arguments,
+            @Nullable Node receiver,
             ExecutableElement methodElt) {
 
         // TODO: this method should also take the receiver parameter, if there was one at the
@@ -732,6 +736,7 @@ public class DependentTypesHelper {
         // important for the TreePath, which is expensive to compute.
         List<JavaExpression> argsAsExprs =
                 CollectionsPlume.mapList(LocalVariable::fromNode, arguments);
+        JavaExpression receiverAsExpr = receiver == null ? null : LocalVariable.fromNode(receiver);
         TreePath path = factory.getPath(invocationTree);
 
         StringToJavaExpression stringToJavaExpr =
@@ -748,6 +753,11 @@ public class DependentTypesHelper {
                                     if (index != -1) {
                                         return FormalParameter.getFormalParameters(methodElt)
                                                 .get(index);
+                                    }
+                                    if (javaExpr.equals(receiverAsExpr)) {
+                                        return new ThisReference(
+                                                ElementUtils.enclosingTypeElement(methodElt)
+                                                        .asType());
                                     }
                                     return super.convert(javaExpr);
                                 }
@@ -767,7 +777,37 @@ public class DependentTypesHelper {
                                         ThisReference thisRef, Void unused) {
                                     return null;
                                 }
+
+                                @Override
+                                public JavaExpression visitMethodCall(
+                                        MethodCall methodCall, Void unused) {
+                                    // To delocalize a method call, first delocalize its receiver
+                                    // and its
+                                    // parameters. If any of them are null - that is, represent
+                                    // local variables
+                                    // - return null, because the method call expression shouldn't
+                                    // be included
+                                    // in the delocalized result.
+                                    JavaExpression convertedReceiver =
+                                            convert(methodCall.getReceiver());
+                                    if (convertedReceiver == null) {
+                                        return null;
+                                    }
+                                    List<JavaExpression> convertedArgs =
+                                            methodCall.getArguments().stream()
+                                                    .map(this::convert)
+                                                    .collect(Collectors.toList());
+                                    if (convertedArgs.contains(null)) {
+                                        return null;
+                                    }
+                                    return new MethodCall(
+                                            methodCall.getType(),
+                                            methodCall.getElement(),
+                                            convertedReceiver,
+                                            convertedArgs);
+                                }
                             };
+
                     return jec.convert(expr);
                 };
 

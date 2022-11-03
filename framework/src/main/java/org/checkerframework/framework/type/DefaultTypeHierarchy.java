@@ -1101,7 +1101,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
                 // javac computes the upper bound as a declared type, when it should be an
                 // intersection type.
                 // (This is a bug in the GLB algorithm; see
-                // https://bugs.openjdk.java.net/browse/JDK-8039222)
+                // https://bugs.openjdk.org/browse/JDK-8039222)
                 // In this case, the upperbound is not a subtype of `supertype` and the Checker
                 // Framework crashes. So catch that crash and just return false.
                 // TODO: catch the problem more locally.

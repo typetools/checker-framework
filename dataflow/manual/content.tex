@@ -2,34 +2,48 @@
 \section{Introduction}
 
 This document describes a \emph{Dataflow Framework} for the Java
-Programming Language.  The framework is used in the
+programming language.  The Dataflow Framework is used in the
 \href{https://checkerframework.org/}{Checker Framework},
 \href{http://errorprone.info/}{Error Prone},
 \href{https://github.com/uber/NullAway}{NullAway},
-at Facebook, and in other contexts.
+at Facebook,
+and in other contexts.
 
 The primary purpose of the Dataflow Framework is to estimate values:
-for each line of source code, it determines what
-values each variable might contain.
+for each line of source code, it determines properties for
+each variable, that are true for every value the variable might contain.
 
 The Dataflow Framework's result (\autoref{sec:analysis_result_class})
 is an abstract value for each expression (an estimate of the
 expression's run-time value) and a store at each program point.  A
 store maps variables and other expressions to abstract
-values.  As a pre-pass, the Dataflow Framework transforms an input
+values.
+
+As a pre-pass, the Dataflow Framework transforms an input
 AST into a control flow graph (\autoref{sec:cfg}) consisting of basic
 blocks made up of nodes representing single operations.  An analysis
-performs iterative data flow
-analysis over the control flow graph.  The effect of a single node on
+operates over the control flow graph.  The effect of a single node on
 the dataflow store is represented by a transfer function, which takes
 an input store and a node and produces an output store.  Once the
-analysis reaches a fix point, the result can be accessed by client
+analysis reaches a fixed point, the result can be accessed by client
 code.
 
+The \emph{easiest way} to create a dataflow analysis for Java is to use the
+Checker Framework.  The Checker Framework performs type checking along with
+flow-sensitive type inference, which is equivalent to a dataflow analysis or
+an abstract interpretation.
 In the Checker Framework, the abstract values to be computed are
-annotated types.  An individual checker can customize its analysis by
+annotated types.  You would define a type hierarchy corresponding to the
+lattice for your dataflow analysis.
+An individual checker can customize its analysis by
 extending the abstract value class and by overriding the behavior of
 the transfer function for particular node types.
+This approach requires you to write very little code.  The downside is
+that it will run relatively slowly because of the Checker Framework's rich
+functionality.  If you do not need that functionality, you can write a
+faster analysis directly on the Dataflow Framework.  Some users first
+create an analysis using the Checker Framework, and then if it is not fast
+enough, they rewrite it for the Dataflow Framework.
 
 The Dataflow Framework was
 designed with several goals in mind.  First, to encourage use
@@ -53,7 +67,7 @@ enhancements.
 \end{workinprogress}
 
 
-\paragraph{Potential version conflicts if you export the Dataflow Framework}
+\subsection{Potential version conflicts if you export the Dataflow Framework}
 
 If your tool uses the Dataflow Framework, then \textbf{please shade the
   Dataflow Framework in your tool}.  You can do this using the Maven Shade
@@ -2056,53 +2070,29 @@ where $\operatorname{type}(o)$ determines the Java type of a reference $o$
 and $<:$ denotes standard Java subtyping.
 
 
+%% Problem: Emacs function `hack-local-variables` only looks backwards 3000
+%% characters for the "Local Variables" block, that number is hardcoded,
+%% and the "LocalWords" part of this file is longer than that if its lines
+%% are only (say) 100 characters long.
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "dataflow"
 %%% TeX-command-default: "PDF"
 %%% End:
 
-%  LocalWords:  pre cfg javacutils InternalUtils DivideByZero BlockImpl se
-%  LocalWords:  SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl
-%  LocalWords:  ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
-%  LocalWords:  ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue
-%  LocalWords:  JavaExpressions AbstractValue AbstractValues PolyNull Poly
-%  LocalWords:  AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
-%  LocalWords:  NullnessCheckers CFAbstractStore InitializationStore Regex
-%  LocalWords:  NullnessStore TransferInput TransferResult TransferInputs
-%  LocalWords:  ConditionalTransferResult RegularTransferResult CFTransfer
-%  LocalWords:  TransferFunction NodeVisitor TransferResults isRegex lst
-%  LocalWords:  CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree
-%  LocalWords:  InitializationTransfer visitMethodInvocation RegexTransfer
-%  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp Uber
-%  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
-%  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker
-%  LocalWords:  GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis
-%  LocalWords:  BaseAnnotatedTypeFactory CFGSimple ValueLiteral txt
-%  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
-%  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
-%  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess This
-%  LocalWords:  MethodAccess ExplicitThis ImplicitThis NullAway
-%  LocalWords:  LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType
-%  LocalWords:  BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot
-%  LocalWords:  ConditionalOr FloatingDivision FloatingRemainder LeftShift
-%  LocalWords:  IntegerDivision IntegerRemainder NumericalAddition EqualTo
-%  LocalWords:  NumericalMinus NumericalMultiplication NumericalPlus util
-%  LocalWords:  NumericalSubtraction SignedRightShift StringConcatenate
-%  LocalWords:  TernaryExpression UnsignedRightShift NotEqual GreaterThan
-%  LocalWords:  GreaterThanOrEqual LessThan LessThanOrEqual ArrayCreation
-%  LocalWords:  ObjectCreation TypeCast cond
-%  LocalWords:  InstanceOf instanceof NarrowingConversion StringConversion
-%  LocalWords:  WideningConversion ArrayType ParameterizedType ClassName
-%  LocalWords:  PrimitiveType PackageName AssertionError NullChk accessor
-%  LocalWords:  VariableDeclaration desugared desugaring FieldAssignment
-%  LocalWords:  CFGFieldAssignment getRegularStore CFGConditionalOr fnc
-%  LocalWords:  CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
-%  LocalWords:  IdentifierTree FieldAccessNode ImplicitThisNode unboxing
-%  LocalWords:  TreePath pathHack MethodTree VarSymbol DetachedVarSymbols
-%  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
-%  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
-%  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
-%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
-%  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
-%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
+%  LocalWords: pre cfg javacutils InternalUtils DivideByZero BlockImpl se SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
+%  LocalWords: ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue JavaExpressions AbstractValue AbstractValues PolyNull Poly AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
+%  LocalWords: NullnessCheckers CFAbstractStore InitializationStore Regex NullnessStore TransferInput TransferResult TransferInputs ConditionalTransferResult RegularTransferResult CFTransfer
+%  LocalWords: TransferFunction NodeVisitor TransferResults isRegex lst CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree InitializationTransfer visitMethodInvocation RegexTransfer
+%  LocalWords: CFAbstractAnalysis NullnessTransfer RegexChecker's lp AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys AnnotationProvider getAnnotatedType BaseTypeChecker
+%  LocalWords: GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis BaseAnnotatedTypeFactory CFGSimple ValueLiteral txt BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
+%  LocalWords: IntegerLiteral LongLiteral NullLiteral ShortLiteral args StringLiteral Accessor ArrayAccess FieldAccess This MethodAccess ExplicitThis ImplicitThis NullAway
+%  LocalWords: LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot ConditionalOr FloatingDivision FloatingRemainder LeftShift
+%  LocalWords: IntegerDivision IntegerRemainder NumericalAddition EqualTo NumericalMinus NumericalMultiplication NumericalPlus util NumericalSubtraction SignedRightShift StringConcatenate
+%  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan LessThanOrEqual ArrayCreation StringConcatenateAssignment ObjectCreation TypeCast cond
+%  LocalWords: InstanceOf NarrowingConversion StringConversion WideningConversion ArrayType ParameterizedType ClassName PrimitiveType PackageName AssertionError NullChk accessor
+%  LocalWords: VariableDeclaration FieldAssignment CFGFieldAssignment getRegularStore CFGConditionalOr fnc CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
+%  LocalWords: IdentifierTree FieldAccessNode ImplicitThisNode unboxing TreePath pathHack MethodTree VarSymbol DetachedVarSymbols DeclarationFromElement BoxedClass treeLookup getValue
+%  LocalWords: nodeValues AdditionNode postconversion treelookup LocalVariableNode AconcurrentSemantics MonotonicNonNull MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
+%  LocalWords: ConstSimple SelfReference PureMethodCall javacutil stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple

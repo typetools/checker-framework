@@ -138,15 +138,18 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // annotation that combines their values.
 
             // Each annotation is either NegativeIndexFor or SearchIndexFor.
-            Set<String> combinedArrays = new HashSet<>(getValueElement(a1));
-            combinedArrays.addAll(getValueElement(a2));
+            Set<String> combinedSet = new HashSet<>(getValueElement(a1));
+            combinedSet.addAll(getValueElement(a2));
+            // The list is backed by the given array.
+            List<String> combinedList =
+                    Arrays.asList(combinedSet.toArray(new String[combinedSet.size()]));
 
             // NegativeIndexFor <: SearchIndexFor.
             if (areSameByClass(a1, NegativeIndexFor.class)
                     || areSameByClass(a2, NegativeIndexFor.class)) {
-                return createNegativeIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));
+                return createNegativeIndexFor(combinedList);
             } else {
-                return createSearchIndexFor(Arrays.asList(combinedArrays.toArray(new String[0])));
+                return createSearchIndexFor(combinedList);
             }
         }
 

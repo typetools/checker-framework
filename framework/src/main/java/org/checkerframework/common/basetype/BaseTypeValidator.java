@@ -620,7 +620,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 // If the super bound of the wildcard is the same as the upper bound of the
                 // type parameter, then javac uses the bound rather than creating a fresh
                 // type variable.
-                // (See https://bugs.openjdk.java.net/browse/JDK-8054309.)
+                // (See https://bugs.openjdk.org/browse/JDK-8054309.)
                 // In this case, the Checker Framework uses the annotations on the super
                 // bound of the wildcard and ignores the annotations on the extends bound.
                 // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.

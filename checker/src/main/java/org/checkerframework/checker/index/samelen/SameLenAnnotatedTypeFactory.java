@@ -375,12 +375,15 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     ///
 
     /**
-     * Creates a @SameLen annotation whose values are the given strings, from an <em>ordered</em>
-     * collection such as a list or TreeSet in which the strings are in alphabetical order.
+     * Creates a @SameLen annotation whose values are the given strings.
+     *
+     * @param exprs the values for the @SameLen annotation. This must be an <em>ordered</em>
+     *     collection such as a list or TreeSet in which the strings are in alphabetical order.
+     * @return a @SameLen annotation whose values are the given strings
      */
     public AnnotationMirror createSameLen(Collection<String> exprs) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, SameLen.class);
-        String[] exprArray = exprs.toArray(new String[0]);
+        String[] exprArray = exprs.toArray(new String[exprs.size()]);
         builder.setValue("value", exprArray);
         return builder.build();
     }

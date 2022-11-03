@@ -28,6 +28,7 @@ import java.lang.annotation.Target;
     IntVal.class,
     StringVal.class,
     MatchesRegex.class,
+    DoesNotMatchRegex.class,
     ArrayLenRange.class,
     IntRange.class,
     IntRangeFromPositive.class,

@@ -47,24 +47,27 @@ public class Values {
         }
     }
 
-    void foo(@Value Object o) {}
+    void foo(@ValueTypeAnno Object o) {}
 
-    void foo1(@Value(1) Object o) {}
+    void foo1(@ValueTypeAnno(1) Object o) {}
 
-    void foo2(@Value(2) Object o) {}
+    void foo2(@ValueTypeAnno(2) Object o) {}
 
     @SuppressWarnings("flowtest:return.type.incompatible")
-    @Value Object get() {
+    @ValueTypeAnno
+    Object get() {
         return null;
     }
 
     @SuppressWarnings("flowtest:return.type.incompatible")
-    @Value(1) Object get1() {
+    @ValueTypeAnno(1)
+    Object get1() {
         return null;
     }
 
     @SuppressWarnings("flowtest:return.type.incompatible")
-    @Value(2) Object get2() {
+    @ValueTypeAnno(2)
+    Object get2() {
         return null;
     }
 }

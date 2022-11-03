@@ -38,35 +38,35 @@ public class Postcondition {
         throw new RuntimeException();
     }
 
-    @EnsuresQualifier(expression = "f1", qualifier = Value.class)
+    @EnsuresQualifier(expression = "f1", qualifier = ValueTypeAnno.class)
     // :: error: (contracts.postcondition.not.satisfied)
     void valueF1() {}
 
-    @EnsuresQualifier(expression = "---", qualifier = Value.class)
+    @EnsuresQualifier(expression = "---", qualifier = ValueTypeAnno.class)
     // :: error: (flowexpr.parse.error)
     void error() {}
 
-    @EnsuresQualifier(expression = "#1.#2", qualifier = Value.class)
+    @EnsuresQualifier(expression = "#1.#2", qualifier = ValueTypeAnno.class)
     // :: error: (flowexpr.parse.error)
     void error2(final String p1, final String p2) {}
 
-    @EnsuresQualifier(expression = "f1", qualifier = Value.class)
+    @EnsuresQualifier(expression = "f1", qualifier = ValueTypeAnno.class)
     void exception() {
         throw new RuntimeException();
     }
 
-    @EnsuresQualifier(expression = "#1", qualifier = Value.class)
-    void param1(final @Value String f) {}
+    @EnsuresQualifier(expression = "#1", qualifier = ValueTypeAnno.class)
+    void param1(final @ValueTypeAnno String f) {}
 
     @EnsuresQualifier(
             expression = {"#1", "#2"},
-            qualifier = Value.class)
+            qualifier = ValueTypeAnno.class)
     // :: error: (flowexpr.parameter.not.final)
-    void param2(@Value String f, @Value String g) {
+    void param2(@ValueTypeAnno String f, @ValueTypeAnno String g) {
         f = g;
     }
 
-    @EnsuresQualifier(expression = "#1", qualifier = Value.class)
+    @EnsuresQualifier(expression = "#1", qualifier = ValueTypeAnno.class)
     // :: error: (flowexpr.parse.index.too.big)
     void param3() {}
 
@@ -116,16 +116,16 @@ public class Postcondition {
     /** *** many postcondition ***** */
     @EnsuresQualifier.List({
         @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
-        @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+        @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
     })
-    void oddValueF1(@Value String p1) {
+    void oddValueF1(@ValueTypeAnno String p1) {
         f1 = null;
         f2 = p1;
     }
 
     @EnsuresQualifier(expression = "f1", qualifier = Odd.class)
-    @EnsuresQualifier(expression = "f2", qualifier = Value.class)
-    void oddValueF1_repeated1(@Value String p1) {
+    @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
+    void oddValueF1_repeated1(@ValueTypeAnno String p1) {
         f1 = null;
         f2 = p1;
     }
@@ -133,25 +133,25 @@ public class Postcondition {
     @EnsuresQualifier.List({
         @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
     })
-    @EnsuresQualifier(expression = "f2", qualifier = Value.class)
-    void oddValueF1_repeated2(@Value String p1) {
+    @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
+    void oddValueF1_repeated2(@ValueTypeAnno String p1) {
         f1 = null;
         f2 = p1;
     }
 
     @EnsuresQualifier(expression = "f1", qualifier = Odd.class)
-    @EnsuresQualifier.List({@EnsuresQualifier(expression = "f2", qualifier = Value.class)})
-    void oddValueF1_repeated3(@Value String p1) {
+    @EnsuresQualifier.List({@EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)})
+    void oddValueF1_repeated3(@ValueTypeAnno String p1) {
         f1 = null;
         f2 = p1;
     }
 
     @EnsuresQualifier.List({
         @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
-        @EnsuresQualifier(expression = "f2", qualifier = Value.class)
+        @EnsuresQualifier(expression = "f2", qualifier = ValueTypeAnno.class)
     })
     // :: error: (contracts.postcondition.not.satisfied)
-    void oddValueF1_invalid(@Value String p1) {}
+    void oddValueF1_invalid(@ValueTypeAnno String p1) {}
 
     @EnsuresQualifier.List({
         @EnsuresQualifier(expression = "--", qualifier = Odd.class),
@@ -160,14 +160,14 @@ public class Postcondition {
     void error2() {}
 
     // basic postcondition test
-    void tnm1(@Odd String p1, @Value String p2) {
+    void tnm1(@Odd String p1, @ValueTypeAnno String p2) {
         // :: error: (assignment.type.incompatible)
         @Odd String l1 = f1;
         // :: error: (assignment.type.incompatible)
-        @Value String l2 = f2;
+        @ValueTypeAnno String l2 = f2;
         oddValueF1(p2);
         @Odd String l3 = f1;
-        @Value String l4 = f2;
+        @ValueTypeAnno String l4 = f2;
 
         // :: error: (flowexpr.parse.error.postcondition)
         error2();
@@ -264,9 +264,9 @@ public class Postcondition {
     /** *** many conditional postcondition ***** */
     @EnsuresQualifierIf.List({
         @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Odd.class),
-        @EnsuresQualifierIf(result = false, expression = "f1", qualifier = Value.class)
+        @EnsuresQualifierIf(result = false, expression = "f1", qualifier = ValueTypeAnno.class)
     })
-    boolean condsOddF1(boolean b, @Value String p1) {
+    boolean condsOddF1(boolean b, @ValueTypeAnno String p1) {
         if (b) {
             f1 = null;
             return true;
@@ -277,9 +277,9 @@ public class Postcondition {
 
     @EnsuresQualifierIf.List({
         @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Odd.class),
-        @EnsuresQualifierIf(result = false, expression = "f1", qualifier = Value.class)
+        @EnsuresQualifierIf(result = false, expression = "f1", qualifier = ValueTypeAnno.class)
     })
-    boolean condsOddF1_invalid(boolean b, @Value String p1) {
+    boolean condsOddF1_invalid(boolean b, @ValueTypeAnno String p1) {
         if (b) {
             // :: error: (contracts.conditional.postcondition.not.satisfied)
             return true;
@@ -296,18 +296,18 @@ public class Postcondition {
         return "";
     }
 
-    void t6(@Odd String p1, @Value String p2) {
+    void t6(@Odd String p1, @ValueTypeAnno String p2) {
         condsOddF1(true, p2);
         // :: error: (assignment.type.incompatible)
         @Odd String l1 = f1;
         // :: error: (assignment.type.incompatible)
-        @Value String l2 = f1;
+        @ValueTypeAnno String l2 = f1;
         if (condsOddF1(false, p2)) {
             @Odd String l3 = f1;
             // :: error: (assignment.type.incompatible)
-            @Value String l4 = f1;
+            @ValueTypeAnno String l4 = f1;
         } else {
-            @Value String l5 = f1;
+            @ValueTypeAnno String l5 = f1;
             // :: error: (assignment.type.incompatible)
             @Odd String l6 = f1;
         }
