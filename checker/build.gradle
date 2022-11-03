@@ -69,6 +69,13 @@ dependencies {
     // The AWS SDK is used for testing the Called Methods Checker.
     testImplementation platform("com.amazonaws:aws-java-sdk-bom:1.12.293")
 
+    // Required for checker/tests/index-initializedfields/RequireJavadoc.java
+    if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
+        testImplementation 'org.plumelib:options:1.0.6'
+    } else {
+        testImplementation 'org.plumelib:options:2.0.2'
+    }
+
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
     testImplementation sourceSets.testannotations.output
