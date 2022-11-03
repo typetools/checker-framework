@@ -1240,8 +1240,14 @@ If a method's contract is expressible in the type system's annotation
 syntax, then you should write annotations, in a stub file or annotated JDK
 (Chapter~\ref{annotating-libraries}).
 
-Only if the contract is not expressible should you write a type-checking
-rule for method invocation, where your rule checks the name of the method
+If the contract is not expressible, you can create a declaration
+annotation, and your checker can treat methods with that annotation
+specially.  An example is the
+\refqualclass{checker/formatter/qual}{FormatMethod} annotation; see
+Section~\ref{formatter-FormatMethod}.
+
+A final alternative is to write a type-checking rule for method invocation,
+where your rule checks the (class and) name of the method
 being called and then treats the method in a special way.
 
 
@@ -2087,7 +2093,7 @@ command-line options. \\
 
 \subsubsectionAndLabel{Creating a CFG by running CFGVisualizeLauncher}{creating-debugging-dataflow-graph-with-cfgvisualizelauncher}
 
-You can also use \refclass{dataflow/cfg}{CFGVisualizeLauncher} to generate a DOT
+You can also use \refclass{dataflow/cfg/visualize}{CFGVisualizeLauncher} to generate a DOT
 or String representation of the control flow graph of a given method in a given class.
 The CFG is generated and output, but no dataflow analysis is performed.
 
@@ -2252,7 +2258,7 @@ following sections:
   \end{Verbatim}
 
   \noindent
-  For more details, see \refclass{javacutil/dist}{ManualTaglet}.
+  For more details, see \refclass{taglet}{ManualTaglet}.
 
 \item[Section: What the Belly Rub Checker checks]
   This section gives more details about when an error is issued, with examples.
@@ -2300,7 +2306,7 @@ Also ensure that the Javadoc links back to the manual, using the
 
 Since this section of the manual was written, the useful ``The Hitchhiker's
 Guide to javac'' has become available at
-\url{http://openjdk.java.net/groups/compiler/doc/hhgtjavac/index.html}.
+\url{https://openjdk.org/groups/compiler/doc/hhgtjavac/index.html}.
 See it first, and then refer to this section.  (This section of the manual
 should be revised, or parts eliminated, in light of that document.)
 
@@ -2376,6 +2382,12 @@ statement (also known as a foreach loop).
 You should limit your use of trees. A checker uses Trees mainly to
 traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
+
+To obtain the position (line number and column number) of a Tree,
+cast the Tree to a \<com.sun.tools.javac.tree.JCTree> and then use one of
+its methods, such as \<pos()> which returns a \<JCDiagnostic.DiagnosticPosition>.
+\<com.sun.source.tree.CompilationUnitTree> has a LineMap lets you convert
+positions to line numbers.
 
 
 \subsubsectionAndLabel{Using the APIs}{creating-using-the-apis}
@@ -2474,9 +2486,9 @@ other useful resources include the Java Infrastructure
 Developer's guide at
 \url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.asciidoc} and the compiler
 mailing list archives at
-\url{https://mail.openjdk.java.net/pipermail/compiler-dev/}
+\url{https://mail.openjdk.org/pipermail/compiler-dev/}
 (subscribe at
-\url{https://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
+\url{https://mail.openjdk.org/mailman/listinfo/compiler-dev}).
 
 
 \sectionAndLabel{Integrating a checker with the Checker Framework}{creating-integrating-a-checker}

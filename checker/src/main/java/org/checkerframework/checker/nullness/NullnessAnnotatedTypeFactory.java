@@ -142,7 +142,7 @@ public class NullnessAnnotatedTypeFactory
           "com.sun.istack.internal.NotNull",
           // https://github.com/pingidentity/ldapsdk/blob/master/src/com/unboundid/util/NotNull.java
           "com.unboundid.util.NotNull",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
           "edu.umd.cs.findbugs.annotations.NonNull",
           // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/NonNull.java
           "io.micrometer.core.lang.NonNull",
@@ -218,13 +218,13 @@ public class NullnessAnnotatedTypeFactory
           "com.sun.istack.internal.Nullable",
           // https://github.com/pingidentity/ldapsdk/blob/master/src/com/unboundid/util/Nullable.java
           "com.unboundid.util.Nullable",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
           "edu.umd.cs.findbugs.annotations.CheckForNull",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html
           "edu.umd.cs.findbugs.annotations.Nullable",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/PossiblyNull.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/PossiblyNull.html
           "edu.umd.cs.findbugs.annotations.PossiblyNull",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
           "edu.umd.cs.findbugs.annotations.UnknownNullness",
           // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/Nullable.java
           "io.micrometer.core.lang.Nullable",
@@ -871,6 +871,14 @@ public class NullnessAnnotatedTypeFactory
     if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
       rhsATM.replaceAnnotation(NULLABLE);
     }
+  }
+
+  @Override
+  public boolean wpiShouldInferTypesForReceivers() {
+    // All receivers must be non-null, or the dereference involved in
+    // the method call would fail (and cause an NPE). So, WPI should not
+    // infer non-null or nullable annotations on method receiver parameters.
+    return false;
   }
 
   // This implementation overrides the superclass implementation to:
