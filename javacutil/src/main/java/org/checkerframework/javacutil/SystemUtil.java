@@ -26,7 +26,7 @@ public class SystemUtil {
 
     /** Do not instantiate. */
     private SystemUtil() {
-        throw new Error("Do not instantiate.");
+        throw new AssertionError("Class SystemUtil cannot be instantiated.");
     }
 
     /** The major version number of the Java runtime (JRE), such as 8, 11, or 17. */
