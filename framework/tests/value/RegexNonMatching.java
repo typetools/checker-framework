@@ -5,9 +5,9 @@ import org.checkerframework.common.value.qual.*;
 public class RegexNonMatching {
 
     void stringConstants() {
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("a*") String aStar = "a";
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         aStar = "";
         aStar = "b";
         @DoesNotMatchRegex({"a+"}) String aPlus = "b";
@@ -15,77 +15,77 @@ public class RegexNonMatching {
         aStar = "ab";
         aStar = "baa";
 
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("a") String a1 = "a";
         @DoesNotMatchRegex("a") String blank1 = "";
         @DoesNotMatchRegex("a") String b1 = "b";
 
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("\\s") String space = " ";
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("\\s+") String severalSpaces = "      ";
         // TODO: this should work
         @DoesNotMatchRegex("\\s") String b2 = "b";
 
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("[^abc]") String d = "d";
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("[^abc]") String d1 = String.valueOf(new char[] {'d'});
         // TODO: this should work, shouldn't it?
         @DoesNotMatchRegex("[^abc]") String c = "c";
     }
 
     void severalString(@StringVal({"a", "aa"}) String aaa, @StringVal({"aa", "b"}) String aab) {
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("a*") String a = aaa;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("a*") String a1 = aab;
 
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("a+") String a2 = aaa;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("a+") String a3 = aab;
     }
 
     void multipleRegexes(@StringVal({"a", "aa"}) String aaa, @StringVal({"aa", "b"}) String aab) {
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"a*", "b*"}) String a = aaa;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"a*", "b*"}) String a1 = aab;
 
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"aa", "b*"}) String a2 = aaa;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"aa", "b*"}) String a3 = aab;
     }
 
     void regexSubtypingConstant(@DoesNotMatchRegex({"a", "b"}) String ab) {
         @DoesNotMatchRegex("a") String a = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("c") String c = ab;
         @DoesNotMatchRegex({"a", "b"}) String ab1 = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"a", "b", "c"}) String abc = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @StringVal("a") String a1 = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @StringVal({"a", "b"}) String ab2 = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @StringVal({"a", "b", "c"}) String abc1 = ab;
     }
 
     void regexSubtyping2(@DoesNotMatchRegex({"a*", "b*"}) String ab) {
         @DoesNotMatchRegex("a*") String a = ab;
         @DoesNotMatchRegex({"a*", "b*"}) String ab1 = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"a*", "b*", "c*"}) String abc = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @StringVal("a*") String a1 = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @StringVal({"a*", "b*"}) String ab2 = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @StringVal({"a*", "b*", "c*"}) String abc1 = ab;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @StringVal({"c*"}) String c = ab;
     }
 
@@ -99,16 +99,16 @@ public class RegexNonMatching {
         } else {
             s = bstar;
         }
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"a*", "b*"}) String s1 = s;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"a*"}) String s2 = s;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({"b*"}) String s3 = s;
         s3 = s1;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({}) String s4 = s;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex({".*"}) String s5 = s;
         @UnknownVal() String s6 = s;
     }
@@ -134,103 +134,103 @@ public class RegexNonMatching {
         @DoesNotMatchRegex({"a", "b", "c"}) String dnmABC;
 
         dnmNone = dnmsNone;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmA = dnmsNone;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmB = dnmsNone;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmC = dnmsNone;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAB = dnmsNone;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAC = dnmsNone;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmBC = dnmsNone;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmABC = dnmsNone;
 
         dnmNone = dnmsA;
         dnmA = dnmsA;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmB = dnmsA;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmC = dnmsA;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAB = dnmsA;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAC = dnmsA;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmBC = dnmsA;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmABC = dnmsA;
 
         dnmNone = dnmsB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmA = dnmsB;
         dnmB = dnmsB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmC = dnmsB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAB = dnmsB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAC = dnmsB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmBC = dnmsB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmABC = dnmsB;
 
         dnmNone = dnmsC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmA = dnmsC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmB = dnmsC;
         dnmC = dnmsC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAB = dnmsC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAC = dnmsC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmBC = dnmsC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmABC = dnmsC;
 
         dnmNone = dnmsAC;
         dnmA = dnmsAC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmB = dnmsAC;
         dnmC = dnmsAC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAB = dnmsAC;
         dnmAC = dnmsAC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmBC = dnmsAC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmABC = dnmsAC;
 
         dnmNone = dnmsAB;
         dnmA = dnmsAB;
         dnmB = dnmsAB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmC = dnmsAB;
         dnmAB = dnmsAB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAC = dnmsAB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmBC = dnmsAB;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmABC = dnmsAB;
 
         dnmNone = dnmsBC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmA = dnmsBC;
         dnmB = dnmsBC;
         dnmC = dnmsBC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAB = dnmsBC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmAC = dnmsBC;
         dnmBC = dnmsBC;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         dnmABC = dnmsBC;
 
         dnmNone = dnmsABC;
@@ -245,7 +245,7 @@ public class RegexNonMatching {
 
     void stringToRegex1(@StringVal({"(a)"}) String a) {
         @DoesNotMatchRegex("(a)") String a2 = a;
-        // :: error: assignment
+        // :: error: assignment.type.incompatible
         @DoesNotMatchRegex("\\(a\\)") String a3 = a;
     }
 }

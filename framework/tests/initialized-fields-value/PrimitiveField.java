@@ -28,42 +28,42 @@ public class PrimitiveField {
 
     @IntVal(0) long l2;
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk1 {
         @BoolVal(true) boolean b2;
     }
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk2 {
         @IntVal(1) byte by2;
     }
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk3 {
         @IntVal(1) char c2;
     }
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk4 {
         @IntVal(1) int i2;
     }
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk5 {
         @IntVal(1) short s2;
     }
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk6 {
         @DoubleVal(1.0) float f2;
     }
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk7 {
         @DoubleVal(1.0) double d2;
     }
 
-    // :: error: (contracts.postcondition)
+    // :: error: (contracts.postcondition.not.satisfied)
     static class InitValueNotOk8 {
         @IntVal(2) long l2;
     }
