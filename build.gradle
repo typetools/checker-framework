@@ -310,14 +310,14 @@ allprojects {
               if (isJava8) {
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
               }
-                // This file is looked for by Javadoc.
-                file("${destinationDir}/resources/fonts/").mkdirs()
-                ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
-                options.addStringOption('source', '8')
-                // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
-                // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
-                // options.addBooleanOption('Xwerror', true)
-                options.addStringOption('Xmaxwarns', '99999')
+              // This file is looked for by Javadoc.
+              file("${destinationDir}/resources/fonts/").mkdirs()
+              ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
+              options.addStringOption('source', '8')
+              // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
+              // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
+              // options.addBooleanOption('Xwerror', true)
+              options.addStringOption('Xmaxwarns', '99999')
             }
         }
 
