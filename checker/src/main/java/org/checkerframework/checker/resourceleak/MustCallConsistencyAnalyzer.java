@@ -2131,7 +2131,8 @@ class MustCallConsistencyAnalyzer {
         // Create this annotation and use a subtype test because there's no guarantee that
         // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
         AnnotationMirror cmAnnoForMustCallMethods =
-                typeFactory.createCalledMethods(mustCallValues.toArray(new String[0]));
+                typeFactory.createCalledMethods(
+                        mustCallValues.toArray(new String[mustCallValues.size()]));
         return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
     }
 

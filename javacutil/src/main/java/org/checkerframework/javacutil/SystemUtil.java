@@ -24,13 +24,20 @@ import javax.annotation.processing.ProcessingEnvironment;
 /** This file contains basic utility functions. */
 public class SystemUtil {
 
-    /** The major version of the JRE, such as 8, 11, or 17. */
+    /** Do not instantiate. */
+    private SystemUtil() {
+        throw new AssertionError("Class SystemUtil cannot be instantiated.");
+    }
+
+    /** The major version number of the Java runtime (JRE), such as 8, 11, or 17. */
     @SuppressWarnings(
-            "deprecation") // remove when getJreVersion is made private (and not deprecated)
+            "deprecation") // remove @SuppressWarnings when getJreVersion() isn't deprecated
     public static final int jreVersion = getJreVersion();
 
+    // Keep in sync with BCELUtil.java (in the bcel-util project).
     /**
-     * Returns the major JRE version.
+     * Returns the major version number from the "java.version" system property, such as 8, 11, or
+     * 17.
      *
      * <p>This is different from the version passed to the compiler via --release; use {@link
      * #getReleaseValue(ProcessingEnvironment)} to get that version.
@@ -42,42 +49,31 @@ public class SystemUtil {
      * <p>Starting in Java 9, there is the int {@code Runtime.version().feature()}, but that does
      * not exist on JDK 8.
      *
-     * @return the major version number from "java.version"
+     * @return the major version of the Java runtime
      * @deprecated use field {@link #jreVersion} instead
      */
-    @Deprecated // 2022-07-14 not for removal, just to make private
+    @Deprecated // 2022-07-14 not for removal, just to make private (and then it won't be
+    // deprecated)
     public static int getJreVersion() {
-        final String jreVersionStr = System.getProperty("java.version");
+        String version = System.getProperty("java.version");
 
-        final Pattern oldVersionPattern = Pattern.compile("^1\\.(\\d+)\\..*$");
-        final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
-        if (oldVersionMatcher.matches()) {
-            String v = oldVersionMatcher.group(1);
-            assert v != null : "@AssumeAssertion(nullness): inspection";
-            return Integer.parseInt(v);
+        // Up to Java 8, from a version string like "1.8.whatever", extract "8".
+        if (version.startsWith("1.")) {
+            return Integer.parseInt(version.substring(2, 3));
         }
 
-        // See http://openjdk.java.net/jeps/223
-        // We only care about the major version number.
+        // Since Java 9, from a version string like "11.0.1" or "11-ea" or "11u25", extract "11".
+        // The format is described at http://openjdk.org/jeps/223 .
         final Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
-        final Matcher newVersionMatcher = newVersionPattern.matcher(jreVersionStr);
+        final Matcher newVersionMatcher = newVersionPattern.matcher(version);
         if (newVersionMatcher.matches()) {
             String v = newVersionMatcher.group(1);
             assert v != null : "@AssumeAssertion(nullness): inspection";
             return Integer.parseInt(v);
         }
 
-        // For Early Access version of the JDK
-        final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
-        final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr);
-        if (eaVersionMatcher.matches()) {
-            String v = eaVersionMatcher.group(1);
-            assert v != null : "@AssumeAssertion(nullness): inspection";
-            return Integer.parseInt(v);
-        }
-
         throw new RuntimeException(
-                "Could not determine version from property java.version=" + jreVersionStr);
+                "Could not determine version from property java.version=" + version);
     }
 
     /**

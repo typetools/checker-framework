@@ -1,13 +1,16 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
-import org.checkerframework.afu.scenelib.annotations.util.JVMNames;
+import org.checkerframework.afu.scenelib.util.JVMNames;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -167,7 +170,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(
-                constructorElt, arguments, objectCreationNode.getTree());
+                constructorElt, arguments, null, objectCreationNode.getTree());
         updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
     }
 
@@ -205,7 +208,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
 
         List<Node> arguments = methodInvNode.getArguments();
-        updateInferredExecutableParameterTypes(methodElt, arguments, methodInvNode.getTree());
+        Node receiver = methodInvNode.getTarget().getReceiver();
+        // Static methods have a "receiver" that is a class name rather than an expression.
+        // Do not attempt to use the class name as a receiver expression for inference
+        // purposes.
+        if (receiver instanceof ClassNameNode) {
+            receiver = null;
+        }
+        updateInferredExecutableParameterTypes(
+                methodElt, arguments, receiver, methodInvNode.getTree());
         updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
     }
 
@@ -230,21 +241,45 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
      *
      * @param methodElt the element of the method or constructor being invoked
      * @param arguments the arguments of the invocation
+     * @param receiver the receiver node, if there is one; null if there is not
      * @param invocationTree the method or constructor invocation, used to viewpoint adapt any
      *     dependent types when storing newly-inferred annotations
      */
     private void updateInferredExecutableParameterTypes(
-            ExecutableElement methodElt, List<Node> arguments, Tree invocationTree) {
-
-        // TODO: this method should be updated to:
-        // 1. take the receiver parameter of the method being invoked as an argument, in node form,
-        //    if there is one (the argument should be null otherwise)
-        // 2. infer types for the method declaration based on the type of the receiver
-        // 3. DependentTypesHelper#delocalizeAtCallsite should be updated to handle dependent types
-        //    that refer to the receiver (there is a (commented-out) test for this in
-        //    tests/ainfer-index/non-annotated/DependentTypesViewpointAdapationTest.java).
+            ExecutableElement methodElt,
+            List<Node> arguments,
+            @Nullable Node receiver,
+            ExpressionTree invocationTree) {
 
         String file = storage.getFileForElement(methodElt);
+        // Need to check both that receiver is non-null and that this is not a constructor
+        // invocation: despite updateFromObjectCreation always passes null, it's possible
+        // for updateFromMethodInvocation to actually be a constructor invocation with a
+        // receiver: for example, when calling an inner class's constructor, the receiver
+        // can be an instance of the enclosing class. Constructor invocations should never
+        // have information inferred about their receivers.
+        if (receiver != null
+                && atypeFactory.wpiShouldInferTypesForReceivers()
+                && !methodElt.getSimpleName().contentEquals("<init>")) {
+            AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
+            AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
+            AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();
+            atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
+            T receiverAnnotations =
+                    storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
+            if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+                ((GenericAnnotatedTypeFactory) this.atypeFactory)
+                        .getDependentTypesHelper()
+                        .delocalizeAtCallsite(
+                                receiverArgATM, invocationTree, arguments, receiver, methodElt);
+            }
+            updateAnnotationSet(
+                    receiverAnnotations,
+                    TypeUseLocation.RECEIVER,
+                    receiverArgATM,
+                    receiverParamATM,
+                    file);
+        }
 
         for (int i = 0; i < arguments.size(); i++) {
             Node arg = arguments.get(i);
@@ -329,7 +364,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
             if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
                 ((GenericAnnotatedTypeFactory) this.atypeFactory)
                         .getDependentTypesHelper()
-                        .delocalizeAtCallsite(argATM, invocationTree, arguments, methodElt);
+                        .delocalizeAtCallsite(
+                                argATM, invocationTree, arguments, receiver, methodElt);
             }
             updateAnnotationSet(
                     paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);

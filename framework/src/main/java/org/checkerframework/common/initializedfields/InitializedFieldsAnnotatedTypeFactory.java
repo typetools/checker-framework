@@ -9,6 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.initializedfields.qual.EnsuresInitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFieldsBottom;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
@@ -57,6 +58,10 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             GenericAnnotatedTypeFactory<?, ?, ?, ?> atf =
                     createTypeFactoryForProcessor(checkerName);
             if (atf != null) {
+                // Add all the subcheckers so that default values are checked for the subcheckers.
+                for (BaseTypeChecker subchecker : atf.getChecker().getSubcheckers()) {
+                    defaultValueAtypeFactories.add(subchecker.getTypeFactory());
+                }
                 defaultValueAtypeFactories.add(atf);
             }
         }
@@ -225,7 +230,13 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         for (GenericAnnotatedTypeFactory<?, ?, ?, ?> defaultValueAtypeFactory :
                 defaultValueAtypeFactories) {
             defaultValueAtypeFactory.setRoot(root);
-
+            // Set the root on all the subcheckers, too.
+            for (BaseTypeChecker subchecker :
+                    defaultValueAtypeFactory.getChecker().getSubcheckers()) {
+                AnnotatedTypeFactory subATF =
+                        defaultValueAtypeFactory.getTypeFactoryOfSubchecker(subchecker.getClass());
+                subATF.setRoot(root);
+            }
             AnnotatedTypeMirror fieldType = defaultValueAtypeFactory.getAnnotatedType(field);
             AnnotatedTypeMirror defaultValueType =
                     defaultValueAtypeFactory.getDefaultValueAnnotatedType(

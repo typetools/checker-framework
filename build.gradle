@@ -59,7 +59,7 @@ ext {
     // afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.4.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.7.jar"
 
     jtregHome = "${parentDir}/jtreg"
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
@@ -146,7 +146,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.26.0-eisop2-SNAPSHOT'
+    version '3.27.0'
 
     repositories {
         mavenCentral()
@@ -206,7 +206,7 @@ allprojects {
         ]
 
         reflectionUtilVersion = '1.0.5'
-        plumeUtilVersion = '1.5.9'
+        plumeUtilVersion = '1.6.0'
     }
 
     spotless {
@@ -236,7 +236,11 @@ allprojects {
                 '**/calledmethods-delomboked/*',
                 '**/returnsreceiverdelomboked/*',
                 '*/build/**',
-                '*/tests/build/**']
+                '*/tests/build/**',
+                // TODO: Formatting of this file and the .ajava files in subdirectories
+                // need to be in sync. Reformatting all .ajava files does not fix this issue.
+                'checker/tests/index-initializedfields/RequireJavadoc.java'
+            ]
             if (isJava16plus) {
                 targetExclude stdExclude
             } else if (isJava14plus) {
@@ -250,7 +254,8 @@ allprojects {
 
             googleJavaFormat().aosp()
             importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
-            formatAnnotations()
+            // Remove addTypeAnnotation after the next release of Spotless.
+            formatAnnotations().addTypeAnnotation("DoesNotMatchRegex")
         }
     }
     // The Spotless plugin uses the latest version of google-java-format
@@ -287,30 +292,36 @@ allprojects {
             dependsOn(':checker:shadowJar')
             dependsOn(":framework-test:${tagletVersion}Classes")
             doFirst {
-                options.encoding = 'UTF-8'
-                if (!name.equals("javadocDoclintAll")) {
-                    options.memberLevel = javadocMemberLevel
-                }
-                classpath += configurations.getByName('checkerFatJar').asFileTree
-                if (isJava8) {
-                    classpath += configurations.javacJar
-                }
-                options.taglets 'org.checkerframework.taglet.ManualTaglet'
-                options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
+              options.encoding = 'UTF-8'
+              if (!name.equals("javadocDoclintAll")) {
+                options.memberLevel = javadocMemberLevel
+              }
+              classpath += configurations.getByName('checkerFatJar').asFileTree
+              if (isJava8) {
+                classpath += configurations.javacJar
+              }
+              options.taglets 'org.checkerframework.taglet.ManualTaglet'
+              options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
 
-                // We want to link to Java 9 documentation of the compiler classes since we use Java 9
-                // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
-                // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
-                // TODO, this creates broken links to the com.sun.tools.javac package.
+              // We want to link to Java 9 documentation of the compiler classes since we use Java 9
+              // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
+              // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
+              // TODO, this creates broken links to the com.sun.tools.javac package.
+              // Only add the links of building with Java 8.  This prevents the following error:
+              // warning: URL https://docs.oracle.com/javase/8/docs/api/element-list was redirected
+              // to https://docs.oracle.com/en/java/javase/19/ -- Update the command-line options
+              // to suppress this warning.
+              if (isJava8) {
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
-                // This file is looked for by Javadoc.
-                file("${destinationDir}/resources/fonts/").mkdirs()
-                ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
-                options.addStringOption('source', '8')
-                // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
-                // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
-                // options.addBooleanOption('Xwerror', true)
-                options.addStringOption('Xmaxwarns', '99999')
+              }
+              // This file is looked for by Javadoc.
+              file("${destinationDir}/resources/fonts/").mkdirs()
+              ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
+              options.addStringOption('source', '8')
+              // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
+              // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
+              // options.addBooleanOption('Xwerror', true)
+              options.addStringOption('Xmaxwarns', '99999')
             }
         }
 
@@ -325,7 +336,7 @@ allprojects {
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
             // --add-exports are not required, (nor are they allowed with target 8). See
-            // https://openjdk.java.net/jeps/247 for details on compiling for older versions.
+            // https://openjdk.org/jeps/247 for details on compiling for older versions.
 
             // When sourceCompatibilty is changed to 11, then the following will be required.
             // options.compilerArgs += [
@@ -343,7 +354,7 @@ allprojects {
             // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
             // reflective access to private members.
             //
-            // From https://openjdk.java.net/jeps/261, Section titled: "Breaking encapsulation"
+            // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
             // "The effect of each instance [of --add-exports] is to add a qualified export of the
             // named package from the source module to the target module. This is, essentially, a
             // command-line form of an exports clause in a module declaration[...].
@@ -361,7 +372,8 @@ allprojects {
                     // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
                     // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
                     // warnings are suppressible with a "// fall through" comment.
-                    "-Xlint:-options,-fallthrough",
+                    // -classfile: classgraph jar file and https://bugs.openjdk.org/browse/JDK-8190452
+                    "-Xlint:-options,-fallthrough,-classfile",
                     "-Xlint",
             ]
 
@@ -825,8 +837,9 @@ subprojects {
             }
         }
 
-        // Add tasks to run various checkers on all the main source sets.
+        // Tasks to run various checkers on all the main source sets.
         // These pass and are run by typecheckTests.
+        // When you add one here, also update a dependsOn item for the 'typecheck' task.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
         createCheckTypeTask(project.name, 'Interning',
@@ -858,66 +871,76 @@ subprojects {
                 String name = 'all'
                 String tests = '.'
                 doLast {
+                  try {
                     exec {
-                        executable "${jtregHome}/bin/jtreg"
-                        args = [
-                                "-dir:${projectDir}/jtreg",
-                                "-workDir:${jtregOutput}/${name}/work",
-                                "-reportDir:${jtregOutput}/${name}/report",
-                                "-verbose:error,fail",
-                                // Don't add debugging information
-                                //  "-javacoptions:-g",
-                                "-keywords:!ignore",
-                                "-samevm",
-                                "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-                                // Required for checker/jtreg/nullness/PersistUtil.java and other tests
-                                "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-                        ]
-                        if (isJava8) {
-                            // Use Error Prone javac and source/target 8
-                            args += [
-                                "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
-                                "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
-                                "-javacoptions:-source 8",
-                                "-javacoptions:-target 8"
-                                ]
-                        } else {
-                            args += [
-                                    // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
-                                    // uses the jdk.jdeps module.
-                                    "-javacoptions:--add-modules jdk.jdeps",
-                                    "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                                    "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-                            ]
-                        }
-                        if (project.name.is('framework')) {
-                            // Do not check for the annotated JDK
-                            args += [
-                                    "-javacoptions:-ApermitMissingJdk"
-                            ]
-                        } else if (project.name.is('checker')) {
-                            args += [
-                                    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
-                            ]
-                        }
-
-                        // Allow running on any JRE version.
+                      executable "${jtregHome}/bin/jtreg"
+                      args = [
+                              "-dir:${projectDir}/jtreg",
+                              "-workDir:${jtregOutput}/${name}/work",
+                              "-reportDir:${jtregOutput}/${name}/report",
+                              "-verbose:error,fail",
+                              // Don't add debugging information
+                              //  "-javacoptions:-g",
+                              "-keywords:!ignore",
+                              "-samevm",
+                              "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                              // Required for checker/jtreg/nullness/PersistUtil.java and other tests
+                              "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                      ]
+                      if (isJava8) {
+                        // Use Error Prone javac and source/target 8
                         args += [
-                                "-javacoptions:-AnoJreVersionCheck"
+                            "-vmoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
+                            "-javacoptions:-Xbootclasspath/p:${configurations.javacJar.asPath}",
+                            "-javacoptions:-source 8",
+                            "-javacoptions:-target 8"
                         ]
+                      } else {
+                        args += [
+                            // checker/jtreg/nullness/defaultsPersist/ReferenceInfoUtil.java
+                            // uses the jdk.jdeps module.
+                            "-javacoptions:--add-modules jdk.jdeps",
+                            "-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                            "-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+                        ]
+                      }
+                      if (project.name.is('framework')) {
+                        // Do not check for the annotated JDK
+                        args += [
+                            "-javacoptions:-ApermitMissingJdk"
+                        ]
+                      } else if (project.name.is('checker')) {
+                        args += [
+                            "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+                        ]
+                      }
 
-                        // Location of jtreg tests
-                        args += "${tests}"
+                      // Allow running on any JRE version.
+                      args += [
+                          "-javacoptions:-AnoJreVersionCheck"
+                      ]
+
+                      // Location of jtreg tests
+                      args += "${tests}"
                     }
+                  } catch (Exception ex) {
+                    if (ex.getCause() != null && ex.getCause().getCause()!= null) {
+                      String msg = ex.getCause().getLocalizedMessage() + ":\n"
+                      msg += ex.getCause().getCause().getLocalizedMessage() + "\n"
+                      msg += "Have you installed jtreg?"
+                      println msg
+                    }
+                    throw ex
+                  }
                 }
             }
         }

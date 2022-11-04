@@ -205,7 +205,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.26.0-eisop1.zip}
+  \url{https://checkerframework.org/checker-framework-3.27.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -736,11 +736,12 @@ Partially-annotated libraries
 
 \item
   \<-AstubWarnIfNotFound>,
+  \<-AstubNoWarnIfNotFound>,
   \<-AstubWarnIfNotFoundIgnoresClasses>,
   %% Uncomment when https://tinyurl.com/cfissue/2759 is fixed.
   %  \<-AstubWarnIfOverwritesBytecode>,
   \<-AstubWarnIfRedundantWithBytecode>,
-  \<-AstubWarnNote>,
+  \<-AstubWarnNote>
   Warn about problems with stub files; see Section~\ref{stub-troubleshooting}.
 
 \item \<-AmergeStubsWithSource>

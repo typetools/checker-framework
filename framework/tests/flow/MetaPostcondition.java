@@ -87,11 +87,11 @@ public class MetaPostcondition {
     }
 
     // basic postcondition test
-    void tnm1(@Odd String p1, @Value String p2) {
+    void tnm1(@Odd String p1, @ValueTypeAnno String p2) {
         // :: error: (assignment.type.incompatible)
         @Odd String l1 = f1;
         // :: error: (assignment.type.incompatible)
-        @Value String l2 = f2;
+        @ValueTypeAnno String l2 = f2;
 
         // :: error: (flowexpr.parse.error.postcondition)
         error2(p1, p2);

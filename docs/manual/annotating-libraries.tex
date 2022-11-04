@@ -817,7 +817,8 @@ Some command-line options make the stub parser issue more warnings:
 \begin{description}
 \item[\<-AstubWarnIfNotFound>]
 \item[\<-AstubNoWarnIfNotFound>]
-  The Checker Framework can warn when a stub file contains a nonexistent
+  The Checker Framework can issue a ``Type not found'' warning
+  when a stub file contains a nonexistent
   element, for example when the stub file mentions a method that the class
   does not contain.
   By default, the Checker Framework warns about such problems in a stub
@@ -854,7 +855,8 @@ Some command-line options make the stub parser issue more warnings:
 
 \item[\<-AstubWarnNote>]
   Issue a ``note'', not a warning, for the \<-AstubWarn*> command-line
-  arguments.  A warning prevents further compilation, but a note permits
+  arguments.  A warning may prevents further compilation (depending on
+  whether the \<-Werror> command-line argument is passed), but a note permits
   compilation to proceed.
 
 \end{description}
