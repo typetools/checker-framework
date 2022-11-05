@@ -185,6 +185,10 @@ import javax.tools.Diagnostic.Kind;
     // See Issue 979.
     "conservativeUninferredTypeArguments",
 
+    // Issues a "redundant.anno" warning if the annotation explicitly written on the type is
+    // the same as the default annotation for this type and location.
+    "warnRedundantAnnotations",
+
     // Whether to ignore all subtype tests for type arguments that
     // were inferred for a raw type. Defaults to true.
     // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
@@ -562,6 +566,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
      * called from {@link BaseTypeChecker#instantiateSubcheckers(LinkedHashMap)}).
      */
     protected TreePathCacher treePathCacher = null;
+
+    /** Default constructor. */
+    protected SourceChecker() {}
 
     @Override
     public final synchronized void init(ProcessingEnvironment env) {

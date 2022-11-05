@@ -657,6 +657,10 @@ Type-checking modes:  enable/disable functionality
 \begin{itemize}
 \item \<-Alint>
   Enable or disable optional checks; see Section~\ref{lint-options}.
+\item \<-AwarnRedundantAnnotations>
+  This flag warns about redundant annotations.
+  A warning is issued if the explicitly written annotation
+  on a type is the same as the default annotation for this type and location.
 \item \<-AsuggestPureMethods>
   Suggest methods that could be marked
   \refqualclass{dataflow/qual}{SideEffectFree},
