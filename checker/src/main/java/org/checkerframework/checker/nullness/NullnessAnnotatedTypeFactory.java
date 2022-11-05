@@ -154,10 +154,14 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.NonNull",
                     // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/NonNull.java
                     "io.micrometer.core.lang.NonNull",
+                    // https://github.com/micronaut-projects/micronaut-core/blob/master/core/src/main/java/io/micronaut/core/annotation/NonNull.java
+                    "io.micronaut.core.annotation.NonNull",
                     // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/NonNull.java
                     "io.reactivex.annotations.NonNull",
                     // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/NonNull.java
                     "io.reactivex.rxjava3.annotations.NonNull",
+                    // https://github.com/jakartaee/common-annotations-api/blob/master/api/src/main/java/jakarta/annotation/Nonnull.java
+                    "jakarta.annotation.Nonnull",
                     // https://jcp.org/en/jsr/detail?id=305; no documentation at
                     // https://www.javadoc.io/doc/com.google.code.findbugs/jsr305/3.0.1/javax/annotation/Nonnull.html
                     "javax.annotation.Nonnull",
@@ -167,6 +171,10 @@ public class NullnessAnnotatedTypeFactory
                     "libcore.util.NonNull",
                     // https://github.com/projectlombok/lombok/blob/master/src/core/lombok/NonNull.java
                     "lombok.NonNull",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-agent/src/main/java/net/bytebuddy/agent/utility/nullability/NeverNull.java
+                    "net.bytebuddy.agent.utility.nullability.NeverNull",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-dep/src/main/java/net/bytebuddy/utility/nullability/NeverNull.java
+                    "net.bytebuddy.utility.nullability.NeverNull",
                     // https://github.com/antlr/antlr4/blob/master/runtime/Java/src/org/antlr/v4/runtime/misc/NotNull.java
                     "org.antlr.v4.runtime.misc.NotNull",
                     // https://search.maven.org/artifact/org.checkerframework/checker-compat-qual/2.5.5/jar
@@ -255,10 +263,16 @@ public class NullnessAnnotatedTypeFactory
                     "edu.umd.cs.findbugs.annotations.UnknownNullness",
                     // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/Nullable.java
                     "io.micrometer.core.lang.Nullable",
+                    // https://github.com/micronaut-projects/micronaut-core/blob/master/core/src/main/java/io/micronaut/core/annotation/Nullable.java
+                    "io.micronaut.core.annotation.Nullable",
                     // https://github.com/ReactiveX/RxJava/blob/2.x/src/main/java/io/reactivex/annotations/Nullable.java
                     "io.reactivex.annotations.Nullable",
                     // https://github.com/ReactiveX/RxJava/blob/3.x/src/main/java/io/reactivex/rxjava3/annotations/Nullable.java
                     "io.reactivex.rxjava3.annotations.Nullable",
+                    // https://github.com/eclipse-vertx/vertx-codegen/blob/master/src/main/java/io/vertx/codegen/annotations/Nullable.java
+                    "io.vertx.codegen.annotations.Nullable",
+                    // https://github.com/jakartaee/common-annotations-api/blob/master/api/src/main/java/jakarta/annotation/Nullable.java
+                    "jakarta.annotation.Nullable",
                     // https://jcp.org/en/jsr/detail?id=305; no documentation at
                     // https://www.javadoc.io/doc/com.google.code.findbugs/jsr305/3.0.1/javax/annotation/Nullable.html
                     "javax.annotation.CheckForNull",
@@ -267,6 +281,18 @@ public class NullnessAnnotatedTypeFactory
                     "junitparams.converters.Nullable",
                     // https://android.googlesource.com/platform/libcore/+/master/luni/src/main/java/libcore/util/Nullable.java
                     "libcore.util.Nullable",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-agent/src/main/java/net/bytebuddy/agent/utility/nullability/AlwaysNull.java
+                    "net.bytebuddy.agent.utility.nullability.AlwaysNull",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-agent/src/main/java/net/bytebuddy/agent/utility/nullability/MaybeNull.java
+                    "net.bytebuddy.agent.utility.nullability.MaybeNull",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-agent/src/main/java/net/bytebuddy/agent/utility/nullability/UnknownNull.java
+                    "net.bytebuddy.agent.utility.nullability.UnknownNull",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-dep/src/main/java/net/bytebuddy/utility/nullability/AlwaysNull.java
+                    "net.bytebuddy.utility.nullability.AlwaysNull",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-dep/src/main/java/net/bytebuddy/utility/nullability/MaybeNull.java
+                    "net.bytebuddy.utility.nullability.MaybeNull",
+                    // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-dep/src/main/java/net/bytebuddy/utility/nullability/UnknownNull.java
+                    "net.bytebuddy.utility.nullability.UnknownNull",
                     // https://github.com/apache/avro/blob/master/lang/java/avro/src/main/java/org/apache/avro/reflect/Nullable.java
                     // "org.apache.avro.reflect.Nullable",
                     "org.apa".toString() + "che.avro.reflect.Nullable",
