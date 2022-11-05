@@ -3148,6 +3148,22 @@ public class AnnotationFileParser {
      * #processField}.
      */
     private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+
+        /** Default constructor. */
+        private AjavaAnnotationCollectorVisitor() {}
+
+        // This method overrides super.visitCompilationUnit() to prevent parsing import
+        // statements. Requiring imports in both ajava file and the source file to be
+        // exactly same is error-prone and unnecessary.
+        @Override
+        public Void visitCompilationUnit(CompilationUnitTree javacTree, Node javaParserNode) {
+            CompilationUnit node = castNode(CompilationUnit.class, javaParserNode, javacTree);
+            processCompilationUnit(javacTree, node);
+            visitOptional(javacTree.getPackage(), node.getPackageDeclaration());
+            visitLists(javacTree.getTypeDecls(), node.getTypes());
+            return null;
+        }
+
         @Override
         public Void visitClass(ClassTree javacTree, Node javaParserNode) {
             List<AnnotatedTypeVariable> typeDeclTypeParameters = null;

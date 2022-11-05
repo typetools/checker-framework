@@ -222,24 +222,31 @@ allprojects {
             endWithNewline()
         }
         java {
-            target 'checker/**/*.java',
-                'checker-qual/**/*.java',
-                'checker-util/**/*.java',
-                'dataflow/**/*.java',
-                'docs/examples/**/*.java',
-                'docs/tutorial/**/*.java',
-                'framework/**/*.java',
-                'framework-test/**/*.java',
-                'javacutil/**/*.java'
+            def targets = [
+                    // add target folders here
+                    'checker',
+                    'checker-qual',
+                    'checker-util',
+                    'dataflow',
+                    'docs/examples',
+                    'docs/tutorial',
+                    'framework',
+                    'framework-test',
+                    'javacutil',
+            ]
+            targets = targets.collectMany {[
+                    // must call toString() to convert GString to String
+                    "${it}/**/*.java".toString(),
+                    "${it}/**/*.ajava".toString()
+            ]}
+            target targets
+
             def stdExclude = [ 'dataflow/manual/examples/',
                 '**/nullness-javac-errors/*',
                 '**/calledmethods-delomboked/*',
                 '**/returnsreceiverdelomboked/*',
                 '*/build/**',
-                '*/tests/build/**',
-                // TODO: Formatting of this file and the .ajava files in subdirectories
-                // need to be in sync. Reformatting all .ajava files does not fix this issue.
-                'checker/tests/index-initializedfields/RequireJavadoc.java'
+                '*/tests/build/**'
             ]
             if (isJava16plus) {
                 targetExclude stdExclude

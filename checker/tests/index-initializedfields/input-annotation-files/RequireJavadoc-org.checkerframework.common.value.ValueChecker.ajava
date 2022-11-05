@@ -1,5 +1,5 @@
-
 import static com.github.javaparser.utils.PositionUtils.sortByBeginPosition;
+
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Position;
 import com.github.javaparser.Range;
@@ -34,6 +34,9 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.PrimitiveType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+
+import org.plumelib.options.Options;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -51,11 +54,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.options.Option;
-import org.plumelib.options.Options;
 
 /**
  * A program that issues an error for any class, constructor, method, or field that lacks a Javadoc
@@ -66,22 +64,18 @@ import org.plumelib.options.Options;
 @org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.common.value.ValueChecker")
 public class RequireJavadoc {
 
-    /**
-     * Matches name of file or directory where no problems should be reported.
-     */
+    /** Matches name of file or directory where no problems should be reported. */
     public Pattern exclude = null;
 
     // TODO: It would be nice to support matching fully-qualified class names, but matching
     // packages will have to do for now.
     /**
-     * Matches simple name of class/constructor/method/field, or full package name, where no problems
-     * should be reported.
+     * Matches simple name of class/constructor/method/field, or full package name, where no
+     * problems should be reported.
      */
     public Pattern dont_require = null;
 
-    /**
-     * If true, don't check elements with private access.
-     */
+    /** If true, don't check elements with private access. */
     public boolean dont_require_private;
 
     /**
@@ -124,56 +118,39 @@ public class RequireJavadoc {
      */
     public boolean dont_require_trivial_properties;
 
-    /**
-     * If true, don't check type declarations: classes, interfaces, enums, annotations.
-     */
+    /** If true, don't check type declarations: classes, interfaces, enums, annotations. */
     public boolean dont_require_type;
 
-    /**
-     * If true, don't check fields.
-     */
+    /** If true, don't check fields. */
     public boolean dont_require_field;
 
-    /**
-     * If true, don't check methods, constructors, and annotation members.
-     */
+    /** If true, don't check methods, constructors, and annotation members. */
     public boolean dont_require_method;
 
-    /**
-     * If true, warn if any package lacks a package-info.java file.
-     */
+    /** If true, warn if any package lacks a package-info.java file. */
     public boolean require_package_info;
 
     /**
-     * If true, print filenames relative to working directory. Setting this only has an effect if the
-     * command-line arguments were absolute pathnames, or no command-line arguments were supplied.
+     * If true, print filenames relative to working directory. Setting this only has an effect if
+     * the command-line arguments were absolute pathnames, or no command-line arguments were
+     * supplied.
      */
     public boolean relative = false;
 
-    /**
-     * If true, output debug information.
-     */
+    /** If true, output debug information. */
     public boolean verbose = false;
 
-    /**
-     * All the errors this program will report.
-     */
-    private  List<String> errors = new ArrayList<>();
+    /** All the errors this program will report. */
+    private List<String> errors = new ArrayList<>();
 
-    /**
-     * The Java files to be checked.
-     */
-    private  List<Path> javaFiles = new ArrayList<Path>();
+    /** The Java files to be checked. */
+    private List<Path> javaFiles = new ArrayList<Path>();
 
-    /**
-     * The current working directory, for making relative pathnames.
-     */
-    private  Path workingDirRelative = Paths.get("");
+    /** The current working directory, for making relative pathnames. */
+    private Path workingDirRelative = Paths.get("");
 
-    /**
-     * The current working directory, for making relative pathnames.
-     */
-    private  Path workingDirAbsolute = Paths.get("").toAbsolutePath();
+    /** The current working directory, for making relative pathnames. */
+    private Path workingDirAbsolute = Paths.get("").toAbsolutePath();
 
     /**
      * The main entry point for the require-javadoc program. See documentation at <a
@@ -183,7 +160,10 @@ public class RequireJavadoc {
      */
     public static void main(String[] args) {
         RequireJavadoc rj = new RequireJavadoc();
-        Options options = new Options("java org.plumelib.javadoc.RequireJavadoc [options] [directory-or-file ...]", rj);
+        Options options =
+                new Options(
+                        "java org.plumelib.javadoc.RequireJavadoc [options] [directory-or-file ...]",
+                        rj);
         String[] remainingArgs = options.parse(true, args);
         rj.setJavaFiles(remainingArgs);
         for (Path javaFile : rj.javaFiles) {
@@ -208,21 +188,18 @@ public class RequireJavadoc {
         System.exit(rj.errors.isEmpty() ? 0 : 1);
     }
 
-    /**
-     * Creates a new RequireJavadoc instance.
-     */
+    /** Creates a new RequireJavadoc instance. */
     @org.checkerframework.dataflow.qual.SideEffectFree
-    private RequireJavadoc() {
-    }
+    private RequireJavadoc() {}
 
     /**
      * Set the Java files to be processed from the command-line arguments.
      *
      * @param args the directories and files listed on the command line
      */
-    private void setJavaFiles( String  [] args) {
+    private void setJavaFiles(String[] args) {
         if (args.length == 0) {
-            args = new String[] { workingDirAbsolute.toString() };
+            args = new String[] {workingDirAbsolute.toString()};
         }
         FileVisitor<Path> walker = new JavaFilesVisitor();
         for (String arg : args) {
@@ -263,18 +240,14 @@ public class RequireJavadoc {
         }
     }
 
-    /**
-     * Collects files into the {@link #javaFiles} variable.
-     */
+    /** Collects files into the {@link #javaFiles} variable. */
     private class JavaFilesVisitor extends SimpleFileVisitor<Path> {
 
-        /**
-         * Create a new JavaFilesVisitor.
-         */
-        public JavaFilesVisitor() {
-        }
+        /** Create a new JavaFilesVisitor. */
+        public JavaFilesVisitor() {}
 
-        public @org.checkerframework.common.value.qual.StringVal({ "CONTINUE" }) FileVisitResult visitFile( JavaFilesVisitor this,  Path file,  BasicFileAttributes attr) {
+        public @org.checkerframework.common.value.qual.StringVal({"CONTINUE"}) FileVisitResult
+                visitFile(JavaFilesVisitor this, Path file, BasicFileAttributes attr) {
             if (attr.isRegularFile() && file.toString().endsWith(".java")) {
                 if (!shouldExclude(file)) {
                     javaFiles.add(file);
@@ -283,15 +256,19 @@ public class RequireJavadoc {
             return FileVisitResult.CONTINUE;
         }
 
-        public @org.checkerframework.common.value.qual.StringVal({ "CONTINUE", "SKIP_SUBTREE" }) FileVisitResult preVisitDirectory( JavaFilesVisitor this,  Path dir,  BasicFileAttributes attr) {
+        public @org.checkerframework.common.value.qual.StringVal({"CONTINUE", "SKIP_SUBTREE"}) FileVisitResult preVisitDirectory(
+                JavaFilesVisitor this, Path dir, BasicFileAttributes attr) {
             if (shouldExclude(dir)) {
                 return FileVisitResult.SKIP_SUBTREE;
             }
             return FileVisitResult.CONTINUE;
         }
 
-        @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "#2" }, qualifier = org.checkerframework.common.value.qual.BottomVal.class)
-        public @org.checkerframework.common.value.qual.StringVal({ "CONTINUE" }) FileVisitResult postVisitDirectory( JavaFilesVisitor this,  Path dir,  IOException exc) {
+        @org.checkerframework.framework.qual.EnsuresQualifier(
+                expression = {"#2"},
+                qualifier = org.checkerframework.common.value.qual.BottomVal.class)
+        public @org.checkerframework.common.value.qual.StringVal({"CONTINUE"}) FileVisitResult
+                postVisitDirectory(JavaFilesVisitor this, Path dir, IOException exc) {
             if (exc != null) {
                 System.out.println("Problem visiting " + dir + ": " + exc.getMessage());
                 System.exit(2);
@@ -299,8 +276,11 @@ public class RequireJavadoc {
             return FileVisitResult.CONTINUE;
         }
 
-        @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "#2" }, qualifier = org.checkerframework.common.value.qual.BottomVal.class)
-        public @org.checkerframework.common.value.qual.StringVal({ "CONTINUE" }) FileVisitResult visitFileFailed( JavaFilesVisitor this,  Path file,  IOException exc) {
+        @org.checkerframework.framework.qual.EnsuresQualifier(
+                expression = {"#2"},
+                qualifier = org.checkerframework.common.value.qual.BottomVal.class)
+        public @org.checkerframework.common.value.qual.StringVal({"CONTINUE"}) FileVisitResult
+                visitFileFailed(JavaFilesVisitor this, Path file, IOException exc) {
             if (exc != null) {
                 System.out.println("Problem visiting " + file + ": " + exc.getMessage());
                 System.exit(2);
@@ -316,7 +296,7 @@ public class RequireJavadoc {
      * @param name the name of a Java element. It is a simple name, except for packages.
      * @return true if no warnings should be issued about the element
      */
-    private   boolean shouldNotRequire( String name) {
+    private boolean shouldNotRequire(String name) {
         if (dont_require == null) {
             return false;
         }
@@ -334,7 +314,7 @@ public class RequireJavadoc {
      * @param fileName the name of a Java file or directory
      * @return true if the file or directory should be skipped
      */
-    private   boolean shouldExclude( String fileName) {
+    private boolean shouldExclude(String fileName) {
         if (exclude == null) {
             return false;
         }
@@ -352,77 +332,49 @@ public class RequireJavadoc {
      * @param path a Java file or directory
      * @return true if the file or directory should be skipped
      */
-    private   boolean shouldExclude( Path path) {
+    private boolean shouldExclude(Path path) {
         return shouldExclude(path.toString());
     }
 
-    /**
-     * A property method's return type.
-     */
+    /** A property method's return type. */
     private enum ReturnType {
 
-        /**
-         * The return type is void.
-         */
+        /** The return type is void. */
         VOID,
-        /**
-         * The return type is boolean.
-         */
+        /** The return type is boolean. */
         BOOLEAN,
-        /**
-         * The return type is non-void.
-         */
+        /** The return type is non-void. */
         NON_VOID
     }
 
-    /**
-     * The type of property method: a getter or setter.
-     */
+    /** The type of property method: a getter or setter. */
     private enum PropertyKind {
 
-        /**
-         * A method of the form {@code SomeType getFoo()}.
-         */
+        /** A method of the form {@code SomeType getFoo()}. */
         GETTER("get", 0, ReturnType.NON_VOID),
-        /**
-         * A method of the form {@code SomeType foo()}.
-         */
+        /** A method of the form {@code SomeType foo()}. */
         GETTER_NO_PREFIX("", 0, ReturnType.NON_VOID),
-        /**
-         * A method of the form {@code boolean hasFoo()}.
-         */
+        /** A method of the form {@code boolean hasFoo()}. */
         GETTER_HAS("has", 0, ReturnType.BOOLEAN),
-        /**
-         * A method of the form {@code boolean isFoo()}.
-         */
+        /** A method of the form {@code boolean isFoo()}. */
         GETTER_IS("is", 0, ReturnType.BOOLEAN),
-        /**
-         * A method of the form {@code boolean notFoo()}.
-         */
+        /** A method of the form {@code boolean notFoo()}. */
         GETTER_NOT("not", 0, ReturnType.BOOLEAN),
-        /**
-         * A method of the form {@code void setFoo(SomeType arg)}.
-         */
+        /** A method of the form {@code void setFoo(SomeType arg)}. */
         SETTER("set", 1, ReturnType.VOID),
-        /**
-         * Not a getter or setter.
-         */
+        /** Not a getter or setter. */
         NOT_PROPERTY("", -1, ReturnType.VOID);
 
-        /**
-         * The prefix for the method name: "get", "", "has", "is", "not", or "set".
-         */
-        final @org.checkerframework.common.value.qual.StringVal({ "set", "not", "is", "has", "", "get" }) String prefix;
+        /** The prefix for the method name: "get", "", "has", "is", "not", or "set". */
+        final @org.checkerframework.common.value.qual.StringVal({
+            "set", "not", "is", "has", "", "get"
+        }) String prefix;
 
-        /**
-         * The number of required formal parameters: 0 or 1.
-         */
-        final  @org.checkerframework.common.value.qual.IntVal({ -1, 1, 0 }) int requiredParams;
+        /** The number of required formal parameters: 0 or 1. */
+        final @org.checkerframework.common.value.qual.IntVal({-1, 1, 0}) int requiredParams;
 
-        /**
-         * The return type.
-         */
-        final @org.checkerframework.common.value.qual.StringVal({ "VOID", "BOOLEAN", "NON_VOID" }) ReturnType returnType;
+        /** The return type. */
+        final @org.checkerframework.common.value.qual.StringVal({"VOID", "BOOLEAN", "NON_VOID"}) ReturnType returnType;
 
         /**
          * Create a new PropertyKind.
@@ -431,7 +383,13 @@ public class RequireJavadoc {
          * @param requiredParams the number of required formal parameters: 0 or 1
          * @param returnType the return type
          */
-        PropertyKind(@org.checkerframework.common.value.qual.StringVal({ "set", "not", "is", "has", "", "get" }) String prefix,  @org.checkerframework.common.value.qual.IntVal({ -1, 1, 0 }) int requiredParams, @org.checkerframework.common.value.qual.StringVal({ "VOID", "BOOLEAN", "NON_VOID" }) ReturnType returnType) {
+        PropertyKind(
+                @org.checkerframework.common.value.qual.StringVal({
+                            "set", "not", "is", "has", "", "get"
+                        })
+                        String prefix,
+                @org.checkerframework.common.value.qual.IntVal({-1, 1, 0}) int requiredParams,
+                @org.checkerframework.common.value.qual.StringVal({"VOID", "BOOLEAN", "NON_VOID"}) ReturnType returnType) {
             this.prefix = prefix;
             this.requiredParams = requiredParams;
             this.returnType = returnType;
@@ -443,17 +401,25 @@ public class RequireJavadoc {
          * @return true if this is a getter
          */
         @org.checkerframework.dataflow.qual.Pure
-          boolean isGetter() {
+        boolean isGetter() {
             return this != SETTER;
         }
 
         /**
-         * Return the PropertyKind for the given method, or null if it isn't a property accessor method.
+         * Return the PropertyKind for the given method, or null if it isn't a property accessor
+         * method.
          *
          * @param md the method to check
          * @return the PropertyKind for the given method, or null
          */
-        static @org.checkerframework.common.value.qual.StringVal({ "GETTER_NO_PREFIX", "SETTER", "GETTER_NOT", "GETTER_IS", "GETTER_HAS", "GETTER" }) PropertyKind fromMethodDeclaration( MethodDeclaration md) {
+        static @org.checkerframework.common.value.qual.StringVal({
+            "GETTER_NO_PREFIX",
+            "SETTER",
+            "GETTER_NOT",
+            "GETTER_IS",
+            "GETTER_HAS",
+            "GETTER"
+        }) PropertyKind fromMethodDeclaration(MethodDeclaration md) {
             String methodName = md.getNameAsString();
             if (methodName.startsWith("get")) {
                 return GETTER;
@@ -475,18 +441,18 @@ public class RequireJavadoc {
      * Return true if this method declaration is a trivial getter or setter.
      *
      * <ul>
-     *   <li>A trivial getter is named {@code getFoo}, {@code foo}, {@code hasFoo}, {@code isFoo}, or
-     *       {@code notFoo}, has no formal parameters, and has a body of the form {@code return foo}
-     *       or {@code return this.foo} (except for {@code notFoo}, in which case the body is
+     *   <li>A trivial getter is named {@code getFoo}, {@code foo}, {@code hasFoo}, {@code isFoo},
+     *       or {@code notFoo}, has no formal parameters, and has a body of the form {@code return
+     *       foo} or {@code return this.foo} (except for {@code notFoo}, in which case the body is
      *       negated).
-     *   <li>A trivial setter is named {@code setFoo}, has one formal parameter named {@code foo}, and
-     *       has a body of the form {@code this.foo = foo}.
+     *   <li>A trivial setter is named {@code setFoo}, has one formal parameter named {@code foo},
+     *       and has a body of the form {@code this.foo = foo}.
      * </ul>
      *
      * @param md the method to check
      * @return true if this method is a trivial getter or setter
      */
-    private   boolean isTrivialGetterOrSetter( MethodDeclaration md) {
+    private boolean isTrivialGetterOrSetter(MethodDeclaration md) {
         PropertyKind kind = PropertyKind.fromMethodDeclaration(md);
         if (kind != PropertyKind.GETTER_NO_PREFIX) {
             if (isTrivialGetterOrSetter(md, kind)) {
@@ -504,9 +470,21 @@ public class RequireJavadoc {
      * @param propertyKind the kind of property
      * @return true if this method is a trivial getter or setter
      */
-    private   boolean isTrivialGetterOrSetter( MethodDeclaration md, @org.checkerframework.common.value.qual.StringVal({ "GETTER_NO_PREFIX", "SETTER", "GETTER_NOT", "GETTER_IS", "GETTER_HAS", "GETTER" }) PropertyKind propertyKind) {
+    private boolean isTrivialGetterOrSetter(
+            MethodDeclaration md,
+            @org.checkerframework.common.value.qual.StringVal({
+                        "GETTER_NO_PREFIX",
+                        "SETTER",
+                        "GETTER_NOT",
+                        "GETTER_IS",
+                        "GETTER_HAS",
+                        "GETTER"
+                    })
+                    PropertyKind propertyKind) {
         String propertyName = propertyName(md, propertyKind);
-        return propertyName != null && hasCorrectSignature(md, propertyKind, propertyName) && hasCorrectBody(md, propertyKind, propertyName);
+        return propertyName != null
+                && hasCorrectSignature(md, propertyKind, propertyName)
+                && hasCorrectBody(md, propertyKind, propertyName);
     }
 
     /**
@@ -520,7 +498,18 @@ public class RequireJavadoc {
      * @param propertyKind the type of property method
      * @return the name of the property, or null
      */
-    private @org.checkerframework.common.value.qual.ArrayLenRange(from = 1, to = 2147483647) String propertyName( MethodDeclaration md, @org.checkerframework.common.value.qual.StringVal({ "GETTER_NO_PREFIX", "SETTER", "GETTER_NOT", "GETTER_IS", "GETTER_HAS", "GETTER" }) PropertyKind propertyKind) {
+    private @org.checkerframework.common.value.qual.ArrayLenRange(from = 1, to = 2147483647) String
+            propertyName(
+                    MethodDeclaration md,
+                    @org.checkerframework.common.value.qual.StringVal({
+                                "GETTER_NO_PREFIX",
+                                "SETTER",
+                                "GETTER_NOT",
+                                "GETTER_IS",
+                                "GETTER_HAS",
+                                "GETTER"
+                            })
+                            PropertyKind propertyKind) {
         String methodName = md.getNameAsString();
         assert methodName.startsWith(propertyKind.prefix);
         String upperCamelCaseProperty = methodName.substring(propertyKind.prefix.length());
@@ -532,7 +521,9 @@ public class RequireJavadoc {
         } else if (!Character.isUpperCase(upperCamelCaseProperty.charAt(0))) {
             return null;
         } else {
-            return "" + Character.toLowerCase(upperCamelCaseProperty.charAt(0)) + upperCamelCaseProperty.substring(1);
+            return ""
+                    + Character.toLowerCase(upperCamelCaseProperty.charAt(0))
+                    + upperCamelCaseProperty.substring(1);
         }
     }
 
@@ -544,7 +535,19 @@ public class RequireJavadoc {
      * @param propertyName the name of the property
      * @return true if the body of the given method is a property accessor
      */
-    private  @org.checkerframework.common.value.qual.BoolVal({ true, false }) boolean hasCorrectSignature( MethodDeclaration md, @org.checkerframework.common.value.qual.StringVal({ "GETTER_NO_PREFIX", "SETTER", "GETTER_NOT", "GETTER_IS", "GETTER_HAS", "GETTER" }) PropertyKind propertyKind, @org.checkerframework.common.value.qual.ArrayLenRange(from = 1, to = 2147483647) String propertyName) {
+    private @org.checkerframework.common.value.qual.BoolVal({true, false}) boolean
+            hasCorrectSignature(
+                    MethodDeclaration md,
+                    @org.checkerframework.common.value.qual.StringVal({
+                                "GETTER_NO_PREFIX",
+                                "SETTER",
+                                "GETTER_NOT",
+                                "GETTER_IS",
+                                "GETTER_HAS",
+                                "GETTER"
+                            })
+                            PropertyKind propertyKind,
+                    @org.checkerframework.common.value.qual.ArrayLenRange(from = 1, to = 2147483647) String propertyName) {
         NodeList<Parameter> parameters = md.getParameters();
         if (parameters.size() != propertyKind.requiredParams) {
             return false;
@@ -558,7 +561,7 @@ public class RequireJavadoc {
         // Check presence/absence of return type. (The Java compiler will verify
         // that the type is consistent with the method body.)
         Type returnType = md.getType();
-        switch(propertyKind.returnType) {
+        switch (propertyKind.returnType) {
             case VOID:
                 if (!returnType.isVoidType()) {
                     return false;
@@ -588,7 +591,18 @@ public class RequireJavadoc {
      * @param propertyName the name of the property
      * @return true if the body of the given method is a property accessor
      */
-    private  @org.checkerframework.common.value.qual.BoolVal({ true, false }) boolean hasCorrectBody( MethodDeclaration md, @org.checkerframework.common.value.qual.StringVal({ "GETTER_NO_PREFIX", "SETTER", "GETTER_NOT", "GETTER_IS", "GETTER_HAS", "GETTER" }) PropertyKind propertyKind, @org.checkerframework.common.value.qual.ArrayLenRange(from = 1, to = 2147483647) String propertyName) {
+    private @org.checkerframework.common.value.qual.BoolVal({true, false}) boolean hasCorrectBody(
+            MethodDeclaration md,
+            @org.checkerframework.common.value.qual.StringVal({
+                        "GETTER_NO_PREFIX",
+                        "SETTER",
+                        "GETTER_NOT",
+                        "GETTER_IS",
+                        "GETTER_HAS",
+                        "GETTER"
+                    })
+                    PropertyKind propertyKind,
+            @org.checkerframework.common.value.qual.ArrayLenRange(from = 1, to = 2147483647) String propertyName) {
         Statement statement = getOnlyStatement(md);
         if (propertyKind.isGetter()) {
             if (!(statement instanceof ReturnStmt)) {
@@ -654,7 +668,8 @@ public class RequireJavadoc {
             if (op != AssignExpr.Operator.ASSIGN) {
                 return false;
             }
-            if (!(value instanceof NameExpr && ((NameExpr) value).getNameAsString().equals(propertyName))) {
+            if (!(value instanceof NameExpr
+                    && ((NameExpr) value).getNameAsString().equals(propertyName))) {
                 return false;
             }
             return true;
@@ -669,7 +684,7 @@ public class RequireJavadoc {
      * @param md a method declaration
      * @return its sole statement, or null
      */
-    private  Statement getOnlyStatement( MethodDeclaration md) {
+    private Statement getOnlyStatement(MethodDeclaration md) {
         Optional<BlockStmt> body = md.getBody();
         if (!body.isPresent()) {
             return null;
@@ -681,22 +696,18 @@ public class RequireJavadoc {
         return statements.get(0);
     }
 
-    /**
-     * Visits an AST and collects warnings about missing Javadoc.
-     */
+    /** Visits an AST and collects warnings about missing Javadoc. */
     private class RequireJavadocVisitor extends VoidVisitorAdapter<Void> {
 
-        /**
-         * The file being visited. Used for constructing error messages.
-         */
-        private  Path filename;
+        /** The file being visited. Used for constructing error messages. */
+        private Path filename;
 
         /**
          * Create a new RequireJavadocVisitor.
          *
          * @param filename the file being visited; used for diagnostic messages
          */
-        public RequireJavadocVisitor( Path filename) {
+        public RequireJavadocVisitor(Path filename) {
             this.filename = filename;
         }
 
@@ -707,18 +718,24 @@ public class RequireJavadoc {
          * @param simpleName the construct's simple name, used in diagnostic messages
          * @return an error message for the given construct
          */
-        private  String errorString( Node node,  String simpleName) {
+        private String errorString(Node node, String simpleName) {
             Optional<Range> range = node.getRange();
             if (range.isPresent()) {
                 Position begin = range.get().begin;
-                Path path = (relative ? (filename.isAbsolute() ? workingDirAbsolute : workingDirRelative).relativize(filename) : filename);
-                return String.format("%s:%d:%d: missing documentation for %s", path, begin.line, begin.column, simpleName);
+                Path path =
+                        (relative
+                                ? (filename.isAbsolute() ? workingDirAbsolute : workingDirRelative)
+                                        .relativize(filename)
+                                : filename);
+                return String.format(
+                        "%s:%d:%d: missing documentation for %s",
+                        path, begin.line, begin.column, simpleName);
             } else {
                 return "missing documentation for " + simpleName;
             }
         }
 
-        public void visit( RequireJavadocVisitor this,  CompilationUnit cu,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, CompilationUnit cu, Void ignore) {
             Optional<PackageDeclaration> opd = cu.getPackageDeclaration();
             if (opd.isPresent()) {
                 String packageName = opd.get().getName().asString();
@@ -726,7 +743,10 @@ public class RequireJavadoc {
                     return;
                 }
                 Optional<String> oTypeName = cu.getPrimaryTypeName();
-                if (oTypeName.isPresent() && oTypeName.get().equals("package-info") && !hasJavadocComment(opd.get()) && !hasJavadocComment(cu)) {
+                if (oTypeName.isPresent()
+                        && oTypeName.get().equals("package-info")
+                        && !hasJavadocComment(opd.get())
+                        && !hasJavadocComment(cu)) {
                     errors.add(errorString(opd.get(), packageName));
                 }
             }
@@ -736,7 +756,7 @@ public class RequireJavadoc {
             super.visit(cu, ignore);
         }
 
-        public void visit( RequireJavadocVisitor this,  ClassOrInterfaceDeclaration cd,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, ClassOrInterfaceDeclaration cd, Void ignore) {
             if (dont_require_private && cd.isPrivate()) {
                 return;
             }
@@ -753,7 +773,7 @@ public class RequireJavadoc {
             super.visit(cd, ignore);
         }
 
-        public void visit( RequireJavadocVisitor this,  ConstructorDeclaration cd,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, ConstructorDeclaration cd, Void ignore) {
             if (dont_require_private && cd.isPrivate()) {
                 return;
             }
@@ -773,13 +793,14 @@ public class RequireJavadoc {
             super.visit(cd, ignore);
         }
 
-        public void visit( RequireJavadocVisitor this,  MethodDeclaration md,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, MethodDeclaration md, Void ignore) {
             if (dont_require_private && md.isPrivate()) {
                 return;
             }
             if (dont_require_trivial_properties && isTrivialGetterOrSetter(md)) {
                 if (verbose) {
-                    System.out.printf("skipping trivial property method %s%n", md.getNameAsString());
+                    System.out.printf(
+                            "skipping trivial property method %s%n", md.getNameAsString());
                 }
                 return;
             }
@@ -796,7 +817,7 @@ public class RequireJavadoc {
             super.visit(md, ignore);
         }
 
-        public void visit( RequireJavadocVisitor this,  FieldDeclaration fd,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, FieldDeclaration fd, Void ignore) {
             if (dont_require_private && fd.isPrivate()) {
                 return;
             }
@@ -825,7 +846,7 @@ public class RequireJavadoc {
             }
         }
 
-        public void visit( RequireJavadocVisitor this,  EnumDeclaration ed,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, EnumDeclaration ed, Void ignore) {
             if (dont_require_private && ed.isPrivate()) {
                 return;
             }
@@ -842,7 +863,7 @@ public class RequireJavadoc {
             super.visit(ed, ignore);
         }
 
-        public void visit( RequireJavadocVisitor this,  EnumConstantDeclaration ecd,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, EnumConstantDeclaration ecd, Void ignore) {
             String name = ecd.getNameAsString();
             if (shouldNotRequire(name)) {
                 return;
@@ -856,7 +877,7 @@ public class RequireJavadoc {
             super.visit(ecd, ignore);
         }
 
-        public void visit( RequireJavadocVisitor this,  AnnotationDeclaration ad,  Void ignore) {
+        public void visit(RequireJavadocVisitor this, AnnotationDeclaration ad, Void ignore) {
             if (dont_require_private && ad.isPrivate()) {
                 return;
             }
@@ -873,7 +894,8 @@ public class RequireJavadoc {
             super.visit(ad, ignore);
         }
 
-        public void visit( RequireJavadocVisitor this,  AnnotationMemberDeclaration amd,  Void ignore) {
+        public void visit(
+                RequireJavadocVisitor this, AnnotationMemberDeclaration amd, Void ignore) {
             String name = amd.getNameAsString();
             if (shouldNotRequire(name)) {
                 return;
@@ -893,7 +915,8 @@ public class RequireJavadoc {
          * @param md the method to check for an {@code @Override} annotation
          * @return true if this method is annotated with {@code @Override}
          */
-        private  @org.checkerframework.common.value.qual.BoolVal({ false, true }) boolean isOverride( MethodDeclaration md) {
+        private @org.checkerframework.common.value.qual.BoolVal({false, true}) boolean isOverride(
+                MethodDeclaration md) {
             for (AnnotationExpr anno : md.getAnnotations()) {
                 String annoName = anno.getName().toString();
                 if (annoName.equals("Override") || annoName.equals("java.lang.Override")) {
@@ -910,7 +933,8 @@ public class RequireJavadoc {
      * @param n the node to check for a Javadoc comment
      * @return true if this node has a Javadoc comment
      */
-    private  @org.checkerframework.common.value.qual.BoolVal({ false, true }) boolean hasJavadocComment( Node n) {
+    private @org.checkerframework.common.value.qual.BoolVal({false, true}) boolean
+            hasJavadocComment(Node n) {
         if (n instanceof NodeWithJavadoc && ((NodeWithJavadoc<?>) n).hasJavaDocComment()) {
             return true;
         }
@@ -922,7 +946,8 @@ public class RequireJavadoc {
             }
         }
         Optional<Comment> oc = n.getComment();
-        if (oc.isPresent() && (oc.get().isJavadocComment() || oc.get().getContent().startsWith("/**"))) {
+        if (oc.isPresent()
+                && (oc.get().isJavadocComment() || oc.get().getContent().startsWith("/**"))) {
             return true;
         }
         return false;
@@ -946,7 +971,7 @@ public class RequireJavadoc {
      *     implementation uses this to minimize the diffs against upstream.
      */
     private static // to provide such functionality in JavaParser proper.
-    void getOrphanCommentsBeforeThisChildNode(final  Node node,  List<Comment> result) {
+    void getOrphanCommentsBeforeThisChildNode(final Node node, List<Comment> result) {
         if (node instanceof Comment) {
             return;
         }
@@ -958,21 +983,25 @@ public class RequireJavadoc {
         sortByBeginPosition(everything);
         int positionOfTheChild = -1;
         for (int i = 0; i < everything.size(); i++) {
-            if (everything.get(i) == node)
-                positionOfTheChild = i;
+            if (everything.get(i) == node) positionOfTheChild = i;
         }
         if (positionOfTheChild == -1) {
             throw new AssertionError("I am not a child of my parent.");
         }
         int positionOfPreviousChild = -1;
         for (int i = positionOfTheChild - 1; i >= 0 && positionOfPreviousChild == -1; i--) {
-            if (!(everything.get(i) instanceof Comment))
-                positionOfPreviousChild = i;
+            if (!(everything.get(i) instanceof Comment)) positionOfPreviousChild = i;
         }
         for (int i = positionOfPreviousChild + 1; i < positionOfTheChild; i++) {
             Node nodeToPrint = everything.get(i);
             if (!(nodeToPrint instanceof Comment))
-                throw new RuntimeException("Expected comment, instead " + nodeToPrint.getClass() + ". Position of previous child: " + positionOfPreviousChild + ", position of child " + positionOfTheChild);
+                throw new RuntimeException(
+                        "Expected comment, instead "
+                                + nodeToPrint.getClass()
+                                + ". Position of previous child: "
+                                + positionOfPreviousChild
+                                + ", position of child "
+                                + positionOfTheChild);
             result.add((Comment) nodeToPrint);
         }
     }
