@@ -7,7 +7,6 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -58,9 +57,6 @@ public class PurityUtils {
      */
     public static boolean isDeterministic(AnnotationProvider provider, MethodTree methodTree) {
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
-        if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + methodTree);
-        }
         return isDeterministic(provider, methodElement);
     }
 
@@ -92,9 +88,6 @@ public class PurityUtils {
     @Deprecated // 2022-09-27
     public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree methodTree) {
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
-        if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + methodTree);
-        }
         return isSideEffectFree(provider, methodElement);
     }
 
@@ -125,9 +118,6 @@ public class PurityUtils {
     public static EnumSet<Pure.Kind> getPurityKinds(
             AnnotationProvider provider, MethodTree methodTree) {
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
-        if (methodElement == null) {
-            throw new BugInCF("Could not find element for tree: " + methodTree);
-        }
         return getPurityKinds(provider, methodElement);
     }
 

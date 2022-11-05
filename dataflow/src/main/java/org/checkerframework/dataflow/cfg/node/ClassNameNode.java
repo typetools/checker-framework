@@ -53,10 +53,7 @@ public class ClassNameNode extends Node {
     public ClassNameNode(ClassTree tree) {
         super(TreeUtils.typeOf(tree));
         this.tree = tree;
-        Element element = TreeUtils.elementFromDeclaration(tree);
-        assert element instanceof TypeElement || element instanceof TypeParameterElement
-                : "@AssumeAssertion(nullness)";
-        this.element = element;
+        this.element = TreeUtils.elementFromDeclaration(tree);
         this.parent = null;
     }
 

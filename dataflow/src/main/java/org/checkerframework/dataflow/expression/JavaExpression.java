@@ -709,7 +709,6 @@ public abstract class JavaExpression {
      * @return viewpoint-adapted version of this
      */
     public final JavaExpression atMethodBody(MethodTree methodTree) {
-        @SuppressWarnings("nullness:argument") // elementFromDeclaration is non-null for a parameter
         List<JavaExpression> parametersJe =
                 CollectionsPlume.mapList(
                         (VariableTree param) ->
