@@ -1,11 +1,11 @@
-Version 3.27.0-eisop1 (November 4, 2022)
+Version 3.27.0-eisop1 (November 6, 2022)
 ----------------------------------------
 
 **User-visible changes:**
 
 The new command-line argument `-AwarnRedundantAnnotations` warns about redundant annotations.
-With this flag, a warning is issued if an explicitly written annotation on a type is the same as the default
-annotation for this type and location.
+With this flag, a warning is issued if an explicitly written annotation on a type is the same
+as the default annotation for this type and location.
 
 Support additional Nullness Checker annotation aliases from:
 - `io.micronaut.core.annotation`
