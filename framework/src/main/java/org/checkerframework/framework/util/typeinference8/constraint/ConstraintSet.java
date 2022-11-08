@@ -119,10 +119,11 @@ public class ConstraintSet implements ReductionResult {
     ConstraintSet subset = new ConstraintSet();
     Set<Variable> inputDependencies = new LinkedHashSet<>();
     Set<Variable> outDependencies = new LinkedHashSet<>();
-    for (Constraint c : list) {
-      if (c.getKind() == Kind.EXPRESSION
-          || c.getKind() == Kind.LAMBDA_EXCEPTION
-          || c.getKind() == Kind.METHOD_REF_EXCEPTION) {
+    for (Constraint constraint : list) {
+      if (constraint.getKind() == Kind.EXPRESSION
+          || constraint.getKind() == Kind.LAMBDA_EXCEPTION
+          || constraint.getKind() == Kind.METHOD_REF_EXCEPTION) {
+        TypeConstraint c = (TypeConstraint) constraint;
         Set<Variable> newInputs = dependencies.get(c.getInputVariables());
         Set<Variable> newOutputs = dependencies.get(c.getOutputVariables());
         if (Collections.disjoint(newInputs, outDependencies)
@@ -136,7 +137,7 @@ public class ConstraintSet implements ReductionResult {
           break;
         }
       } else {
-        subset.add(c);
+        subset.add(constraint);
       }
     }
 
@@ -149,7 +150,11 @@ public class ConstraintSet implements ReductionResult {
     // If this subset is empty, then there is a cycle (or cycles) in the graph of dependencies
     // between constraints.
     List<Constraint> consideredConstraints = new ArrayList<>();
-    for (Constraint c : list) {
+    for (Constraint constraint : list) {
+      if (!(constraint instanceof TypeConstraint)) {
+        continue;
+      }
+      TypeConstraint c = (TypeConstraint) constraint;
       Set<Variable> newInputs = dependencies.get(c.getInputVariables());
       Set<Variable> newOutputs = dependencies.get(c.getOutputVariables());
       if (inputDependencies.isEmpty()
@@ -187,8 +192,10 @@ public class ConstraintSet implements ReductionResult {
    */
   public Set<Variable> getAllInferenceVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
-    for (Constraint constraint : list) {
-      vars.addAll(constraint.getInferenceVariables());
+    for (Constraint c : list) {
+      if (c instanceof TypeConstraint) {
+        vars.addAll(((TypeConstraint) c).getInferenceVariables());
+      }
     }
     return vars;
   }
@@ -201,7 +208,9 @@ public class ConstraintSet implements ReductionResult {
   public Set<Variable> getAllInputVariables() {
     Set<Variable> vars = new LinkedHashSet<>();
     for (Constraint constraint : list) {
-      vars.addAll(constraint.getInputVariables());
+      if (constraint instanceof TypeConstraint) {
+        vars.addAll(((TypeConstraint) constraint).getInputVariables());
+      }
     }
     return vars;
   }
@@ -209,7 +218,9 @@ public class ConstraintSet implements ReductionResult {
   /** Applies the instantiations to all the constraints in this set. */
   public void applyInstantiations(List<Variable> instantiations) {
     for (Constraint constraint : list) {
-      constraint.applyInstantiations(instantiations);
+      if (constraint instanceof TypeConstraint) {
+        ((TypeConstraint) constraint).applyInstantiations(instantiations);
+      }
     }
   }
 
@@ -234,7 +245,7 @@ public class ConstraintSet implements ReductionResult {
           throw new FalseBoundException(constraint, result);
         }
         this.addAll(((ReductionResultPair) result).constraintSet);
-      } else if (result instanceof Constraint) {
+      } else if (result instanceof TypeConstraint) {
         this.add((Constraint) result);
       } else if (result instanceof ConstraintSet) {
         this.addAll((ConstraintSet) result);

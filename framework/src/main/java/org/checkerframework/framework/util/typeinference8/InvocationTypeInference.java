@@ -41,10 +41,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
-import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Expression;
+import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
@@ -91,10 +91,11 @@ import org.checkerframework.javacutil.TypesUtils;
  * example, the target type of a method invocation assigned to a variable is the type of the
  * variable.
  *
- * <p>Constraints are represented by {@link Constraint} objects and are between abstract types (see
- * {@link AbstractType}) and either expressions (see {@link Expression}) or other abstract types. A
- * constraint might also be an abstract type that might be thrown by the method invocation (see
- * {@link CheckedExceptionConstraint}). Groups of constraints are stored in {@link ConstraintSet}s.
+ * <p>Constraints are represented by {@link TypeConstraint} objects and are between abstract types
+ * (see {@link AbstractType}) and either expressions (see {@link Expression}) or other abstract
+ * types. A constraint might also be an abstract type that might be thrown by the method invocation
+ * (see {@link CheckedExceptionConstraint}). Groups of constraints are stored in {@link
+ * ConstraintSet}s.
  *
  * <p>3. Next, these constraints are "reduced" producing bounds on the inference variables.
  * Reduction depends on the kind of constraint and is defined in <a

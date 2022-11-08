@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * &lt;Expression &rarr; T&gt; An expression is compatible in a loose invocation context with type T
  */
-public class Expression extends Constraint {
+public class Expression extends TypeConstraint {
 
   /** Expression that is compatible in a loose invocation context with {@link #T}. */
   private final ExpressionTree expression;
@@ -74,7 +74,7 @@ public class Expression extends Constraint {
         AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(expression);
         s = getT().create(atm, atm.getUnderlyingType());
       }
-      return new Typing(s, T, Constraint.Kind.TYPE_COMPATIBILITY);
+      return new Typing(s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
     }
     switch (expression.getKind()) {
       case PARENTHESIZED:
@@ -84,7 +84,7 @@ public class Expression extends Constraint {
         return reduceMethodInvocation(context);
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
-        Constraint trueConstraint = new Expression(conditional.getTrueExpression(), T);
+        TypeConstraint trueConstraint = new Expression(conditional.getTrueExpression(), T);
         Constraint falseConstraint = new Expression(conditional.getFalseExpression(), T);
         return new ConstraintSet(trueConstraint, falseConstraint);
       case LAMBDA_EXPRESSION:
@@ -161,15 +161,15 @@ public class Expression extends Constraint {
         } else {
           referenceType = new ProperType(qualifierExp, context);
         }
-        constraintSet.add(new Typing(targetReference, referenceType, Constraint.Kind.SUBTYPE));
+        constraintSet.add(new Typing(targetReference, referenceType, TypeConstraint.Kind.SUBTYPE));
       }
       for (int i = 0; i < ps.size(); i++) {
-        constraintSet.add(new Typing(ps.get(i), fs.get(i), Constraint.Kind.SUBTYPE));
+        constraintSet.add(new Typing(ps.get(i), fs.get(i), TypeConstraint.Kind.SUBTYPE));
       }
       AbstractType r = T.getFunctionTypeReturnType();
       if (r != null && r.getTypeKind() != TypeKind.VOID) {
         AbstractType rPrime = typeOfPoAppMethod.getReturnType(null).capture(context);
-        constraintSet.add(new Typing(rPrime, r, Constraint.Kind.TYPE_COMPATIBILITY));
+        constraintSet.add(new Typing(rPrime, r, TypeConstraint.Kind.TYPE_COMPATIBILITY));
       }
       return constraintSet;
     }
@@ -214,7 +214,8 @@ public class Expression extends Constraint {
     // to false; otherwise, the constraint reduces to <R' -> R>.
     return ReductionResultPair.of(
         new ConstraintSet(
-            new Typing(compileTimeReturn.capture(context), r, Constraint.Kind.TYPE_COMPATIBILITY)),
+            new Typing(
+                compileTimeReturn.capture(context), r, TypeConstraint.Kind.TYPE_COMPATIBILITY)),
         new BoundSet(context));
   }
 
@@ -237,9 +238,9 @@ public class Expression extends Constraint {
         VariableTree parameter = parameters.get(i);
         AbstractType fi = new ProperType(parameter, context);
         AbstractType gi = gs.get(i);
-        constraintSet.add(new Typing(fi, gi, Constraint.Kind.TYPE_EQUALITY));
+        constraintSet.add(new Typing(fi, gi, TypeConstraint.Kind.TYPE_EQUALITY));
       }
-      constraintSet.add(new Typing(tPrime, T, Constraint.Kind.SUBTYPE));
+      constraintSet.add(new Typing(tPrime, T, TypeConstraint.Kind.SUBTYPE));
     } else {
       context.addLambdaParms(lambda.getParameters());
     }
@@ -335,7 +336,7 @@ public class Expression extends Constraint {
     for (int i = 0; i < ps.size(); i++) {
       ProperType pi = ps.get(i);
       AbstractType qi = qs.get(i);
-      constraintSet.add(new Typing(pi, qi, Constraint.Kind.TYPE_EQUALITY));
+      constraintSet.add(new Typing(pi, qi, TypeConstraint.Kind.TYPE_EQUALITY));
     }
     // This constraint formula set is reduced to form the bound set B.
     BoundSet b = constraintSet.reduce(context);

@@ -52,8 +52,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -912,7 +912,8 @@ public class InferenceFactory {
       if (!isSubtypeOfProper) {
         for (Variable ei : es) {
           constraintSet.add(
-              new Typing(new ProperType(iter2.next(), xi, context), ei, Constraint.Kind.SUBTYPE));
+              new Typing(
+                  new ProperType(iter2.next(), xi, context), ei, TypeConstraint.Kind.SUBTYPE));
           ei.getBounds().setHasThrowsBound(true);
         }
       }

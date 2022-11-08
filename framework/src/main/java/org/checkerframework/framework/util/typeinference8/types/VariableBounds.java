@@ -8,9 +8,10 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
+import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.Pair;
@@ -136,7 +137,7 @@ public class VariableBounds {
     return false;
   }
 
-  /** Adds {@code qualifier} as a qualifier bound against this variable. */
+  /** Adds {@code qualifiers} as a qualifier bound against this variable. */
   public void addQualifierBound(BoundKind kind, Set<AnnotationMirror> qualifiers) {
     addConstraintsFromComplementaryQualifierBounds(kind, qualifiers);
     qualifierBounds.get(kind).add(qualifiers);
@@ -148,19 +149,19 @@ public class VariableBounds {
     if (kind == BoundKind.EQUAL) {
       for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
         if (s != t) {
-          constraints.add(new Typing(s, t, Kind.TYPE_EQUALITY));
+          constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_EQUALITY));
         }
       }
     } else if (kind == BoundKind.LOWER) {
       for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
         if (s != t) {
-          constraints.add(new Typing(s, t, Kind.SUBTYPE));
+          constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
         }
       }
     } else { // UPPER
       for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
         if (s != t) {
-          constraints.add(new Typing(t, s, Kind.SUBTYPE));
+          constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
         }
       }
     }
@@ -168,7 +169,7 @@ public class VariableBounds {
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.LOWER)) {
         if (s != t) {
-          constraints.add(new Typing(t, s, Kind.SUBTYPE));
+          constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
         }
       }
     }
@@ -176,7 +177,7 @@ public class VariableBounds {
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.UPPER)) {
         if (s != t) {
-          constraints.add(new Typing(s, t, Kind.SUBTYPE));
+          constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
         }
       }
     }
@@ -184,6 +185,8 @@ public class VariableBounds {
 
   /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
   public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
+    addConstraintsFromComplementaryQualifierBounds(
+        kind, s.getAnnotatedType().getEffectiveAnnotations());
     if (kind == BoundKind.EQUAL) {
       for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
         if (s != t) {
@@ -513,12 +516,12 @@ public class VariableBounds {
       if (Bi.isObject()) {
         // If Bi is Object, then var <: R implies the constraint formula <T <: R>
         for (AbstractType r : upperBoundsNonVar) {
-          constraintSet.add(new Typing(T, r, Constraint.Kind.SUBTYPE));
+          constraintSet.add(new Typing(T, r, TypeConstraint.Kind.SUBTYPE));
         }
       } else if (T.isObject()) {
         // If T is Object, then var <: R implies the constraint formula <Bi theta <: R>
         for (AbstractType r : upperBoundsNonVar) {
-          constraintSet.add(new Typing(Bi, r, Constraint.Kind.SUBTYPE));
+          constraintSet.add(new Typing(Bi, r, TypeConstraint.Kind.SUBTYPE));
         }
       }
       // else no constraint
@@ -526,13 +529,13 @@ public class VariableBounds {
       // Super bounded wildcard
       // var <: R implies the constraint formula <Bi theta <: R>
       for (AbstractType r : upperBoundsNonVar) {
-        constraintSet.add(new Typing(Bi, r, Constraint.Kind.SUBTYPE));
+        constraintSet.add(new Typing(Bi, r, TypeConstraint.Kind.SUBTYPE));
       }
 
       // R <: var implies the constraint formula <R <: T>
       AbstractType T = Ai.getWildcardLowerBound();
       for (AbstractType r : lowerBoundsNonVar) {
-        constraintSet.add(new Typing(r, T, Constraint.Kind.SUBTYPE));
+        constraintSet.add(new Typing(r, T, TypeConstraint.Kind.SUBTYPE));
       }
     }
     return constraintSet;

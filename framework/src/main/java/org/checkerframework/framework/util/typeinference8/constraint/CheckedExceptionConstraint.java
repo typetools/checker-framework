@@ -17,7 +17,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * <p>&lt;MethodReference &rarr;throws T&gt;: The checked exceptions thrown by the referenced method
  * are declared by the throws clause of the function type derived from T.
  */
-public class CheckedExceptionConstraint extends Constraint {
+public class CheckedExceptionConstraint extends TypeConstraint {
   protected final ExpressionTree expression;
   protected final Theta map;
 

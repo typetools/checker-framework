@@ -32,7 +32,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *       argument S is the same as type argument T.
  * </ul>
  */
-public class Typing extends Constraint {
+public class Typing extends TypeConstraint {
 
   /** One of the abstract types in this constraint. {@link #T} is the other. */
   private AbstractType S;
@@ -131,6 +131,7 @@ public class Typing extends Constraint {
         ((Variable) T)
             .getBounds()
             .addQualifierBound(BoundKind.LOWER, S.getAnnotatedType().getAnnotations());
+        return ConstraintSet.TRUE;
       } else {
         // TODO: check that null is a subtype.
         // T is an Inference Type
