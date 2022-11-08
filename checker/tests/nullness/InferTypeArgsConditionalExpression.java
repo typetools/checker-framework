@@ -9,7 +9,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class InferTypeArgsConditionalExpression {
 
   public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     bar(flag ? real : other);
   }
 
