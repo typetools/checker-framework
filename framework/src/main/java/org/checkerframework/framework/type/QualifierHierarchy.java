@@ -164,7 +164,25 @@ public interface QualifierHierarchy {
   // collection version of LUB below.
   @Nullable AnnotationMirror leastUpperBound(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
-
+  /**
+   * Returns the least upper bound of the all the collections of qualifiers. The result is the lub
+   * of the qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers A collection of collections of qualifiers
+   * @return the least upper bound of the collections of qualifiers
+   */
+  default Set<? extends AnnotationMirror> leastUpperBounds(
+      Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    Set<? extends AnnotationMirror> result = null;
+    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
+      if (result == null) {
+        result = AnnotationUtils.createAnnotationSet(annos);
+      } else {
+        result = leastUpperBounds(result, annos);
+      }
+    }
+    return result;
+  }
   /**
    * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
    * qualifier for the same hierarchy in each set.

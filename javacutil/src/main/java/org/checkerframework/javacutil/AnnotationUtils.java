@@ -489,7 +489,7 @@ public class AnnotationUtils {
    * @return a sorted new set to store {@link AnnotationMirror} as element
    */
   public static NavigableSet<AnnotationMirror> createAnnotationSet(
-      Collection<AnnotationMirror> annos) {
+      Collection<? extends AnnotationMirror> annos) {
     TreeSet<AnnotationMirror> set = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
     set.addAll(annos);
     return set;

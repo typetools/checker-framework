@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
@@ -14,6 +16,7 @@ import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
+import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 
 /**
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
@@ -250,8 +253,21 @@ public class Resolution {
   private void resolveNoCapture(Variable ai) {
     assert !ai.getBounds().hasInstantiation();
     LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+    Set<Set<AnnotationMirror>> qualifierLowerBounds =
+        ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+
     if (!lowerBounds.isEmpty()) {
       ProperType lub = context.inferenceTypeFactory.lub(lowerBounds);
+      if (!qualifierLowerBounds.isEmpty()) {
+        Set<? extends AnnotationMirror> lubAnnos =
+            context.typeFactory.getQualifierHierarchy().leastUpperBounds(qualifierLowerBounds);
+        lubAnnos =
+            context
+                .typeFactory
+                .getQualifierHierarchy()
+                .leastUpperBounds(lubAnnos, lub.getAnnotatedType().getAnnotations());
+        lub.getAnnotatedType().replaceAnnotations(lubAnnos);
+      }
       ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, lub);
       return;
     }

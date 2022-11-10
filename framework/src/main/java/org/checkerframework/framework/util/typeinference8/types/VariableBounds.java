@@ -132,6 +132,8 @@ public class VariableBounds {
     }
     if (bounds.get(kind).add(otherType)) {
       addConstraintsFromComplementaryBounds(kind, otherType);
+      addConstraintsFromComplementaryQualifierBounds(
+          kind, otherType.getAnnotatedType().getEffectiveAnnotations());
       return true;
     }
     return false;
@@ -140,6 +142,7 @@ public class VariableBounds {
   /** Adds {@code qualifiers} as a qualifier bound against this variable. */
   public void addQualifierBound(BoundKind kind, Set<AnnotationMirror> qualifiers) {
     addConstraintsFromComplementaryQualifierBounds(kind, qualifiers);
+    addConstraintsFromComplementaryBounds(kind, qualifiers);
     qualifierBounds.get(kind).add(qualifiers);
   }
 
@@ -185,8 +188,6 @@ public class VariableBounds {
 
   /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
   public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
-    addConstraintsFromComplementaryQualifierBounds(
-        kind, s.getAnnotatedType().getEffectiveAnnotations());
     if (kind == BoundKind.EQUAL) {
       for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
         if (s != t) {
@@ -239,6 +240,30 @@ public class VariableBounds {
     }
   }
 
+  public void addConstraintsFromComplementaryBounds(BoundKind kind, Set<AnnotationMirror> s) {
+    // Copy bound to equal variables
+    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+      if (t.isVariable()) {
+        ((Variable) t).getBounds().addQualifierBound(kind, s);
+      }
+    }
+
+    if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
+      for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+        if (t.isVariable()) {
+          ((Variable) t).getBounds().addQualifierBound(BoundKind.UPPER, s);
+        }
+      }
+    }
+
+    if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
+      for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+        if (t.isVariable()) {
+          ((Variable) t).getBounds().addQualifierBound(BoundKind.LOWER, s);
+        }
+      }
+    }
+  }
   /**
    * Returns the constraints between the type arguments to {@code s} and {@code t}.
    *
