@@ -4,6 +4,7 @@
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.RequiresCalledMethods;
 import org.checkerframework.common.returnsreceiver.qual.This;
+import org.checkerframework.dataflow.qual.Deterministic;
 
 public class Issue5402 {}
 
@@ -23,6 +24,23 @@ class Issue5402_Ok1 {
 
 class Issue5402_Ok2 {
 
+  public @This Issue5402_Ok2 bar() {
+    return this;
+  }
+
+  @RequiresCalledMethods(value = "this", methods = "bar")
+  public void baz() {}
+
+  public static void test() {
+    final Issue5402_Ok2 foo = new Issue5402_Ok2();
+    final Issue5402_Ok2 foo1 = foo.bar();
+    foo1.baz(); // No error
+  }
+}
+
+class Issue5402_Ok3 {
+
+  @Deterministic
   public @This Issue5402_Ok2 bar() {
     return this;
   }
