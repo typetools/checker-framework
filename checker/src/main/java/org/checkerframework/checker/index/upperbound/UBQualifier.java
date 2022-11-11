@@ -1366,6 +1366,8 @@ public abstract class UBQualifier {
         return true;
       } else if (superType.isBottom()) {
         return false;
+      } else if (superType.isPoly()) {
+        return false;
       } else if (superType.isLiteral()) {
         int otherValue = ((UpperBoundLiteralQualifier) superType).value;
         return value == otherValue;
