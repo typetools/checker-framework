@@ -164,6 +164,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
+# Unlimited fetchDepth for misc_jobs, because of need to make contributors.tex
 - job: misc_jdk8
   dependsOn:
    - canary_jobs
@@ -173,7 +174,6 @@ jobs:
   container: mdernst/cf-ubuntu-jdk8-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk11
@@ -185,7 +185,6 @@ jobs:
   container: mdernst/cf-ubuntu-jdk11-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk17
@@ -194,7 +193,6 @@ jobs:
   container: mdernst/cf-ubuntu-jdk17-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk18
@@ -205,7 +203,6 @@ jobs:
   container: mdernst/cf-ubuntu-jdk18-plus:latest
   steps:
   - checkout: self
-    fetchDepth: 1000
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: typecheck_jdk8
@@ -328,11 +325,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
-# "condition: false" because as of 6 Sep 2022, the Error Prone compiler is crashing
-# when compiling Guava (even on the Guava mainline without type annotations).
-# TODO: remove "condition: false" and reinstate dependences on this.
 - job: guava_jdk17
-  condition: false
   dependsOn:
    - canary_jobs
   pool:
