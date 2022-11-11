@@ -145,6 +145,12 @@ public class ValueCheckerUtils {
     return values;
   }
 
+  /**
+   * Converts a list of objects to a list of their string representations.
+   *
+   * @param origValues the objects to format
+   * @return a list of the formatted objects
+   */
   @SuppressWarnings("mustcall:methodref.receiver") // generics; #979 ?
   private static List<?> convertToStringVal(List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
