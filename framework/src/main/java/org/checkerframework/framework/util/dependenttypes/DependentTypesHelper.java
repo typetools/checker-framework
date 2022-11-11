@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -35,16 +34,11 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.expression.ArrayAccess;
-import org.checkerframework.dataflow.expression.BinaryOperation;
-import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.LocalVariable;
-import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
-import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -719,88 +713,20 @@ public class DependentTypesHelper {
                 // type annotation, which returning null from these methods accomplishes.
                 @Override
                 public JavaExpression visitLocalVariable(LocalVariable local, Void unused) {
-                  return null;
-                }
-
-                @Override
-                public JavaExpression visitBinaryOperation(BinaryOperation b, Void unused) {
-                  JavaExpression left = convert(b.getLeft());
-                  if (left == null) {
-                    return null;
-                  }
-                  JavaExpression right = convert(b.getRight());
-                  if (right == null) {
-                    return null;
-                  }
-                  // Don't call super(), since it would just convert the two leaves again
-                  // and then do this:
-                  return new BinaryOperation(b.getType(), b.getOperationKind(), left, right);
-                }
-
-                @Override
-                public JavaExpression visitUnaryOperation(UnaryOperation u, Void unused) {
-                  JavaExpression expr = convert(u.getOperand());
-                  if (expr == null) {
-                    return null;
-                  }
-                  // Don't call super, since it would re-convert expr.
-                  return new UnaryOperation(u.getType(), u.getOperationKind(), expr);
-                }
-
-                @Override
-                public JavaExpression visitArrayAccess(ArrayAccess arrayAccessExpr, Void unused) {
-                  JavaExpression array = convert(arrayAccessExpr.getArray());
-                  if (array == null) {
-                    return null;
-                  }
-                  JavaExpression index = convert(arrayAccessExpr.getIndex());
-                  if (index == null) {
-                    return null;
-                  }
-                  return new ArrayAccess(arrayAccessExpr.getType(), array, index);
-                }
-
-                @Override
-                public JavaExpression visitFieldAccess(FieldAccess fieldAccessExpr, Void unused) {
-                  JavaExpression receiver = convert(fieldAccessExpr.getReceiver());
-                  if (receiver == null) {
-                    return null;
-                  }
-                  return new FieldAccess(
-                      receiver, fieldAccessExpr.getType(), fieldAccessExpr.getField());
+                  throw new FoundLocalException();
                 }
 
                 @Override
                 public JavaExpression visitThisReference(ThisReference thisRef, Void unused) {
-                  return null;
-                }
-
-                @Override
-                public JavaExpression visitMethodCall(MethodCall methodCall, Void unused) {
-                  // To delocalize a method call, first delocalize its receiver and its
-                  // parameters. If any of them are null - that is, represent local variables
-                  // - return null, because the method call expression shouldn't be included
-                  // in the delocalized result.
-                  JavaExpression convertedReceiver = convert(methodCall.getReceiver());
-                  if (convertedReceiver == null) {
-                    return null;
-                  }
-                  List<JavaExpression> convertedArgs =
-                      methodCall.getArguments().stream()
-                          .map(this::convert)
-                          .collect(Collectors.toList());
-                  if (convertedArgs.contains(null)) {
-                    return null;
-                  }
-                  return new MethodCall(
-                      methodCall.getType(),
-                      methodCall.getElement(),
-                      convertedReceiver,
-                      convertedArgs);
+                  throw new FoundLocalException();
                 }
               };
 
-          return jec.convert(expr);
+          try {
+            return jec.convert(expr);
+          } catch (FoundLocalException ex) {
+            return null;
+          }
         };
 
     convertAnnotatedTypeMirror(stringToJavaExpr, atm);
