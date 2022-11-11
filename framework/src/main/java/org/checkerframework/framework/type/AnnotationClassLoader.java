@@ -65,8 +65,8 @@ import org.plumelib.reflection.Signatures;
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
 @SuppressWarnings(
-    "mustcall:inconsistent.mustcall.subtype" // Don't check that AnnotationClassLoaders are closed.
-// (Just one is created per type factory.)
+    "mustcall:inconsistent.mustcall.subtype" // No need to check that AnnotationClassLoaders are
+// closed. (Just one is created per type factory.)
 )
 @InheritableMustCall({})
 public class AnnotationClassLoader implements Closeable {
