@@ -152,6 +152,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   /// End of static methods, start of per-instance state.
   ///
 
+  /** Converts a file line into a TestDiagnosticLine. */
   private final StringToTestDiagnosticLine codec;
 
   /** The file name. */
@@ -169,7 +170,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
    * Creates a JavaDiagnosticReader.
    *
    * @param toRead the file to read
-   * @praam StringToTestDiagnosticLine converts a file line into a TestDiagnosticLine
+   * @param StringToTestDiagnosticLine converts a file line into a TestDiagnosticLine
    */
   @SuppressWarnings("builder:required.method.not.called") // WHY?
   private JavaDiagnosticReader(File toRead, StringToTestDiagnosticLine codec) {
@@ -187,7 +188,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
    * Creates a JavaDiagnosticReader.
    *
    * @param toReadFileObject the file to read
-   * @praam StringToTestDiagnosticLine converts a file line into a TestDiagnosticLine
+   * @param StringToTestDiagnosticLine converts a file line into a TestDiagnosticLine
    */
   @SuppressWarnings("builder:required.method.not.called") // WHY?
   private JavaDiagnosticReader(JavaFileObject toReadFileObject, StringToTestDiagnosticLine codec) {

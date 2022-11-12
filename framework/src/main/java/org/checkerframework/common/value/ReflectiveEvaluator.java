@@ -215,6 +215,13 @@ public class ReflectiveEvaluator {
         (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)), ele.getParameters());
   }
 
+  /**
+   * Returns all combinations of the elements of the given lists.
+   *
+   * @param allArgValues the lists whose cartesian product to form
+   * @param whichArg pass {@code allArgValues.size() - 1}
+   * @return all combinations of the elements of the given lists
+   */
   @SuppressWarnings("mustcall:assignment") // code is not relevant to @MustCall
   private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
