@@ -170,7 +170,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
    * Creates a JavaDiagnosticReader.
    *
    * @param toRead the file to read
-   * @param StringToTestDiagnosticLine converts a file line into a TestDiagnosticLine
+   * @param codec converts a file line into a TestDiagnosticLine
    */
   @SuppressWarnings("builder:required.method.not.called") // WHY?
   private JavaDiagnosticReader(File toRead, StringToTestDiagnosticLine codec) {
@@ -188,7 +188,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
    * Creates a JavaDiagnosticReader.
    *
    * @param toReadFileObject the file to read
-   * @param StringToTestDiagnosticLine converts a file line into a TestDiagnosticLine
+   * @param codec converts a file line into a TestDiagnosticLine
    */
   @SuppressWarnings("builder:required.method.not.called") // WHY?
   private JavaDiagnosticReader(JavaFileObject toReadFileObject, StringToTestDiagnosticLine codec) {
