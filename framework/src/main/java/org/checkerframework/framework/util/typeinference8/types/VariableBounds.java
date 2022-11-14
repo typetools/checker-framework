@@ -251,14 +251,14 @@ public class VariableBounds {
     // Copy bound to equal variables
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
       if (t.isVariable()) {
-        ((Variable) t).getBounds().addQualifierBound(kind, s);
+        ((Variable) t).getBounds().qualifierBounds.get(kind).add(s);
       }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (AbstractType t : bounds.get(BoundKind.LOWER)) {
         if (t.isVariable()) {
-          ((Variable) t).getBounds().addQualifierBound(BoundKind.UPPER, s);
+          ((Variable) t).getBounds().qualifierBounds.get(BoundKind.UPPER).add(s);
         }
       }
     }
@@ -266,7 +266,7 @@ public class VariableBounds {
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (AbstractType t : bounds.get(BoundKind.UPPER)) {
         if (t.isVariable()) {
-          ((Variable) t).getBounds().addQualifierBound(BoundKind.LOWER, s);
+          ((Variable) t).getBounds().qualifierBounds.get(BoundKind.LOWER).add(s);
         }
       }
     }
