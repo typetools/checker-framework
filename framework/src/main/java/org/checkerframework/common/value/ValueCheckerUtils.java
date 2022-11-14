@@ -144,6 +144,12 @@ public class ValueCheckerUtils {
     return values;
   }
 
+  /**
+   * Converts a list of objects to a list of their string representations.
+   *
+   * @param origValues the objects to format
+   * @return a list of the formatted objects
+   */
   private static List<?> convertToStringVal(List<?> origValues) {
     if (origValues == null) {
       return null;
