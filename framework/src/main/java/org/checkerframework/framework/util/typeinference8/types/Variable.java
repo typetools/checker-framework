@@ -55,7 +55,7 @@ public class Variable extends AbstractType {
       int id) {
     super(context);
     assert typeVariable != null;
-    this.variableBounds = new VariableBounds(context);
+    this.variableBounds = new VariableBounds(this, context);
     this.typeVariableJava = typeVariableJava;
     this.typeVariable = typeVariable;
     this.invocation = invocation;

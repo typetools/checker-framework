@@ -29,6 +29,9 @@ public class VariableBounds {
     EQUAL;
   }
 
+  /** The variable whose bounds this class represents. */
+  private final Variable variable;
+
   private final Java8InferenceContext context;
 
   /** The type to which this variable is instantiated. */
@@ -60,7 +63,8 @@ public class VariableBounds {
   /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
   public EnumMap<BoundKind, LinkedHashSet<Set<AnnotationMirror>>> savedQualifierBounds = null;
 
-  public VariableBounds(Java8InferenceContext context) {
+  public VariableBounds(Variable variable, Java8InferenceContext context) {
+    this.variable = variable;
     this.context = context;
     bounds.put(BoundKind.EQUAL, new LinkedHashSet<>());
     bounds.put(BoundKind.UPPER, new LinkedHashSet<>());
@@ -127,6 +131,9 @@ public class VariableBounds {
 
   /** Adds {@code otherType} as bound against this variable. */
   public boolean addBound(BoundKind kind, AbstractType otherType) {
+    if (otherType == variable) {
+      return false;
+    }
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
       instantiation = ((ProperType) otherType).boxType();
     }
