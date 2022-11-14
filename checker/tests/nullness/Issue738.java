@@ -19,11 +19,11 @@ public class Issue738 {
         methodB2(is, os);
         break;
       case 3:
-        // :: error: (type.argument)
+        // :: error: (type.arguments.not.inferred)
         methodB3(is, os);
         break;
       case 4:
-        // :: error: (type.argument)
+        // :: error: (type.arguments.not.inferred)
         methodB4(is, os);
         break;
     }

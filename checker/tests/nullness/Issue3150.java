@@ -5,9 +5,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue3150 {
   void foo(@Nullable Object nble, @NonNull Object nn) {
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     requireNonNull1(null);
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     requireNonNull1(nble);
     requireNonNull1("hello");
     requireNonNull1(nn);
