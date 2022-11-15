@@ -738,6 +738,9 @@ public final class SceneToStubWriter {
         if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
           if (!anyClassPrintable) {
             try {
+              if (fileWriter != null || printWriter != null) {
+                throw new Error("This can't happen");
+              }
               fileWriter = new FileWriter(filename);
               printWriter = new PrintWriter(fileWriter);
             } catch (IOException e) {
