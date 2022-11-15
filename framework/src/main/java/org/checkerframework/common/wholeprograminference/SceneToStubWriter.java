@@ -702,7 +702,6 @@ public final class SceneToStubWriter {
    * @param filename the name of the file to write (must end in .astub)
    * @param checker the checker, for computing preconditions
    */
-  @SuppressWarnings("builder:required.method.not.called") // looks like a false positive
   private static void writeImpl(ASceneWrapper scene, String filename, BaseTypeChecker checker) {
     // Sort by package name first so that output is deterministic and default package
     // comes first; within package sort by class name.

@@ -15,6 +15,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -215,8 +216,8 @@ public class ReflectiveEvaluator {
         (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)), ele.getParameters());
   }
 
-  @SuppressWarnings("mustcall:assignment") // code is not relevant to @MustCall
-  private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
+  private List<@PolyMustCall Object[]> cartesianProduct(
+      List<List<? extends @PolyMustCall Object>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
     List<Object[]> tuples = new ArrayList<>();
 

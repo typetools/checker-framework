@@ -440,9 +440,6 @@ public class StubGenerator {
     javac.initModules(com.sun.tools.javac.util.List.nil());
     javac.enterDone();
 
-    @SuppressWarnings("builder:required.method.not.called" // WHY? JdkCompiler.astub has
-    // JavacProcessingEnvironment
-    )
     ProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
 
     StubGenerator generator = new StubGenerator();

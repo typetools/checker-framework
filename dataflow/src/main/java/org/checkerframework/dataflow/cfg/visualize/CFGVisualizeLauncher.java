@@ -235,7 +235,7 @@ public class CFGVisualizeLauncher {
       @SuppressWarnings({
         "builder:required.method.not.called",
         "mustcall:assignment"
-      }) // WHY? Annotated JDK should handle this, and test case NullOutputStreamTest passes.
+      }) // Won't be needed in JDK 11+ with use of "OutputStream.nullOutputStream()".
       @MustCall() OutputStream nullOS =
           // In JDK 11+, this can be just "OutputStream.nullOutputStream()".
           new OutputStream() {
