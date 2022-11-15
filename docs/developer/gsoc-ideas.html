@@ -1368,7 +1368,7 @@ a <code>JavaExpression</code>.
   </li>
   <li>
     The <a href="https://checkerframework.org/api/org/checkerframework/framework/util/JavaExpressionParseUtil.html"><code>JavaExpressionParseUtil</code></a>
-    class already uses JavaParser, but it uses <code>ExpressionToReceiverVisitor</code> it to construct
+    class already uses JavaParser, but it uses <code>ExpressionToReceiverVisitor</code> to construct
     a <code>JavaExpression</code>.  Have it return a
     JavaParser <code>Expression</code> instead, and delete <code>ExpressionToReceiverVisitor</code>.
   </li>
