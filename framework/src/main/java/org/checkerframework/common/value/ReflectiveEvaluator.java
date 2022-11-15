@@ -317,7 +317,9 @@ public class ReflectiveEvaluator {
       listOfArguments = Collections.singletonList(null);
     } else {
       // Find all possible argument sets
-      listOfArguments = cartesianProduct(argValues, argValues.size() - 1);
+      @SuppressWarnings("mustcall:argument") // I can't type cartesianProduct().
+      List<Object[]> listOfArgumentsTmp = cartesianProduct(argValues, argValues.size() - 1);
+      listOfArguments = listOfArgumentsTmp;
     }
 
     List<Object> results = new ArrayList<>(listOfArguments.size());
