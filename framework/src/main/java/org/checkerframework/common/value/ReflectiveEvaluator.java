@@ -58,6 +58,7 @@ public class ReflectiveEvaluator {
    * @return all possible values that the method may return, or null if the method could not be
    *     evaluated
    */
+  @SuppressWarnings("mustcall") // code is not relevant to @MustCall
   public List<?> evaluateMethodCall(
       List<List<?>> allArgValues, List<?> receiverValues, MethodInvocationTree tree) {
     Method method = getMethodObject(tree);
@@ -223,7 +224,7 @@ public class ReflectiveEvaluator {
    * @param whichArg pass {@code allArgValues.size() - 1}
    * @return all combinations of the elements of the given lists
    */
-  // @SuppressWarnings("mustcall:assignment") // code is not relevant to @MustCall
+  @SuppressWarnings("mustcall") // code is not relevant to @MustCall
   private List<@PolyMustCall Object[]> cartesianProduct(
       List<List<? extends @PolyMustCall Object>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
