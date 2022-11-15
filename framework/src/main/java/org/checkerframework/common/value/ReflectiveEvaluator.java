@@ -15,7 +15,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -225,8 +224,7 @@ public class ReflectiveEvaluator {
    * @return all combinations of the elements of the given lists
    */
   @SuppressWarnings("mustcall") // code is not relevant to @MustCall
-  private List<@PolyMustCall Object[]> cartesianProduct(
-      List<List<? extends @PolyMustCall Object>> allArgValues, int whichArg) {
+  private List<Object[]> cartesianProduct(List<List<? extends Object>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
     List<Object[]> tuples = new ArrayList<>();
 
@@ -319,9 +317,7 @@ public class ReflectiveEvaluator {
       listOfArguments = Collections.singletonList(null);
     } else {
       // Find all possible argument sets
-      @SuppressWarnings("mustcall:assignment") // I can't type cartesianProduct().
-      List<Object[]> listOfArgumentsTmp = cartesianProduct(argValues, argValues.size() - 1);
-      listOfArguments = listOfArgumentsTmp;
+      listOfArguments = cartesianProduct(argValues, argValues.size() - 1);
     }
 
     List<Object> results = new ArrayList<>(listOfArguments.size());
