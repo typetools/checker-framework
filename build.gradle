@@ -717,8 +717,8 @@ subprojects {
             }
         }
 
-        // Tasks to run various checkers on all the main source sets.
-        // These pass and are run by typecheckTests.
+        // Tasks such as `checkResourceLeak` to run various checkers on all the main source sets.
+        // These pass and are run by the `typecheck` task.
         // When you add one here, also update a dependsOn item for the 'typecheck' task.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
