@@ -57,7 +57,6 @@ public class ReflectiveEvaluator {
    * @return all possible values that the method may return, or null if the method could not be
    *     evaluated
    */
-  @SuppressWarnings("mustcall") // code is not relevant to @MustCall
   public List<?> evaluateMethodCall(
       List<List<?>> allArgValues, List<?> receiverValues, MethodInvocationTree tree) {
     Method method = getMethodObject(tree);
@@ -223,8 +222,8 @@ public class ReflectiveEvaluator {
    * @param whichArg pass {@code allArgValues.size() - 1}
    * @return all combinations of the elements of the given lists
    */
-  @SuppressWarnings("mustcall") // code is not relevant to @MustCall
-  private List<Object[]> cartesianProduct(List<List<? extends Object>> allArgValues, int whichArg) {
+  @SuppressWarnings("mustcall") // I cannot type cartesianProduct() for @MustCall
+  private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
     List<Object[]> tuples = new ArrayList<>();
 
@@ -317,9 +316,7 @@ public class ReflectiveEvaluator {
       listOfArguments = Collections.singletonList(null);
     } else {
       // Find all possible argument sets
-      @SuppressWarnings("mustcall:argument") // I can't type cartesianProduct().
-      List<Object[]> listOfArgumentsTmp = cartesianProduct(argValues, argValues.size() - 1);
-      listOfArguments = listOfArgumentsTmp;
+      listOfArguments = cartesianProduct(argValues, argValues.size() - 1);
     }
 
     List<Object> results = new ArrayList<>(listOfArguments.size());

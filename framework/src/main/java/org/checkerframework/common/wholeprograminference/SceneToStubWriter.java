@@ -762,22 +762,16 @@ public final class SceneToStubWriter {
           printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
         }
       }
-      if (printWriter != null) {
-        printWriter.flush();
-      }
     } finally {
+      if (printWriter != null) {
+        printWriter.close(); // does not throw IOException
+      }
       try {
-        if (printWriter != null) {
-          printWriter.close(); // does not throw IOException
-        }
-        // This should not be necessary, because fileWriter and printWriter are resource aliases.
         if (fileWriter != null) {
           fileWriter.close();
         }
       } catch (IOException e) {
-        // Nothing to do, unfortunately, since exceptions thrown from a finally block have no
-        // effect.
-        // throw new Error(e);
+        // Nothing to do since exceptions thrown from a finally block have no effect.
       }
     }
   }
