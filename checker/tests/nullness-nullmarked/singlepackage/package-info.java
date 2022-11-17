@@ -1,2 +1,2 @@
-@org.jspecify.nullness.NullMarked
+@org.jspecify.annotations.NullMarked
 package other;

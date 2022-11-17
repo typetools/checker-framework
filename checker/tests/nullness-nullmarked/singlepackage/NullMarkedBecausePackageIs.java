@@ -1,6 +1,6 @@
 package other;
 
-import org.jspecify.nullness.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class NullMarkedBecausePackageIs<T> {
     // :: error: (type.argument.type.incompatible)
