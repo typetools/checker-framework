@@ -28,6 +28,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
@@ -61,6 +64,11 @@ import org.plumelib.reflection.Signatures;
  * #isSupportedAnnotationClass(Class)}. See {@code
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
+@SuppressWarnings(
+    "mustcall:inconsistent.mustcall.subtype" // No need to check that AnnotationClassLoaders are
+// closed. (Just one is created per type factory.)
+)
+@InheritableMustCall({})
 public class AnnotationClassLoader implements Closeable {
   /** For issuing errors to the user. */
   protected final BaseTypeChecker checker;
@@ -97,7 +105,8 @@ public class AnnotationClassLoader implements Closeable {
   private final URL resourceURL;
 
   /** The class loader used to load annotation classes. */
-  protected final URLClassLoader classLoader;
+  @SuppressWarnings("builder:required.method.not.called") // this class is @MustCall({})
+  protected final @Owning URLClassLoader classLoader;
 
   /**
    * The annotation classes bundled with a checker (located in its qual directory) that are deemed
@@ -170,6 +179,7 @@ public class AnnotationClassLoader implements Closeable {
     loadBundledAnnotationClasses();
   }
 
+  @EnsuresCalledMethods(value = "classLoader", methods = "close")
   @Override
   public void close() {
     try {

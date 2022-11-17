@@ -726,37 +726,53 @@ public final class SceneToStubWriter {
 
     // The writer is not initialized until it is certain that at
     // least one class can be written, to avoid empty stub files.
+    // An alternate approach would be to delete the file after it is closed, if the file is empty.
+    // It's not worth rewriting this code, since .stub files are obsolescent.
+
     FileWriter fileWriter = null;
     PrintWriter printWriter = null;
+    try {
 
-    // For each class
-    for (String clazz : classes) {
-      if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
-        if (!anyClassPrintable) {
-          try {
-            fileWriter = new FileWriter(filename);
-            printWriter = new PrintWriter(fileWriter);
-          } catch (IOException e) {
-            throw new BugInCF("error writing file during WPI: " + filename);
-          }
+      // For each class
+      for (String clazz : classes) {
+        if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
+          if (!anyClassPrintable) {
+            try {
+              if (fileWriter != null || printWriter != null) {
+                throw new Error("This can't happen");
+              }
+              fileWriter = new FileWriter(filename);
+              printWriter = new PrintWriter(fileWriter);
+            } catch (IOException e) {
+              throw new BugInCF("error writing file during WPI: " + filename);
+            }
 
-          // Write out all imports
-          ImportDefWriter importDefWriter;
-          try {
-            importDefWriter = new ImportDefWriter(scene, printWriter);
-          } catch (DefException e) {
-            throw new BugInCF(e);
+            // Write out all imports
+            ImportDefWriter importDefWriter;
+            try {
+              importDefWriter = new ImportDefWriter(scene, printWriter);
+            } catch (DefException e) {
+              throw new BugInCF(e);
+            }
+            importDefWriter.visit();
+            printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
+            printWriter.println();
+            anyClassPrintable = true;
           }
-          importDefWriter.visit();
-          printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
-          printWriter.println();
-          anyClassPrintable = true;
+          printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
         }
-        printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
       }
-    }
-    if (printWriter != null) {
-      printWriter.flush();
+    } finally {
+      if (printWriter != null) {
+        printWriter.close(); // does not throw IOException
+      }
+      try {
+        if (fileWriter != null) {
+          fileWriter.close();
+        }
+      } catch (IOException e) {
+        // Nothing to do since exceptions thrown from a finally block have no effect.
+      }
     }
   }
 
