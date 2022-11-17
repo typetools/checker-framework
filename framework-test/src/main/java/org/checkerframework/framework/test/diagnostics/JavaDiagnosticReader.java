@@ -13,7 +13,6 @@ import javax.tools.JavaFileObject;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -159,7 +158,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   private final String filename;
 
   /** The reader for the file. */
-  private final @Owning @MustCall("close") LineNumberReader reader;
+  private final @Owning LineNumberReader reader;
 
   /** The next line to be read, or null. */
   private @Nullable String nextLine = null;
