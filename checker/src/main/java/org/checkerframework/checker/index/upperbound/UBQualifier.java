@@ -125,6 +125,11 @@ public abstract class UBQualifier {
     List<String> sequences =
         AnnotationUtils.getElementValueArray(
             ltLengthOfAnno, ubChecker.ltLengthOfValueElement, String.class);
+    if (sequences.isEmpty()) {
+      // These annotations can be created by delocalization of an LTLengthOf annotation
+      // that only contains local variables at a call site.
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
     List<String> offsets =
         AnnotationUtils.getElementValueArray(
             ltLengthOfAnno,
@@ -147,6 +152,11 @@ public abstract class UBQualifier {
     List<String> sequences =
         AnnotationUtils.getElementValueArray(
             substringIndexForAnno, ubChecker.substringIndexForValueElement, String.class);
+    if (sequences.isEmpty()) {
+      // These annotations can be created by delocalization of a SubstringIndexFor annotation
+      // that only contains local variables at a call site.
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
     List<String> offsets =
         AnnotationUtils.getElementValueArray(
             substringIndexForAnno, ubChecker.substringIndexForOffsetElement, String.class);
@@ -169,7 +179,8 @@ public abstract class UBQualifier {
     List<String> sequences =
         AnnotationUtils.getElementValueArray(am, ubChecker.ltEqLengthOfValueElement, String.class);
     if (sequences.isEmpty()) {
-      // How did this AnnotationMirror even get made?  It seems invalid.
+      // These annotations can be created by delocalization of an LTEqLengthOf annotation
+      // that only contains local variables at a call site.
       return UpperBoundUnknownQualifier.UNKNOWN;
     }
     List<String> offset = Collections.nCopies(sequences.size(), "-1");
@@ -188,6 +199,11 @@ public abstract class UBQualifier {
       AnnotationMirror am, String extraOffset, UpperBoundChecker ubChecker) {
     List<String> sequences =
         AnnotationUtils.getElementValueArray(am, ubChecker.ltOMLengthOfValueElement, String.class);
+    if (sequences.isEmpty()) {
+      // These annotations can be created by delocalization of an LTOMLengthOf annotation
+      // that only contains local variables at a call site.
+      return UpperBoundUnknownQualifier.UNKNOWN;
+    }
     List<String> offset = Collections.nCopies(sequences.size(), "1");
     return createUBQualifier(sequences, offset, extraOffset);
   }
@@ -1349,6 +1365,8 @@ public abstract class UBQualifier {
       if (superType.isUnknown()) {
         return true;
       } else if (superType.isBottom()) {
+        return false;
+      } else if (superType.isPoly()) {
         return false;
       } else if (superType.isLiteral()) {
         int otherValue = ((UpperBoundLiteralQualifier) superType).value;
