@@ -1,18 +1,18 @@
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
-import org.checkerframework.checker.testchecker.ainfer.qual.Top;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
 
 class EnsuresQualifierTest {
 
-  @Top int field1;
-  @Top int field2;
+  @AinferTop int field1;
+  @AinferTop int field2;
 
-  @Top int top;
-  @Parent int parent;
-  @Sibling1 int sibling1;
-  @Sibling2 int sibling2;
+  @AinferTop int top;
+  @AinferParent int parent;
+  @AinferSibling1 int sibling1;
+  @AinferSibling2 int sibling2;
   @AinferBottom int bottom;
 
   void field1IsParent() {
@@ -27,11 +27,11 @@ class EnsuresQualifierTest {
     }
   }
 
-  void field1IsSibling2() {
+  void field1IsAinferSibling2() {
     field1 = sibling2;
   }
 
-  void field1IsSibling2_2(boolean b) {
+  void field1IsAinferSibling2_2(boolean b) {
     if (b) {
       field1 = sibling2;
     } else {
@@ -39,12 +39,12 @@ class EnsuresQualifierTest {
     }
   }
 
-  void parentIsSibling1() {
+  void parentIsAinferSibling1() {
     parent = sibling1;
   }
 
   // Prevent refinement of the `parent` field variable.
-  void parentIsParent(@Parent int x) {
+  void parentIsParent(@AinferParent int x) {
     parent = x;
   }
 
@@ -53,30 +53,30 @@ class EnsuresQualifierTest {
   void client1() {
     field1IsParent();
     // :: warning: (assignment)
-    @Parent int p = field1;
+    @AinferParent int p = field1;
   }
 
   void client2() {
     field1IsParent_2(true);
     // :: warning: (assignment)
-    @Parent int p = field1;
+    @AinferParent int p = field1;
   }
 
   void client3() {
-    field1IsSibling2();
+    field1IsAinferSibling2();
     // :: warning: (assignment)
-    @Sibling2 int x = field1;
+    @AinferSibling2 int x = field1;
   }
 
   void client4() {
-    field1IsSibling2_2(true);
+    field1IsAinferSibling2_2(true);
     // :: warning: (assignment)
-    @Sibling2 int x = field1;
+    @AinferSibling2 int x = field1;
   }
 
   void client5() {
-    parentIsSibling1();
+    parentIsAinferSibling1();
     // :: warning: (assignment)
-    @Sibling1 int x = parent;
+    @AinferSibling1 int x = parent;
   }
 }

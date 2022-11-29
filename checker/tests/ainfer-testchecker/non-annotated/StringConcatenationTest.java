@@ -1,4 +1,4 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 public class StringConcatenationTest {
 
@@ -6,21 +6,21 @@ public class StringConcatenationTest {
   private String options_str2;
 
   void foo() {
-    options_str = getSibling1();
-    options_str2 += getSibling1();
+    options_str = getAinferSibling1();
+    options_str2 += getAinferSibling1();
   }
 
   void test() {
     // :: warning: (argument)
-    expectsSibling1(options_str);
+    expectsAinferSibling1(options_str);
     // :: warning: (argument)
-    expectsSibling1(options_str2);
+    expectsAinferSibling1(options_str2);
   }
 
-  void expectsSibling1(@Sibling1 String t) {}
+  void expectsAinferSibling1(@AinferSibling1 String t) {}
 
   @SuppressWarnings("cast.unsafe")
-  @Sibling1 String getSibling1() {
-    return (@Sibling1 String) " ";
+  @AinferSibling1 String getAinferSibling1() {
+    return (@AinferSibling1 String) " ";
   }
 }

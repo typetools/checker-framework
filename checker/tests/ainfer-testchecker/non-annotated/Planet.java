@@ -1,6 +1,6 @@
 // This test checks that enums with fields and methods are handled correctly
 
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 @SuppressWarnings(
     "value" // Do not generate Value Checker annotations, because IndexFileParser cannot handle
@@ -45,7 +45,7 @@ public enum Planet {
     return otherMass * surfaceGravity();
   }
 
-  void test(@Sibling1 int x) {
+  void test(@AinferSibling1 int x) {
     foo = x;
   }
 

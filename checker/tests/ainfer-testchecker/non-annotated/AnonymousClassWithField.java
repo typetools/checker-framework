@@ -10,17 +10,17 @@ public class AnonymousClassWithField {
   public void test() {
     this.scan(
         new InterfaceTestExtension() {
-          private String s1 = InterfaceTest.getSibling1();
+          private String s1 = InterfaceTest.getAinferSibling1();
 
           @Override
           public void testX() {
             // :: warning: (argument)
-            requireSibling1(s1);
+            requireAinferSibling1(s1);
           }
 
           public void testY() {
             // :: warning: (argument)
-            requireSibling1(toaster);
+            requireAinferSibling1(toaster);
           }
         });
   }

@@ -1,6 +1,6 @@
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.DefaultType;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 @AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferTestChecker")
@@ -9,6 +9,6 @@ class ExistingPurityAnnotations {
   // methods:
 
   @Pure
-  java.lang.Object pureMethod(@Sibling1 java.lang.Object object);
+  java.lang.Object pureMethod(@AinferSibling1 java.lang.Object object);
 
 }

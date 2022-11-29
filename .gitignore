@@ -154,6 +154,8 @@ checker/jtreg/multipleexecutions/Main.class
 checker-qual-android/src
 
 # Some tests produce output into the tests/ directory instead of the build/ directory.
+checker/tests/ainfer-index/annotated/
+checker/tests/ainfer-index/inference-output/
 checker/tests/ainfer-nullness/annotated/
 checker/tests/ainfer-nullness/inference-output/
 checker/tests/ainfer-testchecker/annotated/
