@@ -7,11 +7,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * Toy type system for testing field inference.
  *
- * @see Sibling1, Sibling2, Parent
+ * @see AinferSibling1, AinferSibling2, AinferParent
  */
-@SubtypeOf(Parent.class)
+@SubtypeOf(AinferParent.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface SiblingWithFields {
+public @interface AinferSiblingWithFields {
   String[] value() default {};
 
   String value2() default "";
