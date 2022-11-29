@@ -32,8 +32,6 @@
         <arg value="-processor"/>
         <arg value="@{checker}"/>
         <arg value="-implicit:none"/>
-        <arg value="-source"/>
-        <arg value="1.8"/>
         <arg value="-encoding"/>
         <arg value="utf-8"/>
         <arg value="-Xprefer:newer"/>
@@ -66,8 +64,6 @@
         <arg value="-processor"/>
         <arg value="@{checker}"/>
         <arg value="-implicit:none"/>
-        <arg value="-source"/>
-        <arg value="1.8"/>
         <arg value="-encoding"/>
         <arg value="utf-8"/>
         <arg value="-Xprefer:newer"/>
