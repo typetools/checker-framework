@@ -1,14 +1,14 @@
 import java.lang.reflect.Method;
-import org.checkerframework.framework.testchecker.reflection.qual.ReflectBottom;
-import org.checkerframework.framework.testchecker.reflection.qual.Sibling1;
-import org.checkerframework.framework.testchecker.reflection.qual.Sibling2;
-import org.checkerframework.framework.testchecker.reflection.qual.Top;
+import org.checkerframework.framework.testchecker.reflection.qual.TestReflectBottom;
+import org.checkerframework.framework.testchecker.reflection.qual.TestReflectSibling1;
+import org.checkerframework.framework.testchecker.reflection.qual.TestReflectSibling2;
+import org.checkerframework.framework.testchecker.reflection.qual.TestReflectTop;
 
 public class MethodTest {
 
-  @Sibling1 int sibling1;
-  @Sibling2 int sibling2;
-  @ReflectBottom SuperClass superClass;
+  @TestReflectSibling1 int sibling1;
+  @TestReflectSibling2 int sibling2;
+  @TestReflectBottom SuperClass superClass;
 
   public void real_class() {
     try {
@@ -26,7 +26,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SuperClass");
       Method m = c.getMethod("getA", new Class[] {});
-      @Sibling1 Object a = m.invoke(superClass, (@ReflectBottom Object[]) null);
+      @TestReflectSibling1 Object a = m.invoke(superClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
@@ -35,7 +35,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SuperClass");
       Method m = c.getMethod("getA", (Class[]) null);
-      @Sibling1 Object a = m.invoke(superClass, (@ReflectBottom Object[]) null);
+      @TestReflectSibling1 Object a = m.invoke(superClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
@@ -45,7 +45,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SuperClass");
       Method m = c.getMethod(str, new Class[] {});
-      @Sibling1 Object a = m.invoke(superClass, (@ReflectBottom Object[]) null);
+      @TestReflectSibling1 Object a = m.invoke(superClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
@@ -60,15 +60,15 @@ public class MethodTest {
       // and remove the expected error
 
       // :: error: (assignment)
-      @Sibling1 Object a = m.invoke(superClass, (@ReflectBottom Object[]) null);
+      @TestReflectSibling1 Object a = m.invoke(superClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
 
   public void pass4() {
     String str = "setA";
-    @Sibling1 int val1 = sibling1;
-    @Sibling1 Integer val2 = val1;
+    @TestReflectSibling1 int val1 = sibling1;
+    @TestReflectSibling1 Integer val2 = val1;
     try {
       Class<?> c = Class.forName("MethodTest$SuperClass");
       Method m = c.getMethod(str, new Class[] {Integer.class});
@@ -80,8 +80,8 @@ public class MethodTest {
 
   public void pass4b() {
     String str = "setA";
-    @Sibling1 int val1 = sibling1;
-    @Sibling1 Integer val2 = val1;
+    @TestReflectSibling1 int val1 = sibling1;
+    @TestReflectSibling1 Integer val2 = val1;
     try {
       //
       Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -92,13 +92,13 @@ public class MethodTest {
     }
   }
 
-  @ReflectBottom SubClass subClass;
+  @TestReflectBottom SubClass subClass;
   // Test resolution of methods declared in super class
   public void pass5() {
     try {
       Class<?> c = Class.forName("MethodTest$SubClass");
       Method m = c.getMethod("getB", new Class[0]);
-      @Sibling2 Object o = m.invoke(subClass, (@ReflectBottom Object[]) null);
+      @TestReflectSibling2 Object o = m.invoke(subClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
@@ -107,8 +107,8 @@ public class MethodTest {
   public void pass6() {
     try {
       Class<?> c = MethodTest.class;
-      Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
-      @Sibling1 Object o = m.invoke(null, sibling2);
+      Method m = c.getMethod("convertTestReflectSibling2ToTestReflectSibling1", new Class[] {Integer.class});
+      @TestReflectSibling1 Object o = m.invoke(null, sibling2);
     } catch (Exception ignore) {
     }
   }
@@ -117,8 +117,8 @@ public class MethodTest {
   public void pass7() {
     try {
       Class<?> c = MethodTest.class;
-      Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {int.class});
-      @Sibling1 Object o = m.invoke(null, sibling2);
+      Method m = c.getMethod("convertTestReflectSibling2ToTestReflectSibling1", new Class[] {int.class});
+      @TestReflectSibling1 Object o = m.invoke(null, sibling2);
     } catch (Exception ignore) {
     }
   }
@@ -141,7 +141,7 @@ public class MethodTest {
     try {
       Class<?> c = Class.forName("MethodTest$SubClass");
       Method m = c.getMethod(str, new Class[0]);
-      @Top Object o = m.invoke(subClass, (@ReflectBottom Object[]) null);
+      @TestReflectTop Object o = m.invoke(subClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
@@ -152,7 +152,7 @@ public class MethodTest {
     try {
       Class<?> c = inst.getClass();
       Method m = c.getMethod("getA", new Class[0]);
-      @Sibling1 Object o = m.invoke(inst, (@ReflectBottom Object[]) null);
+      @TestReflectSibling1 Object o = m.invoke(inst, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
@@ -160,8 +160,8 @@ public class MethodTest {
   public void pass11() {
     try {
       Class<?> c = this.getClass();
-      Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
-      @Sibling1 Object o = m.invoke(null, sibling2);
+      Method m = c.getMethod("convertTestReflectSibling2ToTestReflectSibling1", new Class[] {Integer.class});
+      @TestReflectSibling1 Object o = m.invoke(null, sibling2);
     } catch (Exception ignore) {
     }
   }
@@ -169,8 +169,8 @@ public class MethodTest {
   public void pass11b() {
     try {
       Class<?> c = getClass();
-      Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
-      @Sibling1 Object o = m.invoke(null, sibling2);
+      Method m = c.getMethod("convertTestReflectSibling2ToTestReflectSibling1", new Class[] {Integer.class});
+      @TestReflectSibling1 Object o = m.invoke(null, sibling2);
     } catch (Exception ignore) {
     }
   }
@@ -180,7 +180,7 @@ public class MethodTest {
     try {
       Class<?> c = SuperClass.class;
       Method m = c.getMethod("getA", new Class[0]);
-      @Sibling1 Object o = m.invoke(new SuperClass(), new @ReflectBottom Object @ReflectBottom [0]);
+      @TestReflectSibling1 Object o = m.invoke(new SuperClass(), new @TestReflectBottom Object @TestReflectBottom [0]);
     } catch (Exception ignore) {
     }
   }
@@ -196,7 +196,7 @@ public class MethodTest {
       } else {
         m = c.getMethod("getB", new Class[0]);
       }
-      @Top Object o = m.invoke(new SuperClass(), new @ReflectBottom Object @ReflectBottom [0]);
+      @TestReflectTop Object o = m.invoke(new SuperClass(), new @TestReflectBottom Object @TestReflectBottom [0]);
     } catch (Exception ignore) {
     }
   }
@@ -211,7 +211,7 @@ public class MethodTest {
         m = c.getMethod("getB", new Class[0]);
       }
       // :: error: (assignment)
-      @ReflectBottom Object o = m.invoke(new SuperClass(), new @ReflectBottom Object @ReflectBottom [0]);
+      @TestReflectBottom Object o = m.invoke(new SuperClass(), new @TestReflectBottom Object @TestReflectBottom [0]);
     } catch (Exception ignore) {
     }
   }
@@ -221,7 +221,7 @@ public class MethodTest {
   public void fail1() {
     try {
       Class<?> c = MethodTest.class;
-      Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
+      Method m = c.getMethod("convertTestReflectSibling2ToTestReflectSibling1", new Class[] {Integer.class});
       // :: error: (argument)
       Object o = m.invoke(null, sibling1);
     } catch (Exception ignore) {
@@ -234,7 +234,7 @@ public class MethodTest {
       Class<?> c = Class.forName(str);
       Method m = c.getMethod("getA", new Class[] {Integer.class});
       // :: error: (assignment)
-      @Sibling1 Object o = m.invoke(subClass, (@ReflectBottom Object[]) null);
+      @TestReflectSibling1 Object o = m.invoke(subClass, (@TestReflectBottom Object[]) null);
     } catch (Exception ignore) {
     }
   }
@@ -288,11 +288,11 @@ public class MethodTest {
 
   public void fail7() {
     // :: warning: (cast.unsafe.constructor.invocation)
-    @Sibling2 MethodTest inst = new @Sibling2 MethodTest();
+    @TestReflectSibling2 MethodTest inst = new @TestReflectSibling2 MethodTest();
     try {
       Class<?> c = MethodTest.class;
-      Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
-      @Sibling1 Object o = m.invoke(inst, sibling2);
+      Method m = c.getMethod("convertTestReflectSibling2ToTestReflectSibling1", new Class[] {Integer.class});
+      @TestReflectSibling1 Object o = m.invoke(inst, sibling2);
     } catch (Exception ignore) {
     }
   }
@@ -310,8 +310,8 @@ public class MethodTest {
 
   public void bug() {
     String str = "setA";
-    @Sibling1 int val1 = sibling1;
-    @Sibling1 Object[] args = new Object[] {val1};
+    @TestReflectSibling1 int val1 = sibling1;
+    @TestReflectSibling1 Object[] args = new Object[] {val1};
     try {
       //
       Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -328,8 +328,8 @@ public class MethodTest {
 
   public void bug2() {
     String str = "setAB";
-    @Sibling1 int val1 = sibling1;
-    @Sibling2 int val2 = sibling2;
+    @TestReflectSibling1 int val1 = sibling1;
+    @TestReflectSibling2 int val2 = sibling2;
 
     Object[] args = new Object[] {val1, val2};
     try {
@@ -345,8 +345,8 @@ public class MethodTest {
     }
   }
 
-  public static @Sibling1 int convertSibling2ToSibling1(@Sibling2 int a) {
-    return (@Sibling1 int) 1;
+  public static @TestReflectSibling1 int convertTestReflectSibling2ToTestReflectSibling1(@TestReflectSibling2 int a) {
+    return (@TestReflectSibling1 int) 1;
   }
 
   // TODO: Does the testing framework somehow support the compilation of
@@ -354,41 +354,41 @@ public class MethodTest {
   private class SubClass extends SuperClass {}
 
   private class SuperClass {
-    private @Sibling1 int a;
-    private @Sibling2 int b;
-    private @Sibling1 Integer c;
+    private @TestReflectSibling1 int a;
+    private @TestReflectSibling2 int b;
+    private @TestReflectSibling1 Integer c;
 
     public SuperClass() {
       this.a = sibling1;
       this.b = sibling2;
     }
 
-    public @Sibling1 int getA() {
+    public @TestReflectSibling1 int getA() {
       return a;
     }
 
-    public void setA(@Sibling1 int a) {
+    public void setA(@TestReflectSibling1 int a) {
       this.a = a;
     }
 
-    public @Sibling2 int getB() {
+    public @TestReflectSibling2 int getB() {
       return b;
     }
 
-    public void setB(@Sibling2 int b) {
+    public void setB(@TestReflectSibling2 int b) {
       this.b = b;
     }
 
-    public void setAB(@Sibling1 int a, @Sibling2 int b) {
+    public void setAB(@TestReflectSibling1 int a, @TestReflectSibling2 int b) {
       this.a = a;
       this.b = b;
     }
 
-    public void setC(@Sibling1 int c) {
+    public void setC(@TestReflectSibling1 int c) {
       this.c = c;
     }
 
-    public void setC(@Sibling1 Integer c) {
+    public void setC(@TestReflectSibling1 Integer c) {
       this.c = c;
     }
   }

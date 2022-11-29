@@ -2,14 +2,16 @@ package org.checkerframework.framework.testchecker.reflection.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Toy type system for testing reflection resolution. Uses
  * org.checkerframework.common.subtyping.qual.Bottom as bottom.
  *
- * @see Top, Sibling2
+ * @see TestReflectSibling1, TestReflectSibling2
  */
-@SubtypeOf(Top.class)
+@SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Sibling1 {}
+@DefaultQualifierInHierarchy
+public @interface TestReflectTop {}
