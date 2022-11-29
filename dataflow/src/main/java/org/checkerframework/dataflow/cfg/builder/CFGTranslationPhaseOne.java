@@ -231,16 +231,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   final Label exceptionalExitLabel;
 
   /**
-   * Current {@link TryFinallyScopeCell} to which a return statement should jump, or null if there
-   * is no valid destination.
+   * Current {@link LabelCell} to which a return statement should jump, or null if there is no valid
+   * destination.
    */
-  @Nullable TryFinallyScopeCell returnTargetL;
+  @Nullable LabelCell returnTargetLC;
 
   /**
-   * Current {@link TryFinallyScopeCell} to which a break statement with no label should jump, or
-   * null if there is no valid destination.
+   * Current {@link LabelCell} to which a break statement with no label should jump, or null if
+   * there is no valid destination.
    */
-  @Nullable TryFinallyScopeCell breakTargetL;
+  @Nullable LabelCell breakTargetLC;
 
   /**
    * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates two
@@ -249,10 +249,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   Map<Name, Label> breakLabels;
 
   /**
-   * Current {@link TryFinallyScopeCell} to which a continue statement with no label should jump, or
-   * null if there is no valid destination.
+   * Current {@link LabelCell} to which a continue statement with no label should jump, or null if
+   * there is no valid destination.
    */
-  @Nullable TryFinallyScopeCell continueTargetL;
+  @Nullable LabelCell continueTargetLC;
 
   /**
    * Map from AST label Names to CFG {@link Label}s for continues. Each labeled statement creates
@@ -399,7 +399,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     regularExitLabel = new Label();
     exceptionalExitLabel = new Label();
     tryStack = new TryStack(exceptionalExitLabel);
-    returnTargetL = new TryFinallyScopeCell(regularExitLabel);
+    returnTargetLC = new LabelCell(regularExitLabel);
     breakLabels = new HashMap<>(2);
     continueLabels = new HashMap<>(2);
     returnNodes = new ArrayList<>();
@@ -2161,28 +2161,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // see JLS 15.23 and 15.24
 
           // all necessary labels
-          Label rightStartL = new Label();
-          Label shortCircuitL = new Label();
+          Label rightStartLabel = new Label();
+          Label shortCircuitLabel = new Label();
 
           // left-hand side
           Node left = scan(leftTree, p);
 
           ConditionalJump cjump;
           if (kind == Tree.Kind.CONDITIONAL_AND) {
-            cjump = new ConditionalJump(rightStartL, shortCircuitL);
+            cjump = new ConditionalJump(rightStartLabel, shortCircuitLabel);
             cjump.setFalseFlowRule(FlowRule.ELSE_TO_ELSE);
           } else {
-            cjump = new ConditionalJump(shortCircuitL, rightStartL);
+            cjump = new ConditionalJump(shortCircuitLabel, rightStartLabel);
             cjump.setTrueFlowRule(FlowRule.THEN_TO_THEN);
           }
           extendWithExtendedNode(cjump);
 
           // right-hand side
-          addLabelForNextNode(rightStartL);
+          addLabelForNextNode(rightStartLabel);
           Node right = scan(rightTree, p);
 
           // conditional expression itself
-          addLabelForNextNode(shortCircuitL);
+          addLabelForNextNode(shortCircuitLabel);
           Node node;
           if (kind == Tree.Kind.CONDITIONAL_AND) {
             node = new ConditionalAndNode(tree, left, right);
@@ -2212,9 +2212,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitBreak(BreakTree tree, Void p) {
     Name label = tree.getLabel();
     if (label == null) {
-      assert breakTargetL != null : "no target for break statement";
+      assert breakTargetLC != null : "no target for break statement";
 
-      extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
+      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
     } else {
       assert breakLabels.containsKey(label);
 
@@ -2299,13 +2299,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     public @Nullable SwitchExpressionNode build() {
       SwitchBuilder oldSwitchBuilder = switchBuilder;
       switchBuilder = this;
-      TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-      breakTargetL = new TryFinallyScopeCell(new Label());
+      LabelCell oldBreakTargetLC = breakTargetLC;
+      breakTargetLC = new LabelCell(new Label());
       int cases = caseBodyLabels.length - 1;
       for (int i = 0; i < cases; ++i) {
         caseBodyLabels[i] = new Label();
       }
-      caseBodyLabels[cases] = breakTargetL.peekLabel();
+      caseBodyLabels[cases] = breakTargetLC.peekLabel();
 
       buildSelector();
 
@@ -2337,8 +2337,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         buildCase(caseTrees.get(defaultIndex), defaultIndex);
       }
 
-      addLabelForNextNode(breakTargetL.peekLabel());
-      breakTargetL = oldBreakTargetL;
+      addLabelForNextNode(breakTargetLC.peekLabel());
+      breakTargetLC = oldBreakTargetLC;
       if (switchTree.getKind() == Tree.Kind.SWITCH) {
         // It's a switch statement, not a switch expression.
         extendWithNode(
@@ -2428,9 +2428,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param index the index of the case tree in {@link #caseBodyLabels}
      */
     private void buildCase(CaseTree tree, int index) {
-      final Label thisBodyL = caseBodyLabels[index];
-      final Label nextBodyL = caseBodyLabels[index + 1];
-      final Label nextCaseL = new Label();
+      final Label thisBodyLabel = caseBodyLabels[index];
+      final Label nextBodyLabel = caseBodyLabels[index + 1];
+      final Label nextCaseLabel = new Label();
 
       List<? extends ExpressionTree> exprTrees = TreeUtils.caseTreeGetExpressions(tree);
       if (!exprTrees.isEmpty()) {
@@ -2441,16 +2441,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
         CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
+        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
-      addLabelForNextNode(thisBodyL);
+      addLabelForNextNode(thisBodyLabel);
       if (tree.getStatements() != null) {
         // This is a switch labeled statement groups.
         for (StatementTree stmt : tree.getStatements()) {
           scan(stmt, null);
         }
         // Handle possible fall through by adding jump to next body.
-        extendWithExtendedNode(new UnconditionalJump(nextBodyL));
+        extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
       } else {
         // This is a switch rule.
         Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
@@ -2459,12 +2459,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         } else {
           scan(bodyTree, null);
           // Switch rules never fall through so add jump to the break target.
-          assert breakTargetL != null : "no target for case statement";
-          extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
+          assert breakTargetLC != null : "no target for case statement";
+          extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
         }
       }
 
-      addLabelForNextNode(nextCaseL);
+      addLabelForNextNode(nextCaseLabel);
     }
 
     /**
@@ -2475,7 +2475,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *   <li>Builds the CFG for the switch expression result.
      *   <li>Creates an assignment node for the assignment of {@code resultExpression} to {@code
      *       switchExprVarTree}.
-     *   <li>Adds an unconditional jump to {@link #breakTargetL} (the end of the switch expression).
+     *   <li>Adds an unconditional jump to {@link #breakTargetLC} (the end of the switch
+     *       expression).
      * </ol>
      *
      * @param resultExpression the result of a switch expression; either from a yield or an
@@ -2499,8 +2500,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       assignmentNode.setInSource(false);
       extendWithNode(assignmentNode);
       // Switch rules never fall through so add jump to the break target.
-      assert breakTargetL != null : "no target for case statement";
-      extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
+      assert breakTargetLC != null : "no target for case statement";
+      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
     }
   }
 
@@ -2619,9 +2620,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitContinue(ContinueTree tree, Void p) {
     Name label = tree.getLabel();
     if (label == null) {
-      assert continueTargetL != null : "no target for continue statement";
+      assert continueTargetLC != null : "no target for continue statement";
 
-      extendWithExtendedNode(new UnconditionalJump(continueTargetL.accessLabel()));
+      extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
     } else {
       assert continueLabels.containsKey(label);
 
@@ -2647,11 +2648,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       conditionStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(conditionStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(conditionStart);
 
     // Loop body
     addLabelForNextNode(loopEntry);
@@ -2668,8 +2669,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }
@@ -2702,11 +2703,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       updateStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(updateStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(updateStart);
 
     // Distinguish loops over Iterables from loops over arrays.
 
@@ -2956,8 +2957,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }
@@ -3004,11 +3005,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       updateStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(updateStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(updateStart);
 
     // Initializer
     for (StatementTree init : tree.getInitializer()) {
@@ -3039,8 +3040,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }
@@ -3147,15 +3148,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // nodes. Labeled loops must look up and use the continue Labels.
     Name labelName = tree.getLabel();
 
-    Label breakL = new Label(labelName + "_break");
-    Label continueL = new Label(labelName + "_continue");
+    Label breakLabel = new Label(labelName + "_break");
+    Label continueLabel = new Label(labelName + "_continue");
 
-    breakLabels.put(labelName, breakL);
-    continueLabels.put(labelName, continueL);
+    breakLabels.put(labelName, breakLabel);
+    continueLabels.put(labelName, continueLabel);
 
     scan(tree.getStatement(), p);
 
-    addLabelForNextNode(breakL);
+    addLabelForNextNode(breakLabel);
 
     breakLabels.remove(labelName);
     continueLabels.remove(labelName);
@@ -3304,7 +3305,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(result);
     }
 
-    extendWithExtendedNode(new UnconditionalJump(this.returnTargetL.accessLabel()));
+    extendWithExtendedNode(new UnconditionalJump(this.returnTargetLC.accessLabel()));
 
     return result;
   }
@@ -3396,10 +3397,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             catches);
 
     // Store return/break/continue labels, just in case we need them for a finally block.
-    TryFinallyScopeCell oldReturnTargetL = returnTargetL;
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
+    LabelCell oldReturnTargetLC = returnTargetLC;
+    LabelCell oldBreakTargetLC = breakTargetLC;
     Map<Name, Label> oldBreakLabels = breakLabels;
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
+    LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
 
     Label finallyLabel = null;
@@ -3411,12 +3412,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       exceptionalFinallyLabel = new Label();
       tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
 
-      returnTargetL = new TryFinallyScopeCell();
+      returnTargetLC = new LabelCell();
 
-      breakTargetL = new TryFinallyScopeCell();
+      breakTargetLC = new LabelCell();
       breakLabels = new TryFinallyScopeMap();
 
-      continueTargetL = new TryFinallyScopeCell();
+      continueTargetLC = new LabelCell();
       continueLabels = new TryFinallyScopeMap();
     }
 
@@ -3515,9 +3516,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         throwing.setTerminatesExecution(true);
       }
 
-      if (returnTargetL.wasAccessed()) {
-        addLabelForNextNode(returnTargetL.peekLabel());
-        returnTargetL = oldReturnTargetL;
+      if (returnTargetLC.wasAccessed()) {
+        addLabelForNextNode(returnTargetLC.peekLabel());
+        returnTargetLC = oldReturnTargetLC;
 
         extendWithNode(
             new MarkerNode(
@@ -3530,14 +3531,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "end of finally block for return #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(returnTargetL.accessLabel()));
+        extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
       } else {
-        returnTargetL = oldReturnTargetL;
+        returnTargetLC = oldReturnTargetLC;
       }
 
-      if (breakTargetL.wasAccessed()) {
-        addLabelForNextNode(breakTargetL.peekLabel());
-        breakTargetL = oldBreakTargetL;
+      if (breakTargetLC.wasAccessed()) {
+        addLabelForNextNode(breakTargetLC.peekLabel());
+        breakTargetLC = oldBreakTargetLC;
 
         extendWithNode(
             new MarkerNode(
@@ -3550,9 +3551,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "end of finally block for break #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
+        extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
       } else {
-        breakTargetL = oldBreakTargetL;
+        breakTargetLC = oldBreakTargetLC;
       }
 
       Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
@@ -3584,9 +3585,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         breakLabels = oldBreakLabels;
       }
 
-      if (continueTargetL.wasAccessed()) {
-        addLabelForNextNode(continueTargetL.peekLabel());
-        continueTargetL = oldContinueTargetL;
+      if (continueTargetLC.wasAccessed()) {
+        addLabelForNextNode(continueTargetLC.peekLabel());
+        continueTargetLC = oldContinueTargetLC;
 
         extendWithNode(
             new MarkerNode(
@@ -3599,9 +3600,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "end of finally block for continue #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(continueTargetL.accessLabel()));
+        extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
       } else {
-        continueTargetL = oldContinueTargetL;
+        continueTargetLC = oldContinueTargetLC;
       }
 
       Map<Name, Label> accessedContinueLabels =
@@ -3934,11 +3935,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       conditionStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(conditionStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(conditionStart);
 
     // Condition
     addLabelForNextNode(conditionStart);
@@ -3972,8 +3973,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }

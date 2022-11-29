@@ -1,9 +1,11 @@
-Version 3.27.1 (December1, 2022)
+Version 3.28.0 (December 1, 2022)
 ---------------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+Renamed `TryFinallyScopeCell` to `LabelCell`.
 
 **Closed issues:**
 
