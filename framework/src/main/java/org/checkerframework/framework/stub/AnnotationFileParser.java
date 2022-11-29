@@ -2908,7 +2908,7 @@ public class AnnotationFileParser {
    * @param warnIfNotFound whether to print warnings about types/members that were not found
    */
   private void stubWarnNotFound(NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
-    if ((fileType.isCommandLine() || warnIfNotFound) || debugAnnotationFileParser) {
+    if (warnIfNotFound || debugAnnotationFileParser) {
       warn(astNode, warning);
     }
   }
