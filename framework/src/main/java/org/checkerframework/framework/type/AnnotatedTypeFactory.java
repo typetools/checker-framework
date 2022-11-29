@@ -1126,8 +1126,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     the returned set, for example, it is used frequently to add Bottom qualifiers
    * @return a set of annotation class instances
    */
-  @SafeVarargs
-  @SuppressWarnings("varargs")
+  @SuppressWarnings({"varargs", "unchecked"}) // @SafeVarargs is only applicable to static methods
   private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
       Class<? extends Annotation>... explicitlyListedAnnotations) {
     if (loader != null) {

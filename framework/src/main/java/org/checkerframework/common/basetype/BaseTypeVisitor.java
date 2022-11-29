@@ -280,7 +280,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @return the appropriate type factory
    */
-  @SuppressWarnings("unchecked") // unchecked cast to type variable
+  @SuppressWarnings({
+    "unchecked", // unchecked cast to type variable
+    "mustcall:cast.unsafe" // cast to type variable, hairy generics error message
+  })
   protected Factory createTypeFactory() {
     // Try to reflectively load the type factory.
     Class<?> checkerClass = checker.getClass();

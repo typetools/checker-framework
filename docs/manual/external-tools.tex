@@ -735,7 +735,7 @@ Ant, but other build systems are similar.
 Add an Ant target as described in Section~\ref{ant-task}.  You can
 run the Ant target by executing the following steps
 (instructions copied from
-{\codesize\url{http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
+{\codesize\url{https://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.platform.doc.user%2FgettingStarted%2Fqs-84_run_ant.htm}}):
 
 \begin{enumerate}
 
@@ -921,6 +921,17 @@ Therefore, you must run the Checker Framework in a postpass after the
 Checker Framework on that.  The
 \href{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker
   Framework Gradle plugin} does this for you automatically.
+
+
+\subsectionAndLabel{Maven Projects using Lombok}{lombok-maven}
+
+\href{http://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok Maven Plugin}
+can be used to delombok source code for Maven projects. The
+\href{http://anthonywhitford.com/lombok.maven/lombok-maven-plugin/faq.html#alt-src-setup}
+{Lombok Maven Plugin FAQ} discusses how to configure the plugin when code
+using Lombok is mixed with standard Java code. Once the Lombok Maven plugin
+is configured correctly, the Checker Framework Maven configuration can be added
+independently.
 
 
 \sectionAndLabel{Maven}{maven}

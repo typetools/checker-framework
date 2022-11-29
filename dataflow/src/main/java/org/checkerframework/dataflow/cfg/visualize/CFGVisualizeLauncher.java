@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -231,13 +232,17 @@ public class CFGVisualizeLauncher {
     try {
       // Redirect syserr to nothing (and prevent the compiler from issuing
       // warnings about our exception).
-      System.setErr(
-          new PrintStream(
-              // In JDK 11+, this can be just "OutputStream.nullOutputStream()".
-              new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {}
-              }));
+      @SuppressWarnings({
+        "builder:required.method.not.called",
+        "mustcall:assignment"
+      }) // Won't be needed in JDK 11+ with use of "OutputStream.nullOutputStream()".
+      @MustCall() OutputStream nullOS =
+          // In JDK 11+, this can be just "OutputStream.nullOutputStream()".
+          new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {}
+          };
+      System.setErr(new PrintStream(nullOS));
       javac.compile(List.of(l), List.of(clas), List.of(cfgProcessor), List.nil());
     } catch (Throwable e) {
       // ok

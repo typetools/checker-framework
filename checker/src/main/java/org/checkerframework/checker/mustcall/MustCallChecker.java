@@ -11,6 +11,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  */
 @StubFiles({
   "JavaEE.astub",
+  "JdkCompiler.astub",
   "Reflection.astub",
   "SocketCreatesMustCallFor.astub",
 })

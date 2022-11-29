@@ -10,8 +10,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
@@ -149,15 +151,26 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   /// End of static methods, start of per-instance state.
   ///
 
+  /** Converts a file line into a TestDiagnosticLine. */
   private final StringToTestDiagnosticLine codec;
 
+  /** The file name. */
   private final String filename;
 
-  private LineNumberReader reader;
+  /** The reader for the file. */
+  private final @Owning LineNumberReader reader;
 
+  /** The next line to be read, or null. */
   private @Nullable String nextLine = null;
+  /** The line number of the next line to be read, or -1. */
   private @GTENegativeOne int nextLineNumber = -1;
 
+  /**
+   * Creates a JavaDiagnosticReader.
+   *
+   * @param toRead the file to read
+   * @param codec converts a file line into a TestDiagnosticLine
+   */
   private JavaDiagnosticReader(File toRead, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = toRead.getName();
@@ -169,6 +182,12 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
     }
   }
 
+  /**
+   * Creates a JavaDiagnosticReader.
+   *
+   * @param toReadFileObject the file to read
+   * @param codec converts a file line into a TestDiagnosticLine
+   */
   private JavaDiagnosticReader(JavaFileObject toReadFileObject, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = new File(toReadFileObject.getName()).getName();
@@ -230,6 +249,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   }
 
   @Override
+  @EnsuresCalledMethods(value = "reader", methods = "close")
   public void close() {
     try {
       reader.close();

@@ -218,7 +218,7 @@ allprojects {
         // any module to reference classes in any other module.
         // Also, build and use ManualTaglet as a taglet.
         tasks.withType(Javadoc) {
-            def tagletVersion = isJava8 ? 'taglet' : 'tagletJdk11'
+            def tagletVersion = isJava8 ? 'tagletJdk8' : 'taglet'
 
             dependsOn(':checker:shadowJar')
             dependsOn(":framework-test:${tagletVersion}Classes")
@@ -479,8 +479,19 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
     description = 'Generates API documentation that includes all the modules.'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
-    source(project(':checker-util').sourceSets.main.allJava, project(':checker-qual').sourceSets.main.allJava, project(':checker').sourceSets.main.allJava, project(':framework').sourceSets.main.allJava,
-            project(':dataflow').sourceSets.main.allJava, project(':javacutil').sourceSets.main.allJava)
+
+    doFirst {
+      source(
+        project(':checker-util').sourceSets.main.allJava,
+        project(':checker-qual').sourceSets.main.allJava,
+        project(':checker').sourceSets.main.allJava,
+        project(':framework').sourceSets.main.allJava,
+        project(':dataflow').sourceSets.main.allJava,
+        project(':javacutil').sourceSets.main.allJava,
+        project(':framework-test').sourceSets.main.allJava,
+        project(':framework-test').sourceSets."${isJava8 ? 'tagletJdk8' : 'taglet'}".allJava
+      )
+    }
 
     classpath = configurations.allProjects
     if (isJava8) {
@@ -717,8 +728,8 @@ subprojects {
             }
         }
 
-        // Tasks to run various checkers on all the main source sets.
-        // These pass and are run by typecheckTests.
+        // Tasks such as `checkResourceLeak` to run various checkers on all the main source sets.
+        // These pass and are run by the `typecheck` task.
         // When you add one here, also update a dependsOn item for the 'typecheck' task.
         createCheckTypeTask(project.name, 'Formatter',
             'org.checkerframework.checker.formatter.FormatterChecker')
@@ -730,6 +741,8 @@ subprojects {
             ['-AskipUses=com\\.sun\\.*', '-AuseConservativeDefaultsForUncheckedCode=source'])
         createCheckTypeTask(project.name, 'Purity',
             'org.checkerframework.framework.util.PurityChecker')
+        createCheckTypeTask(project.name, 'ResourceLeak',
+            'org.checkerframework.checker.resourceleak.ResourceLeakChecker')
         createCheckTypeTask(project.name, 'Signature',
             'org.checkerframework.checker.signature.SignatureChecker')
         // These pass on some subprojects, which the `typecheck` task runs.
@@ -911,7 +924,7 @@ subprojects {
         // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
         tasks.create(name: 'typecheck', group: 'Verification') {
             description 'Run the Checker Framework on itself'
-            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkSignature')
+            dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkResourceLeak', 'checkSignature')
             if (project.name.is('framework') || project.name.is('checker')) {
                 dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
             } else {
