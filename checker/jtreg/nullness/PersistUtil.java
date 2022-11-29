@@ -51,8 +51,6 @@ public class PersistUtil {
     int rc =
         com.sun.tools.javac.Main.compile(
             new String[] {
-              "-source",
-              "1.8",
               "-g",
               "-processor",
               "org.checkerframework.checker.nullness.NullnessChecker",
