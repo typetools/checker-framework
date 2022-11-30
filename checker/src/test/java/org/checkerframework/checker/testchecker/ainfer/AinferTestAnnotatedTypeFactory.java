@@ -11,13 +11,13 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
-import org.checkerframework.checker.testchecker.ainfer.qual.DefaultType;
-import org.checkerframework.checker.testchecker.ainfer.qual.ImplicitAnno;
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
-import org.checkerframework.checker.testchecker.ainfer.qual.SiblingWithFields;
-import org.checkerframework.checker.testchecker.ainfer.qual.Top;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferImplicitAnno;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSiblingWithFields;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -41,18 +41,18 @@ import org.checkerframework.javacutil.TypeSystemError;
 public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private final AnnotationMirror PARENT =
-      new AnnotationBuilder(processingEnv, Parent.class).build();
+      new AnnotationBuilder(processingEnv, AinferParent.class).build();
   private final AnnotationMirror BOTTOM =
       new AnnotationBuilder(processingEnv, AinferBottom.class).build();
   private final AnnotationMirror IMPLICIT_ANNO =
-      new AnnotationBuilder(processingEnv, ImplicitAnno.class).build();
+      new AnnotationBuilder(processingEnv, AinferImplicitAnno.class).build();
 
-  /** The SiblingWithFields.value field/element. */
+  /** The AinferSiblingWithFields.value field/element. */
   private final ExecutableElement siblingWithFieldsValueElement =
-      TreeUtils.getMethod(SiblingWithFields.class, "value", 0, processingEnv);
-  /** The SiblingWithFields.value2 field/element. */
+      TreeUtils.getMethod(AinferSiblingWithFields.class, "value", 0, processingEnv);
+  /** The AinferSiblingWithFields.value2 field/element. */
   private final ExecutableElement siblingWithFieldsValue2Element =
-      TreeUtils.getMethod(SiblingWithFields.class, "value2", 0, processingEnv);
+      TreeUtils.getMethod(AinferSiblingWithFields.class, "value2", 0, processingEnv);
 
   public AinferTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
@@ -63,14 +63,14 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return new HashSet<Class<? extends Annotation>>(
         Arrays.asList(
-            Parent.class,
-            DefaultType.class,
-            Top.class,
-            Sibling1.class,
-            Sibling2.class,
+            AinferParent.class,
+            AinferDefaultType.class,
+            AinferTop.class,
+            AinferSibling1.class,
+            AinferSibling2.class,
             AinferBottom.class,
-            SiblingWithFields.class,
-            ImplicitAnno.class));
+            AinferSiblingWithFields.class,
+            AinferImplicitAnno.class));
   }
 
   @Override
@@ -88,8 +88,9 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Using a MultiGraphQualifierHierarchy to enable tests with Annotations that contain fields. @see
-   * SiblingWithFields.
+   * Using a MultiGraphQualifierHierarchy to enable tests with Annotations that contain fields.
+   *
+   * @see AinferSiblingWithFields.
    */
   protected class AinferTestQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
@@ -104,7 +105,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected AinferTestQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
       super(qualifierClasses, elements);
-      SIBLING_WITH_FIELDS_KIND = getQualifierKind(SiblingWithFields.class.getCanonicalName());
+      SIBLING_WITH_FIELDS_KIND = getQualifierKind(AinferSiblingWithFields.class.getCanonicalName());
     }
 
     @Override

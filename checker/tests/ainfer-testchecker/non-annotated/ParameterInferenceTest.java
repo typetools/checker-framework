@@ -1,23 +1,23 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Top;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
 
 public class ParameterInferenceTest {
 
   void test1() {
-    @Parent int parent = (@Parent int) 0;
+    @AinferParent int parent = (@AinferParent int) 0;
     expectsParentNoSignature(parent);
   }
 
   void expectsParentNoSignature(int t) {
     // :: warning: (assignment)
-    @Parent int parent = t;
+    @AinferParent int parent = t;
   }
 
   void test2() {
-    @Top int top = (@Top int) 0;
+    @AinferTop int top = (@AinferTop int) 0;
     // :: warning: (argument)
-    expectsTopNoSignature(top);
+    expectsAinferTopNoSignature(top);
   }
 
-  void expectsTopNoSignature(int t) {}
+  void expectsAinferTopNoSignature(int t) {}
 }

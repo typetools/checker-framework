@@ -1,20 +1,20 @@
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
-import org.checkerframework.checker.testchecker.ainfer.qual.Top;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
 
 public class PublicFieldTest {
   public static int field1; // parent
   public static int field2; // sib2
 
   public PublicFieldTest() {
-    field1 = getSibling1();
+    field1 = getAinferSibling1();
   }
 
   void testPublicInference() {
     // :: warning: (argument)
-    expectsSibling2(field2);
+    expectsAinferSibling2(field2);
     // :: warning: (argument)
     expectsParent(field1);
     // :: warning: (argument)
@@ -23,16 +23,16 @@ public class PublicFieldTest {
 
   void expectsBottom(@AinferBottom int t) {}
 
-  void expectsSibling1(@Sibling1 int t) {}
+  void expectsAinferSibling1(@AinferSibling1 int t) {}
 
-  void expectsSibling2(@Sibling2 int t) {}
+  void expectsAinferSibling2(@AinferSibling2 int t) {}
 
-  void expectsTop(@Top int t) {}
+  void expectsAinferTop(@AinferTop int t) {}
 
-  void expectsParent(@Parent int t) {}
+  void expectsParent(@AinferParent int t) {}
 
-  @Sibling1 int getSibling1() {
-    return (@Sibling1 int) 0;
+  @AinferSibling1 int getAinferSibling1() {
+    return (@AinferSibling1 int) 0;
   }
 
   class AnotherClass {
@@ -40,28 +40,28 @@ public class PublicFieldTest {
     int innerField;
 
     public AnotherClass() {
-      PublicFieldTest.field1 = getSibling2();
-      PublicFieldTest.field2 = getSibling2();
-      innerField = getSibling2();
+      PublicFieldTest.field1 = getAinferSibling2();
+      PublicFieldTest.field2 = getAinferSibling2();
+      innerField = getAinferSibling2();
     }
 
     void innerFieldTest() {
       // :: warning: (argument)
-      expectsSibling2(innerField);
+      expectsAinferSibling2(innerField);
     }
 
     @AinferBottom int getBottom() {
       return (@AinferBottom int) 0;
     }
 
-    @Top int getTop() {
-      return (@Top int) 0;
+    @AinferTop int getAinferTop() {
+      return (@AinferTop int) 0;
     }
 
-    @Sibling2 int getSibling2() {
-      return (@Sibling2 int) 0;
+    @AinferSibling2 int getAinferSibling2() {
+      return (@AinferSibling2 int) 0;
     }
 
-    void expectsSibling2(@Sibling2 int t) {}
+    void expectsAinferSibling2(@AinferSibling2 int t) {}
   }
 }
