@@ -19,7 +19,7 @@ class LabelCell {
   /**
    * Create a LabelCell with the given label.
    *
-   * @label the label
+   * @param label the label
    */
   protected LabelCell(Label label) {
     assert label != null;
