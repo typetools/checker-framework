@@ -263,10 +263,9 @@ allprojects {
             // Uncomment when needed.
             // // Put source files in deterministic order, for debugging.
             // compilationTask.source = compilationTask.source.sort()
-            sourceCompatibility = 8
-            targetCompatibility = 8
-            // Because the target is 8, all of the public compiler classes are accessible, so
-            // --add-exports are not required, (nor are they allowed with target 8). See
+            options.release.set(8)
+            // Because the release is 8, all of the public compiler classes are accessible, so
+            // --add-exports are not required or allowed. See
             // https://openjdk.org/jeps/247 for details on compiling for older versions.
 
             // When sourceCompatibilty is changed to 11, then the following will be required.
