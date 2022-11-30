@@ -6,11 +6,11 @@ import org.checkerframework.checker.nullness.qual.*;
  */
 public class MethodTypeVars {
   void m() {
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     Object a = A.badMethod(null);
     Object b = A.badMethod(new Object());
 
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     A.goodMethod(null);
     A.goodMethod(new Object());
   }
