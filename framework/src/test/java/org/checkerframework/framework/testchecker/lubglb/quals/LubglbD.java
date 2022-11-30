@@ -10,5 +10,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({C.class})
-public @interface E {}
+@SubtypeOf({LubglbC.class, LubglbB.class})
+public @interface LubglbD {}

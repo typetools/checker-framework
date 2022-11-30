@@ -1,10 +1,10 @@
 import java.lang.reflect.Field;
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
-import org.checkerframework.checker.testchecker.ainfer.qual.ToIgnore;
-import org.checkerframework.checker.testchecker.ainfer.qual.Top;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferToIgnore;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 
 /**
@@ -13,21 +13,21 @@ import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 public class ExpectedErrors {
 
   // Case where the declared type is a supertype of the refined type.
-  private @Top int privateDeclaredField;
-  public @Top int publicDeclaredField;
+  private @AinferTop int privateDeclaredField;
+  public @AinferTop int publicDeclaredField;
 
   // The type of both privateDeclaredField and publicDeclaredField are
   // not refined to @AinferBottom.
-  void assignFieldsToSibling1() {
-    privateDeclaredField = getSibling1();
-    publicDeclaredField = getSibling1();
+  void assignFieldsToAinferSibling1() {
+    privateDeclaredField = getAinferSibling1();
+    publicDeclaredField = getAinferSibling1();
   }
 
   void testFields() {
     // :: warning: (argument)
-    expectsSibling1(privateDeclaredField);
+    expectsAinferSibling1(privateDeclaredField);
     // :: warning: (argument)
-    expectsSibling1(publicDeclaredField);
+    expectsAinferSibling1(publicDeclaredField);
   }
 
   // Case where the declared type is a subtype of the refined type.
@@ -35,11 +35,11 @@ public class ExpectedErrors {
   public @AinferBottom int publicDeclaredField2;
 
   // The refinement cannot happen and an assignemnt type incompatible error occurs.
-  void assignFieldsToTop() {
+  void assignFieldsToAinferTop() {
     // :: warning: (assignment)
-    privateDeclaredField2 = getTop();
+    privateDeclaredField2 = getAinferTop();
     // :: warning: (assignment)
-    publicDeclaredField2 = getTop();
+    publicDeclaredField2 = getAinferTop();
   }
 
   // No errors should be issued below:
@@ -55,73 +55,73 @@ public class ExpectedErrors {
   }
 
   // LUB TEST
-  // The default type for fields is @Top.
+  // The default type for fields is @AinferTop.
   private static int lubPrivateField;
   public static int lubPublicField;
 
-  void assignLubFieldsToSibling1() {
-    lubPrivateField = getSibling1();
-    lubPublicField = getSibling1();
+  void assignLubFieldsToAinferSibling1() {
+    lubPrivateField = getAinferSibling1();
+    lubPublicField = getAinferSibling1();
   }
 
   static {
-    lubPrivateField = getSibling2();
-    lubPublicField = getSibling2();
+    lubPrivateField = getAinferSibling2();
+    lubPublicField = getAinferSibling2();
   }
 
   void testLUBFields1() {
     // :: warning: (argument)
-    expectsSibling1(lubPrivateField);
+    expectsAinferSibling1(lubPrivateField);
     // :: warning: (argument)
-    expectsSibling1(lubPublicField);
+    expectsAinferSibling1(lubPublicField);
   }
 
   void testLUBFields2() {
     // :: warning: (argument)
-    expectsSibling2(lubPrivateField);
+    expectsAinferSibling2(lubPrivateField);
     // :: warning: (argument)
-    expectsSibling2(lubPublicField);
+    expectsAinferSibling2(lubPublicField);
   }
 
   private static boolean bool = false;
 
   public static int lubTest() {
     if (bool) {
-      return (@Sibling1 int) 0;
+      return (@AinferSibling1 int) 0;
     } else {
-      return (@Sibling2 int) 0;
+      return (@AinferSibling2 int) 0;
     }
   }
 
-  public @Sibling1 int getSibling1Wrong() {
+  public @AinferSibling1 int getAinferSibling1Wrong() {
     int x = lubTest();
     // :: warning: (return)
     return x;
   }
 
-  public @Sibling2 int getSibling2Wrong() {
+  public @AinferSibling2 int getAinferSibling2Wrong() {
     int x = lubTest();
     // :: warning: (return)
     return x;
   }
 
-  void expectsSibling1(@Sibling1 int t) {}
+  void expectsAinferSibling1(@AinferSibling1 int t) {}
 
-  void expectsSibling2(@Sibling2 int t) {}
+  void expectsAinferSibling2(@AinferSibling2 int t) {}
 
   void expectsBottom(@AinferBottom int t) {}
 
   void expectsBottom(@AinferBottom String t) {}
 
-  void expectsTop(@Top int t) {}
+  void expectsAinferTop(@AinferTop int t) {}
 
-  void expectsParent(@Parent int t) {}
+  void expectsParent(@AinferParent int t) {}
 
-  static @Sibling1 int getSibling1() {
+  static @AinferSibling1 int getAinferSibling1() {
     return 0;
   }
 
-  static @Sibling2 int getSibling2() {
+  static @AinferSibling2 int getAinferSibling2() {
     return 0;
   }
 
@@ -129,7 +129,8 @@ public class ExpectedErrors {
     return 0;
   }
 
-  @Top int getTop() {
+  @AinferTop
+  int getAinferTop() {
     return 0;
   }
 
@@ -151,33 +152,33 @@ public class ExpectedErrors {
 
     @SuppressWarnings("all")
     public void suppressWarningsTest() {
-      i = (@Sibling1 int) 0;
-      i2 = getSibling1();
+      i = (@AinferSibling1 int) 0;
+      i2 = getAinferSibling1();
     }
 
     public void suppressWarningsTest2() {
-      SuppressWarningsInner.i = (@Sibling1 int) 0;
-      SuppressWarningsInner.i2 = getSibling1();
+      SuppressWarningsInner.i = (@AinferSibling1 int) 0;
+      SuppressWarningsInner.i2 = getAinferSibling1();
     }
 
     public void suppressWarningsValidation() {
       // :: warning: (argument)
-      expectsSibling1(i);
+      expectsAinferSibling1(i);
       // :: warning: (argument)
-      expectsSibling1(i2);
+      expectsAinferSibling1(i2);
       // :: warning: (argument)
-      expectsSibling1(SuppressWarningsInner.i);
+      expectsAinferSibling1(SuppressWarningsInner.i);
       // :: warning: (argument)
-      expectsSibling1(SuppressWarningsInner.i2);
+      expectsAinferSibling1(SuppressWarningsInner.i2);
       // :: warning: (argument)
-      expectsSibling1(suppressWarningsMethodReturn());
+      expectsAinferSibling1(suppressWarningsMethodReturn());
 
-      suppressWarningsMethodParams(getSibling1());
+      suppressWarningsMethodParams(getAinferSibling1());
     }
 
     @SuppressWarnings("all")
     public int suppressWarningsMethodReturn() {
-      return getSibling1();
+      return getAinferSibling1();
     }
 
     // It is problematic to automatically test whole-program inference for method params when
@@ -196,7 +197,7 @@ public class ExpectedErrors {
   }
 
   class NullTest {
-    // The default type for fields is @DefaultType.
+    // The default type for fields is @AinferDefaultType.
     private String privateField;
     public String publicField;
 
@@ -218,26 +219,26 @@ public class ExpectedErrors {
   }
 
   class IgnoreMetaAnnotationTest2 {
-    @ToIgnore int field;
+    @AinferToIgnore int field;
     @IgnoreInWholeProgramInference int field2;
 
     void foo() {
-      field = getSibling1();
-      field2 = getSibling1();
+      field = getAinferSibling1();
+      field2 = getAinferSibling1();
     }
 
     void test() {
       // :: warning: (argument)
-      expectsSibling1(field);
+      expectsAinferSibling1(field);
       // :: warning: (argument)
-      expectsSibling1(field2);
+      expectsAinferSibling1(field2);
     }
   }
 
   class AssignParam {
     public void f(@AinferBottom Object param) {
       // :: warning: assignment
-      param = ((@Top Object) null);
+      param = ((@AinferTop Object) null);
     }
   }
 }

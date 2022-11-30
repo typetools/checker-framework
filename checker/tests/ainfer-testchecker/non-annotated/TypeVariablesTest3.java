@@ -1,9 +1,9 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 
-public class TypeVariablesTest3<@Sibling1 T extends @Sibling1 Object> {
-  public @Sibling2 T sibling2;
-  public @Sibling1 T sibling1;
+public class TypeVariablesTest3<@AinferSibling1 T extends @AinferSibling1 Object> {
+  public @AinferSibling2 T sibling2;
+  public @AinferSibling1 T sibling1;
 
   public T tField;
 
@@ -16,7 +16,7 @@ public class TypeVariablesTest3<@Sibling1 T extends @Sibling1 Object> {
     param = sibling1;
   }
 
-  void bar(@Sibling2 T param) {
+  void bar(@AinferSibling2 T param) {
     // :: warning: (assignment)
     tField = param;
   }

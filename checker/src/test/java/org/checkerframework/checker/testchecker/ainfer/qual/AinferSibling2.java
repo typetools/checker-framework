@@ -7,8 +7,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * Toy type system for testing field inference.
  *
- * @see Sibling1, Sibling2, Parent
+ * @see AinferSibling1, AinferSibling2, AinferParent
  */
-@SubtypeOf({})
+@SubtypeOf(AinferParent.class)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Top {}
+public @interface AinferSibling2 {}
