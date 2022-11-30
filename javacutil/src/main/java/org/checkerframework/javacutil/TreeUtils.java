@@ -2022,8 +2022,19 @@ public final class TreeUtils {
   }
 
   /**
-   * Get the list of expressions from a case expression. In JDK 11 and earlier, this is a singleton
-   * list. In JDK 12 onwards, there can be multiple expressions per case.
+   * Returns true if this is the default case for a switch statement or expression.
+   *
+   * @param caseTree a case tree
+   * @return true if {@code caseTree} is the default case for a switch statement or expression
+   */
+  public static boolean isDefaultCaseTree(CaseTree caseTree) {
+    return caseTreeGetExpressions(caseTree).isEmpty();
+  }
+
+  /**
+   * Get the list of expressions from a case expression. For the default case, this is empty.
+   * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
+   * multiple expressions per case.
    *
    * @param caseTree the case expression to get the expressions from
    * @return the list of expressions in the case
@@ -2176,6 +2187,16 @@ public final class TreeUtils {
           "TreeUtils.switchExpressionTreeGetCases: reflection failed for tree: %s",
           switchExpressionTree, e);
     }
+  }
+
+  /**
+   * Returns true if the given tree is a switch statement (as opposed to a switch expression).
+   *
+   * @param tree the switch statement or expression to check
+   * @return true if the given tree is a switch statement (as opposed to a switch expression)
+   */
+  public static boolean isSwitchStatement(Tree tree) {
+    return tree.getKind() == Tree.Kind.SWITCH;
   }
 
   /**
