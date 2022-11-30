@@ -14,7 +14,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -66,10 +65,6 @@ public class TestConfigurationBuilder {
 
     if (outputClassDirectory != null) {
       configBuilder.addOption("-d", outputClassDirectory.getAbsolutePath());
-    }
-
-    if (SystemUtil.jreVersion == 8) {
-      configBuilder.addOption("-source", "8").addOption("-target", "8");
     }
 
     configBuilder

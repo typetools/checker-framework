@@ -1,6 +1,6 @@
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
-import org.checkerframework.checker.testchecker.ainfer.qual.Top;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
 
 public class UsesAnonymous {
   void method() {
@@ -9,29 +9,29 @@ public class UsesAnonymous {
           int innerField;
 
           public void method2() {
-            Anonymous.field1 = getSibling2();
-            Anonymous.field2 = getSibling2();
-            innerField = getSibling2();
+            Anonymous.field1 = getAinferSibling2();
+            Anonymous.field2 = getAinferSibling2();
+            innerField = getAinferSibling2();
           }
 
           void innerFieldTest() {
             // :: warning: (argument)
-            expectsSibling2(innerField);
+            expectsAinferSibling2(innerField);
           }
 
           @AinferBottom int getBottom() {
             return (@AinferBottom int) 0;
           }
 
-          @Top int getTop() {
-            return (@Top int) 0;
+          @AinferTop int getAinferTop() {
+            return (@AinferTop int) 0;
           }
 
-          @Sibling2 int getSibling2() {
-            return (@Sibling2 int) 0;
+          @AinferSibling2 int getAinferSibling2() {
+            return (@AinferSibling2 int) 0;
           }
 
-          void expectsSibling2(@Sibling2 int t) {}
+          void expectsAinferSibling2(@AinferSibling2 int t) {}
         };
   }
 }

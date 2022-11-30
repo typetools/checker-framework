@@ -1,4 +1,4 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 // See ExpectedErrors#IgnoreMetaAnnotationTest2
 public class IgnoreMetaAnnotationTest1 {
@@ -6,17 +6,17 @@ public class IgnoreMetaAnnotationTest1 {
   int field2;
 
   void foo() {
-    field2 = getSibling1();
+    field2 = getAinferSibling1();
   }
 
   void test() {
     // :: warning: (argument)
-    expectsSibling1(field2);
+    expectsAinferSibling1(field2);
   }
 
-  void expectsSibling1(@Sibling1 int t) {}
+  void expectsAinferSibling1(@AinferSibling1 int t) {}
 
-  static @Sibling1 int getSibling1() {
+  static @AinferSibling1 int getAinferSibling1() {
     return 0;
   }
 }

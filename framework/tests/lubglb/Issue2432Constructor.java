@@ -6,79 +6,91 @@ import org.checkerframework.framework.testchecker.lubglb.quals.*;
 class Issue2432C {
 
   // reason for suppressing:
-  // super.invocation: Object is @A by default and it is unreasonable to change jdk stub
+  // super.invocation: Object is @LubglbA by default and it is unreasonable to change jdk stub
   // just because of this
   // inconsistent.constructor.type: the qualifier on returning type is expected not to be top
   @SuppressWarnings({"super.invocation", "inconsistent.constructor.type"})
-  @Poly Issue2432C(@Poly Object dummy) {}
+  @PolyLubglb
+  Issue2432C(@PolyLubglb Object dummy) {}
 
   @SuppressWarnings({"super.invocation", "inconsistent.constructor.type"})
-  @Poly Issue2432C(@Poly Object dummy1, @Poly Object dummy2) {}
+  @PolyLubglb
+  Issue2432C(@PolyLubglb Object dummy1, @PolyLubglb Object dummy2) {}
 
   // class for test cases using type parameter
   static class TypeParamClass<T> {
 
-    // @Poly on T shouldn't be in the poly resolving process
+    // @PolyLubglb on T shouldn't be in the poly resolving process
     @SuppressWarnings({"super.invocation", "inconsistent.constructor.type"})
-    @Poly TypeParamClass(@Poly Object dummy, T t) {}
+    @PolyLubglb
+    TypeParamClass(@PolyLubglb Object dummy, T t) {}
 
     // 2 poly param for testing lub
     @SuppressWarnings({"super.invocation", "inconsistent.constructor.type"})
-    @Poly TypeParamClass(@Poly Object dummy1, @Poly Object dummy2, T t) {}
+    @PolyLubglb
+    TypeParamClass(@PolyLubglb Object dummy1, @PolyLubglb Object dummy2, T t) {}
   }
 
   // class for test cases using type parameter
   class ReceiverClass {
 
-    // if the qualifier on receiver is @Poly, it should not be involved in poly resolve process
+    // if the qualifier on receiver is @PolyLubglb, it should not be involved in poly resolve
+    // process
     @SuppressWarnings({"super.invocation", "inconsistent.constructor.type"})
-    @Poly ReceiverClass(Issue2432C Issue2432C.this, @Poly Object dummy) {}
+    @PolyLubglb
+    ReceiverClass(Issue2432C Issue2432C.this, @PolyLubglb Object dummy) {}
 
     // 2 poly param for testing lub
     @SuppressWarnings({"super.invocation", "inconsistent.constructor.type"})
-    @Poly ReceiverClass(Issue2432C Issue2432C.this, @Poly Object dummy1, @Poly Object dummy2) {}
+    @PolyLubglb
+    ReceiverClass(
+        Issue2432C Issue2432C.this, @PolyLubglb Object dummy1, @PolyLubglb Object dummy2) {}
   }
 
-  void invokeConstructors(@A Object top, @F Object bottom, @Poly Object poly) {
+  void invokeConstructors(@LubglbA Object top, @LubglbF Object bottom, @PolyLubglb Object poly) {
     // :: error: (assignment)
-    @F Issue2432C bottomOuter = new Issue2432C(top);
-    @A Issue2432C topOuter = new Issue2432C(top);
+    @LubglbF Issue2432C bottomOuter = new Issue2432C(top);
+    @LubglbA Issue2432C topOuter = new Issue2432C(top);
 
     // lub test
-    @A Issue2432C bottomOuter2 = new Issue2432C(top, bottom);
+    @LubglbA Issue2432C bottomOuter2 = new Issue2432C(top, bottom);
     // :: error: (assignment)
-    @B Issue2432C bottomOuter3 = new Issue2432C(top, bottom);
+    @LubglbB Issue2432C bottomOuter3 = new Issue2432C(top, bottom);
 
-    @F Issue2432C bottomOuter4 = new Issue2432C(bottom, bottom);
+    @LubglbF Issue2432C bottomOuter4 = new Issue2432C(bottom, bottom);
   }
 
   // invoke constructors with a receiver to test poly resolving
   // note: seems CF already works well on these before changes
   void invokeReceiverConstructors(
-      @A Issue2432C topOuter, @Poly Issue2432C polyOuter, @F Object bottom, @A Object top) {
-    Issue2432C.@F ReceiverClass ref1 = polyOuter.new ReceiverClass(bottom);
+      @LubglbA Issue2432C topOuter,
+      @PolyLubglb Issue2432C polyOuter,
+      @LubglbF Object bottom,
+      @LubglbA Object top) {
+    Issue2432C.@LubglbF ReceiverClass ref1 = polyOuter.new ReceiverClass(bottom);
     // :: error: (assignment)
-    Issue2432C.@B ReceiverClass ref2 = polyOuter.new ReceiverClass(top);
+    Issue2432C.@LubglbB ReceiverClass ref2 = polyOuter.new ReceiverClass(top);
 
     // lub tests
-    Issue2432C.@A ReceiverClass ref3 = polyOuter.new ReceiverClass(top, bottom);
+    Issue2432C.@LubglbA ReceiverClass ref3 = polyOuter.new ReceiverClass(top, bottom);
     // :: error: (assignment)
-    Issue2432C.@B ReceiverClass ref4 = polyOuter.new ReceiverClass(top, bottom);
+    Issue2432C.@LubglbB ReceiverClass ref4 = polyOuter.new ReceiverClass(top, bottom);
 
-    Issue2432C.@F ReceiverClass ref5 = polyOuter.new ReceiverClass(bottom, bottom);
+    Issue2432C.@LubglbF ReceiverClass ref5 = polyOuter.new ReceiverClass(bottom, bottom);
   }
 
   // invoke constructors with a type parameter to test poly resolving
-  void invokeTypeVarConstructors(@A Object top, @F Object bottom, @Poly Object poly) {
-    @F TypeParamClass<@Poly Object> ref1 = new TypeParamClass<>(bottom, poly);
+  void invokeTypeVarConstructors(
+      @LubglbA Object top, @LubglbF Object bottom, @PolyLubglb Object poly) {
+    @LubglbF TypeParamClass<@PolyLubglb Object> ref1 = new TypeParamClass<>(bottom, poly);
     // :: error: (assignment)
-    @B TypeParamClass<@Poly Object> ref2 = new TypeParamClass<>(top, poly);
+    @LubglbB TypeParamClass<@PolyLubglb Object> ref2 = new TypeParamClass<>(top, poly);
 
     // lub tests
-    @A TypeParamClass<@Poly Object> ref3 = new TypeParamClass<>(bottom, top, poly);
+    @LubglbA TypeParamClass<@PolyLubglb Object> ref3 = new TypeParamClass<>(bottom, top, poly);
     // :: error: (assignment)
-    @B TypeParamClass<@Poly Object> ref4 = new TypeParamClass<>(bottom, top, poly);
+    @LubglbB TypeParamClass<@PolyLubglb Object> ref4 = new TypeParamClass<>(bottom, top, poly);
 
-    @F TypeParamClass<@Poly Object> ref5 = new TypeParamClass<>(bottom, bottom, poly);
+    @LubglbF TypeParamClass<@PolyLubglb Object> ref5 = new TypeParamClass<>(bottom, bottom, poly);
   }
 }

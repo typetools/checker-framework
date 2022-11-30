@@ -78,7 +78,7 @@ task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verificati
                     "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
                     "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
                     "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 ]
             }
 
@@ -113,7 +113,7 @@ task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification'
                     "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
                     "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
                     "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
                 ]
             }
             classpath = sourceSets.test.runtimeClasspath

@@ -2,14 +2,14 @@ package org.checkerframework.framework.testchecker.reflection.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
  * Toy type system for testing reflection resolution. Uses
- * org.checkerframework.common.subtyping.qual.Bottom as bottom.
+ * org.checkerframework.common.subtyping.qual.Bottom as bottom
  *
- * @see Top, Sibling1,
+ * @see TestReflectSibling1, TestReflectSibling2
  */
-@SubtypeOf(Top.class)
+@PolymorphicQualifier
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Sibling2 {}
+public @interface PolyTestReflect {}
