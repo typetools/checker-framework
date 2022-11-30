@@ -3,6 +3,8 @@ Version 3.27.1 (December1, 2022)
 
 **User-visible changes:**
 
+The Checker Framework runs under JDK 19 -- that is, it runs on a version 19 JVM.
+
 **Implementation details:**
 
 **Closed issues:**
