@@ -25,7 +25,7 @@ repositories {
 ext {
     release = false
 
-    // On a Java 8 JVM, use error-prone javac and release (~ source+target) 8.
+    // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
@@ -263,9 +263,13 @@ allprojects {
             // Uncomment when needed.
             // // Put source files in deterministic order, for debugging.
             // compilationTask.source = compilationTask.source.sort()
-            options.release.set(8)
-            // Because the release is 8, all of the public compiler classes are accessible, so
-            // --add-exports is not required or allowed. See
+
+            // Don't try to use `options.release.set(8)` here.
+            // Because CI compiles under JDK 8, we know no Java 9+ features are used.
+            sourceCompatibility = 8
+            targetCompatibility = 8
+            // Because the target is 8, all of the public compiler classes are accessible, so
+            // --add-exports are not required (nor are they allowed with target 8). See
             // https://openjdk.org/jeps/247 for details on compiling for older versions.
 
             // When sourceCompatibilty is changed to 11, then the following will be required.
