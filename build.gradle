@@ -25,7 +25,7 @@ repositories {
 ext {
     release = false
 
-    // On a Java 8 JVM, use error-prone javac and source/target 8.
+    // On a Java 8 JVM, use error-prone javac and release (~ source+target) 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
 
