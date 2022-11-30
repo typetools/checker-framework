@@ -451,7 +451,8 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
         } else {
             options.fork = true
             options.forkOptions.jvmArgs += compilerArgsForRunningCF
-       }
+            options.compilerArgs += compilerArgsForRunningCF
+        }
     }
 }
 
