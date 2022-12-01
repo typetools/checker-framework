@@ -287,7 +287,7 @@ task allNullnessTests(type: Test, group: 'Verification') {
 task allCalledMethodsTests(type: Test, group: 'Verification') {
     description 'Run all Junit tests for the Called Methods Checker.'
     include '**/CalledMethods*.class'
-    if (!isJava19) {
+    if (!skipDelombok) {
         dependsOn 'delombok'
     }
 }
@@ -363,7 +363,7 @@ task delombok {
     }
 }
 
-if (isJava19) {
+if (skipDelombok) {
     delombok.enabled = false
 } else {
     tasks.test.dependsOn("delombok")

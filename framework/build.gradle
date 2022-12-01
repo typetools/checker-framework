@@ -215,7 +215,7 @@ task delombok {
     }
 }
 
-if (isJava19) {
+if (skipDelombok) {
     delombok.enabled = false
 } else {
     tasks.test.dependsOn("delombok")
