@@ -1892,27 +1892,23 @@ Section~\ref{sec:alias}.
 
 \subsubsubsection{At Field Assignments}
 
-For a field update of the form $o_1.f_1 = e$, the
+For a field update of the form $o_1.f = e$, the
 dataflow analysis first determines the abstract value $e_\text{val}$ for $e$.
 Then, it updates the store $S$ as follows.
 \begin{enumerate}
-    \item For every field access $o_2.f_2$ that is a key in $S$, remove its
-      information if $f_1 = f_2$ and
-      $o_2$ lexically contains a \nonterminal{Receiver} that \emph{might}
+    \item For every field access $o_2.f$ that is a key in $S$, remove its
+      information if
+        $o_2.f$ lexically contains a \nonterminal{Receiver} that \emph{might}
         alias $o_1.f$ as determined by the $\alias$
         predicate.
       Note that the ``lexically contains'' notion for pure method calls
         includes both the receiver as well as the arguments.
-
-      This includes the case where $o_1 = o_2$ (that is, they are
-      syntactically the same) and the case where  $o_2$ and $o_1.f$ might be
+      At the top level,
+      this includes the case where $o_1 = o_2$ (that is, they are
+      syntactically the same) and the case where $o_2$ and $o_1$ might be
       aliases.
 
-      \begin{workinprogress}
-        Should the two occurrences of field $f$ in this paragraph be $f_1$?
-      \end{workinprogress}
-
-    \item $S[o_1.f_1] = e_\text{val}$
+    \item $S[o_1.f] = e_\text{val}$
 \end{enumerate}
 
 
