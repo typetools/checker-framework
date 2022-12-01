@@ -1,3 +1,13 @@
+Version 3.28.1 (January 3, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.28.0 (December 1, 2022)
 ---------------------------------
 
