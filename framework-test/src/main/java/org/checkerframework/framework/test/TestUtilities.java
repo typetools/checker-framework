@@ -100,17 +100,24 @@ public class TestUtilities {
 
     for (String dirName : dirNames) {
       File dir = new File(parent, dirName).toPath().toAbsolutePath().normalize().toFile();
-      if (!dir.isDirectory()) {
-        // For "ainfer-*" tests, their sources do not necessarily
-        // exist yet but will be created by a test that runs earlier than they do.
-        if (!(dir.getName().equals("annotated")
-            && dir.getParentFile() != null
-            && dir.getParentFile().getName().startsWith("ainfer-"))) {
-          throw new BugInCF("test directory does not exist: %s", dir);
-        }
-      }
       if (dir.isDirectory()) {
         filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
+      } else {
+        // `dir` is not an existent directory.
+
+        // If delombok does not yet work on a given JDK, this directory does not exist.
+        if (dir.getName().equals("returnsreceiverdelomboked")) {
+          continue;
+        }
+        // For "ainfer-*" tests, their sources do not necessarily
+        // exist yet but will be created by a test that runs earlier than they do.
+        if (dir.getName().equals("annotated")
+            && dir.getParentFile() != null
+            && dir.getParentFile().getName().startsWith("ainfer-")) {
+          continue;
+        }
+
+        throw new BugInCF("test directory does not exist: %s", dir);
       }
     }
 

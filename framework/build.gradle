@@ -218,11 +218,12 @@ task delombok {
     }
 }
 
+println 'skipDelombok = ' + skipDelombok
 if (skipDelombok) {
     delombok.enabled = false
-} else {
-    tasks.test.dependsOn("delombok")
     test {
         exclude '**/ReturnsReceiverLombokTest.java'
     }
+} else {
+    tasks.test.dependsOn("delombok")
 }
