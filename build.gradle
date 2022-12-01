@@ -28,6 +28,8 @@ ext {
     // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
+    // As of 2022-11-30, delombok crashes under JDK 19.
+    skipDelombok = JavaVersion.current() == JavaVersion.VERSION_19
 
     // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
     // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
@@ -58,10 +60,10 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
     case JavaVersion.VERSION_17:
-    case JavaVersion.VERSION_18:
+    case JavaVersion.VERSION_19:
         break; // Supported versions
     default:
-        logger.info("The Checker Framework has only been tested with JDK 8, 11, 17, and 18." +
+        logger.info("The Checker Framework has only been tested with JDK 8, 11, 17, and 19." +
                 " You are using JDK " + JavaVersion.current().majorVersion + ".");
         break;
 }
@@ -272,7 +274,7 @@ allprojects {
             // --add-exports are not required (nor are they allowed with target 8). See
             // https://openjdk.org/jeps/247 for details on compiling for older versions.
 
-            // When sourceCompatibilty is changed to 11, then the following will be required.
+            // When sourceCompatibility or release is changed to 11, then the following will be required.
             // options.compilerArgs += [
             // "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
             // "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
