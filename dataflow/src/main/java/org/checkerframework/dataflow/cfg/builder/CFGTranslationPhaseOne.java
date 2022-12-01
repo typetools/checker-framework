@@ -2436,6 +2436,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree tree, int index) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+      // In the future, other types of terminal cases will exist, when the case labels are
+      // exhaustive.
       boolean isTerminalCase = isDefaultCase;
 
       final Label thisBodyLabel = caseBodyLabels[index];
