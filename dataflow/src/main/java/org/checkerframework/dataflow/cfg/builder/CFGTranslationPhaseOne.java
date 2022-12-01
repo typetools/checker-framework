@@ -2491,9 +2491,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      // TODO: Should this be done unconditionally?
-      // Calling `addLabelForNextNode(nextCaseLabel)` unconditionally leads to "error: bindings
-      // already contains key"
       if (!isTerminalCase) {
         System.out.printf("buildCase(%s, %s, %s)%n", tree, index, isLastOfExhaustive);
         System.out.printf(
