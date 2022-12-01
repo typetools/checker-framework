@@ -2435,7 +2435,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       // Handle the case expressions
       List<? extends ExpressionTree> exprTrees = TreeUtils.caseTreeGetExpressions(tree);
-      if (!exprTrees.isEmpty()) {
+      boolean isDefaultCase = exprTrees.isEmpty();
+      if (!isDefaultCase) {
         // non-default cases: a case expression exists
         ArrayList<Node> exprs = new ArrayList<>();
         for (ExpressionTree exprTree : exprTrees) {
@@ -2456,13 +2457,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           scan(stmt, null);
         }
         // Handle possible fallthrough by adding jump to next body.
-        extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
+        if (!isDefaultCase) {
+          extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
+        }
       } else {
-        // This is a switch labeled rule.
+        // This is a switch labeled rule (which appears in a switch expression).
         // A "switch labeled rule" is a "case L ->" label along with its code.
-        //
+        assert !TreeUtils.isSwitchStatement(switchTree);
         Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
-        if (!TreeUtils.isSwitchStatement(switchTree) && bodyTree instanceof ExpressionTree) {
+        if (bodyTree instanceof ExpressionTree) {
           buildSwitchExpressionResult((ExpressionTree) bodyTree);
         } else {
           scan(bodyTree, null);
@@ -2472,7 +2475,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      addLabelForNextNode(nextCaseLabel);
+      if (!isDefaultCase) {
+        addLabelForNextNode(nextCaseLabel);
+      }
     }
 
     /**
