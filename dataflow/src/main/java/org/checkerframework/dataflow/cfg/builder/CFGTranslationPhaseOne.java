@@ -2257,7 +2257,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * The Tree for the selector expression.
      *
      * <pre>
-     *   switch ( <em>selector expression</em> ) { ... }
+     *   switch (<em>selector expression</em> ) { ... }
      * </pre>
      */
     private final ExpressionTree selectorExprTree;
@@ -2436,10 +2436,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree tree, int index) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+      boolean isTerminalCase = isDefaultCase;
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      final Label nextCaseLabel = new Label();
+      final Label nextCaseLabel = isTerminalCase ? new Label() : exceptionalExitLabel;
 
       // Handle the case expressions
       if (!isDefaultCase) {
@@ -2463,7 +2464,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           scan(stmt, null);
         }
         // Handle possible fallthrough by adding jump to next body.
-        if (!isDefaultCase) {
+        if (!isTerminalCase) {
           extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
         }
       } else {
@@ -2481,7 +2482,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isDefaultCase) {
+      if (!isTerminalCase) {
         addLabelForNextNode(nextCaseLabel);
       }
     }
