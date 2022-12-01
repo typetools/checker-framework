@@ -2254,6 +2254,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /** The case trees of {@code switchTree} */
     private final List<? extends CaseTree> caseTrees;
 
+    /** True if the cases are exhaustive (ignoring the default case). */
+    private final boolean casesAreExhaustive;
+
     /**
      * The Tree for the selector expression.
      *
@@ -2292,6 +2295,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         this.caseTrees = TreeUtils.switchExpressionTreeGetCases(switchTree);
         this.selectorExprTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
       }
+      this.casesAreExhaustive = casesAreExhaustive();
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
       this.caseBodyLabels = new Label[caseTrees.size() + 1];
@@ -2338,10 +2342,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           boolean isLastExceptDefault =
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
-          boolean isLastOfExhaustive = isLastExceptDefault && casesAreExhaustive();
+          boolean isLastOfExhaustive = isLastExceptDefault && casesAreExhaustive;
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
+      // TODO: Maybe do all these optimizations only for switch expressions.
+      // TODO: I would like to ignore the default: case (because it's dead code) UNLESS there is
+      // fallthrough to it, which can only happen with "case L:" and never with "case L ->".
+      // Type-checking the default: case when it's dead code leads to spurious errors.
       if (defaultIndex != -1) {
         // The checks of all cases must happen before the default case, therefore we build the
         // default case last.
@@ -2454,8 +2462,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Using thisBodyLabel lacks flow-sensitive type refinement.
       final Label nextCaseLabel = isTerminalCase ? thisBodyLabel : new Label();
 
-      final Label nextCaseLabel = new Label();
-
       // Handle the case expressions
       if (!isDefaultCase) {
         // non-default cases: a case expression exists
@@ -2496,10 +2502,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      // Reinstate the `if` when an InfeasibleExitBlock exists.
-      // if (!isTerminalCase) {
-      addLabelForNextNode(nextCaseLabel);
-      // }
+      if (!isTerminalCase) {
+        addLabelForNextNode(nextCaseLabel);
+      }
     }
 
     /**
