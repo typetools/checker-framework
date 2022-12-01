@@ -1436,7 +1436,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     List<Node> arguments;
-    if (TreeUtils.isEnumSuper(tree)) {
+    if (TreeUtils.isEnumSuperCall(tree)) {
       // Don't convert arguments for enum super calls.  The AST contains no actual arguments, while
       // the method element expects two arguments, leading to an exception in convertCallArguments.
       // Since no actual arguments are present in the AST that is being checked, it shouldn't cause
@@ -2257,7 +2257,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * The Tree for the selector expression.
      *
      * <pre>
-     *   switch (<em>selector expression</em> ) { ... }
+     *   switch ( <em>selector expression</em> ) { ... }
      * </pre>
      */
     private final ExpressionTree selectorExprTree;
@@ -2445,7 +2445,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
+      // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
+      // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
+      // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This requires
+      // a new type of SpecialBlock in the CFG: InfeasibleExitBlock.
+      // final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
+      final Label nextCaseLabel = new Label();
 
       // Handle the case expressions
       if (!isDefaultCase) {
@@ -2454,9 +2459,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
-        extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        if (isTerminalCase) {
+          // This does not do the test and therefore lacks flow-sensitive type refinement.
+          // After introducing a new InfeasibleExitBlock, this `then` clause can be removed and the
+          // enclosing `if` replaced by its `else` clause.
+          extendWithExtendedNode(new UnconditionalJump(thisBodyLabel));
+        } else {
+          CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
+          extendWithNode(test);
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        }
       }
 
       // Handle the case body
@@ -2487,18 +2499,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isTerminalCase) {
-        addLabelForNextNode(nextCaseLabel);
-      }
-      // else if (!bindings.containsKey(nextCaseLabel)) {
-      //   System.out.printf("nonterminal, bindings does not contain key %s; adding%n",
-      // nextCaseLabel);
-      //   System.out.printf(
-      //       "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
-      //       nextCaseLabel,
-      //       (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
-      //       exceptionalExitLabel);
-      //   addLabelForNextNode(nextCaseLabel);
+      // Reinstate the `if` when an InfeasibleExitBlock exists.
+      // if (!isTerminalCase) {
+      addLabelForNextNode(nextCaseLabel);
       // }
     }
 
