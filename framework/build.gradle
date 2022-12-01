@@ -214,5 +214,10 @@ task delombok {
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
     }
 }
+if (isJava19) {
+    delombok.enabled = false
+}
 
-tasks.test.dependsOn("delombok")
+if (!isJava19) {
+    tasks.test.dependsOn("delombok")
+}

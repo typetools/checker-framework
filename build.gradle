@@ -28,6 +28,8 @@ ext {
     // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
+    // As of 2022-11-30, delombok crashes under JDK 19.
+    isJava19 = JavaVersion.current() == JavaVersion.VERSION_19
 
     // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
     // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)

@@ -287,7 +287,9 @@ task allNullnessTests(type: Test, group: 'Verification') {
 task allCalledMethodsTests(type: Test, group: 'Verification') {
     description 'Run all Junit tests for the Called Methods Checker.'
     include '**/CalledMethods*.class'
-    dependsOn 'delombok'
+    if (!isJava19) {
+        dependsOn 'delombok'
+    }
 }
 
 // These are tests that should only be run with JDK 11+.
@@ -360,8 +362,13 @@ task delombok {
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
     }
 }
+if (isJava19) {
+    delombok.enabled = false
+}
 
-tasks.test.dependsOn("delombok")
+if (!isJava19) {
+    tasks.test.dependsOn("delombok")
+}
 
 ///
 /// Whole-program inference tests
