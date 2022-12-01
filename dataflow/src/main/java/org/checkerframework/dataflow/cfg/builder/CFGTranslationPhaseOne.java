@@ -2429,17 +2429,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param index the index of the case tree in {@link #caseBodyLabels}
      */
     private void buildCase(CaseTree tree, int index) {
+      boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
       final Label nextCaseLabel = new Label();
 
       // Handle the case expressions
-      List<? extends ExpressionTree> exprTrees = TreeUtils.caseTreeGetExpressions(tree);
-      boolean isDefaultCase = exprTrees.isEmpty();
       if (!isDefaultCase) {
         // non-default cases: a case expression exists
         ArrayList<Node> exprs = new ArrayList<>();
-        for (ExpressionTree exprTree : exprTrees) {
+        for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
         }
         CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
