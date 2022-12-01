@@ -218,7 +218,6 @@ task delombok {
     }
 }
 
-println 'skipDelombok = ' + skipDelombok
 if (skipDelombok) {
     delombok.enabled = false
     test {
