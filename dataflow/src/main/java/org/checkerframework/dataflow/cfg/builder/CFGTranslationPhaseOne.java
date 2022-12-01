@@ -2445,7 +2445,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
       // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
       // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This requires
-      // a new type of SpecialBlock: InfeasibleExitBlock.
+      // a new type of SpecialBlock in the CFG: InfeasibleExitBlock.
       // final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
       final Label nextCaseLabel = new Label();
 
