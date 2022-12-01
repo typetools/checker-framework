@@ -181,7 +181,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     // method element requires two.
     // See also BaseTypeVisitor.visitMethodInvocation and
     // CFGBuilder.CFGTranslationPhaseOne.visitMethodInvocation.
-    if (TreeUtils.isEnumSuper(tree)) {
+    if (TreeUtils.isEnumSuperCall(tree)) {
       return;
     }
     List<AnnotatedTypeMirror> parameters =
