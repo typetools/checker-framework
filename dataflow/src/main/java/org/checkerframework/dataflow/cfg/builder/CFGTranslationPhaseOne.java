@@ -2446,7 +2446,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      final Label nextCaseLabel = isTerminalCase ? new Label() : exceptionalExitLabel;
+      final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
 
       // Handle the case expressions
       if (!isDefaultCase) {
@@ -2502,9 +2502,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             "  isTerminalCase = %s, isDefaultCase = %s, isLastOfExhaustive = %s%n",
             isTerminalCase, isDefaultCase, isLastOfExhaustive);
         System.out.printf("  addLabelForNextNode(%s)%n    %s%n", nextCaseLabel, tree);
+        System.out.printf(
+            "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
+            nextCaseLabel,
+            (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
+            exceptionalExitLabel);
         addLabelForNextNode(nextCaseLabel);
         System.out.printf("  buildCase successful%n");
       } else if (!bindings.containsKey(nextCaseLabel)) {
+        System.out.printf("nonterminal, but bindings contains key %s%n", nextCaseLabel);
+        System.out.printf(
+            "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
+            nextCaseLabel,
+            (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
+            exceptionalExitLabel);
         addLabelForNextNode(nextCaseLabel);
       }
     }
