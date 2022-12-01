@@ -2436,11 +2436,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree tree, int index) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+      // In the future, other types of terminal cases will exist, when the case labels are
+      // exhaustive.
       boolean isTerminalCase = isDefaultCase;
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
+      // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
+      // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
+      // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This requires
+      // a new type of SpecialBlock: InfeasibleExitBlock.
+      // final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
+      final Label nextCaseLabel = new Label();
 
       // Handle the case expressions
       if (!isDefaultCase) {
@@ -2449,9 +2456,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
-        extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        if (isTerminalCase) {
+          // This does not do the test and therefore lacks flow-sensitive type refinement.
+          // After introducing a new InfeasibleExitBlock, this `then` clause can be removed and the
+          // enclosing `if` replaced by its `else` clause.
+          extendWithExtendedNode(new UnconditionalJump(thisBodyLabel));
+        } else {
+          CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
+          extendWithNode(test);
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        }
       }
 
       // Handle the case body
@@ -2482,9 +2496,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isTerminalCase) {
-        addLabelForNextNode(nextCaseLabel);
-      }
+      // Reinstate the `if` when an InfeasibleExitBlock exists.
+      // if (!isTerminalCase) {
+      addLabelForNextNode(nextCaseLabel);
+      // }
     }
 
     /**
