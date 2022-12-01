@@ -106,7 +106,7 @@ public class TestUtilities {
         // `dir` is not an existent directory.
 
         // If delombok does not yet work on a given JDK, this directory does not exist.
-        if (dir.getName().equals("returnsreceiverdelomboked")) {
+        if (dir.getName().contains("delomboked")) {
           continue;
         }
         // For "ainfer-*" tests, their sources do not necessarily
