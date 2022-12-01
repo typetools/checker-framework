@@ -2446,11 +2446,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
-      // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
-      // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This requires
-      // a new type of SpecialBlock in the CFG: InfeasibleExitBlock.
+      // // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
+      // // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
+      // // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This
+      // // requires a new type of SpecialBlock in the CFG: InfeasibleExitBlock.
       // final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
+      // Using thisBodyLabel lacks flow-sensitive type refinement.
+      final Label nextCaseLabel = isTerminalCase ? thisBodyLabel : new Label();
+
       final Label nextCaseLabel = new Label();
 
       // Handle the case expressions
@@ -2460,16 +2463,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
         }
-        if (isTerminalCase) {
-          // This does not do the test and therefore lacks flow-sensitive type refinement.
-          // After introducing a new InfeasibleExitBlock, this `then` clause can be removed and the
-          // enclosing `if` replaced by its `else` clause.
-          extendWithExtendedNode(new UnconditionalJump(thisBodyLabel));
-        } else {
-          CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
-          extendWithNode(test);
-          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
-        }
+        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
+        extendWithNode(test);
+        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
 
       // Handle the case body
