@@ -1510,7 +1510,7 @@ public final class TreeUtils {
    * @param tree the method invocation to check
    * @return true if this is a super call to the {@link Enum} constructor
    */
-  public static boolean isEnumSuper(MethodInvocationTree tree) {
+  public static boolean isEnumSuperCall(MethodInvocationTree tree) {
     ExecutableElement ex = TreeUtils.elementFromUse(tree);
     assert ex != null : "@AssumeAssertion(nullness): tree kind";
     Name name = ElementUtils.getQualifiedClassName(ex);

@@ -9,6 +9,8 @@ The Checker Framework runs under JDK 19 -- that is, it runs on a version 19 JVM.
 
 Renamed `TryFinallyScopeCell` to `LabelCell`.
 
+Renamed `TreeUtils.isEnumSuper` to `isEnumSuperCall`.
+
 **Closed issues:**
 
 
