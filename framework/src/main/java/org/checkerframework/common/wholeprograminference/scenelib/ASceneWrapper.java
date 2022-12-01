@@ -4,7 +4,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -194,12 +193,7 @@ public class ASceneWrapper {
       return;
     }
     if (classSymbol.isEnum()) {
-      List<VariableElement> enumConstants = new ArrayList<>();
-      for (Element e : classSymbol.getEnclosedElements()) {
-        if (e.getKind() == ElementKind.ENUM_CONSTANT) {
-          enumConstants.add((VariableElement) e);
-        }
-      }
+      List<VariableElement> enumConstants = ElementUtils.getEnumConstants(classSymbol);
       if (!aClass.isEnum(classSymbol.getSimpleName().toString())) {
         aClass.setEnumConstants(enumConstants);
       } else {

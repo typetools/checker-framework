@@ -816,9 +816,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
   }
 
-  /** Add the label {@code l} to the extended node that will be placed next in the sequence. */
+  /**
+   * Add the label {@code l} to the extended node that will be placed next in the sequence.
+   *
+   * @param l the node to add to the forthcoming extended node
+   */
   protected void addLabelForNextNode(Label l) {
-    assert !bindings.containsKey(l);
+    if (bindings.containsKey(l)) {
+      throw new BugInCF("bindings already contains key %s: %s", l, bindings);
+    }
     leaders.add(nodeList.size());
     bindings.put(l, nodeList.size());
   }
@@ -2239,8 +2245,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private class SwitchBuilder {
 
     /**
-     * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree} or
-     * {@code SwitchExpressionTree}}
+     * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}
+     * (for a switch statement) or {@code SwitchExpressionTree}.
      */
     private final Tree switchTree;
 
@@ -2251,7 +2257,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * The Tree for the selector expression.
      *
      * <pre>
-     *   switch ( <em> selector expression</em> ) { ... }
+     *   switch ( <em>selector expression</em> ) { ... }
      * </pre>
      */
     private final ExpressionTree selectorExprTree;
@@ -2265,9 +2271,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private AssignmentNode selectorExprAssignment;
 
     /**
-     * If {@link #switchTree} is a switch expression, then this is result variable: the synthetic
-     * variable tree that all results of {@code #switchTree} are assigned to. Otherwise, this is
-     * null.
+     * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
+     * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
      */
     private @Nullable VariableTree switchExprVarTree;
 
@@ -2278,7 +2283,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private SwitchBuilder(Tree switchTree) {
       this.switchTree = switchTree;
-      if (switchTree instanceof SwitchTree) {
+      if (TreeUtils.isSwitchStatement(switchTree)) {
         SwitchTree switchStatementTree = (SwitchTree) switchTree;
         this.caseTrees = switchStatementTree.getCases();
         this.selectorExprTree = switchStatementTree.getExpression();
@@ -2303,6 +2308,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       LabelCell oldBreakTargetLC = breakTargetLC;
       breakTargetLC = new LabelCell(new Label());
       int numCases = caseTrees.size();
+
       for (int i = 0; i < numCases; ++i) {
         caseBodyLabels[i] = new Label();
       }
@@ -2322,7 +2328,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       // Build CFG for the cases.
-      Integer defaultIndex = null;
+      int defaultIndex = -1;
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
@@ -2331,7 +2337,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           buildCase(caseTree, i);
         }
       }
-      if (defaultIndex != null) {
+      if (defaultIndex != -1) {
         // The checks of all cases must happen before the default case, therefore we build the
         // default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
@@ -2429,21 +2435,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param index the index of the case tree in {@link #caseBodyLabels}
      */
     private void buildCase(CaseTree tree, int index) {
+      boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
       final Label nextCaseLabel = new Label();
 
-      List<? extends ExpressionTree> exprTrees = TreeUtils.caseTreeGetExpressions(tree);
-      if (!exprTrees.isEmpty()) {
-        // non-default cases
+      // Handle the case expressions
+      if (!isDefaultCase) {
+        // non-default cases: a case expression exists
         ArrayList<Node> exprs = new ArrayList<>();
-        for (ExpressionTree exprTree : exprTrees) {
+        for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
         }
         CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
+
+      // Handle the case body
       addLabelForNextNode(thisBodyLabel);
       if (tree.getStatements() != null) {
         // This is a switch labeled statement group.
@@ -2452,12 +2462,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         for (StatementTree stmt : tree.getStatements()) {
           scan(stmt, null);
         }
-        // Handle possible fall through by adding jump to next body.
-        extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
+        // Handle possible fallthrough by adding jump to next body.
+        if (!isDefaultCase) {
+          extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
+        }
       } else {
-        // This is a switch labeled rule.
+        // This is either the default case or a switch labeled rule (which appears in a switch
+        // expression).
         // A "switch labeled rule" is a "case L ->" label along with its code.
-        //
         Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
         if (!TreeUtils.isSwitchStatement(switchTree) && bodyTree instanceof ExpressionTree) {
           buildSwitchExpressionResult((ExpressionTree) bodyTree);
@@ -2469,7 +2481,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      addLabelForNextNode(nextCaseLabel);
+      if (!isDefaultCase) {
+        addLabelForNextNode(nextCaseLabel);
+      }
     }
 
     /**
