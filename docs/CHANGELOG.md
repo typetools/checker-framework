@@ -1,3 +1,13 @@
+Version 3.28.1 (January 3, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.28.0 (December 1, 2022)
 ---------------------------------
 
@@ -12,6 +22,8 @@ Renamed `TryFinallyScopeCell` to `LabelCell`.
 Renamed `TreeUtils.isEnumSuper` to `isEnumSuperCall`.
 
 **Closed issues:**
+
+#5390, #5399, #5390.
 
 
 Version 3.27.0 (November 1, 2022)
