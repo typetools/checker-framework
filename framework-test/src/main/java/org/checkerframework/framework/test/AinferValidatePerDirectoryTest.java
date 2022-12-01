@@ -78,7 +78,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
    * because the framework issues a warning if a .ajava file with no corresponding source file is
    * specified.
    *
-   * <p>Assumes that ajava files will be in the {@link #getInferenceBaseDir(String)} directory.
+   * <p>Assumes that ajava files will be in the {@code #getInferenceBaseDir(String)} directory.
    *
    * @param sourceFiles the list of source files
    * @param checkerShortName the short name of the checker, as used in the naming conventions for
@@ -94,7 +94,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
    * because the framework issues a warning if a .astub file with no corresponding source file is
    * specified.
    *
-   * <p>Assumes that astub files will be in the {@link #getInferenceBaseDir(String)} directory.
+   * <p>Assumes that astub files will be in the {@code #getInferenceBaseDir(String)} directory.
    *
    * @param sourceFiles the list of source files
    * @param checkerShortName the short name of the checker, as used in the naming conventions for
@@ -110,7 +110,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
    * necessary because the framework issues a warning if a .ajava file or a stub file with no
    * corresponding source file is specified.
    *
-   * <p>Assumes that ajava/astub files will be in the {@link #getInferenceBaseDir(String)}
+   * <p>Assumes that ajava/astub files will be in the {@code #getInferenceBaseDir(String)}
    * directory.
    *
    * @param sourceFiles the list of source files
