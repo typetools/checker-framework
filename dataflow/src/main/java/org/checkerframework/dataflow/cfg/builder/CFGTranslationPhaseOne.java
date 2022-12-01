@@ -2331,7 +2331,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       int defaultIndex = -1;
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
-        System.out.printf("i=%d, numCases=%d, caseTree=%s%n", i, numCases, caseTree);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
           defaultIndex = i;
         } else {
@@ -2457,9 +2456,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
         CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
-        System.out.printf(
-            "buildCase(%s, %s, %s): isTerminalCase = %s, new ConditionalJump(%s, %s)%n",
-            tree, index, isLastOfExhaustive, isTerminalCase, thisBodyLabel, nextCaseLabel);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
 
@@ -2492,29 +2488,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       if (!isTerminalCase) {
-        System.out.printf("buildCase(%s, %s, %s)%n", tree, index, isLastOfExhaustive);
-        System.out.printf(
-            "  thisBodyLabel = %s%n  nextBodyLabel = %s%n", thisBodyLabel, nextBodyLabel);
-        System.out.printf(
-            "  isTerminalCase = %s, isDefaultCase = %s, isLastOfExhaustive = %s%n",
-            isTerminalCase, isDefaultCase, isLastOfExhaustive);
-        System.out.printf("  addLabelForNextNode(%s)%n    %s%n", nextCaseLabel, tree);
-        System.out.printf(
-            "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
-            nextCaseLabel,
-            (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
-            exceptionalExitLabel);
-        addLabelForNextNode(nextCaseLabel);
-        System.out.printf("  buildCase successful%n");
-      } else if (!bindings.containsKey(nextCaseLabel)) {
-        System.out.printf("nonterminal, but bindings contains key %s%n", nextCaseLabel);
-        System.out.printf(
-            "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
-            nextCaseLabel,
-            (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
-            exceptionalExitLabel);
         addLabelForNextNode(nextCaseLabel);
       }
+      // else if (!bindings.containsKey(nextCaseLabel)) {
+      //   System.out.printf("nonterminal, bindings does not contain key %s; adding%n",
+      // nextCaseLabel);
+      //   System.out.printf(
+      //       "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
+      //       nextCaseLabel,
+      //       (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
+      //       exceptionalExitLabel);
+      //   addLabelForNextNode(nextCaseLabel);
+      // }
     }
 
     /**
@@ -2563,9 +2548,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     boolean casesAreExhaustive() {
       TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
 
-      System.out.printf(
-          "casesAreExhaustive(): selectorExprTree = %s, selectorTypeMirror = %s [%s]%n",
-          selectorExprTree, selectorTypeMirror, selectorTypeMirror.getKind());
       switch (selectorTypeMirror.getKind()) {
         case BOOLEAN:
           // TODO
@@ -2585,9 +2567,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             }
             // Could also check that the values match.
             boolean result = enumConstants.size() == caseLabels.size();
-            System.out.printf(
-                "casesAreExhaustive => %s%n  [%d] %s%n  [%d] %s%n",
-                result, enumConstants.size(), enumConstants, caseLabels.size(), caseLabels);
             return result;
           }
           break;
