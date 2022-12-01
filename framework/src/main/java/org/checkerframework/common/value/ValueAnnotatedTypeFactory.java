@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -370,13 +369,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (ElementUtils.matchesElement(methodElt, "values")
         && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
         && ElementUtils.isStatic(methodElt)) {
-      int count = 0;
-      List<? extends Element> l = methodElt.getEnclosingElement().getEnclosedElements();
-      for (Element el : l) {
-        if (el.getKind() == ElementKind.ENUM_CONSTANT) {
-          count++;
-        }
-      }
+      int count =
+          ElementUtils.getEnumConstants((TypeElement) methodElt.getEnclosingElement()).size();
       AnnotationMirror am = createArrayLenAnnotation(Collections.singletonList(count));
       superPair.executableType.getReturnType().replaceAnnotation(am);
     }

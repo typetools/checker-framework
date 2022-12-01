@@ -714,6 +714,21 @@ public class ElementUtils {
   }
 
   /**
+   * Returns all enum constants declared in the given enumeration.
+   *
+   * @return all enum constants declared in the given enumeration
+   */
+  public static List<VariableElement> getEnumConstants(TypeElement type) {
+    List<VariableElement> enumConstants = new ArrayList<>();
+    for (Element e : type.getEnclosedElements()) {
+      if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+        enumConstants.add((VariableElement) e);
+      }
+    }
+    return enumConstants;
+  }
+
+  /**
    * Return all methods declared in the given type or any superclass/interface. Note that no
    * constructors will be returned.
    *
