@@ -484,16 +484,18 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
     description = 'Generates API documentation that includes all the modules.'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
+  source(
+      project(':checker-util').sourceSets.main.allJava,
+      project(':checker-qual').sourceSets.main.allJava,
+      project(':checker').sourceSets.main.allJava,
+      project(':framework').sourceSets.main.allJava,
+      project(':dataflow').sourceSets.main.allJava,
+      project(':javacutil').sourceSets.main.allJava,
+      project(':framework-test').sourceSets.main.allJava,
+  )
 
     doFirst {
       source(
-        project(':checker-util').sourceSets.main.allJava,
-        project(':checker-qual').sourceSets.main.allJava,
-        project(':checker').sourceSets.main.allJava,
-        project(':framework').sourceSets.main.allJava,
-        project(':dataflow').sourceSets.main.allJava,
-        project(':javacutil').sourceSets.main.allJava,
-        project(':framework-test').sourceSets.main.allJava,
         project(':framework-test').sourceSets."${isJava8 ? 'tagletJdk8' : 'taglet'}".allJava
       )
     }
