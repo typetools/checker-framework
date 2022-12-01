@@ -219,4 +219,7 @@ if (isJava19) {
     delombok.enabled = false
 } else {
     tasks.test.dependsOn("delombok")
+    test {
+        exclude '**/ReturnsReceiverLombokTest.java'
+    }
 }
