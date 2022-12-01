@@ -2331,6 +2331,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       int defaultIndex = -1;
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
+        // System.out.printf("i=%d, numCases=%d, caseTree=%s%n", i, numCases, caseTree);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
           defaultIndex = i;
         } else {
@@ -2440,7 +2441,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      final Label nextCaseLabel = isTerminalCase ? new Label() : exceptionalExitLabel;
+      final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
 
       // Handle the case expressions
       if (!isDefaultCase) {
@@ -2451,6 +2452,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
         CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
+        // System.out.printf(
+        //     "buildCase(%s, %s): isTerminalCase = %s, new ConditionalJump(%s, %s)%n",
+        //     tree, index, isTerminalCase, thisBodyLabel, nextCaseLabel);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
 
@@ -2482,9 +2486,33 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
+      // TODO: Should this be done unconditionally?
+      // Calling `addLabelForNextNode(nextCaseLabel)` unconditionally leads to "error: bindings
+      // already contains key"
       if (!isTerminalCase) {
+        // System.out.printf("buildCase(%s, %s)%n", tree, index);
+        // System.out.printf(
+        //     "  thisBodyLabel = %s%n  nextBodyLabel = %s%n", thisBodyLabel, nextBodyLabel);
+        // System.out.printf(
+        //     "  isTerminalCase = %s, isDefaultCase = %s%n", isTerminalCase, isDefaultCase);
+        // System.out.printf("  addLabelForNextNode(%s)%n    %s%n", nextCaseLabel, tree);
+        // System.out.printf(
+        //     "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
+        //     nextCaseLabel,
+        //     (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
+        //     exceptionalExitLabel);
         addLabelForNextNode(nextCaseLabel);
+        // System.out.printf("  buildCase successful%n");
       }
+      // else if (!bindings.containsKey(nextCaseLabel)) {
+      //   System.out.printf("nonterminal, but bindings contains key %s%n", nextCaseLabel);
+      //   System.out.printf(
+      //       "    nextCaseLabel %s %s exceptionalExitLabel %s%n",
+      //       nextCaseLabel,
+      //       (nextCaseLabel == exceptionalExitLabel ? "==" : "!="),
+      //       exceptionalExitLabel);
+      //   addLabelForNextNode(nextCaseLabel);
+      // }
     }
 
     /**
