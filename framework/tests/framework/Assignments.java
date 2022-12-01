@@ -33,7 +33,7 @@ public class Assignments {
 
   public void testMethodInvocation() {
     // TODO anonymous constructor
-    // TODO isEnumSuper
+    // TODO isEnumSuperCall
     // @see Varargs
 
     @Odd String s = null;

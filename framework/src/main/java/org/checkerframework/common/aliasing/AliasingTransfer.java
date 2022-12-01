@@ -82,7 +82,7 @@ public class AliasingTransfer extends CFTransfer {
   protected void processPostconditions(
       MethodInvocationNode n, CFStore store, ExecutableElement methodElement, Tree tree) {
     super.processPostconditions(n, store, methodElement, tree);
-    if (TreeUtils.isEnumSuper(n.getTree())) {
+    if (TreeUtils.isEnumSuperCall(n.getTree())) {
       // Skipping the init() method for enums.
       return;
     }
