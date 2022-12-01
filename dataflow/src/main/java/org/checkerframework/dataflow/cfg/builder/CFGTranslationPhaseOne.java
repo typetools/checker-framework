@@ -818,7 +818,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** Add the label {@code l} to the extended node that will be placed next in the sequence. */
   protected void addLabelForNextNode(Label l) {
-    assert !bindings.containsKey(l);
+    if (bindings.containsKey(l)) {
+      throw new BugInCF("bindings already contains key %s: %s", l, bindings);
+    }
     leaders.add(nodeList.size());
     bindings.put(l, nodeList.size());
   }
