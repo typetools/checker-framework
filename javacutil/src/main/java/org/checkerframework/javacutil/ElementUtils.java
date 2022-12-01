@@ -716,6 +716,7 @@ public class ElementUtils {
   /**
    * Returns all enum constants declared in the given enumeration.
    *
+   * @param type an Enum type
    * @return all enum constants declared in the given enumeration
    */
   public static List<VariableElement> getEnumConstants(TypeElement type) {
