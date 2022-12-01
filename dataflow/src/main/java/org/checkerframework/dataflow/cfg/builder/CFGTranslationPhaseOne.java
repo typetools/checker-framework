@@ -818,7 +818,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** Add the label {@code l} to the extended node that will be placed next in the sequence. */
   protected void addLabelForNextNode(Label l) {
-    assert !bindings.containsKey(l);
+    if (bindings.containsKey(l)) {
+      throw new BugInCF("bindings already contains key %s: %s", l, bindings);
+    }
     leaders.add(nodeList.size());
     bindings.put(l, nodeList.size());
   }
@@ -2325,10 +2327,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       int defaultIndex = -1;
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
+        System.out.printf("i=%d, numCases=%d, caseTree=%s%n", i, numCases, caseTree);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
           defaultIndex = i;
         } else {
-          boolean isLastOfExhaustive = i == numCases - 1 && casesAreExhaustive();
+          boolean isLastExceptDefault =
+              i == numCases - 1
+                  || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
+          boolean isLastOfExhaustive = isLastExceptDefault && casesAreExhaustive();
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
@@ -2432,11 +2438,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree tree, int index, boolean isLastOfExhaustive) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+      boolean isTerminalCase = isDefaultCase || isLastOfExhaustive;
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      final Label nextCaseLabel =
-          isDefaultCase || isLastOfExhaustive ? new Label() : exceptionalExitLabel;
+      final Label nextCaseLabel = isTerminalCase ? new Label() : exceptionalExitLabel;
 
       // Handle the case expressions
       if (!isDefaultCase) {
@@ -2447,6 +2453,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
         CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
+        System.out.printf(
+            "buildCase(%s, %s, %s): isTerminalCase = %s, new ConditionalJump(%s, %s)%n",
+            tree, index, isLastOfExhaustive, isTerminalCase, thisBodyLabel, nextCaseLabel);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
 
@@ -2460,7 +2469,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           scan(stmt, null);
         }
         // Handle possible fallthrough by adding jump to next body.
-        if (!isDefaultCase) {
+        if (!isTerminalCase) {
           extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
         }
       } else {
@@ -2478,7 +2487,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isDefaultCase) {
+      // TODO: Should this be done unconditionally?
+      // Calling `addLabelForNextNode(nextCaseLabel)` unconditionally leads to "error: bindings
+      // already contains key"
+      if (!isTerminalCase) {
+        System.out.printf("buildCase(%s, %s, %s)%n", tree, index, isLastOfExhaustive);
+        System.out.printf(
+            "  thisBodyLabel = %s%n  nextBodyLabel = %s%n", thisBodyLabel, nextBodyLabel);
+        System.out.printf(
+            "  isTerminalCase = %s, isDefaultCase = %s, isLastOfExhaustive = %s%n",
+            isTerminalCase, isDefaultCase, isLastOfExhaustive);
+        System.out.printf("  addLabelForNextNode(%s)%n    %s%n", nextCaseLabel, tree);
+        addLabelForNextNode(nextCaseLabel);
+        System.out.printf("  buildCase successful%n");
+      } else if (!bindings.containsKey(nextCaseLabel)) {
         addLabelForNextNode(nextCaseLabel);
       }
     }
@@ -2529,6 +2551,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     boolean casesAreExhaustive() {
       TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
 
+      System.out.printf(
+          "casesAreExhaustive(): selectorExprTree = %s, selectorTypeMirror = %s [%s]%n",
+          selectorExprTree, selectorTypeMirror, selectorTypeMirror.getKind());
       switch (selectorTypeMirror.getKind()) {
         case BOOLEAN:
           // TODO
@@ -2547,7 +2572,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               }
             }
             // Could also check that the values match.
-            return enumConstants.size() == caseLabels.size();
+            boolean result = enumConstants.size() == caseLabels.size();
+            System.out.printf(
+                "casesAreExhaustive => %s%n  [%d] %s%n  [%d] %s%n",
+                result, enumConstants.size(), enumConstants, caseLabels.size(), caseLabels);
+            return result;
           }
           break;
         default:

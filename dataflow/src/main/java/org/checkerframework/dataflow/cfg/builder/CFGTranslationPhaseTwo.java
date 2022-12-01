@@ -110,7 +110,12 @@ public class CFGTranslationPhaseTwo {
                     },
                     target));
             target = bindings.get(elseLabel);
-            assert target != null;
+            if (target == null) {
+              throw new Error(
+                  String.format(
+                      "in conditional jump %s, no binding for elseLabel %s: %s",
+                      cj, elseLabel, bindings));
+            }
             missingEdges.add(
                 new MissingEdge(
                     new RegularBlockImpl() {
