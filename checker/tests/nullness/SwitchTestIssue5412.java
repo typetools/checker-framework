@@ -21,6 +21,20 @@ class SwitchTestExhaustive {
     return s;
   }
 
+  public String foo1a(MyEnum b) {
+    final var s =
+        switch (b) {
+          case VAL1 -> "1";
+          case VAL2 -> "2";
+          case VAL3 -> "3";
+            // The default case is dead code, so it would be possible for type-checking to skip it
+            // and not issue this warning.  But giving the warning is also good.
+            // :: error: (switch.expression)
+          default -> null;
+        };
+    return s;
+  }
+
   public String foo2(MyEnum b) {
     final var s =
         switch (b) {
@@ -45,14 +59,37 @@ class SwitchTestExhaustive {
     switch (b) {
       case VAL1:
         return "a";
+        break;
       case VAL2:
         return "b";
+        break;
       case VAL3:
         return "c";
+        break;
       default:
         System.out.println(aString.hashCode());
         throw new Error();
     }
+  }
+
+  public String foo4a(MyEnum b) {
+    String aString = null;
+    switch (b) {
+      case VAL1:
+        aString = "a";
+        break;
+      case VAL2:
+        aString = "b";
+        break;
+      case VAL3:
+        aString = "c";
+        break;
+        // The `default:` case is dead code, so it would be acceptable for this method to compile
+        // without nullness errors.
+      default:
+        break;
+    }
+    return aString;
   }
 
   // TODO: test fallthrough to the default: case.
