@@ -1,4 +1,4 @@
-Version 3.27.1 (December1, 2022)
+Version 3.28.1 (January 3, 2022)
 ---------------------------------
 
 **User-visible changes:**
@@ -6,6 +6,24 @@ Version 3.27.1 (December1, 2022)
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.28.0 (December 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 19 -- that is, it runs on a version 19 JVM.
+
+**Implementation details:**
+
+Renamed `TryFinallyScopeCell` to `LabelCell`.
+
+Renamed `TreeUtils.isEnumSuper` to `isEnumSuperCall`.
+
+**Closed issues:**
+
+#5390, #5399, #5390.
 
 
 Version 3.27.0 (November 1, 2022)

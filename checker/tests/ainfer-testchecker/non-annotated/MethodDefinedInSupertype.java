@@ -1,23 +1,23 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 abstract class MethodDefinedInSupertype {
 
   void test() {
     // :: warning: argument
-    expectsSibling1(shouldReturnSibling1());
+    expectsAinferSibling1(shouldReturnAinferSibling1());
   }
 
-  public void expectsSibling1(@Sibling1 int t) {}
+  public void expectsAinferSibling1(@AinferSibling1 int t) {}
 
-  public abstract int shouldReturnSibling1();
+  public abstract int shouldReturnAinferSibling1();
 
   void testMultipleOverrides() {
     // :: warning: argument
     expectsParent(shouldReturnParent());
   }
 
-  public void expectsParent(@Parent int t1) {}
+  public void expectsParent(@AinferParent int t1) {}
 
   public abstract int shouldReturnParent();
 }

@@ -28,6 +28,8 @@ ext {
     // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
+    // As of 2022-11-30, delombok crashes under JDK 19.
+    skipDelombok = JavaVersion.current() == JavaVersion.VERSION_19
 
     // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
     // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
@@ -58,10 +60,10 @@ switch (JavaVersion.current()) {
     case JavaVersion.VERSION_1_8:
     case JavaVersion.VERSION_11:
     case JavaVersion.VERSION_17:
-    case JavaVersion.VERSION_18:
+    case JavaVersion.VERSION_19:
         break; // Supported versions
     default:
-        logger.info("The Checker Framework has only been tested with JDK 8, 11, 17, and 18." +
+        logger.info("The Checker Framework has only been tested with JDK 8, 11, 17, and 19." +
                 " You are using JDK " + JavaVersion.current().majorVersion + ".");
         break;
 }
@@ -124,7 +126,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.27.1-SNAPSHOT'
+    version '3.28.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
@@ -245,14 +247,14 @@ allprojects {
               if (isJava8) {
                 options.links = ['https://docs.oracle.com/javase/8/docs/api/', 'https://docs.oracle.com/javase/9/docs/api/']
               }
-                // This file is looked for by Javadoc.
-                file("${destinationDir}/resources/fonts/").mkdirs()
-                ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
-                options.addStringOption('source', '8')
-                // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
-                // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
-                // options.addBooleanOption('Xwerror', true)
-                options.addStringOption('Xmaxwarns', '99999')
+              // This file is looked for by Javadoc.
+              file("${destinationDir}/resources/fonts/").mkdirs()
+              ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
+              options.addStringOption('source', '8')
+              // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
+              // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
+              // options.addBooleanOption('Xwerror', true)
+              options.addStringOption('Xmaxwarns', '99999')
             }
         }
 
@@ -263,13 +265,16 @@ allprojects {
             // Uncomment when needed.
             // // Put source files in deterministic order, for debugging.
             // compilationTask.source = compilationTask.source.sort()
+
+            // Don't try to use `options.release.set(8)` here.
+            // Because CI compiles under JDK 8, we know no Java 9+ features are used.
             sourceCompatibility = 8
             targetCompatibility = 8
             // Because the target is 8, all of the public compiler classes are accessible, so
-            // --add-exports are not required, (nor are they allowed with target 8). See
+            // --add-exports are not required (nor are they allowed with target 8). See
             // https://openjdk.org/jeps/247 for details on compiling for older versions.
 
-            // When sourceCompatibilty is changed to 11, then the following will be required.
+            // When sourceCompatibility or release is changed to 11, then the following will be required.
             // options.compilerArgs += [
             // "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
             // "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
@@ -451,7 +456,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
         } else {
             options.fork = true
             options.forkOptions.jvmArgs += compilerArgsForRunningCF
-       }
+        }
     }
 }
 
@@ -479,16 +484,18 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
     description = 'Generates API documentation that includes all the modules.'
     dependsOn(':checker:shadowJar', 'getPlumeScripts', 'getHtmlTools')
     destinationDir = file("${rootDir}/docs/api")
+  source(
+      project(':checker-util').sourceSets.main.allJava,
+      project(':checker-qual').sourceSets.main.allJava,
+      project(':checker').sourceSets.main.allJava,
+      project(':framework').sourceSets.main.allJava,
+      project(':dataflow').sourceSets.main.allJava,
+      project(':javacutil').sourceSets.main.allJava,
+      project(':framework-test').sourceSets.main.allJava,
+  )
 
     doFirst {
       source(
-        project(':checker-util').sourceSets.main.allJava,
-        project(':checker-qual').sourceSets.main.allJava,
-        project(':checker').sourceSets.main.allJava,
-        project(':framework').sourceSets.main.allJava,
-        project(':dataflow').sourceSets.main.allJava,
-        project(':javacutil').sourceSets.main.allJava,
-        project(':framework-test').sourceSets.main.allJava,
         project(':framework-test').sourceSets."${isJava8 ? 'tagletJdk8' : 'taglet'}".allJava
       )
     }

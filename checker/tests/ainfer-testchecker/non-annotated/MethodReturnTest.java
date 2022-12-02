@@ -1,29 +1,29 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 
 public class MethodReturnTest {
 
-  static int getSibling1NotAnnotated() {
-    return (@Sibling1 int) 0;
+  static int getAinferSibling1NotAnnotated() {
+    return (@AinferSibling1 int) 0;
   }
 
-  static @Sibling1 int getSibling1() {
+  static @AinferSibling1 int getAinferSibling1() {
     // :: warning: (return)
-    return getSibling1NotAnnotated();
+    return getAinferSibling1NotAnnotated();
   }
 
   public static boolean bool = false;
 
   public static int lubTest() {
     if (bool) {
-      return (@Sibling1 int) 0;
+      return (@AinferSibling1 int) 0;
     } else {
-      return (@Sibling2 int) 0;
+      return (@AinferSibling2 int) 0;
     }
   }
 
-  public static @Parent int getParent() {
+  public static @AinferParent int getParent() {
     int x = lubTest();
     // :: warning: (return)
     return x;
@@ -37,16 +37,16 @@ public class MethodReturnTest {
       return getParent();
     }
 
-    void receivesSibling1(int i) {
+    void receivesAinferSibling1(int i) {
       // :: warning: (argument)
-      expectsSibling1(i);
+      expectsAinferSibling1(i);
     }
 
-    void expectsSibling1(@Sibling1 int i) {}
+    void expectsAinferSibling1(@AinferSibling1 int i) {}
 
     void test() {
-      @Sibling1 int sib = (@Sibling1 int) 0;
-      receivesSibling1(sib);
+      @AinferSibling1 int sib = (@AinferSibling1 int) 0;
+      receivesAinferSibling1(sib);
     }
   }
 }

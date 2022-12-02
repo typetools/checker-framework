@@ -287,7 +287,9 @@ task allNullnessTests(type: Test, group: 'Verification') {
 task allCalledMethodsTests(type: Test, group: 'Verification') {
     description 'Run all Junit tests for the Called Methods Checker.'
     include '**/CalledMethods*.class'
-    dependsOn 'delombok'
+    if (!skipDelombok) {
+        dependsOn 'delombok'
+    }
 }
 
 // These are tests that should only be run with JDK 11+.
@@ -354,14 +356,21 @@ task delombok {
     dependsOn project(':checker-qual').tasks.jar
 
     doLast {
+      // As of 2022-11-30, delombok crashes under JDK 19.
+      if(!skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
-                classpath: collection.asPath)
+            classpath: collection.asPath)
         ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+      }
     }
 }
 
-tasks.test.dependsOn("delombok")
+if (skipDelombok) {
+    delombok.enabled = false
+} else {
+    tasks.test.dependsOn("delombok")
+}
 
 ///
 /// Whole-program inference tests

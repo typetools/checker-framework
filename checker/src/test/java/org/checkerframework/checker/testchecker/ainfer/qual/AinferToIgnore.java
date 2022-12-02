@@ -5,7 +5,7 @@ import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 /**
  * Toy type system for testing field inference.
  *
- * @see Sibling1, Sibling2, Parent
+ * @see AinferSibling1, AinferSibling2, AinferParent
  */
 @IgnoreInWholeProgramInference
-public @interface ToIgnore {}
+public @interface AinferToIgnore {}
