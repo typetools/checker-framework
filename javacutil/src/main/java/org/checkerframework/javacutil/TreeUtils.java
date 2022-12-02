@@ -76,6 +76,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -115,7 +116,7 @@ public final class TreeUtils {
   /** The {@code CaseTree.getKind()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetCaseKind = null;
   /** The {@code CaseTree.CaseKind.RULE} enum value. Null on JDK 11 and lower. */
-  private static @Nullable Enum<?> caseKindRule = null;
+  private static @Nullable @Interned Enum<?> caseKindRule = null;
   /** The {@code CaseTree.getExpressions()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetExpressions = null;
   /** The {@code CaseTree.getBody()} method. Null on JDK 11 and lower. */
@@ -137,7 +138,7 @@ public final class TreeUtils {
         caseGetCaseKind = CaseTree.class.getDeclaredMethod("getCaseKind");
         for (Class<?> nested : CaseTree.class.getDeclaredClasses()) {
           if (nested.isEnum() && nested.getSimpleName().equals("CaseKind")) {
-            for (Object enumConstant : nested.getEnumConstants()) {
+            for (@Interned Object enumConstant : nested.getEnumConstants()) {
               if (enumConstant.toString().equals("RULE")) {
                 caseKindRule = (Enum<?>) enumConstant;
                 break;
@@ -2059,8 +2060,8 @@ public final class TreeUtils {
     }
     // Code for JDK 12 and later.
     try {
-      @SuppressWarnings({"unchecked", "nullness"}) // reflective call
-      @NonNull Enum<?> caseKind = (Enum<?>) caseGetCaseKind.invoke(caseTree);
+      @SuppressWarnings({"unchecked", "nullness", "interning:cast.unsafe"}) // reflective call
+      @NonNull @Interned Enum<?> caseKind = (@Interned Enum<?>) caseGetCaseKind.invoke(caseTree);
       return caseKind == caseKindRule;
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       throw new BugInCF("cannot find and/or call method CaseTree.getKind()", e);
