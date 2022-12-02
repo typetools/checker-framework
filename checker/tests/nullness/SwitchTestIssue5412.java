@@ -59,13 +59,10 @@ class SwitchTestExhaustive {
     switch (b) {
       case VAL1:
         return "a";
-        break;
       case VAL2:
         return "b";
-        break;
       case VAL3:
         return "c";
-        break;
       default:
         System.out.println(aString.hashCode());
         throw new Error();
