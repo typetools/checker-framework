@@ -115,7 +115,7 @@ public final class TreeUtils {
   /** The {@code CaseTree.getKind()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetCaseKind = null;
   /** The {@code CaseTree.CaseKind.RULE} enum value. Null on JDK 11 and lower. */
-  private static @Nullable Object caseKindRule = null;
+  private static @Nullable Enum<?> caseKindRule = null;
   /** The {@code CaseTree.getExpressions()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetExpressions = null;
   /** The {@code CaseTree.getBody()} method. Null on JDK 11 and lower. */
@@ -139,7 +139,7 @@ public final class TreeUtils {
           if (nested.isEnum() && nested.getSimpleName().equals("CaseKind")) {
             for (Object enumConstant : nested.getEnumConstants()) {
               if (enumConstant.toString().equals("RULE")) {
-                caseKindRule = enumConstant;
+                caseKindRule = (Enum<?>) enumConstant;
                 break;
               }
             }
@@ -2060,7 +2060,7 @@ public final class TreeUtils {
     // Code for JDK 12 and later.
     try {
       @SuppressWarnings({"unchecked", "nullness"}) // reflective call
-      @NonNull Object caseKind = caseGetCaseKind.invoke(caseTree);
+      @NonNull Enum<?> caseKind = (Enum<?>) caseGetCaseKind.invoke(caseTree);
       return caseKind == caseKindRule;
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       throw new BugInCF("cannot find and/or call method CaseTree.getKind()", e);
