@@ -2461,7 +2461,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       // Handle the case expressions
       if (!isTerminalCase) {
-        // a case expression exists, and it needs to be tested.
+        // A case expression exists, and it needs to be tested.
         ArrayList<Node> exprs = new ArrayList<>();
         for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
