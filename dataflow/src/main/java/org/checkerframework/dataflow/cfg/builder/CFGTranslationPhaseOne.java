@@ -2230,7 +2230,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
-  // This visits a switch statement, not a switch expression.
+  // This visits a switch statement.
+  // Switch expressions are visited by visitSwitchExpression17.
   @Override
   public Node visitSwitch(SwitchTree tree, Void p) {
     SwitchBuilder builder = new SwitchBuilder(tree);
@@ -2332,14 +2333,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
+          // Per the Java Language Specification, the checks of all cases must happen before the
+          // default case, no matter where `default:` is written.  Therefore, build the default
+          // case last.
           defaultIndex = i;
         } else {
           buildCase(caseTree, i);
         }
       }
       if (defaultIndex != -1) {
-        // The checks of all cases must happen before the default case, therefore we build the
-        // default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
         buildCase(caseTrees.get(defaultIndex), defaultIndex);
       }
@@ -2442,15 +2444,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
-      // // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
-      // // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
+      // // exceptionalExitLabel isn't right here.  The flow is infeasible rather than
+      // // exceptional.  But a ConditionalJump is desirable, to permit flow-sensitive
       // // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This
       // // requires a new type of SpecialBlock in the CFG: InfeasibleExitBlock.
       // final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
-      // Using thisBodyLabel lacks flow-sensitive type refinement.
+      // Using thisBodyLabel prevents flow-sensitive type refinement.
       final Label nextCaseLabel = isTerminalCase ? thisBodyLabel : new Label();
-
-      final Label nextCaseLabel = new Label();
 
       // Handle the case expressions
       if (!isDefaultCase) {
@@ -2493,9 +2493,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       // Reinstate the `if` when an InfeasibleExitBlock exists.
-      // if (!isTerminalCase) {
-      addLabelForNextNode(nextCaseLabel);
-      // }
+      if (!isTerminalCase) {
+        addLabelForNextNode(nextCaseLabel);
+      }
     }
 
     /**
