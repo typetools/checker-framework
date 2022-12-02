@@ -2342,7 +2342,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
           // This can be extended to handle case statements as well as case rules.
-          boolean noFallthroughToHere = caseTree.getCaseKind() == CaseTree.CaseKind.RULE;
+          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
           boolean isLastOfExhaustive =
               isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
           buildCase(caseTree, i, isLastOfExhaustive);

@@ -112,6 +112,10 @@ public final class TreeUtils {
 
   // These variables cannot be final because they might be overwritten in the static block
   // immediately below.
+  /** The {@code CaseTree.getKind()} method. Null on JDK 11 and lower. */
+  private static @Nullable Method caseGetKind = null;
+  /** The {@code CaseTree.CaseKind.RULE} enum value. Null on JDK 11 and lower. */
+  private static @Nullable Object caseKindRule = null;
   /** The {@code CaseTree.getExpressions()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetExpressions = null;
   /** The {@code CaseTree.getBody()} method. Null on JDK 11 and lower. */
@@ -130,6 +134,20 @@ public final class TreeUtils {
   static {
     if (SystemUtil.jreVersion >= 12) {
       try {
+        caseGetKind = CaseTree.class.getDeclaredMethod("getKind");
+        Object caseKindRuleTmp = null;
+        for (Class<?> nested : CaseTree.class.getDeclaredClasses()) {
+          if (nested.isEnum() && nested.getSimpleName().equals("CaseKind")) {
+            for (Object enumConstant : nested.getEnumConstants()) {
+              if (enumConstant.toString().equals("RULE")) {
+                caseKindRuleTmp = enumConstant;
+                break;
+              }
+            }
+          }
+        }
+        caseKindRule = caseKindRuleTmp;
+        assert caseKindRuleTmp != null;
         caseGetExpressions = CaseTree.class.getDeclaredMethod("getExpressions");
         caseGetBody = CaseTree.class.getDeclaredMethod("getBody");
         Class<?> bindingPatternClass = Class.forName("com.sun.source.tree.BindingPatternTree");
@@ -2029,6 +2047,27 @@ public final class TreeUtils {
    */
   public static boolean isDefaultCaseTree(CaseTree caseTree) {
     return caseTreeGetExpressions(caseTree).isEmpty();
+  }
+
+  /**
+   * Returns true if this is a case rule (as opposed to a case statement).
+   *
+   * @param caseTree a case tree
+   * @return true if {@code caseTree} is a case rule
+   */
+  public static boolean isCaseRule(CaseTree caseTree) {
+    if (SystemUtil.jreVersion < 12) {
+      return false;
+    }
+    // Code for JDK 12 and later.
+    try {
+      @SuppressWarnings({"unchecked", "nullness"}) // reflective call
+      @NonNull List<? extends ExpressionTree> result =
+          (List<? extends ExpressionTree>) caseGetKind.invoke(caseTree);
+      return result == caseKindRule;
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      throw new BugInCF("cannot find and/or call method CaseTree.getKind()", e);
+    }
   }
 
   /**
