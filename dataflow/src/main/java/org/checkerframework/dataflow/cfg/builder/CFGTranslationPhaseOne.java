@@ -2254,9 +2254,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /** The case trees of {@code switchTree} */
     private final List<? extends CaseTree> caseTrees;
 
-    /** True if the cases are exhaustive (ignoring the default case). */
-    private final boolean casesAreExhaustive;
-
     /**
      * The Tree for the selector expression.
      *
@@ -2295,7 +2292,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         this.caseTrees = TreeUtils.switchExpressionTreeGetCases(switchTree);
         this.selectorExprTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
       }
-      this.casesAreExhaustive = casesAreExhaustive();
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
       this.caseBodyLabels = new Label[caseTrees.size() + 1];
@@ -2348,15 +2344,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // This can be extended to handle case statements as well as case rules.
           boolean noFallthroughToHere = caseTree.getCaseKind() == CaseTree.CaseKind.RULE;
           boolean isLastOfExhaustive =
-              isLastExceptDefault && casesAreExhaustive && noFallthroughToHere;
+              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
-      // TODO: Maybe do all these optimizations only for switch expressions.
-
-      // TODO: I would like to ignore the default: case (because it's dead code) UNLESS there is
-      // fallthrough to it, which can only happen with "case L:" and never with "case L ->".
-      // Type-checking the `default:` case when it's dead code leads to spurious errors.
 
       if (defaultIndex != -1) {
         // Fallthrough is still handled correctly with the caseBodyLabels.
@@ -2467,12 +2458,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       final Label nextBodyLabel = caseBodyLabels[index + 1];
       // `nextCaseLabel` is not used if isTerminalCase==FALSE.
       final Label nextCaseLabel = new Label();
-      // // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
-      // // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
-      // // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This
-      // // requires a new type of SpecialBlock in the CFG: InfeasibleExitBlock.
-      // final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
-      // Using thisBodyLabel lacks flow-sensitive type refinement.
 
       // Handle the case expressions
       if (!isTerminalCase) {

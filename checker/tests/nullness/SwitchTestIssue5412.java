@@ -86,6 +86,29 @@ class SwitchTestExhaustive {
       default:
         break;
     }
+    // :: error (return)
+    return aString;
+  }
+
+  public String foo4b(MyEnum b) {
+    String aString;
+    switch (b) {
+      case VAL1:
+        aString = "a";
+        break;
+      case VAL2:
+        aString = "b";
+        break;
+      case VAL3:
+        aString = "c";
+        break;
+        // The `default:` case is dead code, so it would be acceptable for this method to compile
+        // without nullness errors.
+      default:
+        aString = null;
+        break;
+    }
+    // :: error (return)
     return aString;
   }
 
