@@ -137,7 +137,10 @@ public final class TreeUtils {
         caseGetCaseKind = CaseTree.class.getDeclaredMethod("getCaseKind");
         for (Class<?> nested : CaseTree.class.getDeclaredClasses()) {
           if (nested.isEnum() && nested.getSimpleName().equals("CaseKind")) {
-            @SuppressWarnings("nullness:assignment") // capture problem; fix later
+            @SuppressWarnings({
+              "nullness:assignment",
+              "mustcall:assignment"
+            }) // capture problem; fix later
             Object @NonNull [] enumConstants = nested.getEnumConstants();
             for (Object enumConstant : enumConstants) {
               if (enumConstant.toString().equals("RULE")) {
