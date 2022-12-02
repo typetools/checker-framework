@@ -81,12 +81,12 @@ class SwitchTestExhaustive {
       case VAL3:
         aString = "c";
         break;
-        // The `default:` case is dead code, so it would be acceptable for this method to compile
+        // The `default:` case is dead code, so it is acceptable for this method to compile
         // without nullness errors.
       default:
         break;
     }
-    // :: error (return)
+    // :: error: (return)
     return aString;
   }
 
@@ -102,13 +102,13 @@ class SwitchTestExhaustive {
       case VAL3:
         aString = "c";
         break;
-        // The `default:` case is dead code, so it would be acceptable for this method to compile
+        // The `default:` case is dead code, so it is acceptable for this method to compile
         // without nullness errors.
       default:
         aString = null;
         break;
     }
-    // :: error (return)
+    // :: error: (return)
     return aString;
   }
 
