@@ -2337,22 +2337,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
+          // Per the Java Language Specification, the checks of all cases must happen before the
+          // default case, no matter where `default:` is written.  Therefore, build the default
+          // case last.
           defaultIndex = i;
         } else {
           boolean isLastExceptDefault =
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
-          boolean isLastOfExhaustive = isLastExceptDefault && casesAreExhaustive;
+          // This can be extended to handle case statements as well as case rules.
+          boolean noFallthroughToHere = caseTree.getCaseKind() == CaseTree.CaseKind.RULE;
+          boolean isLastOfExhaustive =
+              isLastExceptDefault && casesAreExhaustive && noFallthroughToHere;
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
       // TODO: Maybe do all these optimizations only for switch expressions.
+
       // TODO: I would like to ignore the default: case (because it's dead code) UNLESS there is
       // fallthrough to it, which can only happen with "case L:" and never with "case L ->".
-      // Type-checking the default: case when it's dead code leads to spurious errors.
+      // Type-checking the `default:` case when it's dead code leads to spurious errors.
+
       if (defaultIndex != -1) {
-        // The checks of all cases must happen before the default case, therefore we build the
-        // default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
         buildCase(caseTrees.get(defaultIndex), defaultIndex, false);
       }
@@ -2446,25 +2452,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * @param tree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
-     * @param isLastOfExhaustive true if this is the last case of an exhaustive switch statement
+     * @param isLastOfExhaustive true if this is the last case of an exhaustive switch statement,
+     *     with no fallthrough to it. In other words, no test of the labels is necessary.
      */
     private void buildCase(CaseTree tree, int index, boolean isLastOfExhaustive) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+      // If true, no test of labels is necessary.
+      // Unfortunately, if isLastOfExhaustive==TRUE, no flow-sensitive refinement occurs within the
+      // body of the CaseNode.  In the future, that can be performed, but it requires addition of
+      // InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastOfExhaustive;
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
+      // `nextCaseLabel` is not used if isTerminalCase==FALSE.
+      final Label nextCaseLabel = new Label();
       // // exceptionalExitLabel isn't quite right here.  The flow is infeasible rather than
       // // exceptional.  But I do want a ConditionalJump, in order to permit flow-sensitive
       // // refinement.  So, replace exceptionalExitLabel by a new infeasibleExitLabel.  This
       // // requires a new type of SpecialBlock in the CFG: InfeasibleExitBlock.
       // final Label nextCaseLabel = isTerminalCase ? exceptionalExitLabel : new Label();
       // Using thisBodyLabel lacks flow-sensitive type refinement.
-      final Label nextCaseLabel = isTerminalCase ? thisBodyLabel : new Label();
 
       // Handle the case expressions
-      if (!isDefaultCase) {
-        // non-default cases: a case expression exists
+      if (!isTerminalCase) {
+        // a case expression exists, and it needs to be tested.
         ArrayList<Node> exprs = new ArrayList<>();
         for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
