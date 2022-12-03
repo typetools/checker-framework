@@ -2230,7 +2230,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
-  // This visits a switch statement, not a switch expression.
+  // This visits a switch statement.
+  // Switch expressions are visited by visitSwitchExpression17.
   @Override
   public Node visitSwitch(SwitchTree tree, Void p) {
     SwitchBuilder builder = new SwitchBuilder(tree);
@@ -2332,14 +2333,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
+          // Per the Java Language Specification, the checks of all cases must happen before the
+          // default case, no matter where `default:` is written.  Therefore, build the default
+          // case last.
           defaultIndex = i;
         } else {
           buildCase(caseTree, i);
         }
       }
       if (defaultIndex != -1) {
-        // The checks of all cases must happen before the default case, therefore we build the
-        // default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
         buildCase(caseTrees.get(defaultIndex), defaultIndex);
       }
@@ -2436,14 +2438,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree tree, int index) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+      // If true, no test of labels is necessary.
+      // In the future, other types of terminal cases will exist, when the case labels are
+      // exhaustive.
+      boolean isTerminalCase = isDefaultCase;
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
+      // `nextCaseLabel` is not used if isTerminalCase==FALSE.
       final Label nextCaseLabel = new Label();
 
       // Handle the case expressions
-      if (!isDefaultCase) {
-        // non-default cases: a case expression exists
+      if (!isTerminalCase) {
+        // A case expression exists, and it needs to be tested.
         ArrayList<Node> exprs = new ArrayList<>();
         for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
@@ -2463,7 +2470,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           scan(stmt, null);
         }
         // Handle possible fallthrough by adding jump to next body.
-        if (!isDefaultCase) {
+        if (!isTerminalCase) {
           extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
         }
       } else {
@@ -2481,7 +2488,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isDefaultCase) {
+      if (!isTerminalCase) {
         addLabelForNextNode(nextCaseLabel);
       }
     }
