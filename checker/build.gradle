@@ -964,8 +964,9 @@ task wpiManyTest(group: "Verification") {
                         // Ignore the warnings about --add-opens arguments to the JVM
                         || line.contains("warning: [options] --add-opens has no effect at compile time")
                         // Ignore the summary line that reports the total number of warnings (which can be single or plural).
-                        || line.endsWith("warning")
-                        || line.endsWith("warnings")) {
+                        || line.endsWith(" warning")
+                        || line.endsWith(" warnings")
+                        || line.startsWith("warning: No processor claimed any of these annotations: ")) {
                   return;
                 }
                 if (!line.trim().equals("")) {
