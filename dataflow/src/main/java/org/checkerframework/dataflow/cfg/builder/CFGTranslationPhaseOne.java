@@ -2338,12 +2338,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // case last.
           defaultIndex = i;
         } else {
-          buildCase(caseTree, i);
+          boolean isLastExceptDefault =
+              i == numCases - 1
+                  || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
+          // This can be extended to handle case statements as well as case rules.
+          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
+          boolean isLastOfExhaustive =
+              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
+          buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
+
       if (defaultIndex != -1) {
         // Fallthrough is still handled correctly with the caseBodyLabels.
-        buildCase(caseTrees.get(defaultIndex), defaultIndex);
+        buildCase(caseTrees.get(defaultIndex), defaultIndex, false);
       }
 
       addLabelForNextNode(breakTargetLC.peekLabel());
@@ -2435,13 +2443,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * @param tree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
+     * @param isLastOfExhaustive true if this is the last case of an exhaustive switch statement,
+     *     with no fallthrough to it. In other words, no test of the labels is necessary.
      */
-    private void buildCase(CaseTree tree, int index) {
+    private void buildCase(CaseTree tree, int index, boolean isLastOfExhaustive) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
       // If true, no test of labels is necessary.
-      // In the future, other types of terminal cases will exist, when the case labels are
-      // exhaustive.
-      boolean isTerminalCase = isDefaultCase;
+      // Unfortunately, if isLastOfExhaustive==TRUE, no flow-sensitive refinement occurs within the
+      // body of the CaseNode.  In the future, that can be performed, but it requires addition of
+      // InfeasibleExitBlock, a new SpecialBlock in the CFG.
+      boolean isTerminalCase = isDefaultCase || isLastOfExhaustive;
 
       final Label thisBodyLabel = caseBodyLabels[index];
       final Label nextBodyLabel = caseBodyLabels[index + 1];
@@ -2528,6 +2539,43 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Switch rules never fall through so add jump to the break target.
       assert breakTargetLC != null : "no target for case statement";
       extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
+    }
+
+    /**
+     * Returns true if the cases are exhaustive -- exactly one is executed. There might or might not
+     * be a `default` case label; if there is, it is never used.
+     *
+     * @return true if the cases are exhaustive
+     */
+    boolean casesAreExhaustive() {
+      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
+
+      switch (selectorTypeMirror.getKind()) {
+        case BOOLEAN:
+          // TODO
+          break;
+        case DECLARED:
+          DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
+          TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
+          if (declaredTypeElement.getKind() == ElementKind.ENUM) {
+            // It's an enumerated type.
+            List<VariableElement> enumConstants =
+                ElementUtils.getEnumConstants(declaredTypeElement);
+            List<Name> caseLabels = new ArrayList<>(enumConstants.size());
+            for (CaseTree caseTree : caseTrees) {
+              for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
+                caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
+              }
+            }
+            // Could also check that the values match.
+            boolean result = enumConstants.size() == caseLabels.size();
+            return result;
+          }
+          break;
+        default:
+          break;
+      }
+      return false;
     }
   }
 
