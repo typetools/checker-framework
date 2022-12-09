@@ -122,7 +122,7 @@ public class Variable {
   @Override
   public int hashCode() {
     int result = typeVariableJava.toString().hashCode();
-    result = 31 * result + Kind.VARIABLE.hashCode();
+    result = 31 * result + Kind.USE_OF_VARIABLE.hashCode();
     result = 31 * result + invocation.hashCode();
     return result;
   }

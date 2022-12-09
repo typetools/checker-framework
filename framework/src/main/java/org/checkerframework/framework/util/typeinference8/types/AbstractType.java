@@ -51,8 +51,8 @@ public abstract class AbstractType {
   public enum Kind {
     /** {@link ProperType},a type that contains no inference variables* */
     PROPER,
-    /** {@link Variable}, an inference variable. */
-    VARIABLE,
+    /** {@link UseOfVariable}, a use of an inference variable. */
+    USE_OF_VARIABLE,
     /**
      * {@link InferenceType}, a type that contains inference variables, but is not an inference
      * variable.
@@ -85,12 +85,12 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is an inference variable.
+   * Return true if this type is a use of an inference variable.
    *
-   * @return true if this type is an inference variable
+   * @return true if this type is a use of an inference variable
    */
-  public boolean isVariable() {
-    return getKind() == Kind.VARIABLE;
+  public boolean isUseOfVariable() {
+    return getKind() == Kind.USE_OF_VARIABLE;
   }
 
   /**

@@ -131,7 +131,7 @@ public class VariableBounds {
 
   /** Adds {@code otherType} as bound against this variable. */
   public boolean addBound(BoundKind kind, AbstractType otherType) {
-    if (otherType.isVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
+    if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
@@ -250,7 +250,7 @@ public class VariableBounds {
   public void addConstraintsFromComplementaryBounds(BoundKind kind, Set<AnnotationMirror> s) {
     // Copy bound to equal variables
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-      if (t.isVariable()) {
+      if (t.isUseOfVariable()) {
         VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
         otherBounds.qualifierBounds.get(kind).add(s);
       }
@@ -258,7 +258,7 @@ public class VariableBounds {
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (AbstractType t : bounds.get(BoundKind.LOWER)) {
-        if (t.isVariable()) {
+        if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
           otherBounds.qualifierBounds.get(BoundKind.UPPER).add(s);
         }
@@ -267,7 +267,7 @@ public class VariableBounds {
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (AbstractType t : bounds.get(BoundKind.UPPER)) {
-        if (t.isVariable()) {
+        if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
           otherBounds.qualifierBounds.get(BoundKind.LOWER).add(s);
         }
@@ -347,7 +347,7 @@ public class VariableBounds {
   public LinkedHashSet<AbstractType> upperBounds() {
     LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
     for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
-      if (!bound.isVariable()) {
+      if (!bound.isUseOfVariable()) {
         set.add(bound);
       }
     }
@@ -439,12 +439,12 @@ public class VariableBounds {
    */
   public boolean hasWildcardParameterizedLowerOrEqualBound() {
     for (AbstractType type : bounds.get(BoundKind.EQUAL)) {
-      if (!type.isVariable() && type.isWildcardParameterizedType()) {
+      if (!type.isUseOfVariable() && type.isWildcardParameterizedType()) {
         return true;
       }
     }
     for (AbstractType type : bounds.get(BoundKind.LOWER)) {
-      if (!type.isVariable() && type.isWildcardParameterizedType()) {
+      if (!type.isUseOfVariable() && type.isWildcardParameterizedType()) {
         return true;
       }
     }
@@ -459,7 +459,7 @@ public class VariableBounds {
   public boolean hasLowerBoundDifferentParam() {
     List<AbstractType> parameteredTypes = new ArrayList<>();
     for (AbstractType type : bounds.get(BoundKind.LOWER)) {
-      if (!type.isVariable() && type.isParameterizedType()) {
+      if (!type.isUseOfVariable() && type.isParameterizedType()) {
         parameteredTypes.add(type);
       }
     }
@@ -490,7 +490,7 @@ public class VariableBounds {
    */
   public boolean hasRawTypeLowerOrEqualBound(AbstractType g) {
     for (AbstractType type : bounds.get(BoundKind.LOWER)) {
-      if (type.isVariable()) {
+      if (type.isUseOfVariable()) {
         continue;
       }
       AbstractType superTypeOfS = type.asSuper(g.getJavaType());
@@ -500,7 +500,7 @@ public class VariableBounds {
     }
 
     for (AbstractType type : bounds.get(BoundKind.EQUAL)) {
-      if (type.isVariable()) {
+      if (type.isUseOfVariable()) {
         continue;
       }
       AbstractType superTypeOfS = type.asSuper(g.getJavaType());

@@ -128,7 +128,7 @@ public class Typing extends TypeConstraint {
       }
       return isSubtype;
     } else if (S.getTypeKind() == TypeKind.NULL) {
-      if (T.isVariable()) {
+      if (T.isUseOfVariable()) {
         ((UseOfVariable) T)
             .addQualifierBound(BoundKind.LOWER, S.getAnnotatedType().getAnnotations());
         return ConstraintSet.TRUE;
@@ -141,15 +141,15 @@ public class Typing extends TypeConstraint {
       return ConstraintSet.FALSE;
     }
 
-    if (S.isVariable() || T.isVariable()) {
-      if (S.isVariable()) {
+    if (S.isUseOfVariable() || T.isUseOfVariable()) {
+      if (S.isUseOfVariable()) {
         if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
           ((UseOfVariable) S).addBound(VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
         } else {
           ((UseOfVariable) S).addBound(VariableBounds.BoundKind.UPPER, T);
         }
       }
-      if (T.isVariable()) {
+      if (T.isUseOfVariable()) {
         if (TypesUtils.isCapturedTypeVariable(S.getJavaType())) {
           ((UseOfVariable) T).addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
         }
@@ -304,7 +304,7 @@ public class Typing extends TypeConstraint {
       return new Typing(((ProperType) S).boxType(), T, Kind.TYPE_COMPATIBILITY);
     } else if (T.isProper() && T.getTypeKind().isPrimitive()) {
       return new Typing(S, ((ProperType) T).boxType(), Kind.TYPE_EQUALITY);
-    } else if (T.isParameterizedType() && !S.isVariable()) {
+    } else if (T.isParameterizedType() && !S.isUseOfVariable()) {
       // Otherwise, if T is a parameterized type of the form G<T1, ..., Tn>,
       // and there exists no type of the form G<...> that is a supertype of S,
       // but the raw type G is a supertype of S, then the constraint reduces to true.
@@ -346,11 +346,11 @@ public class Typing extends TypeConstraint {
       }
     }
 
-    if (S.isVariable() || T.isVariable()) {
-      if (S.isVariable()) {
+    if (S.isUseOfVariable() || T.isUseOfVariable()) {
+      if (S.isUseOfVariable()) {
         ((UseOfVariable) S).addBound(VariableBounds.BoundKind.EQUAL, T);
       }
-      if (T.isVariable()) {
+      if (T.isUseOfVariable()) {
         ((UseOfVariable) T).addBound(VariableBounds.BoundKind.EQUAL, S);
       }
       return ConstraintSet.TRUE;

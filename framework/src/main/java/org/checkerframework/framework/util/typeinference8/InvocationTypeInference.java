@@ -235,7 +235,7 @@ public class InvocationTypeInference {
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
     // set, B1.
     for (AbstractType thrownType : methodType.getThrownTypes(map)) {
-      if (thrownType.isVariable()) {
+      if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
     }
@@ -248,7 +248,7 @@ public class InvocationTypeInference {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
 
-      if (!notPertinentToApplicability(ei, fi.isVariable())) {
+      if (!notPertinentToApplicability(ei, fi.isUseOfVariable())) {
         c.add(new Expression(ei, fi));
       }
     }
@@ -272,7 +272,7 @@ public class InvocationTypeInference {
     // alphai is implied. These bounds, if any, are incorporated with B0 to produce a new bound
     // set, B1.
     for (AbstractType thrownType : methodType.getThrownTypes(map)) {
-      if (thrownType.isVariable()) {
+      if (thrownType.isUseOfVariable()) {
         ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
     }
@@ -334,7 +334,7 @@ public class InvocationTypeInference {
       BoundSet b = capture.incorporate(target, context);
       b2.incorporateToFixedPoint(b);
       return b2;
-    } else if (r.isVariable()) {
+    } else if (r.isUseOfVariable()) {
       Variable alpha = ((UseOfVariable) r).getVariable();
       // Should a type compatibility constraint be added?
       boolean compatibility = false;
@@ -406,7 +406,7 @@ public class InvocationTypeInference {
     for (int i = 0; i < formals.size(); i++) {
       ExpressionTree ei = args.get(i);
       AbstractType fi = formals.get(i);
-      if (notPertinentToApplicability(ei, fi.isVariable())) {
+      if (notPertinentToApplicability(ei, fi.isUseOfVariable())) {
         c.add(new Expression(ei, fi));
       }
       c.addAll(createAdditionalArgConstraints(ei, fi, map));

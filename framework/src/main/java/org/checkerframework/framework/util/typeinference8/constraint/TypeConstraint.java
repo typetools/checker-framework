@@ -83,7 +83,7 @@ public abstract class TypeConstraint implements Constraint {
 
     switch (tree.getKind()) {
       case LAMBDA_EXPRESSION:
-        if (T.isVariable()) {
+        if (T.isUseOfVariable()) {
           return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else {
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
@@ -109,7 +109,7 @@ public abstract class TypeConstraint implements Constraint {
           return inputs;
         }
       case MEMBER_REFERENCE:
-        if (T.isVariable()) {
+        if (T.isUseOfVariable()) {
           return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) tree)) {
           return Collections.emptyList();

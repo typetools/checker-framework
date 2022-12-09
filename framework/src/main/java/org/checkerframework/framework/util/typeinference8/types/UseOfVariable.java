@@ -59,7 +59,7 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public Kind getKind() {
-    return Kind.VARIABLE;
+    return Kind.USE_OF_VARIABLE;
   }
 
   @Override
@@ -70,7 +70,7 @@ public class UseOfVariable extends AbstractType {
   @Override
   public AbstractType applyInstantiations(List<Variable> instantiations) {
     for (Variable inst : instantiations) {
-      if (inst.equals(this)) {
+      if (inst.equals(this.variable)) {
         return inst.getBounds().getInstantiation();
       }
     }
