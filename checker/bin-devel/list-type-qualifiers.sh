@@ -27,7 +27,7 @@ find \
      framework/src/main/java \
      framework/src/test/java \
      -name '*.java' -print0 \
-    | xargs -0 grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' \
+    | xargs -0 grep --recursive --files-with-matches -e '^@Target\b.*' \
     | sed 's/\.java$//' | sed 's/.*\/java\///' | sed 's/.*\/units-extension\///' \
     | awk '{print $1} END {print "NotNull.java"; print "UbTop.java"; print "LbTop.java"; print "UB_TOP.java"; print "LB_TOP.java";}' \
     | sed 's/\.java$//' | sed 's/\//./g' | sort | uniq \
