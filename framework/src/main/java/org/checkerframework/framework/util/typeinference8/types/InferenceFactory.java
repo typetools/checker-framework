@@ -866,7 +866,7 @@ public class InferenceFactory {
     ConstraintSet constraintSet = new ConstraintSet();
     ExecutableElement ele = TreeUtils.findFunction(expression, context.env);
     // The types in the function type's throws clause that are not proper types.
-    List<Variable> es = new ArrayList<>();
+    List<UseOfVariable> es = new ArrayList<>();
     List<ProperType> properTypes = new ArrayList<>();
 
     AnnotatedExecutableType functionType =
@@ -878,7 +878,7 @@ public class InferenceFactory {
       if (ei.isProper()) {
         properTypes.add((ProperType) ei);
       } else {
-        es.add((Variable) ei);
+        es.add((UseOfVariable) ei);
       }
     }
     if (es.isEmpty()) {
@@ -910,11 +910,11 @@ public class InferenceFactory {
         }
       }
       if (!isSubtypeOfProper) {
-        for (Variable ei : es) {
+        for (UseOfVariable ei : es) {
           constraintSet.add(
               new Typing(
                   new ProperType(iter2.next(), xi, context), ei, TypeConstraint.Kind.SUBTYPE));
-          ei.getBounds().setHasThrowsBound(true);
+          ei.setHasThrowsBound(true);
         }
       }
     }

@@ -1,21 +1,19 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kind;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
 /** An inference variable. */
-public class Variable extends AbstractType {
+public class Variable {
 
   /** Bounds of this variable. */
   protected final VariableBounds variableBounds;
@@ -37,6 +35,8 @@ public class Variable extends AbstractType {
 
   protected final Theta map;
 
+  protected final Java8InferenceContext context;
+
   Variable(
       AnnotatedTypeVariable typeVariable,
       TypeVariable typeVariableJava,
@@ -53,7 +53,7 @@ public class Variable extends AbstractType {
       Java8InferenceContext context,
       Theta map,
       int id) {
-    super(context);
+    this.context = context;
     assert typeVariable != null;
     this.variableBounds = new VariableBounds(this, context);
     this.typeVariableJava = typeVariableJava;
@@ -101,41 +101,6 @@ public class Variable extends AbstractType {
     }
   }
 
-  @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type) {
-    return InferenceType.create(atm, type, map, context);
-  }
-
-  @Override
-  public boolean isObject() {
-    return false;
-  }
-
-  @Override
-  public List<ProperType> getTypeParameterBounds() {
-    return null;
-  }
-
-  @Override
-  public Variable capture(Java8InferenceContext context) {
-    return this;
-  }
-
-  @Override
-  public Variable getErased() {
-    return this;
-  }
-
-  @Override
-  public TypeVariable getJavaType() {
-    return typeVariableJava;
-  }
-
-  @Override
-  public AnnotatedTypeVariable getAnnotatedType() {
-    return typeVariable;
-  }
-
   public ExpressionTree getInvocation() {
     return invocation;
   }
@@ -160,26 +125,6 @@ public class Variable extends AbstractType {
     result = 31 * result + Kind.VARIABLE.hashCode();
     result = 31 * result + invocation.hashCode();
     return result;
-  }
-
-  @Override
-  public Kind getKind() {
-    return Kind.VARIABLE;
-  }
-
-  @Override
-  public Collection<Variable> getInferenceVariables() {
-    return Collections.singleton(this);
-  }
-
-  @Override
-  public AbstractType applyInstantiations(List<Variable> instantiations) {
-    for (Variable inst : instantiations) {
-      if (inst.equals(this)) {
-        return inst.getBounds().getInstantiation();
-      }
-    }
-    return this;
   }
 
   @Override
@@ -214,5 +159,9 @@ public class Variable extends AbstractType {
    */
   public boolean isCaptureVariable() {
     return false;
+  }
+
+  public TypeVariable getJavaType() {
+    return typeVariableJava;
   }
 }

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -83,7 +84,7 @@ public abstract class TypeConstraint implements Constraint {
     switch (tree.getKind()) {
       case LAMBDA_EXPRESSION:
         if (T.isVariable()) {
-          return Collections.singletonList((Variable) T);
+          return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else {
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) tree;
           List<Variable> inputs = new ArrayList<>();
@@ -109,7 +110,7 @@ public abstract class TypeConstraint implements Constraint {
         }
       case MEMBER_REFERENCE:
         if (T.isVariable()) {
-          return Collections.singletonList((Variable) T);
+          return Collections.singletonList(((UseOfVariable) T).getVariable());
         } else if (TreeUtils.isExactMethodReference((MemberReferenceTree) tree)) {
           return Collections.emptyList();
         } else {

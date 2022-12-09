@@ -50,6 +50,7 @@ import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
+import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -235,7 +236,7 @@ public class InvocationTypeInference {
     // set, B1.
     for (AbstractType thrownType : methodType.getThrownTypes(map)) {
       if (thrownType.isVariable()) {
-        ((Variable) thrownType).getBounds().setHasThrowsBound(true);
+        ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
     }
 
@@ -272,7 +273,7 @@ public class InvocationTypeInference {
     // set, B1.
     for (AbstractType thrownType : methodType.getThrownTypes(map)) {
       if (thrownType.isVariable()) {
-        ((Variable) thrownType).getBounds().setHasThrowsBound(true);
+        ((UseOfVariable) thrownType).setHasThrowsBound(true);
       }
     }
 
@@ -334,7 +335,7 @@ public class InvocationTypeInference {
       b2.incorporateToFixedPoint(b);
       return b2;
     } else if (r.isVariable()) {
-      Variable alpha = (Variable) r;
+      Variable alpha = ((UseOfVariable) r).getVariable();
       // Should a type compatibility constraint be added?
       boolean compatibility = false;
       // If the target type is a reference type, but is not a wildcard-parameterized type.
@@ -345,7 +346,7 @@ public class InvocationTypeInference {
         // ii) B2 contains two bounds of the forms S1 <: alpha and S2 <: alpha, where S1
         // and S2 have supertypes that are two different parameterizations of the same
         // generic class or interface.
-        compatibility |= compatibility = alpha.getBounds().hasLowerBoundDifferentParam();
+        compatibility |= alpha.getBounds().hasLowerBoundDifferentParam();
       } else if (target.isParameterizedType()) {
         // The target type is a parameterization of a generic class or interface, G, and B2
         // contains a

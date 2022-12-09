@@ -11,6 +11,7 @@ import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
+import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
@@ -128,8 +129,7 @@ public class Typing extends TypeConstraint {
       return isSubtype;
     } else if (S.getTypeKind() == TypeKind.NULL) {
       if (T.isVariable()) {
-        ((Variable) T)
-            .getBounds()
+        ((UseOfVariable) T)
             .addQualifierBound(BoundKind.LOWER, S.getAnnotatedType().getAnnotations());
         return ConstraintSet.TRUE;
       } else {
@@ -144,20 +144,16 @@ public class Typing extends TypeConstraint {
     if (S.isVariable() || T.isVariable()) {
       if (S.isVariable()) {
         if (T.getTypeKind() == TypeKind.TYPEVAR && T.isLowerBoundTypeVariable()) {
-          ((Variable) S)
-              .getBounds()
-              .addBound(VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
+          ((UseOfVariable) S).addBound(VariableBounds.BoundKind.UPPER, T.getTypeVarLowerBound());
         } else {
-          ((Variable) S).getBounds().addBound(VariableBounds.BoundKind.UPPER, T);
+          ((UseOfVariable) S).addBound(VariableBounds.BoundKind.UPPER, T);
         }
       }
       if (T.isVariable()) {
         if (TypesUtils.isCapturedTypeVariable(S.getJavaType())) {
-          ((Variable) T)
-              .getBounds()
-              .addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
+          ((UseOfVariable) T).addBound(VariableBounds.BoundKind.LOWER, S.getTypeVarUpperBound());
         }
-        ((Variable) T).getBounds().addBound(VariableBounds.BoundKind.LOWER, S);
+        ((UseOfVariable) T).addBound(VariableBounds.BoundKind.LOWER, S);
       }
       return ConstraintSet.TRUE;
     }
@@ -352,10 +348,10 @@ public class Typing extends TypeConstraint {
 
     if (S.isVariable() || T.isVariable()) {
       if (S.isVariable()) {
-        ((Variable) S).getBounds().addBound(VariableBounds.BoundKind.EQUAL, T);
+        ((UseOfVariable) S).addBound(VariableBounds.BoundKind.EQUAL, T);
       }
       if (T.isVariable()) {
-        ((Variable) T).getBounds().addBound(VariableBounds.BoundKind.EQUAL, S);
+        ((UseOfVariable) T).addBound(VariableBounds.BoundKind.EQUAL, S);
       }
       return ConstraintSet.TRUE;
     }

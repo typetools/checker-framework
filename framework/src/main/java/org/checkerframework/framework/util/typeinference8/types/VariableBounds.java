@@ -131,7 +131,7 @@ public class VariableBounds {
 
   /** Adds {@code otherType} as bound against this variable. */
   public boolean addBound(BoundKind kind, AbstractType otherType) {
-    if (otherType == variable) {
+    if (otherType.isVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
     if (kind == BoundKind.EQUAL && otherType.isProper()) {
@@ -251,14 +251,16 @@ public class VariableBounds {
     // Copy bound to equal variables
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
       if (t.isVariable()) {
-        ((Variable) t).getBounds().qualifierBounds.get(kind).add(s);
+        VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
+        otherBounds.qualifierBounds.get(kind).add(s);
       }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
       for (AbstractType t : bounds.get(BoundKind.LOWER)) {
         if (t.isVariable()) {
-          ((Variable) t).getBounds().qualifierBounds.get(BoundKind.UPPER).add(s);
+          VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
+          otherBounds.qualifierBounds.get(BoundKind.UPPER).add(s);
         }
       }
     }
@@ -266,7 +268,8 @@ public class VariableBounds {
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
       for (AbstractType t : bounds.get(BoundKind.UPPER)) {
         if (t.isVariable()) {
-          ((Variable) t).getBounds().qualifierBounds.get(BoundKind.LOWER).add(s);
+          VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
+          otherBounds.qualifierBounds.get(BoundKind.LOWER).add(s);
         }
       }
     }
