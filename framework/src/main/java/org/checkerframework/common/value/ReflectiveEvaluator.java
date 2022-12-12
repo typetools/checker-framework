@@ -49,7 +49,7 @@ public class ReflectiveEvaluator {
    * Returns all possible values that the method may return, or null if the method could not be
    * evaluated.
    *
-   * @param allArgValues a list of list where the first list corresponds to all possible values for
+   * @param allArgValues a list of lists where the first list corresponds to all possible values for
    *     the first argument. Pass null to indicate that the method has no arguments.
    * @param receiverValues a list of possible receiver values. null indicates that the method has no
    *     receiver.
@@ -185,8 +185,7 @@ public class ReflectiveEvaluator {
       return null;
 
     } catch (Throwable e) {
-      // The class we attempted to getMethod from inside the
-      // call to getMethodObject.
+      // The class we attempted to getMethod from inside the call to getMethodObject.
       Element classElem = ele.getEnclosingElement();
 
       if (classElem == null) {
@@ -262,8 +261,8 @@ public class ReflectiveEvaluator {
    *
    * @param classname the class containing the field
    * @param fieldName the name of the field
-   * @param tree the static field access in the program; a MemberSelectTree or an IdentifierTree;
-   *     used for diagnostics
+   * @param tree the static field access in the program. It is a MemberSelectTree or an
+   *     IdentifierTree and is used for diagnostics.
    * @return the value of the static field access, or null if it cannot be determined
    */
   public Object evaluateStaticFieldAccess(
@@ -280,7 +279,7 @@ public class ReflectiveEvaluator {
       }
       return null;
     } catch (Throwable e) {
-      // Catch all exception so that the checker doesn't crash
+      // Catch all exceptions so that the checker doesn't crash.
       if (reportWarnings) {
         checker.reportWarning(
             tree,
@@ -346,8 +345,11 @@ public class ReflectiveEvaluator {
     return constructor;
   }
   /**
-   * Returns the box primitive type if the passed type is an (unboxed) primitive. Otherwise it
-   * returns the passed type
+   * Returns the boxed primitive type if the passed type is an (unboxed) primitive. Otherwise it
+   * returns the passed type.
+   *
+   * @param type a type to box or to return unchanged
+   * @return a boxed primitive type, if the argument was primitive; otherwise the argument
    */
   private static Class<?> boxPrimitives(Class<?> type) {
     if (type == byte.class) {
