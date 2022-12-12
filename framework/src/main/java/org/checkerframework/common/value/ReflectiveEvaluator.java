@@ -347,6 +347,9 @@ public class ReflectiveEvaluator {
   /**
    * Returns the boxed primitive type if the passed type is an (unboxed) primitive. Otherwise it
    * returns the passed type.
+   *
+   * @param type a type to box or to return unchanged
+   * @return a boxed primitive type, if the argument was primitive; otherwise the argument
    */
   private static Class<?> boxPrimitives(Class<?> type) {
     if (type == byte.class) {
