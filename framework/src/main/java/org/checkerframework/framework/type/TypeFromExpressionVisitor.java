@@ -75,6 +75,11 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
+  /** Creates a new TypeFromTreeVisitor. */
+  TypeFromExpressionVisitor() {
+    // nothing to do
+  }
+
   @Override
   public AnnotatedTypeMirror visitAnnotation(AnnotationTree node, AnnotatedTypeFactory f) {
     return f.type(node);
