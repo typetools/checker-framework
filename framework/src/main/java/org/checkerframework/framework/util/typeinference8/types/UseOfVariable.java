@@ -9,17 +9,30 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 public class UseOfVariable extends AbstractType {
   private final Variable variable;
   private final boolean hasPrimaryAnno;
+  private final Set<AnnotationMirror> bots;
+  private final Set<AnnotationMirror> tops;
 
   public UseOfVariable(AnnotatedTypeMirror type, Variable variable, Java8InferenceContext context) {
     super(context);
+    QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     this.variable = variable;
     this.hasPrimaryAnno = !type.getAnnotations().isEmpty();
+    this.bots = AnnotationUtils.createAnnotationSet();
+    this.tops = AnnotationUtils.createAnnotationSet();
+    if (hasPrimaryAnno) {
+      for (AnnotationMirror anno : type.getAnnotations()) {
+        bots.add(qh.getBottomAnnotation(anno));
+        tops.add(qh.getTopAnnotation(anno));
+      }
+    }
   }
 
   @Override
@@ -95,8 +108,22 @@ public class UseOfVariable extends AbstractType {
     if (!hasPrimaryAnno) {
       variable.getBounds().addBound(kind, bound);
     } else {
-      // TODO: ignore annotations:
-      variable.getBounds().addBound(kind, bound);
+      if (kind == BoundKind.LOWER) {
+        bound.getAnnotatedType().replaceAnnotations(bots);
+        variable.getBounds().addBound(kind, bound);
+      } else if (kind == BoundKind.UPPER) {
+        bound.getAnnotatedType().replaceAnnotations(tops);
+        variable.getBounds().addBound(kind, bound);
+      } else {
+        AnnotatedTypeMirror copyATM = bound.getAnnotatedType().deepCopy();
+        AbstractType boundCopy = bound.create(copyATM, bound.getJavaType());
+
+        bound.getAnnotatedType().replaceAnnotations(tops);
+        variable.getBounds().addBound(BoundKind.UPPER, bound);
+
+        boundCopy.getAnnotatedType().replaceAnnotations(bots);
+        variable.getBounds().addBound(BoundKind.LOWER, boundCopy);
+      }
     }
   }
 }
