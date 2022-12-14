@@ -444,14 +444,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               System.lineSeparator(),
               "Sanity check of erasing then reinserting annotations produced a different AST.",
               "File: " + root.getSourceFile(),
-              "Original node: " + visitor.getMismatchedNode1(),
-              "Node with annotations re-inserted: " + visitor.getMismatchedNode2(),
+              "Node class: " + visitor.getMismatchedNode1().getClass().getSimpleName(),
+              "Original node: " + oneLine(visitor.getMismatchedNode1()),
+              "Node with annotations re-inserted: " + oneLine(visitor.getMismatchedNode2()),
               "Original annotations: " + visitor.getMismatchedNode1().getAnnotations(),
               "Re-inserted annotations: " + visitor.getMismatchedNode2().getAnnotations(),
               "Original AST:",
               originalAst.toString(),
               "Ast with annotations re-inserted: " + modifiedAst));
     }
+  }
+
+  /**
+   * Replace newlines in the printed representation by spaces.
+   *
+   * @param arg an object to format
+   * @return the object's toString representation, on one line
+   */
+  private String oneLine(Object arg) {
+    return arg.toString().replace(System.lineSeparator(), " ");
   }
 
   /**
