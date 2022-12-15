@@ -28,12 +28,12 @@ abstract class Issue329NN {
 
   void f1(Flag<@Nullable String> flag) {
     String s = getValue(flag);
-    // :: error: (type.arguments.not.inferred))
+    // :: error: (type.arguments.not.inferred)
     setExtension(s);
   }
 
   void f2(Flag<@Nullable String> flag) {
-    // :: error: (type.arguments.not.inferred))
+    // :: error: (type.arguments.not.inferred)
     setExtension(getValue(flag));
   }
 }
