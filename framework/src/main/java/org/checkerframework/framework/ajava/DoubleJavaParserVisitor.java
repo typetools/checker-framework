@@ -130,10 +130,15 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
    * corresponding elements in order.
    *
    * @param list1 first list of nodes
-   * @param list2 second list of nodes
+   * @param list2 second list of nodes, which has the same size as the first list
    */
   private void visitLists(List<? extends Node> list1, List<? extends Node> list2) {
-    assert list1.size() == list2.size();
+    if (list1.size() != list2.size()) {
+      throw new Error(
+          String.format(
+              "%s.visitLists(%s [size %d], %s [size %d])",
+              this.getClass().getCanonicalName(), list1, list1.size(), list2, list2.size()));
+    }
     for (int i = 0; i < list1.size(); i++) {
       list1.get(i).accept(this, list2.get(i));
     }

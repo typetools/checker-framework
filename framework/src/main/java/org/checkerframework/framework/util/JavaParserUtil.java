@@ -12,6 +12,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -265,6 +266,11 @@ public class JavaParserUtil {
           node.remove(child);
         }
       }
+    }
+
+    @Override
+    public void visit(ArrayInitializerExpr node, Void p) {
+      // Do not remove annotations that are array elements.
     }
   }
 
