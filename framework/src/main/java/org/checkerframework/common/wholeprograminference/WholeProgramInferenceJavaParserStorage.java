@@ -197,7 +197,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param fieldElt a field
    * @return the annotations for a field
    */
-  private FieldAnnos getFieldAnnos(VariableElement fieldElt) {
+  private @Nullable FieldAnnos getFieldAnnos(VariableElement fieldElt) {
     String className = ElementUtils.getEnclosingClassName(fieldElt);
     // Read in classes for the element.
     getFileForElement(fieldElt);
@@ -357,7 +357,7 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public boolean addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     FieldAnnos fieldAnnos = getFieldAnnos(field);
-    boolean isNewAnnotation = fieldAnnos.addDeclarationAnnotation(anno);
+    boolean isNewAnnotation = fieldAnnos != null && fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(field));
     }
