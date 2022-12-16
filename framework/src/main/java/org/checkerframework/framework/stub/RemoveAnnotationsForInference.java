@@ -192,7 +192,7 @@ public class RemoveAnnotationsForInference {
         String newLine = prefix + suffix;
         replaceLine(lines, beginLine, newLine);
       } else {
-        String newLastLine = lines.get(endLine).substring(0, endColumn);
+        String newLastLine = lines.get(endLine).substring(endColumn);
         replaceLine(lines, endLine, newLastLine);
         for (int lineno = endLine - 1; lineno > beginLine; lineno--) {
           lines.remove(lineno);

@@ -24,6 +24,15 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
+// The use of reflection in ReflectiveEvaluator is troubling.
+// A static analysis such as  the Checker Framework should always use compiler APIs, never
+// reflection, to obtain values, for these reasons:
+//  * The program being compiled is not necessarily on the classpath nor the processorpath.
+//  * There might even be a different class of the same fully-qualified name on the processorpath.
+//  * Loading a class can have side effects (say, caused by static initializers).
+//
+// A better implementation strategy would be to use BeanShell or the like to perform evaluation.
+
 /**
  * Evaluates expressions (such as method calls and field accesses) at compile time, to determine
  * whether they have compile-time constant values.
