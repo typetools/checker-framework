@@ -9,7 +9,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * This represents the start and end of synchronized code block. If startOfBlock == true it is the
+ * This represents the start and end of a synchronized code block. If startOfBlock == true it is the
  * node preceding a synchronized code block. Otherwise it is the node immediately after a
  * synchronized code block.
  */
