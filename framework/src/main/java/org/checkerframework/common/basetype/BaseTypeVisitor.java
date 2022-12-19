@@ -2590,7 +2590,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once. */
   private @MonotonicNonNull Set<? extends AnnotationMirror>
       getExceptionParameterLowerBoundAnnotationsCache;
-  /** The same as {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache. */
+  /**
+   * Returns a set of AnnotationMirrors that is a lower bound for exception parameters. The same as
+   * {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache.
+   *
+   * @return a set of AnnotationMirrors that is a lower bound for exception parameters
+   */
   private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCached() {
     if (getExceptionParameterLowerBoundAnnotationsCache == null) {
       getExceptionParameterLowerBoundAnnotationsCache =

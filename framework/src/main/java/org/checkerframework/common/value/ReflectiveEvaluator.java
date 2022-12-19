@@ -48,6 +48,13 @@ public class ReflectiveEvaluator {
    */
   private final boolean reportWarnings;
 
+  /**
+   * Create a new ReflectiveEvaluator.
+   *
+   * @param checker the BaseTypeChecker
+   * @param factory the annotated type factory.
+   * @param reportWarnings if true, report warnings about problems with evaluation
+   */
   public ReflectiveEvaluator(
       BaseTypeChecker checker, ValueAnnotatedTypeFactory factory, boolean reportWarnings) {
     this.checker = checker;

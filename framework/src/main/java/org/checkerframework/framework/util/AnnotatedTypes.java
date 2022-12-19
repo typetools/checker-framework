@@ -69,6 +69,7 @@ public class AnnotatedTypes {
     throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
   }
 
+  /** Implements {@code asSuper}. */
   private static @MonotonicNonNull AsSuperVisitor asSuperVisitor;
 
   /**

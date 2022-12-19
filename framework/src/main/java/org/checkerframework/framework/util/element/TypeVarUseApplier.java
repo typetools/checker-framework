@@ -30,6 +30,7 @@ public class TypeVarUseApplier {
     new TypeVarUseApplier(type, element, typeFactory).extractAndApply();
   }
 
+  /** The ElementKinds that are accepted by this. */
   private static final ElementKind[] acceptedKinds = {
     ElementKind.PARAMETER,
     ElementKind.FIELD,
@@ -73,6 +74,7 @@ public class TypeVarUseApplier {
   private final TypeParameterElement declarationElem;
   private final Element useElem;
 
+  /** The annotated type factory. */
   private final AnnotatedTypeFactory typeFactory;
 
   TypeVarUseApplier(

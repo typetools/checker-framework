@@ -410,6 +410,7 @@ public class TypeVisualizer {
      */
     private class NodeDrawer implements AnnotatedTypeVisitor<Void, Void> {
 
+      /** Create a new NodeDrawer. */
       public NodeDrawer() {}
 
       private void visitAll(final List<? extends AnnotatedTypeMirror> types) {

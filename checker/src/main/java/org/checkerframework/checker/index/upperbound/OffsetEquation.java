@@ -30,11 +30,16 @@ public class OffsetEquation {
   public static final OffsetEquation NEG_1 = createOffsetForInt(-1);
   public static final OffsetEquation ONE = createOffsetForInt(1);
 
+  /** Mutable list of terms that have been added to this. */
   private final List<String> addedTerms;
+  /** Mutable list of terms that have been subtracted from this. */
   private final List<String> subtractedTerms;
+  /** The integer offset. */
   private int intValue;
-  private String error;
+  /** Non-null if an error has occurred. */
+  private @Nullable String error;
 
+  /** Create a new OffsetEquation. */
   private OffsetEquation() {
     addedTerms = new ArrayList<>(1);
     subtractedTerms = new ArrayList<>(1);

@@ -86,6 +86,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   // The possessive modifiers "*+" are for efficiency only.
   // private static Pattern packagePattern =
   //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
+  /** A pattern that matches an import statement. */
   private static final Pattern importPattern =
       Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
