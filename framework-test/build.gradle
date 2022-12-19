@@ -19,7 +19,7 @@ dependencies {
 
 jar.archiveBaseName = 'framework-test'
 
-apply from: rootProject.file("gradle-mvn-push.gradle")
+apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading to Maven repositories. */
 final frameworkTest(publication) {
