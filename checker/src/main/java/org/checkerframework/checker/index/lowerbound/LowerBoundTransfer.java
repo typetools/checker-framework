@@ -169,7 +169,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
   public final AnnotationMirror UNKNOWN;
 
   // The ATF (Annotated Type Factory).
-  private LowerBoundAnnotatedTypeFactory aTypeFactory;
+  private final LowerBoundAnnotatedTypeFactory aTypeFactory;
 
   public LowerBoundTransfer(CFAnalysis analysis) {
     super(analysis);

@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenTransfer extends CFTransfer {
 
-  private SameLenAnnotatedTypeFactory aTypeFactory;
+  private final SameLenAnnotatedTypeFactory aTypeFactory;
 
   /** Shorthand for aTypeFactory.UNKNOWN. */
   private AnnotationMirror UNKNOWN;

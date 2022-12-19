@@ -38,7 +38,7 @@ import org.plumelib.util.ArraysPlume;
 public class AutoValueSupport implements BuilderFrameworkSupport {
 
   /** The type factory. */
-  private CalledMethodsAnnotatedTypeFactory atypeFactory;
+  private final CalledMethodsAnnotatedTypeFactory atypeFactory;
 
   /**
    * Create a new AutoValueSupport.

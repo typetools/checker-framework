@@ -73,7 +73,7 @@ public class TypeVarUseApplier {
   private final TypeParameterElement declarationElem;
   private final Element useElem;
 
-  private AnnotatedTypeFactory typeFactory;
+  private final AnnotatedTypeFactory typeFactory;
 
   TypeVarUseApplier(
       final AnnotatedTypeMirror type,

@@ -42,7 +42,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AliasingTransfer extends CFTransfer {
 
-  private AnnotatedTypeFactory factory;
+  private final AnnotatedTypeFactory factory;
 
   public AliasingTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);

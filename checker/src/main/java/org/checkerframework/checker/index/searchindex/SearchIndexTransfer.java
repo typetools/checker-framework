@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class SearchIndexTransfer extends IndexAbstractTransfer {
 
   // The ATF (Annotated Type Factory).
-  private SearchIndexAnnotatedTypeFactory aTypeFactory;
+  private final SearchIndexAnnotatedTypeFactory aTypeFactory;
 
   public SearchIndexTransfer(CFAnalysis analysis) {
     super(analysis);

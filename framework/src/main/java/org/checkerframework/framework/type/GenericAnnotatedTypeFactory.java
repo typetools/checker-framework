@@ -239,7 +239,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
    */
-  private Map<Tree, AnnotatedTypeMirror> initializerCache;
+  private final Map<Tree, AnnotatedTypeMirror> initializerCache;
 
   /**
    * Should the analysis assume that side effects to a value can change the type of aliased

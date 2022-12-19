@@ -234,17 +234,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   final ExecutableElement requiresQualifierListValueElement;
 
   /** The RequiresQualifier type. */
-  TypeMirror requiresQualifierTM;
+  final TypeMirror requiresQualifierTM;
   /** The RequiresQualifier.List type. */
-  TypeMirror requiresQualifierListTM;
+  final TypeMirror requiresQualifierListTM;
   /** The EnsuresQualifier type. */
-  TypeMirror ensuresQualifierTM;
+  final TypeMirror ensuresQualifierTM;
   /** The EnsuresQualifier.List type. */
-  TypeMirror ensuresQualifierListTM;
+  final TypeMirror ensuresQualifierListTM;
   /** The EnsuresQualifierIf type. */
-  TypeMirror ensuresQualifierIfTM;
+  final TypeMirror ensuresQualifierIfTM;
   /** The EnsuresQualifierIf.List type. */
-  TypeMirror ensuresQualifierIfListTM;
+  final TypeMirror ensuresQualifierIfListTM;
 
   /**
    * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
