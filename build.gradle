@@ -402,7 +402,7 @@ task maybeCloneAndBuildDependencies() {
                 executable 'ls'
                 ignoreExitValue = true
             }
-            throw new RuntimeException('Can't find stubparser jar: ' + stubparserJar)
+            throw new RuntimeException('Can\'t find stubparser jar: ' + stubparserJar)
         }
     }
 }
