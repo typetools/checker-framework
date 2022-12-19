@@ -466,12 +466,6 @@ task ainferTestCheckerGenerateAjava(type: Test) {
     doLast {
         copyNonannotatedToAnnotatedDirectory("ainfer-testchecker")
 
-        // A crash occurs because of a bug in Java Parser when trying to read the .ajava
-        // file produced for these tests. Reinstate them when https://github.com/javaparser/javaparser/pull/3527
-        // has been merged and released, and we've updated to a JavaParser version with that fix.
-        delete("tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Issue946.java")
-        delete("tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Receivers.java")
-
         // This test must be deleted, because otherwise an error about a missing type in an
         // ajava file is issued. The test itself shouldn't be run as an all-systems test while testing
         // WPI; see the copy in the non-annotated WPI tests for an explanation.
