@@ -191,8 +191,7 @@ allprojects {
     }
     java {
       googleJavaFormat()
-      // Remove addTypeAnnotation after the next release of Spotless.
-      formatAnnotations().addTypeAnnotation("DoesNotMatchRegex")
+      formatAnnotations()
     }
   }
   // The Spotless plugin uses the latest version of google-java-format
