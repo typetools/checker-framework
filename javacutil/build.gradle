@@ -20,7 +20,7 @@ dependencies {
     // shadowJar block.
 }
 
-apply from: rootProject.file("gradle-mvn-push.gradle")
+apply from: rootProject.file('gradle-mvn-push.gradle')
 
 final javacUtilPom(publication) {
     sharedPublicationConfiguration(publication)
