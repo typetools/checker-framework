@@ -35,9 +35,9 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * Annotations imported by the file, stored as a mapping from names to the TypeElements for the
    * annotations. Contains entries for the simple and fully qualified names of each annotation.
    */
-  private Map<String, TypeElement> allAnnotations;
+  private final Map<String, TypeElement> allAnnotations;
   /** Element utilities. */
-  private Elements elements;
+  private final Elements elements;
 
   /**
    * Constructs a {@code TypeAnnotationMover}.

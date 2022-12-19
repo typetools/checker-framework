@@ -48,7 +48,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * The builder frameworks (such as Lombok and AutoValue) supported by this instance of the Called
    * Methods Checker.
    */
-  private Collection<BuilderFrameworkSupport> builderFrameworkSupports;
+  private final Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
   /**
    * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing calls
@@ -112,7 +112,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param disabledFrameworks the disabled builder frameworks
    */
-  private void enableFrameworks(String[] disabledFrameworks) {
+  private final void enableFrameworks(String[] disabledFrameworks) {
     boolean enableAutoValueSupport = true;
     boolean enableLombokSupport = true;
     for (String framework : disabledFrameworks) {

@@ -46,7 +46,7 @@ public class SameLenTransfer extends CFTransfer {
   private final SameLenAnnotatedTypeFactory aTypeFactory;
 
   /** Shorthand for aTypeFactory.UNKNOWN. */
-  private AnnotationMirror UNKNOWN;
+  private final AnnotationMirror UNKNOWN;
 
   public SameLenTransfer(CFAnalysis analysis) {
     super(analysis);

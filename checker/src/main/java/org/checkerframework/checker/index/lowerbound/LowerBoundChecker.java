@@ -35,7 +35,7 @@ public class LowerBoundChecker extends BaseTypeChecker {
    * These collection classes have some subtypes whose length can change and some subtypes whose
    * length cannot change. Lower bound checker warnings are skipped at uses of them.
    */
-  private HashSet<String> collectionBaseTypeNames;
+  private final HashSet<String> collectionBaseTypeNames;
 
   /**
    * A type-checker for preventing fixed-length sequences such as arrays or strings from being

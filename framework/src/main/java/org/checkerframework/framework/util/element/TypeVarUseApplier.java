@@ -30,7 +30,7 @@ public class TypeVarUseApplier {
     new TypeVarUseApplier(type, element, typeFactory).extractAndApply();
   }
 
-  private static ElementKind[] acceptedKinds = {
+  private static final ElementKind[] acceptedKinds = {
     ElementKind.PARAMETER,
     ElementKind.FIELD,
     ElementKind.LOCAL_VARIABLE,

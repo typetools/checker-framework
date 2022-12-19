@@ -141,10 +141,10 @@ import org.plumelib.util.StringsPlume;
 class MustCallConsistencyAnalyzer {
 
   /** True if errors related to static owning fields should be suppressed. */
-  private boolean permitStaticOwning;
+  private final boolean permitStaticOwning;
 
   /** True if errors related to field initialization should be suppressed. */
-  private boolean permitInitializationLeak;
+  private final boolean permitInitializationLeak;
 
   /**
    * Aliases about which the checker has already reported about a resource leak, to avoid duplicate
@@ -162,13 +162,13 @@ class MustCallConsistencyAnalyzer {
    * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
    * node. The cache prevents repeatedly computing least upper bounds on stores
    */
-  private IdentityHashMap<Node, CFStore> cmStoreAfter = new IdentityHashMap<>();
+  private final IdentityHashMap<Node, CFStore> cmStoreAfter = new IdentityHashMap<>();
 
   /**
    * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
    * node. The cache prevents repeatedly computing least upper bounds on stores
    */
-  private IdentityHashMap<Node, CFStore> mcStoreAfter = new IdentityHashMap<>();
+  private final IdentityHashMap<Node, CFStore> mcStoreAfter = new IdentityHashMap<>();
 
   /** The Resource Leak Checker, used to issue errors. */
   private final ResourceLeakChecker checker;

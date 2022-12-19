@@ -334,7 +334,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
    */
-  private SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
+  private final SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
       new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
 
   /**

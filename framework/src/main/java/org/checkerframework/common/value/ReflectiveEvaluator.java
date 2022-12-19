@@ -46,7 +46,7 @@ public class ReflectiveEvaluator {
    * Whether to report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
    * command-line option.
    */
-  private boolean reportWarnings;
+  private final boolean reportWarnings;
 
   public ReflectiveEvaluator(
       BaseTypeChecker checker, ValueAnnotatedTypeFactory factory, boolean reportWarnings) {

@@ -44,6 +44,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
@@ -147,7 +148,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected static boolean flowByDefault = true;
 
   /** To cache the supported monotonic type qualifiers. */
-  private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+  private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
   /** to annotate types based on the given tree */
   protected TypeAnnotator typeAnnotator;
@@ -231,7 +232,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
    */
-  private Set<VariableElement> variablesUnderInitialization;
+  private final Set<VariableElement> variablesUnderInitialization = new HashSet<>();
 
   /**
    * Caches types of initializers for local variables with a qualifier parameter, so that they
@@ -325,8 +326,6 @@ public abstract class GenericAnnotatedTypeFactory<
     this.shouldDefaultTypeVarLocals = useFlow;
     this.useFlow = useFlow;
 
-    this.variablesUnderInitialization = new HashSet<>();
-    this.scannedClasses = new HashMap<>();
     this.flowResult = null;
     this.regularExitStores = null;
     this.exceptionalExitStores = null;
@@ -1038,7 +1037,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** Map from ClassTree to their dataflow analysis state. */
-  protected final Map<ClassTree, ScanState> scannedClasses;
+  protected final Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
 
   /**
    * The result of the flow analysis. Invariant:

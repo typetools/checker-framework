@@ -12,12 +12,12 @@ import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
- * An abstraction that can be either a range or a list of values that could come from an {@link
- * ArrayLen} or {@link IntVal}. This abstraction reduces the number of cases that {@link
+ * A mutable abstraction that can be either a range or a list of values that could come from an
+ * {@link ArrayLen} or {@link IntVal}. This abstraction reduces the number of cases that {@link
  * ValueTreeAnnotator#handleInitializers(List, AnnotatedTypeMirror.AnnotatedArrayType)} and {@link
  * ValueTreeAnnotator#handleDimensions(List, AnnotatedTypeMirror.AnnotatedArrayType)} must handle.
  *
- * <p>Tracks Ints in the list, and creates ArrayLen or ArrayLenRange annotations, because it's meant
+ * <p>Tracks ints in the list, and creates ArrayLen or ArrayLenRange annotations, because it's meant
  * to be used to reason about ArrayLen and ArrayLenRange values.
  */
 class RangeOrListOfValues {

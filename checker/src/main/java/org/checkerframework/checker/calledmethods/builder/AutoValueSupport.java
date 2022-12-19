@@ -269,7 +269,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
   }
 
   /** Method names for {@link #isAutoValueRequiredProperty} to ignore. */
-  private Set<String> isAutoValueRequiredPropertyIgnored =
+  private final Set<String> isAutoValueRequiredPropertyIgnored =
       new HashSet<>(Arrays.asList("equals", "hashCode", "toString", "<init>", "toBuilder"));
 
   /**

@@ -32,12 +32,14 @@ public class OffsetEquation {
 
   private final List<String> addedTerms;
   private final List<String> subtractedTerms;
-  private int intValue = 0;
-  private String error = null;
+  private int intValue;
+  private String error;
 
   private OffsetEquation() {
     addedTerms = new ArrayList<>(1);
     subtractedTerms = new ArrayList<>(1);
+    this.intValue = 0;
+    this.error = null;
   }
 
   /**
@@ -48,8 +50,8 @@ public class OffsetEquation {
   protected OffsetEquation(OffsetEquation other) {
     this.addedTerms = new ArrayList<>(other.addedTerms);
     this.subtractedTerms = new ArrayList<>(other.subtractedTerms);
-    this.error = other.error;
     this.intValue = other.intValue;
+    this.error = other.error;
   }
 
   public boolean hasError() {

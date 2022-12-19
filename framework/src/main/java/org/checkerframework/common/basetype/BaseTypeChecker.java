@@ -630,7 +630,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * <p>If this checker has no subcheckers and is not a subchecker for any other checker, then
    * messageStore is null and messages will be printed as they are issued by this checker.
    */
-  private TreeSet<CheckerMessage> messageStore = null;
+  private @MonotonicNonNull TreeSet<CheckerMessage> messageStore;
 
   /**
    * If this is a compound checker or a subchecker of a compound checker, then the message is stored

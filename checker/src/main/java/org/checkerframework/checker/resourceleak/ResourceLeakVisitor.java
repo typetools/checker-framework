@@ -36,7 +36,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
   /** True if errors related to static owning fields should be suppressed. */
-  private boolean permitStaticOwning;
+  private final boolean permitStaticOwning;
 
   /**
    * Because CalledMethodsVisitor doesn't have a type parameter, we need a reference to the type

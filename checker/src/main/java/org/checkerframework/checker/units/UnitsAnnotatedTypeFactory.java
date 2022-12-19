@@ -17,6 +17,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -88,7 +89,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
    * to prevent instantiating the UnitsRelations multiple times.
    */
-  private Map<@CanonicalName String, UnitsRelations> unitsRel;
+  private @MonotonicNonNull Map<@CanonicalName String, UnitsRelations> unitsRel;
 
   /** Map from canonical name of external qualifiers, to their Class. */
   private static final Map<@CanonicalName String, Class<? extends Annotation>> externalQualsMap =
@@ -337,7 +338,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /** A class loader for looking up annotations. */
-  private static ClassLoader classLoader =
+  private static final ClassLoader classLoader =
       InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
 
   /**
