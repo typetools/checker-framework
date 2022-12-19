@@ -2350,6 +2350,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       if (defaultIndex != -1) {
+        // The checks of all cases must happen before the default case, therefore we build the
+        // default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
         buildCase(caseTrees.get(defaultIndex), defaultIndex, false);
       }
