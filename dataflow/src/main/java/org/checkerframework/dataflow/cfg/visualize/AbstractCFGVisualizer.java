@@ -52,10 +52,10 @@ public abstract class AbstractCFGVisualizer<
   protected boolean verbose;
 
   /** The line separator. */
-  protected final String lineSeparator = System.lineSeparator();
+  protected static final String lineSeparator = System.lineSeparator();
 
   /** The indentation for elements of the store. */
-  protected final String storeEntryIndent = "  ";
+  protected static final String storeEntryIndent = "  ";
 
   @Override
   public void init(Map<String, Object> args) {

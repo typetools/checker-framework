@@ -201,6 +201,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private @Nullable TreePath visitorTreePath;
 
+  // These variables cannot be static because they depend on the ProcessingEnvironment.
   /** The AnnotatedFor.value argument/element. */
   private final ExecutableElement annotatedForValueElement;
   /** The EnsuresQualifier.expression field/element. */
