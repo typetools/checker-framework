@@ -9,23 +9,24 @@ echo "SHELLOPTS=${SHELLOPTS}"
 # Optional argument $1 is the group.
 GROUPARG=$1
 echo "GROUPARG=$GROUPARG"
-# These are all the Java projects at https://github.com/plume-lib
+# These are all the Java projects at https://github.com/plume-lib , as of Dec 2022.
 if [[ "${GROUPARG}" == "bcel-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "bibtex-clean" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "html-pretty-print" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "icalavailable" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "javadoc-lookup" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "lookup" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "multi-version-control" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "options" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "plume-util" ]]; then PACKAGES=("${GROUPARG}"); fi
+if [[ "${GROUPARG}" == "reflection-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "require-javadoc" ]]; then PACKAGES=("${GROUPARG}"); fi
-if [[ "${GROUPARG}" == "signature-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "all" ]] || [[ "${GROUPARG}" == "" ]]; then
     if java -version 2>&1 | grep version | grep 1.8 ; then
-        # options does not compile under JDK 8
-        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control plume-util require-javadoc)
+        # options master branch does not compile under JDK 8
+        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable javadoc-lookup lookup multi-version-control plume-util reflection-util require-javadoc)
     else
-        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable lookup multi-version-control options plume-util require-javadoc)
+        PACKAGES=(bcel-util bibtex-clean html-pretty-print icalavailable javadoc-lookup lookup multi-version-control options plume-util reflection-util require-javadoc)
     fi
 fi
 if [ -z ${PACKAGES+x} ]; then

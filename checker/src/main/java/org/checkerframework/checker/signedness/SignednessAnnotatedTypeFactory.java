@@ -604,7 +604,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true iff the right shift is masked such that a signed or unsigned right shift has the
    *     same effect
    */
-  /*package-private*/ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
+  /* package-private */ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
     Pair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = enclosingPair.first;
@@ -652,7 +652,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true iff the right shift is type casted such that a signed or unsigned right shift has
    *     the same effect
    */
-  /*package-private*/ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
+  /* package-private */ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = TreePathUtil.enclosingNonParen(path).first;
 
