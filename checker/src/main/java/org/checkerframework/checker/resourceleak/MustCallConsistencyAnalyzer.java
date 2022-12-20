@@ -1075,9 +1075,16 @@ class MustCallConsistencyAnalyzer {
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
         // Assigning to an owning field is sufficient to clear a must-call alias obligation in
-        // a constructor.
+        // a constructor, if the enclosing class has at most one @Owning field. If the class
+        // had multiple owning fields, then a soundness bug would occur: the must call alias
+        // relationship would allow the whole class' obligation to be fulfilled by closing
+        // only one of the parameters passed to the constructor (but the other owning fields
+        // might not actually have had their obligations fulfilled). See test case
+        // checker/tests/resourceleak/TwoOwningMCATest.java for an example.
         Element enclosingCtr = lhsElement.getEnclosingElement();
-        if (enclosingCtr != null && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR) {
+        if (enclosingCtr != null
+            && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR
+            && hasAtMostOneOwningField(ElementUtils.enclosingTypeElement(enclosingCtr))) {
           removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
         } else {
           removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
@@ -1095,6 +1102,30 @@ class MustCallConsistencyAnalyzer {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
+  }
+
+  /**
+   * Returns true iff the given type element has 0 or 1 @Owning fields.
+   *
+   * @param element an element for a class
+   * @return true iff element has no more than 1 owning field
+   */
+  private boolean hasAtMostOneOwningField(TypeElement element) {
+    List<VariableElement> fields =
+        ElementUtils.getAllFieldsIn(element, typeFactory.getElementUtils());
+    // Has an owning field already been encountered?
+    boolean hasOwningField = false;
+    for (VariableElement field : fields) {
+      if (typeFactory.getDeclAnnotation(field, Owning.class) != null) {
+        if (hasOwningField) {
+          return false;
+        } else {
+          hasOwningField = true;
+        }
+      }
+    }
+    // We haven't seen two owning fields, so there must be 1 or 0.
+    return true;
   }
 
   /**

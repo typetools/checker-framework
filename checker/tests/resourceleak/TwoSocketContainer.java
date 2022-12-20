@@ -9,6 +9,7 @@ public class TwoSocketContainer {
   @Owning
   private final Socket s1, s2;
 
+  // :: error: mustcallalias.out.of.scope
   public @MustCallAlias TwoSocketContainer(@MustCallAlias Socket s1, @MustCallAlias Socket s2) {
     this.s1 = s1;
     this.s2 = s2;

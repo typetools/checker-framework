@@ -1,3 +1,5 @@
+// Test case for issue 5453: https://github.com/typetools/checker-framework/issues/5453
+
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 
@@ -9,6 +11,7 @@ class TwoOwningMCATest {
   @Owning private final Foo f2;
 
   @MustCallAlias
+  // :: error: mustcallalias.out.of.scope
   TwoOwningMCATest(@MustCallAlias Foo g) {
     this.f2 = g;
   }
@@ -29,7 +32,6 @@ class TwoOwningMCATest {
   }
 
   public static void test(Foo f) {
-    // :: error: required.method.not.called
     TwoOwningMCATest t = new TwoOwningMCATest(f);
     f.a();
   }
