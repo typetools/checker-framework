@@ -20,24 +20,44 @@ import org.checkerframework.javacutil.TypeSystemError;
  */
 public class IndexRefinementInfo {
 
-  public final Node left, right;
+  /** The left operand. */
+  public final Node left;
+  /** The right operand. */
+  public final Node right;
 
   /**
-   * Annotation for left and right expressions. Might be null if dataflow doesn't have a value for
-   * the expression.
+   * Annotation for left expressions. Might be null if dataflow doesn't have a value for the
+   * expression.
    */
-  public final AnnotationMirror leftAnno, rightAnno;
+  public final @Nullable AnnotationMirror leftAnno;
+  /**
+   * Annotation for right expressions. Might be null if dataflow doesn't have a value for the
+   * expression.
+   */
+  public final @Nullable AnnotationMirror rightAnno;
 
-  public final CFStore thenStore, elseStore;
+  /** The then store. */
+  public final CFStore thenStore;
+  /** The else store. */
+  public final CFStore elseStore;
+  /** The new result, after refinement. */
   public final ConditionalTransferResult<CFValue, CFStore> newResult;
 
+  /**
+   * Creates a new IndexRefinementInfo.
+   *
+   * @param left the left operand
+   * @param right the right operand
+   * @param result the new result, after refinement
+   * @param analysis the CFAbstractAnalysis
+   */
   public IndexRefinementInfo(
       TransferResult<CFValue, CFStore> result,
       CFAbstractAnalysis<?, ?, ?> analysis,
-      Node r,
-      Node l) {
-    right = r;
-    left = l;
+      Node right,
+      Node left) {
+    this.right = right;
+    this.left = left;
 
     thenStore = result.getThenStore();
     elseStore = result.getElseStore();
