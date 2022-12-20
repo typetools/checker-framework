@@ -440,7 +440,7 @@ public class FormatterTreeUtil {
    * @param invalidFormatString an invalid formatter string
    * @return an {@link InvalidFormat} annotation with the given string as its value
    */
-  // package-private
+  /* package-private */
   AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
     builder.setValue("value", invalidFormatString);
