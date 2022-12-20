@@ -213,7 +213,7 @@ public class DependentTypesHelper {
 
   /** If true, log information about where lambdas are created. */
   // This variable is only set here; edit the source code to modify it.
-  private static boolean debugStringToJavaExpression = false;
+  private static final boolean debugStringToJavaExpression = false;
 
   /**
    * Viewpoint-adapts the dependent type annotations on the bounds of the type parameters of the

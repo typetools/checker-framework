@@ -112,7 +112,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param disabledFrameworks the disabled builder frameworks
    */
-  private final void enableFrameworks(String[] disabledFrameworks) {
+  private void enableFrameworks(String[] disabledFrameworks) {
     boolean enableAutoValueSupport = true;
     boolean enableLombokSupport = true;
     for (String framework : disabledFrameworks) {
