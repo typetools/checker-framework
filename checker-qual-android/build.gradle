@@ -1,4 +1,4 @@
-evaluationDependsOn(":checker-qual")
+evaluationDependsOn(':checker-qual')
 
 task copySources(type: Copy) {
     description 'Copy checker-qual source to checker-qual-android'
@@ -9,8 +9,8 @@ task copySources(type: Copy) {
         delete file('src')
     }
     from files('../checker-qual/src/main')
-    include "**/*.java"
-    exclude "**/SignednessUtilExtra.java"
+    include '**/*.java'
+    exclude '**/SignednessUtilExtra.java'
     into file('src/main')
 
     // Not read only because "replaceAnnotations" tasks writes to the files.
@@ -28,8 +28,8 @@ sourcesJar.dependsOn(copySources)
 */
 task replaceAnnotations {
     doLast {
-        fileTree(dir: 'src', include: "**/*.java").each {
-            it.text = it.text.replaceAll("RetentionPolicy.RUNTIME", "RetentionPolicy.CLASS")
+        fileTree(dir: 'src', include: '**/*.java').each {
+            it.text = it.text.replaceAll('RetentionPolicy.RUNTIME', 'RetentionPolicy.CLASS')
         }
     }
 }
@@ -41,7 +41,7 @@ clean {
     delete file('src')
 }
 
-apply from: rootProject.file("gradle-mvn-push.gradle")
+apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading to Maven repositories. */
 final checkerQualAndroidPom(publication) {

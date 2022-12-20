@@ -4,7 +4,7 @@
 
 plugins {
     id 'java'
-    id "io.freefair.lombok" version "5.3.3.3"
+    id 'io.freefair.lombok' version '5.3.3.3'
     // Checker Framework pluggable type-checking
     id 'org.checkerframework' version '0.6.20'
 }
@@ -13,9 +13,9 @@ apply plugin: 'org.checkerframework'
 
 def cfHome = "${projectDir}/../../.."
 dependencies {
-    compileOnly files(cfHome + "/checker/dist/checker-qual.jar")
-    testCompileOnly files(cfHome + "/checker/dist/checker-qual.jar")
-    checkerFramework files(cfHome + "/checker/dist/checker.jar")
+    compileOnly files(cfHome + '/checker/dist/checker-qual.jar')
+    testCompileOnly files(cfHome + '/checker/dist/checker-qual.jar')
+    checkerFramework files(cfHome + '/checker/dist/checker.jar')
 }
 
 repositories {
