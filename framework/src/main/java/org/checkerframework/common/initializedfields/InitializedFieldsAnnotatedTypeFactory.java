@@ -104,6 +104,9 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     return new InitializedFieldsContractsFromMethod(this);
   }
 
+  /** An array consisting only of the string "this". */
+  private static String[] thisStringArray = new String[] {"this"};
+
   /**
    * A subclass of ContractsFromMethod that adds a postcondition contract to each constructor,
    * requiring that it initializes all fields.
@@ -143,7 +146,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             {
               AnnotationBuilder builder =
                   new AnnotationBuilder(processingEnv, EnsuresInitializedFields.class);
-              builder.setValue("value", new String[] {"this"});
+              builder.setValue("value", thisStringArray);
               builder.setValue("fields", fieldsToInitialize);
               ensuresAnno = builder.build();
             }

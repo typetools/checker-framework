@@ -52,28 +52,35 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
     this.declaredType = (AnnotatedDeclaredType) type;
   }
 
-  @Override
-  protected TargetType[] validTargets() {
-    return new TargetType[] {
-      TargetType.RESOURCE_VARIABLE,
-      TargetType.EXCEPTION_PARAMETER,
-      TargetType.NEW,
-      TargetType.CAST,
-      TargetType.INSTANCEOF,
-      TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
-      TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
-      TargetType.METHOD_REFERENCE,
-      TargetType.CONSTRUCTOR_REFERENCE,
-      TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
-      TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
-      TargetType.CLASS_TYPE_PARAMETER,
-      TargetType.CLASS_TYPE_PARAMETER_BOUND
-    };
-  }
+  /** The annotated targets. */
+  private static TargetType[] annotatedTargets = new TargetType[] {TargetType.CLASS_EXTENDS};
 
   @Override
   protected TargetType[] annotatedTargets() {
-    return new TargetType[] {TargetType.CLASS_EXTENDS};
+    return annotatedTargets;
+  }
+
+  /** The valid targets. */
+  private static TargetType[] validTargets =
+      new TargetType[] {
+        TargetType.RESOURCE_VARIABLE,
+        TargetType.EXCEPTION_PARAMETER,
+        TargetType.NEW,
+        TargetType.CAST,
+        TargetType.INSTANCEOF,
+        TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
+        TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+        TargetType.METHOD_REFERENCE,
+        TargetType.CONSTRUCTOR_REFERENCE,
+        TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
+        TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
+        TargetType.CLASS_TYPE_PARAMETER,
+        TargetType.CLASS_TYPE_PARAMETER_BOUND
+      };
+
+  @Override
+  protected TargetType[] validTargets() {
+    return validTargets;
   }
 
   /** All TypeCompounds (annotations) on the ClassSymbol. */

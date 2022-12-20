@@ -211,6 +211,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
     return hasOptionNoSubcheckers("resolveReflection");
   }
 
+  /** An array containing just {@code BaseTypeChecker.class}. */
+  private static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
+
   /**
    * Returns the appropriate visitor that type-checks the compilation unit according to the type
    * system rules.
@@ -230,13 +233,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
   protected BaseTypeVisitor<?> createSourceVisitor() {
     // Try to reflectively load the visitor.
     Class<?> checkerClass = this.getClass();
-
+    Object[] thisArray = new Object[] {this};
     while (checkerClass != BaseTypeChecker.class) {
       BaseTypeVisitor<?> result =
           invokeConstructorFor(
               BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
-              new Class<?>[] {BaseTypeChecker.class},
-              new Object[] {this});
+              baseTypeCheckerClassArray,
+              thisArray);
       if (result != null) {
         return result;
       }

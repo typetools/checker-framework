@@ -315,6 +315,16 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     return true;
   }
 
+  /** Classes that AutoValue considers "optional". This list comes from AutoValue's source code. */
+  private static String[] optionalClassNames =
+      new String[] {
+        "com.google.common.base.Optional",
+        "java.util.Optional",
+        "java.util.OptionalDouble",
+        "java.util.OptionalInt",
+        "java.util.OptionalLong"
+      };
+
   /**
    * Returns whether AutoValue considers a type to be "optional". Optional types do not need to be
    * set before build is called on a builder. Adapted from AutoValue source code.
@@ -322,21 +332,12 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
    * @param type some type
    * @return true if type is an Optional type
    */
-  static boolean isOptional(TypeMirror type) {
+  private static boolean isOptional(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {
       return false;
     }
     DeclaredType declaredType = (DeclaredType) type;
     TypeElement typeElement = (TypeElement) declaredType.asElement();
-    // This list of classes that AutoValue considers "optional" comes from AutoValue's source code.
-    String[] optionalClassNames =
-        new String[] {
-          "com.google.common.base.Optional",
-          "java.util.Optional",
-          "java.util.OptionalDouble",
-          "java.util.OptionalInt",
-          "java.util.OptionalLong"
-        };
     return typeElement.getTypeParameters().size() == declaredType.getTypeArguments().size()
         && ArraysPlume.indexOf(optionalClassNames, typeElement.getQualifiedName().toString()) != -1;
   }
