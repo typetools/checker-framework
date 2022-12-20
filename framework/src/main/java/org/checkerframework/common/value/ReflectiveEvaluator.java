@@ -133,6 +133,9 @@ public class ReflectiveEvaluator {
     return results;
   }
 
+  /** An empty Object array. */
+  private static Object[] emptyObjectArray = new Object[] {};
+
   /**
    * This method normalizes an array of arguments to a varargs method by changing the arguments
    * associated with the varargs parameter into an array.
@@ -146,7 +149,7 @@ public class ReflectiveEvaluator {
 
     if (arguments == null) {
       // null means no arguments.  For varargs no arguments is an empty array.
-      arguments = new Object[] {};
+      arguments = emptyObjectArray;
     }
     Object[] newArgs = new Object[numberOfParameters];
     Object[] varArgsArray;
@@ -157,7 +160,7 @@ public class ReflectiveEvaluator {
       System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
     } else {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
-      varArgsArray = new Object[] {};
+      varArgsArray = emptyObjectArray;
     }
     newArgs[numberOfParameters - 1] = varArgsArray;
     return newArgs;
