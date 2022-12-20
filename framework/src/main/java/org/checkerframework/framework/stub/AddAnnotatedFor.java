@@ -60,6 +60,11 @@ public class AddAnnotatedFor {
             "AddAnnotatedFor.<clinit>");
   }
 
+  /** Do not instantiate. */
+  private AddAnnotatedFor() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Reads JAIF from the file indicated by the first element, or standard input if the argument
    * array is empty; inserts any appropriate {@code @AnnotatedFor} annotations, based on the
