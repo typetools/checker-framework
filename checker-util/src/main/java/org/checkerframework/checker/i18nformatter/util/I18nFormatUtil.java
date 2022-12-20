@@ -108,8 +108,8 @@ public class I18nFormatUtil {
   }
 
   private static class I18nConversion {
-    public int index;
-    public I18nConversionCategory category;
+    public final int index;
+    public final I18nConversionCategory category;
 
     public I18nConversion(int index, I18nConversionCategory category) {
       this.index = index;

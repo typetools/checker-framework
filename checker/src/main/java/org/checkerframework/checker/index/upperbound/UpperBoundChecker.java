@@ -41,20 +41,20 @@ import org.checkerframework.javacutil.TreeUtils;
 @SuppressWarningsPrefix({"index", "upperbound"})
 public class UpperBoundChecker extends BaseTypeChecker {
   /** The SubstringIndexFor.value argument/element. */
-  public final @MonotonicNonNull ExecutableElement substringIndexForValueElement;
+  public @MonotonicNonNull ExecutableElement substringIndexForValueElement;
   /** The SubstringIndexFor.offset argument/element. */
-  public final @MonotonicNonNull ExecutableElement substringIndexForOffsetElement;
+  public @MonotonicNonNull ExecutableElement substringIndexForOffsetElement;
 
   /** The LTLengthOf.value argument/element. */
-  public final @MonotonicNonNull ExecutableElement ltLengthOfValueElement;
+  public @MonotonicNonNull ExecutableElement ltLengthOfValueElement;
   /** The LTLengthOf.offset argument/element. */
-  public final @MonotonicNonNull ExecutableElement ltLengthOfOffsetElement;
+  public @MonotonicNonNull ExecutableElement ltLengthOfOffsetElement;
   /** The LTEqLengthOf.value argument/element. */
-  public final @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
+  public @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
   /** The LTOMLengthOf.value argument/element. */
-  public final @MonotonicNonNull ExecutableElement ltOMLengthOfValueElement;
+  public @MonotonicNonNull ExecutableElement ltOMLengthOfValueElement;
   /** The UpperBoundLiteral.value element/field. */
-  public final @MonotonicNonNull ExecutableElement upperBoundLiteralValueElement;
+  public @MonotonicNonNull ExecutableElement upperBoundLiteralValueElement;
 
   /**
    * These collection classes have some subtypes whose length can change and some subtypes whose

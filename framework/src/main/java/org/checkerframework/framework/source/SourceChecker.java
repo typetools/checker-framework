@@ -61,6 +61,7 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -422,10 +423,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Maps error keys to localized/custom error messages. Do not use directly; call {@link
    * #fullMessageOf} or {@link #processArg}.
    */
-  protected Properties messagesProperties;
+  protected @MonotonicNonNull Properties messagesProperties;
 
   /** Used to report error messages and warnings via the compiler. */
-  protected Messager messager;
+  protected @MonotonicNonNull Messager messager;
 
   /** Element utilities. */
   protected Elements elements;
@@ -452,7 +453,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly, call
    * {@link #getSuppressWarningsStringsFromOption()}.
    */
-  private String @Nullable [] suppressWarningsStringsFromOption;
+  private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
 
   /**
    * If true, use the "allcheckers:" warning string prefix.
@@ -470,7 +471,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.skipUses};
    * otherwise it contains a pattern that can match no class.
    */
-  private Pattern skipUsesPattern;
+  private @MonotonicNonNull Pattern skipUsesPattern;
 
   /**
    * Regular expression pattern to specify Java classes that are annotated, so warnings about them
@@ -479,7 +480,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.onlyUses};
    * otherwise it contains a pattern that matches every class.
    */
-  private Pattern onlyUsesPattern;
+  private @MonotonicNonNull Pattern onlyUsesPattern;
 
   /**
    * Regular expression pattern to specify Java classes whose definition should not be checked.
@@ -487,7 +488,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.skipDefs};
    * otherwise it contains a pattern that can match no class.
    */
-  private Pattern skipDefsPattern;
+  private @MonotonicNonNull Pattern skipDefsPattern;
 
   /**
    * Regular expression pattern to specify Java classes whose definition should be checked.
@@ -495,13 +496,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.onlyDefs};
    * otherwise it contains a pattern that matches every class.
    */
-  private Pattern onlyDefsPattern;
+  private @MonotonicNonNull Pattern onlyDefsPattern;
 
   /** The supported lint options. */
-  private Set<String> supportedLints;
+  private @MonotonicNonNull Set<String> supportedLints;
 
   /** The enabled lint options. */
-  private Set<String> activeLints;
+  private @MonotonicNonNull Set<String> activeLints;
 
   /**
    * The active options for this checker. This is a processed version of {@link
@@ -514,7 +515,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>Both the simple and the canonical name of the checker can be used. Superclasses of the
    * current checker are also considered.
    */
-  private Map<String, String> activeOptions;
+  private @MonotonicNonNull Map<String, String> activeOptions;
 
   /**
    * The string that separates the checker name from the option name in a "-A" command-line
@@ -532,7 +533,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected @Nullable SourceChecker parentChecker;
 
   /** List of upstream checker names. Includes the current checker. */
-  protected List<@FullyQualifiedName String> upstreamCheckerNames;
+  protected @MonotonicNonNull List<@FullyQualifiedName String> upstreamCheckerNames;
 
   @Override
   public final synchronized void init(ProcessingEnvironment env) {

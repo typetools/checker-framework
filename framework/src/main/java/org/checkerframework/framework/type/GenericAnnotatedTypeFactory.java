@@ -44,6 +44,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
@@ -143,11 +144,11 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
-  /** Should use flow by default. */
+  /** Should flow be used by default? */
   protected static boolean flowByDefault = true;
 
   /** To cache the supported monotonic type qualifiers. */
-  private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+  private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
   /** to annotate types based on the given tree */
   protected TypeAnnotator typeAnnotator;
@@ -170,8 +171,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /** To handle dependent type annotations and contract expressions. */
   protected DependentTypesHelper dependentTypesHelper;
 
-  /** to handle method pre- and postconditions */
-  protected ContractsFromMethod contractsUtils;
+  /** To handle method pre- and postconditions. */
+  protected final ContractsFromMethod contractsUtils;
 
   /**
    * The Java types on which users may write this type system's type annotations. null means no
@@ -183,7 +184,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code Class<?>} objects because the elements will be compared to TypeMirrors for which Class
    * objects may not exist (they might not be on the classpath).
    */
-  public @Nullable Set<TypeMirror> relevantJavaTypes;
+  public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
    * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
@@ -295,7 +296,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>The initial capacity of the map is set by {@link #getCacheSize()}.
    */
-  protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
+  protected @MonotonicNonNull Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
 
   /**
    * If true, {@link #setRoot(CompilationUnitTree)} should clear the {@link #subcheckerSharedCFG}
@@ -357,10 +358,10 @@ public abstract class GenericAnnotatedTypeFactory<
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
       this.relevantJavaTypes = new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
-      this.arraysAreRelevant = false;
+      boolean arraysAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
-          arraysAreRelevant = true;
+          arraysAreRelevantTemp = true;
         } else if (clazz.isArray()) {
           throw new TypeSystemError(
               "Don't use arrays other than Object[] in @RelevantJavaTypes on "
@@ -370,6 +371,7 @@ public abstract class GenericAnnotatedTypeFactory<
           relevantJavaTypes.add(types.erasure(relevantType));
         }
       }
+      this.arraysAreRelevant = arraysAreRelevantTemp;
     }
 
     contractsUtils = createContractsFromMethod();
@@ -1050,7 +1052,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Note that flowResult contains analysis results for Trees from multiple classes which are
    * produced by multiple calls to performFlowAnalysis.
    */
-  protected AnalysisResult<Value, Store> flowResult;
+  protected @MonotonicNonNull AnalysisResult<Value, Store> flowResult;
 
   /**
    * A mapping from methods (or other code blocks) to their regular exit store (used to check

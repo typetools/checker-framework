@@ -39,6 +39,9 @@ public class IndexRefinementInfo {
     right = r;
     left = l;
 
+    thenStore = result.getThenStore();
+    elseStore = result.getElseStore();
+
     if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
       leftAnno = null;
       rightAnno = null;
@@ -47,10 +50,6 @@ public class IndexRefinementInfo {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       rightAnno = getAnno(analysis.getValue(right).getAnnotations(), hierarchy);
       leftAnno = getAnno(analysis.getValue(left).getAnnotations(), hierarchy);
-
-      thenStore = result.getThenStore();
-      elseStore = result.getElseStore();
-
       newResult = new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
     }
   }
