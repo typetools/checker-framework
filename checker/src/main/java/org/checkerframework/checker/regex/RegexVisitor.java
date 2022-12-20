@@ -8,7 +8,6 @@ import com.sun.source.tree.Tree;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -32,14 +31,16 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
 
+  /** The java.util.regex.MatchResult.end method. */
   private final ExecutableElement matchResultEnd;
+  /** The java.util.regex.MatchResult.group method. */
   private final ExecutableElement matchResultGroup;
+  /** The java.util.regex.MatchResult.start method. */
   private final ExecutableElement matchResultStart;
+  /** The java.util.regex.Pattern.compile method. */
   private final ExecutableElement patternCompile;
+  /** The java.util.regex.Pattern.LITERAL field. */
   private final VariableElement patternLiteral;
-
-  /** Reference types that may be annotated with @Regex. */
-  protected TypeMirror[] legalReferenceTypes;
 
   /**
    * Create a RegexVisitor.

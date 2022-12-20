@@ -20,16 +20,16 @@ import org.checkerframework.javacutil.TypeSystemError;
  */
 public class IndexRefinementInfo {
 
-  public Node left, right;
+  public final Node left, right;
 
   /**
    * Annotation for left and right expressions. Might be null if dataflow doesn't have a value for
    * the expression.
    */
-  public AnnotationMirror leftAnno, rightAnno;
+  public final AnnotationMirror leftAnno, rightAnno;
 
-  public CFStore thenStore, elseStore;
-  public ConditionalTransferResult<CFValue, CFStore> newResult;
+  public final CFStore thenStore, elseStore;
+  public final ConditionalTransferResult<CFValue, CFStore> newResult;
 
   public IndexRefinementInfo(
       TransferResult<CFValue, CFStore> result,
