@@ -74,7 +74,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
    * field is used to report a rough location for the error in {@link
    * org.checkerframework.framework.source.SourceChecker#logBugInCF(BugInCF)}.
    */
-  /*package-private*/ Tree lastVisited;
+  /* package-private */ Tree lastVisited;
 
   /** Entry point for a type processor: the TreePath leaf is a top-level type tree within root. */
   public void visit(TreePath path) {
