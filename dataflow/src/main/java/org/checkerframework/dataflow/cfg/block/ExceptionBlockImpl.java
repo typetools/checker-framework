@@ -11,7 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 
-/** Base class of the {@link Block} implementation hierarchy. */
+/** Implementation of {@link ExceptionBlock}. */
 public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements ExceptionBlock {
 
   /** The node of this block. */

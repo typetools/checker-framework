@@ -379,8 +379,8 @@ two sequences:
 For example, to indicate that \<shorter> is a subsequence of \<longer>:
 
 \begin{Verbatim}
-  int startIndex;
-  int endIndex;
+  int start;
+  int end;
   int[] shorter;
   @HasSubsequence(value="shorter", from="this.start", to="this.end")
   int[] longer;
