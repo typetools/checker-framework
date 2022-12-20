@@ -66,17 +66,28 @@ public class TypeVarUseApplier {
     return componentType;
   }
 
+  /** The generic array type, if any. */
   // In order to avoid sprinkling code for type parameter uses all over the various locations
-  // uses can show up we also handle generic array types.  T [] myTArr;
-  private final AnnotatedArrayType arrayType;
+  // uses can show up, we also handle generic array types.  T [] myTArr;
+  private final @Nullable AnnotatedArrayType arrayType;
 
+  /** The type variable. */
   private final AnnotatedTypeVariable typeVariable;
+  /** The element for the declaration. */
   private final TypeParameterElement declarationElem;
+  /** The element for the use. */
   private final Element useElem;
 
   /** The annotated type factory. */
   private final AnnotatedTypeFactory typeFactory;
 
+  /**
+   * Create a new TypeVarUseApplier.
+   *
+   * @param type the type of the variable use
+   * @param element the element for the variable use
+   * @param typeFactory the type factory
+   */
   TypeVarUseApplier(
       final AnnotatedTypeMirror type,
       final Element element,

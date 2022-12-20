@@ -26,8 +26,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>An OffsetEquation is mutable.
  */
 public class OffsetEquation {
+  /** The equation for 0 (zero). */
   public static final OffsetEquation ZERO = createOffsetForInt(0);
+  /** The equation for -1. */
   public static final OffsetEquation NEG_1 = createOffsetForInt(-1);
+  /** The equation for 1. */
   public static final OffsetEquation ONE = createOffsetForInt(1);
 
   /** Mutable list of terms that have been added to this. */
