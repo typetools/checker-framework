@@ -1929,8 +1929,9 @@ public final class TreeUtils {
           typeTree = ((ParameterizedTypeTree) typeTree).getType();
           break;
         case UNION_TYPE:
-          List<AnnotationTree> result = new ArrayList<>();
-          for (Tree alternative : ((UnionTypeTree) typeTree).getTypeAlternatives()) {
+          List<? extends Tree> alternatives = ((UnionTypeTree) typeTree).getTypeAlternatives();
+          List<AnnotationTree> result = new ArrayList<>(alternatives.size());
+          for (Tree alternative : alternatives) {
             result.addAll(getExplicitAnnotationTrees(null, alternative));
           }
           return result;

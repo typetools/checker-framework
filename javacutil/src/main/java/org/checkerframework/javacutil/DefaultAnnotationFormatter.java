@@ -13,6 +13,7 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.CollectionsPlume;
 
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
@@ -112,7 +113,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    */
   private Map<ExecutableElement, AnnotationValue> removeDefaultValues(
       Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {
-    Map<ExecutableElement, AnnotationValue> nonDefaults = new LinkedHashMap<>();
+    // Most annotations have 2 or fewer elements.
+    Map<ExecutableElement, AnnotationValue> nonDefaults =
+        new LinkedHashMap<>(CollectionsPlume.mapCapacity(2));
     elementValues.forEach(
         (element, value) -> {
           if (element.getDefaultValue() == null

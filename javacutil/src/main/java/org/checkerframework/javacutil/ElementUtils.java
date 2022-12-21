@@ -487,7 +487,7 @@ public class ElementUtils {
    *     {@code type}
    */
   public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
-    Set<VariableElement> results = new HashSet<>();
+    Set<VariableElement> results = new HashSet<>(CollectionsPlume.mapCapacity(names));
     for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
       if (names.contains(field.getSimpleName().toString())) {
         results.add(field);
@@ -514,7 +514,7 @@ public class ElementUtils {
   public static Set<VariableElement> findFieldsInTypeOrSuperType(
       TypeMirror type, Collection<String> names) {
     int origCardinality = names.size();
-    Set<VariableElement> elements = new HashSet<>();
+    Set<VariableElement> elements = new HashSet<>(CollectionsPlume.mapCapacity(names.size()));
     findFieldsInTypeOrSuperType(type, names, elements);
     // Since names may contain duplicates, I don't trust the claim in the documentation about
     // cardinality.  (Does any code depend on the invariant, though?)
@@ -720,8 +720,10 @@ public class ElementUtils {
    * @return all enum constants declared in the given enumeration
    */
   public static List<VariableElement> getEnumConstants(TypeElement type) {
-    List<VariableElement> enumConstants = new ArrayList<>();
-    for (Element e : type.getEnclosedElements()) {
+    List<? extends Element> enclosedElements = type.getEnclosedElements();
+    List<VariableElement> enumConstants =
+        new ArrayList<>(CollectionsPlume.mapCapacity(enclosedElements.size()));
+    for (Element e : enclosedElements) {
       if (e.getKind() == ElementKind.ENUM_CONSTANT) {
         enumConstants.add((VariableElement) e);
       }

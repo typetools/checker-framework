@@ -1141,7 +1141,7 @@ public final class TypesUtils {
    */
   public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
     List<TypeVariable> list = new ArrayList<>(collection);
-    List<TypeVariable> ordered = new ArrayList<>();
+    List<TypeVariable> ordered = new ArrayList<>(list.size());
     while (!list.isEmpty()) {
       TypeVariable free = doesNotContainOthers(list, types);
       list.remove(free);

@@ -606,7 +606,8 @@ public class AnnotationUtils {
   @Deprecated // 2021-03-29; do not remove, just make private
   public static Map<? extends ExecutableElement, ? extends AnnotationValue>
       getElementValuesWithDefaults(AnnotationMirror ad) {
-    Map<ExecutableElement, AnnotationValue> valMap = new HashMap<>();
+    // Most annotations have 2 or fewer elements.
+    Map<ExecutableElement, AnnotationValue> valMap = new HashMap<>(CollectionsPlume.mapCapacity(2));
     if (ad.getElementValues() != null) {
       valMap.putAll(ad.getElementValues());
     }
