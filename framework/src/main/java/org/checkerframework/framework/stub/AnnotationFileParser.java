@@ -959,7 +959,8 @@ public class AnnotationFileParser {
 
     if (typeDecl instanceof RecordDeclaration) {
       NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
-      LinkedHashMap<String, RecordComponentStub> byName = new LinkedHashMap<>();
+      LinkedHashMap<String, RecordComponentStub> byName =
+          new LinkedHashMap<>(CollectionsPlume.mapCapacity(recordMembers.size()));
       for (Parameter recordMember : recordMembers) {
         RecordComponentStub stub =
             processRecordField(
@@ -1246,8 +1247,8 @@ public class AnnotationFileParser {
         // annotations should not be automatically transferred:
         String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
         if (annotationFileAnnos.records.containsKey(qualRecordName)) {
-          ArrayList<AnnotatedTypeMirror> annotatedParameters = new ArrayList<>();
           List<? extends VariableElement> parameters = elt.getParameters();
+          ArrayList<AnnotatedTypeMirror> annotatedParameters = new ArrayList<>(parameters.size());
           for (int i = 0; i < parameters.size(); i++) {
             VariableElement parameter = parameters.get(i);
             AnnotatedTypeMirror atm =
@@ -1860,7 +1861,8 @@ public class AnnotationFileParser {
           findElement(typeElt, method, /*noWarn=*/ false);
         } else {
           List<BodyDeclaration<?>> l =
-              fakeOverrideDecls.computeIfAbsent(overriddenMethod, __ -> new ArrayList<>());
+              fakeOverrideDecls.computeIfAbsent(
+                  overriddenMethod, __ -> new ArrayList<>(CollectionsPlume.mapCapacity(1)));
           l.add(member);
         }
       }
@@ -2049,7 +2051,8 @@ public class AnnotationFileParser {
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
     List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
-        annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>());
+        annotationFileAnnos.fakeOverrides.computeIfAbsent(
+            element, __ -> new ArrayList<>(CollectionsPlume.mapCapacity(1)));
     l.add(Pair.of(fakeLocation.asType(), methodType));
   }
 

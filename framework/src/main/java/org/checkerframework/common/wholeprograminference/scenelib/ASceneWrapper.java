@@ -93,7 +93,7 @@ public class ASceneWrapper {
     String annosToRemoveKey = WholeProgramInferenceScenesStorage.aTypeElementToString(typeElt);
     Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
     if (annosToRemoveForLocation != null) {
-      Set<Annotation> annosToRemoveHere = new HashSet<>();
+      Set<Annotation> annosToRemoveHere = new HashSet<>(annosToRemoveForLocation.size());
       for (Annotation anno : typeElt.tlAnnotationsHere) {
         if (annosToRemoveForLocation.contains(anno.def().toString())) {
           annosToRemoveHere.add(anno);

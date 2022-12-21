@@ -199,7 +199,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
       return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
     }
     // The returned set will be modified by callees.
-    return new LinkedHashSet<>();
+    // Most checkers have 1 or fewer subcheckers.
+    return new LinkedHashSet<>(CollectionsPlume.mapCapacity(1));
   }
 
   /**

@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * The ClassVal Checker provides a sound estimate of the binary name of Class objects.
@@ -21,7 +22,8 @@ public class ClassValChecker extends BaseTypeChecker {
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     // Don't call super otherwise MethodVal will be added as a subChecker
     // which creates a circular dependency.
-    LinkedHashSet<Class<? extends BaseTypeChecker>> subCheckers = new LinkedHashSet<>();
+    LinkedHashSet<Class<? extends BaseTypeChecker>> subCheckers =
+        new LinkedHashSet<>(CollectionsPlume.mapCapacity(1));
     subCheckers.add(ValueChecker.class);
     return subCheckers;
   }

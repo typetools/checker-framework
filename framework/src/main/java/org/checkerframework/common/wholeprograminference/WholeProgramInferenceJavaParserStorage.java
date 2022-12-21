@@ -883,8 +883,9 @@ public class WholeProgramInferenceJavaParserStorage
     if (parentDecl.isClassOrInterfaceDeclaration()) {
       ClassOrInterfaceDeclaration parentClassDecl = parentDecl.asClassOrInterfaceDeclaration();
       if (!parentClassDecl.getTypeParameters().isEmpty()) {
+        List<TypeParameter> typeParams = parentClassDecl.getTypeParameters();
         NodeList<Type> typeArgs = new NodeList<>();
-        for (TypeParameter typeParam : parentClassDecl.getTypeParameters()) {
+        for (TypeParameter typeParam : typeParams) {
           ClassOrInterfaceType typeArg = new ClassOrInterfaceType();
           typeArg.setName(typeParam.getNameAsString());
           typeArgs.add(typeArg);

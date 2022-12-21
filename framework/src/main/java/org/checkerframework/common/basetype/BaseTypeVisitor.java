@@ -1511,7 +1511,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
     if (lastDeclAnnoIndex != -1) {
-      List<AnnotationTree> badTypeAnnos = new ArrayList<>();
+      // Usually, there are few bad invariant annotations.
+      List<AnnotationTree> badTypeAnnos = new ArrayList<>(CollectionsPlume.mapCapacity(2));
       for (int i = 0; i < lastDeclAnnoIndex; i++) {
         AnnotationTree anno = annotations.get(i);
         if (isTypeAnnotation(anno)) {

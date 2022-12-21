@@ -1421,8 +1421,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.singleton("all");
     }
 
-    Set<String> activeLint = new HashSet<>();
-    for (String s : lintString.split(",")) {
+    String[] lintStrings = lintString.split(",");
+    Set<String> activeLint = new HashSet<>(lintStrings.length);
+    for (String s : lintStrings) {
       if (!this.getSupportedLintOptions().contains(s)
           && !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1)))
           && !s.equals("all")
@@ -1543,7 +1544,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     TODO: assert that name doesn't start with '-'
     */
 
-    Set<String> newlints = new HashSet<>();
+    Set<String> newlints = new HashSet<>(CollectionsPlume.mapCapacity(activeLints.size() + 1));
     newlints.addAll(activeLints);
     if (val) {
       newlints.add(name);
@@ -1837,8 +1838,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected Collection<String> expandCFOptions(
       List<? extends Class<?>> clazzPrefixes, String[] options) {
-    Set<String> res = new HashSet<>();
-
+    Set<String> res =
+        new HashSet<>(CollectionsPlume.mapCapacity(options.length * (1 + clazzPrefixes.size())));
     for (String option : options) {
       res.add(option);
       for (Class<?> clazz : clazzPrefixes) {

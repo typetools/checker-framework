@@ -52,6 +52,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Default implementation of {@link ReflectionResolver}. It resolves calls to:
@@ -552,7 +553,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     ElementFilter.constructorsIn(symClass.getEnclosedElements());
 
     // The common case is probably that `result` is a singleton at method exit.
-    List<Symbol> result = new ArrayList<>();
+    List<Symbol> result = new ArrayList<>(CollectionsPlume.mapCapacity(1));
     for (Symbol s : symClass.getEnclosedElements()) {
       // Check all constructors
       if (s.getKind() == ElementKind.CONSTRUCTOR) {
