@@ -250,7 +250,7 @@ public final class SceneToStubWriter {
     }
   }
 
-  /** Static variable to improve performance of getNextArrayLevel. */
+  /** Static mutable variable to improve performance of getNextArrayLevel. */
   private static List<TypePathEntry> location;
 
   /**

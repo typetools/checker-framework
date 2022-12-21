@@ -1978,7 +1978,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /** The name of the @SuppressWarnings annotation. */
-  private final @CanonicalName String suppressWarningsClassName =
+  private static final @CanonicalName String suppressWarningsClassName =
       SuppressWarnings.class.getCanonicalName();
   /**
    * Finds the tree that is a {@code @SuppressWarnings} annotation.

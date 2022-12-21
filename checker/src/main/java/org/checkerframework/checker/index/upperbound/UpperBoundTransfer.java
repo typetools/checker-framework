@@ -107,10 +107,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
   /** The type factory associated with this transfer function. */
-  private UpperBoundAnnotatedTypeFactory atypeFactory;
+  private final UpperBoundAnnotatedTypeFactory atypeFactory;
 
   /** The int TypeMirror. */
-  TypeMirror intTM;
+  final TypeMirror intTM;
 
   /**
    * Creates a new UpperBoundTransfer.

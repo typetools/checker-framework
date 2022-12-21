@@ -531,7 +531,7 @@ public class QualifierDefaults {
   }
 
   /** The default {@code value} element for a @DefaultQualifier annotation. */
-  private static TypeUseLocation[] defaultQualifierValueDefault =
+  private static final TypeUseLocation[] defaultQualifierValueDefault =
       new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
 
   /**

@@ -36,6 +36,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -68,7 +69,8 @@ public class AnnotatedTypes {
     throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
   }
 
-  private static AsSuperVisitor asSuperVisitor;
+  /** Implements {@code asSuper}. */
+  private static @MonotonicNonNull AsSuperVisitor asSuperVisitor;
 
   /**
    * Copies annotations from {@code type} to a copy of {@code superType} where the type variables of
@@ -1193,7 +1195,7 @@ public class AnnotatedTypes {
   }
 
   /** java.lang.annotation.Annotation.class canonical name. */
-  private static @CanonicalName String annotationClassName =
+  private static final @CanonicalName String annotationClassName =
       java.lang.annotation.Annotation.class.getCanonicalName();
 
   /**

@@ -46,7 +46,7 @@ public class MustCallTransfer extends CFTransfer {
   private final TreeBuilder treeBuilder;
 
   /** The type factory. */
-  private MustCallAnnotatedTypeFactory atypeFactory;
+  private final MustCallAnnotatedTypeFactory atypeFactory;
 
   /**
    * A cache for the default type for java.lang.String, to avoid needing to look it up for every

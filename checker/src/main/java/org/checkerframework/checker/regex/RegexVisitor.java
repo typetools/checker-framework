@@ -31,15 +31,15 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
 
-  /** The java.util.regex.MatchResult.end method. */
+  /** The method java.util.regex.MatchResult.end. */
   private final ExecutableElement matchResultEnd;
-  /** The java.util.regex.MatchResult.group method. */
+  /** The method java.util.regex.MatchResult.group. */
   private final ExecutableElement matchResultGroup;
-  /** The java.util.regex.MatchResult.start method. */
+  /** The method java.util.regex.MatchResult.start. */
   private final ExecutableElement matchResultStart;
-  /** The java.util.regex.Pattern.compile method. */
+  /** The method java.util.regex.Pattern.compile. */
   private final ExecutableElement patternCompile;
-  /** The java.util.regex.Pattern.LITERAL field. */
+  /** The field java.util.regex.Pattern.LITERAL. */
   private final VariableElement patternLiteral;
 
   /**
