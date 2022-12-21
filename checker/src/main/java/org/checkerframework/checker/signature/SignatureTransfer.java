@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class SignatureTransfer extends CFTransfer {
 
   /** The annotated type factory for this transfer function. */
-  private SignatureAnnotatedTypeFactory aTypeFactory;
+  private final SignatureAnnotatedTypeFactory aTypeFactory;
 
   /**
    * Create a new SignatureTransfer.

@@ -37,7 +37,7 @@ public class ManualTaglet implements Taglet {
     return NAME;
   }
 
-  private final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
+  private static final EnumSet<Location> allowedSet = EnumSet.allOf(Location.class);
 
   @Override
   public Set<Taglet.Location> getAllowedLocations() {

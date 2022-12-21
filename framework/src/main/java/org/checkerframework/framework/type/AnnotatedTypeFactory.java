@@ -201,6 +201,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private @Nullable TreePath visitorTreePath;
 
+  // These variables cannot be static because they depend on the ProcessingEnvironment.
   /** The AnnotatedFor.value argument/element. */
   private final ExecutableElement annotatedForValueElement;
   /** The EnsuresQualifier.expression field/element. */
@@ -233,17 +234,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   final ExecutableElement requiresQualifierListValueElement;
 
   /** The RequiresQualifier type. */
-  TypeMirror requiresQualifierTM;
+  final TypeMirror requiresQualifierTM;
   /** The RequiresQualifier.List type. */
-  TypeMirror requiresQualifierListTM;
+  final TypeMirror requiresQualifierListTM;
   /** The EnsuresQualifier type. */
-  TypeMirror ensuresQualifierTM;
+  final TypeMirror ensuresQualifierTM;
   /** The EnsuresQualifier.List type. */
-  TypeMirror ensuresQualifierListTM;
+  final TypeMirror ensuresQualifierListTM;
   /** The EnsuresQualifierIf type. */
-  TypeMirror ensuresQualifierIfTM;
+  final TypeMirror ensuresQualifierIfTM;
   /** The EnsuresQualifierIf.List type. */
-  TypeMirror ensuresQualifierIfListTM;
+  final TypeMirror ensuresQualifierIfListTM;
 
   /**
    * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -333,7 +334,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
    */
-  private SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
+  private final SimpleAnnotatedTypeScanner<Void, Void> atmInitializer =
       new SimpleAnnotatedTypeScanner<>((type1, q) -> null);
 
   /**

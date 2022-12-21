@@ -61,6 +61,7 @@ import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -470,7 +471,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.skipUses};
    * otherwise it contains a pattern that can match no class.
    */
-  private Pattern skipUsesPattern;
+  private @MonotonicNonNull Pattern skipUsesPattern;
 
   /**
    * Regular expression pattern to specify Java classes that are annotated, so warnings about them
@@ -479,7 +480,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.onlyUses};
    * otherwise it contains a pattern that matches every class.
    */
-  private Pattern onlyUsesPattern;
+  private @MonotonicNonNull Pattern onlyUsesPattern;
 
   /**
    * Regular expression pattern to specify Java classes whose definition should not be checked.
@@ -487,7 +488,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.skipDefs};
    * otherwise it contains a pattern that can match no class.
    */
-  private Pattern skipDefsPattern;
+  private @MonotonicNonNull Pattern skipDefsPattern;
 
   /**
    * Regular expression pattern to specify Java classes whose definition should be checked.
@@ -495,13 +496,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It contains the pattern specified by the user, through the option {@code checkers.onlyDefs};
    * otherwise it contains a pattern that matches every class.
    */
-  private Pattern onlyDefsPattern;
+  private @MonotonicNonNull Pattern onlyDefsPattern;
 
   /** The supported lint options. */
-  private Set<String> supportedLints;
+  private @MonotonicNonNull Set<String> supportedLints;
 
   /** The enabled lint options. */
-  private Set<String> activeLints;
+  private @MonotonicNonNull Set<String> activeLints;
 
   /**
    * The active options for this checker. This is a processed version of {@link
@@ -1977,7 +1978,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /** The name of the @SuppressWarnings annotation. */
-  private final @CanonicalName String suppressWarningsClassName =
+  private static final @CanonicalName String suppressWarningsClassName =
       SuppressWarnings.class.getCanonicalName();
   /**
    * Finds the tree that is a {@code @SuppressWarnings} annotation.

@@ -38,7 +38,7 @@ import org.plumelib.util.ArraysPlume;
 public class AutoValueSupport implements BuilderFrameworkSupport {
 
   /** The type factory. */
-  private CalledMethodsAnnotatedTypeFactory atypeFactory;
+  private final CalledMethodsAnnotatedTypeFactory atypeFactory;
 
   /**
    * Create a new AutoValueSupport.
@@ -269,7 +269,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
   }
 
   /** Method names for {@link #isAutoValueRequiredProperty} to ignore. */
-  private Set<String> isAutoValueRequiredPropertyIgnored =
+  private final Set<String> isAutoValueRequiredPropertyIgnored =
       new HashSet<>(Arrays.asList("equals", "hashCode", "toString", "<init>", "toBuilder"));
 
   /**

@@ -400,13 +400,17 @@ public class TypeVisualizer {
       }
     }
 
+    /** The default annotation formatter. */
+    private static final DefaultAnnotationFormatter annoFormatter =
+        new DefaultAnnotationFormatter();
+
     /**
      * Scans types and adds a mapping from type to dot node declaration representing that type in
      * the enclosing drawing.
      */
     private class NodeDrawer implements AnnotatedTypeVisitor<Void, Void> {
-      private final DefaultAnnotationFormatter annoFormatter = new DefaultAnnotationFormatter();
 
+      /** Create a new NodeDrawer. */
       public NodeDrawer() {}
 
       private void visitAll(final List<? extends AnnotatedTypeMirror> types) {
