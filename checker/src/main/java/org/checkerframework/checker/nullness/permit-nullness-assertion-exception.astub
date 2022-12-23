@@ -1,0 +1,40 @@
+// This stub file makes the Nullness Checker not warn about null pointer
+// exceptions thrown by nullness assertion methods.  There is no longer any
+// guarantee that your program will not throw a NullPointerException.
+
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import java.util.function.Supplier;
+
+
+package java.util;
+
+public class Objects {
+    @EnsuresNonNull("#1")
+    public static <T> T requireNonNull(@Nullable T obj);
+    @EnsuresNonNull("#1")
+    public static <T> T requireNonNull(@Nullable T obj, String message);
+}
+
+
+// No annotations for com.google.common.base.Preconditions or
+// com.google.common.base.Verify are needed because they are annotated with
+// @CheckForNull and the Checker Framework treats @CheckForNull as @Nullable.
+
+
+package org.junit;
+
+public class Assertions {
+	public static void assertNotNull(@Nullable Object actual);
+	public static void assertNotNull(@Nullable Object actual, String message);
+	public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
+}
+
+
+package org.junit.jupiter.api;
+
+public class Assertions {
+	public static void assertNotNull(@Nullable Object actual);
+	public static void assertNotNull(@Nullable Object actual, String message);
+	public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
+}
