@@ -25,16 +25,16 @@ public class Objects {
 package org.junit;
 
 public class Assertions {
-	public static void assertNotNull(@Nullable Object actual);
-	public static void assertNotNull(@Nullable Object actual, String message);
-	public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
+  public static void assertNotNull(@Nullable Object actual);
+  public static void assertNotNull(@Nullable Object actual, String message);
+  public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
 }
 
 
 package org.junit.jupiter.api;
 
 public class Assertions {
-	public static void assertNotNull(@Nullable Object actual);
-	public static void assertNotNull(@Nullable Object actual, String message);
-	public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
+  public static void assertNotNull(@Nullable Object actual);
+  public static void assertNotNull(@Nullable Object actual, String message);
+  public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
 }
