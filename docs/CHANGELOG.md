@@ -6,6 +6,9 @@ Version 3.28.1 (January 3, 2022)
 Dropped support for `-ApermitUnsupportedJdkVersion` command-line argument.
 You can now run the Checker Framework under any JDK version, without a warning.
 
+Pass `-Astubs=sometimes-nullable.astub` to unsoundly permit passing null to
+calls if null is sometimes but not always permitted.
+
 **Implementation details:**
 
 **Closed issues:**

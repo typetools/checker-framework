@@ -30,8 +30,13 @@ to provide precise nullness checking.
 
 \sectionAndLabel{What the Nullness Checker guarantees}{nullness-checks}
 
+% TODO: The actual guarantee is a bit more subtle than this; put it here
+% rather than this more imprecise one.
+
 If the Nullness Checker type-checks your program without errors, then your
-program will not crash with a \<NullPointerException>.
+program will not crash with a \<NullPointerException> that is caused by
+misuse of \<null> in checked code.
+%
 Section~\ref{checker-guarantees} notes some limitations to guarantees made
 by the Checker Framework.
 
