@@ -70,6 +70,9 @@ class MultipleMethodParamsMustCallAliasTest {
     private final @Owning InputStream in2;
 
     public @MustCallAlias ReplicaInputStreams(
+        // This class is unsafe: calling close on i1 doesn't result in calling close on i2,
+        // so this MustCallAlias relationship shouldn't be verified.
+        // :: error: mustcallalias.out.of.scope
         @MustCallAlias InputStream i1, @MustCallAlias InputStream i2) {
       this.in1 = i1;
       this.in2 = i2;
