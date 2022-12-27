@@ -447,8 +447,9 @@ public class WholeProgramInferenceJavaParserStorage
   private void addClassTree(ClassTree tree) {
     TypeElement element = TreeUtils.elementFromDeclaration(tree);
     if (element == null) {
-      throw new BugInCF("element is null for ClassTree: " + tree);
-      // return;
+      // TODO: There should be an element here, or there is nowhere to store inferences about
+      // `tree`.
+      return;
     }
     String className = ElementUtils.getBinaryName(element);
     if (classToAnnos.containsKey(className)) {
