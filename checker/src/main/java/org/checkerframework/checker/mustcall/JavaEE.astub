@@ -13,8 +13,6 @@ package javax.servlet;
 interface ServletResponse {
     // The link below justifies why these annotations are correct
     // https://stackoverflow.com/questions/1159168/should-one-call-close-on-httpservletresponse-getoutputstream-getwriter
-    // TODO: change these annotations back to @NotOwning after https://github.com/typetools/checker-framework/issues/5472
-    // is fixed.
-    @MustCall({}) ServletOutputStream getOutputStream() throws IOException;
-    @MustCall({}) PrintWriter getWriter() throws IOException;
+    @NotOwning ServletOutputStream getOutputStream() throws IOException;
+    @NotOwning PrintWriter getWriter() throws IOException;
 }

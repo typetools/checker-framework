@@ -1635,7 +1635,7 @@ class MustCallConsistencyAnalyzer {
       return false;
     }
     // check for absence of @NotOwning annotation
-    return (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null);
+    return !typeFactory.hasNotOwning(executableElement);
   }
 
   /**

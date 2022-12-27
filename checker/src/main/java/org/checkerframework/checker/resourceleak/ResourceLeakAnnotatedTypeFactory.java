@@ -23,6 +23,7 @@ import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -354,5 +355,16 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   @Override
   public ExecutableElement getCreatesMustCallForListValueElement() {
     return createsMustCallForListValueElement;
+  }
+
+  /**
+   * Does the given element have an {@code @NotOwning} annotation (including in stub files)?
+   *
+   * @param elt an element
+   * @return whether there is a NotOwning annotation on the given element
+   */
+  public boolean hasNotOwning(Element elt) {
+    return getTypeFactoryOfSubchecker(MustCallChecker.class).getDeclAnnotation(elt, NotOwning.class)
+        != null;
   }
 }
