@@ -653,9 +653,12 @@ public class WholeProgramInferenceJavaParserStorage
             // the specification of an enum constant, which does permit it to define an anonymous
             // class.
             NewClassTree constructor = (NewClassTree) javacTree.getInitializer();
-            if (constructor.getClassBody() != null) {
+            ClassTree constructorClassBody = constructor.getClassBody();
+            if (constructorClassBody != null) {
               // addClass assumes there is an element for its argument, but that is not always true!
-              addClass(constructor.getClassBody());
+              if (TreeUtils.elementFromDeclaration(constructorClassBody) != null) {
+                addClass(constructorClassBody);
+              }
             }
           }
 
