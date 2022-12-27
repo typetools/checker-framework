@@ -202,6 +202,9 @@ public class WholeProgramInferenceJavaParserStorage
     // Read in classes for the element.
     getFileForElement(fieldElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      return null;
+    }
     FieldAnnos fieldAnnos = classAnnos.fields.get(fieldElt.getSimpleName().toString());
     return fieldAnnos;
   }
@@ -261,6 +264,9 @@ public class WholeProgramInferenceJavaParserStorage
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     @BinaryName String className = enclosingClass.flatname.toString();
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      return null;
+    }
     // If it's an enum constant it won't appear as a field
     // and it won't have extra annotations, so just return the basic type:
     if (classAnnos.enumConstants.contains(fieldName)) {
