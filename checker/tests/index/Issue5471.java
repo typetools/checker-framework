@@ -1,4 +1,5 @@
 // Test case for https://github.com/typetools/checker-framework/issues/5471.
+// @skip-test until the issue is fixed.
 
 import org.checkerframework.checker.index.qual.IndexFor;
 
