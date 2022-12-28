@@ -1,0 +1,34 @@
+package org.apache.commons.io;
+
+import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.checker.calledmethods.qual.*;
+
+class IOUtils {
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(Reader arg0);
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(Writer arg0);
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(InputStream arg0);
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(OutputStream arg0);
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(Closeable arg0);
+    @SuppressWarnings("ensuresvarargs.unverified")
+    @EnsuresCalledMethodsVarArgs("close")
+    static void closeQuietly(Closeable... arg0);
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(Socket arg0);
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(Selector arg0);
+    @EnsuresCalledMethods(value = "#1", methods = "close")
+    static void closeQuietly(ServerSocket arg0);
+    @NotOwning static InputStream toBufferedInputStream(InputStream arg0) throws IOException;
+    @NotOwning static BufferedReader toBufferedReader(Reader arg0);
+    @NotOwning static InputStream toInputStream(CharSequence arg0);
+    @NotOwning static InputStream toInputStream(CharSequence arg0, Charset arg1);
+    @NotOwning static InputStream toInputStream(CharSequence arg0, String arg1) throws IOException;
+    @NotOwning static InputStream toInputStream(String arg0);
+    @NotOwning static InputStream toInputStream(String arg0, Charset arg1);
+    @NotOwning static InputStream toInputStream(String arg0, String arg1) throws IOException;
+}
