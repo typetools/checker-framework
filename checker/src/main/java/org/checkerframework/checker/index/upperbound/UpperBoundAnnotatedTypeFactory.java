@@ -500,9 +500,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         // the empty string: "".indexOf("") returns 0, which isn't an index into "". So, this
         // special case modifies the return type of these methods if either the parameter or
         // the receiver is known (by the Value Checker) to not be the empty string. There are
-        // two ways the Value Checker might have that information: either string could have a
-        // @StringVal annotation whose value isn't "", or either could have an @ArrayLen annotation
-        // whose value isn't zero.
+        // three ways the Value Checker might have that information: either string could have a
+        // @StringVal annotation whose value isn't "", either could have an @ArrayLen annotation
+        // whose value isn't zero, or either could have an @ArrayLenRange annotation whose from
+        // value is any positive integer.
         ValueAnnotatedTypeFactory vatf =
             ((UpperBoundAnnotatedTypeFactory) this.atypeFactory).getValueAnnotatedTypeFactory();
         AnnotatedTypeMirror argType = vatf.getAnnotatedType(tree.getArguments().get(0));
@@ -527,8 +528,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *
      * @param atm an annotated type from the Value Checker
      * @param vatf the Value Annotated Type Factory
-     * @return true iff atm contains a {@code StringVal} annotation whose value isn't "", or an
-     *     {@code ArrayLen} annotation whose value isn't 0
+     * @return true iff atm contains a {@code StringVal} annotation whose value isn't "", an {@code
+     *     ArrayLen} annotation whose value isn't 0, or an {@code ArrayLenRange} annotation whose
+     *     from value is greater than 0
      */
     private boolean definitelyIsNotTheEmptyString(
         AnnotatedTypeMirror atm, ValueAnnotatedTypeFactory vatf) {
