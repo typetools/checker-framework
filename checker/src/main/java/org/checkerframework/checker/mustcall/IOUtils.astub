@@ -1,9 +1,18 @@
 package org.apache.commons.io;
 
 import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.common.returnsreceiver.qual.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 
 class IOUtils {
+    static final char DIR_SEPARATOR_UNIX;
+    static final char DIR_SEPARATOR_WINDOWS;
+    static final char DIR_SEPARATOR;
+    static final String LINE_SEPARATOR_UNIX;
+    static final String LINE_SEPARATOR_WINDOWS;
+    static final String LINE_SEPARATOR;
+    IOUtils();
+    static void close(URLConnection arg0);
     @EnsuresCalledMethods(value = "#1", methods = "close")
     static void closeQuietly(Reader arg0);
     @EnsuresCalledMethods(value = "#1", methods = "close")
@@ -25,10 +34,102 @@ class IOUtils {
     static void closeQuietly(ServerSocket arg0);
     @NotOwning static InputStream toBufferedInputStream(InputStream arg0) throws IOException;
     @NotOwning static BufferedReader toBufferedReader(Reader arg0);
+    static byte[] toByteArray(InputStream arg0) throws IOException;
+    static byte[] toByteArray(InputStream arg0, long arg1) throws IOException;
+    static byte[] toByteArray(InputStream arg0, int arg1) throws IOException;
+    static byte[] toByteArray(Reader arg0) throws IOException;
+    static byte[] toByteArray(Reader arg0, Charset arg1) throws IOException;
+    static byte[] toByteArray(Reader arg0, String arg1) throws IOException;
+    @java.lang.Deprecated
+static byte[] toByteArray(String arg0) throws IOException;
+    static byte[] toByteArray(URI arg0) throws IOException;
+    static byte[] toByteArray(URL arg0) throws IOException;
+    static byte[] toByteArray(URLConnection arg0) throws IOException;
+    static char[] toCharArray(InputStream arg0) throws IOException;
+    static char[] toCharArray(InputStream arg0, Charset arg1) throws IOException;
+    static char[] toCharArray(InputStream arg0, String arg1) throws IOException;
+    static char[] toCharArray(Reader arg0) throws IOException;
+    static String toString(InputStream arg0) throws IOException;
+    static String toString(InputStream arg0, Charset arg1) throws IOException;
+    static String toString(InputStream arg0, String arg1) throws IOException;
+    static String toString(Reader arg0) throws IOException;
+    static String toString(URI arg0) throws IOException;
+    static String toString(URI arg0, Charset arg1) throws IOException;
+    static String toString(URI arg0, String arg1) throws IOException;
+    static String toString(URL arg0) throws IOException;
+    static String toString(URL arg0, Charset arg1) throws IOException;
+    static String toString(URL arg0, String arg1) throws IOException;
+    @java.lang.Deprecated
+static String toString(byte[] arg0) throws IOException;
+    static String toString(byte[] arg0, String arg1) throws IOException;
+    static List<String> readLines(InputStream arg0) throws IOException;
+    static List<String> readLines(InputStream arg0, Charset arg1) throws IOException;
+    static List<String> readLines(InputStream arg0, String arg1) throws IOException;
+    static List<String> readLines(Reader arg0) throws IOException;
+    static LineIterator lineIterator(Reader arg0);
+    static LineIterator lineIterator(InputStream arg0, Charset arg1) throws IOException;
+    static LineIterator lineIterator(InputStream arg0, String arg1) throws IOException;
     @NotOwning static InputStream toInputStream(CharSequence arg0);
     @NotOwning static InputStream toInputStream(CharSequence arg0, Charset arg1);
     @NotOwning static InputStream toInputStream(CharSequence arg0, String arg1) throws IOException;
     @NotOwning static InputStream toInputStream(String arg0);
     @NotOwning static InputStream toInputStream(String arg0, Charset arg1);
     @NotOwning static InputStream toInputStream(String arg0, String arg1) throws IOException;
+    static void write(byte[] arg0, OutputStream arg1) throws IOException;
+    static void write(byte[] arg0, Writer arg1) throws IOException;
+    static void write(byte[] arg0, Writer arg1, Charset arg2) throws IOException;
+    static void write(byte[] arg0, Writer arg1, String arg2) throws IOException;
+    static void write(char[] arg0, Writer arg1) throws IOException;
+    static void write(char[] arg0, OutputStream arg1) throws IOException;
+    static void write(char[] arg0, OutputStream arg1, Charset arg2) throws IOException;
+    static void write(char[] arg0, OutputStream arg1, String arg2) throws IOException;
+    static void write(CharSequence arg0, Writer arg1) throws IOException;
+    static void write(CharSequence arg0, OutputStream arg1) throws IOException;
+    static void write(CharSequence arg0, OutputStream arg1, Charset arg2) throws IOException;
+    static void write(CharSequence arg0, OutputStream arg1, String arg2) throws IOException;
+    static void write(String arg0, Writer arg1) throws IOException;
+    static void write(String arg0, OutputStream arg1) throws IOException;
+    static void write(String arg0, OutputStream arg1, Charset arg2) throws IOException;
+    static void write(String arg0, OutputStream arg1, String arg2) throws IOException;
+    @java.lang.Deprecated
+static void write(StringBuffer arg0, Writer arg1) throws IOException;
+    @java.lang.Deprecated
+static void write(StringBuffer arg0, OutputStream arg1) throws IOException;
+    @java.lang.Deprecated
+static void write(StringBuffer arg0, OutputStream arg1, String arg2) throws IOException;
+    static void writeLines(Collection<?> arg0, String arg1, OutputStream arg2) throws IOException;
+    static void writeLines(Collection<?> arg0, String arg1, OutputStream arg2, Charset arg3) throws IOException;
+    static void writeLines(Collection<?> arg0, String arg1, OutputStream arg2, String arg3) throws IOException;
+    static void writeLines(Collection<?> arg0, String arg1, Writer arg2) throws IOException;
+    static int copy(InputStream arg0, OutputStream arg1) throws IOException;
+    static long copyLarge(InputStream arg0, OutputStream arg1) throws IOException;
+    static long copyLarge(InputStream arg0, OutputStream arg1, byte[] arg2) throws IOException;
+    static long copyLarge(InputStream arg0, OutputStream arg1, long arg2, long arg3) throws IOException;
+    static long copyLarge(InputStream arg0, OutputStream arg1, long arg2, long arg3, byte[] arg4) throws IOException;
+    static void copy(InputStream arg0, Writer arg1) throws IOException;
+    static void copy(InputStream arg0, Writer arg1, Charset arg2) throws IOException;
+    static void copy(InputStream arg0, Writer arg1, String arg2) throws IOException;
+    static int copy(Reader arg0, Writer arg1) throws IOException;
+    static long copyLarge(Reader arg0, Writer arg1) throws IOException;
+    static long copyLarge(Reader arg0, Writer arg1, char[] arg2) throws IOException;
+    static long copyLarge(Reader arg0, Writer arg1, long arg2, long arg3) throws IOException;
+    static long copyLarge(Reader arg0, Writer arg1, long arg2, long arg3, char[] arg4) throws IOException;
+    static void copy(Reader arg0, OutputStream arg1) throws IOException;
+    static void copy(Reader arg0, OutputStream arg1, Charset arg2) throws IOException;
+    static void copy(Reader arg0, OutputStream arg1, String arg2) throws IOException;
+    static boolean contentEquals(InputStream arg0, InputStream arg1) throws IOException;
+    static boolean contentEquals(Reader arg0, Reader arg1) throws IOException;
+    static boolean contentEqualsIgnoreEOL(Reader arg0, Reader arg1) throws IOException;
+    static long skip(InputStream arg0, long arg1) throws IOException;
+    static long skip(Reader arg0, long arg1) throws IOException;
+    static void skipFully(InputStream arg0, long arg1) throws IOException;
+    static void skipFully(Reader arg0, long arg1) throws IOException;
+    static int read(Reader arg0, char[] arg1, int arg2, int arg3) throws IOException;
+    static int read(Reader arg0, char[] arg1) throws IOException;
+    static int read(InputStream arg0, byte[] arg1, int arg2, int arg3) throws IOException;
+    static int read(InputStream arg0, byte[] arg1) throws IOException;
+    static void readFully(Reader arg0, char[] arg1, int arg2, int arg3) throws IOException;
+    static void readFully(Reader arg0, char[] arg1) throws IOException;
+    static void readFully(InputStream arg0, byte[] arg1, int arg2, int arg3) throws IOException;
+    static void readFully(InputStream arg0, byte[] arg1) throws IOException;
 }
