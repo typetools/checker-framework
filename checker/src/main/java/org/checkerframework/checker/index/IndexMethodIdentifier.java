@@ -2,6 +2,7 @@ package org.checkerframework.checker.index;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -37,6 +38,9 @@ public class IndexMethodIdentifier {
   /** The LengthOf.value argument/element. */
   private final ExecutableElement lengthOfValueElement;
 
+  /** The {@code java.lang.String#indexOf} methods that take a string argument. */
+  private final List<ExecutableElement> stringIndexOfMethods;
+
   /** The type factory. */
   private final AnnotatedTypeFactory factory;
 
@@ -52,7 +56,28 @@ public class IndexMethodIdentifier {
     mathMinMethods = TreeUtils.getMethods("java.lang.Math", "min", 2, processingEnv);
     mathMaxMethods = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
 
+    stringIndexOfMethods = new ArrayList<>(4);
+    stringIndexOfMethods.add(
+        TreeUtils.getMethod("java.lang.String", "indexOf", processingEnv, "java.lang.String"));
+    stringIndexOfMethods.add(
+        TreeUtils.getMethod(
+            "java.lang.String", "indexOf", processingEnv, "java.lang.String", "int"));
+    stringIndexOfMethods.add(
+        TreeUtils.getMethod("java.lang.String", "lastIndexOf", processingEnv, "java.lang.String"));
+    stringIndexOfMethods.add(
+        TreeUtils.getMethod(
+            "java.lang.String", "lastIndexOf", processingEnv, "java.lang.String", "int"));
+
     lengthOfValueElement = TreeUtils.getMethod(LengthOf.class, "value", 0, processingEnv);
+  }
+
+  /**
+   * Returns true iff the argument is an invocation of String#indexOf or String#lastIndexOf that
+   * takes a string parameter.
+   */
+  public boolean isStringIndexOf(Tree methodTree) {
+    ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+    return TreeUtils.isMethodInvocation(methodTree, stringIndexOfMethods, processingEnv);
   }
 
   /** Returns true iff the argument is an invocation of Math.min. */
