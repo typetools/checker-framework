@@ -15,8 +15,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>If an expression's type has this annotation, then at run time, the expression evaluates to a
  * value that is less than the value of the expression in the annotation.
  *
- * <p>{@code @LessThan("end + 1")} is equivalent to {@code @LessThanOrEqual("end")}.
- *
  * <p>Subtyping:
  *
  * <ul>
