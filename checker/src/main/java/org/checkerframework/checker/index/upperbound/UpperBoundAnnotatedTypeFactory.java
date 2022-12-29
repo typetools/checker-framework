@@ -556,6 +556,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             if (range != null && range.from > 0) {
               return true;
             }
+            break;
         }
       }
       return false;
