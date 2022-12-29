@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * The top qualifier for the LessThan type hierarchy. It indicates that no other expression is known
  * to be larger than the annotated one.
  *
- * @checker_framework.manual #index-inequalities Index Chceker Inequalities
+ * @checker_framework.manual #index-inequalities Index Checker Inequalities
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
