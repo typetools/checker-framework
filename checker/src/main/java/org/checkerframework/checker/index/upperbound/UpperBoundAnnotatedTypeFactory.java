@@ -493,7 +493,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         qualifier = qualifier.plusOffset(1);
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
       }
-      if (imf.isStringIndexOf(tree)) {
+      if (imf.isIndexOfString(tree)) {
         // String#indexOf(String) and its variants that also take a String technically return
         // (and are annotated as) @LTEqLengthOf the receiver. However, the result is always
         // @LTLengthOf the receiver unless both the receiver and the target string are
@@ -501,8 +501,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         // special case modifies the return type of these methods if either the parameter or
         // the receiver is known (by the Value Checker) to not be the empty string. There are
         // three ways the Value Checker might have that information: either string could have a
-        // @StringVal annotation whose value isn't "", either could have an @ArrayLen annotation
-        // whose value isn't zero, or either could have an @ArrayLenRange annotation whose from
+        // @StringVal annotation whose value doesn't include "", either could have an @ArrayLen
+        // annotation
+        // whose value doesn't contain zero, or either could have an @ArrayLenRange annotation whose
+        // from
         // value is any positive integer.
         ValueAnnotatedTypeFactory vatf =
             ((UpperBoundAnnotatedTypeFactory) this.atypeFactory).getValueAnnotatedTypeFactory();
@@ -528,9 +530,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *
      * @param atm an annotated type from the Value Checker
      * @param vatf the Value Annotated Type Factory
-     * @return true iff atm contains a {@code StringVal} annotation whose value isn't "", an {@code
-     *     ArrayLen} annotation whose value isn't 0, or an {@code ArrayLenRange} annotation whose
-     *     from value is greater than 0
+     * @return true iff atm contains a {@code StringVal} annotation whose value doesn't contain "",
+     *     an {@code ArrayLen} annotation whose value doesn't contain 0, or an {@code ArrayLenRange}
+     *     annotation whose from value is greater than 0
      */
     private boolean definitelyIsNotTheEmptyString(
         AnnotatedTypeMirror atm, ValueAnnotatedTypeFactory vatf) {
@@ -539,14 +541,20 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         switch (AnnotationUtils.annotationName(anno)) {
           case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
             List<String> strings = vatf.getStringValues(anno);
-            return strings != null && !strings.contains("");
+            if (strings != null && !strings.contains("")) {
+              return true;
+            }
+            break;
           case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
             List<Integer> lengths = vatf.getArrayLength(anno);
-            return lengths != null && !lengths.contains(0);
+            if (lengths != null && !lengths.contains(0)) {
+              return true;
+            }
+            break;
           default:
             Range range = vatf.getRange(anno);
-            if (range != null) {
-              return range.from > 0;
+            if (range != null && range.from > 0) {
+              return true;
             }
         }
       }

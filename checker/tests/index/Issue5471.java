@@ -10,7 +10,6 @@ public class Issue5471 {
   private static boolean hasDoubleQuestionMarkAtTheBeginning(String line) {
     int i = line.indexOf("??");
     if (i != -1) {
-      // Unexpected warning on this line: i is definitely an index for line.
       return (atTheBeginning(i, line));
     }
     return false;

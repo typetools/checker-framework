@@ -38,8 +38,11 @@ public class IndexMethodIdentifier {
   /** The LengthOf.value argument/element. */
   private final ExecutableElement lengthOfValueElement;
 
-  /** The {@code java.lang.String#indexOf} methods that take a string argument. */
-  private final List<ExecutableElement> stringIndexOfMethods;
+  /**
+   * The {@code java.lang.String#indexOf} and {@code #lastIndexOf} methods that take a string as a
+   * non-receiver parameter.
+   */
+  private final List<ExecutableElement> indexOfStringMethods;
 
   /** The type factory. */
   private final AnnotatedTypeFactory factory;
@@ -56,15 +59,15 @@ public class IndexMethodIdentifier {
     mathMinMethods = TreeUtils.getMethods("java.lang.Math", "min", 2, processingEnv);
     mathMaxMethods = TreeUtils.getMethods("java.lang.Math", "max", 2, processingEnv);
 
-    stringIndexOfMethods = new ArrayList<>(4);
-    stringIndexOfMethods.add(
+    indexOfStringMethods = new ArrayList<>(4);
+    indexOfStringMethods.add(
         TreeUtils.getMethod("java.lang.String", "indexOf", processingEnv, "java.lang.String"));
-    stringIndexOfMethods.add(
+    indexOfStringMethods.add(
         TreeUtils.getMethod(
             "java.lang.String", "indexOf", processingEnv, "java.lang.String", "int"));
-    stringIndexOfMethods.add(
+    indexOfStringMethods.add(
         TreeUtils.getMethod("java.lang.String", "lastIndexOf", processingEnv, "java.lang.String"));
-    stringIndexOfMethods.add(
+    indexOfStringMethods.add(
         TreeUtils.getMethod(
             "java.lang.String", "lastIndexOf", processingEnv, "java.lang.String", "int"));
 
@@ -75,9 +78,9 @@ public class IndexMethodIdentifier {
    * Returns true iff the argument is an invocation of String#indexOf or String#lastIndexOf that
    * takes a string parameter.
    */
-  public boolean isStringIndexOf(Tree methodTree) {
+  public boolean isIndexOfString(Tree methodTree) {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    return TreeUtils.isMethodInvocation(methodTree, stringIndexOfMethods, processingEnv);
+    return TreeUtils.isMethodInvocation(methodTree, indexOfStringMethods, processingEnv);
   }
 
   /** Returns true iff the argument is an invocation of Math.min. */
