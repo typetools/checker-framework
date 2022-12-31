@@ -859,7 +859,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param values list of booleans; duplicates are allowed and the values may be in any order
    * @return a {@link BoolVal} annotation using the values
    */
-  public static AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
+  public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
     if (values == null) {
       return UNKNOWNVAL;
     }
