@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * The bottom type in the LessThan type system. Programmers should rarely write this type.
  *
- * @checker_framework.manual #index-inequalities Index Chceker Inequalities
+ * @checker_framework.manual #index-inequalities Index Checker Inequalities
  * @checker_framework.manual #bottom-type the bottom type
  */
 @Documented
