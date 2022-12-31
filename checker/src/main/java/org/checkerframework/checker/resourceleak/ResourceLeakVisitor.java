@@ -36,7 +36,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
   /** True if errors related to static owning fields should be suppressed. */
-  private boolean permitStaticOwning;
+  private final boolean permitStaticOwning;
 
   /**
    * Because CalledMethodsVisitor doesn't have a type parameter, we need a reference to the type
@@ -238,7 +238,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *     iff there are no @CreatesMustCallFor annotations on elt. The returned list is always
    *     modifiable if it is non-empty.
    */
-  /*package-private*/ static List<String> getCreatesMustCallForValues(
+  /* package-private */ static List<String> getCreatesMustCallForValues(
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
       ResourceLeakAnnotatedTypeFactory atypeFactory) {

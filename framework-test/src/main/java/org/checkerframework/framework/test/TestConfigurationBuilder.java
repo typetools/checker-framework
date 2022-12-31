@@ -182,10 +182,10 @@ public class TestConfigurationBuilder {
   private List<File> testSourceFiles;
 
   /** The set of Checker Framework processors to test with. */
-  private Set<@BinaryName String> processors;
+  private final Set<@BinaryName String> processors;
 
   /** The set of options to the Javac command line used to run the test. */
-  private SimpleOptionMap options;
+  private final SimpleOptionMap options;
 
   /** Should the Javac options be output before running the test. */
   private boolean shouldEmitDebugInfo;

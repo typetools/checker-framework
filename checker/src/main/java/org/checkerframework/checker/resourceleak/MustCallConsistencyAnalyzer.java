@@ -141,10 +141,10 @@ import org.plumelib.util.StringsPlume;
 class MustCallConsistencyAnalyzer {
 
   /** True if errors related to static owning fields should be suppressed. */
-  private boolean permitStaticOwning;
+  private final boolean permitStaticOwning;
 
   /** True if errors related to field initialization should be suppressed. */
-  private boolean permitInitializationLeak;
+  private final boolean permitInitializationLeak;
 
   /**
    * Aliases about which the checker has already reported about a resource leak, to avoid duplicate
@@ -162,13 +162,13 @@ class MustCallConsistencyAnalyzer {
    * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
    * node. The cache prevents repeatedly computing least upper bounds on stores
    */
-  private IdentityHashMap<Node, CFStore> cmStoreAfter = new IdentityHashMap<>();
+  private final IdentityHashMap<Node, CFStore> cmStoreAfter = new IdentityHashMap<>();
 
   /**
    * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
    * node. The cache prevents repeatedly computing least upper bounds on stores
    */
-  private IdentityHashMap<Node, CFStore> mcStoreAfter = new IdentityHashMap<>();
+  private final IdentityHashMap<Node, CFStore> mcStoreAfter = new IdentityHashMap<>();
 
   /** The Resource Leak Checker, used to issue errors. */
   private final ResourceLeakChecker checker;
@@ -640,14 +640,14 @@ class MustCallConsistencyAnalyzer {
     if (expression instanceof FieldAccess) {
       Element elt = ((FieldAccess) expression).getField();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
+          && typeFactory.hasOwning(elt)) {
         // The expression is an Owning field.  This satisfies case 1.
         return true;
       }
     } else if (expression instanceof LocalVariable) {
       Element elt = ((LocalVariable) expression).getElement();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
+          && typeFactory.hasOwning(elt)) {
         // The expression is an Owning formal parameter. Note that this cannot actually
         // be a local variable (despite expressions's type being LocalVariable) because
         // the @Owning annotation can only be written on methods, parameters, and fields;
@@ -956,19 +956,14 @@ class MustCallConsistencyAnalyzer {
 
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
-          Set<AnnotationMirror> annotationMirrors = typeFactory.getDeclAnnotations(parameter);
-          for (AnnotationMirror anno : annotationMirrors) {
-            if (AnnotationUtils.areSameByName(
-                anno, "org.checkerframework.checker.mustcall.qual.Owning")) {
-              Obligation localObligation = getObligationForVar(obligations, local);
-              // Passing to an owning parameter is not sufficient to resolve the
-              // obligation created from a MustCallAlias parameter, because the containing
-              // method must actually return the value.
-              if (!localObligation.derivedFromMustCallAlias()) {
-                // Transfer ownership!
-                obligations.remove(localObligation);
-                break;
-              }
+          if (typeFactory.hasOwning(parameter)) {
+            Obligation localObligation = getObligationForVar(obligations, local);
+            // Passing to an owning parameter is not sufficient to resolve the
+            // obligation created from a MustCallAlias parameter, because the containing
+            // method must actually return the value.
+            if (!localObligation.derivedFromMustCallAlias()) {
+              // Transfer ownership!
+              obligations.remove(localObligation);
             }
           }
         }
@@ -1032,7 +1027,7 @@ class MustCallConsistencyAnalyzer {
       //  not be transferred.
       MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
-      return typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null;
+      return !typeFactory.hasNotOwning(executableElement);
     }
     return false;
   }
@@ -1061,7 +1056,7 @@ class MustCallConsistencyAnalyzer {
     if (lhsElement.getKind() == ElementKind.FIELD) {
       boolean isOwningField =
           !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-              && typeFactory.getDeclAnnotation(lhsElement, Owning.class) != null;
+              && typeFactory.hasOwning(lhsElement);
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
       if (isOwningField
@@ -1075,9 +1070,16 @@ class MustCallConsistencyAnalyzer {
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
         // Assigning to an owning field is sufficient to clear a must-call alias obligation in
-        // a constructor.
+        // a constructor, if the enclosing class has at most one @Owning field. If the class
+        // had multiple owning fields, then a soundness bug would occur: the must call alias
+        // relationship would allow the whole class' obligation to be fulfilled by closing
+        // only one of the parameters passed to the constructor (but the other owning fields
+        // might not actually have had their obligations fulfilled). See test case
+        // checker/tests/resourceleak/TwoOwningMCATest.java for an example.
         Element enclosingCtr = lhsElement.getEnclosingElement();
-        if (enclosingCtr != null && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR) {
+        if (enclosingCtr != null
+            && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR
+            && hasAtMostOneOwningField(ElementUtils.enclosingTypeElement(enclosingCtr))) {
           removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
         } else {
           removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
@@ -1095,6 +1097,30 @@ class MustCallConsistencyAnalyzer {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
+  }
+
+  /**
+   * Returns true iff the given type element has 0 or 1 @Owning fields.
+   *
+   * @param element an element for a class
+   * @return true iff element has no more than 1 owning field
+   */
+  private boolean hasAtMostOneOwningField(TypeElement element) {
+    List<VariableElement> fields =
+        ElementUtils.getAllFieldsIn(element, typeFactory.getElementUtils());
+    // Has an owning field already been encountered?
+    boolean hasOwningField = false;
+    for (VariableElement field : fields) {
+      if (typeFactory.hasOwning(field)) {
+        if (hasOwningField) {
+          return false;
+        } else {
+          hasOwningField = true;
+        }
+      }
+    }
+    // We haven't seen two owning fields, so there must be 1 or 0.
+    return true;
   }
 
   /**
@@ -1604,7 +1630,7 @@ class MustCallConsistencyAnalyzer {
       return false;
     }
     // check for absence of @NotOwning annotation
-    return (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null);
+    return !typeFactory.hasNotOwning(executableElement);
   }
 
   /**

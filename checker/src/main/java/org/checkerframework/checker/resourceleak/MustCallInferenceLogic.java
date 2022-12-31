@@ -30,7 +30,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class MustCallInferenceLogic {
 
   /** The set of owning fields. */
-  private Set<VariableElement> owningFields = new HashSet<>();
+  private final Set<VariableElement> owningFields = new HashSet<>();
 
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
@@ -41,7 +41,7 @@ public class MustCallInferenceLogic {
   protected final AnnotationMirror OWNING;
 
   /** The control flow graph. */
-  private ControlFlowGraph cfg;
+  private final ControlFlowGraph cfg;
 
   /**
    * Creates a MustCallInferenceLogic. If the type factory has whole program inference enabled, its

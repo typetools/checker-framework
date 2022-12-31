@@ -199,7 +199,8 @@ jobs:
     displayName: test-misc.sh
 - job: misc_jdk19
   dependsOn:
-   - canary_jobs
+   # - canary_jobs
+   - misc_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk19-plus:latest

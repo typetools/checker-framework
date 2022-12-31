@@ -107,7 +107,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   private final boolean showWpiFailedInferences;
 
   /** The storage for the inferred annotations. */
-  private WholeProgramInferenceStorage<T> storage;
+  private final WholeProgramInferenceStorage<T> storage;
 
   /** Whether to ignore assignments where the rhs is null. */
   private final boolean ignoreNullAssignments;

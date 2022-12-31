@@ -24,6 +24,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
@@ -208,7 +209,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /** The fixed initial store. */
-  private S fixedInitialStore = null;
+  private @MonotonicNonNull S fixedInitialStore = null;
 
   /** Set a fixed initial Store. */
   public void setFixedInitialStore(S s) {

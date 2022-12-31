@@ -21,7 +21,7 @@
       <li><a href="#get-started">How to get started: do a case study</a></li>
       <li><a href="#ask-questions">How to get help and ask questions</a></li>
       <li><a href="#types-of-projects">Types of projects</a></li>
-      <li><a href="#apply">How to apply</a></li>
+      <li><a href="#apply">How to apply to GSoC (relevant to GSoC students only)</a></li>
     </ul></li>
   <li><a href="#evaluate-type-system">Evaluate a type system or a Checker Framework feature</a>
     <ul>
@@ -359,7 +359,7 @@ This document gives a few suggestions in each category.
 </p>
 
 
-<h2 id="apply">How to apply</h2>
+<h2 id="apply">How to apply to GSoC (relevant to GSoC students only)</h2>
 
 <p>
   (This section is relevant only to Google Summer of Code Students.
@@ -581,11 +581,27 @@ project will do case studies of it and extend it.
 </p>
 
 <p>
-The methodology is to find open-source projects that use Optional, run the
-tool on them, and read the tool's warnings.  Each warning will lead to
-either a bug reports against an open-source project or an improvement to
-the verification tool.
+The methodology is to find open-source projects that use Optional(you can
+do this by searching GitHub, for example), run the tool on them, and read
+the tool's warnings.  Each warning will lead to either a bug report against
+an open-source project or an improvement to the verification tool.
 </p>
+
+<!--
+
+For the Optional Class project, the first task is to run the existing
+verification tool:  https://checkerframework.org/manual/#optional-checker .
+Doing so will give you a feel for its strengths and weaknesses (and the latter
+may suggest ways to improve it).  First, read parts of the Checker Framework
+manual first (the "How to read this manual" section tells you what to read).  In
+addition to reading the section about the Optional Checker, do follow the link
+to the webpage “Nothing is better than the Optional type”.  Once you have done
+that reading, you need to choose a project to type-check.  You can choose a
+program that you know uses Optional, or search GitHub for one.  For each warning
+issued by the Optional Checker, follow the methodology at
+https://checkerframework.org/manual/#handling-warnings .
+
+-->
 
 
 <h2 id="case-study-signedness">Preventing mixed signed/unsigned computations</h2>
@@ -671,9 +687,9 @@ The methodology is:
     In Guava, see
   its <a href="https://github.com/google/guava/wiki/PrimitivesExplained#unsigned-support">unsigned
   support</a>, such
-  as <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a>,
-  <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLong.html">UnsignedLong</a>,
-  <a href="https://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLongs.html">UnsignedLongs</a>,
+  as <a href="https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedBytes.html">UnsignedBytes</a>,
+  <a href="https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLong.html">UnsignedLong</a>,
+  <a href="https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/primitives/UnsignedLongs.html">UnsignedLongs</a>,
   etc.
    Guava is already annotated; search for <code>@Unsigned</code> within
    <a href="https://github.com/typetools/guava">https://github.com/typetools/guava</a>.
@@ -1370,7 +1386,7 @@ differences from the real Nullness checker:
 Compiler writers have come to realize that clarity of error
 messages is as important as the speed of the executable
 (<a href="https://www.brettbecker.com/wp-content/uploads/2016/06/Becker-Effective-2016-SIGCSE.pdf">1</a>, <a href="https://www.mville.edu/sites/default/files/p53-munson_1.pdf">2</a>,
-<a href="https://se.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
+<a href="https://se.inf.ethz.ch/~meyer/publications/teaching/compiler-errors.pdf">3</a>,
 <a href="https://static.barik.net/barik/publications/icse2017/PID4655707.pdf">4</a>).  This is especially true when the language or type system has rich features.
 </p>
 

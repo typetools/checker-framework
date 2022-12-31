@@ -35,8 +35,8 @@ public class JavaParserUtil {
    * The Language Level to use when parsing if a specific level isn't applied. This should be the
    * highest version of Java that the Checker Framework can process.
    */
-  // JavaParser does not yet have a constant for JDK 18.
-  public static LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
+  // JavaParser's ParserConfiguration.java has no constant for JDK 18, as of 2022-12-19.
+  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
 
   ///
   /// Replacements for StaticJavaParser
