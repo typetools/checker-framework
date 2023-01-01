@@ -62,6 +62,8 @@ dependencies {
     testImplementation 'com.amazonaws:aws-java-sdk-kms'
     // The AWS SDK is used for testing the Called Methods Checker.
     testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.293')
+    // For the Resource Leak Checker's support for JavaEE.
+    testImplementation 'javax.servlet:javax.servlet-api:3.1.0'
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation project(':framework-test')
@@ -466,9 +468,9 @@ task ainferTestCheckerGenerateAjava(type: Test) {
     doLast {
         copyNonannotatedToAnnotatedDirectory('ainfer-testchecker')
 
-        // A crash occurs because of a bug in Java Parser when trying to read the .ajava
-        // file produced for these tests. Reinstate them when https://github.com/javaparser/javaparser/pull/3527
-        // has been merged and released, and we've updated to a JavaParser version with that fix.
+        // AinferTestCheckerAjavaValidationTest fails with "warning: (purity.methodref)", whenever
+        // there is a user-defined generic interface, and a variable of that type is assigned a
+        // method reference.
         delete('tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Issue946.java')
         delete('tests/ainfer-testchecker/annotated/all-systems/java8/memberref/Receivers.java')
 

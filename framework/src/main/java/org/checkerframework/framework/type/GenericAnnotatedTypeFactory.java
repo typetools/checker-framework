@@ -1071,13 +1071,22 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns the regular exit store for a method or another code block (such as static
-   * initializers).
+   * initializers). Returns {@code null} if there is no such store. This can happen because the
+   * method cannot exit through the regular exit block, or it is abstract or in an interface.
    *
    * @param tree a MethodTree or other code block, such as a static initializer
-   * @return the regular exit store, or {@code null}, if there is no such store (because the method
-   *     cannot exit through the regular exit block).
+   * @return the regular exit store, or {@code null}
    */
   public @Nullable Store getRegularExitStore(Tree tree) {
+    if (regularExitStores == null) {
+      if (tree.getKind() == Tree.Kind.METHOD) {
+        if (((MethodTree) tree).getBody() == null) {
+          // No body: the method is abstract or in an interface
+          return null;
+        }
+      }
+      throw new BugInCF("regularExitStores==null for [" + tree.getClass() + "]" + tree);
+    }
     return regularExitStores.get(tree);
   }
 
