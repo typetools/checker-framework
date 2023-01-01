@@ -202,6 +202,9 @@ public class WholeProgramInferenceJavaParserStorage
     // Read in classes for the element.
     getFileForElement(fieldElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      return null;
+    }
     FieldAnnos fieldAnnos = classAnnos.fields.get(fieldElt.getSimpleName().toString());
     return fieldAnnos;
   }
@@ -261,6 +264,9 @@ public class WholeProgramInferenceJavaParserStorage
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/3094
     @BinaryName String className = enclosingClass.flatname.toString();
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      return null;
+    }
     // If it's an enum constant it won't appear as a field
     // and it won't have extra annotations, so just return the basic type:
     if (classAnnos.enumConstants.contains(fieldName)) {
@@ -446,6 +452,11 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private void addClassTree(ClassTree tree) {
     TypeElement element = TreeUtils.elementFromDeclaration(tree);
+    if (element == null) {
+      // TODO: There should be an element here, or there is nowhere to store inferences about
+      // `tree`.
+      return;
+    }
     String className = ElementUtils.getBinaryName(element);
     if (classToAnnos.containsKey(className)) {
       return;
@@ -649,12 +660,16 @@ public class WholeProgramInferenceJavaParserStorage
             enclosingClass.enumConstants.add(fieldName);
 
             // Ensure that if an enum constant defines a class, that class gets registered properly.
-            // See e.g. https://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9.1 for
+            // See e.g. https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.9.1 for
             // the specification of an enum constant, which does permit it to define an anonymous
             // class.
             NewClassTree constructor = (NewClassTree) javacTree.getInitializer();
-            if (constructor.getClassBody() != null) {
-              addClass(constructor.getClassBody());
+            ClassTree constructorClassBody = constructor.getClassBody();
+            if (constructorClassBody != null) {
+              // addClass assumes there is an element for its argument, but that is not always true!
+              if (TreeUtils.elementFromDeclaration(constructorClassBody) != null) {
+                addClass(constructorClassBody);
+              }
             }
           }
 
