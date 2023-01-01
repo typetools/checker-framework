@@ -20,8 +20,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
-   * The {@code @}{@link This} annotation. The field is package visible due to a use in {@link
-   * ReturnsReceiverVisitor}
+   * The {@code @}{@link This} annotation. The field is package visible (i.e., "package private")
+   * due to a use in {@link ReturnsReceiverVisitor}
    */
   final AnnotationMirror THIS_ANNOTATION;
 

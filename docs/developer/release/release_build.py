@@ -50,7 +50,7 @@ from release_utils import print_step
 from release_utils import prompt_to_continue
 from release_utils import prompt_w_default
 from release_utils import prompt_yes_no
-from release_utils import read_command_line_option
+from release_utils import has_command_line_option
 from release_utils import set_umask
 
 from distutils.dir_util import copy_tree
@@ -61,16 +61,11 @@ import sys
 debug = False
 ant_debug = ""
 
-# Currently only affects the Checker Framework tests, which run the longest
-notest = False
-
 
 def print_usage():
     """Print usage information."""
     print("Usage:    python3 release_build.py [options]")
     print("\n  --debug  turns on debugging mode which produces verbose output")
-    print("\n  --notest  disables tests to speed up scripts; for debugging only")
-
 
 def clone_or_update_repos():
     """Clone the relevant repos from scratch or update them if they exist and
@@ -217,15 +212,15 @@ def build_annotation_tools_release(version, afu_interm_dir):
 
     date = get_current_date()
 
-    build = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
+    buildfile = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
     ant_cmd = (
         'ant %s -buildfile %s -e update-versions -Drelease.ver="%s" -Drelease.date="%s"'
-        % (ant_debug, build, version, date)
+        % (ant_debug, buildfile, version, date)
     )
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    gradle_cmd = "./gradlew releaseBuild -Pafu.version=%s -Pdeploy-dir=%s" % (
+    gradle_cmd = "./gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s" % (
         version,
         afu_interm_dir,
     )
@@ -258,23 +253,35 @@ def build_checker_framework_release(
         '-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date="%s"'
         % (checker_dir, version, version, afu_build_properties, afu_release_date)
     )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
+    # IMPORTANT: The release.xml in the directory where the Checker Framework is
+    # being built is used. Not the release.xml in the directory you ran
+    # release_build.py from.
     ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (
         ant_debug,
         ant_props,
     )
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    # Update version numbers in the manual and API documentation,
+    # which come from source files that have just been changed.
+    # Otherwise the manual and API documentation show up in the grep command below.
+    execute("./gradlew assemble", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew allJavadoc", working_dir=CHECKER_FRAMEWORK)
+    execute("./gradlew manual", working_dir=CHECKER_FRAMEWORK)
 
     # Check that updating versions didn't overlook anything.
-    print("Here are occurrences of the old version number, " + old_cf_version)
-    grep_cmd = "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
+    print("Here are occurrences of the old version number, " + old_cf_version + ":")
+    grep_cmd = (
+        "grep -n -r --exclude-dir=build --exclude-dir=.git -F %s" % old_cf_version
+    )
     execute(grep_cmd, False, False, CHECKER_FRAMEWORK)
     continue_or_exit(
         'If any occurrence is not acceptable, then stop the release, update target "update-checker-framework-versions" in file release.xml, and start over.'
     )
 
-    # build the checker framework binaries and documents.  Tests are run by release_push.py
+    # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
     gradle_cmd = "./gradlew releaseBuild"
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
+    gradle_cmd = "./gradlew copyJarsToDist"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
@@ -313,12 +320,15 @@ def build_checker_framework_release(
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # copy the remaining checker-framework website files to checker_framework_interm_dir
-    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s" % (
-        checker_dir,
-        checker_framework_interm_dir,
-        "checker-framework-manual",
-        "checker-framework-dataflow-manual",
-        "checker-framework-webpage.html",
+    ant_props = (
+        "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s"
+        % (
+            checker_dir,
+            checker_framework_interm_dir,
+            "checker-framework-manual",
+            "checker-framework-dataflow-manual",
+            "checker-framework-webpage.html",
+        )
     )
 
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
@@ -364,11 +374,9 @@ def main(argv):
 
     global debug
     global ant_debug
-    debug = read_command_line_option(argv, "--debug")
+    debug = has_command_line_option(argv, "--debug")
     if debug:
         ant_debug = "-debug"
-    global notest
-    notest = read_command_line_option(argv, "--notest")
 
     afu_date = get_afu_date()
 
@@ -393,13 +401,13 @@ def main(argv):
     # i.e. indistinguishable from a freshly cloned repository.
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE
-    print_step("\n1a: Clone/update repositories.")  # MANUAL
+    print_step("\nStep 1a: Clone/update repositories.")  # MANUAL
     clone_or_update_repos()
 
     # This step ensures the previous step worked. It checks to see if we have any modified files, untracked files,
     # or outgoing changesets. If so, it fails.
 
-    print_step("1b: Verify repositories.")  # MANUAL
+    print_step("Step 1b: Verify repositories.")  # MANUAL
     check_repos(INTERM_REPOS, True, True)
     check_repos(BUILD_REPOS, True, False)
 
@@ -450,10 +458,10 @@ def main(argv):
 
     print_step("Build Step 5: Build projects and websites.")  # AUTO
 
-    print_step("5a: Build Annotation File Utilities.")
+    print_step("Step 5a: Build Annotation File Utilities.")
     build_annotation_tools_release(cf_version, afu_interm_dir)
 
-    print_step("5b: Build Checker Framework.")
+    print_step("Step 5b: Build Checker Framework.")
     build_checker_framework_release(
         cf_version,
         old_cf_version,

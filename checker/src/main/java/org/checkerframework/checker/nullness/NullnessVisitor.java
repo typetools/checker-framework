@@ -240,7 +240,7 @@ public class NullnessVisitor
   /** Case 1: Check for null dereferencing. */
   @Override
   public Void visitMemberSelect(MemberSelectTree node, Void p) {
-    Element e = TreeUtils.elementFromTree(node);
+    Element e = TreeUtils.elementFromUse(node);
     if (e.getKind() == ElementKind.CLASS) {
       if (atypeFactory.containsNullnessAnnotation(null, node.getExpression())) {
         checker.reportError(node, "nullness.on.outer");
@@ -374,13 +374,14 @@ public class NullnessVisitor
     // on and @AssumeAssertions is not used, checkForNullability is still called since the
     // CFGBuilder will have generated one branch for which asserts are assumed to be enabled.
 
-    boolean doVisitAssert = true;
-
+    boolean doVisitAssert;
     if (checker.hasOption("assumeAssertionsAreEnabled")
         || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, node)) {
       doVisitAssert = true;
     } else if (checker.hasOption("assumeAssertionsAreDisabled")) {
       doVisitAssert = false;
+    } else {
+      doVisitAssert = true;
     }
 
     if (doVisitAssert) {
@@ -534,7 +535,7 @@ public class NullnessVisitor
    * @param tree a method invocation whose first formal parameter is of String type
    * @return the first argument if it is a literal, otherwise null
    */
-  /*package-private*/ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
+  /* package-private */ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
     List<? extends ExpressionTree> args = tree.getArguments();
     assert args.size() > 0;
     ExpressionTree arg = args.get(0);

@@ -6,6 +6,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
@@ -35,6 +36,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -67,7 +69,8 @@ public class AnnotatedTypes {
     throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");
   }
 
-  private static AsSuperVisitor asSuperVisitor;
+  /** Implements {@code asSuper}. */
+  private static @MonotonicNonNull AsSuperVisitor asSuperVisitor;
 
   /**
    * Copies annotations from {@code type} to a copy of {@code superType} where the type variables of
@@ -236,9 +239,16 @@ public class AnnotatedTypes {
     }
   }
 
-  /** This method identifies wildcard types that are unbound. */
+  // Do not use `isUnbound()` because as of Java 18, it returns true for "?  extends Object".
+
+  /**
+   * This method identifies wildcard types that are unbound.
+   *
+   * @param wildcard the type to check
+   * @return true if the given card is an unbounded wildcard
+   */
   public static boolean hasNoExplicitBound(final AnnotatedTypeMirror wildcard) {
-    return ((Type.WildcardType) wildcard.getUnderlyingType()).isUnbound();
+    return ((Type.WildcardType) wildcard.getUnderlyingType()).kind == BoundKind.UNBOUND;
   }
 
   /**
@@ -249,7 +259,7 @@ public class AnnotatedTypes {
   public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
     final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
     return wildcardType.isSuperBound()
-        && !((WildcardType) wildcard.getUnderlyingType()).isUnbound();
+        && ((WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
   /**
@@ -260,7 +270,7 @@ public class AnnotatedTypes {
   public static boolean hasExplicitExtendsBound(final AnnotatedTypeMirror wildcard) {
     final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
     return wildcardType.isExtendsBound()
-        && !((WildcardType) wildcard.getUnderlyingType()).isUnbound();
+        && ((WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
   /**
@@ -331,8 +341,8 @@ public class AnnotatedTypes {
    * @param t the receiver type
    * @param elem the element that should be viewed as member of t
    * @param type unsubstituted type of member
-   * @return the type of member as member of of, with initial type memberType; can be an alias to
-   *     memberType
+   * @return the type of member as member of {@code t}, with initial type memberType; can be an
+   *     alias to memberType
    */
   public static AnnotatedExecutableType asMemberOf(
       Types types,
@@ -554,7 +564,7 @@ public class AnnotatedTypes {
     }
 
     for (int i = 0; i < ownerParams.size(); ++i) {
-      mappings.put(ownerParams.get(i).getUnderlyingType(), baseParams.get(i));
+      mappings.put(ownerParams.get(i).getUnderlyingType(), baseParams.get(i).asUse());
     }
   }
 
@@ -987,6 +997,9 @@ public class AnnotatedTypes {
     if (!method.getElement().isVarArgs()) {
       return parameters;
     }
+    if (parameters.size() == 0) {
+      return parameters;
+    }
 
     AnnotatedArrayType varargs = (AnnotatedArrayType) parameters.get(parameters.size() - 1);
 
@@ -1182,7 +1195,7 @@ public class AnnotatedTypes {
   }
 
   /** java.lang.annotation.Annotation.class canonical name. */
-  private static @CanonicalName String annotationClassName =
+  private static final @CanonicalName String annotationClassName =
       java.lang.annotation.Annotation.class.getCanonicalName();
 
   /**
@@ -1294,10 +1307,10 @@ public class AnnotatedTypes {
       final TypeElement type1Class = (TypeElement) type1Executable.getEnclosingElement();
       final TypeElement type2Class = (TypeElement) type2Executable.getEnclosingElement();
 
-      boolean methodIsOverriden =
+      boolean methodIsOverridden =
           elements.overrides(type1Executable, type2Executable, type1Class)
               || elements.overrides(type2Executable, type1Executable, type2Class);
-      if (methodIsOverriden) {
+      if (methodIsOverridden) {
         boolean haveSameIndex =
             type1Executable.getTypeParameters().indexOf(type1ParamElem)
                 == type2Executable.getTypeParameters().indexOf(type2ParamElem);
@@ -1504,25 +1517,47 @@ public class AnnotatedTypes {
     return result;
   }
 
-  // For Wildcards, isSuperBound and isExtendsBound will return true if isUnbound does.
+  // For Wildcards, isSuperBound() and isExtendsBound() will return true if isUnbound() does.
+  // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
 
+  /**
+   * Returns true if wildcard type is explicitly super bounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly super bounded
+   */
   public static boolean isExplicitlySuperBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound()
-        && !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+        && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
-  /** Returns true if wildcard type was explicitly unbounded. */
+  /**
+   * Returns true if wildcard type is explicitly extends bounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly extends bounded
+   */
   public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound()
-        && !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
+        && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
-  /** Returns true if this type is super bounded or unbounded. */
+  /**
+   * Returns true if this type is super bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is super bounded or unbounded
+   */
   public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
   }
 
-  /** Returns true if this type is extends bounded or unbounded. */
+  /**
+   * Returns true if this type is extends bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is extends bounded or unbounded
+   */
   public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
   }

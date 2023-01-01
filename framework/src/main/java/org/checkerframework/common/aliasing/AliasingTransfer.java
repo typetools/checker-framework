@@ -42,8 +42,14 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AliasingTransfer extends CFTransfer {
 
-  private AnnotatedTypeFactory factory;
+  /** The annotated type factory. */
+  private final AnnotatedTypeFactory factory;
 
+  /**
+   * Create a new AliasingTransfer.
+   *
+   * @param analysis the CFAbstractAnalysis
+   */
   public AliasingTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     factory = analysis.getTypeFactory();
@@ -82,7 +88,7 @@ public class AliasingTransfer extends CFTransfer {
   protected void processPostconditions(
       MethodInvocationNode n, CFStore store, ExecutableElement methodElement, Tree tree) {
     super.processPostconditions(n, store, methodElement, tree);
-    if (TreeUtils.isEnumSuper(n.getTree())) {
+    if (TreeUtils.isEnumSuperCall(n.getTree())) {
       // Skipping the init() method for enums.
       return;
     }

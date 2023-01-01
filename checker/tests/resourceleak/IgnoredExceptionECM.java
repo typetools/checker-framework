@@ -4,7 +4,8 @@
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("foo") class IgnoredExceptionECM {
+@InheritableMustCall("foo")
+class IgnoredExceptionECM {
 
   @Owning
   @MustCall("toString") Object obj;

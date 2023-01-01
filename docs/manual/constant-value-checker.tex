@@ -40,6 +40,7 @@ The main type annotations are
 \refqualclass{common/value/qual}{DoubleVal},
 \refqualclass{common/value/qual}{StringVal},
 \refqualclass{common/value/qual}{MatchesRegex},
+\refqualclass{common/value/qual}{DoesNotMatchRegex},
 and \refqualclass{common/value/qual}{EnumVal}.
 Additional type annotations for arrays and strings are
 \refqualclass{common/value/qual}{ArrayLen},
@@ -63,6 +64,7 @@ Checker gives up and its type becomes
 \refqualclass{common/value/qual}{IntRange} for integral types,
 \refqualclass{common/value/qual}{ArrayLenRange} for array types,
 \refqualclass{common/value/qual}{MatchesRegex},
+\refqualclass{common/value/qual}{DoesNotMatchRegex},
 \refqualclass{common/value/qual}{ArrayLen}, or
 \refqualclass{common/value/qual}{ArrayLenRange} for \<String>, and
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
@@ -75,18 +77,22 @@ If this would result in too many lengths,
 only the minimum and maximum lengths are used in \<@ArrayLenRange>,
 giving a range of possible lengths of the string.
 
-The \<@StringVal> and \<@MatchesRegex> annotations may be applied to char arrays.  Although byte
+The \<@StringVal>, \<@MatchesRegex>, and \<@DoesNotMatchRegex>
+annotations may be applied to char arrays.  Although byte
 arrays are often converted to/from strings, these annotations may
 not be applied to them.  This is because the conversion depends on the
 platform's character set.
 
-The \<@MatchesRegex> annotation uses the standard Java regular expression syntax.
+The \<@MatchesRegex> and \<@DoesNotMatchRegex> annotations use the standard Java regular expression syntax.
 \<@MatchesRegex(A)> is only a subtype of \<@MatchesRegex(B)> if the set of regular
 expressions \<A> is a subset of the set of regular expressions \<B>. An
 \<@StringVal> annotation is a subtype of an \<@MatchesRegex> annotation if
-each string matches at least one of the regular expressions.  Matching is done
+each string matches at least one of the regular expressions.
+\<@DoesNotMatchRegex(A)> is only a subtype of \<@MatchesRegex(B)> if the set of regular
+expressions \<A> is a superset of the set of regular expressions \<B>.
+Matching is done
 via the
-\href{https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html\#matches(java.lang.String)}{java.lang.String\#matches}
+\href{https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html\#matches(java.lang.String)}{java.lang.String\#matches}
 method, which matches against the entire string (it does not look for a
 matching substring).
 

@@ -33,6 +33,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  *  void assertNonNull(Object arg) { ... }
  * </code></pre>
  *
+ * @see EnsuresNonNullIf
  * @see NonNull
  * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
@@ -63,7 +64,7 @@ public @interface EnsuresNonNull {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @PostconditionAnnotation(qualifier = NonNull.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
      * Returns the repeatable annotations.
      *

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -68,7 +68,7 @@ public abstract class AbstractAnalysis<
   protected final IdentityHashMap<Node, V> nodeValues = new IdentityHashMap<>();
 
   /** Map from (effectively final) local variable elements to their abstract value. */
-  protected final HashMap<Element, V> finalLocalValues = new HashMap<>();
+  protected final HashMap<VariableElement, V> finalLocalValues = new HashMap<>();
 
   /**
    * The node that is currently handled in the analysis (if it is running). The following invariant
@@ -214,7 +214,7 @@ public abstract class AbstractAnalysis<
    *
    * @param in the current node values
    */
-  /*package-private*/ void setNodeValues(IdentityHashMap<Node, V> in) {
+  /* package-private */ void setNodeValues(IdentityHashMap<Node, V> in) {
     assert !isRunning;
     nodeValues.clear();
     nodeValues.putAll(in);
@@ -354,7 +354,7 @@ public abstract class AbstractAnalysis<
       Node lhst = assignment.getTarget();
       if (lhst instanceof LocalVariableNode) {
         LocalVariableNode lhs = (LocalVariableNode) lhst;
-        Element elem = lhs.getElement();
+        VariableElement elem = lhs.getElement();
         if (ElementUtils.isEffectivelyFinal(elem)) {
           V resval = transferResult.getResultValue();
           if (resval != null) {

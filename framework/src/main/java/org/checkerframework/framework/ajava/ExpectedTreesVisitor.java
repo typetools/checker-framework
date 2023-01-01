@@ -34,8 +34,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * some JavaParser node. Some trees shouldn't be matched with a JavaParser node because there isn't
  * a corresponding JavaParser node. These trees are excluded.
  *
- * <p>The primary purpose is to test the {@link JointJavacJavaParserVisitor} class when the
- * -AajavaChecks flag is used. That class traverses a javac tree and JavaParser AST simultaneously,
+ * <p>The primary purpose is to test the {@link JointJavacJavaParserVisitor} class when the {@code
+ * -AajavaChecks} flag is used. That class traverses a javac tree and JavaParser AST simultaneously,
  * so the trees this class stores can be used to test if the entirety of the javac tree was visited.
  */
 public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
@@ -381,7 +381,8 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // Javac expands the keyword "var" in a variable declaration to its inferred type.
     // JavaParser has a special "var" construct, so they won't match. If a javac type was generated
     // this way, then it won't have a position in source code so in that case we don't add it.
-    if (((JCExpression) tree.getType()).pos == Position.NOPOS) {
+    JCExpression type = (JCExpression) tree.getType();
+    if (type != null && type.pos == Position.NOPOS) {
       return null;
     }
 

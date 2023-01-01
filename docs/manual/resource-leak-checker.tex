@@ -252,7 +252,7 @@ must-call obligation; for example,
 
 \noindent
 The Resource Leak Checker issues a warning about every assignment of an
-object with with a must-call annotation into a static owning field,
+object with a must-call annotation into a static owning field,
 indicating that the obligation of the field's content might not be
 satisfied.  When those fields are used throughout execution, until the
 program exits, there is no good place to dispose of them, so these warnings
@@ -289,7 +289,8 @@ and its parameter \<p>, the Resource Leak Checker requires one of the following:
 \begin{enumerate}
 \item \<p> is passed to another method or constructor (including \<super>) in a
   \<@MustCallAlias> position, and \<m> returns that method's result, or
-\item \<p> is stored in an \<@Owning> field of the enclosing class.
+\item \<p> is stored in the only \<@Owning> field of the enclosing class (a class with more than one
+  \<@Owning> field cannot have a resource alias relationship).
 \end{enumerate}
 
 
@@ -441,9 +442,12 @@ unpredictably at most points in the program. For example, the JVM can throw
 an \<OutOfMemoryError> on any allocation.  Similarly,
 \<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
 may occur at any reference to a class.  Such exceptions usually terminate
-the program.  Accounting for such exceptions would lead to vast numbers of
+the program, and in that case unclosed resources do not matter.
+Accounting for such exceptions would lead to vast numbers of
 false positive warnings, so the Resource Leak Checker assumes they are
-never thrown.  Strictly speaking, this is an unsoundness.
+never thrown.  Strictly speaking, this is an unsoundness:  it can lead to
+false negatives (missed resource leaks) if the programmer catches these
+exceptions, which is a discouraged practice.
 
 \item
 The Resource Leak Checker also ignores exception types that can be verified
@@ -476,7 +480,7 @@ One way to prevent this false positive warning is to declare the field as \<fina
 Alternately, to suppress all warnings related to field assignments in the
 constructor and in initializer blocks, pass the
 \<-ApermitInitializationLeak> command-line argument.  This makes the
-checker unsound:  the Resoure Leak Checker will not warn if the constructor
+checker unsound:  the Resource Leak Checker will not warn if the constructor
 and initializers set a field more than once.  The amount of leakage is
 limited to how many times the field is set.
 

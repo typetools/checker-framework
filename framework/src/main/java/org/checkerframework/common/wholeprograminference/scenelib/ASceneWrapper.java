@@ -4,7 +4,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.afu.scenelib.el.AClass;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
+import org.checkerframework.afu.scenelib.el.AScene;
+import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.afu.scenelib.el.DefException;
+import org.checkerframework.afu.scenelib.io.IndexFileWriter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.AnnotationConverter;
@@ -27,14 +34,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.CollectionsPlume;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.AScene;
-import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully
@@ -165,7 +164,9 @@ public class ASceneWrapper {
                 aMethod.contracts = contractAnnotations;
               }
             }
-            IndexFileWriter.write(scene, new FileWriter(filepath));
+            try (FileWriter fw = new FileWriter(filepath)) {
+              IndexFileWriter.write(scene, fw);
+            }
             break;
           default:
             throw new BugInCF("Unhandled outputFormat " + outputFormat);
@@ -192,12 +193,7 @@ public class ASceneWrapper {
       return;
     }
     if (classSymbol.isEnum()) {
-      List<VariableElement> enumConstants = new ArrayList<>();
-      for (Element e : ((TypeElement) classSymbol).getEnclosedElements()) {
-        if (e.getKind() == ElementKind.ENUM_CONSTANT) {
-          enumConstants.add((VariableElement) e);
-        }
-      }
+      List<VariableElement> enumConstants = ElementUtils.getEnumConstants(classSymbol);
       if (!aClass.isEnum(classSymbol.getSimpleName().toString())) {
         aClass.setEnumConstants(enumConstants);
       } else {

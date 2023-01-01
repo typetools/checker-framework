@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * shared in the same way that subcheckers share CFG structure; see {@link
    * #getSharedCFGForTree(Tree)}.
    */
-  /* package-private */ final HashMap<Tree, LocalVariableNode> tempVars = new HashMap<>();
+  /* package-private */ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
+      new IdentityHashMap<>(100);
 
   /** The MustCall.value field/element. */
   final ExecutableElement mustCallValueElement =
@@ -194,7 +196,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     if (tree instanceof MethodInvocationTree) {
       declaration = TreeUtils.elementFromUse((MethodInvocationTree) tree);
     } else if (tree instanceof MemberReferenceTree) {
-      declaration = (ExecutableElement) TreeUtils.elementFromTree(tree);
+      declaration = (ExecutableElement) TreeUtils.elementFromUse(tree);
     } else {
       throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
     }
@@ -414,13 +416,13 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
     @Override
     public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
-      Element elt = TreeUtils.elementFromTree(node);
+      Element elt = TreeUtils.elementFromUse(node);
       if (elt.getKind() == ElementKind.PARAMETER
           && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
               || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
       }
-      if (isResourceVariable(TreeUtils.elementFromTree(node))) {
+      if (isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
       return super.visitIdentifier(node, type);

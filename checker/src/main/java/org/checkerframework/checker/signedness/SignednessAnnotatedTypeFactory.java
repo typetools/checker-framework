@@ -82,13 +82,14 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
 
   /** The Serializable type mirror. */
-  private TypeMirror serializableTM =
+  private final TypeMirror serializableTM =
       elements.getTypeElement(Serializable.class.getCanonicalName()).asType();
   /** The Comparable type mirror. */
-  private TypeMirror comparableTM =
+  private final TypeMirror comparableTM =
       elements.getTypeElement(Comparable.class.getCanonicalName()).asType();
   /** The Number type mirror. */
-  private TypeMirror numberTM = elements.getTypeElement(Number.class.getCanonicalName()).asType();
+  private final TypeMirror numberTM =
+      elements.getTypeElement(Number.class.getCanonicalName()).asType();
 
   /**
    * Create a SignednessAnnotatedTypeFactory.
@@ -155,15 +156,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           || javaTypeKind == TypeKind.SHORT
           || javaTypeKind == TypeKind.INT
           || javaTypeKind == TypeKind.LONG) {
-        // To avoid a crash when running the InitializedFields Checker with the Signedness Checker,
-        // special case the literal 0 here rather than using the Value Checker.
-        if (tree instanceof LiteralTree) {
-          Object value = ((LiteralTree) tree).getValue();
-          if (value instanceof Number && ((Number) value).longValue() == 0) {
-            type.replaceAnnotation(SIGNEDNESS_GLB);
-            return;
-          }
-        }
         ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
         // These annotations are trusted rather than checked.  Maybe have an option to
@@ -612,7 +604,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true iff the right shift is masked such that a signed or unsigned right shift has the
    *     same effect
    */
-  /*package-private*/ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
+  /* package-private */ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
     Pair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = enclosingPair.first;
@@ -660,7 +652,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true iff the right shift is type casted such that a signed or unsigned right shift has
    *     the same effect
    */
-  /*package-private*/ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
+  /* package-private */ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = TreePathUtil.enclosingNonParen(path).first;
 

@@ -48,7 +48,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * The builder frameworks (such as Lombok and AutoValue) supported by this instance of the Called
    * Methods Checker.
    */
-  private Collection<BuilderFrameworkSupport> builderFrameworkSupports;
+  private final Collection<BuilderFrameworkSupport> builderFrameworkSupports;
 
   /**
    * Whether to use the Value Checker as a subchecker to reduce false positives when analyzing calls
@@ -413,7 +413,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   private AnnotationMirror ensuresCMAnno(String expression, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
     builder.setValue("value", new String[] {expression});
-    builder.setValue("methods", calledMethods.toArray(new String[0]));
+    builder.setValue("methods", calledMethods.toArray(new String[calledMethods.size()]));
     AnnotationMirror am = builder.build();
     return am;
   }

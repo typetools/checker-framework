@@ -30,9 +30,9 @@ import org.checkerframework.framework.qual.JavaExpression;
  * annotations:
  *
  * <ul>
- *   <li>If {@code i} is {@code @IndexFor("this")}, then {@code start + i} is
+ *   <li>If {@code i} is {@code @IndexFor("this")}, then {@code this.start + i} is
  *       {@code @IndexFor("array")}.
- *   <li>If {@code j} is {@code @IndexFor("array")}, then {@code j - start } is
+ *   <li>If {@code j} is {@code @IndexFor("array")}, then {@code j - this.start } is
  *       {@code @IndexFor("this")}.
  * </ul>
  *

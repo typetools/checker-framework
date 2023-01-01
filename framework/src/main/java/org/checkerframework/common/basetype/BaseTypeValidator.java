@@ -349,11 +349,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // May be zero for a "diamond" (inferred type args in constructor invocation).
     int numTypeArgs = typeArgTree.getTypeArguments().size();
     if (numTypeArgs != 0) {
-      // TODO: this should be an equality, but in
-      // http://buffalo.cs.washington.edu:8080/job/jdk6-daikon-typecheck/2061/console
-      // it failed with:
-      // daikon/Debug.java; message: size mismatch for type arguments:
-      // @NonNull Object and Class<?>
+      // TODO: this should be an equality, but in the past it failed with:
+      //   daikon/Debug.java; message: size mismatch for type arguments:
+      //   @NonNull Object and Class<?>
       // but I didn't manage to reduce it to a test case.
       assert tatypes.size() <= numTypeArgs || skipChecks
           : "size mismatch for type arguments: " + type + " and " + typeArgTree;
@@ -605,7 +603,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           } else if (AnnotatedTypes.isExplicitlySuperBounded(wildcard)) {
             // If the super bound of the wildcard is the same as the upper bound of the type
             // parameter, then javac uses the bound rather than creating a fresh type variable.
-            // (See https://bugs.openjdk.java.net/browse/JDK-8054309.)
+            // (See https://bugs.openjdk.org/browse/JDK-8054309.)
             // In this case, the Checker Framework uses the annotations on the super bound of the
             // wildcard and ignores the annotations on the extends bound. So, issue a warning if
             // the annotations on the extends bound are not the same as the annotations on the super

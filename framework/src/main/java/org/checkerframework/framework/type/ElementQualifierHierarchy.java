@@ -37,7 +37,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
 
   /** {@link org.checkerframework.javacutil.ElementUtils}. */
-  private Elements elements;
+  private final Elements elements;
 
   /** {@link QualifierKindHierarchy}. */
   protected final QualifierKindHierarchy qualifierKindHierarchy;

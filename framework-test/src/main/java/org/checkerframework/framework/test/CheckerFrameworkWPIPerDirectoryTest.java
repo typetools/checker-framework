@@ -39,8 +39,8 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
    * Do not typecheck any file ending with the given String. Use this routine to avoid typechecking
    * files in the all-systems test suite that are problematic for one typechecker. For example, this
    * routine is useful when running the all-systems tests using WPI, because some all-systems tests
-   * have expected errors that become warnings during a WPI run (because of -Awarns) and so must be
-   * excluded.
+   * have expected errors that become warnings during a WPI run (because of {@code -Awarns}) and so
+   * must be excluded.
    *
    * <p>This code takes advantage of the mutability of the {@link #testFiles} field.
    *
@@ -48,7 +48,7 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
    *     typechecked ends with. Usually, this takes the form "all-systems/ProblematicFile.java".
    */
   protected void doNotTypecheck(
-          @UnderInitialization(CheckerFrameworkPerDirectoryTest.class) CheckerFrameworkWPIPerDirectoryTest this,
+      @UnderInitialization(CheckerFrameworkPerDirectoryTest.class) CheckerFrameworkWPIPerDirectoryTest this,
       String endswith) {
     int removeIndex = -1;
     for (int i = 0; i < testFiles.size(); i++) {

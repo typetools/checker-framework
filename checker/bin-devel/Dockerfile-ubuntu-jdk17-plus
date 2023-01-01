@@ -9,22 +9,13 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
-#  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
+#  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
-# Instructions for installing Java 17 on Ubuntu:
-# https://www.linuxuprising.com/2021/09/how-to-install-oracle-java-17-lts-on.html
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install software-properties-common \
-&& add-apt-repository ppa:linuxuprising/java
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt-get -qqy update \
-&& echo oracle-java17-installer shared/accepted-oracle-license-v1-3 select true | /usr/bin/debconf-set-selections \
-&& echo oracle-java17-installer shared/accepted-oracle-licence-v1-3 boolean true | /usr/bin/debconf-set-selections \
 && apt-get -qqy install \
-  oracle-java17-installer --install-recommends
+  openjdk-17-jdk
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
@@ -34,6 +25,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   git \
   gradle \
   jq \
+  jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
@@ -43,10 +35,12 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
+# Maven 3.6.3 (the default on Ubuntu 22.04) does not run under JDK 17.
+# (Don't try to use a variable here for the Maven version.)
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.8.3/binaries/apache-maven-3.8.3-bin.tar.gz \
-&& tar xzvf apache-maven-3.8.3-bin.tar.gz
-ENV PATH="/apache-maven-3.8.3/bin:$PATH"
+&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz \
+&& tar xzvf apache-maven-3.8.6-bin.tar.gz
+ENV PATH="/apache-maven-3.8.6/bin:$PATH"
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
@@ -57,7 +51,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   hevea \
   imagemagick \
   junit \
-  jtreg \
   latexmk \
   librsvg2-bin \
   libasound2-dev libcups2-dev libfontconfig1-dev \

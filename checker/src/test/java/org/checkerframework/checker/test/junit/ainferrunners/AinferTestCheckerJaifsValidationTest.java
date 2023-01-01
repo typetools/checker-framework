@@ -13,11 +13,14 @@ import org.junit.runners.Parameterized.Parameters;
  */
 @Category(AinferTestCheckerJaifsTest.class)
 public class AinferTestCheckerJaifsValidationTest extends AinferValidatePerDirectoryTest {
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public AinferTestCheckerJaifsValidationTest(List<File> testFiles) {
     super(
         testFiles,
         AinferTestChecker.class,
+        "testchecker",
         "ainfer-testchecker/non-annotated",
         AinferTestCheckerJaifsTest.class,
         "-Anomsgtext",

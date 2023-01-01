@@ -517,10 +517,15 @@ then write a \<@SuppressWarnings> annotation.
 
 % Implemented in org.checkerframework.checker.nullness.CollectionToArrayHeuristics
 
-The semantics of
+The nullness semantics of
 \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
-cannot be captured by the nullness type system syntax. The nullness type of the
-returned array depends on the size of the passed parameter. In particular, the
+cannot be captured by just the nullness type system, though the Nullness
+Checker contains special-case code to type-check calls to \<toArray>.
+Therefore, you will probably have to write \<@SuppressWarnings("nullness")>
+on any overriding definitions of \<toArray>.
+
+The nullness type of the
+returned array depends on the \emph{size} of the passed parameter. In particular, the
 returned array component is of type \<@NonNull> if the following conditions
 hold:
 
@@ -1105,7 +1110,7 @@ Section~\ref{checker-options}).
 
 FindBugs and SpotBugs have a non-standard definition of
 \<@Nullable>.  This treatment is not documented in its own
-% \href{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
+% \href{https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 \href{https://www.javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/latest/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
 nullness analysis; it means the same thing as \<@NonNull> when applied to a
@@ -1458,12 +1463,12 @@ The Initialization Checker issues an error if the constructor fails to initializ
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
 This is different than Java's test for definite assignment (see
-\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-16.html}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -1960,7 +1965,7 @@ consider a doubly linked list:
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se11/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)

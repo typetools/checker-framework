@@ -24,6 +24,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
@@ -208,7 +209,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /** The fixed initial store. */
-  private S fixedInitialStore = null;
+  private @MonotonicNonNull S fixedInitialStore = null;
 
   /** Set a fixed initial Store. */
   public void setFixedInitialStore(S s) {
@@ -310,7 +311,7 @@ public abstract class CFAbstractTransfer<
       Element enclosingElement = null;
       if (enclosingTree.getKind() == Tree.Kind.METHOD) {
         // If it is in an initializer, we need to use locals from the initializer.
-        enclosingElement = TreeUtils.elementFromTree(enclosingTree);
+        enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -418,9 +419,9 @@ public abstract class CFAbstractTransfer<
    */
   private void addFinalLocalValues(S store, Element enclosingElement) {
     // add information about effectively final variables (from outer scopes)
-    for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
+    for (Map.Entry<VariableElement, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
 
-      Element elem = e.getKey();
+      VariableElement elem = e.getKey();
 
       // TODO: There is a design flaw where the values of final local values leaks
       // into other methods of the same class. For example, in
@@ -808,7 +809,7 @@ public abstract class CFAbstractTransfer<
       } else if (lhs instanceof LocalVariableNode
           && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
-        VariableElement param = (VariableElement) ((LocalVariableNode) lhs).getElement();
+        VariableElement param = ((LocalVariableNode) lhs).getElement();
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -832,7 +833,7 @@ public abstract class CFAbstractTransfer<
       if (classTree == null) {
         return result;
       }
-      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
+      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromDeclaration(classTree);
 
       ExecutableElement methodElem =
           TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));

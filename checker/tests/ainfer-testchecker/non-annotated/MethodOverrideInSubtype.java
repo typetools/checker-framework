@@ -1,17 +1,17 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 public class MethodOverrideInSubtype extends MethodDefinedInSupertype {
   @java.lang.Override
-  public int shouldReturnSibling1() {
-    return getSibling1();
+  public int shouldReturnAinferSibling1() {
+    return getAinferSibling1();
   }
 
-  private @Sibling1 int getSibling1() {
+  private @AinferSibling1 int getAinferSibling1() {
     return 0;
   }
 
   @java.lang.Override
   public int shouldReturnParent() {
-    return getSibling1();
+    return getAinferSibling1();
   }
 }

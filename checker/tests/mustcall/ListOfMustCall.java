@@ -4,7 +4,8 @@
 import java.util.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("a") class ListOfMustCall {
+@InheritableMustCall("a")
+class ListOfMustCall {
   static void test(ListOfMustCall lm) {
     List<ListOfMustCall> l = new ArrayList<>();
     // add(E e) takes an object of the type argument's type

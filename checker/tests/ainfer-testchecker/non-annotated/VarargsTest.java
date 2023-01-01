@@ -1,5 +1,5 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 public class VarargsTest {
 
@@ -15,8 +15,8 @@ public class VarargsTest {
 
   static void m3ArrArgs(Object[] args) {}
 
-  static @Sibling1 Object @Parent [] p_s1_array;
-  static @Sibling1 Object @Sibling1 [] s1_s1_array;
+  static @AinferSibling1 Object @AinferParent [] p_s1_array;
+  static @AinferSibling1 Object @AinferSibling1 [] s1_s1_array;
 
   static void client() {
     m1Varargs(s1_s1_array);

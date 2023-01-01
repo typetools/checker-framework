@@ -1,24 +1,24 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Parent;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferParent;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 
 public class LUBAssignmentTest {
-  // The default type for fields is @DefaultType.
+  // The default type for fields is @AinferDefaultType.
   private static int privateField;
   public static int publicField;
 
-  void assignFieldsToSibling1() {
-    privateField = getSibling1();
-    publicField = getSibling1();
+  void assignFieldsToAinferSibling1() {
+    privateField = getAinferSibling1();
+    publicField = getAinferSibling1();
   }
 
   static {
-    privateField = getSibling2();
-    publicField = getSibling2();
+    privateField = getAinferSibling2();
+    publicField = getAinferSibling2();
   }
 
-  // LUB between @Sibling1 and @Sibling2 is @Parent, therefore the assignments
-  // above refine the type of privateField to @Parent.
+  // LUB between @AinferSibling1 and @AinferSibling2 is @AinferParent, therefore the assignments
+  // above refine the type of privateField to @AinferParent.
   void testFields() {
     // :: warning: (argument)
     expectsParent(privateField);
@@ -26,24 +26,24 @@ public class LUBAssignmentTest {
     expectsParent(publicField);
   }
 
-  void expectsParent(@Parent int t) {}
+  void expectsParent(@AinferParent int t) {}
 
-  static @Sibling1 int getSibling1() {
+  static @AinferSibling1 int getAinferSibling1() {
     return 0;
   }
 
-  static @Sibling2 int getSibling2() {
+  static @AinferSibling2 int getAinferSibling2() {
     return 0;
   }
 
   String lubTest2() {
     if (Math.random() > 0.5) {
       @SuppressWarnings("cast.unsafe")
-      @Sibling1 String s = (@Sibling1 String) "";
+      @AinferSibling1 String s = (@AinferSibling1 String) "";
       return s;
     } else {
       @SuppressWarnings("cast.unsafe")
-      @Sibling2 String s = (@Sibling2 String) "";
+      @AinferSibling2 String s = (@AinferSibling2 String) "";
       return s;
     }
   }

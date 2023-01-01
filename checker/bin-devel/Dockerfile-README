@@ -58,11 +58,21 @@ export JDKVER=jdk17-plus
 export PROJECT=cf
 create_upload_docker_image
 
+export OS=ubuntu
+export JDKVER=jdk19
+export PROJECT=cf
+create_upload_docker_image
+
+export OS=ubuntu
+export JDKVER=jdk19-plus
+export PROJECT=cf
+create_upload_docker_image
+
 
 Cleanup:
 
-After creating docker images, consider deleting the docker containers,
-which can take up a lot of disk space.
+After creating docker images, if you are low on disk space,
+consider deleting the docker containers.
 To stop and remove/delete all docker containers:
   docker stop $(docker ps -a -q)
   docker rm $(docker ps -a -q)

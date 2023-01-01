@@ -4,13 +4,13 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.testchecker.lubglb.quals.A;
-import org.checkerframework.framework.testchecker.lubglb.quals.B;
-import org.checkerframework.framework.testchecker.lubglb.quals.C;
-import org.checkerframework.framework.testchecker.lubglb.quals.D;
-import org.checkerframework.framework.testchecker.lubglb.quals.E;
-import org.checkerframework.framework.testchecker.lubglb.quals.F;
-import org.checkerframework.framework.testchecker.lubglb.quals.Poly;
+import org.checkerframework.framework.testchecker.lubglb.quals.LubglbA;
+import org.checkerframework.framework.testchecker.lubglb.quals.LubglbB;
+import org.checkerframework.framework.testchecker.lubglb.quals.LubglbC;
+import org.checkerframework.framework.testchecker.lubglb.quals.LubglbD;
+import org.checkerframework.framework.testchecker.lubglb.quals.LubglbE;
+import org.checkerframework.framework.testchecker.lubglb.quals.LubglbF;
+import org.checkerframework.framework.testchecker.lubglb.quals.PolyLubglb;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -34,13 +34,13 @@ public class LubGlbChecker extends BaseTypeChecker {
 
     Elements elements = processingEnv.getElementUtils();
 
-    A = AnnotationBuilder.fromClass(elements, A.class);
-    B = AnnotationBuilder.fromClass(elements, B.class);
-    C = AnnotationBuilder.fromClass(elements, C.class);
-    D = AnnotationBuilder.fromClass(elements, D.class);
-    E = AnnotationBuilder.fromClass(elements, E.class);
-    F = AnnotationBuilder.fromClass(elements, F.class);
-    POLY = AnnotationBuilder.fromClass(elements, Poly.class);
+    A = AnnotationBuilder.fromClass(elements, LubglbA.class);
+    B = AnnotationBuilder.fromClass(elements, LubglbB.class);
+    C = AnnotationBuilder.fromClass(elements, LubglbC.class);
+    D = AnnotationBuilder.fromClass(elements, LubglbD.class);
+    E = AnnotationBuilder.fromClass(elements, LubglbE.class);
+    F = AnnotationBuilder.fromClass(elements, LubglbF.class);
+    POLY = AnnotationBuilder.fromClass(elements, PolyLubglb.class);
 
     QualifierHierarchy qh = ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
 

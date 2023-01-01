@@ -85,10 +85,14 @@ test_wpi_plume_lib() {
       diff -u expected.txt actual.txt
       if [ -n "$AZURE_HTTP_USER_AGENT" ] || [ -n "$CIRCLE_PR_USERNAME" ] || [ -n "$GITHUB_HEAD_REF" ] || [ "$TRAVIS" = "true" ] ; then
         # Running under continuous integration.  Output files that may be useful for debugging.
-        more "$TESTDIR/$project"/dljc-out/*
-        AJAVADIR="$(sed -n 's/Directory for generated ajava files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
+        rm -f "$DLJC_OUT_DIR"/dljc.cache
+        more "$DLJC_OUT_DIR"/*
+        AJAVADIR="$(sed -n 's/Directory for generated annotation files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
         echo "AJAVADIR=$AJAVADIR"
         find "$AJAVADIR" -type f -print0 | xargs -0 more
+        # Repeat the actual error, so it appears at the end of the continuous integration log.
+        echo "Comparing $EXPECTED_FILE $ACTUAL_FILE in $(pwd)"
+        diff -u expected.txt actual.txt
       fi
       exit 1
     fi
@@ -101,6 +105,7 @@ mkdir -p "$TESTDIR"
 cd "$TESTDIR" || (echo "can't do: cd $TESTDIR" && exit 1)
 
 # Get the list of checkers from the project's build.gradle file
+## TODO: These projects are annotated for additional checkers, like resourceleak. Add to these lists.
 test_wpi_plume_lib bcel-util         "formatter,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib bibtex-clean      "formatter,index,interning,lock,nullness,regex,signature"
 test_wpi_plume_lib html-pretty-print "formatter,index,interning,lock,nullness,regex,signature"
