@@ -8,7 +8,9 @@ import org.junit.runners.Parameterized.Parameters;
 /** Tests the MethodVal Checker. */
 public class MethodValTest extends CheckerFrameworkPerDirectoryTest {
 
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public MethodValTest(List<File> testFiles) {
     super(
         testFiles,

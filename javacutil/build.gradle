@@ -11,7 +11,7 @@ dependencies {
 
     // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
     // https://mvnrepository.com/artifact/org.plumelib/plume-util
-    implementation 'org.plumelib:plume-util:1.5.8'
+    implementation "org.plumelib:plume-util:${plumeUtilVersion}"
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages both in checker.jar and
@@ -20,7 +20,7 @@ dependencies {
     // shadowJar block.
 }
 
-apply from: rootProject.file("gradle-mvn-push.gradle")
+apply from: rootProject.file('gradle-mvn-push.gradle')
 
 final javacUtilPom(publication) {
     sharedPublicationConfiguration(publication)

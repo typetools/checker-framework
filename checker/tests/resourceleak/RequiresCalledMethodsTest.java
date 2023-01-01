@@ -4,13 +4,15 @@ import org.checkerframework.checker.mustcall.qual.*;
 
 public class RequiresCalledMethodsTest {
 
-  @MustCall("a") static class Foo {
+  @InheritableMustCall("a")
+  static class Foo {
     void a() {}
 
     void c() {}
   }
 
-  @MustCall("releaseFoo") static class FooField {
+  @InheritableMustCall("releaseFoo")
+  static class FooField {
     private @Owning Foo foo = null;
 
     @RequiresCalledMethods(

@@ -38,7 +38,7 @@ def getAndAppend(name, append):
 def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
     """Execute the given command.
     If capture_output is true, then return the output (and ignore the halt_if_fail argument).
-    If capture_output is not true, return the return code of the subprocess call."""
+    If capture_output is not true, return the return code of the subprocess call (0 for success)."""
 
     if working_dir is not None:
         print("Executing in %s: %s" % (working_dir, command_args))
@@ -55,7 +55,7 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
     else:
         result = subprocess.call(args, cwd=working_dir)
         if halt_if_fail and result:
-            raise Exception("Error %s while executing %s" % (result, args))
+            raise Exception("Error %s while executing %s in %s" % (result, args, working_dir))
         return result
 
 
@@ -139,6 +139,7 @@ AFU_LIVE_SITE = os.path.join(LIVE_SITE_DIR, "annotation-file-utilities")
 AFU_LIVE_RELEASES_DIR = os.path.join(AFU_LIVE_SITE, "releases")
 
 CHECKER_LIVE_RELEASES_DIR = os.path.join(LIVE_SITE_DIR, "releases")
+CHECKER_LIVE_API_DIR = os.path.join(LIVE_SITE_DIR, "api")
 
 os.environ["PARENT_DIR"] = BUILD_DIR
 os.environ["CHECKERFRAMEWORK"] = CHECKER_FRAMEWORK

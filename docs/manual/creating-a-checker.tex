@@ -2,9 +2,9 @@
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
-\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/com/sun/source}
+\newcommand{\TreeAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/11/docs/api/java.compiler/javax/lang/model}
+\newcommand{\ModelAPIBase}{https://docs.oracle.com/en/java/javase/17/docs/api/java.compiler/javax/lang/model}
 \newcommand{\refModelclass}[2]{\href{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -477,7 +477,9 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and
-\<qual> should be placed in the same directory as your checker's source file.
+\<qual> should be placed in the same directory as your checker's source
+file (unless you are creating multiple distribution artifacts, one for your
+checker and one for its qualifiers).
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
@@ -501,6 +503,12 @@ The top qualifier is conventionally named \<\emph{CheckerName}Unknown>.
 Most type systems should also include a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{creating-declarative-hierarchy}).
+
+One of the annotations must be meta-annotated with
+\refqualclass{framework/qual}{DefaultQualifierInHierarchy} or
+\refqualclasswithparams{framework/qual}{DefaultFor}{TypeUseLocation.OTHERWISE}.
+It is usually easiest to make the top type be the default; this may or may
+not be the correct default for the type system design.
 
 Choose good names for the qualifiers, because users will write these in
 their source code.
@@ -973,7 +981,9 @@ A checker must indicate the annotations that it supports (that make up its type
 hierarchy).
 
 By default, a checker supports all type annotations located in a
-subdirectory called \<qual> that's located in the same directory as the checker.
+subdirectory called \<qual> that's located in the same directory as the
+checker (unless you are creating multiple distribution artifacts, one for your
+checker and one for its qualifiers).
 A type annotation is meta-annotated with either
 \<@Target(ElementType.TYPE\_USE)>
 or
@@ -1124,6 +1134,7 @@ required parsing of the option.
 
 
 % TODO: describe -ANullnessChecker_option=value mechanism.
+% For the implementation, see SourceChecker#OPTION_SEPARATOR.
 
 
 \sectionAndLabel{Visitor: Type rules}{creating-extending-visitor}
@@ -1137,7 +1148,7 @@ Put them in a file \<\emph{MyChecker}Visitor.java> that extends
 BaseTypeVisitor performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\href{https://docs.oracle.com/en/java/javase/11/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
+\href{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
 \refmethodterse{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
@@ -1229,8 +1240,14 @@ If a method's contract is expressible in the type system's annotation
 syntax, then you should write annotations, in a stub file or annotated JDK
 (Chapter~\ref{annotating-libraries}).
 
-Only if the contract is not expressible should you write a type-checking
-rule for method invocation, where your rule checks the name of the method
+If the contract is not expressible, you can create a declaration
+annotation, and your checker can treat methods with that annotation
+specially.  An example is the
+\refqualclass{checker/formatter/qual}{FormatMethod} annotation; see
+Section~\ref{formatter-FormatMethod}.
+
+A final alternative is to write a type-checking rule for method invocation,
+where your rule checks the (class and) name of the method
 being called and then treats the method in a special way.
 
 
@@ -1909,6 +1926,10 @@ should only do it if you have discovered a bug in a checker, you have
 already reported the bug, and you want to continue using the checker on a
 large codebase without being inundated in stack traces.
 
+\item \code{-AnoWarnMemoryConstraints}: when memory constraints are
+impeding performance, issue a note rather than a warning.
+This prevents the message from being elevated to an error by \code{-Werror}.
+
 \item \code{-AdumpOnErrors}: Outputs a stack trace when reporting errors or warnings.
 
 \end{itemize}
@@ -2015,7 +2036,7 @@ refinement, you can create a graphical representation of the CFG.
 Typical use is:
 
 \begin{Verbatim}
-javac -processor mypackage.MyProcessor -Aflowdotdir=. MyClass.java
+javacheck -processor mypackage.MyProcessor -Aflowdotdir=. MyClass.java
 for dotfile in *.dot; do dot -Tpdf -o "$dotfile.pdf" "$dotfile"; done
 \end{Verbatim}
 
@@ -2072,7 +2093,7 @@ command-line options. \\
 
 \subsubsectionAndLabel{Creating a CFG by running CFGVisualizeLauncher}{creating-debugging-dataflow-graph-with-cfgvisualizelauncher}
 
-You can also use \refclass{dataflow/cfg}{CFGVisualizeLauncher} to generate a DOT
+You can also use \refclass{dataflow/cfg/visualize}{CFGVisualizeLauncher} to generate a DOT
 or String representation of the control flow graph of a given method in a given class.
 The CFG is generated and output, but no dataflow analysis is performed.
 
@@ -2090,7 +2111,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \end{smaller}
 
 
-\item With JDK 11:
+\item With JDK 11 or later:
 
 \begin{smaller}
 \begin{Verbatim}
@@ -2118,7 +2139,7 @@ java -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/javac.jar \
 \end{smaller}
 
 For more details about invoking
-\refclass{dataflow/cfg}{CFGVisualizeLauncher}, run it with
+\refclass{dataflow/cfg/visualize}{CFGVisualizeLauncher}, run it with
 no arguments.
 
 
@@ -2236,9 +2257,6 @@ following sections:
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
   \end{Verbatim}
 
-  \noindent
-  For more details, see \refclass{javacutil/dist}{ManualTaglet}.
-
 \item[Section: What the Belly Rub Checker checks]
   This section gives more details about when an error is issued, with examples.
   This section may be omitted if the checker does not contain special
@@ -2285,7 +2303,7 @@ Also ensure that the Javadoc links back to the manual, using the
 
 Since this section of the manual was written, the useful ``The Hitchhiker's
 Guide to javac'' has become available at
-\url{http://openjdk.java.net/groups/compiler/doc/hhgtjavac/index.html}.
+\url{https://openjdk.org/groups/compiler/doc/hhgtjavac/index.html}.
 See it first, and then refer to this section.  (This section of the manual
 should be revised, or parts eliminated, in light of that document.)
 
@@ -2355,12 +2373,18 @@ no tree is available for classes read from bytecode.
 
 There is a Tree interface for each Java source structure, e.g.,
 \code{ClassTree} for class declaration, \code{MethodInvocationTree}
-for a method invocation, and \code{ForEachTree} for an enhanced-for-loop
-statement.
+for a method invocation, and \code{ForEachTree} for an enhanced \<for>
+statement (also known as a foreach loop).
 
 You should limit your use of trees. A checker uses Trees mainly to
 traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
+
+To obtain the position (line number and column number) of a Tree,
+cast the Tree to a \<com.sun.tools.javac.tree.JCTree> and then use one of
+its methods, such as \<pos()> which returns a \<JCDiagnostic.DiagnosticPosition>.
+\<com.sun.source.tree.CompilationUnitTree> has a LineMap lets you convert
+positions to line numbers.
 
 
 \subsubsectionAndLabel{Using the APIs}{creating-using-the-apis}
@@ -2459,9 +2483,9 @@ other useful resources include the Java Infrastructure
 Developer's guide at
 \url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.asciidoc} and the compiler
 mailing list archives at
-\url{http://mail.openjdk.java.net/pipermail/compiler-dev/}
+\url{https://mail.openjdk.org/pipermail/compiler-dev/}
 (subscribe at
-\url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
+\url{https://mail.openjdk.org/mailman/listinfo/compiler-dev}).
 
 
 \sectionAndLabel{Integrating a checker with the Checker Framework}{creating-integrating-a-checker}

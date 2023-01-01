@@ -60,7 +60,7 @@ public class UpperBoundChecker extends BaseTypeChecker {
    * These collection classes have some subtypes whose length can change and some subtypes whose
    * length cannot change. Warnings are skipped at uses of them.
    */
-  private HashSet<String> collectionBaseTypeNames;
+  private final HashSet<String> collectionBaseTypeNames;
 
   /** Create a new UpperBoundChecker. */
   public UpperBoundChecker() {

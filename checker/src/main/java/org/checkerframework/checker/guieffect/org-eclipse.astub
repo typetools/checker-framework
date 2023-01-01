@@ -1,3 +1,4 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.guieffect.qual.*;
 
 package org.eclipse.compare;
@@ -310,7 +311,7 @@ public class BusyIndicator {
 @UIPackage package org.eclipse.swt.graphics;
 // XXX: Not 100%, but this seems safe.  At least the .equals(), which is what my case study needs
 public final class RGB extends Object implements org.eclipse.swt.internal.SerializableCompatibility {
-    @SafeEffect public boolean equals(Object object);
+    @SafeEffect public boolean equals(@Nullable Object object);
 }
 public final class Font extends Resource {
     // Another SWT class that happens to work on other threads... (https://bugs.eclipse.org/bugs/show_bug.cgi?id=241062)
@@ -321,7 +322,7 @@ public abstract class Resource {
     @SafeEffect public void dispose();
 }
 public final class Image extends Resource implements Drawable {
-    @SafeEffect public boolean equals(Object object);
+    @SafeEffect public boolean equals(@Nullable Object object);
     @SafeEffect public int hashCode();
 }
 

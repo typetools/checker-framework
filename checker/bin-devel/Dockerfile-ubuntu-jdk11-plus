@@ -5,11 +5,9 @@
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
-## Keep this file in sync with ../../docs/manual/troubleshooting.tex
-
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
-#  * Put "apt-get update" and "apt-get install" and apt cleanup in the same RUN command.
+#  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -25,6 +23,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   git \
   gradle \
   jq \
+  jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
@@ -42,7 +41,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   dia \
   hevea \
   imagemagick \
-  jtreg \
   junit \
   latexmk \
   librsvg2-bin \

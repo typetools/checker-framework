@@ -1,5 +1,6 @@
 package org.checkerframework.framework.test.diagnostics;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,12 +10,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class reads expected javac diagnostics from a single file. Its implementation is as an
@@ -22,7 +24,7 @@ import org.plumelib.util.CollectionsPlume;
  * #readJavaSourceFiles} reads diagnostics from multiple Java source files, and {@link
  * #readDiagnosticFiles} reads diagnostics from multiple "diagnostic files".
  */
-public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
+public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Closeable {
 
   ///
   /// This class begins with the public static methods that clients use to read diagnostics.
@@ -37,14 +39,19 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
   // The argument has type Iterable<? extends Object> because Java cannot resolve the overload
   // of two versions that take Iterable<? extends File> and Iterable<? extends JavaFileObject>.
   public static List<TestDiagnostic> readJavaSourceFiles(Iterable<? extends Object> files) {
-    List<JavaDiagnosticReader> readers = new ArrayList<>();
+    List<TestDiagnostic> result = new ArrayList<>();
     for (Object file : files) {
       if (file instanceof JavaFileObject) {
-        readers.add(
+        try (JavaDiagnosticReader reader =
             new JavaDiagnosticReader(
-                (JavaFileObject) file, TestDiagnosticUtils::fromJavaSourceLine));
+                (JavaFileObject) file, TestDiagnosticUtils::fromJavaSourceLine)) {
+          readDiagnostics(result, reader);
+        }
       } else if (file instanceof File) {
-        readers.add(new JavaDiagnosticReader((File) file, TestDiagnosticUtils::fromJavaSourceLine));
+        try (JavaDiagnosticReader reader =
+            new JavaDiagnosticReader((File) file, TestDiagnosticUtils::fromJavaSourceLine)) {
+          readDiagnostics(result, reader);
+        }
       } else {
         throw new IllegalArgumentException(
             String.format(
@@ -52,7 +59,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
                 file.getClass(), file));
       }
     }
-    return readDiagnostics(readers);
+    return result;
   }
 
   /**
@@ -62,15 +69,16 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
    * @return the TestDiagnosticLines from the input files
    */
   public static List<TestDiagnostic> readDiagnosticFiles(Iterable<? extends File> files) {
-    List<JavaDiagnosticReader> readers =
-        CollectionsPlume.mapList(
-            (File file) ->
-                new JavaDiagnosticReader(
-                    file,
-                    (filename, line, lineNumber) ->
-                        TestDiagnosticUtils.fromDiagnosticFileLine(line)),
-            files);
-    return readDiagnostics(readers);
+    List<TestDiagnostic> result = new ArrayList<>();
+    for (File file : files) {
+      try (JavaDiagnosticReader reader =
+          new JavaDiagnosticReader(
+              file,
+              (filename, line, lineNumber) -> TestDiagnosticUtils.fromDiagnosticFileLine(line))) {
+        readDiagnostics(result, reader);
+      }
+    }
+    return result;
   }
 
   ///
@@ -78,28 +86,13 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
   ///
 
   /**
-   * Returns all the diagnostics in any of the files.
+   * Reads all the diagnostics in the file.
    *
-   * @param readers the files (Java or Diagnostics format) to read
-   * @return the List of TestDiagnosticLines from the input file
+   * @param list where to put the diagnostics
+   * @param reader the file (Java or Diagnostics format) to read
    */
-  private static List<TestDiagnostic> readDiagnostics(Iterable<JavaDiagnosticReader> readers) {
-    return diagnosticLinesToDiagnostics(readDiagnosticLines(readers));
-  }
-
-  /**
-   * Reads the entire input file using the given codec and returns the resulting line.
-   *
-   * @param readers the files (Java or Diagnostics format) to read
-   * @return the List of TestDiagnosticLines from the input file
-   */
-  private static List<TestDiagnosticLine> readDiagnosticLines(
-      Iterable<JavaDiagnosticReader> readers) {
-    List<TestDiagnosticLine> result = new ArrayList<>();
-    for (JavaDiagnosticReader reader : readers) {
-      result.addAll(readDiagnosticLines(reader));
-    }
-    return result;
+  private static void readDiagnostics(List<TestDiagnostic> list, JavaDiagnosticReader reader) {
+    diagnosticLinesToDiagnostics(list, readDiagnosticLines(reader));
   }
 
   /**
@@ -121,13 +114,17 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     return diagnosticLines;
   }
 
-  /** Converts a list of TestDiagnosticLine into a list of TestDiagnostic. */
-  private static List<TestDiagnostic> diagnosticLinesToDiagnostics(List<TestDiagnosticLine> lines) {
-    List<TestDiagnostic> result = new ArrayList<>((int) (lines.size() * 1.1));
+  /**
+   * Converts a list of TestDiagnosticLine into a list of TestDiagnostic.
+   *
+   * @param list where to put the result TestDiagnostics
+   * @param lines the TestDiagnosticLines
+   */
+  private static void diagnosticLinesToDiagnostics(
+      List<TestDiagnostic> list, List<TestDiagnosticLine> lines) {
     for (TestDiagnosticLine line : lines) {
-      result.addAll(line.getDiagnostics());
+      list.addAll(line.getDiagnostics());
     }
-    return result;
   }
 
   /**
@@ -154,15 +151,26 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
   /// End of static methods, start of per-instance state.
   ///
 
+  /** Converts a file line into a TestDiagnosticLine. */
   private final StringToTestDiagnosticLine codec;
 
+  /** The file name. */
   private final String filename;
 
-  private LineNumberReader reader;
+  /** The reader for the file. */
+  private final @Owning LineNumberReader reader;
 
+  /** The next line to be read, or null. */
   private @Nullable String nextLine = null;
+  /** The line number of the next line to be read, or -1. */
   private @GTENegativeOne int nextLineNumber = -1;
 
+  /**
+   * Creates a JavaDiagnosticReader.
+   *
+   * @param toRead the file to read
+   * @param codec converts a file line into a TestDiagnosticLine
+   */
   private JavaDiagnosticReader(File toRead, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = toRead.getName();
@@ -174,6 +182,12 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     }
   }
 
+  /**
+   * Creates a JavaDiagnosticReader.
+   *
+   * @param toReadFileObject the file to read
+   * @param codec converts a file line into a TestDiagnosticLine
+   */
   private JavaDiagnosticReader(JavaFileObject toReadFileObject, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = new File(toReadFileObject.getName()).getName();
@@ -231,6 +245,16 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     nextLineNumber = reader.getLineNumber();
     if (nextLine == null) {
       reader.close();
+    }
+  }
+
+  @Override
+  @EnsuresCalledMethods(value = "reader", methods = "close")
+  public void close() {
+    try {
+      reader.close();
+    } catch (IOException e) {
+      throw new Error(e);
     }
   }
 }

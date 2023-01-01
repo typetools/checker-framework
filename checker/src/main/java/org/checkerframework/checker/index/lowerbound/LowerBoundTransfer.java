@@ -168,9 +168,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
   /** The canonical {@link LowerBoundUnknown} annotation. */
   public final AnnotationMirror UNKNOWN;
 
-  // The ATF (Annotated Type Factory).
-  private LowerBoundAnnotatedTypeFactory aTypeFactory;
+  /** The annotated type factory. */
+  private final LowerBoundAnnotatedTypeFactory aTypeFactory;
 
+  /**
+   * Create a new LowerBoundTransfer.
+   *
+   * @param analysis the CFAnalysis
+   */
   public LowerBoundTransfer(CFAnalysis analysis) {
     super(analysis);
     aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();

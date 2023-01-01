@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Represents a binary name as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">Java Language
+ * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">Java Language
  * Specification, section 13.1</a>.
  *
  * <p>For example, in

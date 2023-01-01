@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,9 +41,9 @@ public class PersistUtil {
 
   public static File writeTestFile(String fullFile) throws IOException {
     File f = new File("Test.java");
-    PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f)));
-    out.println(fullFile);
-    out.close();
+    try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f)))) {
+      out.println(fullFile);
+    }
     return f;
   }
 
@@ -50,8 +51,6 @@ public class PersistUtil {
     int rc =
         com.sun.tools.javac.Main.compile(
             new String[] {
-              "-source",
-              "1.8",
               "-g",
               "-processor",
               "org.checkerframework.checker.nullness.NullnessChecker",
@@ -60,14 +59,8 @@ public class PersistUtil {
     if (rc != 0) {
       throw new Error("compilation failed. rc=" + rc);
     }
-    String path;
-    if (f.getParent() != null) {
-      path = f.getParent();
-    } else {
-      path = "";
-    }
 
-    File result = new File(path + testClass + ".class");
+    File result = new File(f.getParent(), testClass + ".class");
 
     // This diagnostic code preserves temporary files and prints the paths where they are preserved.
     if (false) {
@@ -81,7 +74,7 @@ public class PersistUtil {
         Files.copy(result.toPath(), resultCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         System.out.printf("comileTestFile: copied to %s %s%n", fCopy, resultCopy);
       } catch (IOException e) {
-        throw new Error(e);
+        throw new UncheckedIOException(e);
       }
     }
 

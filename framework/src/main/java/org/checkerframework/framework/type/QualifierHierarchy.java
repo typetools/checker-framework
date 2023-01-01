@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -389,14 +390,16 @@ public interface QualifierHierarchy {
   }
 
   /**
-   * Throws an exception if the result does not have the same size as the inputs (which are assumed
-   * to have the same size as one another).
+   * Throws an exception if the result and the inputs do not all have the same size.
    *
    * @param c1 the first collection
    * @param c2 the second collection
    * @param result the result collection
    */
-  static void assertSameSize(Collection<?> c1, Collection<?> c2, Collection<?> result) {
+  static void assertSameSize(
+      @MustCallUnknown Collection<? extends @MustCallUnknown Object> c1,
+      @MustCallUnknown Collection<? extends @MustCallUnknown Object> c2,
+      @MustCallUnknown Collection<? extends @MustCallUnknown Object> result) {
     if (c1.size() != result.size() || c2.size() != result.size()) {
       throw new BugInCF(
           "inconsistent sizes (%d, %d, %d):%n  %s%n  %s%n  %s",

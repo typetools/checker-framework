@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -29,7 +30,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class MustCallInferenceLogic {
 
   /** The set of owning fields. */
-  private Set<Element> owningFields = new HashSet<>();
+  private final Set<VariableElement> owningFields = new HashSet<>();
 
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
@@ -40,7 +41,7 @@ public class MustCallInferenceLogic {
   protected final AnnotationMirror OWNING;
 
   /** The control flow graph. */
-  private ControlFlowGraph cfg;
+  private final ControlFlowGraph cfg;
 
   /**
    * Creates a MustCallInferenceLogic. If the type factory has whole program inference enabled, its
@@ -101,14 +102,14 @@ public class MustCallInferenceLogic {
     Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
 
     if (receiverEl != null && typeFactory.isCandidateOwningField(receiverEl)) {
-      Element method = TreeUtils.elementFromTree(mNode.getTree());
+      Element method = TreeUtils.elementFromUse(mNode.getTree());
       List<String> mustCallValues = typeFactory.getMustCallValue(receiverEl);
 
       // This assumes that any MustCall annotation has at most one element.
       // TODO: generalize this to MustCall annotations with more than one element.
       if (mustCallValues.size() == 1
           && mustCallValues.contains(method.getSimpleName().toString())) {
-        owningFields.add(receiverEl);
+        owningFields.add((VariableElement) receiverEl);
       }
     }
   }
@@ -132,7 +133,7 @@ public class MustCallInferenceLogic {
       if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
         assert wpi != null : "MustCallInference is running without WPI.";
-        for (Element fieldElt : owningFields) {
+        for (VariableElement fieldElt : owningFields) {
           wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
         }
       }

@@ -15,15 +15,18 @@ import org.junit.runners.Parameterized.Parameters;
 @Category(AinferTestCheckerAjavaTest.class)
 public class AinferTestCheckerAjavaValidationTest extends AinferValidatePerDirectoryTest {
 
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public AinferTestCheckerAjavaValidationTest(List<File> testFiles) {
     super(
         testFiles,
         AinferTestChecker.class,
+        "testchecker",
         "ainfer-testchecker/annotated",
         AinferTestCheckerAjavaTest.class,
         "-Anomsgtext",
-        ajavaArgFromFiles(testFiles),
+        ajavaArgFromFiles(testFiles, "testchecker"),
         "-Awarns");
   }
 

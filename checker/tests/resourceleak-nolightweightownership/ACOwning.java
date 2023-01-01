@@ -8,7 +8,8 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class ACOwning {
 
-  @MustCall("a") static class Foo {
+  @InheritableMustCall("a")
+  static class Foo {
     void a() {}
   }
 

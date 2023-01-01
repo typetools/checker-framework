@@ -143,7 +143,8 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
 
   @Override
   public String toString() {
-    // only output local variable information
+    // Only output local variable information.
+    // This output is very terse, so a CFG containing it fits well in the manual.
     Map<Node, Constant> contentsWithoutLocalVars =
         new LinkedHashMap<>(CollectionsPlume.mapCapacity(contents));
     for (Map.Entry<Node, Constant> e : contents.entrySet()) {
@@ -166,8 +167,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
    * visualization.
    */
   @Override
-  @SuppressWarnings("nullness")
   public String visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {
-    return viz.visualizeStoreKeyVal("constant propagation", null);
+    return viz.visualizeStoreKeyVal("constant propagation", toString());
   }
 }

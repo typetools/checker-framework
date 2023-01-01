@@ -6,7 +6,8 @@ import java.net.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("close") class SocketContainer3 {
+@InheritableMustCall("close")
+class SocketContainer3 {
   @Owning Socket sock = null;
 
   public SocketContainer3(String host, int port) throws Exception {

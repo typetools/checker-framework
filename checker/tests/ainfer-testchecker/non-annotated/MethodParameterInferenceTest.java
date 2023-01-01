@@ -1,13 +1,13 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 // TODO: Like this one, some tests must verify that it contains the expected
 // output after performing the whole-program inference.
 public class MethodParameterInferenceTest {
   void foo(int i) {
-    i = getSibling1(); // The type of i must be inferred to @Sibling1.
+    i = getAinferSibling1(); // The type of i must be inferred to @AinferSibling1.
   }
 
-  @Sibling1 int getSibling1() {
-    return (@Sibling1 int) 0;
+  @AinferSibling1 int getAinferSibling1() {
+    return (@AinferSibling1 int) 0;
   }
 }

@@ -167,7 +167,7 @@ public class SubtypesSolver {
    * @param qualifierHierarchy the qualifier of the annotation hierarchy
    * @return the GLB of annos
    */
-  private final AnnotationMirror greatestLowerBound(
+  private static final AnnotationMirror greatestLowerBound(
       final Iterable<? extends AnnotationMirror> annos, QualifierHierarchy qualifierHierarchy) {
     Iterator<? extends AnnotationMirror> annoIter = annos.iterator();
     AnnotationMirror glb = annoIter.next();

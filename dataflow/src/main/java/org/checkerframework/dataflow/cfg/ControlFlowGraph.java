@@ -271,7 +271,7 @@ public class ControlFlowGraph implements UniqueId {
   /**
    * Returns an unmodifiable view of the lookup-map of the binary tree for a postfix expression.
    *
-   * @return the unmodifiable lookup-map of the binary tree for a postfix expression.
+   * @return the unmodifiable lookup-map of the binary tree for a postfix expression
    */
   public UnmodifiableIdentityHashMap<UnaryTree, BinaryTree> getPostfixNodeLookup() {
     return UnmodifiableIdentityHashMap.wrap(postfixNodeLookup);

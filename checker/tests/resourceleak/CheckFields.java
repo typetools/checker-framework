@@ -4,7 +4,8 @@ import org.checkerframework.common.returnsreceiver.qual.*;
 
 class CheckFields {
 
-  @MustCall("a") static class Foo {
+  @InheritableMustCall("a")
+  static class Foo {
     void a() {}
 
     void c() {}
@@ -14,7 +15,8 @@ class CheckFields {
     return new Foo();
   }
 
-  @MustCall("b") static class FooField {
+  @InheritableMustCall("b")
+  static class FooField {
     private final @Owning Foo finalOwningFoo;
     // :: error: required.method.not.called
     private final @Owning Foo finalOwningFooWrong;
@@ -123,6 +125,7 @@ class CheckFields {
     @Owning Foo foo;
 
     @CreatesMustCallFor("this")
+    // :: error: creates.mustcall.for.invalid.target
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();
@@ -130,7 +133,8 @@ class CheckFields {
     }
   }
 
-  @MustCall("f") static class NestedWrong2 {
+  @InheritableMustCall("f")
+  static class NestedWrong2 {
     // Non-final owning fields also require the surrounding class to have an appropriate MC
     // annotation.
     // :: error: required.method.not.called
@@ -146,7 +150,8 @@ class CheckFields {
     void f() {}
   }
 
-  @MustCall("f") static class NestedRight {
+  @InheritableMustCall("f")
+  static class NestedRight {
     // Non-final owning fields also require the surrounding class to have an appropriate MC
     // annotation.
     @Owning Foo foo;

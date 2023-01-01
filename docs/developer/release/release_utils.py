@@ -24,7 +24,7 @@ from release_vars import execute
 # Parse Args Utils # TODO: Perhaps use argparse module
 
 
-def read_command_line_option(argv, argument):
+def has_command_line_option(argv, argument):
     """Returns True if the given command line arguments contain the specified
     argument, False otherwise."""
     for index in range(1, len(argv)):
@@ -130,7 +130,7 @@ def check_tools(tools):
     print(", ".join(tools))
     print(
         (
-            "Note: If you are NOT working on buffalo.cs.washington.edu then you "
+            "Note: If you are NOT working on the CSE file system then you "
             + "likely need to change the variables that are set in release.py\n"
             + 'Search for "Set environment variables".'
         )
@@ -262,13 +262,15 @@ def update_repo(path, bareflag):
     if bareflag:
         execute("git fetch origin master:master", working_dir=path)
     else:
-        execute("git pull", working_dir=path)
+        execute("git pull --ff-only", working_dir=path)
 
 
 def commit_tag_and_push(version, path, tag_prefix):
     """Commit the changes made for this release, add a tag for this release, and
     push these changes."""
-    execute('git commit -a -m "new release %s"' % (version), working_dir=path)
+    # Do nothing (instead of erring) if there is nothing to commit.
+    if execute("git diff-index --quiet HEAD", False, False, working_dir=path) != 0:
+        execute('git commit -a -m "new release %s"' % (version), working_dir=path)
     execute("git tag %s%s" % (tag_prefix, version), working_dir=path)
     push_changes(path)
 
