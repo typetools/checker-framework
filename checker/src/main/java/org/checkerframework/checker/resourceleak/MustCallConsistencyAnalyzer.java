@@ -640,14 +640,14 @@ class MustCallConsistencyAnalyzer {
     if (expression instanceof FieldAccess) {
       Element elt = ((FieldAccess) expression).getField();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
+          && typeFactory.hasOwning(elt)) {
         // The expression is an Owning field.  This satisfies case 1.
         return true;
       }
     } else if (expression instanceof LocalVariable) {
       Element elt = ((LocalVariable) expression).getElement();
       if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          && typeFactory.getDeclAnnotation(elt, Owning.class) != null) {
+          && typeFactory.hasOwning(elt)) {
         // The expression is an Owning formal parameter. Note that this cannot actually
         // be a local variable (despite expressions's type being LocalVariable) because
         // the @Owning annotation can only be written on methods, parameters, and fields;
@@ -956,19 +956,14 @@ class MustCallConsistencyAnalyzer {
 
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
-          Set<AnnotationMirror> annotationMirrors = typeFactory.getDeclAnnotations(parameter);
-          for (AnnotationMirror anno : annotationMirrors) {
-            if (AnnotationUtils.areSameByName(
-                anno, "org.checkerframework.checker.mustcall.qual.Owning")) {
-              Obligation localObligation = getObligationForVar(obligations, local);
-              // Passing to an owning parameter is not sufficient to resolve the
-              // obligation created from a MustCallAlias parameter, because the containing
-              // method must actually return the value.
-              if (!localObligation.derivedFromMustCallAlias()) {
-                // Transfer ownership!
-                obligations.remove(localObligation);
-                break;
-              }
+          if (typeFactory.hasOwning(parameter)) {
+            Obligation localObligation = getObligationForVar(obligations, local);
+            // Passing to an owning parameter is not sufficient to resolve the
+            // obligation created from a MustCallAlias parameter, because the containing
+            // method must actually return the value.
+            if (!localObligation.derivedFromMustCallAlias()) {
+              // Transfer ownership!
+              obligations.remove(localObligation);
             }
           }
         }
@@ -1032,7 +1027,7 @@ class MustCallConsistencyAnalyzer {
       //  not be transferred.
       MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
-      return typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null;
+      return !typeFactory.hasNotOwning(executableElement);
     }
     return false;
   }
@@ -1061,7 +1056,7 @@ class MustCallConsistencyAnalyzer {
     if (lhsElement.getKind() == ElementKind.FIELD) {
       boolean isOwningField =
           !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-              && typeFactory.getDeclAnnotation(lhsElement, Owning.class) != null;
+              && typeFactory.hasOwning(lhsElement);
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
       if (isOwningField
@@ -1116,7 +1111,7 @@ class MustCallConsistencyAnalyzer {
     // Has an owning field already been encountered?
     boolean hasOwningField = false;
     for (VariableElement field : fields) {
-      if (typeFactory.getDeclAnnotation(field, Owning.class) != null) {
+      if (typeFactory.hasOwning(field)) {
         if (hasOwningField) {
           return false;
         } else {
@@ -1635,7 +1630,7 @@ class MustCallConsistencyAnalyzer {
       return false;
     }
     // check for absence of @NotOwning annotation
-    return (typeFactory.getDeclAnnotation(executableElement, NotOwning.class) == null);
+    return !typeFactory.hasNotOwning(executableElement);
   }
 
   /**

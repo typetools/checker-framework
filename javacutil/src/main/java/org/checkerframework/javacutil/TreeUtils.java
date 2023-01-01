@@ -301,6 +301,7 @@ public final class TreeUtils {
   // This section of the file groups methods by their receiver type; that is, it puts all
   // `elementFrom*(FooTree)` methods together.
 
+  // TODO: Document when this may return null.
   /**
    * Returns the type element corresponding to the given class declaration.
    *
