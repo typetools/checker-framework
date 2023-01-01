@@ -340,7 +340,6 @@ jobs:
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
 - job: guava_jdk19
-  condition: false
   dependsOn:
    - canary_jobs
    - guava_jdk17
