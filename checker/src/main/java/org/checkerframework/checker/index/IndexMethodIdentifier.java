@@ -77,13 +77,22 @@ public class IndexMethodIdentifier {
   /**
    * Returns true iff the argument is an invocation of String#indexOf or String#lastIndexOf that
    * takes a string parameter.
+   *
+   * @param methodTree the method invocation tree to be tested
+   * @return true iff the argument is an invocation of one of String's indexOf or lastIndexOf
+   *     methods that takes another string as a parameter.
    */
   public boolean isIndexOfString(Tree methodTree) {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     return TreeUtils.isMethodInvocation(methodTree, indexOfStringMethods, processingEnv);
   }
 
-  /** Returns true iff the argument is an invocation of Math.min. */
+  /**
+   * Returns true iff the argument is an invocation of Math.min.
+   *
+   * @param methodTree the method invocation tree to be tested
+   * @return true iff the argument is an invocation of Math.min()
+   */
   public boolean isMathMin(Tree methodTree) {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     return TreeUtils.isMethodInvocation(methodTree, mathMinMethods, processingEnv);
