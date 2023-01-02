@@ -196,9 +196,22 @@ public interface WholeProgramInference {
    */
   void addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
 
+  /**
+   * Adds a declaration annotation to a formal parameter.
+   *
+   * @param methodElt the method whose formal parameter will be annotated
+   * @param index the index of the parameter (0-indexed)
+   * @param anno the annotation to add
+   */
   void addDeclarationAnnotationToFormalParameter(
       ExecutableElement methodElt, int index, AnnotationMirror anno);
 
+  /**
+   * Adds an annotation to a class declaration.
+   *
+   * @param classElt the class declaration to annotate
+   * @param anno the annotation to add
+   */
   void addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
 
   /**

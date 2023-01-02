@@ -385,7 +385,7 @@ public class WholeProgramInferenceJavaParserStorage
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
     String className = ElementUtils.getBinaryName(classElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
-    boolean isNewAnnotation = classAnnos.addDeclarationAnnotation(anno);
+    boolean isNewAnnotation = classAnnos.addAnnotationToClassDeclaration(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(classElt));
     }
@@ -603,8 +603,13 @@ public class WholeProgramInferenceJavaParserStorage
            *     classToAnnos} if {@code classNameKey} is null.
            * @param classNameKey if non-null, used as the key for {@code classToAnnos} instead of
            *     the element corresponding to {@code tree}
+           * @param javaParserNode the node corresponding to the declaration, which is used to place
+           *     annotations on the class itself. Can be null, e.g. for an anonymous class.
            */
-          private void addClass(ClassTree tree, @Nullable @BinaryName String classNameKey, @Nullable TypeDeclaration<?> javaParserNode) {
+          private void addClass(
+              ClassTree tree,
+              @Nullable @BinaryName String classNameKey,
+              @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
             if (classNameKey == null) {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
@@ -1019,17 +1024,37 @@ public class WholeProgramInferenceJavaParserStorage
     /** Collection of declared enum constants (empty if not an enum). */
     public Set<String> enumConstants = new HashSet<>(2);
 
+    /**
+     * Annotations on the declaration of the class (note that despite the name, these can also be
+     * type annotations).
+     */
     private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
+    /**
+     * The Java Parser TypeDeclaration representing the class's declaration. Used for placing
+     * annotations inferred on the class declaration itself.
+     */
     private @MonotonicNonNull TypeDeclaration<?> declaration = null;
 
-    public ClassOrInterfaceAnnos(TypeDeclaration<?> javaParserNode) {
+    /**
+     * Create a new ClassOrInterfaceAnnos
+     *
+     * @param javaParserNode the java parser node corresponding to the class declaration, which is
+     *     used for placing annotations on the class declaration
+     */
+    public ClassOrInterfaceAnnos(@Nullable TypeDeclaration<?> javaParserNode) {
       if (javaParserNode != null) {
         declaration = javaParserNode;
       }
     }
 
-    public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
+    /**
+     * Adds {@code annotation} to the set of annotations on the declaration of this class.
+     *
+     * @param annotation an annotation (can be declaration or type)
+     * @return true if this is a new annotation for this class
+     */
+    public boolean addAnnotationToClassDeclaration(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
         declarationAnnotations = new HashSet<>();
       }
@@ -1096,6 +1121,7 @@ public class WholeProgramInferenceJavaParserStorage
     /** Annotations on the callable declaration. */
     private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
 
+    /** Declaration annotations on the parameters. */
     private @MonotonicNonNull Set<Pair<Integer, AnnotationMirror>> paramsDeclAnnos = null;
 
     /**
