@@ -763,6 +763,34 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
   }
 
+  @Override
+  public void addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, int index, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+      return;
+    }
+
+    String file = storage.getFileForElement(methodElt);
+    boolean isNewAnnotation =
+        storage.addDeclarationAnnotationToFormalParameter(methodElt, index, anno);
+    if (isNewAnnotation) {
+      storage.setFileModified(file);
+    }
+  }
+
+  @Override
+  public void addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(classElt)) {
+      return;
+    }
+
+    String file = storage.getFileForElement(classElt);
+    boolean isNewAnnotation = storage.addClassDeclarationAnnotation(classElt, anno);
+    if (isNewAnnotation) {
+      storage.setFileModified(file);
+    }
+  }
+
   /**
    * Updates the set of annotations in a location in a program.
    *

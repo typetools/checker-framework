@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -146,6 +147,11 @@ public interface WholeProgramInferenceStorage<T> {
    *     otherwise
    */
   public boolean addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
+
+  boolean addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, int index, AnnotationMirror anno);
+
+  boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
 
   /**
    * Obtain the type from a storage location.
