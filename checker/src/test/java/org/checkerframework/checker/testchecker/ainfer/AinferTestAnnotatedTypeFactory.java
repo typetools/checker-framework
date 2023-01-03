@@ -109,7 +109,6 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
       TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
       if (wpi != null && classElt.getSimpleName().contentEquals("IShouldBeSibling1")) {
-        System.out.println("adding Sibling1 annotation to this classElt: " + classElt);
         wpi.addClassDeclarationAnnotation(classElt, SIBLING1);
       }
       return super.visitClass(classTree, type);
