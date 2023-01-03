@@ -540,16 +540,16 @@ public final class SceneToStubWriter {
         printWriter.println("@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
       }
       printWriter.print(indents(i));
-      if (aClass.isEnum(nameToPrint)) {
-        printWriter.print("enum ");
-      } else {
-        printWriter.print("class ");
-      }
       if (i == classNames.length - 1) {
         // Only print class annotations on the innermost class, which corresponds to aClass.
         // If there should be class annotations on another class, it will have its own stub
         // file, which will eventually be merged with this one.
         printWriter.print(formatAnnotations(aClass.getAnnotations()));
+      }
+      if (aClass.isEnum(nameToPrint)) {
+        printWriter.print("enum ");
+      } else {
+        printWriter.print("class ");
       }
       printWriter.print(nameToPrint);
       printTypeParameters(typeElements[i], printWriter);

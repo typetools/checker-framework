@@ -157,6 +157,9 @@ public class WholeProgramInferenceScenesStorage
         ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
         className = enclosingClass.flatname.toString();
         break;
+      case CLASS:
+        className = ElementUtils.getBinaryName((TypeElement) elt);
+        break;
       default:
         throw new BugInCF("What element? %s %s", elt.getKind(), elt);
     }
