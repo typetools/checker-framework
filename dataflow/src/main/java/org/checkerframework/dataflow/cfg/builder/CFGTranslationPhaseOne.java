@@ -833,8 +833,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* Utility Methods */
   /* --------------------------------------------------------- */
 
+  /** The UID for the next unique name. */
   protected long uid = 0;
 
+  /**
+   * Returns a unique name starting with {@code prefix}.
+   *
+   * @param prefix the prefix of the unique name
+   * @return a unique name starting with {@code prefix}
+   */
   protected String uniqueName(String prefix) {
     return prefix + "#num" + uid++;
   }

@@ -88,18 +88,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Information collected about array elements, using the internal representation {@link
    * ArrayAccess}.
    */
-  protected Map<ArrayAccess, V> arrayValues;
+  protected final Map<ArrayAccess, V> arrayValues;
 
   /**
    * Information collected about method calls, using the internal representation {@link MethodCall}.
    */
-  protected Map<MethodCall, V> methodValues;
+  protected final Map<MethodCall, V> methodValues;
 
   /**
    * Information collected about <i>classname</i>.class values, using the internal representation
    * {@link ClassName}.
    */
-  protected Map<ClassName, V> classValues;
+  protected final Map<ClassName, V> classValues;
 
   /**
    * Should the analysis use sequential Java semantics (i.e., assume that only one thread is running
