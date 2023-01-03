@@ -33,6 +33,8 @@ public class ArrayAccessNode extends Node {
    * If this ArrayAccessNode is a node for an array desugared from an enhanced for loop, then the
    * {@code arrayExpression} field is the expression in the for loop, e.g., {@code arr} in {@code
    * for(Object o: arr}.
+   *
+   * <p>Is set by {@link #setArrayExpression}.
    */
   protected @Nullable ExpressionTree arrayExpression;
 

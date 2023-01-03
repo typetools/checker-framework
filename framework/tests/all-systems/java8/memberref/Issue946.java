@@ -7,16 +7,13 @@ interface Supply946<R> {
 
 public class Issue946 {
   class MethodRefInnerA {
-    // this line of code causes a crash in CF
     Supply946<MethodRefInnerB> constructorReferenceField = MethodRefInnerB::new;
 
     MethodRefInnerA(Issue946 Issue946.this) {
-      // this line of code also causes a crash in CF
       Supply946<MethodRefInnerB> constructorReference = MethodRefInnerB::new;
     }
 
     void method() {
-      // and so does this line
       Supply946<MethodRefInnerB> constructorReference = MethodRefInnerB::new;
     }
 

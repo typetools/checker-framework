@@ -21,6 +21,8 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
   /**
    * The abstract value of the {@link org.checkerframework.dataflow.cfg.node.Node} associated with
    * this {@link TransferResult}, or {@code null} if no value has been produced.
+   *
+   * <p>Is set by {@link #setResultValue}.
    */
   protected @Nullable V resultValue;
 

@@ -110,11 +110,11 @@ public class InsertAjavaAnnotations {
   /** Represents some text to be inserted at a file and its location. */
   private static class Insertion {
     /** Offset of the insertion in the file, measured in characters from the beginning. */
-    public int position;
+    public final int position;
     /** The contents of the insertion. */
-    public String contents;
+    public final String contents;
     /** Whether the insertion should be on its own separate line. */
-    public boolean ownLine;
+    public final boolean ownLine;
 
     /**
      * Constructs an insertion with the given position and contents.
@@ -166,18 +166,18 @@ public class InsertAjavaAnnotations {
     private @MonotonicNonNull Map<String, TypeElement> allAnnotations = null;
 
     /** The annotation insertions seen so far. */
-    public List<Insertion> insertions = new ArrayList<>();
+    public final List<Insertion> insertions = new ArrayList<>();
     /** A printer for annotations. */
-    private DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
+    private final DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
     /** The lines of the String representation of the second AST. */
-    private List<String> lines;
+    private final List<String> lines;
     /** The line separator used in the text the second AST was parsed from */
-    private String lineSeparator;
+    private final String lineSeparator;
     /**
      * Stores the offsets of the lines in the string representation of the second AST. At index i,
      * stores the number of characters from the start of the file to the beginning of the ith line.
      */
-    private List<Integer> cumulativeLineSizes;
+    private final List<Integer> cumulativeLineSizes;
 
     /**
      * Constructs a {@code BuildInsertionsVisitor} where {@code destFileContents} is the String
@@ -188,9 +188,10 @@ public class InsertAjavaAnnotations {
      * @param lineSeparator the line separator that {@code destFileContents} uses
      */
     public BuildInsertionsVisitor(String destFileContents, String lineSeparator) {
-      this.lineSeparator = lineSeparator;
+      allAnnotations = null;
       String[] lines = destFileContents.split(lineSeparator);
       this.lines = Arrays.asList(lines);
+      this.lineSeparator = lineSeparator;
       cumulativeLineSizes = new ArrayList<>(lines.length);
       cumulativeLineSizes.add(0);
       for (int i = 1; i < lines.length; i++) {
