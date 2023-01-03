@@ -967,9 +967,9 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private static class CompilationUnitAnnos {
     /** Compilation unit being wrapped. */
-    public CompilationUnit compilationUnit;
+    public final CompilationUnit compilationUnit;
     /** Wrappers for classes and interfaces in {@code compilationUnit}. */
-    public List<ClassOrInterfaceAnnos> types;
+    public final List<ClassOrInterfaceAnnos> types = new ArrayList<>();
 
     /**
      * Constructs a wrapper around the given compilation unit.
@@ -978,7 +978,6 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public CompilationUnitAnnos(CompilationUnit compilationUnit) {
       this.compilationUnit = compilationUnit;
-      types = new ArrayList<>();
     }
 
     /**
@@ -1100,9 +1099,7 @@ public class WholeProgramInferenceJavaParserStorage
    */
   public class CallableDeclarationAnnos {
     /** Wrapped method or constructor declaration. */
-    public CallableDeclaration<?> declaration;
-    /** Path to file containing the declaration. */
-    public String file;
+    public final CallableDeclaration<?> declaration;
     /**
      * Inferred annotations for the return type, if the declaration represents a method. Initialized
      * on first usage.
@@ -1437,8 +1434,6 @@ public class WholeProgramInferenceJavaParserStorage
     public String toString() {
       return "CallableDeclarationAnnos [declaration="
           + declaration
-          + ", file="
-          + file
           + ", parameterTypes="
           + parameterTypes
           + ", receiverType="
@@ -1452,7 +1447,7 @@ public class WholeProgramInferenceJavaParserStorage
   /** Stores the JavaParser node for a field and the annotations that have been inferred for it. */
   private static class FieldAnnos {
     /** Wrapped field declaration. */
-    public VariableDeclarator declaration;
+    public final VariableDeclarator declaration;
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
     /** Annotations on the field declaration. */

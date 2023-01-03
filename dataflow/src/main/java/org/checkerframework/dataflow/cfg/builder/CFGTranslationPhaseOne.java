@@ -833,8 +833,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* Utility Methods */
   /* --------------------------------------------------------- */
 
+  /** The UID for the next unique name. */
   protected long uid = 0;
 
+  /**
+   * Returns a unique name starting with {@code prefix}.
+   *
+   * @param prefix the prefix of the unique name
+   * @return a unique name starting with {@code prefix}
+   */
   protected String uniqueName(String prefix) {
     return prefix + "#num" + uid++;
   }
@@ -3331,7 +3338,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     List<Node> arguments = convertCallArguments(constructor, actualExprs);
 
     // TODO: for anonymous classes, don't use the identifier alone.
-    // See Issue 890.
+    // See https://github.com/typetools/checker-framework/issues/890 .
     Node constructorNode = scan(tree.getIdentifier(), p);
 
     // Handle anonymous classes in visitClass.
