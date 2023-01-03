@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * A declaration annotation used to test that the API for inferring declaration annotations on
- * parameters works properly. The presence of this annotation indicates that the check should treat
- * the annotated element as if it were annotated as {@link AinferSibling1}.
+ * parameters works properly. The presence of this annotation indicates that the checker should
+ * treat the annotated element as if it were annotated as {@link AinferSibling1}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER})

@@ -105,7 +105,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected class AinferTestTreeAnnotator extends TreeAnnotator {
 
     /**
-     * Create a new TreeAnnotator.
+     * Create a new AinferTestTreeAnnotator.
      *
      * @param atypeFactory the type factory
      */

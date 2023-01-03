@@ -1037,7 +1037,7 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull TypeDeclaration<?> declaration = null;
 
     /**
-     * Create a new ClassOrInterfaceAnnos
+     * Create a new ClassOrInterfaceAnnos.
      *
      * @param javaParserNode the java parser node corresponding to the class declaration, which is
      *     used for placing annotations on the class declaration
