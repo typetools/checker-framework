@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A dummy declaration annotation used to test that the API for inferring declaration annotations on
+ * A declaration annotation used to test that the API for inferring declaration annotations on
  * parameters works properly. The presence of this annotation indicates that the check should treat
  * the annotated element as if it were annotated as {@link AinferSibling1}.
  */
