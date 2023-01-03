@@ -27,6 +27,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -863,7 +864,7 @@ public abstract class AnnotatedTypeMirror {
      */
     private boolean isUnderlyingTypeRaw;
 
-    /** The enclosing type. May be null. */
+    /** The enclosing type. May be null. May be changed. */
     protected @Nullable AnnotatedDeclaredType enclosingType;
 
     /** True if this represents a declaration, rather than a use, of a type. */
@@ -2129,7 +2130,11 @@ public abstract class AnnotatedTypeMirror {
    */
   public static class AnnotatedIntersectionType extends AnnotatedTypeMirror {
 
-    /** A list of the bounds of this which are also its direct super types. */
+    /**
+     * A list of the bounds of this which are also its direct super types.
+     *
+     * <p>Is set by {@link #shallowCopy}.
+     */
     protected List<AnnotatedTypeMirror> bounds;
 
     /**
@@ -2316,8 +2321,12 @@ public abstract class AnnotatedTypeMirror {
       return shallowCopy(true);
     }
 
-    /** The types that are unioned to form this AnnotatedUnionType. */
-    protected List<AnnotatedDeclaredType> alternatives;
+    /**
+     * The types that are unioned to form this AnnotatedUnionType.
+     *
+     * <p>Is set by {@link #getAlternatives} and {@link #shallowCopy}.
+     */
+    protected @MonotonicNonNull List<AnnotatedDeclaredType> alternatives;
 
     /**
      * Returns the types that are unioned to form this AnnotatedUnionType.
