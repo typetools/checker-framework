@@ -123,7 +123,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Using a MultiGraphQualifierHierarchy to enable tests with Annotations that contain fields.
    *
-   * @see AinferSiblingWithFields.
+   * @see AinferSiblingWithFields
    */
   protected class AinferTestQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
