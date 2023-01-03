@@ -10,7 +10,6 @@ import org.checkerframework.framework.source.SupportedOptions;
  * another. The Resource Leak Checker verifies that the given methods are actually called.
  */
 @StubFiles({
-  "IOUtils.astub",
   "JavaEE.astub",
   "JdkCompiler.astub",
   "Reflection.astub",

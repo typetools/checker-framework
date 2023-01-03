@@ -8,6 +8,7 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -23,6 +24,7 @@ import org.checkerframework.framework.source.SupportedOptions;
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
   MustCallChecker.NO_RESOURCE_ALIASES
 })
+@StubFiles("IOUtils.astub")
 public class ResourceLeakChecker extends CalledMethodsChecker {
 
   /**
