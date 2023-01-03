@@ -374,7 +374,7 @@ public class WholeProgramInferenceJavaParserStorage
   public boolean addDeclarationAnnotationToFormalParameter(
       ExecutableElement methodElt, int index, AnnotationMirror anno) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
-    boolean isNewAnnotation = methodAnnos.addDeclarationAnnotationForParams(anno, index);
+    boolean isNewAnnotation = methodAnnos.addDeclarationAnnotationToFormalParameter(anno, index);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(methodElt));
     }
@@ -633,6 +633,8 @@ public class WholeProgramInferenceJavaParserStorage
            *
            * @param tree tree to add. Its corresponding element is used as the key for {@code
            *     classToAnnos}.
+           * @param javaParserNode the node corresponding to the declaration, which is used to place
+           *     annotations on the class itself. Can be null, e.g. for an anonymous class.
            */
           private void addClass(ClassTree tree, @Nullable TypeDeclaration<?> javaParserNode) {
             addClass(tree, null, javaParserNode);
@@ -1027,13 +1029,13 @@ public class WholeProgramInferenceJavaParserStorage
      * Annotations on the declaration of the class (note that despite the name, these can also be
      * type annotations).
      */
-    private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
+    private @MonotonicNonNull Set<AnnotationMirror> classAnnotations = null;
 
     /**
      * The Java Parser TypeDeclaration representing the class's declaration. Used for placing
      * annotations inferred on the class declaration itself.
      */
-    private @MonotonicNonNull TypeDeclaration<?> declaration = null;
+    private @MonotonicNonNull TypeDeclaration<?> classDeclaration;
 
     /**
      * Create a new ClassOrInterfaceAnnos.
@@ -1042,9 +1044,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     used for placing annotations on the class declaration
      */
     public ClassOrInterfaceAnnos(@Nullable TypeDeclaration<?> javaParserNode) {
-      if (javaParserNode != null) {
-        declaration = javaParserNode;
-      }
+      classDeclaration = javaParserNode;
     }
 
     /**
@@ -1054,11 +1054,11 @@ public class WholeProgramInferenceJavaParserStorage
      * @return true if this is a new annotation for this class
      */
     public boolean addAnnotationToClassDeclaration(AnnotationMirror annotation) {
-      if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>();
+      if (classAnnotations == null) {
+        classAnnotations = new HashSet<>();
       }
 
-      return declarationAnnotations.add(annotation);
+      return classAnnotations.add(annotation);
     }
 
     /**
@@ -1070,9 +1070,9 @@ public class WholeProgramInferenceJavaParserStorage
         callableAnnos.transferAnnotations();
       }
 
-      if (declarationAnnotations != null && declaration != null) {
-        for (AnnotationMirror annotation : declarationAnnotations) {
-          declaration.addAnnotation(
+      if (classAnnotations != null && classDeclaration != null) {
+        for (AnnotationMirror annotation : classAnnotations) {
+          classDeclaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
                   annotation));
         }
@@ -1226,7 +1226,8 @@ public class WholeProgramInferenceJavaParserStorage
      * @param index index of the parameter
      * @return true if {@code annotation} wasn't previously stored for this parameter
      */
-    public boolean addDeclarationAnnotationForParams(AnnotationMirror annotation, int index) {
+    public boolean addDeclarationAnnotationToFormalParameter(
+        AnnotationMirror annotation, int index) {
       if (paramsDeclAnnos == null) {
         paramsDeclAnnos = new HashSet<>();
       }
