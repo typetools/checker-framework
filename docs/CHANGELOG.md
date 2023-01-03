@@ -9,6 +9,9 @@ You can now run the Checker Framework under any JDK version, without a warning.
 Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about null
 pointer exceptions within nullness assertion methods like `Objects.requireNonNull`.
 
+Pass `-Astubs=sometimes-nullable.astub` to unsoundly permit passing null to
+calls if null is sometimes but not always permitted.
+
 **Implementation details:**
 
 **Closed issues:**

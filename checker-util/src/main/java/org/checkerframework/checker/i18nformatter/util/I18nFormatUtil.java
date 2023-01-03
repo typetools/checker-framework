@@ -107,10 +107,19 @@ public class I18nFormatUtil {
     return true;
   }
 
+  /** An I18n cenversion directive. */
   private static class I18nConversion {
-    public int index;
-    public I18nConversionCategory category;
+    /** The index into the string. */
+    public final int index;
+    /** The conversion category. */
+    public final I18nConversionCategory category;
 
+    /**
+     * Creates a new I18nConversion.
+     *
+     * @param index the index into the string
+     * @param category the conversion category
+     */
     public I18nConversion(int index, I18nConversionCategory category) {
       this.index = index;
       this.category = category;

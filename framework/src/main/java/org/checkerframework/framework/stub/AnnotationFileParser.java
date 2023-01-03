@@ -3073,13 +3073,13 @@ public class AnnotationFileParser {
   /** Represents a class: its package name and name (including outer class names if any). */
   private static class FqName {
     /** Name of the package being parsed, or null. */
-    public @Nullable String packageName;
+    public final @Nullable String packageName;
 
     /**
      * Name of the type being parsed. Includes outer class names if any. Null if the parser has
      * parsed a package declaration but has not yet gotten to a type declaration.
      */
-    public @Nullable String className;
+    public final @Nullable String className;
 
     /**
      * Create a new FqName, which represents a class.
