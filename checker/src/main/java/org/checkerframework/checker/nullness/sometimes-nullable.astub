@@ -1,0 +1,13 @@
+// This file uses `@Nullable` for methods in the JDK that sometimes, but not always, permit null as
+// an argument.  For more discussion, see section "Conservative nullness annotations on the JDK" in
+// the Checker Framework manual (https://checkerframework.org/manual/#nullness-jdk-conservative).
+
+// This file is very incomplete and should be expanded.
+
+package java.lang.ref;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+public class WeakReference<T> extends Reference<T> {
+    public WeakReference(@Nullable T referent, @Nullable ReferenceQueue<? super T> q);
+}

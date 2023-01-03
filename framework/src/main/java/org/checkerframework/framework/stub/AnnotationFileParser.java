@@ -1658,11 +1658,13 @@ public class AnnotationFileParser {
    * same qualifier hierarchies.
    *
    * @param type the type to annotate
-   * @param annotations the new annotations for the type
+   * @param annotations the new annotations for the type; if null, nothing is done
    * @param astNode where to report errors
    */
   private void annotate(
-      AnnotatedTypeMirror type, List<AnnotationExpr> annotations, NodeWithRange<?> astNode) {
+      AnnotatedTypeMirror type,
+      @Nullable List<AnnotationExpr> annotations,
+      NodeWithRange<?> astNode) {
     if (annotations == null) {
       return;
     }
@@ -1758,17 +1760,55 @@ public class AnnotationFileParser {
       TypeParameter param = typeParameters.get(i);
       AnnotatedTypeVariable paramType = (AnnotatedTypeVariable) typeArguments.get(i);
 
+      // Handle type bounds
       if (param.getTypeBound() == null || param.getTypeBound().isEmpty()) {
-        // No bound so annotations are both lower and upper bounds
+        // No type bound, so annotations are both lower and upper bounds.
         annotate(paramType, param.getAnnotations(), param);
       } else if (param.getTypeBound() != null && !param.getTypeBound().isEmpty()) {
         annotate(paramType.getLowerBound(), param.getAnnotations(), param);
-        annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null, param);
-        if (param.getTypeBound().size() > 1) {
-          // TODO: add support for intersection types
-          stubWarnNotFound(param, "Annotations on intersection types are not yet supported");
+        if (param.getTypeBound().size() == 1) {
+          // The additional declAnnos (third argument) is always null in this call to `annotate`,
+          // but the type bound (second argument) might have annotations.
+          annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null, param);
+        } else {
+          // param.getTypeBound().size() > 1
+          ArrayList<ClassOrInterfaceType> typeBoundsWithAnotations =
+              new ArrayList<>(param.getTypeBound().size());
+          for (ClassOrInterfaceType typeBound : param.getTypeBound()) {
+            if (!typeBound.getAnnotations().isEmpty()) {
+              typeBoundsWithAnotations.add(typeBound);
+            }
+          }
+          int numBounds = typeBoundsWithAnotations.size();
+          if (numBounds == 0) {
+            // nothing to do
+          } else if (numBounds == 1) {
+            annotate(paramType.getUpperBound(), typeBoundsWithAnotations.get(0), null, param);
+          } else {
+            // TODO: add support for intersection types
+            // One problem is that `annotate()` removes any existing annotations from the same
+            // qualifier hierarchies, so paramType.getLowerBound() would end up with the annotations
+            // of only the last type bound.
+
+            // String msg =
+            //     String.format(
+            //         "annotateTypeParameters: multiple type bounds:  typeParameters=%s;  "
+            //             + "param #%d=%s;  bounds=%s;  decl=%s;  elt=%s (%s).",
+            //         typeParameters,
+            //         i,
+            //         param,
+            //         param.getTypeBound(),
+            //         decl.toString().replace(LINE_SEPARATOR, " "),
+            //         elt.toString().replace(LINE_SEPARATOR, " "),
+            //         elt.getClass());
+            // warn(decl, msg);
+
+            stubWarnNotFound(
+                param, "Annotations on intersection types are not yet supported: " + param);
+          }
         }
       }
+
       putMerge(annotationFileAnnos.atypes, paramType.getUnderlyingType().asElement(), paramType);
     }
   }
@@ -3073,13 +3113,13 @@ public class AnnotationFileParser {
   /** Represents a class: its package name and name (including outer class names if any). */
   private static class FqName {
     /** Name of the package being parsed, or null. */
-    public @Nullable String packageName;
+    public final @Nullable String packageName;
 
     /**
      * Name of the type being parsed. Includes outer class names if any. Null if the parser has
      * parsed a package declaration but has not yet gotten to a type declaration.
      */
-    public @Nullable String className;
+    public final @Nullable String className;
 
     /**
      * Create a new FqName, which represents a class.
