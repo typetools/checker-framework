@@ -1071,7 +1071,7 @@ public class WholeProgramInferenceJavaParserStorage
         callableAnnos.transferAnnotations();
       }
 
-      if (declarationAnnotations != null) {
+      if (declarationAnnotations != null && declaration != null) {
         for (AnnotationMirror annotation : declarationAnnotations) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
@@ -1377,7 +1377,7 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
-      if (declarationAnnotations != null) {
+      if (declarationAnnotations != null && declaration != null) {
         for (AnnotationMirror annotation : declarationAnnotations) {
           declaration.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(

@@ -1,5 +1,6 @@
 package org.checkerframework.checker.testchecker.ainfer;
 
+import com.sun.source.tree.ClassTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom;
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType;
@@ -20,7 +22,10 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSiblingWithFie
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferTop;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -46,6 +51,9 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       new AnnotationBuilder(processingEnv, AinferBottom.class).build();
   private final AnnotationMirror IMPLICIT_ANNO =
       new AnnotationBuilder(processingEnv, AinferImplicitAnno.class).build();
+
+  private final AnnotationMirror SIBLING1 =
+      new AnnotationBuilder(processingEnv, AinferSibling1.class).build();
 
   /** The AinferSiblingWithFields.value field/element. */
   private final ExecutableElement siblingWithFieldsValueElement =
@@ -79,7 +87,33 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     literalTreeAnnotator.addLiteralKind(LiteralKind.INT, BOTTOM);
     literalTreeAnnotator.addStandardLiteralQualifiers();
 
-    return new ListTreeAnnotator(new PropagationTreeAnnotator(this), literalTreeAnnotator);
+    return new ListTreeAnnotator(
+        new PropagationTreeAnnotator(this),
+        literalTreeAnnotator,
+        new AinferTestTreeAnnotator(this));
+  }
+
+  protected class AinferTestTreeAnnotator extends TreeAnnotator {
+
+    /**
+     * Create a new TreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
+    protected AinferTestTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+      super(atypeFactory);
+    }
+
+    @Override
+    public Void visitClass(ClassTree classTree, AnnotatedTypeMirror type) {
+      WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+      TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
+      if (wpi != null && classElt.getSimpleName().contentEquals("IShouldBeSibling1")) {
+        System.out.println("adding Sibling1 annotation to this classElt: " + classElt);
+        wpi.addClassDeclarationAnnotation(classElt, SIBLING1);
+      }
+      return super.visitClass(classTree, type);
+    }
   }
 
   @Override
