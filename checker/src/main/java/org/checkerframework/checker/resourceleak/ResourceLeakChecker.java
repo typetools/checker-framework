@@ -27,6 +27,9 @@ import org.checkerframework.framework.source.SupportedOptions;
 @StubFiles("IOUtils.astub")
 public class ResourceLeakChecker extends CalledMethodsChecker {
 
+  /** Creates a ResourceLeakChecker. */
+  public ResourceLeakChecker() {}
+
   /**
    * Command-line option for counting how many must-call obligations were checked by the Resource
    * Leak Checker, and emitting the number after processing all files. Used for generating tables
