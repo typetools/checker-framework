@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -155,6 +156,9 @@ public class WholeProgramInferenceScenesStorage
       case ENUM_CONSTANT:
         ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
         className = enclosingClass.flatname.toString();
+        break;
+      case CLASS:
+        className = ElementUtils.getBinaryName((TypeElement) elt);
         break;
       default:
         throw new BugInCF("What element? %s %s", elt.getKind(), elt);
@@ -377,6 +381,41 @@ public class WholeProgramInferenceScenesStorage
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
 
     boolean isNewAnnotation = fieldAnnos.tlAnnotationsHere.add(sceneAnno);
+    return isNewAnnotation;
+  }
+
+  @Override
+  public boolean addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, int index, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+      return false;
+    }
+
+    VariableElement paramElt = methodElt.getParameters().get(index);
+    AnnotatedTypeMirror paramAType = atypeFactory.getAnnotatedType(paramElt);
+    ATypeElement paramAnnos =
+        getParameterAnnotations(methodElt, index, paramAType, paramElt, atypeFactory);
+    Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
+
+    boolean isNewAnnotation = paramAnnos.tlAnnotationsHere.add(sceneAnno);
+    return isNewAnnotation;
+  }
+
+  @Override
+  public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(classElt)) {
+      return false;
+    }
+
+    AClass classAnnos =
+        getClassAnnos(
+            ElementUtils.getBinaryName(classElt),
+            getFileForElement(classElt),
+            (ClassSymbol) classElt);
+
+    Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
+
+    boolean isNewAnnotation = classAnnos.tlAnnotationsHere.add(sceneAnno);
     return isNewAnnotation;
   }
 
