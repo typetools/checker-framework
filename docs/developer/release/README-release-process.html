@@ -246,6 +246,30 @@ TreeAnnotator
   </li>
 </ol>
 
+  <h2 id="snapshot_release">Snapshot release</h2>
+  <p>This section explains how to release the Maven artifacts to the snapshot repository.</p>
+  <ol>
+    <li>
+      Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
+      and <code>SONATYPE_NEXUS_PASSWORD</code>.
+    </li>
+    <li>
+      Ensure that the version number in <code>checker-framework/build.gradle</code> ends in <code>-SNAPSHOT</code>.
+    </li>
+    <li>
+      Run <code>./gradlew publish</code> in <code>checker-framework</code>.
+    </li>
+    <li>
+      Update the Checker Framework dependencies to reference the snapshot version and configure
+      Gradle to use the snapshot repository.
+      <pre>
+repositories {
+ maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+}
+      </pre>
+    </li>
+  </ol>
+
   <h2 id="pre_release_checklist">Pre-release Checklist</h2>
   <p>If you have not performed a release before you must follow these steps.</p>
   <table class="table">
