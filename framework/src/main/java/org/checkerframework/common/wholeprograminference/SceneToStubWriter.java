@@ -540,8 +540,14 @@ public final class SceneToStubWriter {
         printWriter.println("@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
       }
       printWriter.print(indents(i));
-      if (aClass.isEnum(nameToPrint)) {
+      if (aClass.isAnnotation(nameToPrint)) {
+        printWriter.print("@interface ");
+      } else if (aClass.isEnum(nameToPrint)) {
         printWriter.print("enum ");
+      } else if (aClass.isInterface(nameToPrint)) {
+        printWriter.print("interface ");
+      } else if (aClass.isRecord(nameToPrint)) {
+        printWriter.print("record ");
       } else {
         printWriter.print("class ");
       }

@@ -217,8 +217,14 @@ public class ASceneWrapper {
     ClassSymbol outerClass = classSymbol;
     ClassSymbol previous = classSymbol;
     do {
-      if (outerClass.isEnum()) {
+      if (outerClass.getKind() == ElementKind.ANNOTATION_TYPE) {
+        aClass.markAsAnnotation(outerClass.getSimpleName().toString());
+      } else if (outerClass.isEnum()) {
         aClass.markAsEnum(outerClass.getSimpleName().toString());
+      } else if (outerClass.isInterface()) {
+        aClass.markAsInterface(outerClass.getSimpleName().toString());
+        // } else if (outerClass.isRecord()) {
+        //   aClass.markAsRecord(outerClass.getSimpleName().toString());
       }
       Element element = classSymbol.getEnclosingElement();
       if (element == null || element.getKind() == ElementKind.PACKAGE) {

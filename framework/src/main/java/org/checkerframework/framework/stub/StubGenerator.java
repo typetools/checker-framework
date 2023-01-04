@@ -203,6 +203,7 @@ public class StubGenerator {
     } else if (typeElement.getKind() == ElementKind.CLASS) {
       out.print("class");
     } else {
+      // Shouldn't this throw an exception?
       return;
     }
 
