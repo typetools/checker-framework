@@ -932,8 +932,10 @@ public class AnnotationFileParser {
                 + "...");
         return null;
       }
-      stubWarnNotFound(typeDecl, "Skipping annotation type: " + fqTypeName);
+      typeDeclTypeParameters = processType(typeDecl, typeElt);
+      typeParameters.addAll(typeDeclTypeParameters);
     } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
+      // TODO: This test is never satisfied, because it is the opposite of that on the line above.
       if (!(typeDecl instanceof ClassOrInterfaceDeclaration)) {
         warn(
             typeDecl,
