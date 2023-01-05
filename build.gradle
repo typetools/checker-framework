@@ -128,7 +128,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.28.1-SNAPSHOT'
+    version '3.29.0'
 
     repositories {
         mavenCentral()
