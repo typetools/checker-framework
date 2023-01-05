@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -137,7 +136,7 @@ public abstract class AbstractMostlySingleton<T extends Object> implements Set<T
   }
 
   @Override
-  public <S> @Nullable S[] toArray(@PolyNull S[] a) {
+  public <S> @Nullable S[] toArray(S[] a) {
     throw new UnsupportedOperationException();
   }
 
