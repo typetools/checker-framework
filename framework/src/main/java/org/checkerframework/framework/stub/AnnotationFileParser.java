@@ -850,6 +850,28 @@ public class AnnotationFileParser {
   }
 
   /**
+   * Returns the string representation of {@code n}, one one line, truncated to {@code length}
+   * characters.
+   *
+   * @param n a JavaParser node
+   * @param length the maximum length of the string representation
+   * @return the truncated string representation of {@code n}
+   */
+  private String javaParserNodeToStringTruncated(Node n, int length) {
+    String oneLine =
+        n.toString()
+            .replace("\t", " ")
+            .replace("\n", " ")
+            .replace("\r", " ")
+            .replaceAll("  +", " ");
+    if (oneLine.length() <= length) {
+      return oneLine;
+    } else {
+      return oneLine.substring(0, length - 3) + "...";
+    }
+  }
+
+  /**
    * Process a type declaration: copy its annotations to {@code #annotationFileAnnos}.
    *
    * <p>This method stores the declaration's type parameters in {@link #typeParameters}. When
@@ -916,8 +938,7 @@ public class AnnotationFileParser {
             typeDecl,
             innerName
                 + " is an enum, but stub file declared it as "
-                + typeDecl.toString().split("\\R", 2)[0]
-                + "...");
+                + javaParserNodeToStringTruncated(typeDecl, 100));
         return null;
       }
       typeDeclTypeParameters = processEnum((EnumDeclaration) typeDecl, typeElt);
@@ -928,8 +949,7 @@ public class AnnotationFileParser {
             typeDecl,
             innerName
                 + " is an annotation, but stub file declared it as "
-                + typeDecl.toString().split("\\R", 2)[0]
-                + "...");
+                + javaParserNodeToStringTruncated(typeDecl, 100));
         return null;
       }
       typeDeclTypeParameters = processType(typeDecl, typeElt);
@@ -941,8 +961,7 @@ public class AnnotationFileParser {
             typeDecl,
             innerName
                 + " is a class or interface, but stub file declared it as "
-                + typeDecl.toString().split("\\R", 2)[0]
-                + "...");
+                + javaParserNodeToStringTruncated(typeDecl, 100));
         return null;
       }
       typeDeclTypeParameters = processType(typeDecl, typeElt);
