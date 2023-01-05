@@ -1,0 +1,14 @@
+package org.apache.commons.io;
+
+import org.checkerframework.checker.mustcall.qual.*;
+
+class IOUtils {
+    @NotOwning static InputStream toBufferedInputStream(InputStream arg0) throws IOException;
+    @NotOwning static BufferedReader toBufferedReader(Reader arg0);
+    @NotOwning static InputStream toInputStream(CharSequence arg0);
+    @NotOwning static InputStream toInputStream(CharSequence arg0, Charset arg1);
+    @NotOwning static InputStream toInputStream(CharSequence arg0, String arg1) throws IOException;
+    @NotOwning static InputStream toInputStream(String arg0);
+    @NotOwning static InputStream toInputStream(String arg0, Charset arg1);
+    @NotOwning static InputStream toInputStream(String arg0, String arg1) throws IOException;
+}
