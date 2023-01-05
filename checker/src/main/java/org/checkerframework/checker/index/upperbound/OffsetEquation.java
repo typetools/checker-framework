@@ -26,18 +26,28 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>An OffsetEquation is mutable.
  */
 public class OffsetEquation {
+  /** The equation for 0 (zero). */
   public static final OffsetEquation ZERO = createOffsetForInt(0);
+  /** The equation for -1. */
   public static final OffsetEquation NEG_1 = createOffsetForInt(-1);
+  /** The equation for 1. */
   public static final OffsetEquation ONE = createOffsetForInt(1);
 
+  /** Mutable list of terms that have been added to this. */
   private final List<String> addedTerms;
+  /** Mutable list of terms that have been subtracted from this. */
   private final List<String> subtractedTerms;
-  private int intValue = 0;
-  private String error = null;
+  /** The integer offset. */
+  private int intValue;
+  /** Non-null if an error has occurred. */
+  private @Nullable String error;
 
+  /** Create a new OffsetEquation. */
   private OffsetEquation() {
     addedTerms = new ArrayList<>(1);
     subtractedTerms = new ArrayList<>(1);
+    this.intValue = 0;
+    this.error = null;
   }
 
   /**
@@ -48,8 +58,8 @@ public class OffsetEquation {
   protected OffsetEquation(OffsetEquation other) {
     this.addedTerms = new ArrayList<>(other.addedTerms);
     this.subtractedTerms = new ArrayList<>(other.subtractedTerms);
-    this.error = other.error;
     this.intValue = other.intValue;
+    this.error = other.error;
   }
 
   public boolean hasError() {

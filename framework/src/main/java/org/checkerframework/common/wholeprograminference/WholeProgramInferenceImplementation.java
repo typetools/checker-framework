@@ -1,6 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -14,9 +15,13 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.afu.scenelib.util.JVMNames;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -45,6 +50,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This is the primary implementation of {@link
@@ -93,8 +99,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
 
+  /**
+   * Whether to print debugging information when an inference is attempted, but cannot be completed.
+   * An inference can be attempted without success for example because the current storage system
+   * does not support placing annotation in the location for which an annotation was inferred.
+   */
+  private final boolean showWpiFailedInferences;
+
   /** The storage for the inferred annotations. */
-  private WholeProgramInferenceStorage<T> storage;
+  private final WholeProgramInferenceStorage<T> storage;
 
   /** Whether to ignore assignments where the rhs is null. */
   private final boolean ignoreNullAssignments;
@@ -105,14 +118,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param atypeFactory the associated type factory
    * @param storage the storage used for inferred annotations and for writing output files
+   * @param showWpiFailedInferences whether the {@code -AshowWpiFailedInferences} argument was
+   *     passed to the checker, and therefore whether to print debugging messages when inference
+   *     fails
    */
   public WholeProgramInferenceImplementation(
-      AnnotatedTypeFactory atypeFactory, WholeProgramInferenceStorage<T> storage) {
+      AnnotatedTypeFactory atypeFactory,
+      WholeProgramInferenceStorage<T> storage,
+      boolean showWpiFailedInferences) {
     this.atypeFactory = atypeFactory;
     this.storage = storage;
     boolean isNullness =
         atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     this.ignoreNullAssignments = !isNullness;
+    this.showWpiFailedInferences = showWpiFailedInferences;
   }
 
   /**
@@ -134,8 +153,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
+    // Don't infer types for code that can't be annotated anyway.
+    if (!storage.hasStorageLocationForMethod(constructorElt)) {
+      if (showWpiFailedInferences) {
+        printFailedInferenceDebugMessage(
+            "WPI could not store information"
+                + "about this constructor: "
+                + JVMNames.getJVMMethodSignature(constructorElt));
+      }
+      return;
+    }
+
     List<Node> arguments = objectCreationNode.getArguments();
-    updateInferredExecutableParameterTypes(constructorElt, arguments);
+    updateInferredExecutableParameterTypes(
+        constructorElt, arguments, null, objectCreationNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, constructorElt, store);
   }
 
@@ -170,7 +201,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     List<Node> arguments = methodInvNode.getArguments();
-    updateInferredExecutableParameterTypes(methodElt, arguments);
+    Node receiver = methodInvNode.getTarget().getReceiver();
+    // Static methods have a "receiver" that is a class name rather than an expression.
+    // Do not attempt to use the class name as a receiver expression for inference
+    // purposes.
+    if (receiver instanceof ClassNameNode) {
+      receiver = null;
+    }
+    updateInferredExecutableParameterTypes(methodElt, arguments, receiver, methodInvNode.getTree());
     updateContracts(Analysis.BeforeOrAfter.BEFORE, methodElt, store);
   }
 
@@ -195,22 +233,118 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    *
    * @param methodElt the element of the method or constructor being invoked
    * @param arguments the arguments of the invocation
+   * @param receiver the receiver node, if there is one; null if there is not
+   * @param invocationTree the method or constructor invocation, used to viewpoint adapt any
+   *     dependent types when storing newly-inferred annotations
    */
   private void updateInferredExecutableParameterTypes(
-      ExecutableElement methodElt, List<Node> arguments) {
+      ExecutableElement methodElt,
+      List<Node> arguments,
+      @Nullable Node receiver,
+      ExpressionTree invocationTree) {
 
     String file = storage.getFileForElement(methodElt);
+    // Need to check both that receiver is non-null and that this is not a constructor
+    // invocation: despite updateFromObjectCreation always passes null, it's possible
+    // for updateFromMethodInvocation to actually be a constructor invocation with a
+    // receiver: for example, when calling an inner class's constructor, the receiver
+    // can be an instance of the enclosing class. Constructor invocations should never
+    // have information inferred about their receivers.
+    if (receiver != null
+        && atypeFactory.wpiShouldInferTypesForReceivers()
+        && !methodElt.getSimpleName().contentEquals("<init>")) {
+      AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
+      AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
+      AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();
+      atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
+      T receiverAnnotations =
+          storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+        ((GenericAnnotatedTypeFactory) this.atypeFactory)
+            .getDependentTypesHelper()
+            .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
+      }
+      updateAnnotationSet(
+          receiverAnnotations, TypeUseLocation.RECEIVER, receiverArgATM, receiverParamATM, file);
+    }
 
     for (int i = 0; i < arguments.size(); i++) {
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
 
-      VariableElement ve = methodElt.getParameters().get(i);
+      VariableElement ve;
+      boolean varargsParam = i >= methodElt.getParameters().size() - 1 && methodElt.isVarArgs();
+      if (varargsParam && this.atypeFactory.wpiOutputFormat == OutputFormat.JAIF) {
+        // The AFU's org.checkerframework.afu.annotator.Main produces a non-compilable source file
+        // when JAIF-based WPI tries to output an annotated varargs parameter, such as when running
+        // the test checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
+        // Until that bug is fixed, do not attempt to infer information about varargs parameters in
+        // JAIF mode.
+        if (showWpiFailedInferences) {
+          printFailedInferenceDebugMessage(
+              "Annotations cannot be placed on varargs parameters in -Ainfer=jaifs mode, because"
+                  + " the JAIF format does not correctly support it.\n"
+                  + "The signature of the method whose varargs parameter was not annotated is: "
+                  + JVMNames.getJVMMethodSignature(methodElt));
+        }
+        return;
+      }
+      if (varargsParam) {
+        ve = methodElt.getParameters().get(methodElt.getParameters().size() - 1);
+      } else {
+        ve = methodElt.getParameters().get(i);
+      }
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
       AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
+      if (varargsParam) {
+        // Check whether argATM needs to be turned into an array type, so that the type structure
+        // matches paramATM.
+        boolean expandArgATM = false;
+        if (argATM.getKind() == TypeKind.ARRAY) {
+          int argATMDepth = AnnotatedTypes.getArrayDepth((AnnotatedArrayType) argATM);
+          // This unchecked cast is safe because the declared type of a varargs parameter
+          // is guaranteed to be an array of some kind.
+          int paramATMDepth = AnnotatedTypes.getArrayDepth((AnnotatedArrayType) paramATM);
+          if (paramATMDepth != argATMDepth) {
+            assert argATMDepth + 1 == paramATMDepth;
+            expandArgATM = true;
+          }
+        } else {
+          expandArgATM = true;
+        }
+        if (expandArgATM) {
+          if (argATM.getKind() == TypeKind.WILDCARD) {
+            if (showWpiFailedInferences) {
+              printFailedInferenceDebugMessage(
+                  "Javac cannot create an array type "
+                      + "from a wildcard, so WPI did not attempt to infer a type for an array "
+                      + "parameter.\n"
+                      + "The signature of the method whose parameter had inference skipped is: "
+                      + JVMNames.getJVMMethodSignature(methodElt));
+            }
+            return;
+          }
+          AnnotatedTypeMirror argArray =
+              AnnotatedTypeMirror.createType(
+                  TypesUtils.createArrayType(argATM.getUnderlyingType(), atypeFactory.types),
+                  atypeFactory,
+                  false);
+          ((AnnotatedArrayType) argArray).setComponentType(argATM);
+          argATM = argArray;
+        }
+      }
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
+      // If storage.getParameterAnnotations receives an index that's larger than the size
+      // of the parameter list, scenes-backed inference can create duplicate entries
+      // for the varargs parameter (it indexes inferred annotations by the parameter number).
+      int paramIndex = varargsParam ? methodElt.getParameters().size() - 1 : i;
       T paramAnnotations =
-          storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
+          storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
+      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+        ((GenericAnnotatedTypeFactory) this.atypeFactory)
+            .getDependentTypesHelper()
+            .delocalizeAtCallsite(argATM, invocationTree, arguments, receiver, methodElt);
+      }
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
   }
@@ -406,16 +540,38 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // An ArrayCreationNode with a null tree is created when the
       // parameter is a variable-length list. We are ignoring it for now.
       // See Issue 682: https://github.com/typetools/checker-framework/issues/682
+      if (showWpiFailedInferences) {
+        printFailedInferenceDebugMessage(
+            "Could not update from formal parameter "
+                + "assignment, because an ArrayCreationNode with a null tree is created when "
+                + "the parameter is a variable-length list.\nParameter: "
+                + paramElt);
+      }
       return;
     }
 
     ExecutableElement methodElt = (ExecutableElement) paramElt.getEnclosingElement();
 
+    int i = methodElt.getParameters().indexOf(paramElt);
+    if (i == -1) {
+      // When paramElt is the parameter of a lambda contained in another
+      // method body, the enclosing element is the outer method body
+      // rather than the lambda itself (which has no element). WPI
+      // does not support inferring types for lambda parameters, so
+      // ignore it.
+      if (showWpiFailedInferences) {
+        printFailedInferenceDebugMessage(
+            "Could not update from formal "
+                + "parameter assignment inside a lambda expression, because lambda parameters "
+                + "cannot be annotated.\nParameter: "
+                + paramElt);
+      }
+      return;
+    }
+
     AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(paramElt);
     AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
     atypeFactory.wpiAdjustForUpdateNonField(argATM);
-    int i = methodElt.getParameters().indexOf(paramElt);
-    assert i != -1;
     T paramAnnotations =
         storage.getParameterAnnotations(methodElt, i, paramATM, paramElt, atypeFactory);
     String file = storage.getFileForElement(methodElt);
@@ -463,6 +619,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     AnnotatedTypeMirror lhsATM = atypeFactory.getAnnotatedType(lhsTree);
     T fieldAnnotations = storage.getFieldAnnotations(element, fieldName, lhsATM, atypeFactory);
+
+    if (fieldAnnotations == null) {
+      return;
+    }
 
     updateAnnotationSet(fieldAnnotations, TypeUseLocation.FIELD, rhsATM, lhsATM, file);
   }
@@ -591,13 +751,41 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   @Override
-  public void addFieldDeclarationAnnotation(Element field, AnnotationMirror anno) {
+  public void addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     if (!ElementUtils.isElementFromSourceCode(field)) {
       return;
     }
 
     String file = storage.getFileForElement(field);
     boolean isNewAnnotation = storage.addFieldDeclarationAnnotation(field, anno);
+    if (isNewAnnotation) {
+      storage.setFileModified(file);
+    }
+  }
+
+  @Override
+  public void addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, int index, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+      return;
+    }
+
+    String file = storage.getFileForElement(methodElt);
+    boolean isNewAnnotation =
+        storage.addDeclarationAnnotationToFormalParameter(methodElt, index, anno);
+    if (isNewAnnotation) {
+      storage.setFileModified(file);
+    }
+  }
+
+  @Override
+  public void addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(classElt)) {
+      return;
+    }
+
+    String file = storage.getFileForElement(classElt);
+    boolean isNewAnnotation = storage.addClassDeclarationAnnotation(classElt, anno);
     if (isNewAnnotation) {
       storage.setFileModified(file);
     }
@@ -662,6 +850,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
       return;
     }
+
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
     updateAtmWithLub(rhsATM, atmFromStorage);
@@ -681,6 +870,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   }
 
   /**
+   * Prints a debugging message about a failed inference. Must only be called after {@link
+   * #showWpiFailedInferences} has been checked, to avoid constructing the debugging message
+   * eagerly.
+   *
+   * @param reason a message describing the reason an inference was unsuccessful, which will be
+   *     displayed to the user
+   */
+  private void printFailedInferenceDebugMessage(String reason) {
+    assert showWpiFailedInferences;
+    // TODO: it would be nice if this message also included a line number
+    // for the file being analyzed, but I don't know how to get that information
+    // here, given that this message is called from places where only the annotated
+    // type mirrors for the LHS and RHS of some pseduo-assignment are available.
+    System.out.println("WPI failed to make an inference: " + reason);
+  }
+
+  /**
    * Updates sourceCodeATM to contain the LUB between sourceCodeATM and ajavaATM, ignoring missing
    * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
    * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
@@ -689,6 +895,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param ajavaATM the annotated type on the ajava file
    */
   private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
+
+    if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
+      // Ignore null types: passing them to asSuper causes a crash, as they cannot be
+      // substituted for type variables. If sourceCodeATM is a null type, only the primary
+      // annotation will be considered anyway, so there is no danger of recursing into
+      // typevar bounds.
+      if (sourceCodeATM.getKind() != TypeKind.NULL) {
+        // This can happen e.g. when recursing into the bounds of a type variable:
+        // the bound on sourceCodeATM might be a declared type (such as T), while
+        // the ajavaATM might be a typevar (such as S extends T), or vice-versa. In
+        // that case, use asSuper to make the two ATMs fully-compatible.
+        sourceCodeATM = AnnotatedTypes.asSuper(this.atypeFactory, sourceCodeATM, ajavaATM);
+      }
+    }
 
     switch (sourceCodeATM.getKind()) {
       case TYPEVAR:
@@ -714,9 +934,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         //         ((AnnotatedWildcardType) ajavaATM).getSuperBound());
         // break;
       case ARRAY:
-        updateAtmWithLub(
-            ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-            ((AnnotatedArrayType) ajavaATM).getComponentType());
+        AnnotatedTypeMirror sourceCodeComponent =
+            ((AnnotatedArrayType) sourceCodeATM).getComponentType();
+        AnnotatedTypeMirror ajavaComponent = ((AnnotatedArrayType) ajavaATM).getComponentType();
+        if (sourceCodeComponent.getKind() == ajavaComponent.getKind()) {
+          updateAtmWithLub(sourceCodeComponent, ajavaComponent);
+        } else {
+          if (showWpiFailedInferences) {
+            printFailedInferenceDebugMessage(
+                "attempted to update the component type of an array type, but found an unexpected"
+                    + " difference in type structure.\n"
+                    + "LHS kind: "
+                    + sourceCodeComponent.getKind()
+                    + "\nRHS kind: "
+                    + ajavaComponent.getKind());
+            break;
+          }
+        }
         break;
         // case DECLARED:
         // Inferring annotations on type arguments is not supported, so no need to recur on generic

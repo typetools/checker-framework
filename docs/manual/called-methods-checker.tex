@@ -37,11 +37,6 @@ verify.  Please submit an
 \href{https://github.com/typetools/checker-framework/issues}{issue} if you
 discover this.
 
-The paper ``Verifying Object Construction''~\cite{KelloggRSSE2020} (ICSE 2020,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/object-construction-icse2020-abstract.html})
-describes the Called Methods Checker in more detail.  (The paper uses an
-earlier name, ``Object Construction Checker''.)
-
 
 \sectionAndLabel{How to run the Called Methods Checker}{called-methods-run-checker}
 
@@ -125,6 +120,23 @@ annotations (Figure~\ref{fig-called-methods-types}):
 
   Then the receiver for any call to \<build()> must have had \<setX()> and \<setY()> called on it.
 
+  A typical case for Lombok users for manually writing this annotation is when performing extra
+  builder input validation. Performing validation can be done through subclassing generated builders
+  and overriding the generated \<build()> method as follows.
+
+  \begin{Verbatim}
+    class MyObjectSubBuilder extends MyObjectBuilder {
+      @Override
+      MyObject build(@CalledMethods({"setX", "setY"}) MyObjectSubBuilder this) {
+        MyObject o = super.build();
+        if ((o.getX() == null) != (o.getY() == null)) {
+          throw new IllegalArgumentException("Nullness for x and y should be equal");
+        }
+        return o;
+      }
+    }
+  \end{Verbatim}
+
 \item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethodsPredicate}{String expression}]
   The boolean expression specifies the required method calls.  The string
   is a boolean expression composed of method names, disjunction (\<||>),
@@ -151,6 +163,21 @@ annotations (Figure~\ref{fig-called-methods-types}):
   This is helpful when type-checking fluent APIs. This annotation is defined by the
   Returns Receiver Checker (\chapterpageref{returns-receiver-checker}), but is particularly useful
   for the Called Methods Checker because many builders are fluent APIs.
+
+  For Lombok users it is important to (manually) add \<@This> to any custom method that calls any other
+  generated builder method. For instance, in the following example, it is important to annotate
+  \<setXMod42()> with \<@This>, since the added method calls \<setX()> (which returns the current builder
+  instance).
+
+  \begin{Verbatim}
+      class MyObjectBuilder {
+
+        @This
+        MyObjectBuilder setXMod42(int x) {
+          return setX(x % 42);
+        }
+      }
+  \end{Verbatim}
 
 \item[\refqualclass{checker/calledmethods/qual}{CalledMethodsBottom}]
   The bottom type for the Called Methods hierarchy. Conceptually, this annotation
@@ -302,3 +329,12 @@ To improve precision, you can specify the
 instructs the checker to treat provably-safe calls to the \<withFilters>
 method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or
 \<withImageIds> methods.
+
+
+\sectionAndLabel{More information}{called-methods-more-information}
+
+The paper ``Verifying Object Construction''~\cite{KelloggRSSE2020} (ICSE 2020,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/object-construction-icse2020-abstract.html})
+gives more information about the Called Methods Checker, such as
+theoretical underpinnings and results of experiments.  (The paper uses an
+earlier name, ``Object Construction Checker''.)

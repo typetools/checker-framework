@@ -1,4 +1,4 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.SiblingWithFields;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSiblingWithFields;
 
 public class AnnotationWithFieldTest {
 
@@ -7,32 +7,32 @@ public class AnnotationWithFieldTest {
   private String emptyFields;
 
   void testAnnotationWithFields() {
-    fields = getSiblingWithFields();
+    fields = getAinferSiblingWithFields();
     // :: warning: (argument)
-    expectsSiblingWithFields(fields);
+    expectsAinferSiblingWithFields(fields);
   }
 
   void testAnnotationWithEmptyFields() {
-    emptyFields = getSiblingWithFieldsEmpty();
+    emptyFields = getAinferSiblingWithFieldsEmpty();
     // :: warning: (argument)
-    expectsSiblingWithEmptyFields(emptyFields);
+    expectsAinferSiblingWithEmptyFields(emptyFields);
   }
 
-  void expectsSiblingWithFields(
-      @SiblingWithFields(
+  void expectsAinferSiblingWithFields(
+      @AinferSiblingWithFields(
               value = {"test", "test2"},
               value2 = "test3")
           String s) {}
 
-  void expectsSiblingWithEmptyFields(
-      @SiblingWithFields(
+  void expectsAinferSiblingWithEmptyFields(
+      @AinferSiblingWithFields(
               value = {},
               value2 = "")
           String s) {}
 
   @SuppressWarnings("cast.unsafe")
-  String getSiblingWithFields() {
-    return (@SiblingWithFields(
+  String getAinferSiblingWithFields() {
+    return (@AinferSiblingWithFields(
             value = {"test", "test2"},
             value2 = "test3")
         String)
@@ -40,8 +40,8 @@ public class AnnotationWithFieldTest {
   }
 
   @SuppressWarnings("cast.unsafe")
-  String getSiblingWithFieldsEmpty() {
-    return (@SiblingWithFields(
+  String getAinferSiblingWithFieldsEmpty() {
+    return (@AinferSiblingWithFields(
             value = {},
             value2 = "")
         String)

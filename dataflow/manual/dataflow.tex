@@ -15,6 +15,8 @@
 \usepackage{ucs}
 \usepackage{longtable}
 
+\usepackage{relsize}
+
 % At least 80% of every float page must be taken up by
 % floats; there will be no page with more than 20% white space.
 \def\topfraction{.95}
@@ -57,7 +59,7 @@
     commentstyle=\color{gray},
     captionpos=b
 }
-\newcommand{\code}[1]{\lstinline{#1}}
+\newcommand{\code}[1]{{\smaller\lstinline{#1}}}
 
 \usepackage{fullpage}
 

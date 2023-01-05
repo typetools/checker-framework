@@ -1,7 +1,6 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.Position;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -25,8 +24,11 @@ import com.google.common.base.CharMatcher;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.reflect.ClassPath;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -35,6 +37,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsPlume;
 
@@ -108,7 +111,7 @@ public class RemoveAnnotationsForInference {
     CollectionStrategy strategy = new ParserCollectionStrategy();
     // Required to include directories that contain a module-info.java, which don't parse by
     // default.
-    strategy.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+    strategy.getParserConfiguration().setLanguageLevel(JavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
     ProjectRoot projectRoot = strategy.collect(root);
 
     for (SourceRoot sourceRoot : projectRoot.getSourceRoots()) {
@@ -189,7 +192,7 @@ public class RemoveAnnotationsForInference {
         String newLine = prefix + suffix;
         replaceLine(lines, beginLine, newLine);
       } else {
-        String newLastLine = lines.get(endLine).substring(0, endColumn);
+        String newLastLine = lines.get(endLine).substring(endColumn);
         replaceLine(lines, endLine, newLastLine);
         for (int lineno = endLine - 1; lineno > beginLine; lineno--) {
           lines.remove(lineno);
@@ -199,14 +202,13 @@ public class RemoveAnnotationsForInference {
       }
     }
 
-    try {
-      PrintWriter pw = new PrintWriter(absolutePath.toString());
+    try (PrintWriter pw =
+        new PrintWriter(new BufferedWriter(new FileWriter(absolutePath.toString())))) {
       for (String line : lines) {
         pw.println(line);
       }
-      pw.close();
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException("problem writing " + absolutePath.toString(), e);
     }
   }
 
@@ -225,7 +227,7 @@ public class RemoveAnnotationsForInference {
     }
   }
 
-  // TODO: Put the following utility methods in StringsPlume.
+  // TODO: When plume-util 1.6.1 is released, use the version of `isBlank()` in StringsPlume.
 
   /**
    * Returns true if the string contains only white space codepoints, otherwise false.
@@ -250,14 +252,16 @@ public class RemoveAnnotationsForInference {
       extends GenericListVisitorAdapter<AnnotationExpr, Void> {
 
     /**
-     * Returns the argument if it should be removed from source code.
+     * Returns annotations that should be removed from source code.
      *
      * @param n an annotation
-     * @param superResult the result of processing the subcomponents of n
+     * @param superResult the result of calling {@code super.visit} on n; this includes processing
+     *     the subcomponents of n
      * @return the argument to remove it, or superResult to retain it
      */
     List<AnnotationExpr> processAnnotation(AnnotationExpr n, List<AnnotationExpr> superResult) {
       if (n == null) {
+        // TODO: How is this possible?
         return superResult;
       }
 
@@ -440,8 +444,9 @@ public class RemoveAnnotationsForInference {
   }
 
   /**
-   * Given a @SuppressWarnings annotation, returns its strings. Given an annotation that suppresses
-   * warnings, returns strings for what it suppresses. Otherwise, returns null.
+   * Given a @SuppressWarnings annotation, returns its strings. Given a different annotation that
+   * suppresses warnings (e.g., @IgnoreInWholeProgramInference, @Inject, @Singleton), returns
+   * strings for what it suppresses. Otherwise, returns null.
    *
    * @param n an annotation
    * @return the (effective) arguments to {@code @SuppressWarnings}, or null

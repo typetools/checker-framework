@@ -14,7 +14,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -66,10 +65,6 @@ public class TestConfigurationBuilder {
 
     if (outputClassDirectory != null) {
       configBuilder.addOption("-d", outputClassDirectory.getAbsolutePath());
-    }
-
-    if (SystemUtil.getJreVersion() == 8) {
-      configBuilder.addOption("-source", "8").addOption("-target", "8");
     }
 
     configBuilder
@@ -187,10 +182,10 @@ public class TestConfigurationBuilder {
   private List<File> testSourceFiles;
 
   /** The set of Checker Framework processors to test with. */
-  private Set<@BinaryName String> processors;
+  private final Set<@BinaryName String> processors;
 
   /** The set of options to the Javac command line used to run the test. */
-  private SimpleOptionMap options;
+  private final SimpleOptionMap options;
 
   /** Should the Javac options be output before running the test. */
   private boolean shouldEmitDebugInfo;

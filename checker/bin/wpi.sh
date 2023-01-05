@@ -9,7 +9,7 @@
 set -eo pipefail
 # not set -u, because this script checks variables directly
 
-while getopts "d:t:b:g:" opt; do
+while getopts "d:t:b:g:c:" opt; do
   case $opt in
     d) DIR="$OPTARG"
        ;;
@@ -18,6 +18,8 @@ while getopts "d:t:b:g:" opt; do
     b) EXTRA_BUILD_ARGS="$OPTARG"
        ;;
     g) GRADLECACHEDIR="$OPTARG"
+       ;;
+    c) BUILD_TARGET="$OPTARG"
        ;;
     \?) # echo "Invalid option -$OPTARG" >&2
        ;;
@@ -66,6 +68,13 @@ else
   has_java17="yes"
 fi
 
+# shellcheck disable=SC2153 # testing for JAVA19_HOME, not a typo of JAVA_HOME
+if [ "${JAVA19_HOME}" = "" ]; then
+  has_java19="no"
+else
+  has_java19="yes"
+fi
+
 if [ "${has_java_home}" = "yes" ]; then
     java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
@@ -79,6 +88,10 @@ if [ "${has_java_home}" = "yes" ]; then
     if [ "${has_java17}" = "no" ] && [ "${java_version}" = 17 ]; then
       export JAVA17_HOME="${JAVA_HOME}"
       has_java17="yes"
+    fi
+    if [ "${has_java19}" = "no" ] && [ "${java_version}" = 19 ]; then
+      export JAVA19_HOME="${JAVA_HOME}"
+      has_java19="yes"
     fi
 fi
 
@@ -97,8 +110,13 @@ if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
     exit 7
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ]; then
-    echo "No Java 8, 11, or 17 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, or JAVA17_HOME must be set."
+if [ "${has_java19}" = "yes" ] && [ ! -d "${JAVA19_HOME}" ]; then
+    echo "JAVA19_HOME is set to a non-existent directory ${JAVA19_HOME}"
+    exit 7
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
+    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
     exit 8
 fi
 
@@ -135,6 +153,9 @@ fi
 function configure_and_exec_dljc {
 
   if [ -f build.gradle ]; then
+      if [ "${BUILD_TARGET}" = "" ]; then
+        BUILD_TARGET="compileJava"
+      fi
       if [ -f gradlew ]; then
         chmod +x gradlew
         GRADLE_EXEC="./gradlew"
@@ -145,8 +166,11 @@ function configure_and_exec_dljc {
         mkdir "${GRADLECACHEDIR}"
       fi
       CLEAN_CMD="${GRADLE_EXEC} clean -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
-      BUILD_CMD="${GRADLE_EXEC} clean compileJava -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+      BUILD_CMD="${GRADLE_EXEC} clean ${BUILD_TARGET} -g ${GRADLECACHEDIR} -Dorg.gradle.java.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
   elif [ -f pom.xml ]; then
+      if [ "${BUILD_TARGET}" = "" ]; then
+        BUILD_TARGET="compile"
+      fi
       if [ -f mvnw ]; then
         chmod +x mvnw
         MVN_EXEC="./mvnw"
@@ -156,15 +180,18 @@ function configure_and_exec_dljc {
       # if running on Java 8, need /jre at the end of this Maven command
       if [ "${JAVA_HOME}" = "${JAVA8_HOME}" ]; then
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
+          BUILD_CMD="${MVN_EXEC} clean ${BUILD_TARGET} -Djava.home=${JAVA_HOME}/jre ${EXTRA_BUILD_ARGS}"
       else
           CLEAN_CMD="${MVN_EXEC} clean -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
-          BUILD_CMD="${MVN_EXEC} clean compile -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
+          BUILD_CMD="${MVN_EXEC} clean ${BUILD_TARGET} -Djava.home=${JAVA_HOME} ${EXTRA_BUILD_ARGS}"
       fi
   elif [ -f build.xml ]; then
     # TODO: test these more thoroughly
+    if [ "${BUILD_TARGET}" = "" ]; then
+      BUILD_TARGET="compile"
+    fi
     CLEAN_CMD="ant clean ${EXTRA_BUILD_ARGS}"
-    BUILD_CMD="ant clean compile ${EXTRA_BUILD_ARGS}"
+    BUILD_CMD="ant clean ${BUILD_TARGET} ${EXTRA_BUILD_ARGS}"
   else
       echo "no build file found for ${REPO_NAME}; not calling DLJC"
       WPI_RESULTS_AVAILABLE="no build file found for ${REPO_NAME}"

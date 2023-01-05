@@ -7,7 +7,7 @@ dependencies {
     api project(':checker-qual')
 
     // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
-    api 'org.plumelib:plume-util:1.5.8'
+    api "org.plumelib:plume-util:${plumeUtilVersion}"
 
     // External dependencies:
     // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
@@ -19,16 +19,16 @@ dependencies {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 /**
- * Creates a task with name datflow${shadedPkgName} that creates a shaded dataflow jar. The packages will be shaded to
- * "org.checkerframework.{@code shadedPkgName}" and the jar name is datflow-${shadedPkgName}.jar.
+ * Creates a task with name dataflow${shadedPkgName} that creates a shaded dataflow jar. The packages will be shaded to
+ * "org.checkerframework.{@code shadedPkgName}" and the jar name is dataflow-${shadedPkgName}.jar.
  * @param shadedPkgName
  * @return
  */
 def createDataflowShaded(shadedPkgName) {
-    tasks.create(name: "datflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
-        description "Builds datflow-${shadedPkgName}.jar."
+    tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+        description "Builds dataflow-${shadedPkgName}.jar."
         includeEmptyDirs = false
-        archivesBaseName = "datflow-${shadedPkgName}"
+        archivesBaseName = "dataflow-${shadedPkgName}"
         // Without this line, the Maven artifact will have the classifier "all".
         archiveClassifier.set('')
 
@@ -72,13 +72,13 @@ task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verificati
             }
             else if (JavaVersion.current() > JavaVersion.VERSION_11) {
                 jvmArgs += [
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
                 ]
             }
 
@@ -107,13 +107,13 @@ task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification'
             }
             else if (JavaVersion.current() > JavaVersion.VERSION_11) {
                 jvmArgs += [
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-                    "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
                 ]
             }
             classpath = sourceSets.test.runtimeClasspath
@@ -124,7 +124,46 @@ task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification'
     }
 }
 
-apply from: rootProject.file("gradle-mvn-push.gradle")
+task constantPropagationTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
+    description 'Test the constant propagation analysis of the dataflow framework.'
+    inputs.file('tests/constant-propagation/Expected.txt')
+    inputs.file('tests/constant-propagation/Test.java')
+
+    outputs.file('tests/constant-propagation/Out.txt')
+    outputs.file('tests/constant-propagation/Test.class')
+
+    delete('tests/constant-propagation/Out.txt')
+    delete('tests/constant-propagation/Test.class')
+    doLast {
+        javaexec {
+            workingDir = 'tests/constant-propagation'
+            if (!JavaVersion.current().java9Compatible) {
+                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+            }
+            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+                jvmArgs += [
+                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+                ]
+            }
+            classpath = sourceSets.test.runtimeClasspath
+            classpath += sourceSets.test.output
+            mainClass = 'constantpropagation.ConstantPropagation'
+        }
+        exec {
+            workingDir = 'tests/constant-propagation'
+            executable 'diff'
+            args = ['-u', 'Expected.txt', 'Out.txt']
+        }
+    }
+}
+
+apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
 final dataflowPom(publication) {
@@ -179,23 +218,23 @@ publishing {
         dataflowShaded(MavenPublication) {
             dataflowShadedPom(it, 'shaded')
 
-            artifact getTasksByName('datflowshadedJar',false).iterator().next()
+            artifact getTasksByName('dataflowshadedJar',false).iterator().next()
             artifact sourcesJar
             artifact javadocJar
         }
 
-        datflowShadednullaway(MavenPublication) {
+        dataflowShadednullaway(MavenPublication) {
             dataflowShadedPom(it, 'nullaway')
 
-            artifact getTasksByName('datflownullawayJar',false).iterator().next()
+            artifact getTasksByName('dataflownullawayJar',false).iterator().next()
             artifact sourcesJar
             artifact javadocJar
         }
 
-        datflowShadederrorprone(MavenPublication) {
+        dataflowShadederrorprone(MavenPublication) {
             dataflowShadedPom(it, 'errorprone')
 
-            artifact getTasksByName('datflowerrorproneJar',false).iterator().next()
+            artifact getTasksByName('dataflowerrorproneJar',false).iterator().next()
             artifact sourcesJar
             artifact javadocJar
         }
@@ -204,6 +243,6 @@ publishing {
 signing {
     sign publishing.publications.dataflow
     sign publishing.publications.dataflowShaded
-    sign publishing.publications.datflowShadednullaway
-    sign publishing.publications.datflowShadederrorprone
+    sign publishing.publications.dataflowShadednullaway
+    sign publishing.publications.dataflowShadederrorprone
 }

@@ -47,6 +47,8 @@ import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
@@ -105,6 +107,10 @@ public class NullnessAnnotatedTypeFactory
   /** Cache for the nullness annotations. */
   protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
+  /** The Map.get method. */
+  private final ExecutableElement mapGet =
+      TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
+
   // List is in alphabetical order.  If you update it, also update
   // ../../../../../../../../docs/manual/nullness-checker.tex
   // and make a pull request for variables NONNULL_ANNOTATIONS and BASE_COPYABLE_ANNOTATIONS in
@@ -136,7 +142,7 @@ public class NullnessAnnotatedTypeFactory
           "com.sun.istack.internal.NotNull",
           // https://github.com/pingidentity/ldapsdk/blob/master/src/com/unboundid/util/NotNull.java
           "com.unboundid.util.NotNull",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/NonNull.html
           "edu.umd.cs.findbugs.annotations.NonNull",
           // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/NonNull.java
           "io.micrometer.core.lang.NonNull",
@@ -212,13 +218,13 @@ public class NullnessAnnotatedTypeFactory
           "com.sun.istack.internal.Nullable",
           // https://github.com/pingidentity/ldapsdk/blob/master/src/com/unboundid/util/Nullable.java
           "com.unboundid.util.Nullable",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/CheckForNull.html
           "edu.umd.cs.findbugs.annotations.CheckForNull",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html
           "edu.umd.cs.findbugs.annotations.Nullable",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/PossiblyNull.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/PossiblyNull.html
           "edu.umd.cs.findbugs.annotations.PossiblyNull",
-          // http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
+          // https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/UnknownNullness.html
           "edu.umd.cs.findbugs.annotations.UnknownNullness",
           // https://github.com/micrometer-metrics/micrometer/blob/main/micrometer-core/src/main/java/io/micrometer/core/lang/Nullable.java
           "io.micrometer.core.lang.Nullable",
@@ -541,7 +547,7 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public Void visitVariable(VariableTree node, AnnotatedTypeMirror type) {
-      Element elt = TreeUtils.elementFromTree(node);
+      Element elt = TreeUtils.elementFromDeclaration(node);
       if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
         if (!type.isAnnotatedInHierarchy(NONNULL)) {
           // case 9. exception parameter
@@ -746,7 +752,7 @@ public class NullnessAnnotatedTypeFactory
    * <p>This method ignores aliases of nullness annotations that are declaration annotations,
    * because they may apply to inner types.
    *
-   * @param annoTrees a list of annotations that the the Java parser attached to the variable/method
+   * @param annoTrees a list of annotations that the Java parser attached to the variable/method
    *     declaration; null if this type is not from such a location. This is a list of extra
    *     annotations to check, in addition to those on the type.
    * @param typeTree the type whose annotations to test
@@ -866,6 +872,14 @@ public class NullnessAnnotatedTypeFactory
     }
   }
 
+  @Override
+  public boolean wpiShouldInferTypesForReceivers() {
+    // All receivers must be non-null, or the dereference involved in
+    // the method call would fail (and cause an NPE). So, WPI should not
+    // infer non-null or nullable annotations on method receiver parameters.
+    return false;
+  }
+
   // This implementation overrides the superclass implementation to:
   //  * check for @MonotonicNonNull
   //  * output @RequiresNonNull rather than @RequiresQualifier.
@@ -926,5 +940,15 @@ public class NullnessAnnotatedTypeFactory
     builder.setValue("value", new String[] {expression});
     AnnotationMirror am = builder.build();
     return am;
+  }
+
+  /**
+   * Returns true if {@code node} is an invocation of Map.get.
+   *
+   * @param node a node
+   * @return true if {@code node} is an invocation of Map.get
+   */
+  public boolean isMapGet(Node node) {
+    return NodeUtils.isMethodInvocation(node, mapGet, getProcessingEnv());
   }
 }

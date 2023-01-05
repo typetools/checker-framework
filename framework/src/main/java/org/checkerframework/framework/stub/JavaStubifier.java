@@ -1,7 +1,6 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import org.checkerframework.framework.util.JavaParserUtil;
 
 /**
  * Process Java source files in a directory to produce, in-place, minimal stub files.
@@ -68,7 +68,7 @@ public class JavaStubifier {
     CollectionStrategy strategy = new ParserCollectionStrategy();
     // Required to include directories that contain a module-info.java, which don't parse by
     // default.
-    strategy.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+    strategy.getParserConfiguration().setLanguageLevel(JavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
     ProjectRoot projectRoot = strategy.collect(root);
 
     projectRoot
@@ -186,7 +186,7 @@ public class JavaStubifier {
     @Override
     public MethodDeclaration visit(MethodDeclaration md, Void arg) {
       super.visit(md, arg);
-      // Non-private methods could be overriden with larger visibility.
+      // Non-private methods could be overridden with larger visibility.
       // So it is only safe to remove private methods, which can't be overridden.
       if (!removeIfPrivate(md)) {
         md.removeBody();
@@ -231,7 +231,7 @@ public class JavaStubifier {
         return false;
       }
       AccessSpecifier as = node.getAccessSpecifier();
-      if (as == AccessSpecifier.PRIVATE || as == AccessSpecifier.PACKAGE_PRIVATE) {
+      if (as == AccessSpecifier.PRIVATE || as == AccessSpecifier.NONE) {
         ((Node) node).remove();
         return true;
       }

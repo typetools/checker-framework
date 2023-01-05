@@ -30,9 +30,9 @@ import org.checkerframework.framework.qual.JavaExpression;
  * annotations:
  *
  * <ul>
- *   <li>If {@code i} is {@code @IndexFor("this")}, then {@code start + i} is
+ *   <li>If {@code i} is {@code @IndexFor("this")}, then {@code this.start + i} is
  *       {@code @IndexFor("array")}.
- *   <li>If {@code j} is {@code @IndexFor("array")}, then {@code j - start } is
+ *   <li>If {@code j} is {@code @IndexFor("array")}, then {@code j - this.start } is
  *       {@code @IndexFor("this")}.
  * </ul>
  *
@@ -46,8 +46,8 @@ import org.checkerframework.framework.qual.JavaExpression;
  * </ul>
  *
  * The Index Checker verifies the first 3 facts, but always issues a warning because it cannot prove
- * the 4th fact. The programmer should should manually verify that the {@code subsequence} field is
- * equal to the given subsequence and then suppress the warning.
+ * the 4th fact. The programmer should manually verify that the {@code subsequence} field is equal
+ * to the given subsequence and then suppress the warning.
  *
  * <p>For an example of how this annotation is used in practice, see the test GuavaPrimitives.java
  * in /checker/tests/index/.

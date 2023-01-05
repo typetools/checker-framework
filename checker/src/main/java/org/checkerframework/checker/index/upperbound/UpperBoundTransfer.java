@@ -107,10 +107,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class UpperBoundTransfer extends IndexAbstractTransfer {
 
   /** The type factory associated with this transfer function. */
-  private UpperBoundAnnotatedTypeFactory atypeFactory;
+  private final UpperBoundAnnotatedTypeFactory atypeFactory;
 
   /** The int TypeMirror. */
-  TypeMirror intTM;
+  final TypeMirror intTM;
 
   /**
    * Creates a new UpperBoundTransfer.
@@ -825,7 +825,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     // TODO: This cannot be done in strengthenAnnotationOfEqualTo, because that does not provide
     // transfer input.
     List<Node> caseNodes = n.getCaseOperands();
-    AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+    AssignmentNode assign = n.getSwitchOperand();
     Node switchNode = assign.getExpression();
     for (Node caseNode : caseNodes) {
       refineSubtrahendWithOffset(switchNode, caseNode, false, in, result.getThenStore());

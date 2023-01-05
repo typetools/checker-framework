@@ -10,6 +10,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.Arrays;
 import java.util.Collections;
@@ -429,6 +430,10 @@ public class QualifierDefaults {
 
     for (Tree t : path) {
       switch (TreeUtils.getKindRecordAsClass(t)) {
+        case ANNOTATED_TYPE:
+        case ANNOTATION:
+          // If the tree is in an annotation, then there is no relevant scope.
+          return null;
         case VARIABLE:
           VariableTree vtree = (VariableTree) t;
           ExpressionTree vtreeInit = vtree.getInitializer();
@@ -519,14 +524,14 @@ public class QualifierDefaults {
     applyToTypeVar =
         defaultTypeVarLocals
             && elt != null
-            && elt.getKind() == ElementKind.LOCAL_VARIABLE
+            && ElementUtils.isLocalVariable(elt)
             && type.getKind() == TypeKind.TYPEVAR;
     applyDefaultsElement(elt, type);
     applyToTypeVar = false;
   }
 
   /** The default {@code value} element for a @DefaultQualifier annotation. */
-  private static TypeUseLocation[] defaultQualifierValueDefault =
+  private static final TypeUseLocation[] defaultQualifierValueDefault =
       new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
 
   /**
@@ -1189,7 +1194,7 @@ public class QualifierDefaults {
     final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
 
     final BoundType boundType;
-    if (wildcard.isUnbound() && wildcard.bound != null) {
+    if (wildcard.kind == BoundKind.UNBOUND && wildcard.bound != null) {
       boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
 
     } else {

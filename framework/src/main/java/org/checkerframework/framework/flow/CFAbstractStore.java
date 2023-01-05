@@ -10,9 +10,9 @@ import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -35,7 +35,6 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
-import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -98,18 +97,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Information collected about array elements, using the internal representation {@link
    * ArrayAccess}.
    */
-  protected Map<ArrayAccess, V> arrayValues;
+  protected final Map<ArrayAccess, V> arrayValues;
 
   /**
    * Information collected about method calls, using the internal representation {@link MethodCall}.
    */
-  protected Map<MethodCall, V> methodValues;
+  protected final Map<MethodCall, V> methodValues;
 
   /**
    * Information collected about <i>classname</i>.class values, using the internal representation
    * {@link ClassName}.
    */
-  protected Map<ClassName, V> classValues;
+  protected final Map<ClassName, V> classValues;
 
   /**
    * Should the analysis use sequential Java semantics (i.e., assume that only one thread is running
@@ -193,9 +192,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param atypeFactory the type factory used to retrieve annotations on the method element
    * @param method the method element
    * @return whether the method is side-effect-free
+   * @deprecated use {@link org.checkerframework.javacutil.AnnotationProvider#isSideEffectFree}
    */
+  @Deprecated // 2022-09-27
   protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-    return PurityUtils.isSideEffectFree(atypeFactory, method);
+    return atypeFactory.isSideEffectFree(method);
   }
 
   /* --------------------------------------------------------- */
@@ -255,7 +256,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     // case 1: remove information if necessary
     if (!(analysis.checker.hasOption("assumeSideEffectFree")
         || analysis.checker.hasOption("assumePure")
-        || isSideEffectFree(atypeFactory, method))) {
+        || atypeFactory.isSideEffectFree(method))) {
 
       boolean sideEffectsUnrefineAliases =
           ((GenericAnnotatedTypeFactory) atypeFactory).sideEffectsUnrefineAliases;
@@ -1082,11 +1083,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns the current abstract value of a local variable, or {@code null} if no information is
    * available.
    *
+   * @param n the local variable
    * @return the current abstract value of a local variable, or {@code null} if no information is
    *     available
    */
   public @Nullable V getValue(LocalVariableNode n) {
-    Element el = n.getElement();
+    VariableElement el = n.getElement();
     return localVariableValues.get(new LocalVariable(el));
   }
 

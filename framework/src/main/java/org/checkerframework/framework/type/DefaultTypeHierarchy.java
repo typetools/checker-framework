@@ -33,7 +33,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * options passed to DefaultTypeHierarchy.
  *
  * <p>Subtyping rules of the JLS can be found in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10">section 4.10,
+ * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10">section 4.10,
  * "Subtyping"</a>.
  *
  * <p>Note: The visit methods of this class must be public but it is intended to be used through a
@@ -241,11 +241,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * by {@code outside} is a superset of, or equal to, the set of types denoted by {@code inside}.
    *
    * <p>Containment is described in <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.5.1">JLS section
    * 4.5.1 "Type Arguments of Parameterized Types"</a>.
    *
    * <p>As described in <a
-   * href=https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.10.2>JLS section
+   * href=https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10.2>JLS section
    * 4.10.2 Subtyping among Class and Interface Types</a>, a declared type S is considered a
    * supertype of another declared type T only if all of S's type arguments "contain" the
    * corresponding type arguments of the subtype T.
@@ -1069,7 +1069,20 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return false;
       }
     }
-    return isSubtypeCaching(subtypeUpperBound, supertype);
+    try {
+      return isSubtypeCaching(subtypeUpperBound, supertype);
+    } catch (BugInCF e) {
+      if (TypesUtils.isCapturedTypeVariable(subtype.underlyingType)) {
+        // The upper bound of captured type variable may be computed incorrectly by javac. javac
+        // computes the upper bound as a declared type, when it should be an intersection type.
+        // (This is a bug in the GLB algorithm; see
+        // https://bugs.openjdk.org/browse/JDK-8039222)
+        // In this case, the upperbound is not a subtype of `supertype` and the Checker Framework
+        // crashes. So catch that crash and just return false.
+        return false;
+      }
+      throw e;
+    }
   }
 
   /**

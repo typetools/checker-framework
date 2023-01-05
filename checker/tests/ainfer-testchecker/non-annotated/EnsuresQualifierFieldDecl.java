@@ -4,10 +4,10 @@
 // the field is not mentioned (and therefore not in the store, making
 // them unverifiable).
 
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 class EnsuresQualifierFieldDecl {
-  @Sibling1 Object bar;
+  @AinferSibling1 Object bar;
 
   // No annotation should be inferred here.
   void test() {}

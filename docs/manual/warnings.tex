@@ -151,7 +151,7 @@ recommended, except for messages common to all checkers such as
 purity-related messages when using \<-AcheckPurityAnnotations>.  If you use
 \<"allcheckers">, you run some checker that does not issue any warnings,
 and you suply the \<-AwarnUnneededSuppressions> command-line argument, then
-the Checker Framework will issue an unsuppressable \<unneeded.suppression>
+the Checker Framework will issue an \<unneeded.suppression>
 warning.
 
 The special messagekey ``\<all>'' means to suppress all warnings.
@@ -447,7 +447,7 @@ A non-standard use for annotations is to document facts that a programmer
 has independently verified to be true.  The Checker Framework can
 leverage these assertions in order to avoid issuing false positive
 warnings.  The programmer marks such assertions with the \<@AssumeAssertion>
-string in the \<assert> message (see Section~\ref{assumeassertion}.  Only
+string in the \<assert> message (see Section~\ref{assumeassertion}).  Only
 do so if you are sure that the assertion always succeeds at run time.
 
 \label{assertion-methods}
@@ -471,13 +471,23 @@ The method
 \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is not an
 assertion method.  It is a warning suppression method.
 
-Note that some libraries have an imprecise specification of their assertion
-methods.  For example, Guava's \<Verify.verifyNotNull> is imprecisely
+Note that some libraries have an imprecise/incorrect specification of their assertion
+methods.  For example, Guava's \<Verify.verifyNotNull> is imprecisely/incorrectly
 specified to have a \<@Nullable> formal parameter.  In a correct execution,
 \<null> never flows there, so its type can and should be annotated as
 \<@NonNull>.  That annotation allows the Nullness Checker to warn about
-programs that crash due to passing \<null> to \<verifyNotNull>.  You can
-use a version of Guava with a small change to your build file.  Where the
+programs that crash due to passing \<null> to \<verifyNotNull>.
+(A comment in Guava's \<Preconditions.java> agrees with this reasoning:
+``the first parameter to \<checkNotNull> \emph{should} be annotated to
+require it to be non-null.''  The comment goes on to say ``I had hoped to
+take a principled stand on this'' (that, is, write the annotation
+\<@NonNull>), but Guava annotates it as \<@Nullable> to accommodate misuses
+within the Google codebase.)
+
+By default, the Checker Framework uses Guava's annotations as written.  If
+you wish to  take the principled stand in order to prevent \emph{all}
+\<NullPointerException>s, you can
+use a different version of Guava with a small change to your build file.  Where the
 build file refers to Maven Central's \<guava> artifact, change the group
 name from ``com.google.guava'' to ``org.checkerframework.annotatedlib''.
 (The code is identical; the only difference is annotations.)
@@ -519,6 +529,11 @@ guarantee that your code is correct and will not fail at run time.
   If the method is defined in an external library, write a stub file that
   changes the method's annotations, or use \<-AskipUses> to make the
   Checker Framework ignore all calls to an entire class.
+
+  As a special case, if you want the Nullness Checker to prevent most null
+  pointer exceptions in your code, but to \emph{permit} null pointer
+  exceptions at nullness assertion methods, you can pass
+  \<-Astubs=permit-nullness-assertion-exception.astub>.
 \end{itemize}
 
 
@@ -537,16 +552,16 @@ smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 \sectionAndLabel{\code{-AskipUses} and \code{-AonlyUses} command-line options}{askipuses}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
-class, or suppress all errors and warnings except those at uses of a given
+class, or suppress all errors and warnings \emph{except} those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
 the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
-regular expression that matches class names (not file names) for which warnings and errors
+regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyUses} command-line option to a
-regular expression that matches class names (not file names) for which warnings and errors
+regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
 
 For example, suppose that you use
@@ -586,17 +601,17 @@ refined in the future.  Oftentimes \code{-AskipUses} is more useful.
 \sectionAndLabel{\code{-AskipDefs} and \code{-AonlyDefs} command-line options}{askipdefs}
 
 You can suppress all errors and warnings in the \emph{definition} of a given
-class, or suppress all errors and warnings except those in the definition
+class, or suppress all errors and warnings \emph{except} those in the definition
 of a given class.  (Uses of the class are still type-checked, unless you also use
 the \code{-AskipUses} or \code{-AonlyUses} command-line option,
 see~\ref{askipuses}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
-regular expression that matches class names (not file names) in whose definition warnings and errors
+regular expression that matches fully-qualified class names (not file names) in whose definition warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyDefs} command-line option to a
-regular expression that matches class names (not file names) whose
+regular expression that matches fully-qualified class names (not file names) whose
 definitions should be type-checked.
 (This is somewhat similar to NullAway's
 \<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
@@ -715,6 +730,12 @@ class Objects {
 }
 \end{Verbatim}
 
+This particular stub file already exists.
+If you want the Nullness Checker to prevent most null
+pointer exceptions in your code, but to \emph{permit} null pointer
+exceptions at nullness assertion methods, you can pass
+\<-Astubs=permit-nullness-assertion-exception.astub>.
+
 
 \sectionAndLabel{Don't run the processor}{no-processor}
 
@@ -746,17 +767,17 @@ suppressing warnings issued by the Fenum Checker
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext
 % LocalWords:  AskipDefs mypackage Makefile PLXCOMP expr
-%  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
-%  LocalWords:  ing warningkey redundantNullComparison qual proc Decl
-%  LocalWords:  lastsinglesuppression classfiles AwarnUnneededSuppressions
-%%  LocalWords:  AshowSuppressWarningsStrings NullableType NonNullType JUnit's
-%%  LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
-%%  LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl
-%%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
-%%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
-%%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
+% LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
+% LocalWords:  ing warningkey redundantNullComparison qual proc Decl
+% LocalWords:  lastsinglesuppression classfiles AwarnUnneededSuppressions
+% LocalWords:  AshowSuppressWarningsStrings NullableType NonNullType JUnit's
+% LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
+% LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl
+% LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
+% LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
+% LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
 % LocalWords:  AuseConservativeDefaultsForUncheckedCode checkerframework askipuses
-%%  LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
-%%  LocalWords:  assumeassertion askipdefs alint compat substring myGet
+% LocalWords:  suppresswarnings ArequirePrefixInWarningSuppressions
+% LocalWords:  assumeassertion askipdefs alint compat substring myGet
 % LocalWords:  AcheckPurityAnnotations allcheckers requireNonNull
 % LocalWords:  verifyNotNull subcheckers subchecker

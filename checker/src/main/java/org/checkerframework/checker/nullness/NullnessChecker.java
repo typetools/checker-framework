@@ -1,13 +1,13 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
@@ -34,6 +34,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
 @SupportedOptions({"assumeKeyFor"})
+@StubFiles({"junit-assertions.astub"})
 public class NullnessChecker extends InitializationChecker {
 
   /** Should we be strict about initialization of {@link MonotonicNonNull} variables? */
@@ -89,14 +90,5 @@ public class NullnessChecker extends InitializationChecker {
   @Override
   protected BaseTypeVisitor<?> createSourceVisitor() {
     return new NullnessVisitor(this);
-  }
-
-  @Override
-  public List<String> getExtraStubFiles() {
-    List<String> result = super.getExtraStubFiles();
-    if (hasOption("assumeKeyFor")) {
-      result.add("map-assumeKeyFor.astub");
-    }
-    return result;
   }
 }

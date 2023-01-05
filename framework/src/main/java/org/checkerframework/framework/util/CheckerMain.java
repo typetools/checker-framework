@@ -155,7 +155,7 @@ public class CheckerMain {
 
   /** Assert that required jars exist. */
   protected void assertValidState() {
-    if (SystemUtil.getJreVersion() < 9) {
+    if (SystemUtil.jreVersion == 8) {
       assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar, checkerUtilJar));
     } else {
       assertFilesExist(Arrays.asList(checkerJar, checkerQualJar, checkerUtilJar));
@@ -426,7 +426,7 @@ public class CheckerMain {
     final String java = "java";
     args.add(java);
 
-    if (SystemUtil.getJreVersion() == 8) {
+    if (SystemUtil.jreVersion == 8) {
       args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, runtimeClasspath));
     } else {
       args.addAll(
@@ -479,20 +479,13 @@ public class CheckerMain {
       args.add(quote(concatenatePaths(ppOpts)));
     }
 
-    if (SystemUtil.getJreVersion() == 8) {
+    if (SystemUtil.jreVersion == 8) {
       // No classes on the compilation bootclasspath will be loaded
       // during compilation, but the classes are read by the compiler
       // without loading them.  The compiler assumes that any class on
       // this bootclasspath will be on the bootclasspath of the JVM used
       // to later run the classfiles that Javac produces.
       args.add("-Xbootclasspath/p:" + String.join(File.pathSeparator, compilationBootclasspath));
-
-      // We currently provide a Java 8 JDK and want to be runnable
-      // on a Java 8 JVM. So set source/target to 8.
-      args.add("-source");
-      args.add("8");
-      args.add("-target");
-      args.add("8");
     }
 
     args.addAll(toolOpts);
@@ -515,7 +508,12 @@ public class CheckerMain {
 
   /**
    * Given a path element that might be a wildcard, return a list of the elements it expands to. If
-   * the element isn't a wildcard, return a singleton list containing the argument.
+   * the element isn't a wildcard, return a singleton list containing the argument. Since the
+   * original argument list is placed after 'com.sun.tools.javac.Main' in the new command line, the
+   * JVM doesn't do wildcard expansion of jar files in any classpaths in the original argument list.
+   *
+   * @param pathElement an element of a classpath
+   * @return all elements of a classpath with wildcards expanded
    */
   private List<String> expandWildcards(String pathElement) {
     if (pathElement.equals("*")) {
@@ -537,7 +535,15 @@ public class CheckerMain {
    */
   private List<String> jarFiles(String directory) {
     File dir = new File(directory);
-    return Arrays.asList(dir.list((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR")));
+    String[] jarFiles = dir.list((d, name) -> name.endsWith(".jar") || name.endsWith(".JAR"));
+    if (jarFiles == null) {
+      return Collections.emptyList();
+    }
+    // concat directory with jar file path to give full path
+    for (int i = 0; i < jarFiles.length; i++) {
+      jarFiles[i] = directory + jarFiles[i];
+    }
+    return Arrays.asList(jarFiles);
   }
 
   /** Invoke the compiler with all relevant jars on its classpath and/or bootclasspath. */
@@ -563,11 +569,10 @@ public class CheckerMain {
     if (outputFilename != null) {
       String errorMessage = null;
 
-      try {
-        PrintWriter writer =
-            (outputFilename.equals("-")
-                ? new PrintWriter(System.out)
-                : new PrintWriter(outputFilename, "UTF-8"));
+      try (PrintWriter writer =
+          (outputFilename.equals("-")
+              ? new PrintWriter(System.out)
+              : new PrintWriter(outputFilename, "UTF-8"))) {
         for (int i = 0; i < args.size(); i++) {
           String arg = args.get(i);
 
@@ -581,19 +586,18 @@ public class CheckerMain {
             // Read argfile and include its parameters in the output file.
             String inputFilename = arg.substring(1);
 
-            BufferedReader br = new BufferedReader(new FileReader(inputFilename));
-            String line;
-            while ((line = br.readLine()) != null) {
-              writer.print(line);
-              writer.print(" ");
+            try (BufferedReader br = new BufferedReader(new FileReader(inputFilename))) {
+              String line;
+              while ((line = br.readLine()) != null) {
+                writer.print(line);
+                writer.print(" ");
+              }
             }
-            br.close();
           } else {
             writer.print(arg);
             writer.print(" ");
           }
         }
-        writer.close();
       } catch (IOException e) {
         errorMessage = e.toString();
       }
@@ -815,8 +819,8 @@ public class CheckerMain {
    */
   private List<@FullyQualifiedName String> getAllCheckerClassNames() {
     ArrayList<@FullyQualifiedName String> checkerClassNames = new ArrayList<>();
-    try {
-      final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkerJar));
+    try (FileInputStream fis = new FileInputStream(checkerJar);
+        JarInputStream checkerJarIs = new JarInputStream(fis)) {
       ZipEntry entry;
       while ((entry = checkerJarIs.getNextEntry()) != null) {
         final String name = entry.getName();
@@ -831,7 +835,6 @@ public class CheckerMain {
           checkerClassNames.add(fqName);
         }
       }
-      checkerJarIs.close();
     } catch (IOException e) {
       // Issue a warning instead of aborting execution.
       System.err.printf(

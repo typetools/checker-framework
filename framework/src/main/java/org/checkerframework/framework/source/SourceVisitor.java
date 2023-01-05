@@ -32,10 +32,14 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
   /** The {@link Types} helper to use when scanning. */
   protected final Types types;
 
-  /** The root of the AST that this {@link SourceVisitor} will scan. */
+  /**
+   * The root of the AST that this {@link SourceVisitor} will scan.
+   *
+   * <p>Is set by {@link #setRoot}.
+   */
   protected CompilationUnitTree root;
 
-  /** A set of trees that are annotated with {@code @SuppressWarnings}. */
+  /** The trees that are annotated with {@code @SuppressWarnings}. */
   public final List<Tree> treesWithSuppressWarnings;
 
   /** Whether or not a warning should be issued for unneeded warning suppressions. */
@@ -74,7 +78,7 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
    * field is used to report a rough location for the error in {@link
    * org.checkerframework.framework.source.SourceChecker#logBugInCF(BugInCF)}.
    */
-  /*package-private*/ Tree lastVisited;
+  /* package-private */ Tree lastVisited;
 
   /** Entry point for a type processor: the TreePath leaf is a top-level type tree within root. */
   public void visit(TreePath path) {

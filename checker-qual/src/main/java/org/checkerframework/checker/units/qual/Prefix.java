@@ -17,7 +17,7 @@ package org.checkerframework.checker.units.qual;
  * kilo    k   1000^1     10^3     1000                        Thousand                        1795
  * hecto   h   1000^2/3   10^2     100                         Hundred                         1795
  * deca    da  1000^1/3   10^1     10                          Ten                             1795
- * 1000^0     10^0     1                           One
+ *             1000^0     10^0     1                           One
  * deci    d   1000^-1/3  10^-1    0.1                         Tenth                           1795
  * centi   c   1000^-2/3  10^-2    0.01                        Hundredth                       1795
  * milli   m   1000^-1    10^-3    0.001                       Thousandth                      1795

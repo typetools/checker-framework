@@ -34,19 +34,19 @@ class MustCallAliasPassthroughChain {
     return s;
   }
 
-  // :: error: required.method.not.called
+  // :: error: mustcallalias.out.of.scope
   static @MustCallAlias InputStream chain_bad1(@MustCallAlias InputStream is) {
     InputStream s = withMCA(chain1(is));
     return null;
   }
 
-  // :: error: required.method.not.called
+  // :: error: mustcallalias.out.of.scope
   static @MustCallAlias InputStream chain_bad2(@MustCallAlias InputStream is) {
     withMCA(chain1(is));
     return null;
   }
 
-  // :: error: required.method.not.called
+  // :: error: mustcallalias.out.of.scope
   static @MustCallAlias InputStream chain_bad3(@MustCallAlias InputStream is, boolean b) {
     return b ? null : withMCA(chain1(is));
   }

@@ -65,19 +65,18 @@ public class LambdaInit {
         };
   }
 
-  //    // This is a bug
-  //    // Could probably be fixed with CommittmentTreeAnnotator::visitMethod
-  //    // Or more likely, TypeFromTree::212
-  //    // AnnotatedTypeFactory::getImplicitReceiverType::1146(there is a todo...)
-  //    Object o = new Object() {
-  //        @Override
-  //        public String toString() {
-  //            f1.toString();
-  //            f2.toString();
-  //            return "";
-  //        }
-  //    };
-  //
+  // Test for https://github.com/typetools/checker-framework/issues/5194 .
+  Object o =
+      new Object() {
+        @Override
+        public String toString() {
+          // BUG: this should not yield a warning.
+          // :: error: (dereference.of.nullable)
+          f1.toString();
+          f2.toString();
+          return "";
+        }
+      };
 
   //  Works!
   void method() {

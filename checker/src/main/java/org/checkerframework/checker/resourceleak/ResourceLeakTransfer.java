@@ -3,7 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
-import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -12,6 +12,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFStore;
@@ -42,7 +43,23 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   public TransferResult<CFValue, CFStore> visitTernaryExpression(
       TernaryExpressionNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
-    updateStoreWithTempVar(result, node);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      rlTypeFactory.addTempVar(node.getTernaryExpressionVar(), node.getTree());
+    }
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
+      SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      rlTypeFactory.addTempVar(node.getSwitchExpressionVar(), node.getTree());
+    }
     return result;
   }
 
@@ -83,7 +100,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     }
 
     List<JavaExpression> targetExprs =
-        CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
+        CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
             n, rlTypeFactory, rlTypeFactory);
     AnnotationMirror defaultType = rlTypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {

@@ -85,11 +85,16 @@ These are the qualifiers in the signedness type system:
     covers the same cases as
     \refqualclass{checker/signedness/qual}{SignedPositive}, plus manifest literals, to
     prevent the programmer from having to annotate them all explicitly.
-    This annotation should almost never be written by the
-    programmer.
+    \emph{This annotation should almost never be written by the
+    programmer.}
 
  \item[\refqualclass{checker/signedness/qual}{PolySigned}]
    indicates qualifier polymorphism.
+   When two formal parameter types are annotated with
+   \refqualclass{checker/signedness/qual}{PolySigned}, the two arguments
+   at a call site
+   must have the same signedness type annotation.  (This differs from the
+   standard rule for polymorphic qualifiers.)
    For a description of qualifier polymorphism, see
    Section~\ref{method-qualifier-polymorphism}.
 
@@ -119,30 +124,15 @@ Signedness Checker treats it in one of the following ways:
     All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
     to \refqualclass{checker/signedness/qual}{SignednessGlb}.
     \item
-    All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
-    to \refqualclass{checker/signedness/qual}{Signed}.
+    All \code{char} and \code{Character} expressions default to
+    \refqualclass{checker/signedness/qual}{Unsigned}.
     \item
-    All other expressions default to \refqualclass{checker/signedness/qual}{UnknownSignedness}.
+    All \code{char} and \code{Character} variables default to
+    \refqualclass{checker/signedness/qual}{Unsigned}.
+    \item
+    All other expressions default to \refqualclass{checker/signedness/qual}{Signed}.
 
 \end{itemize}
-
-
-\subsectionAndLabel{Widening conversions}{signedness-checker-widening-conversions}
-
-Figure~\ref{fig-signedness-hierarchy} shows the type qualifier hierarchy.
-When upcasting among integral types, the expression has type
-\<@SignedPositive> because the value is guaranteed to be within the signed
-positive range.  For example:
-
-\begin{Verbatim}
-@Signed int sint;
-@Unsigned int uint;
-@SignedPositive long splong1 = sint;   // legal
-@SignedPositive long splong2 = uint;   // legal
-... (long) sint ...   // this expression has type @SignedPositive long
-... (long) uint ...   // this expression has type @SignedPositive long
-\end{Verbatim}
-
 
 \sectionAndLabel{Prohibited operations}{signedness-checker-prohibited-operations}
 
@@ -294,6 +284,14 @@ an \<@Unsigned> variable.
         int x = u1 / u2; // OK; computation over constants, interpreted as signed; result is signed
     }
 \end{Verbatim}
+
+Note that type-checking produces a different result for \<int x = u1 / u2;>
+here than in the similar example in
+Section~\ref{signedness-checker-rationale}.  In
+Section~\ref{signedness-checker-rationale}, the method is reading fields,
+and all it knows is the declared type of the field.  In 20.4, the method is
+reading a local variable, and dataflow (that is, flow-sensitive type
+refinement) refines the types of local variables.
 
 
 \sectionAndLabel{Other signedness annotations}{signedness-other-annotations}

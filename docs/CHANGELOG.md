@@ -1,15 +1,275 @@
-Version 3.1?.? (December 1, 2021)
+Version 3.29.0 (January 5, 2023)
+--------------------------------
+
+**User-visible changes:**
+
+Dropped support for `-ApermitUnsupportedJdkVersion` command-line argument.
+You can now run the Checker Framework under any JDK version, without a warning.
+
+Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about null
+pointer exceptions within nullness assertion methods like `Objects.requireNonNull`.
+
+Pass `-Astubs=sometimes-nullable.astub` to unsoundly permit passing null to
+calls if null is sometimes but not always permitted.
+
+**Closed issues:**
+
+#5412, #5431, #5435, #5438, #5447, #5450, #5453, #5471, #5472, #5487.
+
+
+Version 3.28.0 (December 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 19 -- that is, it runs on a version 19 JVM.
+
+**Implementation details:**
+
+Renamed `TryFinallyScopeCell` to `LabelCell`.
+
+Renamed `TreeUtils.isEnumSuper` to `isEnumSuperCall`.
+
+**Closed issues:**
+
+#5390, #5399, #5390.
+
+
+Version 3.27.0 (November 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+The Constant Value Checker supports new annotation `@DoesNotMatchRegex`.
+
+**Closed issues:**
+
+#5238, #5360, #5362, #5387.
+
+
+Version 3.26.0 (October 3, 2022)
+--------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs under JDK 18 -- that is, it runs on a version 18 JVM.
+(It worked before, but gave a warning that it was not tested.)
+
+Annotations are available for some new JDK 17 APIs (some of those
+introduced since JDK 11).
+
+Added `-AnoWarnMemoryConstraints` to change the "Memory constraints are impeding
+performance; please increase max heap size" message from a warning to a note.
+
+'unneeded.suppression' warnings can now themeselves be suppressed.
+
+**Implementation details:**
+
+Deprecated `TreeUtils.constructor()` in favor of `TreeUtils.elementFromUse()`.
+
+Added method `isSideEffectFree()` to the `AnnotationProvider` interface.
+
+Deprecated `CFAbstractStore.isSideEffectFree()` in favor of new method
+`AnnotationProvider.isSideEffectFree()`.  Note the different contracts of
+`PurityUtils.isSideEffectFree()` and `AnnotationProvider.isSideEffectFree()`.
+
+Use `TreeUtils.elementFromDeclaration` and `TreeUtils.elementFromUse` in
+preference to `TreeUtils.elementFromTree`, when possible.
+
+For code formatting, use `./gradlew spotlessCheck` and `./gradlew spotlessApply`.
+The `checkFormat` and `reformat` Gradle tasks have been removed.
+
+Removed variable `BaseTypeVisitor.inferPurity`.
+
+**Closed issues:**
+
+#5081, #5159, #5245, #5302, #5319, #5323.
+
+
+Version 3.25.0 (September 1, 2022)
+----------------------------------
+
+**User-visible changes:**
+
+Make `mustcall.not.inheritable` a warning rather than an error
+
+The Property File Checker, Internationalization Checker, and Compiler
+Message Checker use `File.pathSeparator` to separate property file paths in
+`-Apropfiles`, rather than ':'.
+
+Added `DoNothingChecker` that does nothing.
+
+**Closed issues:**
+
+#5216, #5240, #5256, #5273.
+
+
+Version 3.24.0 (August 3, 2022)
 -------------------------------
 
 **User-visible changes:**
 
+Performance improvements.
+
+Minor bug fixes and enhancements.
+
 **Implementation details:**
+
+Prefer `SystemUtil.jreVersion` to `SystemUtil.getJreVersion()`.
 
 **Closed issues:**
 
+#5200, #5216.
+
+
+Version 3.23.0 (July 11, 2022)
+------------------------------
+
+**User-visible changes:**
+
+By default, command-line argument `-AstubWarnIfNotFound` is treated as true
+for stub files provided on the command line and false for built-in stub
+files.  Use `-AstubWarnIfNotFound` to enable it for all stub files, and use
+new `-AstubNoWarnIfNotFound` to disable it for all stub files.
+
+New command-line argument `-ApermitStaticOwning` suppresses Resource Leak
+Checker warnings related to static owning fields.
+
+New command-line argument `-ApermitInitializationLeak` suppresses Resource Leak
+Checker warnings related to field initialization.
+
+**Closed issues:**
+
+#4855, #5151, #5166, #5172, #5175, #5181, #5189.
+
+
+Version 3.22.2 (June 14, 2022)
+------------------------------
+
+**Implementation details:**
+
+Expose CFG APIs to allow inserting jumps and throws
+
+
+Version 3.22.1 (June 1, 2022)
+-----------------------------
+
+**Closed issues:**
+#58, #5136, #5138, #5142, #5143,
+
+
+Version 3.22.0 (May 2, 2022)
+----------------------------
+
+**User-visible changes:**
+
+The Signedness Checker now checks calls to `equals()` as well as to `==`.  When
+two formal parameter types are annotated with @PolySigned, the two arguments at
+a call site must have the same signedness type annotation. (This differs from
+the standard rule for polymorphic qualifiers.)
+
+**Implementation details:**
+
+When passed a NewClassTree that creates an anonymous constructor,
+AnnotatedTypeFactory#constructorFormUse now returns the type of the anonymous
+constructor rather than the type of the super constructor invoked in the
+anonymous classes constructor.  If the super constructor has explicit
+annotations, they are copied to the anonymous classes constructor.
+
+**Closed issues:**
+#5113.
+
+
+Version 3.21.4 (April 1, 2022)
+------------------------------
+
+**Closed issues:**
+#5086.
+
+
+Version 3.21.3 (March 1, 2022)
+------------------------------
+
+**Closed issues:**
+#2847, #4965, #5039, #5042, #5047.
+
+
+Version 3.21.2 (February 1, 2022)
+---------------------------------
+
+**User-visible changes:**
+
+The `wpi.sh` script supports non-standard names for build system compile targets
+via the new `-c` command-line option.
+
+The Checker Framework now more precisely computes and checks the type of the
+pattern variable in a pattern match instanceof.
+
+**Implementation details:**
+
+Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
+
+**Closed issues:**
+#4615, #4993, #5006, #5007, #5008, #5013, #5016, #5021.
+
+Version 3.21.1 (January 7, 2022)
+--------------------------------
+
+**User-visible changes:**
+
+The Checker Framework Gradle Plugin now works incrementally:  if you change just
+one source file, then Gradle will recompile just that file rather than all
+files.
+
+**Closed issues:**
+#2401, #4994, #4995, #4996.
+
+
+Version 3.21.0 (December 17, 2021)
+----------------------------------
+
+**User-visible changes:**
+
+The Checker Framework now more precisely computes the type of a switch expression.
+
+**Implementation details:**
+
+The dataflow framework now analyzes switch expressions and switch statements
+that use the new `->` case syntax. To do so, a new node, SwitchExpressionNode,
+was added.
+
+**Closed issues:**
+#2373, #4934, #4977, #4979, #4987.
+
+Version 3.20.0 (December 6, 2021)
+---------------------------------
+
+**User-visible changes:**
+
+The Checker Framework now runs on code that contains switch expressions and
+switch statements that use the new `->` case syntax, but treats them
+conservatively. A future version will improve precision.
+
+**Implementation details:**
+
+The dataflow framework can be run on code that contains switch expressions and
+switch statements that use the new `->` case syntax, but it does not yet
+analyze the cases in a switch expression and it treats `->` as `:`. A future
+version will do so.
+
+Removed methods and classes that have been deprecated for more than one year:
+ * Old way of constructing qualifier hierarchies
+ * `@SuppressWarningsKeys`
+ * `RegularBlock.getContents()`
+ * `TestUtilities.testBooleanProperty()`
+ * `CFAbstractTransfer.getValueWithSameAnnotations()`
+
+**Closed issues:**
+#4911, #4948, #4965.
+
 
 Version 3.19.0 (November 1, 2021)
--------------------------------
+---------------------------------
 
 **User-visible changes:**
 
@@ -34,14 +294,14 @@ Deprecated methods in AnnotatedTypeFactory:
 
 
 Version 3.18.1 (October 4, 2021)
--------------------------------
+--------------------------------
 
 **Closed issues:**
 #4902 and #4903.
 
 
 Version 3.18.0 (September 1, 2021)
--------------------------------
+----------------------------------
 
 **User-visible changes:**
 
@@ -4024,7 +4284,7 @@ Code Changes
     fixed generic and array handling of @ReadOnly
     fixed @RoMaybe resolution of receivers at method invocation
     fixed parsing of parenthesized trees and conditional trees
-    added initial support for for-enhanced loop
+    added initial support for enhanced-for loop
     fixed constructor behavior on @ReadOnly classes
     added checks for annotations on primitive types inside arrays
 
@@ -4081,7 +4341,7 @@ Code Changes
     fixed mutability type handling for type casts and field access
     fixed bug, ensuring no primitives can be ReadOnly
     a method receiver type is now based on the correct annotation
-    fixed parameter type-checking for overriden methods
+    fixed parameter type-checking for overridden methods
     fixed bug on readonly field initialization
     added handling for unary trees
 

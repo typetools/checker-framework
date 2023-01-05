@@ -132,7 +132,7 @@ public class SideEffectsOnlyAnnoChecker {
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
-      Element treeElem = TreeUtils.elementFromTree(node);
+      Element treeElem = TreeUtils.elementFromUse(node);
       AnnotationMirror pureAnno = annoProvider.getDeclAnnotation(treeElem, Pure.class);
       AnnotationMirror sideEffectFreeAnno =
           annoProvider.getDeclAnnotation(treeElem, SideEffectFree.class);

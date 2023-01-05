@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
@@ -32,7 +33,8 @@ public final class TreePathUtil {
   ///
 
   /**
-   * Gets path to the first (innermost) enclosing tree of the specified kind.
+   * Gets path to the first (innermost) enclosing tree of the given kind. May return {@code path}
+   * itself.
    *
    * @param path the path defining the tree node
    * @param kind the kind of the desired tree
@@ -43,30 +45,25 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets path to the first (innermost) enclosing tree with any one of the specified kinds.
+   * Gets path to the first (innermost) enclosing tree with any one of the given kinds. May return
+   * {@code path} itself.
    *
    * @param path the path defining the tree node
    * @param kinds the set of kinds of the desired tree
    * @return the path to the enclosing tree of the given type, {@code null} otherwise
    */
   public static @Nullable TreePath pathTillOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
-    TreePath p = path;
-
-    while (p != null) {
-      Tree leaf = p.getLeaf();
-      assert leaf != null;
-      if (kinds.contains(leaf.getKind())) {
+    for (TreePath p = path; p != null; p = p.getParentPath()) {
+      if (kinds.contains(p.getLeaf().getKind())) {
         return p;
       }
-      p = p.getParentPath();
     }
-
     return null;
   }
 
   /**
    * Gets path to the first (innermost) enclosing class tree, where class is defined by the {@link
-   * TreeUtils#classTreeKinds()} method.
+   * TreeUtils#classTreeKinds()} method. May return {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the path to the enclosing class tree, {@code null} otherwise
@@ -76,7 +73,7 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets path to the first (innermost) enclosing method tree.
+   * Gets path to the first (innermost) enclosing method tree. May return {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the path to the enclosing class tree, {@code null} otherwise
@@ -90,7 +87,8 @@ public final class TreePathUtil {
   ///
 
   /**
-   * Gets the first (innermost) enclosing tree in path, of the specified kind.
+   * Gets the first (innermost) enclosing tree in path, of the given kind. May return the leaf of
+   * {@code path} itself.
    *
    * @param path the path defining the tree node
    * @param kind the kind of the desired tree
@@ -101,7 +99,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, with any one of the specified kinds.
+   * Gets the first (innermost) enclosing tree in path, with any one of the given kinds. May return
+   * the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @param kinds the set of kinds of the desired tree
@@ -113,7 +112,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, of the specified class.
+   * Gets the first (innermost) enclosing tree in path, of the given class. May return the leaf of
+   * {@code path} itself.
    *
    * @param <T> the type of {@code treeClass}
    * @param path the path defining the tree node
@@ -136,9 +136,21 @@ public final class TreePathUtil {
   }
 
   /**
+   * Gets the path to nearest enclosing declaration (class, method, or variable) of the tree node
+   * defined by the given {@link TreePath}. May return the leaf of {@code path} itself.
+   *
+   * @param path the path defining the tree node
+   * @return path to the nearest enclosing class/method/variable in the path, or {@code null} if one
+   *     does not exist
+   */
+  public static @Nullable TreePath enclosingDeclarationPath(final TreePath path) {
+    return pathTillOfKind(path, TreeUtils.declarationTreeKinds());
+  }
+
+  /**
    * Gets the enclosing class of the tree node defined by the given {@link TreePath}. It returns a
    * {@link Tree}, from which {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
-   * obtained.
+   * obtained. May return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing class (or interface) as given by the path, or {@code null} if one does
@@ -149,7 +161,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the enclosing variable of a tree node defined by the given {@link TreePath}.
+   * Gets the enclosing variable of a tree node defined by the given {@link TreePath}. May return
+   * the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing variable as given by the path, or {@code null} if one does not exist
@@ -161,7 +174,7 @@ public final class TreePathUtil {
   /**
    * Gets the enclosing method of the tree node defined by the given {@link TreePath}. It returns a
    * {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can
-   * be obtained.
+   * be obtained. May return the leaf of {@code path} itself.
    *
    * <p>Also see {@code AnnotatedTypeFactory#getEnclosingMethod} and {@code
    * AnnotatedTypeFactory#getEnclosingClassOrMethod}, which do not require a TreePath.
@@ -176,7 +189,7 @@ public final class TreePathUtil {
   /**
    * Gets the enclosing method or lambda expression of the tree node defined by the given {@link
    * TreePath}. It returns a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror}
-   * or {@link Element} can be obtained.
+   * or {@link Element} can be obtained. May return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing method or lambda as given by the path, or {@code null} if one does not
@@ -187,7 +200,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Returns the top-level block that encloses the given path, or null if none does.
+   * Returns the top-level block that encloses the given path, or null if none does. Never returns
+   * the leaf of {@code path} itself.
    *
    * @param path a path
    * @return the top-level block that encloses the given path, or null if none does
@@ -206,7 +220,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, that is not a parenthesis.
+   * Gets the first (innermost) enclosing tree in path, that is not a parenthesis. Never returns the
+   * leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return a pair of a non-parenthesis tree that contains the argument, and its child that is the
@@ -329,7 +344,7 @@ public final class TreePathUtil {
       return block.isStatic();
     }
 
-    // check if its in a variable initializer
+    // check if it's in a variable initializer
     Tree t = enclosingVariable(path);
     if (t != null) {
       return ((VariableTree) t).getModifiers().getFlags().contains(Modifier.STATIC);
@@ -339,6 +354,52 @@ public final class TreePathUtil {
       return classTree.getModifiers().getFlags().contains(Modifier.STATIC);
     }
     return false;
+  }
+
+  /**
+   * Returns true if the path is to a top-level (not within a loop) assignment within an initializer
+   * block. The initializer block might be instance or static. Will return true for a re-assignment
+   * even if there is another initialization (within this initializer block, another initializer
+   * block, a constructor, or the variable declaration).
+   *
+   * @param path the path to test
+   * @return true if the path is to an initialization within an initializer block
+   */
+  public static boolean isTopLevelAssignmentInInitializerBlock(TreePath path) {
+    TreePath origPath = path;
+    if (path.getLeaf().getKind() != Tree.Kind.ASSIGNMENT) {
+      return false;
+    }
+    path = path.getParentPath();
+    if (path.getLeaf().getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
+      return false;
+    }
+    Tree prevLeaf = path.getLeaf();
+    path = path.getParentPath();
+
+    for (Iterator<Tree> itor = path.iterator(); itor.hasNext(); ) {
+      Tree leaf = itor.next();
+      switch (leaf.getKind()) {
+        case CLASS:
+        case ENUM:
+        case PARAMETERIZED_TYPE:
+          return prevLeaf.getKind() == Tree.Kind.BLOCK;
+
+        case COMPILATION_UNIT:
+          throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
+
+        case DO_WHILE_LOOP:
+        case ENHANCED_FOR_LOOP:
+        case FOR_LOOP:
+        case LAMBDA_EXPRESSION:
+        case METHOD:
+          return false;
+
+        default:
+          prevLeaf = leaf;
+      }
+    }
+    throw new BugInCF("path did not contain method or class: " + toString(origPath));
   }
 
   ///

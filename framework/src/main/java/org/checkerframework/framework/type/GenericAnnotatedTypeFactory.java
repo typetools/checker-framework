@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import com.google.common.collect.Ordering;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -40,7 +41,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
@@ -56,7 +60,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
@@ -123,8 +126,6 @@ import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -143,11 +144,11 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
-  /** Should use flow by default. */
+  /** Should flow be used by default? */
   protected static boolean flowByDefault = true;
 
   /** To cache the supported monotonic type qualifiers. */
-  private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+  private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
   /** to annotate types based on the given tree */
   protected TypeAnnotator typeAnnotator;
@@ -170,8 +171,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /** To handle dependent type annotations and contract expressions. */
   protected DependentTypesHelper dependentTypesHelper;
 
-  /** to handle method pre- and postconditions */
-  protected ContractsFromMethod contractsUtils;
+  /** To handle method pre- and postconditions. */
+  protected final ContractsFromMethod contractsUtils;
 
   /**
    * The Java types on which users may write this type system's type annotations. null means no
@@ -183,7 +184,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code Class<?>} objects because the elements will be compared to TypeMirrors for which Class
    * objects may not exist (they might not be on the classpath).
    */
-  public @Nullable Set<TypeMirror> relevantJavaTypes;
+  public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
   /**
    * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
@@ -231,7 +232,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
    */
-  private Set<VariableElement> variablesUnderInitialization;
+  private final Set<VariableElement> variablesUnderInitialization = new HashSet<>();
 
   /**
    * Caches types of initializers for local variables with a qualifier parameter, so that they
@@ -239,7 +240,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
    */
-  private Map<Tree, AnnotatedTypeMirror> initializerCache;
+  private final Map<Tree, AnnotatedTypeMirror> initializerCache;
 
   /**
    * Should the analysis assume that side effects to a value can change the type of aliased
@@ -295,7 +296,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>The initial capacity of the map is set by {@link #getCacheSize()}.
    */
-  protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
+  protected @MonotonicNonNull Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
 
   /**
    * If true, {@link #setRoot(CompilationUnitTree)} should clear the {@link #subcheckerSharedCFG}
@@ -325,8 +326,6 @@ public abstract class GenericAnnotatedTypeFactory<
     this.shouldDefaultTypeVarLocals = useFlow;
     this.useFlow = useFlow;
 
-    this.variablesUnderInitialization = new HashSet<>();
-    this.scannedClasses = new HashMap<>();
     this.flowResult = null;
     this.regularExitStores = null;
     this.exceptionalExitStores = null;
@@ -357,10 +356,10 @@ public abstract class GenericAnnotatedTypeFactory<
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
       this.relevantJavaTypes = new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
-      this.arraysAreRelevant = false;
+      boolean arraysAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
-          arraysAreRelevant = true;
+          arraysAreRelevantTemp = true;
         } else if (clazz.isArray()) {
           throw new TypeSystemError(
               "Don't use arrays other than Object[] in @RelevantJavaTypes on "
@@ -370,6 +369,7 @@ public abstract class GenericAnnotatedTypeFactory<
           relevantJavaTypes.add(types.erasure(relevantType));
         }
       }
+      this.arraysAreRelevant = arraysAreRelevantTemp;
     }
 
     contractsUtils = createContractsFromMethod();
@@ -696,10 +696,20 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-    AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-    dependentTypesHelper.atExpression(superResult, newClassTree);
+  protected List<AnnotatedTypeMirror> getExplicitNewClassClassTypeArgs(NewClassTree newClassTree) {
+    List<AnnotatedTypeMirror> superResult = super.getExplicitNewClassClassTypeArgs(newClassTree);
+    for (AnnotatedTypeMirror superR : superResult) {
+      dependentTypesHelper.atExpression(superR, newClassTree);
+    }
     return superResult;
+  }
+
+  @Override
+  public Set<AnnotationMirror> getExplicitNewClassAnnos(NewClassTree newClassTree) {
+    Set<AnnotationMirror> superResult = super.getExplicitNewClassAnnos(newClassTree);
+    AnnotatedTypeMirror dummy = getAnnotatedNullType(superResult);
+    dependentTypesHelper.atExpression(dummy, newClassTree);
+    return dummy.getAnnotations();
   }
 
   /**
@@ -1028,7 +1038,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** Map from ClassTree to their dataflow analysis state. */
-  protected final Map<ClassTree, ScanState> scannedClasses;
+  protected final Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
 
   /**
    * The result of the flow analysis. Invariant:
@@ -1040,7 +1050,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Note that flowResult contains analysis results for Trees from multiple classes which are
    * produced by multiple calls to performFlowAnalysis.
    */
-  protected AnalysisResult<Value, Store> flowResult;
+  protected @MonotonicNonNull AnalysisResult<Value, Store> flowResult;
 
   /**
    * A mapping from methods (or other code blocks) to their regular exit store (used to check
@@ -1062,13 +1072,22 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns the regular exit store for a method or another code block (such as static
-   * initializers).
+   * initializers). Returns {@code null} if there is no such store. This can happen because the
+   * method cannot exit through the regular exit block, or it is abstract or in an interface.
    *
    * @param tree a MethodTree or other code block, such as a static initializer
-   * @return the regular exit store, or {@code null}, if there is no such store (because the method
-   *     cannot exit through the regular exit block).
+   * @return the regular exit store, or {@code null}
    */
   public @Nullable Store getRegularExitStore(Tree tree) {
+    if (regularExitStores == null) {
+      if (tree.getKind() == Tree.Kind.METHOD) {
+        if (((MethodTree) tree).getBody() == null) {
+          // No body: the method is abstract or in an interface
+          return null;
+        }
+      }
+      throw new BugInCF("regularExitStores==null for [" + tree.getClass() + "]" + tree);
+    }
     return regularExitStores.get(tree);
   }
 
@@ -1254,7 +1273,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return the value of effectively final local variables
    */
-  public HashMap<Element, Value> getFinalLocalValues() {
+  public HashMap<VariableElement, Value> getFinalLocalValues() {
     return flowResult.getFinalLocalValues();
   }
 
@@ -1279,21 +1298,22 @@ public abstract class GenericAnnotatedTypeFactory<
       return;
     }
 
-    Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
+    // class trees and their initial stores
+    Queue<Pair<ClassTree, Store>> classQueue = new ArrayDeque<>();
     List<FieldInitialValue<Value>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
-    queue.add(Pair.of(classTree, null));
+    classQueue.add(Pair.of(classTree, null));
 
-    while (!queue.isEmpty()) {
-      final Pair<ClassTree, Store> qel = queue.remove();
+    while (!classQueue.isEmpty()) {
+      final Pair<ClassTree, Store> qel = classQueue.remove();
       final ClassTree ct = qel.first;
       final Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
       TreePath preTreePath = getVisitorTreePath();
 
-      // Don't use getPath, because that depends on the assignmentContext path.
+      // Don't call AnnotatedTypeFactory#getPath, because it uses visitorTreePath.
       setVisitorTreePath(TreePath.getPath(this.root, ct));
 
       // start with the captured store as initialization store
@@ -1302,6 +1322,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
+      // Queue up classes (for top-level `while` loop) and methods (for within this `try`
+      // construct); analyze top-level blocks and variable initializers as they are encountered.
       try {
         List<CFGMethod> methods = new ArrayList<>();
         List<? extends Tree> members = ct.getMembers();
@@ -1313,6 +1335,14 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         for (Tree m : members) {
           switch (TreeUtils.getKindRecordAsClass(m)) {
+            case CLASS: // Including RECORD
+            case ANNOTATION_TYPE:
+            case INTERFACE:
+            case ENUM:
+              // Visit inner and nested class trees.
+              // TODO: Use no store for them? What can be captured?
+              classQueue.add(Pair.of((ClassTree) m, capturedStore));
+              break;
             case METHOD:
               MethodTree mt = (MethodTree) m;
 
@@ -1342,7 +1372,7 @@ public abstract class GenericAnnotatedTypeFactory<
               if (initializer != null) {
                 boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
                 analyze(
-                    queue,
+                    classQueue,
                     lambdaQueue,
                     new CFGStatement(vt, ct),
                     fieldValues,
@@ -1360,18 +1390,10 @@ public abstract class GenericAnnotatedTypeFactory<
               }
               fieldValues.add(new FieldInitialValue<>(fieldExpr, declaredValue, null));
               break;
-            case CLASS: // Including RECORD
-            case ANNOTATION_TYPE:
-            case INTERFACE:
-            case ENUM:
-              // Visit inner and nested class trees.
-              // TODO: Use no store for them? What can be captured?
-              queue.add(Pair.of((ClassTree) m, capturedStore));
-              break;
             case BLOCK:
               BlockTree b = (BlockTree) m;
               analyze(
-                  queue,
+                  classQueue,
                   lambdaQueue,
                   new CFGStatement(b, ct),
                   fieldValues,
@@ -1392,7 +1414,7 @@ public abstract class GenericAnnotatedTypeFactory<
         // fields of superclasses.
         for (CFGMethod met : methods) {
           analyze(
-              queue,
+              classQueue,
               lambdaQueue,
               met,
               fieldValues,
@@ -1409,7 +1431,7 @@ public abstract class GenericAnnotatedTypeFactory<
               (MethodTree)
                   TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Tree.Kind.METHOD);
           analyze(
-              queue,
+              classQueue,
               lambdaQueue,
               new CFGLambda(lambdaPair.first, classTree, mt),
               fieldValues,
@@ -1458,7 +1480,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Analyze the AST {@code ast} and store the result. Additional operations that should be
    * performed after analysis should be implemented in {@link #postAnalyze(ControlFlowGraph)}.
    *
-   * @param queue the queue for encountered class trees and their initial stores
+   * @param classQueue the queue for encountered class trees and their initial stores
    * @param lambdaQueue the queue for encountered lambda expression trees and their initial stores
    * @param ast the AST to analyze
    * @param fieldValues the abstract values for all fields of the same class
@@ -1470,7 +1492,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
   protected void analyze(
-      Queue<Pair<ClassTree, Store>> queue,
+      Queue<Pair<ClassTree, Store>> classQueue,
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<Value>> fieldValues,
@@ -1549,7 +1571,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // add classes declared in CFG
     for (ClassTree cls : cfg.getDeclaredClasses()) {
-      queue.add(Pair.of(cls, getStoreBefore(cls)));
+      classQueue.add(Pair.of(cls, getStoreBefore(cls)));
     }
     // add lambdas declared in CFG
     for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
@@ -1689,18 +1711,19 @@ public abstract class GenericAnnotatedTypeFactory<
     return varargtype;
   }
 
-  /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
-   * postfix increment or decrement.
+  /**
+   * Returns the type of {@code v + 1} or {@code v - 1} where {@code v} is the expression in the
+   * postfixed increment or decrement expression.
    *
-   * @param tree unary operation tree for compound assignment
+   * @param tree a postfixed increment or decrement tree
    * @return AnnotatedTypeMirror of a right-hand side of an assignment for unary operation
    */
   public AnnotatedTypeMirror getAnnotatedTypeRhsUnaryAssign(UnaryTree tree) {
     if (!useFlow) {
       return getAnnotatedType(tree);
     }
-    AssignmentNode n = flowResult.getAssignForUnaryTree(tree);
-    return getAnnotatedType(n.getExpression().getTree());
+    BinaryTree binaryTree = flowResult.getPostfixBinaryTree(tree);
+    return getAnnotatedType(binaryTree);
   }
 
   @Override
@@ -1809,8 +1832,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Flow analysis will be performed if all of the following are true.
    *
    * <ul>
-   *   <li>tree is a {@link ClassTree}
-   *   <li>Flow analysis has not already been performed on tree
+   *   <li>{@code tree} is a {@link ClassTree}
+   *   <li>Flow analysis has not already been performed on {@code tree}
    * </ul>
    *
    * @param tree the tree to check and possibly perform flow analysis on
@@ -1820,8 +1843,9 @@ public abstract class GenericAnnotatedTypeFactory<
     // on the ClassTree before it's called on any code contained in the class,
     // so that we can perform flow analysis on the class.  Previously we
     // used TreePath.getPath to find enclosing classes, but that call
-    // alone consumed more than 10% of execution time.  See BaseTypeVisitor
-    // .visitClass for the call to getAnnotatedType that triggers analysis.
+    // alone consumed more than 10% of execution time.  See
+    // BaseTypeVisitor.visitClass for the call to getAnnotatedType that
+    // triggers analysis.
     if (tree instanceof ClassTree) {
       ClassTree classTree = (ClassTree) tree;
       if (!scannedClasses.containsKey(classTree)) {
@@ -1842,9 +1866,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tree == null) {
       throw new BugInCF("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
     }
-    if (stubTypes.isParsing()
-        || ajavaTypes.isParsing()
-        || (currentFileAjavaTypes != null && currentFileAjavaTypes.isParsing())) {
+    if (!analysis.isRunning() && flowResult == null) {
       // When parsing stub or ajava files, the analysis is not running (it has not yet started),
       // and flowResult is null (no analysis has occurred). Instead of attempting to find a
       // non-existent inferred type, return null.
@@ -1904,6 +1926,8 @@ public abstract class GenericAnnotatedTypeFactory<
       case CONSTRUCTOR:
       case METHOD:
       case FIELD:
+      case RESOURCE_VARIABLE:
+      case EXCEPTION_PARAMETER:
       case LOCAL_VARIABLE:
       case PARAMETER:
         break;
@@ -1950,7 +1974,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param type where the defaults are applied
    */
   private void applyLocalVariableQualifierParameterDefaults(Element elt, AnnotatedTypeMirror type) {
-    if (elt.getKind() != ElementKind.LOCAL_VARIABLE
+    if (!ElementUtils.isLocalVariable(elt)
         || getQualifierParameterHierarchies(type).isEmpty()
         || variablesUnderInitialization.contains(elt)) {
       return;
@@ -2100,6 +2124,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return a new CFGVisualizer, or null if none will be used on this run
    */
+  @SuppressWarnings("mustcall:return") // hairy generics error message
   protected @Nullable CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
     if (checker.hasOption("flowdotdir")) {
       String flowdotdir = checker.getOption("flowdotdir");
@@ -2207,7 +2232,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+    if (element != null && ElementUtils.isLocalVariable(element)) {
       if (type.getKind() == TypeKind.DECLARED) {
         // If this is a type for a local variable, don't apply the default to the primary location.
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;

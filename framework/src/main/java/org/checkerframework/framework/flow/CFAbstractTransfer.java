@@ -3,6 +3,7 @@ package org.checkerframework.framework.flow;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -23,6 +24,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
@@ -51,6 +53,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
@@ -205,26 +208,8 @@ public abstract class CFAbstractTransfer<
     return analysis.createAbstractValue(at);
   }
 
-  /**
-   * Returns an abstract value with the given {@code type} and the annotations from {@code
-   * annotatedValue}.
-   *
-   * @param type the type to return
-   * @param annotatedValue the annotations to return
-   * @return an abstract value with the given {@code type} and the annotations from {@code
-   *     annotatedValue}
-   * @deprecated use {@link #getWidenedValue} or {@link #getNarrowedValue}
-   */
-  @Deprecated // 2020-10-02
-  protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
-    if (annotatedValue == null) {
-      return null;
-    }
-    return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
-  }
-
   /** The fixed initial store. */
-  private S fixedInitialStore = null;
+  private @MonotonicNonNull S fixedInitialStore = null;
 
   /** Set a fixed initial Store. */
   public void setFixedInitialStore(S s) {
@@ -233,7 +218,7 @@ public abstract class CFAbstractTransfer<
 
   /** The initial store maps method formal parameters to their currently most refined type. */
   @Override
-  public S initialStore(UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
+  public S initialStore(UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
     if (underlyingAST.getKind() != UnderlyingAST.Kind.LAMBDA
         && underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
       if (fixedInitialStore != null) {
@@ -326,7 +311,7 @@ public abstract class CFAbstractTransfer<
       Element enclosingElement = null;
       if (enclosingTree.getKind() == Tree.Kind.METHOD) {
         // If it is in an initializer, we need to use locals from the initializer.
-        enclosingElement = TreeUtils.elementFromTree(enclosingTree);
+        enclosingElement = TreeUtils.elementFromDeclaration((MethodTree) enclosingTree);
 
       } else if (TreeUtils.isClassTree(enclosingTree)) {
 
@@ -434,9 +419,9 @@ public abstract class CFAbstractTransfer<
    */
   private void addFinalLocalValues(S store, Element enclosingElement) {
     // add information about effectively final variables (from outer scopes)
-    for (Map.Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
+    for (Map.Entry<VariableElement, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
 
-      Element elem = e.getKey();
+      VariableElement elem = e.getKey();
 
       // TODO: There is a design flaw where the values of final local values leaks
       // into other methods of the same class. For example, in
@@ -664,18 +649,13 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitTernaryExpression(
       TernaryExpressionNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = super.visitTernaryExpression(n, p);
-    S thenStore = result.getThenStore();
-    S elseStore = result.getElseStore();
-    V thenValue = p.getValueOfSubNode(n.getThenOperand());
-    V elseValue = p.getValueOfSubNode(n.getElseOperand());
-    V resultValue = null;
-    if (thenValue != null && elseValue != null) {
-      // The resulting abstract value is the merge of the 'then' and 'else' branch.
-      resultValue = thenValue.leastUpperBound(elseValue);
-    }
-    V finishedValue = finishValue(resultValue, thenStore, elseStore);
-    return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
+    return visitLocalVariable(n.getTernaryExpressionVar(), p);
+  }
+
+  @Override
+  public TransferResult<V, S> visitSwitchExpressionNode(
+      SwitchExpressionNode n, TransferInput<V, S> vsTransferInput) {
+    return visitLocalVariable(n.getSwitchExpressionVar(), vsTransferInput);
   }
 
   /** Reverse the role of the 'thenStore' and 'elseStore'. */
@@ -829,7 +809,7 @@ public abstract class CFAbstractTransfer<
       } else if (lhs instanceof LocalVariableNode
           && ((LocalVariableNode) lhs).getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
-        VariableElement param = (VariableElement) ((LocalVariableNode) lhs).getElement();
+        VariableElement param = ((LocalVariableNode) lhs).getElement();
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -853,7 +833,7 @@ public abstract class CFAbstractTransfer<
       if (classTree == null) {
         return result;
       }
-      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromTree(classTree);
+      ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromDeclaration(classTree);
 
       ExecutableElement methodElem =
           TreeUtils.elementFromDeclaration(analysis.getContainingMethod(n.getTree()));
@@ -924,13 +904,18 @@ public abstract class CFAbstractTransfer<
 
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
+    NewClassTree newClassTree = n.getTree();
     if (shouldPerformWholeProgramInference(n.getTree())) {
-      ExecutableElement constructorElt =
-          analysis.getTypeFactory().constructorFromUse(n.getTree()).executableType.getElement();
-      analysis
-          .atypeFactory
-          .getWholeProgramInference()
-          .updateFromObjectCreation(n, constructorElt, p.getRegularStore());
+      // Can't infer annotations on an anonymous constructor, so use the super constructor.
+      ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
+      if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
+        // TODO: WPI could be changed to handle the synthetic argument, but for now just don't infer
+        // annotations for those new class trees.
+        analysis
+            .atypeFactory
+            .getWholeProgramInference()
+            .updateFromObjectCreation(n, constructorElt, p.getRegularStore());
+      }
     }
     return super.visitObjectCreation(n, p);
   }
@@ -991,6 +976,15 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
       }
     }
+    // TODO: Should this be an else if?
+    if (node.getBindingVariable() != null) {
+      JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
+      AnnotatedTypeMirror expType =
+          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+      for (AnnotationMirror anno : expType.getAnnotations()) {
+        in.getRegularStore().insertOrRefine(expr, anno);
+      }
+    }
     return result;
   }
 
@@ -1002,7 +996,8 @@ public abstract class CFAbstractTransfer<
    * @return whether to perform whole-program inference on the tree
    */
   private boolean shouldPerformWholeProgramInference(Tree tree) {
-    return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, ""));
+    @Nullable TreePath path = this.analysis.atypeFactory.getPath(tree);
+    return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(path, ""));
   }
 
   /**
@@ -1136,20 +1131,22 @@ public abstract class CFAbstractTransfer<
     }
   }
 
-  /**
-   * A case produces no value, but it may imply some facts about the argument to the switch
-   * statement.
-   */
+  /** A case produces no value, but it may imply some facts about switch selector expression. */
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    TransferResult<V, S> result =
-        new ConditionalTransferResult<>(
-            finishValue(null, store), in.getThenStore(), in.getElseStore(), false);
-
+    TransferResult<V, S> lubResult = null;
+    // Case operands are the case constants. For example, A, B and C in case A, B, C:.
+    // This method refines the type of the selector expression and the synthetic variable that
+    // represents the selector expression to the type of the case constant if it is more precise.
+    // If there are multiple case constants then a new store is created for each case constant and
+    // then they are lubbed. This method returns the lubbed result.
     for (Node caseOperand : n.getCaseOperands()) {
+      TransferResult<V, S> result =
+          new ConditionalTransferResult<>(
+              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
-      AssignmentNode assign = (AssignmentNode) n.getSwitchOperand();
+      AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
       result =
           strengthenAnnotationOfEqualTo(
@@ -1158,8 +1155,19 @@ public abstract class CFAbstractTransfer<
       result =
           strengthenAnnotationOfEqualTo(
               result, caseOperand, assign.getTarget(), caseValue, switchValue, false);
+
+      // Lub the result of one case label constant with the result of the others.
+      if (lubResult == null) {
+        lubResult = result;
+      } else {
+        S thenStore = lubResult.getThenStore().leastUpperBound(result.getThenStore());
+        S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
+        lubResult =
+            new ConditionalTransferResult<>(
+                null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
+      }
     }
-    return result;
+    return lubResult;
   }
 
   /**

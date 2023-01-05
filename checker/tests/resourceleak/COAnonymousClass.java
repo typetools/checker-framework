@@ -3,7 +3,10 @@
 import org.checkerframework.checker.mustcall.qual.*;
 
 class COAnonymousClass {
+  @InheritableMustCall("foo")
   static class Foo {
+
+    void foo() {}
 
     @CreatesMustCallFor("this")
     void resetFoo() {}
@@ -14,8 +17,11 @@ class COAnonymousClass {
           new Runnable() {
             @Override
             @CreatesMustCallFor("Foo.this")
+            // :: error: creates.mustcall.for.invalid.target
             // :: error: creates.mustcall.for.override.invalid
             public void run() {
+              // [The following explanation is incorrect.  The problem is a bug in creating
+              // implicit "this" expressions.]
               // Ideally, we would not issue the following error. However, the Checker Framework's
               // JavaExpression support
               // (https://checkerframework.org/manual/#java-expressions-as-arguments)
@@ -35,6 +41,7 @@ class COAnonymousClass {
           new Runnable() {
             @Override
             @CreatesMustCallFor("this")
+            // :: error: creates.mustcall.for.invalid.target
             // :: error: creates.mustcall.for.override.invalid
             public void run() {
               // This error definitely must be issued, since Foo.this != this.

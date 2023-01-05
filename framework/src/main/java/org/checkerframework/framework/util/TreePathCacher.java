@@ -77,10 +77,19 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     return null;
   }
 
+  /** The result of {@link #getPath}. This exception is used for control flow. */
   private static class Result extends Error {
+    /** Unique identifier for serialization. */
     private static final long serialVersionUID = 4948452207518392627L;
+    /** The result of {@link #getPath}. */
+    @SuppressWarnings("serial") // I do not intend to serialize Result objects
     TreePath path;
 
+    /**
+     * Create a {@link #getPath} result.
+     *
+     * @param path the result of {@link #getPath}
+     */
     Result(TreePath path) {
       this.path = path;
     }

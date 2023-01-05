@@ -28,7 +28,17 @@ Their type hierarchies are completely independent, but they work together
 to provide precise nullness checking.
 
 
-\sectionAndLabel{What the Nullness Checker checks}{nullness-checks}
+\sectionAndLabel{What the Nullness Checker guarantees}{nullness-checks}
+
+% TODO: The actual guarantee is a bit more subtle than this; put it here
+% rather than this more imprecise one.
+
+If the Nullness Checker type-checks your program without errors, then your
+program will not crash with a \<NullPointerException> that is caused by
+misuse of \<null> in checked code.
+%
+Section~\ref{checker-guarantees} notes some limitations to guarantees made
+by the Checker Framework.
 
 The checker issues a warning in these cases:
 
@@ -79,9 +89,6 @@ The checker performs additional checks if certain \code{-Alint}
 command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
-
-Section~\ref{checker-guarantees} notes some limitations to guarantees made
-by the Checker Framework.
 
 
 \subsectionAndLabel{Nullness Checker optional warnings}{nullness-lint}
@@ -473,6 +480,11 @@ Section~\ref{java-expressions-as-arguments}.
 More examples of the use of these annotations appear in the Javadoc for
 \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}.
 
+Java programs sometimes contain more complex nullness invariants.  When
+these invariants are more complex than handled by the Nullness Checker, you
+will need to suppress a warning (see
+Section~\ref{suppressing-warnings-nullness}).
+
 
 \subsectionAndLabel{Nullness and array initialization}{nullness-arrays}
 
@@ -517,10 +529,15 @@ then write a \<@SuppressWarnings> annotation.
 
 % Implemented in org.checkerframework.checker.nullness.CollectionToArrayHeuristics
 
-The semantics of
+The nullness semantics of
 \sunjavadoc{java.base/java/util/Collection.html\#toArray(T[])}{Collection.toArray(T[])}
-cannot be captured by the nullness type system syntax. The nullness type of the
-returned array depends on the size of the passed parameter. In particular, the
+cannot be captured by just the nullness type system, though the Nullness
+Checker contains special-case code to type-check calls to \<toArray>.
+Therefore, you will probably have to write \<@SuppressWarnings("nullness")>
+on any overriding definitions of \<toArray>.
+
+The nullness type of the
+returned array depends on the \emph{size} of the passed parameter. In particular, the
 returned array component is of type \<@NonNull> if the following conditions
 hold:
 
@@ -600,8 +617,10 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 % Julia is no longer publicly available.
 % \item
 %   \href{https://juliasoft.com/solutions/}{Julia analyzer},
-\item
-  \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
+% This URL no longer works.  As of June 2022, the last Wayback Machine crawl
+% was August 2019.
+% \item
+%   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
   \href{https://jastadd.cs.lth.se/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
     checker and inferencer} of the \href{https://jastadd.cs.lth.se/}{JastAdd
@@ -729,6 +748,42 @@ may wish to sacrifice soundness for a reduced number of false positive
 warnings.  To permit \<null> as an argument to these methods, pass the
 command-line argument
 \<-Astubs=collection-object-parameters-may-be-null.astub>.
+
+
+\subsectionAndLabel{Conservative nullness annotations on the JDK}{nullness-jdk-conservative}
+
+The JDK contains nullness annotations that preserve the Nullness Checker's
+guarantee (see Section~\ref{nullness-checks}) that your program will not
+crash with a \<NullPointerException>.  In some cases, a formal parameter
+may be null in some circumstances, but must be non-null in other
+circumstances, and those circumstances are not expressible using the
+Nullness Checker's annotations.
+
+An example is restrictions on collection arguments (see
+Section~\ref{nullness-collection-arguments}).
+
+Another example is this \<WeakReference> constructor:
+
+\begin{Verbatim}
+     ...
+     * @param q the queue with which the reference is to be registered,
+     *          or {@code null} if registration is not required
+     */
+    public WeakReference(@Nullable T referent, ReferenceQueue<? super T> q) {
+      ...
+\end{Verbatim}
+
+For some calls, \<q> must be non-null.  Therefore, \<q> is annotated as
+\<@NonNull> (which is the default and need not be explicitly written).
+
+These JDK annotations reflect a verification philosophy:  a verification
+tool finds all possible errors, but it sometimes issues a false positive warning.
+An alternate philosophy is a bug-finding philosophy:  permit all calls that
+\emph{might} be correct at run time, but sometimes miss a real error.  If
+you wish to use the Checker Framework with the bug-finding philosophy
+(though the Checker Framework is still much more thorough than other
+bug-finders), you can do so by passing the command-line argument
+\<-Astubs=sometimes-nullable.astub>.
 
 
 \sectionAndLabel{Examples}{nullness-example}
@@ -1103,7 +1158,7 @@ Section~\ref{checker-options}).
 
 FindBugs and SpotBugs have a non-standard definition of
 \<@Nullable>.  This treatment is not documented in its own
-% \href{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
+% \href{https://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 \href{https://www.javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/latest/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
 nullness analysis; it means the same thing as \<@NonNull> when applied to a
@@ -1456,12 +1511,12 @@ The Initialization Checker issues an error if the constructor fails to initializ
 any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
 state by the time that the constructor exits.
 This is different than Java's test for definite assignment (see
-\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-16.html}{JLS ch.16}),
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-16.html}{JLS ch.16}),
 % , which requires that local
 % variables (and blank \code{final} fields) must be assigned.  Java does not
 % require that non-\code{final} fields be assigned, since
 which does not apply to fields (except blank final ones, defined in
-\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.12.4}{JLS \S 4.12.4}) because fields
 have a default value of null.
 
 
@@ -1958,7 +2013,7 @@ consider a doubly linked list:
 
 
 
-% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se11/html/jls-8.html#jls-8.8.7}
+% \urldef{\jlsconstructorbodyurl}{\url}{https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.8.7}
 % (Recall that the superclass constructor is called on the first line, or is
 % inserted automatically by the compiler before the first line, see
 % \href{\jlsconstructorbodyurl}{JLS \S8.8.7}.)

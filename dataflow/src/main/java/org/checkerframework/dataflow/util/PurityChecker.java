@@ -15,7 +15,7 @@ import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
@@ -178,8 +178,10 @@ public class PurityChecker {
   /** Helper class to keep {@link PurityChecker}'s interface clean. */
   protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
+    /** The purity result. */
     PurityResult purityResult = new PurityResult();
 
+    /** The annotation provider (typically an AnnotatedTypeFactory). */
     protected final AnnotationProvider annoProvider;
 
     /**
@@ -216,16 +218,20 @@ public class PurityChecker {
       return super.visitCatch(node, ignore);
     }
 
+    /** Represents a method that is both deterministic and side-effect free. */
+    private static final EnumSet<Pure.Kind> detAndSeFree =
+        EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
+
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
-      Element elt = TreeUtils.elementFromUse(node);
+      ExecutableElement elt = TreeUtils.elementFromUse(node);
       if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
         purityResult.addNotBothReason(node, "call");
       } else {
         EnumSet<Pure.Kind> purityKinds =
             (assumeDeterministic && assumeSideEffectFree)
                 // Avoid computation if not necessary
-                ? EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE)
+                ? detAndSeFree
                 : PurityUtils.getPurityKinds(annoProvider, elt);
         boolean det = assumeDeterministic || purityKinds.contains(Kind.DETERMINISTIC);
         boolean seFree = assumeSideEffectFree || purityKinds.contains(Kind.SIDE_EFFECT_FREE);
@@ -271,7 +277,7 @@ public class PurityChecker {
       Tree parent = getCurrentPath().getParentPath().getLeaf();
       boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
-      Element ctorElement = TreeUtils.elementFromUse(node);
+      ExecutableElement ctorElement = TreeUtils.elementFromUse(node);
       boolean deterministic = assumeDeterministic || okThrowDeterministic;
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
@@ -321,6 +327,7 @@ public class PurityChecker {
      * @param variable the lhs to check
      */
     protected void assignmentCheck(ExpressionTree variable) {
+      variable = TreeUtils.withoutParens(variable);
       if (TreeUtils.isFieldAccess(variable)) {
         // lhs is a field access
         purityResult.addNotBothReason(variable, "assign.field");

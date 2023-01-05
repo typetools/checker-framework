@@ -10,6 +10,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -433,11 +434,13 @@ public abstract class JavaExpression {
         }
         assert TreeUtils.isUseOfElement(identifierTree) : "@AssumeAssertion(nullness): tree kind";
         Element ele = TreeUtils.elementFromUse(identifierTree);
-        if (ElementUtils.isTypeElement(ele)) {
+        if (ele == null) {
+          result = null;
+        } else if (ElementUtils.isTypeElement(ele)) {
           result = new ClassName(ele.asType());
-          break;
+        } else {
+          result = fromVariableElement(typeOfId, (VariableElement) ele, identifierTree);
         }
-        result = fromVariableElement(typeOfId, ele);
         break;
 
       case UNARY_PLUS:
@@ -492,7 +495,8 @@ public abstract class JavaExpression {
    * @return a JavaExpression for {@code tree}
    */
   public static JavaExpression fromVariableTree(VariableTree tree) {
-    return fromVariableElement(TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree));
+    return fromVariableElement(
+        TreeUtils.typeOf(tree), TreeUtils.elementFromDeclaration(tree), tree);
   }
 
   /**
@@ -500,9 +504,14 @@ public abstract class JavaExpression {
    *
    * @param typeOfEle the type of {@code ele}
    * @param ele element whose JavaExpression is returned
+   * @param tree the tree for the variable
    * @return the Java expression corresponding to the given variable element {@code ele}
    */
-  private static JavaExpression fromVariableElement(TypeMirror typeOfEle, Element ele) {
+  private static JavaExpression fromVariableElement(
+      TypeMirror typeOfEle, @Nullable VariableElement ele, Tree tree) {
+    if (ele == null) {
+      return new Unknown(tree);
+    }
     switch (ele.getKind()) {
       case LOCAL_VARIABLE:
       case RESOURCE_VARIABLE:
@@ -520,8 +529,11 @@ public abstract class JavaExpression {
         } else {
           fieldAccessExpression = new ThisReference(enclosingTypeElement);
         }
-        return new FieldAccess(fieldAccessExpression, typeOfEle, (VariableElement) ele);
+        return new FieldAccess(fieldAccessExpression, typeOfEle, ele);
       default:
+        if (ElementUtils.isBindingVariable(ele)) {
+          return new LocalVariable(ele);
+        }
         throw new BugInCF(
             "Unexpected kind of VariableTree: kind: %s element: %s", ele.getKind(), ele);
     }
@@ -597,9 +609,9 @@ public abstract class JavaExpression {
   ///
 
   /**
-   * Returns the receiver of the given invocation
+   * Returns the receiver of the given invocation.
    *
-   * @param accessTree method or constructor invocation
+   * @param accessTree a method or constructor invocation
    * @return the receiver of the given invocation
    */
   public static JavaExpression getReceiver(ExpressionTree accessTree) {
@@ -622,6 +634,9 @@ public abstract class JavaExpression {
    *
    * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static or
    * not. The passed element must be a field, method, or class.
+   *
+   * <p>When this returns a ThisReference, its type is the class that declares {@code ele}, which is
+   * not necessarily the type of {@code this} at the invocation site.
    *
    * @param ele a field, method, or class
    * @return either a new ClassName or a new ThisReference depending on whether ele is static or not
@@ -686,6 +701,7 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public final JavaExpression atMethodBody(MethodTree methodTree) {
+    @SuppressWarnings("nullness:argument") // elementFromDeclaration is non-null for a parameter
     List<JavaExpression> parametersJe =
         CollectionsPlume.mapList(
             (VariableTree param) -> new LocalVariable(TreeUtils.elementFromDeclaration(param)),

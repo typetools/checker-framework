@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg.builder;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
@@ -12,7 +13,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
@@ -20,30 +20,68 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 /* Phase One */
 /* --------------------------------------------------------- */
 
-/**
- * A wrapper object to pass around the result of phase one. For a documentation of the fields see
- * {@link CFGTranslationPhaseOne}.
- */
+/** A wrapper object to pass around the result of phase one. */
 public class PhaseOneResult {
 
-  final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
-  final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
-  final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
+  /** AST for which the CFG is to be built. */
   final UnderlyingAST underlyingAST;
-  final Map<Label, Integer> bindings;
+
+  /**
+   * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
+   * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
+   * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in the
+   * treeLookupMap, while the Node for the post-conversion value is stored in the
+   * convertedTreeLookupMap.
+   */
+  final IdentityHashMap<Tree, Set<Node>> treeLookupMap;
+
+  /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
+  final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
+
+  /**
+   * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
+   * tree that is {@code v + 1} or {@code v - 1}.
+   */
+  final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
+
+  /** The list of extended nodes. */
   final ArrayList<ExtendedNode> nodeList;
+
+  /** The bindings of labels to positions (i.e., indices) in the {@code nodeList}. */
+  final Map<Label, Integer> bindings;
+
+  /** The set of leaders (represented as indices into {@code nodeList}). */
   final Set<Integer> leaders;
+
+  /**
+   * All return nodes (if any) encountered. Only includes return statements that actually return
+   * something.
+   */
   final List<ReturnNode> returnNodes;
+
+  /** Special label to identify the regular exit. */
   final Label regularExitLabel;
+
+  /** Special label to identify the exceptional exit. */
   final Label exceptionalExitLabel;
+
+  /**
+   * Class declarations that have been encountered when building the control-flow graph for a
+   * method.
+   */
   final List<ClassTree> declaredClasses;
+
+  /**
+   * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
+   * initializer.
+   */
   final List<LambdaExpressionTree> declaredLambdas;
 
   public PhaseOneResult(
       UnderlyingAST underlyingAST,
       IdentityHashMap<Tree, Set<Node>> treeLookupMap,
       IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap,
-      IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap,
+      IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap,
       ArrayList<ExtendedNode> nodeList,
       Map<Label, Integer> bindings,
       Set<Integer> leaders,
@@ -55,7 +93,7 @@ public class PhaseOneResult {
     this.underlyingAST = underlyingAST;
     this.treeLookupMap = treeLookupMap;
     this.convertedTreeLookupMap = convertedTreeLookupMap;
-    this.unaryAssignNodeLookupMap = unaryAssignNodeLookupMap;
+    this.postfixLookupMap = postfixLookupMap;
     this.nodeList = nodeList;
     this.bindings = bindings;
     this.leaders = leaders;
@@ -130,7 +168,7 @@ public class PhaseOneResult {
             String.format("%n  "), String.format("PhaseOneResult{%n  "), String.format("%n  }"));
     result.add("treeLookupMap=" + mapToString(treeLookupMap));
     result.add("convertedTreeLookupMap=" + mapToString(convertedTreeLookupMap));
-    result.add("unaryAssignNodeLookupMap=" + mapToString(unaryAssignNodeLookupMap));
+    result.add("postfixLookupMap=" + mapToString(postfixLookupMap));
     result.add("underlyingAST=" + underlyingAST);
     result.add("bindings=" + bindings);
     result.add("nodeList=" + CFGBuilder.extendedNodeCollectionToStringDebug(nodeList));

@@ -24,6 +24,15 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
+// The use of reflection in ReflectiveEvaluator is troubling.
+// A static analysis such as  the Checker Framework should always use compiler APIs, never
+// reflection, to obtain values, for these reasons:
+//  * The program being compiled is not necessarily on the classpath nor the processorpath.
+//  * There might even be a different class of the same fully-qualified name on the processorpath.
+//  * Loading a class can have side effects (say, caused by static initializers).
+//
+// A better implementation strategy would be to use BeanShell or the like to perform evaluation.
+
 /**
  * Evaluates expressions (such as method calls and field accesses) at compile time, to determine
  * whether they have compile-time constant values.
@@ -31,14 +40,21 @@ import org.plumelib.util.StringsPlume;
 public class ReflectiveEvaluator {
 
   /** The checker that is using this ReflectiveEvaluator. */
-  private BaseTypeChecker checker;
+  private final BaseTypeChecker checker;
 
   /**
    * Whether to report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
    * command-line option.
    */
-  private boolean reportWarnings;
+  private final boolean reportWarnings;
 
+  /**
+   * Create a new ReflectiveEvaluator.
+   *
+   * @param checker the BaseTypeChecker
+   * @param factory the annotated type factory.
+   * @param reportWarnings if true, report warnings about problems with evaluation
+   */
   public ReflectiveEvaluator(
       BaseTypeChecker checker, ValueAnnotatedTypeFactory factory, boolean reportWarnings) {
     this.checker = checker;
@@ -49,7 +65,7 @@ public class ReflectiveEvaluator {
    * Returns all possible values that the method may return, or null if the method could not be
    * evaluated.
    *
-   * @param allArgValues a list of list where the first list corresponds to all possible values for
+   * @param allArgValues a list of lists where the first list corresponds to all possible values for
    *     the first argument. Pass null to indicate that the method has no arguments.
    * @param receiverValues a list of possible receiver values. null indicates that the method has no
    *     receiver.
@@ -124,6 +140,9 @@ public class ReflectiveEvaluator {
     return results;
   }
 
+  /** An empty Object array. */
+  private static Object[] emptyObjectArray = new Object[] {};
+
   /**
    * This method normalizes an array of arguments to a varargs method by changing the arguments
    * associated with the varargs parameter into an array.
@@ -137,7 +156,7 @@ public class ReflectiveEvaluator {
 
     if (arguments == null) {
       // null means no arguments.  For varargs no arguments is an empty array.
-      arguments = new Object[] {};
+      arguments = emptyObjectArray;
     }
     Object[] newArgs = new Object[numberOfParameters];
     Object[] varArgsArray;
@@ -148,7 +167,7 @@ public class ReflectiveEvaluator {
       System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
     } else {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
-      varArgsArray = new Object[] {};
+      varArgsArray = emptyObjectArray;
     }
     newArgs[numberOfParameters - 1] = varArgsArray;
     return newArgs;
@@ -185,8 +204,7 @@ public class ReflectiveEvaluator {
       return null;
 
     } catch (Throwable e) {
-      // The class we attempted to getMethod from inside the
-      // call to getMethodObject.
+      // The class we attempted to getMethod from inside the call to getMethodObject.
       Element classElem = ele.getEnclosingElement();
 
       if (classElem == null) {
@@ -215,6 +233,14 @@ public class ReflectiveEvaluator {
         (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)), ele.getParameters());
   }
 
+  /**
+   * Returns all combinations of the elements of the given lists.
+   *
+   * @param allArgValues the lists whose cartesian product to form
+   * @param whichArg pass {@code allArgValues.size() - 1}
+   * @return all combinations of the elements of the given lists
+   */
+  @SuppressWarnings("mustcall") // I cannot type cartesianProduct() for @MustCall
   private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
     List<Object[]> tuples = new ArrayList<>();
@@ -254,8 +280,8 @@ public class ReflectiveEvaluator {
    *
    * @param classname the class containing the field
    * @param fieldName the name of the field
-   * @param tree the static field access in the program; a MemberSelectTree or an IdentifierTree;
-   *     used for diagnostics
+   * @param tree the static field access in the program. It is a MemberSelectTree or an
+   *     IdentifierTree and is used for diagnostics.
    * @return the value of the static field access, or null if it cannot be determined
    */
   public Object evaluateStaticFieldAccess(
@@ -272,7 +298,7 @@ public class ReflectiveEvaluator {
       }
       return null;
     } catch (Throwable e) {
-      // Catch all exception so that the checker doesn't crash
+      // Catch all exceptions so that the checker doesn't crash.
       if (reportWarnings) {
         checker.reportWarning(
             tree,
@@ -338,8 +364,11 @@ public class ReflectiveEvaluator {
     return constructor;
   }
   /**
-   * Returns the box primitive type if the passed type is an (unboxed) primitive. Otherwise it
-   * returns the passed type
+   * Returns the boxed primitive type if the passed type is an (unboxed) primitive. Otherwise it
+   * returns the passed type.
+   *
+   * @param type a type to box or to return unchanged
+   * @return a boxed primitive type, if the argument was primitive; otherwise the argument
    */
   private static Class<?> boxPrimitives(Class<?> type) {
     if (type == byte.class) {

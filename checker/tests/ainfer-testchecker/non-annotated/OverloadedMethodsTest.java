@@ -1,6 +1,6 @@
 // This test ensures that overloaded methods with different return types aren't confused.
 
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 
 public class OverloadedMethodsTest {
 
@@ -11,10 +11,10 @@ public class OverloadedMethodsTest {
   }
 
   String m1(String x) {
-    return getSibling1();
+    return getAinferSibling1();
   }
 
-  @Sibling1 String getSibling1() {
+  @AinferSibling1 String getAinferSibling1() {
     return null;
   }
 }

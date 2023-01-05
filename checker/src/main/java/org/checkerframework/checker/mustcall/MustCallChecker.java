@@ -10,7 +10,9 @@ import org.checkerframework.framework.source.SupportedOptions;
  * another. The Resource Leak Checker verifies that the given methods are actually called.
  */
 @StubFiles({
+  "IOUtils.astub",
   "JavaEE.astub",
+  "JdkCompiler.astub",
   "Reflection.astub",
   "SocketCreatesMustCallFor.astub",
 })
@@ -21,12 +23,20 @@ import org.checkerframework.framework.source.SupportedOptions;
 })
 public class MustCallChecker extends BaseTypeChecker {
 
-  /** Disables @CreatesMustCallFor support. Not of interest to most users. */
+  /**
+   * Disables @CreatesMustCallFor support. Not of interest to most users. Not documented in the
+   * manual.
+   */
   public static final String NO_CREATES_MUSTCALLFOR = "noCreatesMustCallFor";
 
-  /** Disables @Owning/@NotOwning support. Not of interest to most users. */
+  /**
+   * Disables @Owning/@NotOwning support. Not of interest to most users. Not documented in the
+   * manual.
+   */
   public static final String NO_LIGHTWEIGHT_OWNERSHIP = "noLightweightOwnership";
 
-  /** Disables @MustCallAlias support. Not of interest to most users. */
+  /**
+   * Disables @MustCallAlias support. Not of interest to most users. Not documented in the manual.
+   */
   public static final String NO_RESOURCE_ALIASES = "noResourceAliases";
 }

@@ -23,6 +23,8 @@ import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -36,6 +38,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * The type factory for the Resource Leak Checker. The main difference between this and the Called
@@ -69,6 +72,15 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * Bidirectional map to store temporary variables created for expressions with non-empty @MustCall
    * obligations and the corresponding trees. Keys are the artificial local variable nodes created
    * as temporary variables; values are the corresponding trees.
+   *
+   * <p>Note that in an ideal world, this would be an {@code IdentityBiMap}: that is, a BiMap using
+   * {@link java.util.IdentityHashMap} as both of the backing maps. However, Guava doesn't have such
+   * a map AND their implementation is incompatible with IdentityHashMap as a backing map, because
+   * even their {@code AbstractBiMap} class uses {@code equals} calls in its implementation (and its
+   * documentation calls out that it and all its derived BiMaps are incompatible with
+   * IdentityHashMap as a backing map for this reason). Therefore, we use a regular BiMap. Doing so
+   * is safe iff 1) the LocalVariableNode keys all have different names, and 2) a standard Tree
+   * implementation that uses reference equality for equality (e.g., JCTree in javac) is used.
    */
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
@@ -187,7 +199,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       return Collections.emptyList();
     }
     return AnnotationUtils.getElementValueArray(
-        mustCallAnnotation, mustCallValueElement, String.class);
+        mustCallAnnotation, mustCallValueElement, String.class, Collections.emptyList());
   }
 
   /**
@@ -212,13 +224,27 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
+   * Gets the tree for a temporary variable
+   *
+   * @param node a node for a temporary variable
+   * @return the tree for {@code node}
+   */
+  /* package-private */ Tree getTreeForTempVar(Node node) {
+    if (!tempVarToTree.containsKey(node)) {
+      throw new TypeSystemError(node + " must be a temporary variable");
+    }
+    return tempVarToTree.get(node);
+  }
+  /**
    * Registers a temporary variable by adding it to this type factory's tempvar map.
    *
    * @param tmpVar a temporary variable
    * @param tree the tree of the expression the tempvar represents
    */
   /* package-private */ void addTempVar(LocalVariableNode tmpVar, Tree tree) {
-    tempVarToTree.put(tmpVar, tree);
+    if (!tempVarToTree.containsValue(tree)) {
+      tempVarToTree.put(tmpVar, tree);
+    }
   }
 
   /**
@@ -330,5 +356,35 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   @Override
   public ExecutableElement getCreatesMustCallForListValueElement() {
     return createsMustCallForListValueElement;
+  }
+
+  /**
+   * Does the given element have an {@code @NotOwning} annotation (including in stub files)?
+   *
+   * <p>Prefer this method to calling {@link #getDeclAnnotation(Element, Class)} on the type factory
+   * directly, which won't find this annotation in stub files (it only considers stub files loaded
+   * by this checker, not subcheckers).
+   *
+   * @param elt an element
+   * @return whether there is a NotOwning annotation on the given element
+   */
+  public boolean hasNotOwning(Element elt) {
+    MustCallAnnotatedTypeFactory mcatf = getTypeFactoryOfSubchecker(MustCallChecker.class);
+    return mcatf.getDeclAnnotation(elt, NotOwning.class) != null;
+  }
+
+  /**
+   * Does the given element have an {@code @Owning} annotation (including in stub files)?
+   *
+   * <p>Prefer this method to calling {@link #getDeclAnnotation(Element, Class)} on the type factory
+   * directly, which won't find this annotation in stub files (it only considers stub files loaded
+   * by this checker, not subcheckers).
+   *
+   * @param elt an element
+   * @return whether there is an Owning annotation on the given element
+   */
+  public boolean hasOwning(Element elt) {
+    MustCallAnnotatedTypeFactory mcatf = getTypeFactoryOfSubchecker(MustCallChecker.class);
+    return mcatf.getDeclAnnotation(elt, Owning.class) != null;
   }
 }

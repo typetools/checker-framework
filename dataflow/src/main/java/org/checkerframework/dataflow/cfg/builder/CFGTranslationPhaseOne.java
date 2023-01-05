@@ -46,6 +46,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -55,7 +56,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,6 +149,7 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -188,17 +190,28 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
+ *
+ * <p>The entry point to process a single body (e.g., method) is {@link #process(TreePath,
+ * UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
-public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
+public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
+
+  /** Path to the tree currently being scanned. */
+  private TreePath path;
 
   /** Annotation processing environment and its associated type and tree utilities. */
   final ProcessingEnvironment env;
 
-  final Elements elements;
+  /** The javac element utilities. */
+  protected final Elements elements;
+  /** The javac type utilities. */
   final Types types;
+  /** The javac tree utilities. */
   final Trees trees;
+  /** The tree builder. */
   public final TreeBuilder treeBuilder;
+  /** The annotation provider, e.g., a type factory. */
   final AnnotationProvider annotationProvider;
 
   /** Can assertions be assumed to be disabled? */
@@ -218,16 +231,16 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   final Label exceptionalExitLabel;
 
   /**
-   * Current {@link TryFinallyScopeCell} to which a return statement should jump, or null if there
-   * is no valid destination.
+   * Current {@link LabelCell} to which a return statement should jump, or null if there is no valid
+   * destination.
    */
-  @Nullable TryFinallyScopeCell returnTargetL;
+  @Nullable LabelCell returnTargetLC;
 
   /**
-   * Current {@link TryFinallyScopeCell} to which a break statement with no label should jump, or
-   * null if there is no valid destination.
+   * Current {@link LabelCell} to which a break statement with no label should jump, or null if
+   * there is no valid destination.
    */
-  @Nullable TryFinallyScopeCell breakTargetL;
+  @Nullable LabelCell breakTargetLC;
 
   /**
    * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates two
@@ -236,10 +249,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   Map<Name, Label> breakLabels;
 
   /**
-   * Current {@link TryFinallyScopeCell} to which a continue statement with no label should jump, or
-   * null if there is no valid destination.
+   * Current {@link LabelCell} to which a continue statement with no label should jump, or null if
+   * there is no valid destination.
    */
-  @Nullable TryFinallyScopeCell continueTargetL;
+  @Nullable LabelCell continueTargetLC;
 
   /**
    * Map from AST label Names to CFG {@link Label}s for continues. Each labeled statement creates
@@ -249,6 +262,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
   /** Nested scopes of try-catch blocks in force at the current program point. */
   private final TryStack tryStack;
+
+  /** SwitchBuilder for the current switch. Used to match yield statements to enclosing switches. */
+  private SwitchBuilder switchBuilder;
 
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
@@ -262,8 +278,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
   final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
 
-  /** Map from AST {@link UnaryTree}s to compound {@link AssignmentNode}s. */
-  final IdentityHashMap<UnaryTree, AssignmentNode> unaryAssignNodeLookupMap;
+  /**
+   * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
+   * tree that is {@code v + 1} or {@code v - 1}.
+   */
+  final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
 
   /** The list of extended nodes. */
   final ArrayList<ExtendedNode> nodeList;
@@ -372,7 +391,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // initialize lists and maps
     treeLookupMap = new IdentityHashMap<>();
     convertedTreeLookupMap = new IdentityHashMap<>();
-    unaryAssignNodeLookupMap = new IdentityHashMap<>();
+    postfixLookupMap = new IdentityHashMap<>();
     nodeList = new ArrayList<>();
     bindings = new HashMap<>();
     leaders = new HashSet<>();
@@ -380,7 +399,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     regularExitLabel = new Label();
     exceptionalExitLabel = new Label();
     tryStack = new TryStack(exceptionalExitLabel);
-    returnTargetL = new TryFinallyScopeCell(regularExitLabel);
+    returnTargetLC = new LabelCell(regularExitLabel);
     breakLabels = new HashMap<>(2);
     continueLabels = new HashMap<>(2);
     returnNodes = new ArrayList<>();
@@ -411,49 +430,67 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   }
 
   /**
-   * Performs the actual work of phase one.
+   * Performs the actual work of phase one: processing a single body (of a method, lambda, top-level
+   * block, etc.).
    *
    * @param bodyPath path to the body of the underlying AST's method
    * @param underlyingAST the AST for which the CFG is to be built
    * @return the result of phase one
    */
   public PhaseOneResult process(TreePath bodyPath, UnderlyingAST underlyingAST) {
-    // traverse AST of the method body
-    Node finalNode = scan(bodyPath, null);
 
-    // If we are building the CFG for a lambda with a single expression as the body, then
-    // add an extra node for the result of that lambda
-    if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
-      LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
-      if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
-        Node resultNode =
-            new LambdaResultExpressionNode(
-                (ExpressionTree) lambdaTree.getBody(), finalNode, env.getTypeUtils());
-        extendWithNode(resultNode);
+    // Set class variables
+    this.path = bodyPath;
+
+    // Traverse AST of the method body.
+    try { // "finally" clause is "this.path = null"
+      Node finalNode = scan(path.getLeaf(), null);
+
+      // If we are building the CFG for a lambda with a single expression as the body, then
+      // add an extra node for the result of that lambda.
+      if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+        LambdaExpressionTree lambdaTree = ((UnderlyingAST.CFGLambda) underlyingAST).getLambdaTree();
+        if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+          Node resultNode =
+              new LambdaResultExpressionNode((ExpressionTree) lambdaTree.getBody(), finalNode);
+          extendWithNode(resultNode);
+        }
       }
+
+      // Add marker to indicate that the next block will be the exit block.
+      // Note: if there is a return statement earlier in the method (which is always the case for
+      // non-void methods), then this is not strictly necessary. However, it is also not a problem,
+      // as it will just generate a degenerate control graph case that will be removed in a later
+      // phase.
+      nodeList.add(new UnconditionalJump(regularExitLabel));
+
+      return new PhaseOneResult(
+          underlyingAST,
+          treeLookupMap,
+          convertedTreeLookupMap,
+          postfixLookupMap,
+          nodeList,
+          bindings,
+          leaders,
+          returnNodes,
+          regularExitLabel,
+          exceptionalExitLabel,
+          declaredClasses,
+          declaredLambdas);
+    } finally {
+      this.path = null;
     }
-
-    // Add marker to indicate that the next block will be the exit block.
-    // Note: if there is a return statement earlier in the method (which is always the case for
-    // non-void methods), then this is not strictly necessary. However, it is also not a problem, as
-    // it will just generate a degenerate control graph case that will be removed in a later phase.
-    nodeList.add(new UnconditionalJump(regularExitLabel));
-
-    return new PhaseOneResult(
-        underlyingAST,
-        treeLookupMap,
-        convertedTreeLookupMap,
-        unaryAssignNodeLookupMap,
-        nodeList,
-        bindings,
-        leaders,
-        returnNodes,
-        regularExitLabel,
-        exceptionalExitLabel,
-        declaredClasses,
-        declaredLambdas);
   }
 
+  /**
+   * Process a single body within {@code root}. This method does not process the entire given
+   * CompilationUnitTree. Rather, it processes one body (of a method/lambda/etc.) within it, which
+   * corresponds to {@code underlyingAST}.
+   *
+   * @param root the compilation unit
+   * @param underlyingAST the AST corresponding to the body to process
+   * @return a PhaseOneResult
+   */
   public PhaseOneResult process(CompilationUnitTree root, UnderlyingAST underlyingAST) {
     // TODO: Isn't this costly? Is there no cache we can reuse?
     TreePath bodyPath = trees.getPath(root, underlyingAST.getCode());
@@ -468,6 +505,96 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    * @param tree the newly created Tree
    */
   public void handleArtificialTree(Tree tree) {}
+
+  /**
+   * Allow subclasses to access the processing environment and its associated utilities.
+   *
+   * @return the ProcessingEnvironment associated with this object
+   */
+  protected ProcessingEnvironment getProcessingEnvironment() {
+    return env;
+  }
+
+  /**
+   * Returns the current path for the tree currently being scanned.
+   *
+   * @return the current path
+   */
+  public TreePath getCurrentPath() {
+    return path;
+  }
+
+  @Override
+  public Node scan(Tree tree, Void p) {
+    if (tree == null) {
+      return null;
+    }
+
+    TreePath prev = path;
+    @SuppressWarnings("interning:not.interned") // Looking for exact match.
+    boolean treeIsLeaf = path.getLeaf() != tree;
+    if (treeIsLeaf) {
+      path = new TreePath(path, tree);
+    }
+    try {
+      // Must use String comparison to support compiling on JDK 11 and earlier.
+      //     Features added between JDK 12 and JDK 17 inclusive.
+      switch (tree.getKind().name()) {
+        case "BINDING_PATTERN":
+          return visitBindingPattern17(path.getLeaf(), p);
+        case "SWITCH_EXPRESSION":
+          return visitSwitchExpression17(tree, p);
+        case "YIELD":
+          return visitYield17(tree, p);
+        default:
+          return tree.accept(this, p);
+      }
+    } finally {
+      path = prev;
+    }
+  }
+
+  /**
+   * Visit a SwitchExpressionTree.
+   *
+   * @param yieldTree a YieldTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the switch expression tree
+   */
+  public Node visitYield17(Tree yieldTree, Void p) {
+    ExpressionTree resultExpression = TreeUtils.yieldTreeGetValue(yieldTree);
+    switchBuilder.buildSwitchExpressionResult(resultExpression);
+    return null;
+  }
+
+  /**
+   * Visit a SwitchExpressionTree
+   *
+   * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the switch expression tree
+   */
+  public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
+    SwitchBuilder switchBuilder = new SwitchBuilder(switchExpressionTree);
+    return switchBuilder.build();
+  }
+
+  /**
+   * Visit a BindingPatternTree
+   *
+   * @param bindingPatternTree a BindingPatternTree, typed as Tree to be backward-compatible
+   * @param p parameter
+   * @return the result of visiting the binding pattern tree
+   */
+  public Node visitBindingPattern17(Tree bindingPatternTree, Void p) {
+    ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+    TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
+    Node receiver = new ImplicitThisNode(classElem.asType());
+    VariableTree varTree = TreeUtils.bindingPatternTreeGetVariable(bindingPatternTree);
+    LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
+    extendWithNode(varNode);
+    return varNode;
+  }
 
   /* --------------------------------------------------------- */
   /* Nodes and Labels Management */
@@ -531,17 +658,6 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     } else {
       existing.add(node);
     }
-  }
-
-  /**
-   * Add a unary tree in the compound assign lookup map. This method is used to update the
-   * UnaryTree-AssignmentNode mapping with compound assign nodes.
-   *
-   * @param tree the tree used as a key in the map
-   * @param unaryAssignNode the node to add to the lookup map
-   */
-  protected void addToUnaryAssignLookupMap(UnaryTree tree, AssignmentNode unaryAssignNode) {
-    unaryAssignNodeLookupMap.put(tree, unaryAssignNode);
   }
 
   /**
@@ -700,9 +816,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
   }
 
-  /** Add the label {@code l} to the extended node that will be placed next in the sequence. */
+  /**
+   * Add the label {@code l} to the extended node that will be placed next in the sequence.
+   *
+   * @param l the node to add to the forthcoming extended node
+   */
   protected void addLabelForNextNode(Label l) {
-    assert !bindings.containsKey(l);
+    if (bindings.containsKey(l)) {
+      throw new BugInCF("bindings already contains key %s: %s", l, bindings);
+    }
     leaders.add(nodeList.size());
     bindings.put(l, nodeList.size());
   }
@@ -711,8 +833,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   /* Utility Methods */
   /* --------------------------------------------------------- */
 
+  /** The UID for the next unique name. */
   protected long uid = 0;
 
+  /**
+   * Returns a unique name starting with {@code prefix}.
+   *
+   * @param prefix the prefix of the unique name
+   * @return a unique name starting with {@code prefix}
+   */
   protected String uniqueName(String prefix) {
     return prefix + "#num" + uid++;
   }
@@ -1305,7 +1434,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
-    ExecutableElement element = TreeUtils.elementFromUse(tree);
+    ExecutableElement element = method;
     if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node
       extendWithNode(target);
@@ -1314,7 +1443,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     }
 
     List<Node> arguments;
-    if (TreeUtils.isEnumSuper(tree)) {
+    if (TreeUtils.isEnumSuperCall(tree)) {
       // Don't convert arguments for enum super calls.  The AST contains no actual arguments, while
       // the method element expects two arguments, leading to an exception in convertCallArguments.
       // Since no actual arguments are present in the AST that is being checked, it shouldn't cause
@@ -1340,7 +1469,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
     /* Check for the TerminatesExecution annotation. */
-    Element methodElement = TreeUtils.elementFromTree(tree);
+    ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
     boolean terminatesExecution =
         annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class) != null;
     if (terminatesExecution) {
@@ -1414,14 +1543,45 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   }
 
   /**
-   * Find nearest owner element(Method or Class) which holds current tree.
+   * Find nearest owner element (Method or Class) which holds current tree.
    *
    * @return nearest owner element of current tree
    */
   private Element findOwner() {
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-    if (enclosingMethod != null) {
-      return TreeUtils.elementFromDeclaration(enclosingMethod);
+    Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
+    if (enclosingMethodOrLambda != null) {
+      if (enclosingMethodOrLambda.getKind() == Kind.METHOD) {
+        return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
+      } else {
+        // The current path is in a lambda tree.  In this case the owner is either a method or
+        // an initializer block.
+        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
+        if (!lambdaTree.getParameters().isEmpty()) {
+          // If there is a lambda parameter, use the same owner.
+          return TreeUtils.elementFromDeclaration(lambdaTree.getParameters().get(0))
+              .getEnclosingElement();
+        }
+        // If there are no lambda parameters then if the lambda is enclosed in a method, that's the
+        // owner.
+        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+        if (enclosingMethod != null) {
+          return TreeUtils.elementFromDeclaration(enclosingMethod);
+        }
+
+        // If the lambda is not enclosed in a method, then the owner should be a constructor. javac
+        // seems to use the last constructor in the list. (If the lambda is in an initializer of a
+        // static field then the owner should be a static initializer block, but there doesn't seem
+        // to be a way to get a reference to the static initializer element.)
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
+        TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
+        ExecutableElement constructor = null;
+        for (Element enclosing : typeElement.getEnclosedElements()) {
+          if (enclosing.getKind() == ElementKind.CONSTRUCTOR) {
+            constructor = (ExecutableElement) enclosing;
+          }
+        }
+        return constructor;
+      }
     } else {
       ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
       return TreeUtils.elementFromDeclaration(enclosingClass);
@@ -1528,15 +1688,18 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    *
    * <p>Note 2: Visits the receiver and adds all necessary blocks to the CFG.
    *
-   * @param tree the field access tree containing the receiver
-   * @return the receiver of the field access
+   * @param tree the field or method access tree containing the receiver: one of
+   *     MethodInvocationTree, AssignmentTree, or IdentifierTree
+   * @return the receiver of the field or method access
    */
   private Node getReceiver(ExpressionTree tree) {
     assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
+      // `tree` has an explicit receiver.
       MemberSelectTree mtree = (MemberSelectTree) tree;
       return scan(mtree.getExpression(), null);
     } else {
+      // `tree` lacks an explicit reciever.
       Element ele = TreeUtils.elementFromUse(tree);
       TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
       TypeMirror type = ElementUtils.getType(declaringClass);
@@ -2011,28 +2174,28 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           // see JLS 15.23 and 15.24
 
           // all necessary labels
-          Label rightStartL = new Label();
-          Label shortCircuitL = new Label();
+          Label rightStartLabel = new Label();
+          Label shortCircuitLabel = new Label();
 
           // left-hand side
           Node left = scan(leftTree, p);
 
           ConditionalJump cjump;
           if (kind == Tree.Kind.CONDITIONAL_AND) {
-            cjump = new ConditionalJump(rightStartL, shortCircuitL);
+            cjump = new ConditionalJump(rightStartLabel, shortCircuitLabel);
             cjump.setFalseFlowRule(FlowRule.ELSE_TO_ELSE);
           } else {
-            cjump = new ConditionalJump(shortCircuitL, rightStartL);
+            cjump = new ConditionalJump(shortCircuitLabel, rightStartLabel);
             cjump.setTrueFlowRule(FlowRule.THEN_TO_THEN);
           }
           extendWithExtendedNode(cjump);
 
           // right-hand side
-          addLabelForNextNode(rightStartL);
+          addLabelForNextNode(rightStartLabel);
           Node right = scan(rightTree, p);
 
           // conditional expression itself
-          addLabelForNextNode(shortCircuitL);
+          addLabelForNextNode(shortCircuitLabel);
           Node node;
           if (kind == Tree.Kind.CONDITIONAL_AND) {
             node = new ConditionalAndNode(tree, left, right);
@@ -2062,9 +2225,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   public Node visitBreak(BreakTree tree, Void p) {
     Name label = tree.getLabel();
     if (label == null) {
-      assert breakTargetL != null : "no target for break statement";
+      assert breakTargetLC != null : "no target for break statement";
 
-      extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
+      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
     } else {
       assert breakLabels.containsKey(label);
 
@@ -2074,7 +2237,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     return null;
   }
 
-  // This visits a switch statement, not a switch expression.
+  // This visits a switch statement.
+  // Switch expressions are visited by visitSwitchExpression17.
   @Override
   public Node visitSwitch(SwitchTree tree, Void p) {
     SwitchBuilder builder = new SwitchBuilder(tree);
@@ -2083,118 +2247,344 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   }
 
   /**
-   * Helper class for handling switch statements, including all their substatements such as case
-   * labels.
+   * Helper class for handling switch statements and switch expressions, including all their
+   * substatements such as case labels.
    */
   private class SwitchBuilder {
-    /** The switch tree. */
-    private final SwitchTree switchTree;
+
+    /**
+     * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}
+     * (for a switch statement) or {@code SwitchExpressionTree}.
+     */
+    private final Tree switchTree;
+
+    /** The case trees of {@code switchTree} */
+    private final List<? extends CaseTree> caseTrees;
+
+    /**
+     * The Tree for the selector expression.
+     *
+     * <pre>
+     *   switch ( <em>selector expression</em> ) { ... }
+     * </pre>
+     */
+    private final ExpressionTree selectorExprTree;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
-    /** The Node for the switch expression. */
-    private Node switchExpr;
+
+    /**
+     * The Node for the assignment of the switch selector expression to a synthetic local variable.
+     */
+    private AssignmentNode selectorExprAssignment;
+
+    /**
+     * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
+     * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
+     */
+    private @Nullable VariableTree switchExprVarTree;
 
     /**
      * Construct a SwitchBuilder.
      *
-     * @param tree a switch tree
+     * @param switchTree a {@link SwitchTree} or a {@code SwitchExpressionTree}
      */
-    private SwitchBuilder(SwitchTree tree) {
-      this.switchTree = tree;
+    private SwitchBuilder(Tree switchTree) {
+      this.switchTree = switchTree;
+      if (TreeUtils.isSwitchStatement(switchTree)) {
+        SwitchTree switchStatementTree = (SwitchTree) switchTree;
+        this.caseTrees = switchStatementTree.getCases();
+        this.selectorExprTree = switchStatementTree.getExpression();
+      } else {
+        this.caseTrees = TreeUtils.switchExpressionTreeGetCases(switchTree);
+        this.selectorExprTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
+      }
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
-      this.caseBodyLabels = new Label[switchTree.getCases().size() + 1];
+      this.caseBodyLabels = new Label[caseTrees.size() + 1];
     }
 
-    /** Build up the CFG for the switchTree. */
-    public void build() {
-      TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-      breakTargetL = new TryFinallyScopeCell(new Label());
-      int cases = caseBodyLabels.length - 1;
-      for (int i = 0; i < cases; ++i) {
+    /**
+     * Build up the CFG for the switchTree.
+     *
+     * @return if the switch is a switch expression, then a {@link SwitchExpressionNode}; otherwise,
+     *     null
+     */
+    public @Nullable SwitchExpressionNode build() {
+      SwitchBuilder oldSwitchBuilder = switchBuilder;
+      switchBuilder = this;
+      LabelCell oldBreakTargetLC = breakTargetLC;
+      breakTargetLC = new LabelCell(new Label());
+      int numCases = caseTrees.size();
+
+      for (int i = 0; i < numCases; ++i) {
         caseBodyLabels[i] = new Label();
       }
-      caseBodyLabels[cases] = breakTargetL.peekLabel();
+      caseBodyLabels[numCases] = breakTargetLC.peekLabel();
 
-      TypeMirror switchExprType = TreeUtils.typeOf(switchTree.getExpression());
-      VariableTree variable =
-          treeBuilder.buildVariableDecl(switchExprType, uniqueName("switch"), findOwner(), null);
-      handleArtificialTree(variable);
+      buildSelector();
 
-      VariableDeclarationNode variableNode = new VariableDeclarationNode(variable);
-      variableNode.setInSource(false);
-      extendWithNode(variableNode);
+      buildSwitchExpressionVar();
 
-      IdentifierTree variableUse = treeBuilder.buildVariableUse(variable);
-      handleArtificialTree(variableUse);
+      if (TreeUtils.isSwitchStatement(switchTree)) {
+        // It's a switch statement, not a switch expression.
+        extendWithNode(
+            new MarkerNode(
+                switchTree,
+                "start of switch statement #" + TreeUtils.treeUids.get(switchTree),
+                env.getTypeUtils()));
+      }
 
-      LocalVariableNode variableUseNode = new LocalVariableNode(variableUse);
-      variableUseNode.setInSource(false);
-      extendWithNode(variableUseNode);
-
-      Node switchExprNode = unbox(scan(switchTree.getExpression(), null));
-
-      AssignmentTree assign = treeBuilder.buildAssignment(variableUse, switchTree.getExpression());
-      handleArtificialTree(assign);
-
-      switchExpr = new AssignmentNode(assign, variableUseNode, switchExprNode);
-      switchExpr.setInSource(false);
-      extendWithNode(switchExpr);
-
-      extendWithNode(
-          new MarkerNode(
-              switchTree,
-              "start of switch statement #" + TreeUtils.treeUids.get(switchTree),
-              env.getTypeUtils()));
-
-      Integer defaultIndex = null;
-      for (int i = 0; i < cases; ++i) {
-        CaseTree caseTree = switchTree.getCases().get(i);
-        if (TreeUtils.caseTreeGetExpressions(caseTree).isEmpty()) {
+      // Build CFG for the cases.
+      int defaultIndex = -1;
+      for (int i = 0; i < numCases; ++i) {
+        CaseTree caseTree = caseTrees.get(i);
+        if (TreeUtils.isDefaultCaseTree(caseTree)) {
+          // Per the Java Language Specification, the checks of all cases must happen before the
+          // default case, no matter where `default:` is written.  Therefore, build the default
+          // case last.
           defaultIndex = i;
         } else {
-          buildCase(caseTree, i);
+          boolean isLastExceptDefault =
+              i == numCases - 1
+                  || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
+          // This can be extended to handle case statements as well as case rules.
+          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
+          boolean isLastOfExhaustive =
+              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
+          buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
-      if (defaultIndex != null) {
+
+      if (defaultIndex != -1) {
         // The checks of all cases must happen before the default case, therefore we build the
         // default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
-        buildCase(switchTree.getCases().get(defaultIndex), defaultIndex);
+        buildCase(caseTrees.get(defaultIndex), defaultIndex, false);
       }
 
-      addLabelForNextNode(breakTargetL.peekLabel());
-      breakTargetL = oldBreakTargetL;
+      addLabelForNextNode(breakTargetLC.peekLabel());
+      breakTargetLC = oldBreakTargetLC;
+      if (TreeUtils.isSwitchStatement(switchTree)) {
+        // It's a switch statement, not a switch expression.
+        extendWithNode(
+            new MarkerNode(
+                switchTree,
+                "end of switch statement #" + TreeUtils.treeUids.get(switchTree),
+                env.getTypeUtils()));
+      }
 
-      extendWithNode(
-          new MarkerNode(
-              switchTree,
-              "end of switch statement #" + TreeUtils.treeUids.get(switchTree),
-              env.getTypeUtils()));
+      switchBuilder = oldSwitchBuilder;
+      if (!TreeUtils.isSwitchStatement(switchTree)) {
+        // It's a switch expression, not a switch statement.
+        IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
+        handleArtificialTree(switchExprVarUseTree);
+
+        LocalVariableNode switchExprVarUseNode = new LocalVariableNode(switchExprVarUseTree);
+        switchExprVarUseNode.setInSource(false);
+        extendWithNode(switchExprVarUseNode);
+        SwitchExpressionNode switchExpressionNode =
+            new SwitchExpressionNode(
+                TreeUtils.typeOf(switchTree), switchTree, switchExprVarUseNode);
+        extendWithNode(switchExpressionNode);
+        return switchExpressionNode;
+      } else {
+        return null;
+      }
     }
 
-    private void buildCase(CaseTree tree, int index) {
-      final Label thisBodyL = caseBodyLabels[index];
-      final Label nextBodyL = caseBodyLabels[index + 1];
-      final Label nextCaseL = new Label();
+    /**
+     * Builds the CFG for the selector expression. It also creates a synthetic variable and assigns
+     * the selector expression to the variable. This assignment node is stored in {@link
+     * #selectorExprAssignment}. It can later be used to refine the selector expression in case
+     * bodies.
+     */
+    private void buildSelector() {
+      // Create a synthetic variable to which the switch selector expression will be assigned
+      TypeMirror selectorExprType = TreeUtils.typeOf(selectorExprTree);
+      VariableTree selectorVarTree =
+          treeBuilder.buildVariableDecl(selectorExprType, uniqueName("switch"), findOwner(), null);
+      handleArtificialTree(selectorVarTree);
 
-      List<? extends ExpressionTree> exprTrees = TreeUtils.caseTreeGetExpressions(tree);
-      if (!exprTrees.isEmpty()) {
-        // non-default cases
+      VariableDeclarationNode selectorVarNode = new VariableDeclarationNode(selectorVarTree);
+      selectorVarNode.setInSource(false);
+      extendWithNode(selectorVarNode);
+
+      IdentifierTree selectorVarUseTree = treeBuilder.buildVariableUse(selectorVarTree);
+      handleArtificialTree(selectorVarUseTree);
+
+      LocalVariableNode selectorVarUseNode = new LocalVariableNode(selectorVarUseTree);
+      selectorVarUseNode.setInSource(false);
+      extendWithNode(selectorVarUseNode);
+
+      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+
+      AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
+      handleArtificialTree(assign);
+
+      selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
+      selectorExprAssignment.setInSource(false);
+      extendWithNode(selectorExprAssignment);
+    }
+
+    /**
+     * If {@link #switchTree} is a switch expression tree, this method creates a synthetic variable
+     * whose value is the value of the switch expression.
+     */
+    private void buildSwitchExpressionVar() {
+      if (TreeUtils.isSwitchStatement(switchTree)) {
+        // A switch statement does not have a value, so do nothing.
+        return;
+      }
+      TypeMirror switchExprType = TreeUtils.typeOf(switchTree);
+      switchExprVarTree =
+          treeBuilder.buildVariableDecl(
+              switchExprType, uniqueName("switchExpr"), findOwner(), null);
+      handleArtificialTree(switchExprVarTree);
+
+      VariableDeclarationNode switchExprVarNode = new VariableDeclarationNode(switchExprVarTree);
+      switchExprVarNode.setInSource(false);
+      extendWithNode(switchExprVarNode);
+    }
+
+    /**
+     * Build the CFG for the given case tree.
+     *
+     * @param tree a case tree whose CFG to build
+     * @param index the index of the case tree in {@link #caseBodyLabels}
+     * @param isLastOfExhaustive true if this is the last case of an exhaustive switch statement,
+     *     with no fallthrough to it. In other words, no test of the labels is necessary.
+     */
+    private void buildCase(CaseTree tree, int index, boolean isLastOfExhaustive) {
+      boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+      // If true, no test of labels is necessary.
+      // Unfortunately, if isLastOfExhaustive==TRUE, no flow-sensitive refinement occurs within the
+      // body of the CaseNode.  In the future, that can be performed, but it requires addition of
+      // InfeasibleExitBlock, a new SpecialBlock in the CFG.
+      boolean isTerminalCase = isDefaultCase || isLastOfExhaustive;
+
+      final Label thisBodyLabel = caseBodyLabels[index];
+      final Label nextBodyLabel = caseBodyLabels[index + 1];
+      // `nextCaseLabel` is not used if isTerminalCase==FALSE.
+      final Label nextCaseLabel = new Label();
+
+      // Handle the case expressions
+      if (!isTerminalCase) {
+        // A case expression exists, and it needs to be tested.
         ArrayList<Node> exprs = new ArrayList<>();
-        for (ExpressionTree exprTree : exprTrees) {
+        for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(tree, switchExpr, exprs, env.getTypeUtils());
+        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyL, nextCaseL));
+        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
-      addLabelForNextNode(thisBodyL);
-      for (StatementTree stmt : tree.getStatements()) {
-        scan(stmt, null);
+
+      // Handle the case body
+      addLabelForNextNode(thisBodyLabel);
+      if (tree.getStatements() != null) {
+        // This is a switch labeled statement group.
+        // A "switch labeled statement group" is a "case L:" label along with its code.
+        // The code either ends with a "yield" statement, or it falls through.
+        for (StatementTree stmt : tree.getStatements()) {
+          scan(stmt, null);
+        }
+        // Handle possible fallthrough by adding jump to next body.
+        if (!isTerminalCase) {
+          extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
+        }
+      } else {
+        // This is either the default case or a switch labeled rule (which appears in a switch
+        // expression).
+        // A "switch labeled rule" is a "case L ->" label along with its code.
+        Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
+        if (!TreeUtils.isSwitchStatement(switchTree) && bodyTree instanceof ExpressionTree) {
+          buildSwitchExpressionResult((ExpressionTree) bodyTree);
+        } else {
+          scan(bodyTree, null);
+          // Switch rules never fall through so add jump to the break target.
+          assert breakTargetLC != null : "no target for case statement";
+          extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
+        }
       }
-      extendWithExtendedNode(new UnconditionalJump(nextBodyL));
-      addLabelForNextNode(nextCaseL);
+
+      if (!isTerminalCase) {
+        addLabelForNextNode(nextCaseLabel);
+      }
+    }
+
+    /**
+     * Does the following for the result expression of a switch expression, {@code
+     * resultExpression}:
+     *
+     * <ol>
+     *   <li>Builds the CFG for the switch expression result.
+     *   <li>Creates an assignment node for the assignment of {@code resultExpression} to {@code
+     *       switchExprVarTree}.
+     *   <li>Adds an unconditional jump to {@link #breakTargetLC} (the end of the switch
+     *       expression).
+     * </ol>
+     *
+     * @param resultExpression the result of a switch expression; either from a yield or an
+     *     expression in a case rule
+     */
+    void buildSwitchExpressionResult(ExpressionTree resultExpression) {
+      IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
+      handleArtificialTree(switchExprVarUseTree);
+
+      LocalVariableNode switchExprVarUseNode = new LocalVariableNode(switchExprVarUseTree);
+      switchExprVarUseNode.setInSource(false);
+      extendWithNode(switchExprVarUseNode);
+
+      Node resultExprNode = scan(resultExpression, null);
+
+      AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
+      handleArtificialTree(assign);
+
+      AssignmentNode assignmentNode =
+          new AssignmentNode(assign, switchExprVarUseNode, resultExprNode);
+      assignmentNode.setInSource(false);
+      extendWithNode(assignmentNode);
+      // Switch rules never fall through so add jump to the break target.
+      assert breakTargetLC != null : "no target for case statement";
+      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
+    }
+
+    /**
+     * Returns true if the cases are exhaustive -- exactly one is executed. There might or might not
+     * be a `default` case label; if there is, it is never used.
+     *
+     * @return true if the cases are exhaustive
+     */
+    boolean casesAreExhaustive() {
+      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
+
+      switch (selectorTypeMirror.getKind()) {
+        case BOOLEAN:
+          // TODO
+          break;
+        case DECLARED:
+          DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
+          TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
+          if (declaredTypeElement.getKind() == ElementKind.ENUM) {
+            // It's an enumerated type.
+            List<VariableElement> enumConstants =
+                ElementUtils.getEnumConstants(declaredTypeElement);
+            List<Name> caseLabels = new ArrayList<>(enumConstants.size());
+            for (CaseTree caseTree : caseTrees) {
+              for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
+                caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
+              }
+            }
+            // Could also check that the values match.
+            boolean result = enumConstants.size() == caseLabels.size();
+            return result;
+          }
+          break;
+        default:
+          break;
+      }
+      return false;
     }
   }
 
@@ -2211,6 +2601,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     return null;
   }
 
+  // This is not invoked for top-level classes.  Maybe it is, for classes defined within method
+  // bodies.
   @Override
   public Node visitClass(ClassTree tree, Void p) {
     declaredClasses.add(tree);
@@ -2228,34 +2620,92 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     Label falseStart = new Label();
     Label merge = new Label();
 
+    // create a synthetic variable for the value of the conditional expression
+    VariableTree condExprVarTree =
+        treeBuilder.buildVariableDecl(exprType, uniqueName("condExpr"), findOwner(), null);
+    VariableDeclarationNode condExprVarNode = new VariableDeclarationNode(condExprVarTree);
+    condExprVarNode.setInSource(false);
+    extendWithNode(condExprVarNode);
+
     Node condition = unbox(scan(tree.getCondition(), p));
     ConditionalJump cjump = new ConditionalJump(trueStart, falseStart);
     extendWithExtendedNode(cjump);
 
     addLabelForNextNode(trueStart);
-    Node trueExpr = scan(tree.getTrueExpression(), p);
-    trueExpr = conditionalExprPromotion(trueExpr, exprType);
+    ExpressionTree trueExprTree = tree.getTrueExpression();
+    Node trueExprNode = scan(trueExprTree, p);
+    trueExprNode = conditionalExprPromotion(trueExprNode, exprType);
+
+    extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
+
     extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
 
     addLabelForNextNode(falseStart);
-    Node falseExpr = scan(tree.getFalseExpression(), p);
-    falseExpr = conditionalExprPromotion(falseExpr, exprType);
+    ExpressionTree falseExprTree = tree.getFalseExpression();
+    Node falseExprNode = scan(falseExprTree, p);
+    falseExprNode = conditionalExprPromotion(falseExprNode, exprType);
+
+    extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
+
     extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
 
     addLabelForNextNode(merge);
-    Node node = new TernaryExpressionNode(tree, condition, trueExpr, falseExpr);
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
+        extendWithVarUseNode(condExprVarTree);
+    Node node =
+        new TernaryExpressionNode(
+            tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.second);
     extendWithNode(node);
 
     return node;
+  }
+
+  /**
+   * Extend the CFG with an assignment for either the true or false case of a conditional
+   * expression, assigning the value of the expression for the case to the synthetic variable for
+   * the conditional expression
+   *
+   * @param condExprVarTree tree for synthetic variable for conditional expression
+   * @param caseExprTree expression tree for the case
+   * @param caseExprNode node for the case
+   */
+  private void extendWithAssignmentForConditionalExpr(
+      VariableTree condExprVarTree, ExpressionTree caseExprTree, Node caseExprNode) {
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
+        extendWithVarUseNode(condExprVarTree);
+
+    AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExprTree);
+    handleArtificialTree(assign);
+
+    AssignmentNode assignmentNode =
+        new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode);
+    assignmentNode.setInSource(false);
+    extendWithNode(assignmentNode);
+  }
+
+  /**
+   * Extend the CFG with a {@link LocalVariableNode} representing a use of some variable
+   *
+   * @param varTree tree for the variable
+   * @return a pair whose first element is the synthetic {@link IdentifierTree} for the use, and
+   *     whose second element is the {@link LocalVariableNode} representing the use
+   */
+  private Pair<IdentifierTree, LocalVariableNode> extendWithVarUseNode(VariableTree varTree) {
+    IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(varTree);
+    handleArtificialTree(condExprVarUseTree);
+    LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
+    condExprVarUseNode.setInSource(false);
+    extendWithNode(condExprVarUseNode);
+    return Pair.of(condExprVarUseTree, condExprVarUseNode);
   }
 
   @Override
   public Node visitContinue(ContinueTree tree, Void p) {
     Name label = tree.getLabel();
     if (label == null) {
-      assert continueTargetL != null : "no target for continue statement";
+      assert continueTargetLC != null : "no target for continue statement";
 
-      extendWithExtendedNode(new UnconditionalJump(continueTargetL.accessLabel()));
+      extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
     } else {
       assert continueLabels.containsKey(label);
 
@@ -2281,11 +2731,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       conditionStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(conditionStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(conditionStart);
 
     // Loop body
     addLabelForNextNode(loopEntry);
@@ -2302,8 +2752,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }
@@ -2336,11 +2786,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       updateStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(updateStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(updateStart);
 
     // Distinguish loops over Iterables from loops over arrays.
 
@@ -2590,8 +3040,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }
@@ -2638,11 +3088,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       updateStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(updateStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(updateStart);
 
     // Initializer
     for (StatementTree init : tree.getInitializer()) {
@@ -2673,8 +3123,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }
@@ -2781,15 +3231,15 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // nodes. Labeled loops must look up and use the continue Labels.
     Name labelName = tree.getLabel();
 
-    Label breakL = new Label(labelName + "_break");
-    Label continueL = new Label(labelName + "_continue");
+    Label breakLabel = new Label(labelName + "_break");
+    Label continueLabel = new Label(labelName + "_continue");
 
-    breakLabels.put(labelName, breakL);
-    continueLabels.put(labelName, continueL);
+    breakLabels.put(labelName, breakLabel);
+    continueLabels.put(labelName, continueLabel);
 
     scan(tree.getStatement(), p);
 
-    addLabelForNextNode(breakL);
+    addLabelForNextNode(breakLabel);
 
     breakLabels.remove(labelName);
     continueLabels.remove(labelName);
@@ -2888,7 +3338,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     List<Node> arguments = convertCallArguments(constructor, actualExprs);
 
     // TODO: for anonymous classes, don't use the identifier alone.
-    // See Issue 890.
+    // See https://github.com/typetools/checker-framework/issues/890 .
     Node constructorNode = scan(tree.getIdentifier(), p);
 
     // Handle anonymous classes in visitClass.
@@ -2938,7 +3388,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       extendWithNode(result);
     }
 
-    extendWithExtendedNode(new UnconditionalJump(this.returnTargetL.accessLabel()));
+    extendWithExtendedNode(new UnconditionalJump(this.returnTargetLC.accessLabel()));
 
     return result;
   }
@@ -3030,10 +3480,10 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
             catches);
 
     // Store return/break/continue labels, just in case we need them for a finally block.
-    TryFinallyScopeCell oldReturnTargetL = returnTargetL;
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
+    LabelCell oldReturnTargetLC = returnTargetLC;
+    LabelCell oldBreakTargetLC = breakTargetLC;
     Map<Name, Label> oldBreakLabels = breakLabels;
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
+    LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
 
     Label finallyLabel = null;
@@ -3045,12 +3495,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       exceptionalFinallyLabel = new Label();
       tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
 
-      returnTargetL = new TryFinallyScopeCell();
+      returnTargetLC = new LabelCell();
 
-      breakTargetL = new TryFinallyScopeCell();
+      breakTargetLC = new LabelCell();
       breakLabels = new TryFinallyScopeMap();
 
-      continueTargetL = new TryFinallyScopeCell();
+      continueTargetLC = new LabelCell();
       continueLabels = new TryFinallyScopeMap();
     }
 
@@ -3149,9 +3599,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         throwing.setTerminatesExecution(true);
       }
 
-      if (returnTargetL.wasAccessed()) {
-        addLabelForNextNode(returnTargetL.peekLabel());
-        returnTargetL = oldReturnTargetL;
+      if (returnTargetLC.wasAccessed()) {
+        addLabelForNextNode(returnTargetLC.peekLabel());
+        returnTargetLC = oldReturnTargetLC;
 
         extendWithNode(
             new MarkerNode(
@@ -3164,14 +3614,14 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 tree,
                 "end of finally block for return #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(returnTargetL.accessLabel()));
+        extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
       } else {
-        returnTargetL = oldReturnTargetL;
+        returnTargetLC = oldReturnTargetLC;
       }
 
-      if (breakTargetL.wasAccessed()) {
-        addLabelForNextNode(breakTargetL.peekLabel());
-        breakTargetL = oldBreakTargetL;
+      if (breakTargetLC.wasAccessed()) {
+        addLabelForNextNode(breakTargetLC.peekLabel());
+        breakTargetLC = oldBreakTargetLC;
 
         extendWithNode(
             new MarkerNode(
@@ -3184,9 +3634,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 tree,
                 "end of finally block for break #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(breakTargetL.accessLabel()));
+        extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
       } else {
-        breakTargetL = oldBreakTargetL;
+        breakTargetLC = oldBreakTargetLC;
       }
 
       Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
@@ -3218,9 +3668,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
         breakLabels = oldBreakLabels;
       }
 
-      if (continueTargetL.wasAccessed()) {
-        addLabelForNextNode(continueTargetL.peekLabel());
-        continueTargetL = oldContinueTargetL;
+      if (continueTargetLC.wasAccessed()) {
+        addLabelForNextNode(continueTargetLC.peekLabel());
+        continueTargetLC = oldContinueTargetLC;
 
         extendWithNode(
             new MarkerNode(
@@ -3233,9 +3683,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
                 tree,
                 "end of finally block for continue #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(continueTargetL.accessLabel()));
+        extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
       } else {
-        continueTargetL = oldContinueTargetL;
+        continueTargetLC = oldContinueTargetLC;
       }
 
       Map<Name, Label> accessedContinueLabels =
@@ -3339,7 +3789,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   public Node visitInstanceOf(InstanceOfTree tree, Void p) {
     Node operand = scan(tree.getExpression(), p);
     TypeMirror refType = TreeUtils.typeOf(tree.getType());
-    InstanceOfNode node = new InstanceOfNode(tree, operand, refType, types);
+    Tree binding = TreeUtils.instanceOfGetPattern(tree);
+    LocalVariableNode bindingNode =
+        (LocalVariableNode) ((binding == null) ? null : scan(binding, p));
+
+    InstanceOfNode node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
     extendWithNode(node);
     return node;
   }
@@ -3398,8 +3852,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
           boolean isPostfix =
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.POSTFIX_DECREMENT;
           AssignmentNode unaryAssign =
-              createIncrementOrDecrementAssign(isPostfix ? null : tree, expr, isIncrement);
-          addToUnaryAssignLookupMap(tree, unaryAssign);
+              createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
 
           if (isPostfix) {
             TypeMirror exprType = TreeUtils.typeOf(exprTree);
@@ -3451,20 +3904,20 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
   /**
    * Create assignment node which represent increment or decrement.
    *
-   * @param target tree for assignment node. If it's null, corresponding assignment tree will be
-   *     generated.
+   * @param unaryTree increment or decrement tree
    * @param expr expression node to be incremented or decremented
    * @param isIncrement true when it's increment
+   * @param isPostfix true if {@code expr} is a postfix increment or decrement
    * @return assignment node for corresponding increment or decrement
    */
   private AssignmentNode createIncrementOrDecrementAssign(
-      Tree target, Node expr, boolean isIncrement) {
+      UnaryTree unaryTree, Node expr, boolean isIncrement, boolean isPostfix) {
     ExpressionTree exprTree = (ExpressionTree) expr.getTree();
     TypeMirror exprType = expr.getType();
     TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
     TypeMirror promotedType = binaryPromotedType(exprType, oneType);
 
-    LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+    LiteralTree oneTree = treeBuilder.buildLiteral(1);
     handleArtificialTree(oneTree);
 
     Node exprRHS = binaryNumericPromotion(expr, promotedType);
@@ -3476,6 +3929,9 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     BinaryTree operTree =
         treeBuilder.buildBinary(
             promotedType, isIncrement ? Tree.Kind.PLUS : Tree.Kind.MINUS, exprTree, oneTree);
+    if (isPostfix) {
+      postfixLookupMap.put(unaryTree, operTree);
+    }
     handleArtificialTree(operTree);
 
     Node operNode;
@@ -3489,9 +3945,12 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
     Node narrowed = narrowAndBox(operNode, exprType);
 
-    if (target == null) {
+    Tree target;
+    if (isPostfix) {
       target = treeBuilder.buildAssignment(exprTree, (ExpressionTree) narrowed.getTree());
       handleArtificialTree(target);
+    } else {
+      target = unaryTree;
     }
 
     AssignmentNode assignNode = new AssignmentNode(target, expr, narrowed);
@@ -3559,11 +4018,11 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
       conditionStart = new Label();
     }
 
-    TryFinallyScopeCell oldBreakTargetL = breakTargetL;
-    breakTargetL = new TryFinallyScopeCell(loopExit);
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    breakTargetLC = new LabelCell(loopExit);
 
-    TryFinallyScopeCell oldContinueTargetL = continueTargetL;
-    continueTargetL = new TryFinallyScopeCell(conditionStart);
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    continueTargetLC = new LabelCell(conditionStart);
 
     // Condition
     addLabelForNextNode(conditionStart);
@@ -3597,8 +4056,8 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
     // Loop exit
     addLabelForNextNode(loopExit);
 
-    breakTargetL = oldBreakTargetL;
-    continueTargetL = oldContinueTargetL;
+    breakTargetLC = oldBreakTargetLC;
+    continueTargetLC = oldContinueTargetLC;
 
     return null;
   }
@@ -3640,7 +4099,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    * @param clazz a class
    * @return the TypeMirror for the class
    */
-  private TypeMirror getTypeMirror(Class<?> clazz) {
+  protected TypeMirror getTypeMirror(Class<?> clazz) {
     return TypesUtils.typeFromClass(clazz, types, elements);
   }
 
@@ -3654,7 +4113,7 @@ public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
    * @param clazz a class, which must have a canonical name
    * @return the TypeMirror for the class, or {@code null} if the type is not present
    */
-  private @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
+  protected @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
     String name = clazz.getCanonicalName();
     assert name != null : clazz + " does not have a canonical name";
     TypeElement element = elements.getTypeElement(name);

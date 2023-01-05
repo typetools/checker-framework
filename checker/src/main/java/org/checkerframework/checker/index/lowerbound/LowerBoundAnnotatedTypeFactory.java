@@ -32,6 +32,8 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -122,6 +124,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     addAliasedTypeAnnotation(PolyIndex.class, POLY);
     addAliasedTypeAnnotation(SubstringIndexFor.class, GTEN1);
 
+    addAliasedTypeAnnotation(SignedPositive.class, NN);
+    addAliasedTypeAnnotation(SignednessGlb.class, NN);
+
     imf = new IndexMethodIdentifier(this);
 
     this.postInit();
@@ -179,6 +184,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     // the Value Checker, because dataflow is used to compute that type.  (Without this,
     // "int i = 1; --i;" fails.)
     if (tree != null
+        // Necessary to check that an ajava file isn't being parsed, because the call
+        // to the Value Checker's getAnnotatedType() method can fail during parsing:
+        // the check in GenericAnnotatedTypeFactory#addComputedTypeAnnotations only
+        // checks if the **current** type factory is parsing, not whether the parent checker's
+        // type factory is parsing.
+        && !ajavaTypes.isParsing()
         && TreeUtils.isExpressionTree(tree)
         && (iUseFlow || tree instanceof LiteralTree)) {
       AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);

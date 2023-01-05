@@ -20,6 +20,17 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.afu.scenelib.el.AClass;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
+import org.checkerframework.afu.scenelib.el.AScene;
+import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
+import org.checkerframework.afu.scenelib.el.DefCollector;
+import org.checkerframework.afu.scenelib.el.DefException;
+import org.checkerframework.afu.scenelib.el.TypePathEntry;
+import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.checker.index.qual.SameLen;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -30,17 +41,6 @@ import org.checkerframework.common.wholeprograminference.scenelib.ASceneWrapper;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.AScene;
-import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.AnnotationDef;
-import scenelib.annotations.el.DefCollector;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.TypePathEntry;
-import scenelib.annotations.field.AnnotationFieldType;
 
 // In this file, "base name" means "type without its package part in binary name format".
 // For example, "Outer$Inner" is a base name.
@@ -79,7 +79,7 @@ public final class SceneToStubWriter {
    * A pattern matching the name of an anonymous inner class, a local class, or a class nested
    * within one of these types of classes. An anonymous inner class has a basename like Outer$1 and
    * a local class has a basename like Outer$1Inner. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-13.html#jls-13.1">Java Language
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-13.html#jls-13.1">Java Language
    * Specification, section 13.1</a>.
    */
   private static final Pattern anonymousInnerClassOrLocalClassPattern = Pattern.compile("\\$\\d+");
@@ -130,22 +130,42 @@ public final class SceneToStubWriter {
    * @return the formatted annotation
    */
   public static String formatAnnotation(Annotation a) {
+    StringBuilder sb = new StringBuilder();
+    formatAnnotation(sb, a);
+    return sb.toString();
+  }
+
+  /**
+   * Formats an annotation in Java source format.
+   *
+   * @param sb where to format the annotation to
+   * @param a the annotation to print
+   */
+  public static void formatAnnotation(StringBuilder sb, Annotation a) {
     String fullAnnoName = a.def().name;
     String simpleAnnoName = fullAnnoName.substring(fullAnnoName.lastIndexOf('.') + 1);
+    sb.append("@");
+    sb.append(simpleAnnoName);
     if (a.fieldValues.isEmpty()) {
-      return "@" + simpleAnnoName;
-    }
-    StringJoiner sj = new StringJoiner(", ", "@" + simpleAnnoName + "(", ")");
-    if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
-      AnnotationFieldType aft = a.def().fieldTypes.get("value");
-      sj.add(aft.format(a.fieldValues.get("value")));
+      return;
     } else {
-      for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
-        AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
-        sj.add(f.getKey() + "=" + aft.format(f.getValue()));
+      sb.append("(");
+      if (a.fieldValues.size() == 1 && a.fieldValues.containsKey("value")) {
+        AnnotationFieldType aft = a.def().fieldTypes.get("value");
+        aft.format(sb, a.fieldValues.get("value"));
+      } else {
+        // This simulates: new StringJoiner(", ", "@" + simpleAnnoName + "(", ")")
+        for (Map.Entry<String, Object> f : a.fieldValues.entrySet()) {
+          AnnotationFieldType aft = a.def().fieldTypes.get(f.getKey());
+          sb.append(f.getKey());
+          sb.append("=");
+          aft.format(sb, f.getValue());
+          sb.append(", ");
+        }
+        sb.delete(sb.length() - 2, sb.length());
       }
+      sb.append(")");
     }
-    return sj.toString();
   }
 
   /**
@@ -159,32 +179,47 @@ public final class SceneToStubWriter {
    */
   private static String formatAnnotations(Collection<? extends Annotation> annos) {
     StringBuilder sb = new StringBuilder();
-    for (Annotation tla : annos) {
-      if (!isInternalJDKAnnotation(tla.def.name)) {
-        sb.append(formatAnnotation(tla));
-        sb.append(" ");
-      }
-    }
+    formatAnnotations(sb, annos);
     return sb.toString();
   }
 
   /**
-   * Formats the type of an array so that it is printable in Java source code, with the annotations
-   * from the scenelib representation added in appropriate places.
+   * Prints all annotations in {@code annos} to {@code sb} in a form suitable to be printed as Java
+   * source code.
    *
+   * <p>Each annotation is followed by a space, to separate it from following Java code.
+   *
+   * @param sb where to write the formatted annotations
+   * @param annos the annotations to format
+   */
+  private static void formatAnnotations(StringBuilder sb, Collection<? extends Annotation> annos) {
+    for (Annotation tla : annos) {
+      if (!isInternalJDKAnnotation(tla.def.name)) {
+        formatAnnotation(sb, tla);
+        sb.append(" ");
+      }
+    }
+  }
+
+  /**
+   * Formats the type of an array so that it is printable in Java source code, with the annotations
+   * from the scenelib representation added in appropriate places. The result includes a trailing
+   * space.
+   *
+   * @param sb where to format the array type to
    * @param scenelibRep the array's scenelib type element
    * @param javacRep the representation of the array's type used by javac
-   * @return the type formatted to be written to Java source code, followed by a space character
    */
-  private static String formatArrayType(ATypeElement scenelibRep, ArrayType javacRep) {
+  private static void formatArrayType(
+      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
     TypeMirror componentType = javacRep.getComponentType();
     ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
     while (componentType.getKind() == TypeKind.ARRAY) {
       componentType = ((ArrayType) componentType).getComponentType();
       scenelibComponent = getNextArrayLevel(scenelibComponent);
     }
-    return formatType(scenelibComponent, componentType)
-        + formatArrayTypeImpl(scenelibRep, javacRep);
+    formatType(sb, scenelibComponent, componentType);
+    formatArrayTypeImpl(sb, scenelibRep, javacRep);
   }
 
   /**
@@ -193,31 +228,29 @@ public final class SceneToStubWriter {
    * does not format (or attempt to format) the ultimate component type (that is, the non-array part
    * of the array type).
    *
+   * @param sb where to format the array type to
    * @param scenelibRep the scene-lib representation
    * @param javacRep the javac representation of the array type
-   * @return the type formatted to be written to Java source code, followed by a space character
    */
-  private static String formatArrayTypeImpl(ATypeElement scenelibRep, ArrayType javacRep) {
+  private static void formatArrayTypeImpl(
+      StringBuilder sb, ATypeElement scenelibRep, ArrayType javacRep) {
     TypeMirror javacComponent = javacRep.getComponentType();
     ATypeElement scenelibComponent = getNextArrayLevel(scenelibRep);
-    String result = "";
     List<? extends AnnotationMirror> explicitAnnos = javacRep.getAnnotationMirrors();
     for (AnnotationMirror explicitAnno : explicitAnnos) {
-      result += explicitAnno.toString();
-      result += " ";
+      sb.append(explicitAnno.toString());
+      sb.append(" ");
     }
-    if (result.isEmpty() && scenelibRep != null) {
-      result += formatAnnotations(scenelibRep.tlAnnotationsHere);
+    if (explicitAnnos.isEmpty() && scenelibRep != null) {
+      formatAnnotations(sb, scenelibRep.tlAnnotationsHere);
     }
-    result += "[] ";
+    sb.append("[] ");
     if (javacComponent.getKind() == TypeKind.ARRAY) {
-      return result + formatArrayTypeImpl(scenelibComponent, (ArrayType) javacComponent);
-    } else {
-      return result;
+      formatArrayTypeImpl(sb, scenelibComponent, (ArrayType) javacComponent);
     }
   }
 
-  /** Static variable to improve performance of getNextArrayLevel. */
+  /** Static mutable variable to improve performance of getNextArrayLevel. */
   private static List<TypePathEntry> location;
 
   /**
@@ -255,12 +288,32 @@ public final class SceneToStubWriter {
    * @return the formatted formal parameter, as if it were written in Java source code
    */
   private static String formatParameter(AField param, String parameterName, String basename) {
-    StringJoiner result = new StringJoiner(" ");
-    for (Annotation declAnno : param.tlAnnotationsHere) {
-      result.add(formatAnnotation(declAnno));
+    StringBuilder sb = new StringBuilder();
+    formatParameter(sb, param, parameterName, basename);
+    return sb.toString();
+  }
+
+  /**
+   * Formats a single formal parameter declaration, as if it were written in Java source code.
+   *
+   * @param sb where to format the formal parameter to
+   * @param param the AField that represents the parameter
+   * @param parameterName the name of the parameter to display in the stub file. Stub files
+   *     disregard formal parameter names, so this is aesthetic in almost all cases. The exception
+   *     is the receiver parameter, whose name must be "this".
+   * @param basename the type name to use for the receiver parameter. Only used when the previous
+   *     argument is exactly the String "this".
+   */
+  private static void formatParameter(
+      StringBuilder sb, AField param, String parameterName, String basename) {
+    if (!param.tlAnnotationsHere.isEmpty()) {
+      for (Annotation declAnno : param.tlAnnotationsHere) {
+        formatAnnotation(sb, declAnno);
+        sb.append(" ");
+      }
+      sb.delete(sb.length() - 1, sb.length());
     }
-    result.add(formatAFieldImpl(param, parameterName, basename));
-    return result.toString();
+    formatAFieldImpl(sb, param, parameterName, basename);
   }
 
   /**
@@ -281,11 +334,36 @@ public final class SceneToStubWriter {
    * @return a String suitable to print in a stub file
    */
   private static String formatAFieldImpl(AField aField, String fieldName, String className) {
+    StringBuilder sb = new StringBuilder();
+    formatAFieldImpl(sb, aField, fieldName, className);
+    return sb.toString();
+  }
+
+  /**
+   * Formats a field declaration or formal parameter so that it can be printed in a stub file.
+   *
+   * <p>This method does not add a trailing semicolon or comma.
+   *
+   * <p>Usually, {@link #formatParameter(AField, String, String)} should be called to format method
+   * parameters, and {@link #printField(AField, String, PrintWriter, String)} should be called to
+   * print field declarations. Both use this method as their underlying implementation.
+   *
+   * @param sb where to write the formatted declaration to
+   * @param aField the field declaration or formal parameter declaration to format; should not
+   *     represent a local variable
+   * @param fieldName the name to use for the declaration in the stub file. This doesn't matter for
+   *     parameters (except the "this" receiver parameter), but must be correct for fields.
+   * @param className the simple name of the enclosing class. This is only used for printing the
+   *     type of an explicit receiver parameter (i.e., a parameter named "this").
+   */
+  private static void formatAFieldImpl(
+      StringBuilder sb, AField aField, String fieldName, String className) {
     if ("this".equals(fieldName)) {
-      return formatType(aField.type, null, className) + fieldName;
+      formatType(sb, aField.type, null, className);
     } else {
-      return formatType(aField.type, aField.getTypeMirror()) + fieldName;
+      formatType(sb, aField.type, aField.getTypeMirror());
     }
+    sb.append(fieldName);
   }
 
   /**
@@ -297,6 +375,21 @@ public final class SceneToStubWriter {
    * @return the type as it would appear in Java source code, followed by a trailing space
    */
   private static String formatType(final @Nullable ATypeElement aType, final TypeMirror javacType) {
+    StringBuilder sb = new StringBuilder();
+    formatType(sb, aType, javacType);
+    return sb.toString();
+  }
+
+  /**
+   * Formats the given type as it would appear in Java source code, followed by a trailing space.
+   *
+   * @param sb where to format the type to
+   * @param aType the scene-lib representation of the type, or null if only the unannotated type is
+   *     to be printed
+   * @param javacType the javac representation of the type
+   */
+  private static void formatType(
+      StringBuilder sb, final @Nullable ATypeElement aType, final TypeMirror javacType) {
     // TypeMirror#toString prints multiple annotations on a single type
     // separated by commas rather than by whitespace, as is required in source code.
     String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
@@ -315,23 +408,27 @@ public final class SceneToStubWriter {
         basetypeToPrint = basetypeToPrint.substring(basetypeToPrint.lastIndexOf(' ') + 1);
       }
     }
-    return formatType(aType, javacType, basetypeToPrint);
+    formatType(sb, aType, javacType, basetypeToPrint);
   }
 
   /**
-   * Formats the given type for printing in Java source code. This separate version of this method
-   * exists only for receiver parameters, which are printed using the name of the class as {@code
-   * basetypeToPrint} instead of the javac type. The other version of this method should be
-   * preferred in every other case.
+   * Formats the given type as it would appear in Java source code, followed by a trailing space.
    *
+   * <p>This overloaded version of this method exists only for receiver parameters, which are
+   * printed using the name of the class as {@code basetypeToPrint} instead of the javac type. The
+   * other version of this method should be preferred in every other case.
+   *
+   * @param sb where to formate the type to
    * @param aType the scene-lib representation of the type, or null if only the unannotated type is
    *     to be printed
    * @param javacType the javac representation of the type, or null if this is a receiver parameter
    * @param basetypeToPrint the string representation of the type
-   * @return the type as it would appear in Java source code, followed by a trailing space
    */
-  private static String formatType(
-      final @Nullable ATypeElement aType, @Nullable TypeMirror javacType, String basetypeToPrint) {
+  private static void formatType(
+      StringBuilder sb,
+      final @Nullable ATypeElement aType,
+      @Nullable TypeMirror javacType,
+      String basetypeToPrint) {
     // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene
     // library uses
     if (basetypeToPrint.startsWith("<anonymous ")) {
@@ -341,21 +438,33 @@ public final class SceneToStubWriter {
 
     // fields don't need their generic types, and sometimes they are wrong. Just don't print them.
     while (basetypeToPrint.contains("<")) {
+      int openCount = 1;
+      int pos = basetypeToPrint.indexOf('<');
+      while (openCount > 0) {
+        pos++;
+        if (basetypeToPrint.charAt(pos) == '<') {
+          openCount++;
+        }
+        if (basetypeToPrint.charAt(pos) == '>') {
+          openCount--;
+        }
+      }
       basetypeToPrint =
           basetypeToPrint.substring(0, basetypeToPrint.indexOf('<'))
-              + basetypeToPrint.substring(basetypeToPrint.lastIndexOf('>') + 1);
+              + basetypeToPrint.substring(pos + 1);
     }
 
     // An array is not a receiver, so using the javacType to check for arrays is safe.
     if (javacType != null && javacType.getKind() == TypeKind.ARRAY) {
-      return formatArrayType(aType, (ArrayType) javacType);
+      formatArrayType(sb, aType, (ArrayType) javacType);
+      return;
     }
 
-    if (aType == null) {
-      return basetypeToPrint + " ";
-    } else {
-      return formatAnnotations(aType.tlAnnotationsHere) + basetypeToPrint + " ";
+    if (aType != null) {
+      formatAnnotations(sb, aType.tlAnnotationsHere);
     }
+    sb.append(basetypeToPrint);
+    sb.append(" ");
   }
 
   /** Writes an import statement for each annotation used in an {@link AScene}. */
@@ -431,16 +540,22 @@ public final class SceneToStubWriter {
         printWriter.println("@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
       }
       printWriter.print(indents(i));
-      if (aClass.isEnum(nameToPrint)) {
-        printWriter.print("enum ");
-      } else {
-        printWriter.print("class ");
-      }
       if (i == classNames.length - 1) {
         // Only print class annotations on the innermost class, which corresponds to aClass.
         // If there should be class annotations on another class, it will have its own stub
         // file, which will eventually be merged with this one.
         printWriter.print(formatAnnotations(aClass.getAnnotations()));
+      }
+      if (aClass.isAnnotation(nameToPrint)) {
+        printWriter.print("@interface ");
+      } else if (aClass.isEnum(nameToPrint)) {
+        printWriter.print("enum ");
+      } else if (aClass.isInterface(nameToPrint)) {
+        printWriter.print("interface ");
+      } else if (aClass.isRecord(nameToPrint)) {
+        printWriter.print("record ");
+      } else {
+        printWriter.print("class ");
       }
       printWriter.print(nameToPrint);
       printTypeParameters(typeElements[i], printWriter);
@@ -617,35 +732,53 @@ public final class SceneToStubWriter {
 
     // The writer is not initialized until it is certain that at
     // least one class can be written, to avoid empty stub files.
+    // An alternate approach would be to delete the file after it is closed, if the file is empty.
+    // It's not worth rewriting this code, since .stub files are obsolescent.
+
+    FileWriter fileWriter = null;
     PrintWriter printWriter = null;
+    try {
 
-    // For each class
-    for (String clazz : classes) {
-      if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
-        if (!anyClassPrintable) {
-          try {
-            printWriter = new PrintWriter(new FileWriter(filename));
-          } catch (IOException e) {
-            throw new BugInCF("error writing file during WPI: " + filename);
-          }
+      // For each class
+      for (String clazz : classes) {
+        if (isPrintable(clazz, scene.getAScene().getClasses().get(clazz))) {
+          if (!anyClassPrintable) {
+            try {
+              if (fileWriter != null || printWriter != null) {
+                throw new Error("This can't happen");
+              }
+              fileWriter = new FileWriter(filename);
+              printWriter = new PrintWriter(fileWriter);
+            } catch (IOException e) {
+              throw new BugInCF("error writing file during WPI: " + filename);
+            }
 
-          // Write out all imports
-          ImportDefWriter importDefWriter;
-          try {
-            importDefWriter = new ImportDefWriter(scene, printWriter);
-          } catch (DefException e) {
-            throw new BugInCF(e);
+            // Write out all imports
+            ImportDefWriter importDefWriter;
+            try {
+              importDefWriter = new ImportDefWriter(scene, printWriter);
+            } catch (DefException e) {
+              throw new BugInCF(e);
+            }
+            importDefWriter.visit();
+            printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
+            printWriter.println();
+            anyClassPrintable = true;
           }
-          importDefWriter.visit();
-          printWriter.println("import org.checkerframework.framework.qual.AnnotatedFor;");
-          printWriter.println();
-          anyClassPrintable = true;
+          printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
         }
-        printClass(clazz, scene.getAScene().getClasses().get(clazz), checker, printWriter);
       }
-    }
-    if (printWriter != null) {
-      printWriter.flush();
+    } finally {
+      if (printWriter != null) {
+        printWriter.close(); // does not throw IOException
+      }
+      try {
+        if (fileWriter != null) {
+          fileWriter.close();
+        }
+      } catch (IOException e) {
+        // Nothing to do since exceptions thrown from a finally block have no effect.
+      }
     }
   }
 

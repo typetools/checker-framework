@@ -9,6 +9,7 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +38,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
@@ -162,7 +164,7 @@ public class ElementUtils {
    * @param elem the enclosed element of a package
    * @return the innermost package element
    */
-  public static PackageElement enclosingPackage(final Element elem) {
+  public static PackageElement enclosingPackage(Element elem) {
     Element result = elem;
     while (result != null && result.getKind() != ElementKind.PACKAGE) {
       @Nullable Element encl = result.getEnclosingElement();
@@ -180,10 +182,10 @@ public class ElementUtils {
    * again.
    *
    * @param elem the package to start from
+   * @param elements the element
    * @return the parent package element or {@code null}
    */
-  public static @Nullable PackageElement parentPackage(
-      final PackageElement elem, final Elements e) {
+  public static @Nullable PackageElement parentPackage(PackageElement elem, Elements elements) {
     // The following might do the same thing:
     //   ((Symbol) elt).owner;
     // TODO: verify and see whether the change is worth it.
@@ -192,7 +194,7 @@ public class ElementUtils {
     if (fqn != null && !fqn.isEmpty()) {
       int dotPos = fqn.lastIndexOf('.');
       if (dotPos != -1) {
-        return e.getPackageElement(fqn.substring(0, dotPos));
+        return elements.getPackageElement(fqn.substring(0, dotPos));
       }
     }
     return null;
@@ -379,7 +381,7 @@ public class ElementUtils {
    * @param elt an element
    * @return true if the element is a reference to a compile-time constant
    */
-  public static boolean isCompileTimeConstant(Element elt) {
+  public static boolean isCompileTimeConstant(@Nullable Element elt) {
     return elt != null
         && (elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.LOCAL_VARIABLE)
         && ((VariableElement) elt).getConstantValue() != null;
@@ -599,9 +601,8 @@ public class ElementUtils {
     try {
       superTypeMirror = typeElt.getSuperclass();
     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-      // Looking up a supertype failed. This sometimes happens
-      // when transitive dependencies are not on the classpath.
-      // As javac didn't complain, let's also not complain.
+      // Looking up a supertype failed. This sometimes happens when transitive dependencies are not
+      // on the classpath.  As javac didn't complain, let's also not complain.
       return null;
     }
 
@@ -629,7 +630,7 @@ public class ElementUtils {
       return Collections.emptyList();
     }
 
-    List<TypeElement> superelems = new ArrayList<>();
+    List<TypeElement> superElems = new ArrayList<>();
 
     // Set up a stack containing type, which is our starting point.
     Deque<TypeElement> stack = new ArrayDeque<>();
@@ -640,31 +641,56 @@ public class ElementUtils {
 
       // For each direct supertype of the current type element, if it
       // hasn't already been visited, push it onto the stack and
-      // add it to our superelems set.
+      // add it to our superElems set.
       TypeElement supercls = ElementUtils.getSuperClass(current);
       if (supercls != null) {
-        if (!superelems.contains(supercls)) {
+        if (!superElems.contains(supercls)) {
           stack.push(supercls);
-          superelems.add(supercls);
+          superElems.add(supercls);
         }
       }
 
       for (TypeMirror supertypeitf : current.getInterfaces()) {
         TypeElement superitf = (TypeElement) ((DeclaredType) supertypeitf).asElement();
-        if (!superelems.contains(superitf)) {
+        if (!superElems.contains(superitf)) {
           stack.push(superitf);
-          superelems.add(superitf);
+          superElems.add(superitf);
         }
       }
     }
 
     // Include java.lang.Object as implicit superclass for all classes and interfaces.
     TypeElement jlobject = elements.getTypeElement("java.lang.Object");
-    if (!superelems.contains(jlobject)) {
-      superelems.add(jlobject);
+    if (!superElems.contains(jlobject)) {
+      superElems.add(jlobject);
     }
 
-    return Collections.unmodifiableList(superelems);
+    return Collections.unmodifiableList(superElems);
+  }
+
+  /**
+   * Determine all type elements for the direct supertypes of the given type element. This is the
+   * union of the extends and implements clauses.
+   *
+   * @param type the type whose supertypes to return
+   * @param elements the Element utilities
+   * @return direct supertypes of {@code type}
+   */
+  public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
+    final TypeMirror superclass = type.getSuperclass();
+    final List<? extends TypeMirror> interfaces = type.getInterfaces();
+    List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
+    if (superclass.getKind() != TypeKind.NONE) {
+      @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.
+      @NonNull TypeElement superclassElement = TypesUtils.getTypeElement(superclass);
+      result.add(superclassElement);
+    }
+    for (TypeMirror interfac : interfaces) {
+      @SuppressWarnings("nullness:assignment") // every interface is a type
+      @NonNull TypeElement interfaceElt = TypesUtils.getTypeElement(interfac);
+      result.add(interfaceElt);
+    }
+    return result;
   }
 
   /**
@@ -685,6 +711,22 @@ public class ElementUtils {
       fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
     }
     return Collections.unmodifiableList(fields);
+  }
+
+  /**
+   * Returns all enum constants declared in the given enumeration.
+   *
+   * @param type an Enum type
+   * @return all enum constants declared in the given enumeration
+   */
+  public static List<VariableElement> getEnumConstants(TypeElement type) {
+    List<VariableElement> enumConstants = new ArrayList<>();
+    for (Element e : type.getEnclosedElements()) {
+      if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+        enumConstants.add((VariableElement) e);
+      }
+    }
+    return enumConstants;
   }
 
   /**
@@ -783,17 +825,60 @@ public class ElementUtils {
     return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
   }
 
+  /** The set of kinds that represent local variables. */
+  private static final Set<ElementKind> localVariableElementKinds =
+      EnumSet.of(
+          ElementKind.LOCAL_VARIABLE,
+          ElementKind.RESOURCE_VARIABLE,
+          ElementKind.EXCEPTION_PARAMETER);
+
+  /**
+   * Return true if the element is a local variable.
+   *
+   * @param elt the element to test
+   * @return true if the argument is a local variable
+   */
+  public static boolean isLocalVariable(Element elt) {
+    return localVariableElementKinds.contains(elt.getKind());
+  }
+
   /**
    * Return true if the element is a binding variable.
    *
-   * <p>Note: This is to conditionally support Java 15 instanceof pattern matching. When available,
-   * this should use {@code ElementKind.BINDING_VARIABLE} directly.
+   * <p>This implementation compiles under JDK 8 and 11 as well as versions that contain {@code
+   * ElementKind.BINDING_VARIABLE}.
    *
    * @param element the element to test
    * @return true if the element is a binding variable
    */
   public static boolean isBindingVariable(Element element) {
-    return "BINDING_VARIABLE".equals(element.getKind().name());
+    return SystemUtil.jreVersion >= 16 && "BINDING_VARIABLE".equals(element.getKind().name());
+  }
+
+  /**
+   * Returns true if the element is a record accessor method.
+   *
+   * @param methodElement a method element
+   * @return true if the element is a record accessor method
+   */
+  public static boolean isRecordAccessor(ExecutableElement methodElement) {
+    // Can only be a record accessor if it has no parameters.
+    if (!methodElement.getParameters().isEmpty()) {
+      return false;
+    }
+
+    TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
+    if (enclosing.getKind().toString().equals("RECORD")) {
+      String methodName = methodElement.getSimpleName().toString();
+      List<? extends Element> encloseds = enclosing.getEnclosedElements();
+      for (Element enclosed : encloseds) {
+        if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
+            && enclosed.getSimpleName().toString().equals(methodName)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -890,7 +975,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the methods that are overriden or implemented by a given method.
+   * Returns the methods that are overridden or implemented by a given method.
    *
    * @param m a method
    * @param types the type utilities
@@ -930,6 +1015,19 @@ public class ElementUtils {
     return kind;
   }
 
+  /** The {@code TypeElement.getRecordComponents()} method. */
+  private static @MonotonicNonNull Method getRecordComponentsMethod = null;
+
+  static {
+    if (SystemUtil.jreVersion >= 16) {
+      try {
+        getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
+      } catch (NoSuchMethodException e) {
+        throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+      }
+    }
+  }
+
   /**
    * Calls getRecordComponents on the given TypeElement. Uses reflection because this method is not
    * available before JDK 16. On earlier JDKs, which don't support records anyway, an exception is
@@ -942,13 +1040,9 @@ public class ElementUtils {
   @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
   public static List<? extends Element> getRecordComponents(TypeElement element) {
     try {
-      return (@NonNull List<? extends Element>)
-          TypeElement.class.getMethod("getRecordComponents").invoke(element);
-    } catch (NoSuchMethodException
-        | IllegalAccessException
-        | IllegalArgumentException
-        | InvocationTargetException e) {
-      throw new Error("Cannot access TypeElement.getRecordComponents", e);
+      return (@NonNull List<? extends Element>) getRecordComponentsMethod.invoke(element);
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      throw new Error("Cannot call TypeElement.getRecordComponents()", e);
     }
   }
 

@@ -428,7 +428,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param node a method invocation node
    * @return true iff {@code node} is a invocation of {@code equals()}
    */
-  private boolean isInvocationOfEquals(MethodInvocationTree node) {
+  public static boolean isInvocationOfEquals(MethodInvocationTree node) {
     ExecutableElement method = TreeUtils.elementFromUse(node);
     return (method.getParameters().size() == 1
         && method.getReturnType().getKind() == TypeKind.BOOLEAN
@@ -463,8 +463,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       return false;
     }
 
-    Tree left = node.getLeftOperand();
-    Tree right = node.getRightOperand();
+    ExpressionTree left = node.getLeftOperand();
+    ExpressionTree right = node.getRightOperand();
 
     // Only valid if we're comparing identifiers.
     if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER)) {
@@ -748,8 +748,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       return false;
     }
 
-    Tree left = TreeUtils.withoutParens(node.getLeftOperand());
-    Tree right = TreeUtils.withoutParens(node.getRightOperand());
+    ExpressionTree left = TreeUtils.withoutParens(node.getLeftOperand());
+    ExpressionTree right = TreeUtils.withoutParens(node.getRightOperand());
 
     // Only valid if we're comparing identifiers.
     if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER)) {

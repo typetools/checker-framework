@@ -55,7 +55,7 @@ import org.plumelib.util.FilesPlume;
 /** This program inserts annotations from an ajava file into a Java file. See {@link #main}. */
 public class InsertAjavaAnnotations {
   /** Element utilities. */
-  private Elements elements;
+  private final Elements elements;
 
   /**
    * Constructs an {@code InsertAjavaAnnotations} using the given {@code Elements} instance.
@@ -79,31 +79,39 @@ public class InsertAjavaAnnotations {
     }
 
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-    JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
-    if (fileManager == null) {
-      System.err.println("Could not get file manager");
-      System.exit(1);
-    }
+    try (JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
+      if (fileManager == null) {
+        System.err.println("Could not get file manager");
+        System.exit(1);
+      }
 
-    CompilationTask cTask =
-        compiler.getTask(
-            null, fileManager, diagnostics, Collections.emptyList(), null, Collections.emptyList());
-    if (!(cTask instanceof JavacTask)) {
-      System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
-      System.exit(1);
-    }
+      CompilationTask cTask =
+          compiler.getTask(
+              null,
+              fileManager,
+              diagnostics,
+              Collections.emptyList(),
+              null,
+              Collections.emptyList());
+      if (!(cTask instanceof JavacTask)) {
+        System.err.println("Could not get a valid JavacTask: " + cTask.getClass());
+        System.exit(1);
+      }
 
-    return ((JavacTask) cTask).getElements();
+      return ((JavacTask) cTask).getElements();
+    } catch (IOException e) {
+      throw new Error(e);
+    }
   }
 
   /** Represents some text to be inserted at a file and its location. */
   private static class Insertion {
     /** Offset of the insertion in the file, measured in characters from the beginning. */
-    public int position;
+    public final int position;
     /** The contents of the insertion. */
-    public String contents;
+    public final String contents;
     /** Whether the insertion should be on its own separate line. */
-    public boolean ownLine;
+    public final boolean ownLine;
 
     /**
      * Constructs an insertion with the given position and contents.
@@ -155,18 +163,18 @@ public class InsertAjavaAnnotations {
     private Map<String, TypeElement> allAnnotations;
 
     /** The annotation insertions seen so far. */
-    public List<Insertion> insertions;
+    public final List<Insertion> insertions = new ArrayList<>();
     /** A printer for annotations. */
-    private DefaultPrettyPrinter printer;
+    private final DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
     /** The lines of the String representation of the second AST. */
-    private List<String> lines;
+    private final List<String> lines;
     /** The line separator used in the text the second AST was parsed from */
-    private String lineSeparator;
+    private final String lineSeparator;
     /**
      * Stores the offsets of the lines in the string representation of the second AST. At index i,
      * stores the number of characters from the start of the file to the beginning of the ith line.
      */
-    private List<Integer> cumulativeLineSizes;
+    private final List<Integer> cumulativeLineSizes;
 
     /**
      * Constructs a {@code BuildInsertionsVisitor} where {@code destFileContents} is the String
@@ -178,8 +186,6 @@ public class InsertAjavaAnnotations {
      */
     public BuildInsertionsVisitor(String destFileContents, String lineSeparator) {
       allAnnotations = null;
-      insertions = new ArrayList<>();
-      printer = new DefaultPrettyPrinter();
       String[] lines = destFileContents.split(lineSeparator);
       this.lines = Arrays.asList(lines);
       this.lineSeparator = lineSeparator;
@@ -517,10 +523,10 @@ public class InsertAjavaAnnotations {
       File javaFile = new File(javaFilePath);
       String fileContents = FilesPlume.readFile(javaFile);
       String lineSeparator = FilesPlume.inferLineSeparator(annotationFilePath);
-      FileInputStream annotationInputStream = new FileInputStream(annotationFilePath);
-      String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
-      annotationInputStream.close();
-      FilesPlume.writeFile(javaFile, result);
+      try (FileInputStream annotationInputStream = new FileInputStream(annotationFilePath)) {
+        String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
+        FilesPlume.writeFile(javaFile, result);
+      }
     } catch (IOException e) {
       System.err.println(
           "Failed to insert annotations from file "

@@ -61,7 +61,7 @@ public class LessThanCustomCollection {
   public @IndexOrLow("this") int indexOf(double target) {
     for (int i = start; i < end; i++) {
       if (areEqual(array[i], target)) {
-        // Don't know that is is greater than start.
+        // Don't know that it is greater than start.
         // :: error: (return)
         return i - start;
       }

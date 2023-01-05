@@ -6,6 +6,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -21,6 +22,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -44,7 +46,7 @@ public class MustCallTransfer extends CFTransfer {
   private final TreeBuilder treeBuilder;
 
   /** The type factory. */
-  private MustCallAnnotatedTypeFactory atypeFactory;
+  private final MustCallAnnotatedTypeFactory atypeFactory;
 
   /**
    * A cache for the default type for java.lang.String, to avoid needing to look it up for every
@@ -126,7 +128,7 @@ public class MustCallTransfer extends CFTransfer {
     updateStoreWithTempVar(result, n);
     if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
       List<JavaExpression> targetExprs =
-          CreatesMustCallForElementSupplier.getCreatesMustCallForExpressions(
+          CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
               n, atypeFactory, atypeFactory);
       for (JavaExpression targetExpr : targetExprs) {
         AnnotationMirror defaultType =
@@ -178,7 +180,23 @@ public class MustCallTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitTernaryExpression(
       TernaryExpressionNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
-    updateStoreWithTempVar(result, node);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      atypeFactory.tempVars.put(node.getTree(), node.getTernaryExpressionVar());
+    }
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
+      SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
+    }
     return result;
   }
 
@@ -238,10 +256,10 @@ public class MustCallTransfer extends CFTransfer {
     Element enclosingElement;
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
-      enclosingElement = TreeUtils.elementFromTree(tree).getEnclosingElement();
+      enclosingElement = TreeUtils.elementFromUse(tree).getEnclosingElement();
     } else {
       ClassTree classTree = TreePathUtil.enclosingClass(path);
-      enclosingElement = TreeUtils.elementFromTree(classTree);
+      enclosingElement = TreeUtils.elementFromDeclaration(classTree);
     }
     if (enclosingElement == null) {
       return null;
@@ -253,16 +271,19 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /** A unique identifier counter for node names. */
-  protected long uid = 0;
+  protected static AtomicLong uid = new AtomicLong();
 
   /**
-   * Creates a unique, abitrary string that can be used as a name for a temporary variable, using
+   * Creates a unique, arbitrary string that can be used as a name for a temporary variable, using
    * the given prefix. Can be used up to Long.MAX_VALUE times.
+   *
+   * <p>Note that the correctness of the Resource Leak Checker depends on these names actually being
+   * unique, because {@code LocalVariableNode}s derived from them are used as keys in a map.
    *
    * @param prefix the prefix for the name
    * @return a unique name that starts with the prefix
    */
   protected String uniqueName(String prefix) {
-    return prefix + "-" + uid++;
+    return prefix + "-" + uid.getAndIncrement();
   }
 }

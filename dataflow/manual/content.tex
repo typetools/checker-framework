@@ -1,35 +1,56 @@
+% -*- mode: latex; TeX-master: "dataflow"; TeX-command-default: "PDF"; -*-
+%% Put local variables at beginning of file because Emacs function
+%% `hack-local-variables` only looks backwards 3000 characters for the "Local
+%% Variables" block, that number is hardcoded, and the "LocalWords" part of this
+%% file is longer than that.
+
 
 \section{Introduction}
 
 This document describes a \emph{Dataflow Framework} for the Java
-Programming Language.  The framework is used in the
+programming language.  This is an industrial-strength framework.
+The Dataflow Framework is used in the
 \href{https://checkerframework.org/}{Checker Framework},
-\href{http://errorprone.info/}{Error Prone},
-\href{https://github.com/uber/NullAway}{NullAway},
-at Facebook, and in other contexts.
+Google's \href{http://errorprone.info/}{Error Prone},
+Uber's \href{https://github.com/uber/NullAway}{NullAway},
+Facebook's \href{https://engineering.fb.com/2022/11/22/developer-tools/meta-java-nullsafe/}{Nullsafe},
+and in other contexts.
 
 The primary purpose of the Dataflow Framework is to estimate values:
-for each line of source code, it determines what
-values each variable might contain.
+for each line of source code, it determines properties for
+each variable, that are true for every value the variable might contain.
 
 The Dataflow Framework's result (\autoref{sec:analysis_result_class})
 is an abstract value for each expression (an estimate of the
 expression's run-time value) and a store at each program point.  A
 store maps variables and other expressions to abstract
-values.  As a pre-pass, the Dataflow Framework transforms an input
+values.
+
+As a pre-pass, the Dataflow Framework transforms an input
 AST into a control flow graph (\autoref{sec:cfg}) consisting of basic
 blocks made up of nodes representing single operations.  An analysis
-performs iterative data flow
-analysis over the control flow graph.  The effect of a single node on
+operates over the control flow graph.  The effect of a single node on
 the dataflow store is represented by a transfer function, which takes
 an input store and a node and produces an output store.  Once the
-analysis reaches a fix point, the result can be accessed by client
+analysis reaches a fixed point, the result can be accessed by client
 code.
 
+The \emph{easiest way} to create a dataflow analysis for Java is to use the
+Checker Framework.  The Checker Framework performs type checking along with
+flow-sensitive type inference, which is equivalent to a dataflow analysis or
+an abstract interpretation.
 In the Checker Framework, the abstract values to be computed are
-annotated types.  An individual checker can customize its analysis by
+annotated types.  You would define a type hierarchy corresponding to the
+lattice for your dataflow analysis.
+An individual checker can customize its analysis by
 extending the abstract value class and by overriding the behavior of
 the transfer function for particular node types.
+This approach requires you to write very little code.  The downside is
+that it will run relatively slowly because of the Checker Framework's rich
+functionality.  If you do not need that functionality, you can write a
+faster analysis directly on the Dataflow Framework.  Some users first
+create an analysis using the Checker Framework, and then if it is not fast
+enough, they rewrite it for the Dataflow Framework.
 
 The Dataflow Framework was
 designed with several goals in mind.  First, to encourage use
@@ -46,14 +67,14 @@ checker in the Checker Framework. The
 gives an introduction to customizing dataflow to add checker-specific
 enhancements.
 
-\begin{workinprogress}
-    Paragraphs colored in gray with a gray bar on the left side (just
-    like this one) contain questions, additional comments or indicate
-    missing parts. Eventually, these paragraphs will be removed.
-\end{workinprogress}
+% \begin{workinprogress}
+%     Paragraphs colored in gray with a gray bar on the left side (just
+%     like this one) contain questions, additional comments or indicate
+%     missing parts. Eventually, these paragraphs will be removed.
+% \end{workinprogress}
 
 
-\paragraph{Potential version conflicts if you export the Dataflow Framework}
+\subsection{Potential version conflicts if you export the Dataflow Framework}
 
 If your tool uses the Dataflow Framework, then \textbf{please shade the
   Dataflow Framework in your tool}.  You can do this using the Maven Shade
@@ -289,9 +310,9 @@ class CFValue extends CFAbstractValue<CFValue>
 For the Nullness Checker, abstract values additionally track the
 meaning of PolyNull, which may be either Nullable or NonNull.  The
 meaning of PolyNull can change when a PolyNull value is compared to
-the null literal, which is specific to the NullnessChecker.  Other
+the null literal, which is specific to the Nullness Checker.  Other
 checkers often also support a Poly* qualifier, but only the
-NullnessChecker tracks the meaning of its poly qualifier using the
+Nullness Checker tracks the meaning of its poly qualifier using the
 dataflow analysis.
 
 \begin{verbatim}
@@ -609,7 +630,7 @@ execution of the method.
         \item \textbf{Regular basic block.} A \emph{regular basic
           block} contains any non-empty sequence of nodes and has
           exactly one successor.  None of the nodes in the block can
-          throw an exception at runtime.
+          throw an exception at run time.
 
         \item \textbf{Special basic blocks.} A \emph{special basic
           block} contains the empty sequence of nodes (i.e., is empty)
@@ -631,7 +652,7 @@ execution of the method.
 
         \item \textbf{Exception basic block.} An \emph{exception basic
           block} contains exactly one node that \emph{might} throw an
-          exception at runtime (e.g., a method call).  There are zero
+          exception at run time (e.g., a method call).  There are zero
           or one non-exceptional successors (only a basic block containing a
           \code{throw} statement does not have a non-exceptional
           successor).  There are one or more
@@ -732,10 +753,13 @@ some temporary variable.  This is done for clarity, so that it is easy
 to see what expressions are summed up and because we don't create
 internal names for expression results.
 
-\autoref{tab:nodes} lists all node types in the framework. We use the
-Java class name of the implementation, but leave out the suffix
-\code{Node}, which is present for every type.
+\autoref{tab:nodes} lists all node types in the framework.
 All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
+
+% Defining a command for node types makes it easier to determine all the
+% node types that the manual discusses.  One can compare this list with the
+% source code to ensure that every node type is listed.
+\newcommand{\nodetype}[1]{\code{#1}}
 
     \begin{longtable}{lp{0.4\linewidth}l}
         \midrule
@@ -746,119 +770,133 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \hline \multicolumn{3}{|c|}{{Continued on next page}} \\ \hline \endfoot
         \endlastfoot
 
-        \code{Node} & The base class of all nodes. & \\
+        \nodetype{Node} & The base class of all nodes. & \\
         \midrule
 
-        \code{ValueLiteral} & The base class of literal value nodes. & \\
-        \code{BooleanLiteral} & & \code{true} \\
-        \code{CharacterLiteral} & & \code{'c'} \\
-        \code{DoubleLiteral} & & \code{3.14159} \\
-        \code{FloatLiteral} & & \code{1.414f} \\
-        \code{IntegerLiteral} & & \code{42} \\
-        \code{LongLiteral} & & \code{1024L} \\
-        \code{NullLiteral} & & \code{null} \\
-        \code{ShortLiteral} & & \code{512} \\
-        \code{StringLiteral} & & \code{"memo"} \\
+        \nodetype{ValueLiteralNode} & The base class of literal value nodes. & \\
+        \nodetype{BooleanLiteralNode} & & \code{true} \\
+        \nodetype{CharacterLiteralNode} & & \code{'c'} \\
+        \nodetype{DoubleLiteralNode} & & \code{3.14159} \\
+        \nodetype{FloatLiteralNode} & & \code{1.414f} \\
+        \nodetype{IntegerLiteralNode} & & \code{42} \\
+        \nodetype{LongLiteralNode} & & \code{1024L} \\
+        \nodetype{NullLiteralNode} & & \code{null} \\
+        \nodetype{ShortLiteralNode} & & \code{512} \\
+        \nodetype{StringLiteralNode} & & \code{"memo"} \\
         \midrule
 
         & Accessor expressions & \\
-        \code{ArrayAccess} & & \code{args[i]} \\
-        \code{FieldAccess} & & \code{f}, \code{obj.f} \\
-        \code{MethodAccess} & & \code{obj.hashCode} \\
-        \code{This} & Base class of references to \code{this} & \\
-        \code{ExplicitThis} & Explicit use of \code{this} in an expression & \\
-        \code{ImplicitThis} & Implicit use of \code{this} in an expression & \\
-        \code{Super} & Explicit use of \code{super} in expression. & \code{super(x, y)} \\
-        \code{LocalVariable} & Use of a local variable, either as l-value or r-value & \\
+        \nodetype{ArrayAccessNode} & & \code{args[i]} \\
+        \nodetype{FieldAccessNode} & & \code{f}, \code{obj.f} \\
+        \nodetype{MethodAccessNode} & & \code{obj.hashCode} \\
+        \nodetype{LocalVariableNode} & Use of a local variable, either as l-value or r-value & \\
+        \nodetype{ThisNode} & Base class of references to \code{this} & \\
+        \nodetype{ExplicitThisNode} & Explicit use of \code{this} in an expression & \\
+        \nodetype{ImplicitThisNode} & Implicit use of \code{this} in an expression & \\
+        \nodetype{SuperNode} & Explicit use of \code{super} in expression. & \code{super(x, y)} \\
         \midrule
 
-        \code{MethodInvocation} & Note that access and invocation are distinct. & \code{hashCode()} \\
+        \nodetype{MethodInvocationNode} & Note that access and invocation are distinct. & \code{hashCode()} \\
         \midrule
+
+        & Expression supertypes. & \\
+        \nodetype{BinaryOperationNode} & Base class of binary expression nodes & \\
+        \nodetype{UnaryOperationNode} & Base class of unary expression nodes & \\
 
         & Arithmetic and logical operations. & \\
-        \code{BitwiseAnd} & & a \& \code{b} \\
-        \code{BitwiseComplement} & & \verb|~b| \\
-        \code{BitwiseOr} & & \code{a | b} \\
-        \code{BitwiseXor} & & \code{a ^ b} \\
-        \code{ConditionalAnd} & Short-circuiting. & a \&\& \code{b} \\
-        \code{ConditionalNot} & & \code{!a} \\
-        \code{ConditionalOr} & Short-circuiting. & \code{a || b} \\
-        \code{FloatingDivision} & & \code{1.0 / 2.0} \\
-        \code{FloatingRemainder} & & \code{13.0 \% 4.0} \\
-        \code{LeftShift} & & \code{x << 3} \\
-        \code{IntegerDivision} & & \code{3 / 2} \\
-        \code{IntegerRemainder} & & \code{13 \% 4} \\
-        \code{NumericalAddition} & & \code{x + y} \\
-        \code{NumericalMinus} & & \code{-x} \\
-        \code{NumericalMultiplication} & & \code{x * y} \\
-        \code{NumericalPlus} & & \code{+x} \\
-        \code{NumericalSubtraction} & & \code{x - y} \\
-        \code{SignedRightShift} & & \code{x >> 3} \\
-        \code{StringConcatenate} & & \code{s + ".txt"} \\
-        \code{TernaryExpression} & & \code{c ? t : f} \\
-        \code{UnsignedRightShift} & & \code{x >>> 5} \\
+        \nodetype{BitwiseAndNode} & & a \& \code{b} \\
+        \nodetype{BitwiseComplementNode} & & \verb|~b| \\
+        \nodetype{BitwiseOrNode} & & \code{a | b} \\
+        \nodetype{BitwiseXorNode} & & \code{a ^ b} \\
+        \nodetype{ConditionalAndNode} & Short-circuiting. & a \&\& \code{b} \\
+        \nodetype{ConditionalNotNode} & & \code{!a} \\
+        \nodetype{ConditionalOrNode} & Short-circuiting. & \code{a || b} \\
+        \nodetype{FloatingDivisionNode} & & \code{1.0 / 2.0} \\
+        \nodetype{FloatingRemainderNode} & & \code{13.0 \% 4.0} \\
+        \nodetype{LeftShiftNode} & & \code{x << 3} \\
+        \nodetype{IntegerDivisionNode} & & \code{3 / 2} \\
+        \nodetype{IntegerRemainderNode} & & \code{13 \% 4} \\
+        \nodetype{NumericalAdditionNode} & & \code{x + y} \\
+        \nodetype{NumericalMinusNode} & & \code{-x} \\
+        \nodetype{NumericalMultiplicationNode} & & \code{x * y} \\
+        \nodetype{NumericalPlusNode} & & \code{+x} \\
+        \nodetype{NumericalSubtractionNode} & & \code{x - y} \\
+        \nodetype{SignedRightShiftNode} & & \code{x >> 3} \\
+        \nodetype{StringConcatenateNode} & & \code{s + ".txt"} \\
+        \nodetype{SwitchExpressionNode} & & \\
+        \nodetype{TernaryExpressionNode} & & \code{c ? t : f} \\
+        \nodetype{UnsignedRightShiftNode} & & \code{x >>> 5} \\
         \midrule
 
         & Relational operations & \\
-        \code{EqualTo} & & \code{x == y} \\
-        \code{NotEqual} & & \code{x != y} \\
-        \code{GreaterThan} & & \code{x > y} \\
-        \code{GreaterThanOrEqual} & & \code{x >= y} \\
-        \code{LessThan} & & \code{x < y} \\
-        \code{LessThanOrEqual} & & \code{x <= y} \\
+        \nodetype{EqualToNode} & & \code{x == y} \\
+        \nodetype{NotEqualNode} & & \code{x != y} \\
+        \nodetype{GreaterThanNode} & & \code{x > y} \\
+        \nodetype{GreaterThanOrEqualNode} & & \code{x >= y} \\
+        \nodetype{LessThanNode} & & \code{x < y} \\
+        \nodetype{LessThanOrEqualNode} & & \code{x <= y} \\
 
-        \code{Case} & Case of a switch.  Acts as an equality test. & \\
+        \nodetype{CaseNode} & Case of a switch.  Acts as an equality test. & \\
         \midrule
 
-        \code{Assignment} & & \code{x = 1} \\
+        \nodetype{AssignmentNode} & & \code{x = 1} \\
 %        \midrule
 
-        \code{StringConcatenateAssignment} & A compound assignment. & \code{s += ".txt"} \\
+        \nodetype{StringConcatenateAssignmentNode} & A compound \code{String} assignment. & \code{s += ".txt"} \\
         \midrule
 
-        \code{ArrayCreation} & & \code{new double[]} \\
-        \code{ObjectCreation} & & \code{new Object()} \\
+        \nodetype{ArrayCreationNode} & & \code{new double[]} \\
+        \nodetype{ObjectCreationNode} & & \code{new Object()} \\
         \midrule
 
-        \code{TypeCast} & & \code{(float) 42} \\
-        \code{InstanceOf} & & \code{x instanceof Float} \\
+        \nodetype{FunctionalInterfaceNode} & A member reference or lambda & \\
+        \midrule
+
+        \nodetype{TypeCastNode} & & \code{(float) 42} \\
+        \nodetype{InstanceOfNode} & & \code{x instanceof Float} \\
         \midrule
 
         & Conversion nodes. & \\
-        \code{NarrowingConversion} & Implicit conversion. & \\
-        \code{StringConversion} & Might be implicit. & \code{obj.toString()} \\
-        \code{WideningConversion} & Implicit conversion. & \\
+        \nodetype{NarrowingConversionNode} & Implicit conversion. & \\
+        \nodetype{StringConversionNode} & Might be implicit. & \code{obj.toString()} \\
+        \nodetype{WideningConversionNode} & Implicit conversion. & \\
         \midrule
 
         \midrule
         & \textbf{Non-value nodes} & \\
 
         & Types appearing in expressions, such as \code{MyType.class} & \\
-        \code{ArrayType} & & \\
-        \code{ParameterizedType} & & \\
-        \code{PrimitiveType} & & \\
+        \nodetype{ArrayTypeNode} & & \\
+        \nodetype{ParameterizedTypeNode} & & \\
+        \nodetype{PrimitiveTypeNode} & & \\
         \midrule
 
-        \code{ClassName} & Identifier referring to Java class or interface. & \code{java.util.HashMap} \\
-        \code{PackageName} & Identifier referring to Java package. & \code{java.util} \\
+        \nodetype{ClassNameNode} & Identifier referring to Java class or interface. & \code{java.util.HashMap} \\
+        \nodetype{PackageNameNode} & Identifier referring to Java package. & \code{java.util} \\
         \midrule
 
-        \code{Throw} & Throw an exception. & \\
-        \code{Return} & Return from a method. & \\
+        \nodetype{ThrowNode} & Throw an exception. & \\
+        \nodetype{ReturnNode} & Return from a method. & \\
         \midrule
 
-        \code{AssertionError} & & \code{assert x != null : "Hey"} \\
+        \nodetype{AssertionErrorNode} & & \code{assert x != null : "Hey"} \\
         \midrule
 
-        \code{Marker} & No-op nodes used to annotate a CFG with
+        \nodetype{SynchronizedNode} & Start or end of a synchronized code block. & \\
+        \nodetype{MarkerNode} & No-op node used to annotate a CFG with
         information of the underlying Java source code.  Mostly useful
         for debugging and visualization. An example is indicating the
-        start/end of switch statements. & \\ \midrule
-
-        \code{NullChk} & Null checks inserted by javac & \\
+        start/end of switch statements. & \\
         \midrule
 
-        \code{VariableDeclaration} & Declaration of a local variable & \\
+        \nodetype{NullChkNode} & Null checks inserted by javac & \\
+        \midrule
+
+        \nodetype{VariableDeclarationNode} & Declaration of a local variable & \\
+        \nodetype{ClassDeclarationNode} & Declaration of a class & \\
+        \midrule
+
+        \nodetype{LambdaResultExpressionNode} & Body of a single-expression lambda & \\
         \midrule
 
         \caption{All node types in the Dataflow Framework.}
@@ -899,36 +937,10 @@ edges shown in \autoref{tab:nodesWithException}.
         \label{tab:nodesWithException}
 \end{table}
 
-\begin{workinprogress}
-Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
-\end{workinprogress}
+Other AST constructs are desugared into the above nodes (see \autoref{sec:desugaring}).
 
 \begin{workinprogress}
-For each non-expression, explain its purpose, just like the explanation for
-Marker that still needs to be fleshed out.
-\end{workinprogress}
-
-\begin{workinprogress}
-``Could be desugared'' on ``StringConcatenateAssignment'' and ``Conversion
-nodes'' was confusing.  What is the design rationale for
-desugaring in the Dataflow Framework?   Discuss that.  Here, at least
-forward-reference to \autoref{sec:desugaring}, if that's relevant. \\
-More generally, for any cases that will be discussed in the text, add a
-forward reference to the section with the discussion.
-\end{workinprogress}
-
-\begin{workinprogress}
-There is a \code{StringConcatenateAssignmentNode}.
-What about other compound assignments? Are they desugared?
-\end{workinprogress}
-
-\begin{workinprogress}
-When we added Java~8 support, did we add additional nodes that are not
-listed here? Cross-check with implementation.
-\end{workinprogress}
-
-\begin{workinprogress}
-Why is it \code{AssertionErrorNode} instead of \code{AssertNode}?
+Can \code{StringConversionNode} be implicit?  I think so, but in any event discuss.
 \end{workinprogress}
 
 
@@ -1175,7 +1187,7 @@ First, we define several entities, which will be used in the translation.
           as defined in Definition~\ref{def:node}.
         \item \textbf{Exception extended node.} Similar to a simple
           node, an exception extended node contains a node, but this
-          node might throw an exception at runtime.
+          node might throw an exception at run time.
         \item \textbf{Unconditional jump.} An unconditional jump
           indicates that control flow proceeds non-sequentially to a
           location indicated by a target label.
@@ -1361,13 +1373,9 @@ methods, as well as transfer functions for method invocations, to
 apply to the conversions with no special work on the part of a checker
 developer.
 
-Widening and narrowing conversions are still represented as special
+Widening and narrowing conversions are represented as special
 node types, although it would be more consistent to change them into
 type casts.
-
-\begin{workinprogress}
-Is the last point a to-do item?
-\end{workinprogress}
 
 We maintain the invariant that a CFG node maps to zero or one AST tree
 and almost all of them map to a single tree.  But we can't maintain a
@@ -1397,7 +1405,7 @@ corresponding control-flow graph as described in
 algorithm is used to compute a fix-point, by iteratively applying a
 set of transfer functions to the nodes in the CFG\@.  These transfer
 functions are specific to the particular analysis and are used to
-approximate the runtime behavior of different statements and expressions.
+approximate the run-time behavior of different statements and expressions.
 
 
 \subsection{Managing Intermediate Results of the Analysis}
@@ -1740,23 +1748,16 @@ Type factories that extend from \code{GeneralAnnotatedTypeFactory}
 and set the constructor parameter \code{useFlow} to true will automatically
 run dataflow analysis and use the result of the analysis when creating an
 \code{AnnotatedTypeMirror}.  The first time that a \code{GenericAnnotatedTypeFactory}
-instance visits a \code{ClassTree}, the type factory runs the dataflow analysis on all the field initializers of the class first, then the bodies of methods in
+instance visits a \code{ClassTree}, the type factory runs the dataflow analysis
+on all the field initializers of the class first, then the bodies of methods in
 the class, and then finally the dataflow analysis is
-ran recursively on the members of nested classes. The result of
-dataflow analysis are stored in the \code{GenericAnnotatedTypeFactory} instance.
+run recursively on the members of nested classes. The result of
+dataflow analysis is stored in the \code{GenericAnnotatedTypeFactory} instance.
 
 When creating an \code{AnnotatedTypeMirror} for a tree node, the type factory
 queries the result of the dataflow analysis to determine if a more refined
 type for the tree node was inferred by the analysis. This is the first
 type of query described in \autoref{sec:answering-questions}.
-
-\begin{workinprogress}
-I found the below section confusing.  I had a hard time putting my finger
-on it, but perhaps you could re-read the section.  As one minor issue,
-``very similar'':  similar to what?  ``intermediary nodes'':  what are
-those?  ``we'':  is that the analysis writer or the framework implementor
-(or the runtime system)?
-\end{workinprogress}
 
 Dataflow itself uses the type factory to get the initial
 \code{AnnotatedTypeMirror} for a tree node in the following way.
@@ -1881,21 +1882,17 @@ For a field update of the form $o_1.f_1 = e$, the
 dataflow analysis first determines the abstract value $e_\text{val}$ for $e$.
 Then, it updates the store $S$ as follows.
 \begin{enumerate}
-    \item For every field access $o_2.f_2$ that is a key in $S$, remove its
-      information if $f_1 = f_2$ and
+    \item For every field access $o_2.f_1$ that is a key in $S$, remove its
+      information if
       $o_2$ lexically contains a \nonterminal{Receiver} that \emph{might}
-        alias $o_1.f$ as determined by the $\alias$
+        alias $o_1.f_1$ as determined by the $\alias$
         predicate.
       Note that the ``lexically contains'' notion for pure method calls
         includes both the receiver as well as the arguments.
 
       This includes the case where $o_1 = o_2$ (that is, they are
-      syntactically the same) and the case where  $o_2$ and $o_1.f$ might be
+      syntactically the same) and the case where $o_2$ and $o_1.f_1$ might be
       aliases.
-
-      \begin{workinprogress}
-        Should the two occurrences of field $f$ in this paragraph be $f_1$?
-      \end{workinprogress}
 
     \item $S[o_1.f_1] = e_\text{val}$
 \end{enumerate}
@@ -1949,53 +1946,29 @@ where $\operatorname{type}(o)$ determines the Java type of a reference $o$
 and $<:$ denotes standard Java subtyping.
 
 
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: "dataflow"
-%%% TeX-command-default: "PDF"
-%%% End:
-
-%  LocalWords:  pre cfg javacutils InternalUtils DivideByZero BlockImpl se
-%  LocalWords:  SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl
-%  LocalWords:  ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
-%  LocalWords:  ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue
-%  LocalWords:  JavaExpressions AbstractValue AbstractValues PolyNull Poly
-%  LocalWords:  AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
-%  LocalWords:  NullnessCheckers CFAbstractStore InitializationStore Regex
-%  LocalWords:  NullnessStore TransferInput TransferResult TransferInputs
-%  LocalWords:  ConditionalTransferResult RegularTransferResult CFTransfer
-%  LocalWords:  TransferFunction NodeVisitor TransferResults isRegex lst
-%  LocalWords:  CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree
-%  LocalWords:  InitializationTransfer visitMethodInvocation RegexTransfer
-%  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp Uber
-%  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
-%  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker
-%  LocalWords:  GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis
-%  LocalWords:  BaseAnnotatedTypeFactory CFGSimple ValueLiteral txt
-%  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
-%  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
-%  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess This
-%  LocalWords:  MethodAccess ExplicitThis ImplicitThis NullAway
-%  LocalWords:  LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType
-%  LocalWords:  BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot
-%  LocalWords:  ConditionalOr FloatingDivision FloatingRemainder LeftShift
-%  LocalWords:  IntegerDivision IntegerRemainder NumericalAddition EqualTo
-%  LocalWords:  NumericalMinus NumericalMultiplication NumericalPlus util
-%  LocalWords:  NumericalSubtraction SignedRightShift StringConcatenate
-%  LocalWords:  TernaryExpression UnsignedRightShift NotEqual GreaterThan
-%  LocalWords:  GreaterThanOrEqual LessThan LessThanOrEqual ArrayCreation
-%  LocalWords:  StringConcatenateAssignment ObjectCreation TypeCast cond
-%  LocalWords:  InstanceOf instanceof NarrowingConversion StringConversion
-%  LocalWords:  WideningConversion ArrayType ParameterizedType ClassName
-%  LocalWords:  PrimitiveType PackageName AssertionError NullChk accessor
-%  LocalWords:  VariableDeclaration desugared desugaring FieldAssignment
-%  LocalWords:  CFGFieldAssignment getRegularStore CFGConditionalOr fnc
-%  LocalWords:  CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
-%  LocalWords:  IdentifierTree FieldAccessNode ImplicitThisNode unboxing
-%  LocalWords:  TreePath pathHack MethodTree VarSymbol DetachedVarSymbols
-%  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
-%  LocalWords:  nodeValues AdditionNode postconversion treelookup desugar
-%  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
-%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
-%  LocalWords:  ConstSimple SelfReference PureMethodCall javacutil
-%  LocalWords:  stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
+%  LocalWords: pre cfg javacutils InternalUtils DivideByZero BlockImpl se SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
+%  LocalWords: ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue JavaExpressions AbstractValue AbstractValues PolyNull Poly AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
+%  LocalWords: NullnessCheckers CFAbstractStore InitializationStore Regex NullnessStore TransferInput TransferResult TransferInputs ConditionalTransferResult RegularTransferResult CFTransfer
+%  LocalWords: TransferFunction NodeVisitor TransferResults isRegex lst CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree InitializationTransfer visitMethodInvocation RegexTransfer
+%  LocalWords: CFAbstractAnalysis NullnessTransfer RegexChecker's lp AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys AnnotationProvider getAnnotatedType BaseTypeChecker
+%  LocalWords: GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis BaseAnnotatedTypeFactory CFGSimple ValueLiteral txt BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
+%  LocalWords: IntegerLiteral LongLiteral NullLiteral ShortLiteral args StringLiteral Accessor ArrayAccess FieldAccess This MethodAccess ExplicitThis ImplicitThis NullAway
+%  LocalWords: LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot ConditionalOr FloatingDivision FloatingRemainder LeftShift
+%  LocalWords: IntegerDivision IntegerRemainder NumericalAddition EqualTo NumericalMinus NumericalMultiplication NumericalPlus util NumericalSubtraction SignedRightShift StringConcatenate
+%  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan ArrayCreation StringConcatenateAssignment ObjectCreation TypeCast cond
+%  LocalWords: InstanceOf NarrowingConversion StringConversion WideningConversion ArrayType ParameterizedType ClassName PrimitiveType PackageName AssertionError NullChk accessor
+%  LocalWords: VariableDeclaration FieldAssignment CFGFieldAssignment getRegularStore CFGConditionalOr fnc CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
+%  LocalWords: IdentifierTree FieldAccessNode ImplicitThisNode unboxing TreePath pathHack MethodTree VarSymbol DetachedVarSymbols DeclarationFromElement BoxedClass treeLookup getValue
+%  LocalWords: nodeValues AdditionNode postconversion treelookup LocalVariableNode AconcurrentSemantics MonotonicNonNull MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
+%  LocalWords: ConstSimple SelfReference PureMethodCall javacutil stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
+% LocalWords:  Uber's Nullsafe CFGVisualizeLauncher intra boolean subparts ValueLiteralNode c' lang BooleanLiteralNode CharacterLiteralNode DoubleLiteralNode FloatLiteralNode ThisNode
+% LocalWords:  LongLiteralNode NullLiteralNode ShortLiteralNode StringLiteralNode ArrayAccessNode MethodAccessNode ExplicitThisNode SuperNode MethodInvocationNode BinaryOperationNode
+% LocalWords:  UnaryOperationNode BitwiseAndNode BitwiseComplementNode BitwiseOrNode BitwiseXorNode ConditionalAndNode ConditionalNotNode FloatingDivisionNode FloatingRemainderNode b1
+% LocalWords:  LeftShiftNode IntegerDivisionNode IntegerRemainderNode NumericalAdditionNode b2 b3 NumericalMinusNode NumericalMultiplicationNode NumericalPlusNode NotEqualNode num0
+% LocalWords:  NumericalSubtractionNode SignedRightShiftNode StringConcatenateNode GreaterThanNode SwitchExpressionNode TernaryExpressionNode UnsignedRightShiftNode LessThanNode
+% LocalWords:  GreaterThanOrEqualNode LessThanOrEqualNode CaseNode AssignmentNode ArrayCreationNode StringConcatenateAssignmentNode ObjectCreationNode FunctionalInterfaceNode ThrowNode
+% LocalWords:  TypeCastNode InstanceOfNode instanceof NarrowingConversionNode StringConversionNode WideningConversionNode ArrayTypeNode ParameterizedTypeNode PrimitiveTypeNode Varargs
+% LocalWords:  ClassNameNode PackageNameNode ReturnNode AssertionErrorNode SynchronizedNode varargs MarkerNode NullChkNode VariableDeclarationNode ClassDeclarationNode NoSuchFieldError
+% LocalWords:  LambdaResultExpressionNode ArrayIndexOutOfBoundsException Throwable ClassFormatError ArithmeticException NegativeArraySizeException ClassCircularityError CFGIfStatement
+% LocalWords:  NoClassDefFoundError unaryAssignNodeLookup assertionsEnabled CFGAssert CFGSwitch
+% LocalWords:  intValue

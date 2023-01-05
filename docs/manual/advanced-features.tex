@@ -162,7 +162,7 @@ qualifier at all.
 Most readers can skip this section on first reading, because you will
 probably find the system simply ``does what you mean'', without forcing
 you to write too many qualifiers in your program.
-particular, programmers rarely write qualifiers in method bodies (except occasionally on
+particular, programmers rarely write qualifiers in method bodies (except on
 type arguments and array component types).
 
 The following steps determine the effective
@@ -222,7 +222,7 @@ rules are used in order, until one applies.
   \<TypeKind> of \<MyClass>. (Section~\ref{default-for-use})
 \item
   The qualifier with a meta-annotation \<@DefaultFor(names = REGEX)>, where \<REGEX>
-  matches the name of the variable being defined (if any).  For return types, the  the name of
+  matches the name of the variable being defined (if any).  For return types, the name of
   the method is used. (Section~\ref{default-for-use})
 \item
   The qualifier in the innermost user-written \<@DefaultQualifier> for the location of the use of \<MyClass>.
@@ -255,7 +255,7 @@ This means any unannotated use of \<MyClass> is treated as \<@B MyClass> by the 
 (Except for locals, which can be refined.)
 
 Similarly, the meta-annotation \refqualclass{framework/qual}{DefaultFor} can be used to specify defaults
-for uses of of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
+for uses of types, using the \<types> element, or type kinds, using the \<typeKinds> elements.
 
 Interaction between qualifier bounds and \<DefaultQualifierForUse>:
 \begin{itemize}
@@ -473,12 +473,12 @@ the CLIMB-to-top rule.
 
 \subsectionAndLabel{Inherited defaults}{inherited-defaults}
 
-When overriding a method, programmers must fully specify types in the overridding
+When overriding a method, programmers must fully specify types in the overriding
 method, which duplicates information on the overridden method.
 By contrast, declaration annotations that are meta-annotated with
 \<@InheritedAnnotation> are inherited by overriding methods.
 
-An example for type annotations is that when definining an \<equals()>
+An example for type annotations is that when defining an \<equals()>
 method, programmers must write the type annotation \<@Nullable>:
 
 \begin{Verbatim}
@@ -726,8 +726,8 @@ than --- that is, a subtype of --- its declared or defaulted (Section~\ref{defau
 This is called ``flow-sensitive type refinement'' or ``local type inference''.
 
 Due to local type refinement, a programmer typically
-does not have to write any qualifiers on local variables within a method body
-(except occasionally on type arguments).
+does not write any qualifiers on local variables within a method body
+(except on type arguments and array component types).
 However, the programmer must write type annotations for method
 signatures (arguments and return values) and fields, unless the default
 annotations are correct.
@@ -1575,7 +1575,7 @@ class @Marsupial-Animal {
 % TO DO:  give an example where @Dependent is actually needed
 
 
-% LocalWords:  MyClass qual PolymorphicQualifier DefaultQualifier subpackages
+% LocalWords:  MyClass qual DefaultQualifier subpackages lang
 % LocalWords:  actuals toArray CollectionToArrayHeuristics nn RegexBottom
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
@@ -1584,7 +1584,7 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 % LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 % LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-% LocalWords:  computeValue arg myInt Anno Im
+% LocalWords:  computeValue arg myInt Anno Im InheritedAnnotation
 % LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
 % LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 % LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName

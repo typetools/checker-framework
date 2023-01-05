@@ -22,7 +22,7 @@ class LambdaParam {
   NNConsumer fn6 = (@NonNull String i) -> {};
 
   // Initializer blocks with annotations don't work yet because of javac compiler bug.
-  // https://bugs.openjdk.java.net/browse/JDK-8056970
+  // https://bugs.openjdk.org/browse/JDK-8056970
   //    {
   //          // :: error: (lambda.param)
   //        NullConsumer fn1 = (@NonNull String i) -> {};

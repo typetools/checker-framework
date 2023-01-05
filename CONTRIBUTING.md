@@ -20,7 +20,7 @@ bug, and we want to fix it.  Please report it.
 ## Submitting changes
 
 Please see the [pull
-requests](https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#pull-requests)
+requests](https://checkerframework.org/manual/developer-manual.html#pull-requests)
 section of the Developer Manual.
 
 Submit changes to the annotated JDK at https://github.com/typetools/jdk/pulls .
@@ -45,4 +45,4 @@ existing [license](LICENSE.txt), usually GPL2 or MIT License.
 ## Code of conduct
 
 When interacting with other people, please abide by the [Contributor
-Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct).
+Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct).

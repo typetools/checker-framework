@@ -1,8 +1,8 @@
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling1;
-import org.checkerframework.checker.testchecker.ainfer.qual.Sibling2;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 
 public class CompoundTypeTest {
-  // The default type for fields is @DefaultType.
+  // The default type for fields is @AinferDefaultType.
   Object[] field;
 
   void assign() {
@@ -14,11 +14,11 @@ public class CompoundTypeTest {
     expectsCompoundType(field);
   }
 
-  void expectsCompoundType(@Sibling1 Object @Sibling2 [] obj) {}
+  void expectsCompoundType(@AinferSibling1 Object @AinferSibling2 [] obj) {}
 
-  @Sibling1 Object @Sibling2 [] getCompoundType() {
+  @AinferSibling1 Object @AinferSibling2 [] getCompoundType() {
     @SuppressWarnings("cast.unsafe")
-    @Sibling1 Object @Sibling2 [] out = (@Sibling1 Object @Sibling2 []) new Object[1];
+    @AinferSibling1 Object @AinferSibling2 [] out = (@AinferSibling1 Object @AinferSibling2 []) new Object[1];
     return out;
   }
 }

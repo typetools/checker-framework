@@ -8,10 +8,12 @@ import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -32,9 +34,10 @@ public class JavaParserUtil {
 
   /**
    * The Language Level to use when parsing if a specific level isn't applied. This should be the
-   * highest version of Java that the Checker Framework can process. Currently, Java 17.
+   * highest version of Java that the Checker Framework can process.
    */
-  public static LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
+  // JavaParser's ParserConfiguration.java has no constant for JDK 18, as of 2022-12-19.
+  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
 
   ///
   /// Replacements for StaticJavaParser
@@ -219,6 +222,11 @@ public class JavaParserUtil {
       return enumDecl.get();
     }
 
+    Optional<AnnotationDeclaration> annoDecl = root.getAnnotationDeclarationByName(name);
+    if (annoDecl.isPresent()) {
+      return annoDecl.get();
+    }
+
     Optional<CompilationUnit.Storage> storage = root.getStorage();
     if (storage.isPresent()) {
       throw new BugInCF("Type " + name + " not found in " + storage.get().getPath());
@@ -264,6 +272,11 @@ public class JavaParserUtil {
           node.remove(child);
         }
       }
+    }
+
+    @Override
+    public void visit(ArrayInitializerExpr node, Void p) {
+      // Do not remove annotations that are array elements.
     }
   }
 
@@ -357,6 +370,11 @@ public class JavaParserUtil {
         case "RELEASE_17":
           currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_17;
           break;
+          // As of 2022-11-28, JavaParser's ParserConfiguration.LanguageLevel does not yet have a
+          // constant for JDK 18 or JDK 19.
+          // case "RELEASE_18":
+          //   currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
+          //   break;
         default:
           currentSourceVersion = DEFAULT_LANGUAGE_LEVEL;
       }

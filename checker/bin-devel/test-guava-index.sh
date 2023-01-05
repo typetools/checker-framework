@@ -1,4 +1,5 @@
 #!/bin/bash
+# Use `bash` instead of `sh` because of use of BASH_SOURCE.
 
 set -e
 set -o verbose
@@ -17,10 +18,10 @@ cd ../guava
 if [ "$TRAVIS" = "true" ] ; then
   # Travis which kills jobs that have not produced output for 10 minutes.
   echo "Setting up sleep-and-output jobs for Travis"
-  (sleep 1s && echo "1 second has elapsed") &
-  (sleep 5m && echo "5 minutes have elapsed") &
-  (sleep 14m && echo "14 minutes have elapsed") &
-  (sleep 23m && echo "23 minutes have elapsed") &
+  (sleep 1 && echo "1 second has elapsed") &
+  (sleep 300 && echo "5 minutes have elapsed") &
+  (sleep 840 && echo "14 minutes have elapsed") &
+  (sleep 1380 && echo "23 minutes have elapsed") &
 fi
 
 ./typecheck.sh index

@@ -43,11 +43,17 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenTransfer extends CFTransfer {
 
-  private SameLenAnnotatedTypeFactory aTypeFactory;
+  /** The annotated type factory. */
+  private final SameLenAnnotatedTypeFactory aTypeFactory;
 
   /** Shorthand for aTypeFactory.UNKNOWN. */
-  private AnnotationMirror UNKNOWN;
+  private final AnnotationMirror UNKNOWN;
 
+  /**
+   * Create a new SameLenTransfer.
+   *
+   * @param analysis the CFAnalysis
+   */
   public SameLenTransfer(CFAnalysis analysis) {
     super(analysis);
     this.aTypeFactory = (SameLenAnnotatedTypeFactory) analysis.getTypeFactory();

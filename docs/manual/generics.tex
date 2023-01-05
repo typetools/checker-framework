@@ -276,7 +276,7 @@ some unknown subtype of \<CharSequence>:
 For more details about wildcards, see the
 \href{https://docs.oracle.com/javase/tutorial/java/generics/wildcards.html}{Java
   tutorial on wildcards} or
-\href{https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.5.1}{JLS
+\href{https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.5.1}{JLS
   \S 4.5.1}.
 
 You can write a type annotation on the bound of a wildcard:
@@ -525,6 +525,9 @@ Here is where a polymorphic qualifier (e.g., \<@PolyNull>) can be used:
   qualifier written on a method in the class has a slightly different
   meaning, see Section~\ref{class-qual-param-method}.
 \end{itemize}
+
+Section~\ref{creating-declarative-hierarchy} explains how to define a
+polymorphic qualifier.
 
 
 \subsectionAndLabel{Using polymorphic qualifiers in a method signature}{qualifier-polymorphism-examples}
@@ -827,7 +830,7 @@ use collections.
 
 There is no point to writing just one polymorphic qualifier in a method
 signature, as the main type qualifier on a formal parameter type.
-This signature:
+Consider this signature:
 
 \begin{Verbatim}
   void m(@PolyNull Object obj)
@@ -860,44 +863,6 @@ which is similar to
 Method \<m2b()> can be called on (for example) \code{List<@Nullable
   MySubClass>} and \code{List<@NonNull MySubClass>}, which are not legal
 arguments to method \<m2a()>.
-
-
-\subsectionAndLabel{Defining a polymorphic qualifier}{qualifier-polymorphism-define}
-
-To define a polymorphic qualifier, meta-annotate the definition with
-\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
-\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
-qualifier for the Nullness type system and is defined as follows:
-
-\begin{Verbatim}
-  import java.lang.annotation.ElementType;
-  import java.lang.annotation.Target;
-  import org.checkerframework.framework.qual.PolymorphicQualifier;
-
-  @PolymorphicQualifier
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface PolyNull {}
-\end{Verbatim}
-
-
-
-
-To \emph{define} a polymorphic qualifier, mark the definition with
-\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
-\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
-qualifier for the Nullness type system:
-
-\begin{Verbatim}
-  import java.lang.annotation.ElementType;
-  import java.lang.annotation.Target;
-  import org.checkerframework.framework.qual.PolymorphicQualifier;
-
-  @PolymorphicQualifier
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface PolyNull {}
-\end{Verbatim}
-
-
 
 
 \sectionAndLabel{Class qualifier parameters}{class-qualifier-polymorphism}
@@ -1106,7 +1071,7 @@ unsound casts would be permitted. For example:
 
 % LocalWords:  nullable MyList nble nn Nullness DefaultQualifier MyClass quals
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
-% LocalWords:  PolymorphicQualifier PolyNull java lub invariantly supertype's
+% LocalWords:  PolyNull java lub invariantly supertype's
 % LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase elt
 % LocalWords:  PolyAll arrays' Xlint rawtypes AignoreRawTypeArguments s1
 % LocalWords:  call's Regex taintedHolder untaintedHolder taintedHolder2

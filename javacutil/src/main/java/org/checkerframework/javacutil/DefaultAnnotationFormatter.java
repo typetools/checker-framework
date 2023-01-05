@@ -108,7 +108,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    * the default value.
    *
    * @param elementValues a mapping of annotation element to annotation value
-   * @return a new map with only the not default default values of {@code elementValues}
+   * @return a new map with only the non-default values of {@code elementValues}
    */
   private Map<ExecutableElement, AnnotationValue> removeDefaultValues(
       Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {

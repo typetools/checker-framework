@@ -18,7 +18,7 @@ public class ValueLiteral extends JavaExpression {
   protected final @Nullable Object value;
 
   /** The negative of Long.MIN_VALUE, which does not fit in a long. */
-  private final BigInteger NEGATIVE_LONG_MIN_VALUE = new BigInteger("9223372036854775808");
+  private static final BigInteger NEGATIVE_LONG_MIN_VALUE = new BigInteger("9223372036854775808");
 
   /**
    * Creates a ValueLiteral from the node with the given type.

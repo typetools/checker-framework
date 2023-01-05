@@ -211,6 +211,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
     return hasOptionNoSubcheckers("resolveReflection");
   }
 
+  /** An array containing just {@code BaseTypeChecker.class}. */
+  private static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
+
   /**
    * Returns the appropriate visitor that type-checks the compilation unit according to the type
    * system rules.
@@ -226,16 +229,17 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @return the type-checking visitor
    */
   @Override
+  @SuppressWarnings("mustcall:return") // generics problem
   protected BaseTypeVisitor<?> createSourceVisitor() {
     // Try to reflectively load the visitor.
     Class<?> checkerClass = this.getClass();
-
+    Object[] thisArray = new Object[] {this};
     while (checkerClass != BaseTypeChecker.class) {
       BaseTypeVisitor<?> result =
           invokeConstructorFor(
               BaseTypeChecker.getRelatedClassName(checkerClass, "Visitor"),
-              new Class<?>[] {BaseTypeChecker.class},
-              new Object[] {this});
+              baseTypeCheckerClassArray,
+              thisArray);
       if (result != null) {
         return result;
       }
@@ -605,6 +609,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     Set<Element> elementsWithSuppressedWarnings =
         new HashSet<>(this.elementsWithSuppressedWarnings);
     this.elementsWithSuppressedWarnings.clear();
+
     Set<String> prefixes = new HashSet<>(getSuppressWarningsPrefixes());
     Set<String> errorKeys = new HashSet<>(messagesProperties.stringPropertyNames());
     for (BaseTypeChecker subChecker : subcheckers) {
@@ -628,7 +633,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * <p>If this checker has no subcheckers and is not a subchecker for any other checker, then
    * messageStore is null and messages will be printed as they are issued by this checker.
    */
-  private TreeSet<CheckerMessage> messageStore = null;
+  private @MonotonicNonNull TreeSet<CheckerMessage> messageStore;
 
   /**
    * If this is a compound checker or a subchecker of a compound checker, then the message is stored
@@ -806,7 +811,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
       }
 
       options.addAll(
-          expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
+          expandCFOptions(
+              Arrays.asList(this.getClass()), options.toArray(new String[options.size()])));
 
       supportedOptions = Collections.unmodifiableSet(options);
     }
@@ -831,7 +837,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * Like {@link #getOptions}, but only includes options provided to this checker. Does not include
    * those passed to subcheckers.
    *
-   * @return the the active options for this checker, not including those passed to subcheckers
+   * @return the active options for this checker, not including those passed to subcheckers
    */
   public Map<String, String> getOptionsNoSubcheckers() {
     return super.getOptions();

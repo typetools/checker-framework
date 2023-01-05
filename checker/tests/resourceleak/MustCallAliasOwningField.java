@@ -4,7 +4,7 @@ import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-public @MustCall("shutdown") class MustCallAliasOwningField {
+public @InheritableMustCall("shutdown") class MustCallAliasOwningField {
 
   private final @Owning BufferedInputStream input;
 
