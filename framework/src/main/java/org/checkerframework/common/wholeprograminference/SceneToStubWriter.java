@@ -546,8 +546,14 @@ public final class SceneToStubWriter {
         // file, which will eventually be merged with this one.
         printWriter.print(formatAnnotations(aClass.getAnnotations()));
       }
-      if (aClass.isEnum(nameToPrint)) {
+      if (aClass.isAnnotation(nameToPrint)) {
+        printWriter.print("@interface ");
+      } else if (aClass.isEnum(nameToPrint)) {
         printWriter.print("enum ");
+      } else if (aClass.isInterface(nameToPrint)) {
+        printWriter.print("interface ");
+      } else if (aClass.isRecord(nameToPrint)) {
+        printWriter.print("record ");
       } else {
         printWriter.print("class ");
       }
