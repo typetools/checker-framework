@@ -222,7 +222,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
-  /** The {@code value} element/field of @{@link SideEffectsOnly} annotation. */
+  /** The {@code value} element/field of the @{@link SideEffectsOnly} annotation. */
   ExecutableElement sideEffectsOnlyValueElement;
 
   /** True if "-Ashowchecks" was passed on the command line. */
@@ -998,13 +998,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    TreePath body = atypeFactory.getPath(node.getBody());
-
-    //    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, node) &&
+    // if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, node) &&
     // !checkSideEffectsOnly) {
-    //      // There is nothing to check.
-    //      return;
-    //    }
+    //   // There is nothing to check.
+    //   return;
+    // }
 
     if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
       // check "no" purity
@@ -1019,6 +1017,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
 
+      TreePath body = atypeFactory.getPath(node.getBody());
       PurityResult r;
       if (body == null) {
         r = new PurityResult();
