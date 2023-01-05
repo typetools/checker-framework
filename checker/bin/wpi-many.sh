@@ -230,7 +230,7 @@ do
 
     cd "${OUTDIR}/${REPO_NAME_HASH}" || exit 5
 
-    RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
+    RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi-stdout.log"
     touch "${RESULT_LOG}"
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
@@ -254,7 +254,7 @@ do
           rm -rf -- "./${REPO_NAME_HASH}"
         fi
     else
-        cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
+        cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
@@ -265,9 +265,9 @@ do
             echo "Start of toplevel.log:"
             cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
             echo "End of toplevel.log."
-            echo "Start of wpi.log:"
-            cat "${REPO_FULLPATH}"/dljc-out/wpi.log
-            echo "End of wpi.log."
+            echo "Start of wpi-stdout.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/wpi-stdout.log
+            echo "End of wpi-stdout.log."
         fi
     fi
 
