@@ -227,7 +227,7 @@ public class RemoveAnnotationsForInference {
     }
   }
 
-  // TODO: When plume-util 1.6.1 is released, use the version of `isBlank()` in StringsPlume.
+  // TODO: When plume-util 1.6.2 is released, use the version of `isBlank()` in StringsPlume.
 
   /**
    * Returns true if the string contains only white space codepoints, otherwise false.
