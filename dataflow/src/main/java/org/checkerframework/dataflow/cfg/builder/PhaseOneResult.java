@@ -31,18 +31,18 @@ public class PhaseOneResult {
    * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
    * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in the
    * treeToCfgNodes, while the Node for the post-conversion value is stored in the
-   * convertedTreeLookupMap.
+   * treeToConvertedCfgNodes.
    */
   final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
   /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
+  final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
    * tree that is {@code v + 1} or {@code v - 1}.
    */
-  final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
+  final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
 
   /** The list of extended nodes. */
   final ArrayList<ExtendedNode> nodeList;
@@ -80,8 +80,8 @@ public class PhaseOneResult {
   public PhaseOneResult(
       UnderlyingAST underlyingAST,
       IdentityHashMap<Tree, Set<Node>> treeToCfgNodes,
-      IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap,
-      IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap,
+      IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes,
+      IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes,
       ArrayList<ExtendedNode> nodeList,
       Map<Label, Integer> bindings,
       Set<Integer> leaders,
@@ -92,8 +92,8 @@ public class PhaseOneResult {
       List<LambdaExpressionTree> declaredLambdas) {
     this.underlyingAST = underlyingAST;
     this.treeToCfgNodes = treeToCfgNodes;
-    this.convertedTreeLookupMap = convertedTreeLookupMap;
-    this.postfixLookupMap = postfixLookupMap;
+    this.treeToConvertedCfgNodes = treeToConvertedCfgNodes;
+    this.postfixTreeToCfgNodes = postfixTreeToCfgNodes;
     this.nodeList = nodeList;
     this.bindings = bindings;
     this.leaders = leaders;
@@ -167,8 +167,8 @@ public class PhaseOneResult {
         new StringJoiner(
             String.format("%n  "), String.format("PhaseOneResult{%n  "), String.format("%n  }"));
     result.add("treeToCfgNodes=" + mapToString(treeToCfgNodes));
-    result.add("convertedTreeLookupMap=" + mapToString(convertedTreeLookupMap));
-    result.add("postfixLookupMap=" + mapToString(postfixLookupMap));
+    result.add("treeToConvertedCfgNodes=" + mapToString(treeToConvertedCfgNodes));
+    result.add("postfixTreeToCfgNodes=" + mapToString(postfixTreeToCfgNodes));
     result.add("underlyingAST=" + underlyingAST);
     result.add("bindings=" + bindings);
     result.add("nodeList=" + CFGBuilder.extendedNodeCollectionToStringDebug(nodeList));

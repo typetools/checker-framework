@@ -271,18 +271,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
    * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in the
    * treeToCfgNodes, while the Node for the post-conversion value is stored in the
-   * convertedTreeLookupMap.
+   * treeToConvertedCfgNodes.
    */
   final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
   /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  final IdentityHashMap<Tree, Set<Node>> convertedTreeLookupMap;
+  final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
    * tree that is {@code v + 1} or {@code v - 1}.
    */
-  final IdentityHashMap<UnaryTree, BinaryTree> postfixLookupMap;
+  final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
 
   /** The list of extended nodes. */
   final ArrayList<ExtendedNode> nodeList;
@@ -390,8 +390,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // initialize lists and maps
     treeToCfgNodes = new IdentityHashMap<>();
-    convertedTreeLookupMap = new IdentityHashMap<>();
-    postfixLookupMap = new IdentityHashMap<>();
+    treeToConvertedCfgNodes = new IdentityHashMap<>();
+    postfixTreeToCfgNodes = new IdentityHashMap<>();
     nodeList = new ArrayList<>();
     bindings = new HashMap<>();
     leaders = new HashSet<>();
@@ -467,8 +467,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return new PhaseOneResult(
           underlyingAST,
           treeToCfgNodes,
-          convertedTreeLookupMap,
-          postfixLookupMap,
+          treeToConvertedCfgNodes,
+          postfixTreeToCfgNodes,
           nodeList,
           bindings,
           leaders,
@@ -656,11 +656,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected void addToConvertedLookupMap(Tree tree, Node node) {
     assert tree != null;
     assert treeToCfgNodes.containsKey(tree);
-    Set<Node> existing = convertedTreeLookupMap.get(tree);
+    Set<Node> existing = treeToConvertedCfgNodes.get(tree);
     if (existing == null) {
       Set<Node> newSet = new IdentityArraySet<>(1);
       newSet.add(node);
-      convertedTreeLookupMap.put(tree, newSet);
+      treeToConvertedCfgNodes.put(tree, newSet);
     } else {
       existing.add(node);
     }
@@ -3936,7 +3936,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         treeBuilder.buildBinary(
             promotedType, isIncrement ? Tree.Kind.PLUS : Tree.Kind.MINUS, exprTree, oneTree);
     if (isPostfix) {
-      postfixLookupMap.put(unaryTree, operTree);
+      postfixTreeToCfgNodes.put(unaryTree, operTree);
     }
     handleArtificialTree(operTree);
 
