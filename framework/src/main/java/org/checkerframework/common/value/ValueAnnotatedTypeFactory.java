@@ -253,7 +253,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected void applyInferredAnnotations(AnnotatedTypeMirror type, CFValue as) {
-    // Inference can widen an IntRange beyond that values possible for the Java type. Change the
+    // Inference can widen an IntRange beyond the values possible for the Java type. Change the
     // annotation here so it is no wider than is possible.
     TypeMirror t = as.getUnderlyingType();
     Set<AnnotationMirror> inferredAnnos = as.getAnnotations();
