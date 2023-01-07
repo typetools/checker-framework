@@ -160,7 +160,6 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
-import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -171,6 +170,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IdentityMostlySingletonSet;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -612,7 +612,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeLookupMap.get(tree);
     if (existing == null) {
-      treeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
+      treeLookupMap.put(tree, new IdentityMostlySingletonSet<>(node));
     } else {
       existing.add(node);
     }
@@ -621,7 +621,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     while (enclosingParens != null) {
       Set<Node> exp = treeLookupMap.get(enclosingParens);
       if (exp == null) {
-        treeLookupMap.put(enclosingParens, new IdentityMostlySingleton<>(node));
+        treeLookupMap.put(enclosingParens, new IdentityMostlySingletonSet<>(node));
       } else if (!existing.contains(node)) {
         exp.add(node);
       }
@@ -654,7 +654,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assert treeLookupMap.containsKey(tree);
     Set<Node> existing = convertedTreeLookupMap.get(tree);
     if (existing == null) {
-      convertedTreeLookupMap.put(tree, new IdentityMostlySingleton<>(node));
+      convertedTreeLookupMap.put(tree, new IdentityMostlySingletonSet<>(node));
     } else {
       existing.add(node);
     }
