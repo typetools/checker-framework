@@ -160,7 +160,6 @@ import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
-import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -171,6 +170,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IdentityMostlySingletonSet;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -612,7 +612,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeToCfgNodes.get(tree);
     if (existing == null) {
-      treeToCfgNodes.put(tree, new IdentityMostlySingleton<>(node));
+      treeToCfgNodes.put(tree, new IdentityMostlySingletonSet<>(node));
     } else {
       existing.add(node);
     }
@@ -621,7 +621,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     while (enclosingParens != null) {
       Set<Node> exp = treeToCfgNodes.get(enclosingParens);
       if (exp == null) {
-        treeToCfgNodes.put(enclosingParens, new IdentityMostlySingleton<>(node));
+        treeToCfgNodes.put(enclosingParens, new IdentityMostlySingletonSet<>(node));
       } else if (!existing.contains(node)) {
         exp.add(node);
       }
@@ -654,7 +654,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assert treeToCfgNodes.containsKey(tree);
     Set<Node> existing = treeToConvertedCfgNodes.get(tree);
     if (existing == null) {
-      treeToConvertedCfgNodes.put(tree, new IdentityMostlySingleton<>(node));
+      treeToConvertedCfgNodes.put(tree, new IdentityMostlySingletonSet<>(node));
     } else {
       existing.add(node);
     }
