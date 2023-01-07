@@ -213,9 +213,9 @@ public class CFGTranslationPhaseTwo {
         regularExitBlock,
         exceptionalExitBlock,
         in.underlyingAST,
-        in.treeLookupMap,
-        in.convertedTreeLookupMap,
-        in.postfixLookupMap,
+        in.treeToCfgNodes,
+        in.treeToConvertedCfgNodes,
+        in.postfixTreeToCfgNodes,
         in.returnNodes,
         in.declaredClasses,
         in.declaredLambdas);
