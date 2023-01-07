@@ -42,6 +42,7 @@ import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
@@ -52,6 +53,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.DefaultInferredTypesApplier;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
@@ -62,6 +64,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -246,6 +249,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Gets a helper object that holds references to methods with special handling. */
   ValueMethodIdentifier getMethodIdentifier() {
     return methods;
+  }
+
+  @Override
+  protected void applyInferredAnnotations(AnnotatedTypeMirror type, CFValue as) {
+    // Inference can widen an IntRange beyond that values possible for the Java type. Change the
+    // annotation here so it is no wider than is possible.
+    TypeMirror t = as.getUnderlyingType();
+    Set<AnnotationMirror> inferredAnnos = as.getAnnotations();
+    AnnotationMirror intRange = AnnotationUtils.getAnnotationByName(inferredAnnos, INTRANGE_NAME);
+    if (intRange != null && TypeKindUtils.primitiveOrBoxedToTypeKind(t) != null) {
+      Range range = getRange(intRange);
+      Range newRange = NumberUtils.castRange(t, range);
+      if (!newRange.equals(range)) {
+        inferredAnnos = AnnotationMirrorSet.singleElementSet(createIntRangeAnnotation(newRange));
+      }
+    }
+
+    DefaultInferredTypesApplier applier =
+        new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
+    applier.applyInferredType(type, inferredAnnos, as.getUnderlyingType());
   }
 
   @Override
