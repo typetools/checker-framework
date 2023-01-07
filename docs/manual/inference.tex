@@ -140,11 +140,11 @@ A typical invocation of \<wpi.sh> is
 
 The result is a set of log files placed in the \<dljc-out/> folder of the
 target project. The results of type-checking with each candidate set of
-annotations will be concatenated into the file \<dljc-out/wpi.log>; the final
+annotations will be concatenated into the file \<dljc-out/wpi-stdout.log>; the final
 results (i.e., those obtained using the most precise, consistent set of annotations)
 will appear at the end of this file.
 The inferred annotations appear in \<.ajava> files in a
-temporary directory whose name appears in the \<dlcj-out/wpi.log> file;
+temporary directory whose name appears in the \<dlcj-out/wpi-stdout.log> file;
 you can find their location by examining the \<-Ajava> argument
 to the last \<javac> command that was run. The annotation files generated in
 each round of inference appear in directories labeled \<iteration0>, \<iteration1>, etc.
