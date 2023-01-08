@@ -63,7 +63,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -163,6 +162,7 @@ import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.dataflow.util.IdentityMostlySingleton;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -170,6 +170,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.ArrayMap;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -419,10 +421,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     noClassDefFoundErrorType = maybeGetTypeMirror(NoClassDefFoundError.class);
     stringType = getTypeMirror(String.class);
     throwableType = getTypeMirror(Throwable.class);
-    uncheckedExceptionTypes = new LinkedHashSet<>(2);
+    uncheckedExceptionTypes = new ArraySet<>(2);
     uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
     uncheckedExceptionTypes.add(getTypeMirror(Error.class));
-    newArrayExceptionTypes = new LinkedHashSet<>(2);
+    newArrayExceptionTypes = new ArraySet<>(2);
     newArrayExceptionTypes.add(negativeArraySizeExceptionType);
     if (outOfMemoryErrorType != null) {
       newArrayExceptionTypes.add(outOfMemoryErrorType);
@@ -694,7 +696,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
       Node node, Set<TypeMirror> causes) {
     addToLookupMap(node);
-    Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
+    Map<TypeMirror, Set<Label>> exceptions = new ArrayMap<>(causes.size());
     for (TypeMirror cause : causes) {
       exceptions.put(cause, tryStack.possibleLabels(cause));
     }
@@ -713,7 +715,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the node holder
    */
   protected NodeWithExceptionsHolder extendWithClassNameNode(ClassNameNode node) {
-    Set<TypeMirror> thrownSet = new LinkedHashSet<>(4);
+    Set<TypeMirror> thrownSet = new ArraySet<>(4);
     if (classCircularityErrorType != null) {
       thrownSet.add(classCircularityErrorType);
     }
@@ -756,7 +758,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
       Node node, Set<TypeMirror> causes, Node pred) {
     addToLookupMap(node);
-    Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
+    Map<TypeMirror, Set<Label>> exceptions = new ArrayMap<>(causes.size());
     for (TypeMirror cause : causes) {
       exceptions.put(cause, tryStack.possibleLabels(cause));
     }
@@ -3349,7 +3351,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
     Set<TypeMirror> thrownSet =
-        new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+        CollectionUtils.newArrayOrLinkedHashSet(
+            thrownTypes.size() + uncheckedExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
     thrownSet.addAll(thrownTypes);
     // Add types to account for unchecked exceptions
