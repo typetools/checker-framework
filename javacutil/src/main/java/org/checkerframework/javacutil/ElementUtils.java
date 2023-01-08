@@ -475,7 +475,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the elements of the fields whose simple names are {@code names} and are declared in
+   * Returns the elements of the fields whose simple names are in {@code names} and are declared in
    * {@code type}.
    *
    * <p>If a field isn't declared in {@code type}, its element isn't included in the returned set.
@@ -632,7 +632,7 @@ public class ElementUtils {
 
     List<TypeElement> superElems = new ArrayList<>();
 
-    // Set up a stack containing type, which is our starting point.
+    // Set up a stack containing `type`, which is our starting point.
     Deque<TypeElement> stack = new ArrayDeque<>();
     stack.push(type);
 
@@ -721,8 +721,7 @@ public class ElementUtils {
    */
   public static List<VariableElement> getEnumConstants(TypeElement type) {
     List<? extends Element> enclosedElements = type.getEnclosedElements();
-    List<VariableElement> enumConstants =
-        new ArrayList<>(CollectionsPlume.mapCapacity(enclosedElements.size()));
+    List<VariableElement> enumConstants = new ArrayList<>(enclosedElements.size());
     for (Element e : enclosedElements) {
       if (e.getKind() == ElementKind.ENUM_CONSTANT) {
         enumConstants.add((VariableElement) e);

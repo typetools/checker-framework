@@ -33,6 +33,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
@@ -113,7 +114,7 @@ public class AnnotationBuilder {
     this.annotationType = annotation.getAnnotationType();
     this.annotationElt = (TypeElement) annotationType.asElement();
 
-    this.elementValues = new LinkedHashMap<>(annotation.getElementValues());
+    this.elementValues = new ArrayMap<>(annotation.getElementValues());
   }
 
   /**

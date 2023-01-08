@@ -1310,6 +1310,8 @@ public final class TreeUtils {
         }
       }
     }
+
+    // Didn't find an answer.  Compose an error message.
     List<String> candidates = new ArrayList<>();
     for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
       if (exec.getSimpleName().contentEquals(methodName)) {
