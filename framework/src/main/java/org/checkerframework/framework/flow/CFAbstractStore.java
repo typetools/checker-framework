@@ -207,10 +207,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * </ol>
    *
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
+   *
+   * @param methodInvocationNode method whose information is being updated
+   * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param val abstract value of the method call
    */
   public void updateForMethodCall(
-      MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
-    ExecutableElement method = n.getTarget().getMethod();
+      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+    ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
     // case 1: remove information if necessary
     if (!(analysis.checker.hasOption("assumeSideEffectFree")
@@ -292,7 +296,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     // store information about method call if possible
-    JavaExpression methodCall = JavaExpression.fromNode(n);
+    JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
   }
 
