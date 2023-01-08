@@ -486,7 +486,7 @@ public class ElementUtils {
    *     {@code type}
    */
   public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
-    Set<VariableElement> results = newArrayOrHashSet(names.size());
+    Set<VariableElement> results = CollectionUtils.newArrayOrHashSet(names.size());
     for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
       if (names.contains(field.getSimpleName().toString())) {
         results.add(field);
@@ -513,7 +513,7 @@ public class ElementUtils {
   public static Set<VariableElement> findFieldsInTypeOrSuperType(
       TypeMirror type, Collection<String> names) {
     int origCardinality = names.size();
-    Set<VariableElement> elements = newArrayOrHashSet(origCardinality);
+    Set<VariableElement> elements = CollectionUtils.newArrayOrHashSet(origCardinality);
     findFieldsInTypeOrSuperType(type, names, elements);
     // Since names may contain duplicates, I don't trust the claim in the documentation about
     // cardinality.  (Does any code depend on the invariant, though?)
@@ -535,8 +535,8 @@ public class ElementUtils {
     TypeElement elt = TypesUtils.getTypeElement(type);
     assert elt != null : "@AssumeAssertion(nullness): assumption";
     Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-    // Use a new set to avoid a ConcurrentModificationException.
-    for (VariableElement field : newArrayOrHashSet(fieldElts)) {
+    // Iterate over a new collection to avoid a ConcurrentModificationException.
+    for (VariableElement field : new ArrayList<>(fieldElts)) {
       if (!field.getModifiers().contains(Modifier.PRIVATE)) {
         notFound.remove(field.getSimpleName().toString());
       } else {
