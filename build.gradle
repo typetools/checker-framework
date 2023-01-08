@@ -20,6 +20,7 @@ apply plugin: 'de.undercouch.download'
 
 import org.ajoberstar.grgit.Grgit
 
+// There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
     mavenCentral()
 }
@@ -45,7 +46,7 @@ ext {
     afu = "${annotationTools}/annotation-file-utilities"
 
     stubparser = "${parentDir}/stubparser"
-    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.9.jar"
+    stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.10.jar"
 
     plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
     htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -96,7 +97,7 @@ spotless {
   //  > Could not create task ':checker-qual:spotlessJavaCheck'.
   //     > Could not create task ':checker-qual:spotlessJava'.
   //        > File signature can only be created for existing regular files, given:
-  //          /Users/smillst/jsr308/checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
+  //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
   predeclareDepsFromBuildscript()
 }
 
@@ -128,7 +129,7 @@ allprojects {
     // level (third number) if:
     //   * any new checkers have been added, or
     //   * backward-incompatible changes have been made to APIs or elsewhere.
-    version '3.28.1-SNAPSHOT'
+    version '3.29.1-SNAPSHOT'
 
     repositories {
         mavenCentral()
