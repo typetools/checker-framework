@@ -505,8 +505,8 @@ public class ElementUtils {
    * called.
    *
    * @param type where to look for fields
-   * @param names simple names of fields that might be declared in {@code type} or a supertype
-   *     (Names that are found are removed from this list.)
+   * @param names simple names of fields that might be declared in {@code type} or a supertype.
+   *     Names that are found are removed from this list.
    * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
    *     whose simple names were in {@code names} when the method was called.
    */
@@ -515,10 +515,12 @@ public class ElementUtils {
     int origCardinality = names.size();
     Set<VariableElement> elements = CollectionUtils.newArrayOrHashSet(origCardinality);
     findFieldsInTypeOrSuperType(type, names, elements);
-    // Since names may contain duplicates, I don't trust the claim in the documentation about
+    // Since `names` may contain duplicates, I don't trust the claim in the documentation about
     // cardinality.  (Does any code depend on the invariant, though?)
     if (origCardinality != names.size() + elements.size()) {
-      throw new BugInCF("Bad sizes: %d != %d + %d", origCardinality, names.size(), elements.size());
+      throw new BugInCF(
+          "Bad sizes: %d != %d + %d ; names=%s  elements=%s",
+          origCardinality, names.size(), elements.size(), names, elements);
     }
     return elements;
   }
