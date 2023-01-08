@@ -37,6 +37,8 @@ public class CollectionUtils {
    * Returns a new ArrayMap or HashMap with the given capacity. Uses an ArrayMap if the capacity is
    * small, and a HashMap otherwise.
    *
+   * @param <K> the type of the keys
+   * @param <V> the type of the values
    * @param capacity the expected maximum number of elements in the set
    * @return a new ArrayMap or HashMap with the given capacity
    */
@@ -52,6 +54,8 @@ public class CollectionUtils {
    * Returns a new ArrayMap or HashMap with the given elements. Uses an ArrayMap if the capacity is
    * small, and a HashMap otherwise.
    *
+   * @param <K> the type of the keys
+   * @param <V> the type of the values
    * @param m the elements to put in the returned set
    * @return a new ArrayMap or HashMap with the given elements
    */
@@ -67,6 +71,8 @@ public class CollectionUtils {
    * Returns a new ArrayMap or LinkedHashMap with the given capacity. Uses an ArrayMap if the
    * capacity is small, and a LinkedHashMap otherwise.
    *
+   * @param <K> the type of the keys
+   * @param <V> the type of the values
    * @param capacity the expected maximum number of elements in the set
    * @return a new ArrayMap or LinkedHashMap with the given capacity
    */
@@ -82,6 +88,8 @@ public class CollectionUtils {
    * Returns a new ArrayMap or LinkedHashMap with the given elements. Uses an ArrayMap if the
    * capacity is small, and a LinkedHashMap otherwise.
    *
+   * @param <K> the type of the keys
+   * @param <V> the type of the values
    * @param m the elements to put in the returned set
    * @return a new ArrayMap or LinkedHashMap with the given elements
    */
@@ -99,6 +107,7 @@ public class CollectionUtils {
    * Returns a new ArraySet or HashSet with the given capacity. Uses an ArraySet if the capacity is
    * small, and a HashSet otherwise.
    *
+   * @param <E> the type of the elements
    * @param capacity the expected maximum number of elements in the set
    * @return a new ArraySet or HashSet with the given capacity
    */
@@ -114,6 +123,7 @@ public class CollectionUtils {
    * Returns a new ArraySet or HashSet with the given elements. Uses an ArraySet if the capacity is
    * small, and a HashSet otherwise.
    *
+   * @param <E> the type of the elements
    * @param s the elements to put in the returned set
    * @return a new ArraySet or HashSet with the given elements
    */
@@ -129,6 +139,7 @@ public class CollectionUtils {
    * Returns a new ArraySet or LinkedHashSet with the given capacity. Uses an ArraySet if the
    * capacity is small, and a LinkedHashSet otherwise.
    *
+   * @param <E> the type of the elements
    * @param capacity the expected maximum number of elements in the set
    * @return a new ArraySet or LinkedHashSet with the given capacity
    */
@@ -144,6 +155,7 @@ public class CollectionUtils {
    * Returns a new ArraySet or LinkedHashSet with the given elements. Uses an ArraySet if the
    * capacity is small, and a LinkedHashSet otherwise.
    *
+   * @param <E> the type of the elements
    * @param s the elements to put in the returned set
    * @return a new ArraySet or LinkedHashSet with the given elements
    */
