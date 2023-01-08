@@ -170,7 +170,7 @@ import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.IdentityMostlySingletonSet;
+import org.plumelib.util.IdentityArraySet;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -612,7 +612,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeToCfgNodes.get(tree);
     if (existing == null) {
-      treeToCfgNodes.put(tree, new IdentityMostlySingletonSet<>(node));
+      Set<Node> newSet = new IdentityArraySet<Node>(1);
+      newSet.add(node);
+      treeToCfgNodes.put(tree, newSet);
     } else {
       existing.add(node);
     }
@@ -621,7 +623,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     while (enclosingParens != null) {
       Set<Node> exp = treeToCfgNodes.get(enclosingParens);
       if (exp == null) {
-        treeToCfgNodes.put(enclosingParens, new IdentityMostlySingletonSet<>(node));
+        Set<Node> newSet = new IdentityArraySet<>(1);
+        newSet.add(node);
+        treeToCfgNodes.put(enclosingParens, newSet);
       } else if (!existing.contains(node)) {
         exp.add(node);
       }
@@ -654,7 +658,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assert treeToCfgNodes.containsKey(tree);
     Set<Node> existing = treeToConvertedCfgNodes.get(tree);
     if (existing == null) {
-      treeToConvertedCfgNodes.put(tree, new IdentityMostlySingletonSet<>(node));
+      Set<Node> newSet = new IdentityArraySet<>(1);
+      newSet.add(node);
+      treeToConvertedCfgNodes.put(tree, newSet);
     } else {
       existing.add(node);
     }

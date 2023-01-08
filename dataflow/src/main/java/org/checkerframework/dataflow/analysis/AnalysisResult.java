@@ -15,10 +15,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.util.UnmodifiableIdentityHashMap;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.UniqueId;
+import org.plumelib.util.UnmodifiableIdentityHashMap;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
