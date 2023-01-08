@@ -43,6 +43,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -487,7 +488,7 @@ public class ElementUtils {
    *     {@code type}
    */
   public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
-    Set<VariableElement> results = new HashSet<>();
+    Set<VariableElement> results = newArrayOrHashSet(names.size());
     for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
       if (names.contains(field.getSimpleName().toString())) {
         results.add(field);
@@ -514,7 +515,7 @@ public class ElementUtils {
   public static Set<VariableElement> findFieldsInTypeOrSuperType(
       TypeMirror type, Collection<String> names) {
     int origCardinality = names.size();
-    Set<VariableElement> elements = new HashSet<>();
+    Set<VariableElement> elements = newArrayOrHashSet(origCardinality);
     findFieldsInTypeOrSuperType(type, names, elements);
     // Since names may contain duplicates, I don't trust the claim in the documentation about
     // cardinality.  (Does any code depend on the invariant, though?)
@@ -536,7 +537,8 @@ public class ElementUtils {
     TypeElement elt = TypesUtils.getTypeElement(type);
     assert elt != null : "@AssumeAssertion(nullness): assumption";
     Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-    for (VariableElement field : new HashSet<VariableElement>(fieldElts)) {
+    // Use a new set to avoid a ConcurrentModificationException.
+    for (VariableElement field : newArrayOrHashSet(fieldElts)) {
       if (!field.getModifiers().contains(Modifier.PRIVATE)) {
         notFound.remove(field.getSimpleName().toString());
       } else {
@@ -1059,5 +1061,37 @@ public class ElementUtils {
 
     return elt.getKind() == ElementKind.CONSTRUCTOR
         && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+  }
+
+  // TODO: move into ArraySet.java (and make public).
+
+  /**
+   * Returns a new ArraySet or HashSet with the given capacity. Uses an ArraySet if the capacity is
+   * small, and a HashSet otherwise.
+   *
+   * @param capacity the expected maximum number of elements in the set
+   * @return a new ArraySet or HashSet with the given capacity
+   */
+  private static <T> Set<T> newArrayOrHashSet(int capacity) {
+    if (capacity <= 4) {
+      return new ArraySet<>(capacity);
+    } else {
+      return new HashSet<>(CollectionsPlume.mapCapacity(capacity));
+    }
+  }
+
+  /**
+   * Returns a new ArraySet or HashSet with the given elements. Uses an ArraySet if the capacity is
+   * small, and a HashSet otherwise.
+   *
+   * @param s the elements to put in the returned set
+   * @return a new ArraySet or HashSet with the given elements
+   */
+  private static <T> Set<T> newArrayOrHashSet(Set<T> s) {
+    if (s.size() <= 4) {
+      return new ArraySet<>(s);
+    } else {
+      return new HashSet<>(s);
+    }
   }
 }
