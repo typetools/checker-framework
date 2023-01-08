@@ -448,7 +448,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     try {
       modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations);
     } catch (ParseProblemException e) {
-      throw new BugInCF("Failed to parse annotation insertion:\n" + withAnnotations, e);
+      throw new BugInCF("Failed to parse code after annotation insertion:\n" + withAnnotations, e);
     }
 
     AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();

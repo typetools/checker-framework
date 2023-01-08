@@ -253,7 +253,7 @@ function configure_and_exec_dljc {
   # Framework crashed, so output the log file for easier debugging.
   wpi_no_output_message="No WPI outputs were discovered; it is likely that WPI failed or the Checker Framework crashed"
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
-    wpi_log_path="${DIR}"/dljc-out/wpi.log
+    wpi_log_path="${DIR}"/dljc-out/wpi-stdout.log
     echo "=== ${wpi_no_output_message}: printing ${wpi_log_path} ==="
     cat "${wpi_log_path}"
     echo "=== end of ${wpi_log_path} ==="
@@ -265,15 +265,15 @@ function configure_and_exec_dljc {
       return
   fi
 
-  if [ -f dljc-out/wpi.log ]; then
+  if [ -f dljc-out/wpi-stdout.log ]; then
       # Put, in file `typecheck.out`, everything from the last "Running ..." onwards.
-      sed -n '/^Running/h;//!H;$!d;x;//p' dljc-out/wpi.log > dljc-out/typecheck.out
+      sed -n '/^Running/h;//!H;$!d;x;//p' dljc-out/wpi-stdout.log > dljc-out/typecheck.out
       WPI_RESULTS_AVAILABLE="yes"
       echo "dljc output is in ${DIR}/dljc-out/"
       echo "typecheck output is in ${DIR}/dljc-out/typecheck.out"
       echo "stdout is in $dljc_stdout"
   else
-      WPI_RESULTS_AVAILABLE="file ${DIR}/dljc-out/wpi.log does not exist"
+      WPI_RESULTS_AVAILABLE="file ${DIR}/dljc-out/wpi-stdout.log does not exist"
       echo "dljc failed: ${WPI_RESULTS_AVAILABLE}"
       echo "dljc output is in ${DIR}/dljc-out/"
       echo "stdout is in $dljc_stdout"
