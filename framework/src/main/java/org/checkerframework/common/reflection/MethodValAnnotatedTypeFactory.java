@@ -127,7 +127,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param sigs the method signatures that the result should represent
    * @return a {@code @MethodVal} annotation that represents {@code sigs}
    */
-  private AnnotationMirror createMethodVal(Set<MethodSignature> sigs) {
+  private AnnotationMirror createMethodVal(Collection<MethodSignature> sigs) {
     int size = sigs.size();
     List<String> classNames = new ArrayList<>(size);
     List<String> methodNames = new ArrayList<>(size);
@@ -224,10 +224,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-
-        Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
-        lubSigs.addAll(a2Sigs); // union
-
+        List<MethodSignature> lubSigs = CollectionsPlume.listUnion(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }
@@ -245,10 +242,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-
-        Set<MethodSignature> lubSigs = new HashSet<>(a1Sigs);
-        lubSigs.retainAll(a2Sigs); // intersection
-
+        List<MethodSignature> lubSigs = CollectionsPlume.listIntersection(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }

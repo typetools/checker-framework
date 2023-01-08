@@ -26,7 +26,6 @@ import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
 
 /** The annotated type factory for the Initialized Fields Checker. */
 public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotatedTypeFactory {
@@ -48,7 +47,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     String[] checkerNames = getCheckerNames();
 
     // There are usually few subcheckers.
-    defaultValueAtypeFactories = new ArrayList<>(CollectionsPlume.mapCapacity(2));
+    defaultValueAtypeFactories = new ArrayList<>(2);
     for (String checkerName : checkerNames) {
       if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
         continue;

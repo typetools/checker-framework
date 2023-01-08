@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
@@ -196,11 +196,12 @@ public abstract class BaseTypeChecker extends SourceChecker {
    */
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     if (shouldResolveReflection()) {
+      // This must return a modifiable set because clients modify it.
       return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
     }
     // The returned set will be modified by callees.
     // Most checkers have 1 or fewer subcheckers.
-    return new LinkedHashSet<>(CollectionsPlume.mapCapacity(1));
+    return new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
   }
 
   /**
@@ -430,8 +431,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * Returns the unmodifiable list of immediate subcheckers of this checker.
    */
   private List<BaseTypeChecker> instantiateSubcheckers(
-      LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker>
-          alreadyInitializedSubcheckerMap) {
+      Map<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap) {
     LinkedHashSet<Class<? extends BaseTypeChecker>> classesOfImmediateSubcheckers =
         getImmediateSubcheckerClasses();
     if (classesOfImmediateSubcheckers.isEmpty()) {
@@ -482,8 +482,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
   public List<BaseTypeChecker> getSubcheckers() {
     if (subcheckers == null) {
       // Instantiate the checkers this one depends on, if any.
-      LinkedHashMap<Class<? extends BaseTypeChecker>, BaseTypeChecker> checkerMap =
-          new LinkedHashMap<>(1);
+      Map<Class<? extends BaseTypeChecker>, BaseTypeChecker> checkerMap =
+          new ArrayMap<Class<? extends BaseTypeChecker>, BaseTypeChecker>(2);
 
       immediateSubcheckers = instantiateSubcheckers(checkerMap);
 
@@ -862,7 +862,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @return stub files to be treated as if they had been written in a {@code @StubFiles} annotation
    */
   public List<String> getExtraStubFiles() {
-    return new ArrayList<>();
+    return Collections.emptyList();
   }
 
   @Override
