@@ -335,8 +335,8 @@ public class AnnotationUtils {
   }
 
   /**
-   * Provide ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by their
-   * fully-qualified names, then by their element values in order of the name of the element.
+   * Provide an ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by
+   * their fully-qualified names, then by their element values in order of the name of the element.
    *
    * @param a1 the first annotation
    * @param a2 the second annotation
@@ -354,6 +354,7 @@ public class AnnotationUtils {
     List<ExecutableElement> methods =
         ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements());
 
+    // getDefaultValue() returns null if the method is not an annotation interface element.
     for (ExecutableElement meth : methods) {
       AnnotationValue aval1 = vals1.get(meth);
       if (aval1 == null) {
