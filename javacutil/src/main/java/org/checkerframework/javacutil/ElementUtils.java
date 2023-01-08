@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +42,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -1061,37 +1059,5 @@ public class ElementUtils {
 
     return elt.getKind() == ElementKind.CONSTRUCTOR
         && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
-  }
-
-  // TODO: move into ArraySet.java (and make public).
-
-  /**
-   * Returns a new ArraySet or HashSet with the given capacity. Uses an ArraySet if the capacity is
-   * small, and a HashSet otherwise.
-   *
-   * @param capacity the expected maximum number of elements in the set
-   * @return a new ArraySet or HashSet with the given capacity
-   */
-  private static <T> Set<T> newArrayOrHashSet(int capacity) {
-    if (capacity <= 4) {
-      return new ArraySet<>(capacity);
-    } else {
-      return new HashSet<>(CollectionsPlume.mapCapacity(capacity));
-    }
-  }
-
-  /**
-   * Returns a new ArraySet or HashSet with the given elements. Uses an ArraySet if the capacity is
-   * small, and a HashSet otherwise.
-   *
-   * @param s the elements to put in the returned set
-   * @return a new ArraySet or HashSet with the given elements
-   */
-  private static <T> Set<T> newArrayOrHashSet(Set<T> s) {
-    if (s.size() <= 4) {
-      return new ArraySet<>(s);
-    } else {
-      return new HashSet<>(s);
-    }
   }
 }
