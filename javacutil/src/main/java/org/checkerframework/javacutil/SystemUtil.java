@@ -128,7 +128,9 @@ public class SystemUtil {
    * @param list1 a list
    * @param list2 a list
    * @return a list that contains all the distinct elements of the two lists
+   * @deprecated use CollectionsPlume.union
    */
+  @Deprecated // 2023-01-08
   public static <T> List<T> union(List<T> list1, List<T> list2) {
     List<T> result = new ArrayList<>(list1.size() + list2.size());
     addWithoutDuplicates(result, list1);
@@ -145,10 +147,12 @@ public class SystemUtil {
    * @param <T> the type of the list elements
    * @param dest a list to add to
    * @param source a list of elements to add
+   * @deprecated use CollectionsPlume.adjoinAll
    */
   @SuppressWarnings("nullness:argument" // true positive:  `dest` might be incompatible with
   // null and `source` might contain null.
   )
+  @Deprecated // 2023-01-08
   public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {
     for (T elt : source) {
       if (!dest.contains(elt)) {
@@ -168,7 +172,9 @@ public class SystemUtil {
    * @param list1 a list
    * @param list2 a list
    * @return a list that contains all the elements of {@code list1} that are not in {@code list2}
+   * @deprecated use CollectionsPlume.intersection
    */
+  @Deprecated // 2023-01-08
   public static <T> List<T> intersection(List<? extends T> list1, List<? extends T> list2) {
     List<T> result = new ArrayList<>(list1);
     result.retainAll(list2);
