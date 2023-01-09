@@ -538,7 +538,7 @@ public class ElementUtils {
     TypeElement elt = TypesUtils.getTypeElement(type);
     assert elt != null : "@AssumeAssertion(nullness): assumption";
     Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-    // Iterate over a new collection to avoid a ConcurrentModificationException.
+    // Use a new list to avoid a ConcurrentModificationException.
     for (VariableElement field : new ArrayList<>(fieldElts)) {
       if (!field.getModifiers().contains(Modifier.PRIVATE)) {
         notFound.remove(field.getSimpleName().toString());
