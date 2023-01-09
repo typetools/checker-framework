@@ -111,6 +111,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
@@ -298,10 +299,10 @@ public class AnnotationFileParser {
   /** Information about a record from a stub file. */
   public static class RecordStub {
     /**
-     * A map from name to record component. The iteration order is the order that they are declared
-     * in the record header.
+     * A map from name to record component. It must have deterministic insertion/iteration order:
+     * the order that they are declared in the record header.
      */
-    public final LinkedHashMap<String, RecordComponentStub> componentsByName;
+    public final Map<String, RecordComponentStub> componentsByName;
     /**
      * If the canonical constructor is given in the stubs, the annotated types (in component
      * declaration order) for the constructor. Null if not present in the stubs.
@@ -311,10 +312,10 @@ public class AnnotationFileParser {
     /**
      * Creates a new RecordStub.
      *
-     * @param componentsByName a map from name to record component. The insertion/iteration order is
-     *     the order that they are declared in the record header.
+     * @param componentsByName a map from name to record component. It must have deterministic
+     *     insertion/iteration order: the order that they are declared in the record header.
      */
-    public RecordStub(LinkedHashMap<String, RecordComponentStub> componentsByName) {
+    public RecordStub(Map<String, RecordComponentStub> componentsByName) {
       this.componentsByName = componentsByName;
     }
 
@@ -980,7 +981,7 @@ public class AnnotationFileParser {
 
     if (typeDecl instanceof RecordDeclaration) {
       NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
-      LinkedHashMap<String, RecordComponentStub> byName =
+      Map<String, RecordComponentStub> byName =
           ArrayMap.newArrayMapOrLinkedHashMap(recordMembers.size());
       for (Parameter recordMember : recordMembers) {
         RecordComponentStub stub =
