@@ -378,7 +378,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Generate the order of processing blocks. Because a block may appears more than once in {@link
+   * Generate the order of processing blocks. Because a block may appear more than once in {@link
    * ControlFlowGraph#getDepthFirstOrderedBlocks()}, the orders of each block are stored in a
    * separate array list.
    *

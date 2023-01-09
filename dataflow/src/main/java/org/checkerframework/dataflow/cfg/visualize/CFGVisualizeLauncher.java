@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -23,6 +22,7 @@ import org.checkerframework.dataflow.analysis.TransferFunction;
 import org.checkerframework.dataflow.cfg.CFGProcessor;
 import org.checkerframework.dataflow.cfg.CFGProcessor.CFGProcessResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.plumelib.util.ArrayMap;
 
 /**
  * Launcher to generate the DOT or String representation of the control flow graph of a given method
@@ -190,7 +190,7 @@ public class CFGVisualizeLauncher {
       analysis.performAnalysis(cfg);
     }
 
-    Map<String, Object> args = new HashMap<>(2);
+    Map<String, Object> args = new ArrayMap<>(2);
     args.put("outdir", outputDir);
     args.put("verbose", verbose);
 

@@ -102,9 +102,10 @@ public class CaseNode extends Node {
 
   @Override
   public Collection<Node> getOperands() {
-    ArrayList<Node> operands = new ArrayList<>();
+    List<Node> caseOperands = getCaseOperands();
+    ArrayList<Node> operands = new ArrayList<>(caseOperands.size() + 1);
     operands.add(getSwitchOperand());
-    operands.addAll(getCaseOperands());
+    operands.addAll(caseOperands);
     return operands;
   }
 }
