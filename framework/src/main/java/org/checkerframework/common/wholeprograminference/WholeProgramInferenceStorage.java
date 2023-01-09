@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -146,6 +147,28 @@ public interface WholeProgramInferenceStorage<T> {
    *     otherwise
    */
   public boolean addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
+
+  /**
+   * Adds a declaration annotation to a formal parameter.
+   *
+   * @param methodElt the method whose formal parameter will be annotated
+   * @param index the index of the parameter (0-indexed)
+   * @param anno the annotation to add
+   * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
+   *     otherwise
+   */
+  public boolean addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, int index, AnnotationMirror anno);
+
+  /**
+   * Adds an annotation to a class declaration.
+   *
+   * @param classElt the class declaration to annotate
+   * @param anno the annotation to add
+   * @return true if {@code anno} is a new declaration annotation for {@code classElt}, false
+   *     otherwise
+   */
+  public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
 
   /**
    * Obtain the type from a storage location.

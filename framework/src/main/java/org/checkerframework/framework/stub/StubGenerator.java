@@ -191,11 +191,19 @@ public class StubGenerator {
       }
     }
 
-    if (typeElement.getKind() == ElementKind.INTERFACE) {
+    // This could be a `switch` statement.
+    if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
+      out.print("@interface");
+    } else if (typeElement.getKind() == ElementKind.ENUM) {
+      out.print("enum");
+    } else if (typeElement.getKind() == ElementKind.INTERFACE) {
       out.print("interface");
+    } else if (typeElement.getKind().name().equals("RECORD")) {
+      out.print("record");
     } else if (typeElement.getKind() == ElementKind.CLASS) {
       out.print("class");
     } else {
+      // Shouldn't this throw an exception?
       return;
     }
 
