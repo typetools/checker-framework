@@ -1922,8 +1922,7 @@ public class AnnotationFileParser {
           findElement(typeElt, method, /*noWarn=*/ false);
         } else {
           List<BodyDeclaration<?>> l =
-              fakeOverrideDecls.computeIfAbsent(
-                  overriddenMethod, __ -> new ArrayList<>(CollectionsPlume.mapCapacity(1)));
+              fakeOverrideDecls.computeIfAbsent(overriddenMethod, __ -> new ArrayList<>(1));
           l.add(member);
         }
       }

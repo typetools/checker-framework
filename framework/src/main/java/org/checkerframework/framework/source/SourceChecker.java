@@ -80,6 +80,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.SystemPlume;
 import org.plumelib.util.UtilPlume;
@@ -1422,7 +1423,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     String[] lintStrings = lintString.split(",");
-    Set<String> activeLint = new HashSet<>(lintStrings.length);
+    Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.length);
     for (String s : lintStrings) {
       if (!this.getSupportedLintOptions().contains(s)
           && !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1)))
@@ -1544,7 +1545,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     TODO: assert that name doesn't start with '-'
     */
 
-    Set<String> newlints = new HashSet<>(CollectionsPlume.mapCapacity(activeLints.size() + 1));
+    Set<String> newlints = ArraySet.newArraySetOrHashSet(activeLints.size() + 1);
     newlints.addAll(activeLints);
     if (val) {
       newlints.add(name);
