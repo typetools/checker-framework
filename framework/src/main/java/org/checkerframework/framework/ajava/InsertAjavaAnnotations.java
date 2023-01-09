@@ -586,6 +586,7 @@ public class InsertAjavaAnnotations {
             }
 
             List<TypeDeclaration<?>> rootTypes = root.getTypes();
+            // Estimate of size.
             Set<String> annotationFilesForRoot =
                 new LinkedHashSet<>(CollectionsPlume.mapCapacity(rootTypes.size()));
             for (TypeDeclaration<?> type : rootTypes) {

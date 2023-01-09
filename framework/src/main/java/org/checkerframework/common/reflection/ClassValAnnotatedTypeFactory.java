@@ -150,7 +150,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
         List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-        // There are usually few arguments of @ClassBound and @ClassVal.
+        // There are usually few arguments/elements of @ClassBound and @ClassVal.
         List<String> lubClassNames = CollectionsPlume.listUnion(a1ClassNames, a2ClassNames);
 
         // If either annotation is a ClassBound, the lub must also be a class bound.
