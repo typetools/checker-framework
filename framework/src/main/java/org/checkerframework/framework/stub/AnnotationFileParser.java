@@ -981,7 +981,7 @@ public class AnnotationFileParser {
     if (typeDecl instanceof RecordDeclaration) {
       NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
       LinkedHashMap<String, RecordComponentStub> byName =
-          new LinkedHashMap<>(CollectionsPlume.mapCapacity(recordMembers.size()));
+          ArrayMap.newArrayMapOrLinkedHashMap(recordMembers.size());
       for (Parameter recordMember : recordMembers) {
         RecordComponentStub stub =
             processRecordField(
@@ -2111,8 +2111,7 @@ public class AnnotationFileParser {
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
     List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
-        annotationFileAnnos.fakeOverrides.computeIfAbsent(
-            element, __ -> new ArrayList<>(CollectionsPlume.mapCapacity(1)));
+        annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>(1));
     l.add(Pair.of(fakeLocation.asType(), methodType));
   }
 
