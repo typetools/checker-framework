@@ -128,7 +128,7 @@ public class SystemUtil {
    * @param list1 a list
    * @param list2 a list
    * @return a list that contains all the distinct elements of the two lists
-   * @deprecated use CollectionsPlume.union
+   * @deprecated use CollectionsPlume.listUnion
    */
   @Deprecated // 2023-01-08
   public static <T> List<T> union(List<T> list1, List<T> list2) {
@@ -172,7 +172,7 @@ public class SystemUtil {
    * @param list1 a list
    * @param list2 a list
    * @return a list that contains all the elements of {@code list1} that are not in {@code list2}
-   * @deprecated use CollectionsPlume.intersection
+   * @deprecated use CollectionsPlume.listIntersection
    */
   @Deprecated // 2023-01-08
   public static <T> List<T> intersection(List<? extends T> list1, List<? extends T> list2) {
