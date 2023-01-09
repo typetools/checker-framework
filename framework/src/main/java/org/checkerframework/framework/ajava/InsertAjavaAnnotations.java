@@ -274,9 +274,8 @@ public class InsertAjavaAnnotations {
           existingImports.add(printer.print(importDecl));
         }
 
-        NodeList<ImportDeclaration> srcImports = src.getImports();
         newImports = new ArrayList<>();
-        for (ImportDeclaration importDecl : srcImports) {
+        for (ImportDeclaration importDecl : src.getImports()) {
           String importString = printer.print(importDecl);
           if (!existingImports.contains(importString)) {
             newImports.add(importString);
