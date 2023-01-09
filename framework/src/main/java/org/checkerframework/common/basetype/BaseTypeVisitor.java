@@ -133,7 +133,6 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
@@ -141,6 +140,7 @@ import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchEx
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.ArraysPlume;
 import org.plumelib.util.CollectionsPlume;
@@ -2078,7 +2078,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     List<ExecutableElement> methods = ElementFilter.methodsIn(anno.getEnclosedElements());
     // Mapping from argument simple name to its annotated type.
-    Map<String, AnnotatedTypeMirror> annoTypes = CollectionUtils.newArrayOrHashMap(methods.size());
+    Map<String, AnnotatedTypeMirror> annoTypes = ArrayMap.newArrayMapOrHashMap(methods.size());
     for (ExecutableElement meth : methods) {
       AnnotatedExecutableType exeatm = atypeFactory.getAnnotatedType(meth);
       AnnotatedTypeMirror retty = exeatm.getReturnType();
@@ -4138,7 +4138,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     Set<Postcondition> result =
-        CollectionUtils.newArrayOrLinkedHashSet(conditionalPostconditions.size());
+        ArraySet.newArraySetOrLinkedHashSet(conditionalPostconditions.size());
     for (Contract c : conditionalPostconditions) {
       ConditionalPostcondition p = (ConditionalPostcondition) c;
       if (p.resultValue == b) {
@@ -4265,7 +4265,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         };
 
     Set<Pair<JavaExpression, AnnotationMirror>> result =
-        CollectionUtils.newArrayOrHashSet(contractSet.size());
+        ArraySet.newArraySetOrHashSet(contractSet.size());
     for (Contract p : contractSet) {
       String expressionString = p.expressionString;
       AnnotationMirror annotation =

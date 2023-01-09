@@ -79,6 +79,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.ArraySet;
 
 /**
  * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
@@ -1230,7 +1231,8 @@ public class WholeProgramInferenceJavaParserStorage
     public boolean addDeclarationAnnotationToFormalParameter(
         AnnotationMirror annotation, int index) {
       if (paramsDeclAnnos == null) {
-        paramsDeclAnnos = new HashSet<>();
+        // There are usually few formal parameters.
+        paramsDeclAnnos = new ArraySet<>(4);
       }
 
       return paramsDeclAnnos.add(Pair.of(index, annotation));

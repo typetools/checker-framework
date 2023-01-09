@@ -374,8 +374,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
     // include FieldInvariant so that @MinLenBottom can be used.
+    Set<Class<? extends Annotation>> superResult = super.getFieldInvariantDeclarationAnnotations();
     Set<Class<? extends Annotation>> set =
-        new HashSet<>(super.getFieldInvariantDeclarationAnnotations());
+        new HashSet<>(CollectionsPlume.mapCapacity(superResult.size() + 1));
+    set.addAll(superResult);
     set.add(MinLenFieldInvariant.class);
     return set;
   }
