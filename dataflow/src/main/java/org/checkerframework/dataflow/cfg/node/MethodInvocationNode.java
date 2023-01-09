@@ -44,6 +44,8 @@ public class MethodInvocationNode extends Node {
    * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
    * enhanced for loop, then the {@code iterExpression} field is the expression in the for loop,
    * e.g., {@code iter} in {@code for(Object o: iter}.
+   *
+   * <p>Is set by {@link #setIterableExpression}.
    */
   protected @Nullable ExpressionTree iterableExpression;
 

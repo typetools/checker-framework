@@ -1,10 +1,10 @@
 package org.checkerframework.dataflow.cfg.builder;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.ArrayMap;
 
 /**
  * A map that keeps track of new labels added within a try block. For names that are outside of the
@@ -18,7 +18,7 @@ class TryFinallyScopeMap extends HashMap<Name, Label> {
 
   /** Create a new TryFinallyScopeMap. */
   protected TryFinallyScopeMap() {
-    this.accessedNames = new LinkedHashMap<>(2);
+    this.accessedNames = new ArrayMap<>(2);
   }
 
   @Override

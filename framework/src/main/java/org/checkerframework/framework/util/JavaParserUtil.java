@@ -8,6 +8,7 @@ import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -219,6 +220,11 @@ public class JavaParserUtil {
     Optional<EnumDeclaration> enumDecl = root.getEnumByName(name);
     if (enumDecl.isPresent()) {
       return enumDecl.get();
+    }
+
+    Optional<AnnotationDeclaration> annoDecl = root.getAnnotationDeclarationByName(name);
+    if (annoDecl.isPresent()) {
+      return annoDecl.get();
     }
 
     Optional<CompilationUnit.Storage> storage = root.getStorage();

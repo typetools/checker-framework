@@ -665,18 +665,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * @throws BugInCF If supportedQuals is empty or if any of the support qualifiers has a @Target
-   *     meta-annotation that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is
-   *     allowed.)
+   * Requires that supportedQuals is non-empty and each element is a type qualifier. That is, no
+   * element has a {@code @Target} meta-annotation that contains something besides TYPE_USE or
+   * TYPE_PARAMETER. (@Target({}) is allowed.) @
+   *
+   * @throws BugInCF If supportedQuals is empty or contaions a non-type qualifier
    */
-  private void checkSupportedQuals() {
+  private void checkSupportedQualsAreTypeQuals() {
     if (supportedQuals.isEmpty()) {
       throw new TypeSystemError("Found no supported qualifiers.");
     }
     for (Class<? extends Annotation> annotationClass : supportedQuals) {
       // Check @Target values
       ElementType[] targetValues = annotationClass.getAnnotation(Target.class).value();
-      List<ElementType> badTargetValues = new ArrayList<>();
+      List<ElementType> badTargetValues = new ArrayList<>(0);
       for (ElementType element : targetValues) {
         if (!(element == ElementType.TYPE_USE || element == ElementType.TYPE_PARAMETER)) {
           // if there's an ElementType with an enumerated value of something other
@@ -1185,7 +1187,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
     if (this.supportedQuals.isEmpty()) {
       supportedQuals.addAll(createSupportedTypeQualifiers());
-      checkSupportedQuals();
+      checkSupportedQualsAreTypeQuals();
     }
     return Collections.unmodifiableSet(supportedQuals);
   }
@@ -1847,9 +1849,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return null;
   }
 
-  /** Returns the set of classes of field invariant annotations. */
+  /** The classes of field invariant annotations. */
+  private Set<Class<? extends Annotation>> fieldInvariantDeclarationAnnotations =
+      Collections.singleton(FieldInvariant.class);
+
+  /**
+   * Returns the set of classes of field invariant annotations.
+   *
+   * @return the set of classes of field invariant annotations
+   */
   protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
-    return Collections.singleton(FieldInvariant.class);
+    return fieldInvariantDeclarationAnnotations;
   }
 
   /**

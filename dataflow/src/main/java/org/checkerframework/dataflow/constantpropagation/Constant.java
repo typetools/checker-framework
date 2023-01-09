@@ -9,7 +9,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class Constant implements AbstractValue<Constant> {
 
   /** What kind of abstract value is this? */
-  protected Type type;
+  protected final Type type;
 
   /** The value of this abstract value (or null). */
   protected @Nullable Integer value;

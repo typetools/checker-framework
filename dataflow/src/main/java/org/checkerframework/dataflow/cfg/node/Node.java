@@ -30,24 +30,30 @@ import org.plumelib.util.UniqueId;
  *
  * Note that two {@code Node}s can be {@code .equals} but represent different CFG nodes. Take care
  * to use reference equality, maps that handle identity {@code IdentityHashMap}, and sets like
- * {@code IdentityMostlySingleton}.
- *
- * @see org.checkerframework.dataflow.util.IdentityMostlySingleton
+ * {@code IdentityArraySet}.
  */
 public abstract class Node implements UniqueId {
 
   /**
    * The basic block this node belongs to. If null, this object represents a method formal
    * parameter.
+   *
+   * <p>Is set by {@link #setBlock}.
    */
   protected @Nullable Block block;
 
-  /** Is this node an l-value? */
+  /**
+   * Is this node an l-value?
+   *
+   * <p>Is set by {@link #setLValue}.
+   */
   protected boolean lvalue = false;
 
   /**
    * Does this node represent a tree that appears in the source code (true) or one that the CFG
    * builder added while desugaring (false).
+   *
+   * <p>Is set by {@link #setInSource}.
    */
   protected boolean inSource = true;
 
