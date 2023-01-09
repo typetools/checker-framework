@@ -296,15 +296,15 @@ public class JavaParserUtil {
     public void visit(BinaryExpr node, Void p) {
       super.visit(node, p);
       if (node.getOperator() == BinaryExpr.Operator.PLUS && node.getRight().isStringLiteralExpr()) {
-        String right = node.getRight().asStringLiteralExpr().asString();
+        String right = node.getRight().asStringLiteralExpr().getValue();
         if (node.getLeft().isStringLiteralExpr()) {
-          String left = node.getLeft().asStringLiteralExpr().asString();
+          String left = node.getLeft().asStringLiteralExpr().getValue();
           node.replace(new StringLiteralExpr(left + right));
         } else if (node.getLeft().isBinaryExpr()) {
           BinaryExpr leftExpr = node.getLeft().asBinaryExpr();
           if (leftExpr.getOperator() == BinaryExpr.Operator.PLUS
               && leftExpr.getRight().isStringLiteralExpr()) {
-            String left = leftExpr.getRight().asStringLiteralExpr().asString();
+            String left = leftExpr.getRight().asStringLiteralExpr().getValue();
             node.replace(
                 new BinaryExpr(
                     leftExpr.getLeft(),
