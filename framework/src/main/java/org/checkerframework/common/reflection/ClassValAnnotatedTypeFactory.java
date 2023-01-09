@@ -42,6 +42,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
+/** A type factory for the @ClassVal and @ClassBound annotations. */
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   protected final AnnotationMirror CLASSVAL_TOP =

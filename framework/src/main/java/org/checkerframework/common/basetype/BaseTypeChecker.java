@@ -421,14 +421,19 @@ public abstract class BaseTypeChecker extends SourceChecker {
     return getTypeFactory().getTypeFactoryOfSubchecker(subCheckerClass);
   }
 
-  /*
-   * Performs a depth first search for all checkers this checker depends on.
-   * The depth first search ensures that the collection has the correct order the checkers need to be run in.
-   *
-   * Modifies the alreadyInitializedSubcheckerMap map by adding all recursively newly instantiated subcheckers' class objects and instances.
-   * A LinkedHashMap is used because, unlike HashMap, it preserves the order in which entries were inserted.
-   *
+  /**
    * Returns the unmodifiable list of immediate subcheckers of this checker.
+   *
+   * <p>Performs a depth first search for all checkers this checker depends on. The depth first
+   * search ensures that the collection has the correct order the checkers need to be run in.
+   *
+   * <p>Modifies the alreadyInitializedSubcheckerMap map by adding all recursively newly
+   * instantiated subcheckers' class objects and instances. A LinkedHashMap is used because, unlike
+   * HashMap, it preserves the order in which entries were inserted.
+   *
+   * @param alreadyInitializedSubcheckerMap subcheckers that have already been instantiated. Is
+   *     modified by this method.
+   * @return the unmodifiable list of immediate subcheckers of this checker.
    */
   private List<BaseTypeChecker> instantiateSubcheckers(
       Map<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap) {
