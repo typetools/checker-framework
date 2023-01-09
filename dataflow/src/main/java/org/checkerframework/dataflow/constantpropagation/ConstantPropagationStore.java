@@ -9,7 +9,6 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.javacutil.CollectionUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** A store that records information about constant values. */
@@ -60,7 +59,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
   @Override
   public ConstantPropagationStore leastUpperBound(ConstantPropagationStore other) {
     Map<Node, Constant> newContents =
-        CollectionUtils.newArrayOrLinkedHashMap(contents.size() + other.contents.size());
+        ArrayMap.newArrayMapOrLinkedHashMap(contents.size() + other.contents.size());
 
     // go through all of the information of the other class
     for (Map.Entry<Node, Constant> e : other.contents.entrySet()) {

@@ -17,7 +17,6 @@ import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.CollectionUtils;
 
 /** A live variable store contains a set of live variables represented by nodes. */
 public class LiveVarStore implements Store<LiveVarStore> {
@@ -110,8 +109,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
   @Override
   public LiveVarStore leastUpperBound(LiveVarStore other) {
     Set<LiveVarValue> liveVarValueSetLub =
-        CollectionUtils.newArrayOrHashSet(
-            this.liveVarValueSet.size() + other.liveVarValueSet.size());
+        ArraySet.newArraySetOrHashSet(this.liveVarValueSet.size() + other.liveVarValueSet.size());
     liveVarValueSetLub.addAll(this.liveVarValueSet);
     liveVarValueSetLub.addAll(other.liveVarValueSet);
     return new LiveVarStore(liveVarValueSetLub);
