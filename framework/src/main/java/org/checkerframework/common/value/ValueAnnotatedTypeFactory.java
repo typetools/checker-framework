@@ -371,13 +371,27 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new FieldInvariants(superInvariants, fields, qualifiers);
   }
 
-  @Override
-  protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+  /**
+   * Computes the classes of field invariant annotations; a helper function for {@link
+   * #getFieldInvariantDeclarationAnnotations}.
+   *
+   * @return the classes of field invariant annotations
+   */
+  private Set<Class<? extends Annotation>> computeFieldInvariantDeclarationAnnotations() {
     // include FieldInvariant so that @MinLenBottom can be used.
     Set<Class<? extends Annotation>> set =
         new HashSet<>(super.getFieldInvariantDeclarationAnnotations());
     set.add(MinLenFieldInvariant.class);
     return set;
+  }
+
+  /** The classes of field invariant annotations. */
+  private Set<Class<? extends Annotation>> fieldInvariantDeclarationAnnotations =
+      computeFieldInvariantDeclarationAnnotations();
+
+  @Override
+  protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+    return fieldInvariantDeclarationAnnotations;
   }
 
   /**
