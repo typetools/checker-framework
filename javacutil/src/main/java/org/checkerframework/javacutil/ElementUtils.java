@@ -536,7 +536,7 @@ public class ElementUtils {
     TypeElement elt = TypesUtils.getTypeElement(type);
     assert elt != null : "@AssumeAssertion(nullness): assumption";
     Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-    for (VariableElement field : new HashSet<VariableElement>(fieldElts)) {
+    for (VariableElement field : new HashSet<>(fieldElts)) {
       if (!field.getModifiers().contains(Modifier.PRIVATE)) {
         notFound.remove(field.getSimpleName().toString());
       } else {
@@ -704,8 +704,8 @@ public class ElementUtils {
    * @return fields of {@code type}
    */
   public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
-    List<VariableElement> fields =
-        new ArrayList<>(ElementFilter.fieldsIn(type.getEnclosedElements()));
+    // ElementFilter.fieldsIn returns a new list
+    List<VariableElement> fields = ElementFilter.fieldsIn(type.getEnclosedElements());
     List<TypeElement> alltypes = getSuperTypes(type, elements);
     for (TypeElement atype : alltypes) {
       fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
@@ -742,8 +742,8 @@ public class ElementUtils {
    * @return methods of {@code type}
    */
   public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
-    List<ExecutableElement> meths =
-        new ArrayList<>(ElementFilter.methodsIn(type.getEnclosedElements()));
+    // ElementFilter.fieldsIn returns a new list
+    List<ExecutableElement> meths = ElementFilter.methodsIn(type.getEnclosedElements());
 
     List<TypeElement> alltypes = getSuperTypes(type, elements);
     for (TypeElement atype : alltypes) {

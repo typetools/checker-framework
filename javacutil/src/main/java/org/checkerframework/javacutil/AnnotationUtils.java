@@ -14,7 +14,6 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -351,12 +350,10 @@ public class AnnotationUtils {
     // The annotations have the same name, but different values, so compare values.
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
-    Set<ExecutableElement> sortedElements =
-        new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleSignature));
-    sortedElements.addAll(
-        ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
+    List<ExecutableElement> elements1 =
+        ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements());
 
-    for (ExecutableElement meth : sortedElements) {
+    for (ExecutableElement meth : elements1) {
       AnnotationValue aval1 = vals1.get(meth);
       if (aval1 == null) {
         aval1 = meth.getDefaultValue();

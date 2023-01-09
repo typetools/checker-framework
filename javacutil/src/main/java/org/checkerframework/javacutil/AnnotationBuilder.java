@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +33,6 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -98,7 +96,7 @@ public class AnnotationBuilder {
     }
     assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
     this.annotationType = (DeclaredType) annotationElt.asType();
-    this.elementValues = new LinkedHashMap<>();
+    this.elementValues = new ArrayMap<>(2); // most annotations have few elements
   }
 
   /**
@@ -113,7 +111,6 @@ public class AnnotationBuilder {
 
     this.annotationType = annotation.getAnnotationType();
     this.annotationElt = (TypeElement) annotationType.asElement();
-
     this.elementValues = new ArrayMap<>(annotation.getElementValues());
   }
 
@@ -235,8 +232,7 @@ public class AnnotationBuilder {
     }
 
     List<ExecutableElement> methods = ElementFilter.methodsIn(annoElt.getEnclosedElements());
-    Map<ExecutableElement, AnnotationValue> elementValues =
-        new LinkedHashMap<>(CollectionsPlume.mapCapacity(methods.size()));
+    Map<ExecutableElement, AnnotationValue> elementValues = new ArrayMap<>(methods.size());
     for (ExecutableElement annoElement : methods) {
       AnnotationValue elementValue = elementNamesValues.get(annoElement.getSimpleName().toString());
       if (elementValue == null) {
