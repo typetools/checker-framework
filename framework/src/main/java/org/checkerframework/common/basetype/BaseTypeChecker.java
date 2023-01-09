@@ -428,8 +428,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * search ensures that the collection has the correct order the checkers need to be run in.
    *
    * <p>Modifies the alreadyInitializedSubcheckerMap map by adding all recursively newly
-   * instantiated subcheckers' class objects and instances. A LinkedHashMap is used because, unlike
-   * HashMap, it preserves the order in which entries were inserted.
+   * instantiated subcheckers' class objects and instances. It is necessary to use a map that
+   * preserves the order in which entries were inserted, such as LinkedHashMap or ArrayMap.
    *
    * @param alreadyInitializedSubcheckerMap subcheckers that have already been instantiated. Is
    *     modified by this method.
