@@ -1835,6 +1835,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<AnnotationMirror> annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
       } else {
+        // If the expression is "this", then get the type of the method receiver.
+        // TODO: There are other expressions that can be converted to trees, "#1" for example.
         if (expressionString.equals("this")) {
           AnnotatedTypeMirror atype = atypeFactory.getReceiverType(tree);
           if (atype != null) {
