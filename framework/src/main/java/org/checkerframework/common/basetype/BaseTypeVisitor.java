@@ -3000,8 +3000,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * A scanner that indicates whether any (sub-)types have the same toString but different verbose
-   * toString. If so, the Checker Framework prints types verbosely.
+   * A scanner that indicates whether any (component) types have the same toString but different
+   * verbose toString. If so, the Checker Framework prints types verbosely.
    */
   private static final SimpleAnnotatedTypeScanner<Boolean, Map<String, String>>
       checkContainsSameToString =
