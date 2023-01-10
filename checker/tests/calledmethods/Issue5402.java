@@ -1,15 +1,12 @@
 import org.checkerframework.checker.calledmethods.qual.RequiresCalledMethods;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.dataflow.qual.Deterministic;
 
 public class Issue5402 {
 
-  @Deterministic
   public @This Issue5402 bar() {
     return this;
   }
-  @Deterministic
   public @This Issue5402 bar(String s) {
     return this;
   }
