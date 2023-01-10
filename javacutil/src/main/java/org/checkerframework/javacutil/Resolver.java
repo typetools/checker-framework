@@ -157,9 +157,9 @@ public class Resolver {
       try {
         scope = (JavacScope) trees.getScope(iter);
       } catch (NullPointerException t) {
-        // Work around https://github.com/typetools/checker-framework/issues/1059 by skipping
-        // through the TreePath until something doesn't crash. This probably returns the class
-        // scope, so users might not get the variables they expect. But that is better than
+        // Work around crash reported in https://github.com/typetools/checker-framework/issues/1059
+        // by skipping through the TreePath until something doesn't crash. This probably returns the
+        // class scope, so users might not get the variables they expect. But that is better than
         // crashing.
         iter = iter.getParentPath();
       }
