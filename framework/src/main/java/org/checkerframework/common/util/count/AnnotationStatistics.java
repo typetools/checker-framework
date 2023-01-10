@@ -91,6 +91,7 @@ public class AnnotationStatistics extends SourceChecker {
     } else {
       StringJoiner sj = new StringJoiner(System.lineSeparator());
       sj.add("Found annotations: ");
+      // alphabetize the annotations
       for (String key : new TreeSet<>(annotationCount.keySet())) {
         sj.add(key + "\t" + annotationCount.get(key));
       }
