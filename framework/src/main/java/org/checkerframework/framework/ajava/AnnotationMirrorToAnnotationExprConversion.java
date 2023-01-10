@@ -201,10 +201,10 @@ public class AnnotationMirrorToAnnotationExprConversion {
     public Expression visitLong(long value, Void p) {
       if (value < 0) {
         return new UnaryExpr(
-            new LongLiteralExpr(Long.toString(-value) + "l"), UnaryExpr.Operator.MINUS);
+            new LongLiteralExpr(Long.toString(-value) + "L"), UnaryExpr.Operator.MINUS);
       }
 
-      return new LongLiteralExpr(Long.toString(value) + "l");
+      return new LongLiteralExpr(Long.toString(value) + "L");
     }
 
     @Override
