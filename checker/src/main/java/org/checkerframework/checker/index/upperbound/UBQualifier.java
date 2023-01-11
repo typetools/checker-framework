@@ -1309,11 +1309,11 @@ public abstract class UBQualifier {
   public static class UpperBoundLiteralQualifier extends UBQualifier {
 
     /** Represents the value -1. */
-    public static UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
+    public static final UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
     /** Represents the value 0. */
-    public static UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
+    public static final UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
     /** Represents the value 1. */
-    public static UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
+    public static final UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
 
     /**
      * Creates a new UpperBoundLiteralQualifier, without using cached values.

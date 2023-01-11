@@ -21,7 +21,7 @@ public class AnnotationFileStore {
    * Mapping from a fully qualified class name to the paths to annotation files that contain that
    * type.
    */
-  private Map<String, List<String>> annotationFiles;
+  private final Map<String, List<String>> annotationFiles;
 
   /** Constructs an {@code AnnotationFileStore}. */
   public AnnotationFileStore() {

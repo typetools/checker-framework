@@ -58,6 +58,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.common.value.qual.BottomVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -469,7 +470,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      * <ul>
      *   <li>Math.min has unusual semantics that combines annotations for the UBC.
      *   <li>The return type of Random.nextInt depends on the argument, but is not equal to it, so a
-     *       polymorhpic qualifier is insufficient.
+     *       polymorphic qualifier is insufficient.
      * </ul>
      *
      * Other methods should not be special-cased here unless there is a compelling reason to do so.
@@ -492,7 +493,73 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         qualifier = qualifier.plusOffset(1);
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
       }
+      if (imf.isIndexOfString(tree)) {
+        // String#indexOf(String) and its variants that also take a String technically return
+        // (and are annotated as) @LTEqLengthOf the receiver. However, the result is always
+        // @LTLengthOf the receiver unless both the receiver and the target string are
+        // the empty string: "".indexOf("") returns 0, which isn't an index into "". So, this
+        // special case modifies the return type of these methods if either the parameter or
+        // the receiver is known (by the Value Checker) to not be the empty string. There are
+        // three ways the Value Checker might have that information: either string could have a
+        // @StringVal annotation whose value doesn't include "", either could have an @ArrayLen
+        // annotation
+        // whose value doesn't contain zero, or either could have an @ArrayLenRange annotation whose
+        // from
+        // value is any positive integer.
+        ValueAnnotatedTypeFactory vatf =
+            ((UpperBoundAnnotatedTypeFactory) this.atypeFactory).getValueAnnotatedTypeFactory();
+        AnnotatedTypeMirror argType = vatf.getAnnotatedType(tree.getArguments().get(0));
+        AnnotatedTypeMirror receiverType = vatf.getReceiverType(tree);
+        if (definitelyIsNotTheEmptyString(argType, vatf)
+            || definitelyIsNotTheEmptyString(receiverType, vatf)) {
+          String receiverName = JavaExpression.getReceiver(tree).toString();
+          UBQualifier ltLengthOfReceiver = UBQualifier.createUBQualifier(receiverName, "0");
+          AnnotationMirror currentReturnAnno = type.getAnnotationInHierarchy(UNKNOWN);
+          UBQualifier currentUBQualifier =
+              UBQualifier.createUBQualifier(currentReturnAnno, (IndexChecker) checker);
+          UBQualifier result = currentUBQualifier.glb(ltLengthOfReceiver);
+          type.replaceAnnotation(convertUBQualifierToAnnotation(result));
+        }
+      }
       return super.visitMethodInvocation(tree, type);
+    }
+
+    /**
+     * Returns true if the given Value Checker annotations guarantee that the annotated element is
+     * not the empty string.
+     *
+     * @param atm an annotated type from the Value Checker
+     * @param vatf the Value Annotated Type Factory
+     * @return true iff atm contains a {@code StringVal} annotation whose value doesn't contain "",
+     *     an {@code ArrayLen} annotation whose value doesn't contain 0, or an {@code ArrayLenRange}
+     *     annotation whose from value is greater than 0
+     */
+    private boolean definitelyIsNotTheEmptyString(
+        AnnotatedTypeMirror atm, ValueAnnotatedTypeFactory vatf) {
+      Set<AnnotationMirror> annos = atm.getAnnotations();
+      for (AnnotationMirror anno : annos) {
+        switch (AnnotationUtils.annotationName(anno)) {
+          case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
+            List<String> strings = vatf.getStringValues(anno);
+            if (strings != null && !strings.contains("")) {
+              return true;
+            }
+            break;
+          case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
+            List<Integer> lengths = vatf.getArrayLength(anno);
+            if (lengths != null && !lengths.contains(0)) {
+              return true;
+            }
+            break;
+          default:
+            Range range = vatf.getRange(anno);
+            if (range != null && range.from > 0) {
+              return true;
+            }
+            break;
+        }
+      }
+      return false;
     }
 
     @Override

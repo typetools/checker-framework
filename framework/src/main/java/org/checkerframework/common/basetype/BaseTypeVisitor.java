@@ -78,6 +78,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -267,6 +268,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
   }
 
+  /** An array containing just {@code BaseTypeChecker.class}. */
+  private static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
+
   /**
    * Constructs an instance of the appropriate type factory for the implemented type system.
    *
@@ -287,12 +291,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected Factory createTypeFactory() {
     // Try to reflectively load the type factory.
     Class<?> checkerClass = checker.getClass();
+    Object[] checkerArray = new Object[] {checker};
     while (checkerClass != BaseTypeChecker.class) {
       AnnotatedTypeFactory result =
           BaseTypeChecker.invokeConstructorFor(
               BaseTypeChecker.getRelatedClassName(checkerClass, "AnnotatedTypeFactory"),
-              new Class<?>[] {BaseTypeChecker.class},
-              new Object[] {checker});
+              baseTypeCheckerClassArray,
+              checkerArray);
       if (result != null) {
         return (Factory) result;
       }
@@ -434,7 +439,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     try {
       modifiedAst = JavaParserUtil.parseCompilationUnit(withAnnotations);
     } catch (ParseProblemException e) {
-      throw new BugInCF("Failed to parse annotation insertion:\n" + withAnnotations, e);
+      throw new BugInCF("Failed to parse code after annotation insertion:\n" + withAnnotations, e);
     }
 
     AnnotationEqualityVisitor visitor = new AnnotationEqualityVisitor();
@@ -445,14 +450,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               System.lineSeparator(),
               "Sanity check of erasing then reinserting annotations produced a different AST.",
               "File: " + root.getSourceFile(),
-              "Original node: " + visitor.getMismatchedNode1(),
-              "Node with annotations re-inserted: " + visitor.getMismatchedNode2(),
+              "Node class: " + visitor.getMismatchedNode1().getClass().getSimpleName(),
+              "Original node: " + oneLine(visitor.getMismatchedNode1()),
+              "Node with annotations re-inserted: " + oneLine(visitor.getMismatchedNode2()),
               "Original annotations: " + visitor.getMismatchedNode1().getAnnotations(),
               "Re-inserted annotations: " + visitor.getMismatchedNode2().getAnnotations(),
               "Original AST:",
               originalAst.toString(),
               "Ast with annotations re-inserted: " + modifiedAst));
     }
+  }
+
+  /**
+   * Replace newlines in the printed representation by spaces.
+   *
+   * @param arg an object to format
+   * @return the object's toString representation, on one line
+   */
+  private String oneLine(Object arg) {
+    return arg.toString().replace(System.lineSeparator(), " ");
   }
 
   /**
@@ -2602,8 +2618,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // **********************************************************************
 
   /** Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once. */
-  private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCache = null;
-  /** The same as {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache. */
+  private @MonotonicNonNull Set<? extends AnnotationMirror>
+      getExceptionParameterLowerBoundAnnotationsCache;
+  /**
+   * Returns a set of AnnotationMirrors that is a lower bound for exception parameters. The same as
+   * {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache.
+   *
+   * @return a set of AnnotationMirrors that is a lower bound for exception parameters
+   */
   private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCached() {
     if (getExceptionParameterLowerBoundAnnotationsCache == null) {
       getExceptionParameterLowerBoundAnnotationsCache =
@@ -3004,10 +3026,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * A scanner that indicates whether any (sub-)types have the same toString but different verbose
-   * toString. If so, the Checker Framework prints types verbosely.
+   * A scanner that indicates whether any (component) types have the same toString but different
+   * verbose toString. If so, the Checker Framework prints types verbosely.
    */
-  private static SimpleAnnotatedTypeScanner<Boolean, Map<String, String>>
+  private static final SimpleAnnotatedTypeScanner<Boolean, Map<String, String>>
       checkContainsSameToString =
           new SimpleAnnotatedTypeScanner<>(
               (AnnotatedTypeMirror type, Map<String, String> map) -> {

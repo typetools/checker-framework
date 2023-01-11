@@ -107,7 +107,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   private final boolean showWpiFailedInferences;
 
   /** The storage for the inferred annotations. */
-  private WholeProgramInferenceStorage<T> storage;
+  private final WholeProgramInferenceStorage<T> storage;
 
   /** Whether to ignore assignments where the rhs is null. */
   private final boolean ignoreNullAssignments;
@@ -758,6 +758,34 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     String file = storage.getFileForElement(field);
     boolean isNewAnnotation = storage.addFieldDeclarationAnnotation(field, anno);
+    if (isNewAnnotation) {
+      storage.setFileModified(file);
+    }
+  }
+
+  @Override
+  public void addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, int index, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+      return;
+    }
+
+    String file = storage.getFileForElement(methodElt);
+    boolean isNewAnnotation =
+        storage.addDeclarationAnnotationToFormalParameter(methodElt, index, anno);
+    if (isNewAnnotation) {
+      storage.setFileModified(file);
+    }
+  }
+
+  @Override
+  public void addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(classElt)) {
+      return;
+    }
+
+    String file = storage.getFileForElement(classElt);
+    boolean isNewAnnotation = storage.addClassDeclarationAnnotation(classElt, anno);
     if (isNewAnnotation) {
       storage.setFileModified(file);
     }

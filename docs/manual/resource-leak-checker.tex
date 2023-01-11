@@ -120,9 +120,9 @@ fields or re-opening resources:
   listed in \<value> have been met.
   In other words, the annotated method ``resets'' the must-call obligations of the expression.
   Multiple \<@CreatesMustCallFor>
-  annotations can be written on the same method.  For more details
-  on how to use this annotation to permit re-assignment of owning
-  fields or the re-opening of resources, see Section~\ref{resource-leak-createsmustcallfor}.
+  annotations can be written on the same method.  Section~\ref{resource-leak-createsmustcallfor}
+  explains how this annotation permits re-assignment of owning
+  fields or the re-opening of resources.
 
 \end{description}
 
@@ -289,7 +289,8 @@ and its parameter \<p>, the Resource Leak Checker requires one of the following:
 \begin{enumerate}
 \item \<p> is passed to another method or constructor (including \<super>) in a
   \<@MustCallAlias> position, and \<m> returns that method's result, or
-\item \<p> is stored in an \<@Owning> field of the enclosing class.
+\item \<p> is stored in the only \<@Owning> field of the enclosing class (a class with more than one
+  \<@Owning> field cannot have a resource alias relationship).
 \end{enumerate}
 
 

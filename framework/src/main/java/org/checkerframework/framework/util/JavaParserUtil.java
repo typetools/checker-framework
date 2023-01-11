@@ -8,10 +8,12 @@ import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.expr.ArrayInitializerExpr;
 import com.github.javaparser.ast.expr.BinaryExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.StringLiteralExpr;
@@ -34,8 +36,8 @@ public class JavaParserUtil {
    * The Language Level to use when parsing if a specific level isn't applied. This should be the
    * highest version of Java that the Checker Framework can process.
    */
-  // JavaParser does not yet have a constant for JDK 18.
-  public static LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
+  // JavaParser's ParserConfiguration.java has no constant for JDK 18, as of 2022-12-19.
+  public static final LanguageLevel DEFAULT_LANGUAGE_LEVEL = LanguageLevel.JAVA_17;
 
   ///
   /// Replacements for StaticJavaParser
@@ -220,6 +222,11 @@ public class JavaParserUtil {
       return enumDecl.get();
     }
 
+    Optional<AnnotationDeclaration> annoDecl = root.getAnnotationDeclarationByName(name);
+    if (annoDecl.isPresent()) {
+      return annoDecl.get();
+    }
+
     Optional<CompilationUnit.Storage> storage = root.getStorage();
     if (storage.isPresent()) {
       throw new BugInCF("Type " + name + " not found in " + storage.get().getPath());
@@ -266,6 +273,11 @@ public class JavaParserUtil {
         }
       }
     }
+
+    @Override
+    public void visit(ArrayInitializerExpr node, Void p) {
+      // Do not remove annotations that are array elements.
+    }
   }
 
   /**
@@ -290,15 +302,15 @@ public class JavaParserUtil {
     public void visit(BinaryExpr node, Void p) {
       super.visit(node, p);
       if (node.getOperator() == BinaryExpr.Operator.PLUS && node.getRight().isStringLiteralExpr()) {
-        String right = node.getRight().asStringLiteralExpr().asString();
+        String right = node.getRight().asStringLiteralExpr().getValue();
         if (node.getLeft().isStringLiteralExpr()) {
-          String left = node.getLeft().asStringLiteralExpr().asString();
+          String left = node.getLeft().asStringLiteralExpr().getValue();
           node.replace(new StringLiteralExpr(left + right));
         } else if (node.getLeft().isBinaryExpr()) {
           BinaryExpr leftExpr = node.getLeft().asBinaryExpr();
           if (leftExpr.getOperator() == BinaryExpr.Operator.PLUS
               && leftExpr.getRight().isStringLiteralExpr()) {
-            String left = leftExpr.getRight().asStringLiteralExpr().asString();
+            String left = leftExpr.getRight().asStringLiteralExpr().getValue();
             node.replace(
                 new BinaryExpr(
                     leftExpr.getLeft(),

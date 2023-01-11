@@ -214,7 +214,7 @@ public abstract class AbstractAnalysis<
    *
    * @param in the current node values
    */
-  /*package-private*/ void setNodeValues(IdentityHashMap<Node, V> in) {
+  /* package-private */ void setNodeValues(IdentityHashMap<Node, V> in) {
     assert !isRunning;
     nodeValues.clear();
     nodeValues.putAll(in);

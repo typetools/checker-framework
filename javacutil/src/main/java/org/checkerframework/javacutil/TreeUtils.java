@@ -108,7 +108,7 @@ public final class TreeUtils {
     throw new AssertionError("Class TreeUtils cannot be instantiated.");
   }
 
-  /** Unique IDs for trees. */
+  /** Unique IDs for trees. Used instead of hash codes, so output is deterministic. */
   public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
   /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
@@ -122,6 +122,10 @@ public final class TreeUtils {
 
   // These variables cannot be final because they might be overwritten in the static block
   // immediately below.
+  /** The {@code CaseTree.getKind()} method. Null on JDK 11 and lower. */
+  private static @Nullable Method caseGetCaseKind = null;
+  /** The {@code CaseTree.CaseKind.RULE} enum value. Null on JDK 11 and lower. */
+  private static @Nullable Enum<?> caseKindRule = null;
   /** The {@code CaseTree.getExpressions()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetExpressions = null;
   /** The {@code CaseTree.getBody()} method. Null on JDK 11 and lower. */
@@ -140,6 +144,23 @@ public final class TreeUtils {
   static {
     if (SystemUtil.jreVersion >= 12) {
       try {
+        caseGetCaseKind = CaseTree.class.getDeclaredMethod("getCaseKind");
+        for (Class<?> nested : CaseTree.class.getDeclaredClasses()) {
+          if (nested.isEnum() && nested.getSimpleName().equals("CaseKind")) {
+            @SuppressWarnings({
+              "nullness:assignment",
+              "mustcall:assignment"
+            }) // capture problem; fix later
+            Object @NonNull [] enumConstants = nested.getEnumConstants();
+            for (Object enumConstant : enumConstants) {
+              if (enumConstant.toString().equals("RULE")) {
+                caseKindRule = (Enum<?>) enumConstant;
+                break;
+              }
+            }
+          }
+        }
+        assert caseKindRule != null;
         caseGetExpressions = CaseTree.class.getDeclaredMethod("getExpressions");
         caseGetBody = CaseTree.class.getDeclaredMethod("getBody");
         Class<?> bindingPatternClass = Class.forName("com.sun.source.tree.BindingPatternTree");
@@ -290,6 +311,7 @@ public final class TreeUtils {
   // This section of the file groups methods by their receiver type; that is, it puts all
   // `elementFrom*(FooTree)` methods together.
 
+  // TODO: Document when this may return null.
   /**
    * Returns the type element corresponding to the given class declaration.
    *
@@ -354,11 +376,15 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the element corresponding to the given use. The given tree must be a use of an element;
-   * for example, it cannot be a binary expression.
+   * Gets the element for the declaration corresponding to this use of an element. To get the
+   * element for a declaration, use {@link #elementFromDeclaration(ClassTree)}, {@link
+   * #elementFromDeclaration(MethodTree)}, or {@link #elementFromDeclaration(VariableTree)} instead.
+   *
+   * <p>This method is just a wrapper around {@link TreeUtils#elementFromTree(Tree)}, but this class
+   * might be the first place someone looks for this functionality.
    *
    * @param tree the tree, which must be a use of an element
-   * @return the element for the given use
+   * @return the element for the corresponding declaration, {@code null} otherwise
    */
   @Pure
   public static Element elementFromUse(ExpressionTree tree) {
@@ -460,11 +486,15 @@ public final class TreeUtils {
    */
   @Pure
   public static ExecutableElement elementFromUse(MethodInvocationTree tree) {
-    ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+    Element result = TreeInfo.symbolFor((JCTree) tree);
     if (result == null) {
       throw new BugInCF("tree = %s [%s]", tree, tree.getClass());
     }
-    return result;
+    if (!(result instanceof ExecutableElement)) {
+      throw new BugInCF(
+          "Method elements should be ExecutableElement. Found: %s [%s]", result, result.getClass());
+    }
+    return (ExecutableElement) result;
   }
 
   /**
@@ -522,7 +552,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the ExecutableElement for the given constructor invocation.
+   * Gets the ExecutableElement for the called constructor, from a constructor invocation.
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
@@ -537,7 +567,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the ExecutableElement for the given constructor invocation.
+   * Gets the ExecutableElement for the called constructor, from a constructor invocation.
    *
    * @param tree a constructor invocation
    * @return the ExecutableElement for the called constructor
@@ -545,11 +575,16 @@ public final class TreeUtils {
    */
   @Pure
   public static ExecutableElement elementFromUse(NewClassTree tree) {
-    ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
+    Element result = TreeInfo.symbolFor((JCTree) tree);
     if (result == null) {
       throw new BugInCF("null element for %s", tree);
     }
-    return result;
+    if (!(result instanceof ExecutableElement)) {
+      throw new BugInCF(
+          "Constructor elements should be ExecutableElement. Found: %s [%s]",
+          result, result.getClass());
+    }
+    return (ExecutableElement) result;
   }
 
   /**
@@ -2052,6 +2087,28 @@ public final class TreeUtils {
    */
   public static boolean isDefaultCaseTree(CaseTree caseTree) {
     return caseTreeGetExpressions(caseTree).isEmpty();
+  }
+
+  /**
+   * Returns true if this is a case rule (as opposed to a case statement).
+   *
+   * @param caseTree a case tree
+   * @return true if {@code caseTree} is a case rule
+   */
+  public static boolean isCaseRule(CaseTree caseTree) {
+    if (SystemUtil.jreVersion < 12) {
+      return false;
+    }
+    // Code for JDK 12 and later.
+    try {
+      @SuppressWarnings({"unchecked", "nullness"}) // reflective call
+      @NonNull Enum<?> caseKind = (Enum<?>) caseGetCaseKind.invoke(caseTree);
+      @SuppressWarnings("interning:not.interned") // bug in interning defaulting
+      boolean result = caseKind == caseKindRule;
+      return result;
+    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      throw new BugInCF("cannot find and/or call method CaseTree.getKind()", e);
+    }
   }
 
   /**

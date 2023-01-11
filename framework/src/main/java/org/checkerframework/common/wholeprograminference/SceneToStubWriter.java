@@ -250,7 +250,7 @@ public final class SceneToStubWriter {
     }
   }
 
-  /** Static variable to improve performance of getNextArrayLevel. */
+  /** Static mutable variable to improve performance of getNextArrayLevel. */
   private static List<TypePathEntry> location;
 
   /**
@@ -540,16 +540,22 @@ public final class SceneToStubWriter {
         printWriter.println("@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
       }
       printWriter.print(indents(i));
-      if (aClass.isEnum(nameToPrint)) {
-        printWriter.print("enum ");
-      } else {
-        printWriter.print("class ");
-      }
       if (i == classNames.length - 1) {
         // Only print class annotations on the innermost class, which corresponds to aClass.
         // If there should be class annotations on another class, it will have its own stub
         // file, which will eventually be merged with this one.
         printWriter.print(formatAnnotations(aClass.getAnnotations()));
+      }
+      if (aClass.isAnnotation(nameToPrint)) {
+        printWriter.print("@interface ");
+      } else if (aClass.isEnum(nameToPrint)) {
+        printWriter.print("enum ");
+      } else if (aClass.isInterface(nameToPrint)) {
+        printWriter.print("interface ");
+      } else if (aClass.isRecord(nameToPrint)) {
+        printWriter.print("record ");
+      } else {
+        printWriter.print("class ");
       }
       printWriter.print(nameToPrint);
       printTypeParameters(typeElements[i], printWriter);

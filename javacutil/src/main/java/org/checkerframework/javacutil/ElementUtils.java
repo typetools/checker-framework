@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -487,7 +487,7 @@ public class ElementUtils {
    *     {@code type}
    */
   public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
-    Set<VariableElement> results = new HashSet<>();
+    Set<VariableElement> results = ArraySet.newArraySetOrHashSet(names.size());
     for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
       if (names.contains(field.getSimpleName().toString())) {
         results.add(field);
@@ -506,20 +506,22 @@ public class ElementUtils {
    * called.
    *
    * @param type where to look for fields
-   * @param names simple names of fields that might be declared in {@code type} or a supertype
-   *     (Names that are found are removed from this list.)
+   * @param names simple names of fields that might be declared in {@code type} or a supertype.
+   *     Names that are found are removed from this list.
    * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
    *     whose simple names were in {@code names} when the method was called.
    */
   public static Set<VariableElement> findFieldsInTypeOrSuperType(
       TypeMirror type, Collection<String> names) {
     int origCardinality = names.size();
-    Set<VariableElement> elements = new HashSet<>();
+    Set<VariableElement> elements = ArraySet.newArraySetOrHashSet(origCardinality);
     findFieldsInTypeOrSuperType(type, names, elements);
-    // Since names may contain duplicates, I don't trust the claim in the documentation about
+    // Since `names` may contain duplicates, I don't trust the claim in the documentation about
     // cardinality.  (Does any code depend on the invariant, though?)
     if (origCardinality != names.size() + elements.size()) {
-      throw new BugInCF("Bad sizes: %d != %d + %d", origCardinality, names.size(), elements.size());
+      throw new BugInCF(
+          "Bad sizes: %d != %d + %d ; names=%s  elements=%s",
+          origCardinality, names.size(), elements.size(), names, elements);
     }
     return elements;
   }
@@ -536,7 +538,8 @@ public class ElementUtils {
     TypeElement elt = TypesUtils.getTypeElement(type);
     assert elt != null : "@AssumeAssertion(nullness): assumption";
     Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-    for (VariableElement field : new HashSet<VariableElement>(fieldElts)) {
+    // Use a new list to avoid a ConcurrentModificationException.
+    for (VariableElement field : new ArrayList<>(fieldElts)) {
       if (!field.getModifiers().contains(Modifier.PRIVATE)) {
         notFound.remove(field.getSimpleName().toString());
       } else {

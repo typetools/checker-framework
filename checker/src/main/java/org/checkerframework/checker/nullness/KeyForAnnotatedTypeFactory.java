@@ -44,7 +44,7 @@ public class KeyForAnnotatedTypeFactory
       AnnotationBuilder.fromClass(elements, KeyForBottom.class);
 
   /** The canonical name of the KeyFor class. */
-  protected final @CanonicalName String KEYFOR_NAME = KeyFor.class.getCanonicalName();
+  protected static final @CanonicalName String KEYFOR_NAME = KeyFor.class.getCanonicalName();
 
   /** The Map.containsKey method. */
   private final ExecutableElement mapContainsKey =
