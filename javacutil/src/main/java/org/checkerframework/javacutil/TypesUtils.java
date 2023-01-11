@@ -182,11 +182,11 @@ public final class TypesUtils {
       case DECLARED:
         return ((DeclaredType) type).asElement().getSimpleName().toString();
       case INTERSECTION:
-        StringJoiner sj = new StringJoiner(" & ");
+        StringJoiner sjI = new StringJoiner(" & ");
         for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
-          sj.add(simpleTypeName(bound));
+          sjI.add(simpleTypeName(bound));
         }
-        return sj.toString();
+        return sjI.toString();
       case NULL:
         return "<nulltype>";
       case VOID:
