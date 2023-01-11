@@ -111,6 +111,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
@@ -298,10 +299,10 @@ public class AnnotationFileParser {
   /** Information about a record from a stub file. */
   public static class RecordStub {
     /**
-     * A map from name to record component. The iteration order is the order that they are declared
-     * in the record header.
+     * A map from name to record component. It must have deterministic insertion/iteration order:
+     * the order that they are declared in the record header.
      */
-    public final LinkedHashMap<String, RecordComponentStub> componentsByName;
+    public final Map<String, RecordComponentStub> componentsByName;
     /**
      * If the canonical constructor is given in the stubs, the annotated types (in component
      * declaration order) for the constructor. Null if not present in the stubs.
@@ -311,10 +312,10 @@ public class AnnotationFileParser {
     /**
      * Creates a new RecordStub.
      *
-     * @param componentsByName a map from name to record component. The insertion/iteration order is
-     *     the order that they are declared in the record header.
+     * @param componentsByName a map from name to record component. It must have deterministic
+     *     insertion/iteration order: the order that they are declared in the record header.
      */
-    public RecordStub(LinkedHashMap<String, RecordComponentStub> componentsByName) {
+    public RecordStub(Map<String, RecordComponentStub> componentsByName) {
       this.componentsByName = componentsByName;
     }
 
@@ -980,7 +981,8 @@ public class AnnotationFileParser {
 
     if (typeDecl instanceof RecordDeclaration) {
       NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
-      LinkedHashMap<String, RecordComponentStub> byName = new LinkedHashMap<>();
+      Map<String, RecordComponentStub> byName =
+          ArrayMap.newArrayMapOrLinkedHashMap(recordMembers.size());
       for (Parameter recordMember : recordMembers) {
         RecordComponentStub stub =
             processRecordField(
@@ -1267,8 +1269,8 @@ public class AnnotationFileParser {
         // annotations should not be automatically transferred:
         String qualRecordName = ElementUtils.getQualifiedName(elt.getEnclosingElement());
         if (annotationFileAnnos.records.containsKey(qualRecordName)) {
-          ArrayList<AnnotatedTypeMirror> annotatedParameters = new ArrayList<>();
           List<? extends VariableElement> parameters = elt.getParameters();
+          ArrayList<AnnotatedTypeMirror> annotatedParameters = new ArrayList<>(parameters.size());
           for (int i = 0; i < parameters.size(); i++) {
             VariableElement parameter = parameters.get(i);
             AnnotatedTypeMirror atm =
@@ -1921,7 +1923,7 @@ public class AnnotationFileParser {
           findElement(typeElt, method, /*noWarn=*/ false);
         } else {
           List<BodyDeclaration<?>> l =
-              fakeOverrideDecls.computeIfAbsent(overriddenMethod, __ -> new ArrayList<>());
+              fakeOverrideDecls.computeIfAbsent(overriddenMethod, __ -> new ArrayList<>(1));
           l.add(member);
         }
       }
@@ -2110,7 +2112,7 @@ public class AnnotationFileParser {
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
     List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
-        annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>());
+        annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>(1));
     l.add(Pair.of(fakeLocation.asType(), methodType));
   }
 
