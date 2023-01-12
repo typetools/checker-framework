@@ -5,12 +5,12 @@ import java.util.Set;
 public abstract class TwoCtorGenericAbstract<T extends Object> implements Set<T> {
   protected T value;
 
-  protected AbstractMostlySingletonSetUnannotated() {
+  protected TwoCtorGenericAbstract() {
     // :: warning: assignment
     this.value = null;
   }
 
-  protected AbstractMostlySingletonSetUnannotated(T v) {
+  protected TwoCtorGenericAbstract(T v) {
     this.value = v;
   }
 }
