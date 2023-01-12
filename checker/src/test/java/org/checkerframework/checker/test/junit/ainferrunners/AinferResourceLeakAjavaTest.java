@@ -8,9 +8,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests whole-program inference with the aid of ajava files. This test is the first pass on the
- * test data, which generates the ajava files. This specific test suite is designed to elicit
- * problems with ajava parsing that only occur when an aggregate checker is in use.
+ * Tests RLC-specific inference features with the aid of ajava files. This test is the first pass on
+ * the test data, which generates the ajava files.
  *
  * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-resourceleak/ are not
  * relevant. The meaning of this test class is to test if the generated ajava files are similar to

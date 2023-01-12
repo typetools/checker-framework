@@ -8,9 +8,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests whole-program type inference with ajava files. This test is the second pass, which ensures
- * that with the ajava files in place, the errors that those annotations remove are no longer
- * issued.
+ * Tests RLC-specific inference features with ajava files. This test is the second pass, which
+ * ensures that with the ajava files in place, the errors that those annotations remove are no
+ * longer issued.
  */
 @Category(AinferResourceLeakAjavaTest.class)
 public class AinferResourceLeakAjavaValidationTest extends AinferValidatePerDirectoryTest {
