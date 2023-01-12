@@ -475,7 +475,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the elements of the fields whose simple names are {@code names} and are declared in
+   * Returns the elements of the fields whose simple names are in {@code names} and are declared in
    * {@code type}.
    *
    * <p>If a field isn't declared in {@code type}, its element isn't included in the returned set.
@@ -635,7 +635,7 @@ public class ElementUtils {
 
     List<TypeElement> superElems = new ArrayList<>();
 
-    // Set up a stack containing type, which is our starting point.
+    // Set up a stack containing `type`, which is our starting point.
     Deque<TypeElement> stack = new ArrayDeque<>();
     stack.push(type);
 
@@ -707,8 +707,8 @@ public class ElementUtils {
    * @return fields of {@code type}
    */
   public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
-    List<VariableElement> fields =
-        new ArrayList<>(ElementFilter.fieldsIn(type.getEnclosedElements()));
+    // ElementFilter.fieldsIn returns a new list
+    List<VariableElement> fields = ElementFilter.fieldsIn(type.getEnclosedElements());
     List<TypeElement> alltypes = getSuperTypes(type, elements);
     for (TypeElement atype : alltypes) {
       fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
@@ -723,8 +723,9 @@ public class ElementUtils {
    * @return all enum constants declared in the given enumeration
    */
   public static List<VariableElement> getEnumConstants(TypeElement type) {
-    List<VariableElement> enumConstants = new ArrayList<>();
-    for (Element e : type.getEnclosedElements()) {
+    List<? extends Element> enclosedElements = type.getEnclosedElements();
+    List<VariableElement> enumConstants = new ArrayList<>(enclosedElements.size());
+    for (Element e : enclosedElements) {
       if (e.getKind() == ElementKind.ENUM_CONSTANT) {
         enumConstants.add((VariableElement) e);
       }
@@ -744,8 +745,8 @@ public class ElementUtils {
    * @return methods of {@code type}
    */
   public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
-    List<ExecutableElement> meths =
-        new ArrayList<>(ElementFilter.methodsIn(type.getEnclosedElements()));
+    // ElementFilter.fieldsIn returns a new list
+    List<ExecutableElement> meths = ElementFilter.methodsIn(type.getEnclosedElements());
 
     List<TypeElement> alltypes = getSuperTypes(type, elements);
     for (TypeElement atype : alltypes) {
