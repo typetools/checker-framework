@@ -11,7 +11,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +42,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.ArrayMap;
 
 /**
  * A visitor to validate the types in a tree.
@@ -565,7 +565,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       // bound of the wildcard.
       int numTypeArgs = capturedType.getTypeArguments().size();
       // First create a mapping from captured type variable to its wildcard.
-      Map<TypeVariable, AnnotatedTypeMirror> typeVarToWildcard = new HashMap<>(numTypeArgs);
+      Map<TypeVariable, AnnotatedTypeMirror> typeVarToWildcard =
+          ArrayMap.newArrayMapOrHashMap(numTypeArgs);
       for (int i = 0; i < numTypeArgs; i++) {
         AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);
         if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())

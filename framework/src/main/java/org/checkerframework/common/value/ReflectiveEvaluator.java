@@ -243,7 +243,7 @@ public class ReflectiveEvaluator {
   @SuppressWarnings("mustcall") // I cannot type cartesianProduct() for @MustCall
   private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
-    List<Object[]> tuples = new ArrayList<>();
+    List<Object[]> tuples = new ArrayList<>(argValues.size());
 
     for (Object value : argValues) {
       if (whichArg == 0) {
