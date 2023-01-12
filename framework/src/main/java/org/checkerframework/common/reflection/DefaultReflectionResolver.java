@@ -356,7 +356,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     assert listClassNames.size() == listMethodNames.size()
         && listClassNames.size() == listParamLengths.size();
 
-    List<MethodInvocationTree> methods = new ArrayList<>();
+    List<MethodInvocationTree> methodInvocations = new ArrayList<>();
     for (int i = 0; i < listClassNames.size(); ++i) {
       String className = listClassNames.get(i);
       String methodName = listMethodNames.get(i);
@@ -384,11 +384,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         // parameters
         JCMethodInvocation syntTree = paramLength > 0 ? make.App(method, args) : make.App(method);
 
-        // add method invocation tree to the list of possible methods
-        methods.add(syntTree);
+        // add method invocation tree to the list of possible method invocations
+        methodInvocations.add(syntTree);
       }
     }
-    return methods;
+    return methodInvocations;
   }
 
   private com.sun.tools.javac.util.List<JCExpression> getCorrectedArgs(
@@ -452,7 +452,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             estimate, reflectionFactory.methodValParamsElement, Integer.class);
     assert listClassNames.size() == listParamLengths.size();
 
-    List<JCNewClass> constructors = new ArrayList<>();
+    List<JCNewClass> constructorInvocations = new ArrayList<>();
     for (int i = 0; i < listClassNames.size(); ++i) {
       String className = listClassNames.get(i);
       int paramLength = listParamLengths.get(i);
@@ -463,12 +463,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
 
         JCNewClass syntTree = (JCNewClass) make.Create(symbol, methodInvocation.args);
 
-        // add constructor invocation tree to the list of possible
-        // constructors
-        constructors.add(syntTree);
+        // add constructor invocation tree to the list of possible constructor invocations
+        constructorInvocations.add(syntTree);
       }
     }
-    return constructors;
+    return constructorInvocations;
   }
 
   private AnnotationMirror getMethodVal(MethodInvocationTree tree) {
@@ -551,8 +550,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     // TODO: Should this be used instead of the below??
     ElementFilter.constructorsIn(symClass.getEnclosedElements());
 
-    // The common case is probably that `result` is a singleton at method exit.
-    List<Symbol> result = new ArrayList<>();
+    // The common case is probably that there is one constructor of the given parameter length.
+    List<Symbol> result = new ArrayList<>(2);
     for (Symbol s : symClass.getEnclosedElements()) {
       // Check all constructors
       if (s.getKind() == ElementKind.CONSTRUCTOR) {

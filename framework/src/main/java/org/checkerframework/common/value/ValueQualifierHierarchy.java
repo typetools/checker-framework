@@ -9,8 +9,8 @@ import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.RegexUtil;
 
 /** The qualifier hierarchy for the Value type system. */
@@ -51,7 +51,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
         // Retain strings of correct lengths
         List<Integer> otherLengths = atypeFactory.getArrayLength(otherAnno);
-        ArrayList<String> result = new ArrayList<>();
+        ArrayList<String> result = new ArrayList<>(values.size());
         for (String s : values) {
           if (otherLengths.contains(s.length())) {
             result.add(s);
@@ -62,7 +62,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       case ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME:
         // Retain strings of lengths from a range
         Range otherRange = atypeFactory.getRange(otherAnno);
-        ArrayList<String> range = new ArrayList<>();
+        ArrayList<String> range = new ArrayList<>(values.size());
         for (String s : values) {
           if (otherRange.contains(s.length())) {
             range.add(s);
@@ -237,27 +237,27 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
           return atypeFactory.createArrayLenRangeAnnotation(range1.union(range2));
         case ValueAnnotatedTypeFactory.INTVAL_NAME:
           List<Long> longs = atypeFactory.getIntValues(a1);
-          SystemUtil.addWithoutDuplicates(longs, atypeFactory.getIntValues(a2));
+          CollectionsPlume.adjoinAll(longs, atypeFactory.getIntValues(a2));
           return atypeFactory.createIntValAnnotation(longs);
         case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
           List<Integer> arrayLens = atypeFactory.getArrayLength(a1);
-          SystemUtil.addWithoutDuplicates(arrayLens, atypeFactory.getArrayLength(a2));
+          CollectionsPlume.adjoinAll(arrayLens, atypeFactory.getArrayLength(a2));
           return atypeFactory.createArrayLenAnnotation(arrayLens);
         case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
           List<String> strings = atypeFactory.getStringValues(a1);
-          SystemUtil.addWithoutDuplicates(strings, atypeFactory.getStringValues(a2));
+          CollectionsPlume.adjoinAll(strings, atypeFactory.getStringValues(a2));
           return atypeFactory.createStringAnnotation(strings);
         case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
           List<Boolean> bools = atypeFactory.getBooleanValues(a1);
-          SystemUtil.addWithoutDuplicates(bools, atypeFactory.getBooleanValues(a2));
+          CollectionsPlume.adjoinAll(bools, atypeFactory.getBooleanValues(a2));
           return atypeFactory.createBooleanAnnotation(bools);
         case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
           List<Double> doubles = atypeFactory.getDoubleValues(a1);
-          SystemUtil.addWithoutDuplicates(doubles, atypeFactory.getDoubleValues(a2));
+          CollectionsPlume.adjoinAll(doubles, atypeFactory.getDoubleValues(a2));
           return atypeFactory.createDoubleAnnotation(doubles);
         case ValueAnnotatedTypeFactory.MATCHES_REGEX_NAME:
           List<@Regex String> regexes = atypeFactory.getMatchesRegexValues(a1);
-          SystemUtil.addWithoutDuplicates(regexes, atypeFactory.getMatchesRegexValues(a2));
+          CollectionsPlume.adjoinAll(regexes, atypeFactory.getMatchesRegexValues(a2));
           return atypeFactory.createMatchesRegexAnnotation(regexes);
         case ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME:
           // The LUB is the intersection of the sets.

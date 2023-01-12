@@ -57,7 +57,6 @@ public class CFGTranslationPhaseThree {
   @SuppressWarnings("nullness") // TODO: successors
   public static ControlFlowGraph process(ControlFlowGraph cfg) {
     Set<Block> worklist = cfg.getAllBlocks();
-    Set<Block> dontVisit = new HashSet<>();
 
     // note: this method has to be careful when relinking basic blocks
     // to not forget to adjust the predecessors, too
@@ -65,7 +64,7 @@ public class CFGTranslationPhaseThree {
     // fix predecessor lists by removing any unreachable predecessors
     for (Block c : worklist) {
       BlockImpl cur = (BlockImpl) c;
-      for (Block pred : new HashSet<>(cur.getPredecessors())) {
+      for (Block pred : cur.getPredecessors()) {
         if (!worklist.contains(pred)) {
           cur.removePredecessor((BlockImpl) pred);
         }
@@ -73,6 +72,7 @@ public class CFGTranslationPhaseThree {
     }
 
     // remove empty blocks
+    Set<Block> dontVisit = new HashSet<>();
     for (Block cur : worklist) {
       if (dontVisit.contains(cur)) {
         continue;

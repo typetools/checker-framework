@@ -860,7 +860,7 @@ public class ValueTransfer extends CFTransfer {
     if (lefts == null || rights == null) {
       return null;
     }
-    List<Number> resultValues = new ArrayList<>();
+    List<Number> resultValues = new ArrayList<>(lefts.size() * rights.size());
     for (Number left : lefts) {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
       for (Number right : rights) {
@@ -1200,14 +1200,15 @@ public class ValueTransfer extends CFTransfer {
     }
 
     // This is a list of all the values that the expression can evaluate to.
-    List<Boolean> resultValues = new ArrayList<>();
+    int numResultValues = lefts.size() * rights.size();
+    List<Boolean> resultValues = new ArrayList<>(numResultValues);
 
     // These lists are used to refine the values in the store based on the results of the
     // comparison.
-    List<Number> thenLeftVals = new ArrayList<>();
-    List<Number> elseLeftVals = new ArrayList<>();
-    List<Number> thenRightVals = new ArrayList<>();
-    List<Number> elseRightVals = new ArrayList<>();
+    List<Number> thenLeftVals = new ArrayList<>(numResultValues);
+    List<Number> elseLeftVals = new ArrayList<>(numResultValues);
+    List<Number> thenRightVals = new ArrayList<>(numResultValues);
+    List<Number> elseRightVals = new ArrayList<>(numResultValues);
 
     for (Number left : lefts) {
       NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
