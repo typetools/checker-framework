@@ -1,4 +1,4 @@
-// test case for
+// test case for https://github.com/typetools/checker-framework/issues/5524
 
 import java.util.Set;
 
