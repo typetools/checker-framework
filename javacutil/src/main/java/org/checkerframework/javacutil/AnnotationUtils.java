@@ -355,8 +355,8 @@ public class AnnotationUtils {
   }
 
   /**
-   * Provide ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by their
-   * fully-qualified names, then by their element values in order of the name of the element.
+   * Provide an ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by
+   * their fully-qualified names, then by their element values in order of the name of the element.
    *
    * @param a1 the first annotation
    * @param a2 the second annotation
@@ -371,10 +371,13 @@ public class AnnotationUtils {
     // The annotations have the same name, but different values, so compare values.
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = a1.getElementValues();
     Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = a2.getElementValues();
-    List<ExecutableElement> elements1 =
-        ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements());
+    Set<ExecutableElement> sortedElements =
+        new TreeSet<>(Comparator.comparing(ElementUtils::getSimpleSignature));
+    sortedElements.addAll(
+        ElementFilter.methodsIn(a1.getAnnotationType().asElement().getEnclosedElements()));
 
-    for (ExecutableElement meth : elements1) {
+    // getDefaultValue() returns null if the method is not an annotation interface element.
+    for (ExecutableElement meth : sortedElements) {
       AnnotationValue aval1 = vals1.get(meth);
       if (aval1 == null) {
         aval1 = meth.getDefaultValue();
