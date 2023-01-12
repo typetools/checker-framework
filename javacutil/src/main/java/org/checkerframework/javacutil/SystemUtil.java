@@ -192,7 +192,6 @@ public class SystemUtil {
    * <p>This is like {@code withoutDuplicates}, but requires the list elements to implement {@link
    * Comparable}, and thus can be more efficient.
    *
-   * @see #withoutDuplicatesComparable
    * @param <T> the type of elements in {@code values}
    * @param values a list of values
    * @return the values, with duplicates removed
