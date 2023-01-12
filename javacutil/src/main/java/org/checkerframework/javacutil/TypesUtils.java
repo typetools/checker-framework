@@ -24,6 +24,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -180,6 +181,12 @@ public final class TypesUtils {
         return ((TypeVariable) type).asElement().getSimpleName().toString();
       case DECLARED:
         return ((DeclaredType) type).asElement().getSimpleName().toString();
+      case INTERSECTION:
+        StringJoiner sjI = new StringJoiner(" & ");
+        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
+          sjI.add(simpleTypeName(bound));
+        }
+        return sjI.toString();
       case NULL:
         return "<nulltype>";
       case VOID:
