@@ -160,4 +160,6 @@ checker/tests/ainfer-nullness/annotated/
 checker/tests/ainfer-nullness/inference-output/
 checker/tests/ainfer-testchecker/annotated/
 checker/tests/ainfer-testchecker/inference-output/
+checker/tests/ainfer-resourceleak/annotated/
+checker/tests/ainfer-resourceleak/inference-output/
 framework/tests/returnsreceiverdelomboked/
