@@ -383,6 +383,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // places the annotations incorrectly on the class declarations.
         continue;
       }
+      if (ElementUtils.isStatic(methodElt) && !ElementUtils.isStatic(fieldElement)) {
+        // A static method can't have precondition annotations about instance fields.
+        continue;
+      }
       FieldAccess fa =
           new FieldAccess(
               (ElementUtils.isStatic(fieldElement) ? classNameReceiver : thisReference),

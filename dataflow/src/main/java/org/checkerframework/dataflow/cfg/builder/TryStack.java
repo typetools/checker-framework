@@ -4,7 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
-import org.plumelib.util.MostlySingletonSet;
+import org.plumelib.util.ArraySet;
 
 /**
  * An exception stack represents the set of all try-catch blocks in effect at a given point in a
@@ -50,7 +50,7 @@ class TryStack {
    */
   public Set<Label> possibleLabels(TypeMirror thrown) {
     // Work up from the innermost frame until the exception is known to be caught.
-    Set<Label> labels = new MostlySingletonSet<>();
+    Set<Label> labels = new ArraySet<>(1);
     for (TryFrame frame : frames) {
       if (frame.possibleLabels(thrown, labels)) {
         return labels;

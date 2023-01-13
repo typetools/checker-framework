@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +42,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -475,7 +475,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the elements of the fields whose simple names are {@code names} and are declared in
+   * Returns the elements of the fields whose simple names are in {@code names} and are declared in
    * {@code type}.
    *
    * <p>If a field isn't declared in {@code type}, its element isn't included in the returned set.
@@ -487,7 +487,7 @@ public class ElementUtils {
    *     {@code type}
    */
   public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
-    Set<VariableElement> results = new HashSet<>();
+    Set<VariableElement> results = ArraySet.newArraySetOrHashSet(names.size());
     for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
       if (names.contains(field.getSimpleName().toString())) {
         results.add(field);
@@ -506,20 +506,22 @@ public class ElementUtils {
    * called.
    *
    * @param type where to look for fields
-   * @param names simple names of fields that might be declared in {@code type} or a supertype
-   *     (Names that are found are removed from this list.)
+   * @param names simple names of fields that might be declared in {@code type} or a supertype.
+   *     Names that are found are removed from this list.
    * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
    *     whose simple names were in {@code names} when the method was called.
    */
   public static Set<VariableElement> findFieldsInTypeOrSuperType(
       TypeMirror type, Collection<String> names) {
     int origCardinality = names.size();
-    Set<VariableElement> elements = new HashSet<>();
+    Set<VariableElement> elements = ArraySet.newArraySetOrHashSet(origCardinality);
     findFieldsInTypeOrSuperType(type, names, elements);
-    // Since names may contain duplicates, I don't trust the claim in the documentation about
+    // Since `names` may contain duplicates, I don't trust the claim in the documentation about
     // cardinality.  (Does any code depend on the invariant, though?)
     if (origCardinality != names.size() + elements.size()) {
-      throw new BugInCF("Bad sizes: %d != %d + %d", origCardinality, names.size(), elements.size());
+      throw new BugInCF(
+          "Bad sizes: %d != %d + %d ; names=%s  elements=%s",
+          origCardinality, names.size(), elements.size(), names, elements);
     }
     return elements;
   }
@@ -536,7 +538,8 @@ public class ElementUtils {
     TypeElement elt = TypesUtils.getTypeElement(type);
     assert elt != null : "@AssumeAssertion(nullness): assumption";
     Set<VariableElement> fieldElts = findFieldsInType(elt, notFound);
-    for (VariableElement field : new HashSet<VariableElement>(fieldElts)) {
+    // Use a new list to avoid a ConcurrentModificationException.
+    for (VariableElement field : new ArrayList<>(fieldElts)) {
       if (!field.getModifiers().contains(Modifier.PRIVATE)) {
         notFound.remove(field.getSimpleName().toString());
       } else {
@@ -632,7 +635,7 @@ public class ElementUtils {
 
     List<TypeElement> superElems = new ArrayList<>();
 
-    // Set up a stack containing type, which is our starting point.
+    // Set up a stack containing `type`, which is our starting point.
     Deque<TypeElement> stack = new ArrayDeque<>();
     stack.push(type);
 
@@ -704,8 +707,8 @@ public class ElementUtils {
    * @return fields of {@code type}
    */
   public static List<VariableElement> getAllFieldsIn(TypeElement type, Elements elements) {
-    List<VariableElement> fields =
-        new ArrayList<>(ElementFilter.fieldsIn(type.getEnclosedElements()));
+    // ElementFilter.fieldsIn returns a new list
+    List<VariableElement> fields = ElementFilter.fieldsIn(type.getEnclosedElements());
     List<TypeElement> alltypes = getSuperTypes(type, elements);
     for (TypeElement atype : alltypes) {
       fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
@@ -720,8 +723,9 @@ public class ElementUtils {
    * @return all enum constants declared in the given enumeration
    */
   public static List<VariableElement> getEnumConstants(TypeElement type) {
-    List<VariableElement> enumConstants = new ArrayList<>();
-    for (Element e : type.getEnclosedElements()) {
+    List<? extends Element> enclosedElements = type.getEnclosedElements();
+    List<VariableElement> enumConstants = new ArrayList<>(enclosedElements.size());
+    for (Element e : enclosedElements) {
       if (e.getKind() == ElementKind.ENUM_CONSTANT) {
         enumConstants.add((VariableElement) e);
       }
@@ -741,8 +745,8 @@ public class ElementUtils {
    * @return methods of {@code type}
    */
   public static List<ExecutableElement> getAllMethodsIn(TypeElement type, Elements elements) {
-    List<ExecutableElement> meths =
-        new ArrayList<>(ElementFilter.methodsIn(type.getEnclosedElements()));
+    // ElementFilter.fieldsIn returns a new list
+    List<ExecutableElement> meths = ElementFilter.methodsIn(type.getEnclosedElements());
 
     List<TypeElement> alltypes = getSuperTypes(type, elements);
     for (TypeElement atype : alltypes) {

@@ -98,8 +98,10 @@ public class AnnotationMirrorToAnnotationExprConversion {
       Map<? extends ExecutableElement, ? extends AnnotationValue> values) {
     NodeList<MemberValuePair> convertedValues = new NodeList<>();
     AnnotationValueConverterVisitor converter = new AnnotationValueConverterVisitor();
-    for (ExecutableElement valueName : values.keySet()) {
-      AnnotationValue value = values.get(valueName);
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        values.entrySet()) {
+      ExecutableElement valueName = entry.getKey();
+      AnnotationValue value = entry.getValue();
       convertedValues.add(
           new MemberValuePair(valueName.getSimpleName().toString(), value.accept(converter, null)));
     }
@@ -200,10 +202,11 @@ public class AnnotationMirrorToAnnotationExprConversion {
     @Override
     public Expression visitLong(long value, Void p) {
       if (value < 0) {
-        return new UnaryExpr(new LongLiteralExpr(Long.toString(-value)), UnaryExpr.Operator.MINUS);
+        return new UnaryExpr(
+            new LongLiteralExpr(Long.toString(-value) + "L"), UnaryExpr.Operator.MINUS);
       }
 
-      return new LongLiteralExpr(Long.toString(value));
+      return new LongLiteralExpr(Long.toString(value) + "L");
     }
 
     @Override
