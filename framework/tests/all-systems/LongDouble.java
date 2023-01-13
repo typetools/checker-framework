@@ -1,4 +1,4 @@
-// Test case for crash that occurred during WPI when calling isSuper inappropriately.
+// Test case for https://github.com/typetools/checker-framework/issues/5526.
 
 public abstract class LongDouble<T> {
 
