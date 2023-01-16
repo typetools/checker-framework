@@ -7,10 +7,11 @@ import org.checkerframework.dataflow.constantpropagation.Constant;
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationStore;
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTransfer;
 
+/** Run constant propagation for a specific file and create a PDF of the CFG. */
 public class ConstantPropagationPlayground {
 
   /**
-   * Run constant propagation for a specific file and create a PDF of the CFG in the end.
+   * Run constant propagation for a specific file and create a PDF of the CFG.
    *
    * @param args command-line arguments, not used
    */
