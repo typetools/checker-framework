@@ -207,7 +207,7 @@ allprojects {
       targets = targets.collectMany {[
           // must call toString() to convert GString to String
           "${it}/**/*.java".toString(),
-          "${it}/**/*.ajava".toString()
+          // Not .ajava files because formatting would remove import statements.
       ]}
       target targets
 
@@ -218,7 +218,6 @@ allprojects {
         '*/build/**',
         '*/dist/**',
         '*/tests/build/**',
-        '**/input-annotation-files/*'
       ]
       if (isJava17orHigher) {
         targetExclude doNotFormat
