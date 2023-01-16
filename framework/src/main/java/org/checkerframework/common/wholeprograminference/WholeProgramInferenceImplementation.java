@@ -256,16 +256,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
       AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
       AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();
-      atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
-      T receiverAnnotations =
-          storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
-      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-        ((GenericAnnotatedTypeFactory) this.atypeFactory)
-            .getDependentTypesHelper()
-            .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
+      // update the set of annotations for the receiver type if it is not null.
+      if (receiverParamATM != null) {
+        atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
+        T receiverAnnotations =
+            storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
+        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+          ((GenericAnnotatedTypeFactory) this.atypeFactory)
+              .getDependentTypesHelper()
+              .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
+        }
+        updateAnnotationSet(
+            receiverAnnotations, TypeUseLocation.RECEIVER, receiverArgATM, receiverParamATM, file);
       }
-      updateAnnotationSet(
-          receiverAnnotations, TypeUseLocation.RECEIVER, receiverArgATM, receiverParamATM, file);
     }
 
     for (int i = 0; i < arguments.size(); i++) {
