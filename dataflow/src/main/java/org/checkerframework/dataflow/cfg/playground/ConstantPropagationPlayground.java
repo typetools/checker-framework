@@ -10,6 +10,11 @@ import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTran
 /** Run constant propagation for a specific file and create a PDF of the CFG. */
 public class ConstantPropagationPlayground {
 
+  /** Do not instantiate. */
+  private ConstantPropagationPlayground() {
+    throw new Error("do not instantiate");
+  }
+
   /**
    * Run constant propagation for a specific file and create a PDF of the CFG.
    *

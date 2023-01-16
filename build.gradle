@@ -215,9 +215,8 @@ allprojects {
         '**/nullness-javac-errors/*',
         '**/calledmethods-delomboked/*',
         '**/returnsreceiverdelomboked/*',
-        '*/build/**',
+        '**/build/**',
         '*/dist/**',
-        '*/tests/build/**',
       ]
       if (isJava17orHigher) {
         targetExclude doNotFormat
